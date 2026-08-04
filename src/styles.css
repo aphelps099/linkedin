@@ -1,0 +1,11 @@
+@import "./tokens/fonts.css";
+@import "./tokens/colors.css";
+@import "./tokens/typography.css";
+@import "./tokens/spacing.css";
+@import "./tokens/effects.css";
+
+html, body { margin: 0; background: var(--surface-page); }
+body { display: flex; justify-content: center; padding: 0 0 40px; }
+#root { width: 100%; display: flex; justify-content: center; }
+a { color: var(--blue); }
+a:hover { color: var(--ink); }
