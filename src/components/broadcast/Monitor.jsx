@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, forwardRef } from 'react';
 import { CBAudio } from '../../audio.js';
+import { loadLibrary, libraryReady, currentPlate, advancePlate } from '../../library.js';
 
 // The broadcast monitor — the clip the feed sees, rendered live.
 // Corporate blue field, white text, white-outlined squares with white fills
@@ -10,7 +11,7 @@ const W = 1080, H = 1080, M = 72;
 const BLUE = '#0a66c2', TINT = '#9fc8ea', WHITE = '#ffffff', INK = '#111111';
 const SANS = '"Helvetica Neue", Helvetica, Arial, sans-serif';
 const MONO = '"IBM Plex Mono", Menlo, Consolas, monospace';
-const SCENES = ['phrase', 'pads', 'eq', 'grid', 'feed'];
+const SCENES = ['phrase', 'plate', 'pads', 'eq', 'grid', 'plate', 'feed'];
 
 function wrapText(ctx, text, maxW){
   const words = text.split(' ');
@@ -47,8 +48,8 @@ function reveal(st, text, now){
   return { partial, cursorOn };
 }
 
-function drawChrome(ctx, st){
-  ctx.fillStyle = BLUE; ctx.fillRect(0,0,W,H);
+function drawChrome(ctx, st, noFill){
+  if(!noFill){ ctx.fillStyle = BLUE; ctx.fillRect(0,0,W,H); }
   ctx.fillStyle = WHITE; ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
   ctx.font = `700 46px ${SANS}`; ctx.letterSpacing = '-0.9px';
   ctx.fillText('Circle Back', M, 116);
@@ -374,6 +375,63 @@ function drawComments(ctx, st, now, {x, w, bottom, max, scale}){
   }
 }
 
+// a plate from the image library: the photograph fills the frame under a blue
+// veil, with the phrase set across the bottom like a caption in an annual report
+// the photograph goes down first, so the masthead can sit on top of it
+function drawPlateBackdrop(ctx){
+  const plate = currentPlate();
+  if(!plate) return false;
+  const { img } = plate;
+  const scale = Math.max(W/img.width, H/img.height);
+  const dw = img.width*scale, dh = img.height*scale;
+  ctx.drawImage(img, (W-dw)/2, (H-dh)/2, dw, dh);
+  // the house veil — keeps a photograph inside the brand
+  ctx.save();
+  ctx.globalCompositeOperation = 'multiply';
+  ctx.fillStyle = 'rgba(10,102,194,.46)'; ctx.fillRect(0,0,W,H);
+  ctx.restore();
+  ctx.fillStyle = 'rgba(10,102,194,.16)'; ctx.fillRect(0,0,W,H);
+  return true;
+}
+
+function drawPlateScene(ctx, st, now){
+  const plate = currentPlate();
+  if(!plate){ drawPhraseBlock(ctx, st, now, {top: 280, bottom: 900, maxW: W - 2*M, startSize: 120}); return; }
+  const { caption } = plate;
+  drawChip(ctx, st.exporting ? 'ON THE RECORD' : 'NOW PLAYING', M, 186);
+  drawStamp(ctx, W - M - 110, 205);
+
+  // caption plate, bottom third
+  const text = st.spoken && st.tickerText ? `“${st.tickerText}”` : 'It’s not an instrument. It’s a journey.';
+  const { size, lines } = fitText(ctx, text, W - 2*M, 3, 96, 44);
+  const lh = size*1.04;
+  const blockH = lines.length*lh + 54;
+  const top = H - 96 - blockH;
+  ctx.fillStyle = 'rgba(10,102,194,.9)';
+  ctx.fillRect(0, top - 26, W, blockH + 52);
+  ctx.fillStyle = WHITE; ctx.textAlign = 'left';
+  ctx.font = `700 ${size}px ${SANS}`; ctx.letterSpacing = `${(-0.035*size).toFixed(1)}px`;
+  const { partial, cursorOn } = st.spoken ? reveal(st, text, now) : {partial:text, cursorOn:false};
+  let y = top + size*.84, remaining = partial.length;
+  for(const line of lines){
+    const shown = line.slice(0, Math.max(0, remaining));
+    ctx.fillText(shown, M, y);
+    if(cursorOn && remaining >= 0 && remaining <= line.length){
+      ctx.fillRect(M + ctx.measureText(shown).width + 8, y - size*.72, size*.5, size*.82);
+    }
+    remaining -= line.length + 1;
+    y += lh;
+    if(remaining < 0 && cursorOn) break;
+  }
+  ctx.letterSpacing = '0px';
+  // plate number, like a figure caption
+  ctx.fillStyle = TINT; ctx.font = `500 17px ${MONO}`; ctx.letterSpacing = '1.6px';
+  ctx.fillText(String(caption).toUpperCase(), M, top + blockH + 6);
+  ctx.textAlign = 'right';
+  ctx.fillText(engagementLine(st), W - M, top + blockH + 6);
+  ctx.letterSpacing = '0px'; ctx.textAlign = 'left';
+}
+
 // the whole post, as it appears in the feed — header, body, engagement bar, thread
 function drawFeedScene(ctx, st, now){
   const x = 54, y = 200, w = W - 108, h = H - y - 74;
@@ -445,13 +503,23 @@ function draw(ctx, st){
   const now = performance.now();
   ctx.setTransform(1,0,0,1,0,0);
   ctx.letterSpacing = '0px';
-  drawChrome(ctx, st);
 
   let scene = 'composite';
   if(st.exporting && st.exportStartedAt){
     const el = (now - st.exportStartedAt)/1000;
     const dur = st.sceneDur || 5;
-    scene = SCENES[Math.floor(el/dur) % SCENES.length];
+    const ix = Math.floor(el/dur) % SCENES.length;
+    scene = SCENES[ix];
+    // cut to a fresh plate every time the director returns to the library
+    if(scene === 'plate' && draw._lastPlateIx !== ix){ advancePlate(); draw._lastPlateIx = ix; }
+    else if(scene !== 'plate') draw._lastPlateIx = -1;
+  }
+  if(scene === 'plate' && libraryReady()){
+    drawPlateBackdrop(ctx);      // photograph first…
+    drawChrome(ctx, st, true);   // …masthead over it
+  } else {
+    if(scene === 'plate') scene = 'phrase'; // library still loading
+    drawChrome(ctx, st);
   }
 
   if(scene === 'phrase'){
@@ -462,6 +530,8 @@ function draw(ctx, st){
   } else if(scene === 'pads'){
     drawChip(ctx, 'PRESS TO OPINE', M, 186);
     drawPadsBlock(ctx, st, now, {top: 250, bottom: 990});
+  } else if(scene === 'plate'){
+    drawPlateScene(ctx, st, now);
   } else if(scene === 'eq'){
     drawChip(ctx, 'THE MIX', M, 186);
     drawPhraseBlock(ctx, st, now, {top: 240, bottom: 420, maxW: W - 2*M, startSize: 64});
@@ -507,6 +577,7 @@ function draw(ctx, st){
 export const Monitor = forwardRef(function Monitor({ stateRef, style }, ref){
   const inner = useRef(null);
   const setRefs = el => { inner.current = el; if(typeof ref === 'function') ref(el); else if(ref) ref.current = el; };
+  useEffect(()=>{ loadLibrary(import.meta.env.BASE_URL).catch(()=>{}); },[]);
   useEffect(()=>{
     let raf;
     const loop = ()=>{
