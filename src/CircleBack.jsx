@@ -14,6 +14,7 @@ import { Pad, KeyPlate } from './components/pads/Pad.jsx';
 import { StepGrid } from './components/sequencer/StepGrid.jsx';
 import { Monitor } from './components/broadcast/Monitor.jsx';
 import { StageKey } from './components/stage/StageKey.jsx';
+import { Backdrop } from './components/stage/Backdrop.jsx';
 import { RemixPanel } from './components/remix/RemixPanel.jsx';
 import { analyze, optimize } from './remix.js';
 import { CBAudio, CBVoice, CHARACTERS, exposeVoice } from './audio.js';
@@ -607,9 +608,11 @@ export default function CircleBack(){
     <StageKey tone={tone} label="Drop" hint="3 / D" caption="Full stop." on={energy===2} onFire={()=> setEnergyLevel(2)}/>
   </div>;
 
-  if(!studio) return <div style={{minHeight:'100vh',background:'var(--blue)',color:'#fff',fontFamily:'var(--sans)',
-    padding: narrow ? '14px 14px 26px' : '20px 26px 30px',boxSizing:'border-box',display:'flex',flexDirection:'column',gap:narrow?12:16}}>
-    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:14,flexWrap:'wrap'}}>
+  if(!studio) return <div style={{position:'relative',minHeight:'100vh',background:'var(--blue)',color:'#fff',fontFamily:'var(--sans)',
+    padding: narrow ? '14px 14px 26px' : '20px 26px 30px',boxSizing:'border-box',display:'flex',flexDirection:'column',gap:narrow?12:16,
+    isolation:'isolate'}}>
+    <Backdrop stateRef={ref} focusRef={canvasRef}/>
+    <div style={{position:'relative',zIndex:1,display:'flex',justifyContent:'space-between',alignItems:'center',gap:14,flexWrap:'wrap'}}>
       <span style={{fontSize:narrow?18:22,fontWeight:700,letterSpacing:'-.02em'}}>Circle Back<sup style={{fontSize:9,verticalAlign:10}}>®</sup></span>
       <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}>
         <Button onClick={()=> setRemixOpen(o=>!o)}
@@ -622,13 +625,15 @@ export default function CircleBack(){
         <Button onClick={()=>setStudio(true)} style={{background:'transparent',color:'#fff',borderColor:'#fff'}}>Audio tools</Button>
       </div>
     </div>
-    {remixOpen && <RemixPanel narrow={narrow} result={remix} onRemix={buildRemix} onClose={()=>setRemixOpen(false)}/>}
-    <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',minHeight:0}}>
+    {remixOpen && <div style={{position:'relative',zIndex:1}}>
+      <RemixPanel narrow={narrow} result={remix} onRemix={buildRemix} onClose={()=>setRemixOpen(false)}/>
+    </div>}
+    <div style={{position:'relative',zIndex:1,flex:1,display:'flex',alignItems:'center',justifyContent:'center',minHeight:0}}>
       <Monitor ref={canvasRef} stateRef={ref}
         style={{border:'2px solid rgba(255,255,255,.32)',width:'auto',height:'auto',maxWidth:'100%',maxHeight: narrow ? '58vh' : '68vh'}}/>
     </div>
-    {stageKeys('light')}
-    <div style={{display:'grid',gridTemplateColumns:narrow?'1fr':'1fr 1fr 1fr auto',gap:narrow?12:18,alignItems:'end'}}>
+    <div style={{position:'relative',zIndex:1}}>{stageKeys('light')}</div>
+    <div style={{position:'relative',zIndex:1,display:'grid',gridTemplateColumns:narrow?'1fr':'1fr 1fr 1fr auto',gap:narrow?12:18,alignItems:'end'}}>
       <Scrubber tone="light" label="Pitch" value={pitch} onChange={setPitch}
         format={v=>{ const s = Math.round((v-.5)*24); return `${s>0?'+':''}${s} st`; }}/>
       <Scrubber tone="light" label="Weirdness" value={weird} onChange={setWeird}/>
@@ -643,14 +648,14 @@ export default function CircleBack(){
         {(CHARACTERS.find(c=>c.id===character)||CHARACTERS[0]).name}
       </Button>
     </div>
-    <div style={{display:'flex',justifyContent:'space-between',gap:12,flexWrap:'wrap',opacity:.72,fontSize:9.5,fontWeight:700,letterSpacing:'.16em',textTransform:'uppercase'}}>
+    <div style={{position:'relative',zIndex:1,display:'flex',justifyContent:'space-between',gap:12,flexWrap:'wrap',opacity:.72,fontSize:9.5,fontWeight:700,letterSpacing:'.16em',textTransform:'uppercase'}}>
       <span>{remix ? `Your remix · index ${remix.score} · ${remix.rank}` : song.name} · {tempo} BPM · {SECTIONS[energy]}</span>
       <span style={{display:'inline-flex',gap:18,alignItems:'center',flexWrap:'wrap'}}>
         {voxRadio('light')}
         <span>Space starts the song · ← → phrases · ⇧R repeats · R new track</span>
       </span>
     </div>
-    {take && <div style={{display:'flex',gap:12,alignItems:'center',flexWrap:'wrap'}}>
+    {take && <div style={{position:'relative',zIndex:1,display:'flex',gap:12,alignItems:'center',flexWrap:'wrap'}}>
       <a href={take.url} download={take.name} style={{fontFamily:'var(--mono)',fontSize:11,color:'#fff'}}>↓ {take.name}</a>
     </div>}
   </div>;
