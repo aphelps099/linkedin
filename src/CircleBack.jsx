@@ -565,10 +565,10 @@ export default function CircleBack(){
   },[studio]);
 
   const voxLabels = VOICES.map((v)=> v.vox ? voxCodes : null);
-  const stageKeys = <div style={{display:'grid',gridTemplateColumns: narrow ? '1fr' : 'repeat(3,1fr)',gap:narrow?10:14,width:'100%'}}>
-    <StageKey label="Phrase" hint="1 / A" caption="Say the next line" onFire={firePhrase}/>
-    <StageKey label="Build" hint="2 / S" caption="Raise the room" on={energy===1} onFire={()=> setEnergyLevel(energy===1?0:1)}/>
-    <StageKey label="Drop" hint="3 / D" caption="Full stop." on={energy===2} onFire={()=> setEnergyLevel(2)}/>
+  const stageKeys = tone => <div style={{display:'grid',gridTemplateColumns: narrow ? '1fr' : 'repeat(3,1fr)',gap:narrow?10:14,width:'100%'}}>
+    <StageKey tone={tone} label="Phrase" hint="1 / A" caption="Say the next line" onFire={firePhrase}/>
+    <StageKey tone={tone} label="Build" hint="2 / S" caption="Raise the room" on={energy===1} onFire={()=> setEnergyLevel(energy===1?0:1)}/>
+    <StageKey tone={tone} label="Drop" hint="3 / D" caption="Full stop." on={energy===2} onFire={()=> setEnergyLevel(2)}/>
   </div>;
 
   if(!studio) return <div style={{minHeight:'100vh',background:'var(--blue)',color:'#fff',fontFamily:'var(--sans)',
@@ -591,7 +591,7 @@ export default function CircleBack(){
       <Monitor ref={canvasRef} stateRef={ref}
         style={{border:'2px solid rgba(255,255,255,.32)',width:'auto',height:'auto',maxWidth:'100%',maxHeight: narrow ? '58vh' : '68vh'}}/>
     </div>
-    {stageKeys}
+    {stageKeys('light')}
     <div style={{display:'grid',gridTemplateColumns:narrow?'1fr':'1fr 1fr 1fr auto',gap:narrow?12:18,alignItems:'end'}}>
       <Scrubber tone="light" label="Pitch" value={pitch} onChange={setPitch}
         format={v=>{ const s = Math.round((v-.5)*24); return `${s>0?'+':''}${s} st`; }}/>
@@ -658,7 +658,7 @@ export default function CircleBack(){
     </div>
 
     <Bay title="Stage keys" aside={`${song.name} · ${SECTIONS[energy]}`} style={{marginTop:'var(--space-section)'}}>
-      {stageKeys}
+      {stageKeys('ink')}
     </Bay>
 
     <div style={{display:'grid',gridTemplateColumns:narrow?'1fr':'200px 1fr 230px',gap:narrow?20:'var(--space-col)',marginTop:'var(--space-section)'}}>
