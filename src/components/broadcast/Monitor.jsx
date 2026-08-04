@@ -11,7 +11,10 @@ const W = 1080, H = 1080, M = 72;
 const BLUE = '#0a66c2', TINT = '#9fc8ea', WHITE = '#ffffff', INK = '#111111';
 const SANS = '"Helvetica Neue", Helvetica, Arial, sans-serif';
 const MONO = '"IBM Plex Mono", Menlo, Consolas, monospace';
-const SCENES = ['phrase', 'plate', 'pads', 'eq', 'grid', 'plate', 'feed'];
+// What a take is made of: photographs, blue fields of white type, the ASCII
+// equalizer, and the comments. No sequencer grid, no pads — a clip should look
+// like a piece of media, not like a screenshot of a music tool.
+const SCENES = ['phrase', 'plate', 'feed', 'eq', 'plate', 'phrase', 'feed'];
 
 function wrapText(ctx, text, maxW){
   const words = text.split(' ');
@@ -490,6 +493,75 @@ function drawPlateScene(ctx, st, now){
   ctx.letterSpacing = '0px'; ctx.textAlign = 'left';
 }
 
+// Zoomed into the thread, the way it looks on a phone held too close: one or
+// two comments at reading size, sliding up as they arrive, their reaction
+// counts ticking, the whole column drifting like someone is scrolling.
+const easeOut = t => 1 - Math.pow(1 - Math.max(0, Math.min(1, t)), 3);
+
+function drawFeedZoom(ctx, st, now){
+  const x = 44, y = 196, w = W - 88, h = H - y - 74;
+  ctx.save();
+  ctx.fillStyle = '#fff';
+  roundRect(ctx, x, y, w, h, 18); ctx.fill();
+  ctx.clip();                                   // the card is the viewport
+
+  const pad = 34;
+  const list = (st.comments || []).slice(-2);
+  const newest = list.length ? list[list.length-1] : null;
+  const age = newest ? (now - newest.at)/1000 : 1;
+
+  // the post being commented on, compact along the top
+  drawAvatar(ctx, x + pad, y + pad, 60, 'CB', {fill:'#0a66c2', color:'#fff'});
+  ctx.textAlign = 'left';
+  ctx.font = `600 26px ${SANS}`; ctx.fillStyle = FEED_TEXT;
+  ctx.fillText('Circle Back®', x + pad + 76, y + pad + 26);
+  ctx.font = `400 18px ${SANS}`; ctx.fillStyle = FEED_MUTED;
+  ctx.fillText('The Professional Phrase Organ · now', x + pad + 76, y + pad + 52);
+  ctx.textAlign = 'right';
+  ctx.font = `600 22px ${SANS}`; ctx.fillStyle = '#0a66c2';
+  ctx.fillText('+ Follow', x + w - pad, y + pad + 30);
+  ctx.textAlign = 'left';
+
+  const e = st.eng || {reactions:0, reposts:0, comments:0};
+  let cy = y + pad + 92;
+  drawReactions(ctx, ['like','insight','love'], e.reactions.toLocaleString(), x + pad, cy, 1.3);
+  ctx.textAlign = 'right';
+  ctx.font = `400 20px ${SANS}`; ctx.fillStyle = FEED_MUTED;
+  ctx.fillText(`${e.comments} comments`, x + w - pad, cy + 7);
+  ctx.textAlign = 'left';
+  cy += 30;
+  ctx.strokeStyle = FEED_FAINT; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(x + pad, cy); ctx.lineTo(x + w - pad, cy); ctx.stroke();
+  cy += 34;
+
+  // the thread — big enough to read across a room
+  const scale = 1.9;
+  const drift = Math.min(1, age/1.2) * 10; // the column settles after each arrival
+  list.forEach((c, i)=>{
+    const isNew = i === list.length-1;
+    const t = easeOut(((now - c.at)/1000) / .45);
+    const likes = Math.round(c.likes * easeOut(((now - c.at)/1000 - .25) / .7));
+    ctx.save();
+    ctx.globalAlpha = isNew ? t : .55 + .45*t;
+    ctx.translate(0, (isNew ? (1-t)*70 : 0) - (isNew ? 0 : drift));
+    const shown = {...c, likes: Math.max(0, likes)};
+    const used = drawCommentRow(ctx, shown, x + pad, cy, w - 2*pad, scale, 1);
+    ctx.restore();
+    cy += used + 26;
+  });
+
+  if(!list.length){
+    ctx.font = `400 26px ${SANS}`; ctx.fillStyle = FEED_MUTED;
+    ctx.fillText('Be the first to comment on this.', x + pad, cy + 30);
+  } else {
+    // somebody is always typing
+    const dots = Math.floor(now/380) % 4;
+    ctx.font = `400 22px ${SANS}`; ctx.fillStyle = 'rgba(0,0,0,.42)';
+    ctx.fillText(`Someone is typing${'.'.repeat(dots)}`, x + pad + 96, Math.min(cy + 34, y + h - 26));
+  }
+  ctx.restore();
+}
+
 // the whole post, as it appears in the feed — header, body, engagement bar, thread
 function drawFeedScene(ctx, st, now){
   const x = 54, y = 200, w = W - 108, h = H - y - 74;
@@ -603,7 +675,7 @@ function draw(ctx, st){
     drawGridBlock(ctx, st, {top: 260, bottom: 990, labelW: 200, labelSize: 19});
   } else if(scene === 'feed'){
     drawChip(ctx, 'THE COMMENTS ARE IN', M, 152);
-    drawFeedScene(ctx, st, now);
+    drawFeedZoom(ctx, st, now);
   } else {
     // the stage — what the room sees
     const chipW = drawChip(ctx, st.exporting ? 'ON THE RECORD' : 'NOW PLAYING', M, 186);
