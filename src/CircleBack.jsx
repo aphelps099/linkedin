@@ -134,6 +134,21 @@ export default function CircleBack(){
     CBVoice.loadBank(`${import.meta.env.BASE_URL}phrases/`, PHRASES.length).catch(()=>{});
   },[]);
 
+  // mobile audio: unlock/resume inside every real gesture (capture phase runs
+  // in the same tap stack, before React handlers) — also re-resumes the
+  // context after iOS interruptions like calls or backgrounding
+  React.useEffect(()=>{
+    const u = ()=> CBAudio.unlock();
+    window.addEventListener('pointerdown', u, true);
+    window.addEventListener('keydown', u, true);
+    window.addEventListener('touchend', u, true);
+    return ()=>{
+      window.removeEventListener('pointerdown', u, true);
+      window.removeEventListener('keydown', u, true);
+      window.removeEventListener('touchend', u, true);
+    };
+  },[]);
+
   const speak = React.useCallback((i)=>{
     const r = ref.current;
     CBVoice.speakPhrase(i, PHRASES[i].say, r.sinc, r.deliv, r.decay);
@@ -141,6 +156,7 @@ export default function CircleBack(){
     setTicker(PHRASES[i].say);
   },[]);
   const pressKey = React.useCallback((i)=>{
+    CBAudio.unlock();
     ref.current.lastKeyAt = performance.now();
     setArmed(i); speak(i);
     const r = ref.current;
@@ -305,11 +321,11 @@ export default function CircleBack(){
     });
     setSelRow(0);
   };
-  const audition = id => { const b = bufRef.current.get(id); if(b) CBAudio.playBuffer(b, {vel:1}); };
+  const audition = id => { CBAudio.unlock(); const b = bufRef.current.get(id); if(b) CBAudio.playBuffer(b, {vel:1}); };
 
   const startExport = async mode => {
     if(expRef.current) return;
-    CBAudio.init(); CBAudio.resume();
+    CBAudio.unlock();
     const totalSteps = loops * ref.current.patLen;
     const ex = {remaining: totalSteps, started:false, finishing:false, discard:false, mode};
     if(mode==='video' && canvasRef.current && await mp4Support(CBAudio.sampleRate())){
@@ -380,9 +396,9 @@ export default function CircleBack(){
     <div style={{display:'grid',gridTemplateColumns:narrow?'1fr':'minmax(0,1fr) 280px',gap:narrow?16:'var(--space-col)',alignItems:'start',marginTop:16}}>
       <Monitor ref={canvasRef} stateRef={ref}/>
       <div style={{display:'flex',flexDirection:'column',gap:14}}>
-        <Button style={{padding:'14px 20px'}} onClick={()=>{ doReorg(); setPlaying(true); }}>▶ Play a random mix</Button>
+        <Button style={{padding:'14px 20px'}} onClick={()=>{ CBAudio.unlock(); doReorg(); setPlaying(true); }}>▶ Play a random mix</Button>
         <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
-          <Button on={playing} onClick={()=>setPlaying(x=>!x)}>{playing?'Pause':'Play'}</Button>
+          <Button on={playing} onClick={()=>{ CBAudio.unlock(); setPlaying(x=>!x); }}>{playing?'Pause':'Play'}</Button>
           <Button onClick={doReorg}>New beat (R)</Button>
         </div>
         <div>
@@ -450,7 +466,7 @@ export default function CircleBack(){
         </div>
       </div>
       <div style={{display:'flex',gap:9,alignItems:'center',marginTop:16,flexWrap:'wrap'}}>
-        <Button on={playing} onClick={()=>setPlaying(x=>!x)}>{playing?'Pause':'Play'}</Button>
+        <Button on={playing} onClick={()=>{ CBAudio.unlock(); setPlaying(x=>!x); }}>{playing?'Pause':'Play'}</Button>
         <Button variant="rec" on={rec} onClick={()=>setRec(x=>!x)}>{rec?'Recording keys':'Record keys'}</Button>
         <Button onClick={doReorg}>Random beat</Button>
         <Button onClick={()=>setRack(rk=>({...rk, pattern:seedPattern(rk.samples.length, rk.pattern[0].length)}))}>Demo beat</Button>
