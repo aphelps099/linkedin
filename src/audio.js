@@ -1,8 +1,31 @@
 // CBAudio — drum synth ported from reference/transient-16.html (WebAudio, no samples)
 // Extended for the sampler + clip export: buffer decode/playback and a MediaStream
 // tap on the master bus so everything (drums, exhibits, vox bank) can be recorded.
+// waveshaper curves for the corporate distortions
+function driveCurve(k){
+  const n = 1024, c = new Float32Array(n), norm = Math.tanh(k) || 1;
+  for(let i=0;i<n;i++){ const x = i/(n-1)*2 - 1; c[i] = Math.tanh(x*k)/norm; }
+  return c;
+}
+function crushCurve(bits){
+  const n = 1024, c = new Float32Array(n), levels = Math.pow(2, bits);
+  for(let i=0;i<n;i++){ const x = i/(n-1)*2 - 1; c[i] = Math.round(x*levels)/levels; }
+  return c;
+}
+
+// Corporate distortions. Each character re-voices the phrase bus.
+export const CHARACTERS = [
+  {id:'boardroom',  name:'Boardroom',       filter:'peaking',  freq:1400, q:.9,  gain:5,   ring:40,  drive:1},
+  {id:'conference', name:'Conference call', filter:'bandpass', freq:1700, q:.85, gain:0,   ring:110, drive:1.3},
+  {id:'allhands',   name:'All-hands PA',    filter:'bandpass', freq:1000, q:1.6, gain:0,   ring:62,  drive:1.7},
+  {id:'replyall',   name:'Reply-all',       filter:'peaking',  freq:2800, q:1.4, gain:8,   ring:214, drive:1.2},
+  {id:'bandwidth',  name:'Bandwidth',       filter:'lowpass',  freq:2200, q:1.1, gain:0,   ring:88,  drive:1.5},
+];
+
 export const CBAudio = (() => {
-  let ctx, master, comp, noiseBuf, streamDest, analyser, specArr, lp, voxIn, voxDelay;
+  let ctx, master, comp, noiseBuf, streamDest, analyser, specArr, lp, voxIn, voxDelay,
+      voxChar, voxDrive, voxCrush, voxDry, voxRing, voxRingOsc, voxWob, voxFb;
+  let fx = {weird:0, dist:.12, character:'boardroom'};
   function init(){
     if(ctx) return;
     ctx = new (window.AudioContext||window.webkitAudioContext)();
@@ -12,18 +35,35 @@ export const CBAudio = (() => {
     comp = ctx.createDynamicsCompressor();
     comp.threshold.value = -6; comp.ratio.value = 12; comp.attack.value = .003; comp.release.value = .15;
     master.connect(lp); lp.connect(comp); comp.connect(ctx.destination);
-    // the vox bus — mild drive + presence peak + dotted-eighth delay (the talkbox trick)
+    // the vox bus — character filter → drive → bitcrush → ring mod → wobble →
+    // presence peak → master, with a tempo-locked delay send (the talkbox trick)
     voxIn = ctx.createGain();
-    const shaper = ctx.createWaveShaper();
-    const curve = new Float32Array(1024);
-    for(let i=0;i<1024;i++){ const x = i/511.5 - 1; curve[i] = Math.tanh(x*1.8); }
-    shaper.curve = curve;
-    const peak = ctx.createBiquadFilter(); peak.type = 'peaking'; peak.frequency.value = 1400; peak.Q.value = .9; peak.gain.value = 5;
-    voxIn.connect(shaper); shaper.connect(peak); peak.connect(master);
+    voxChar = ctx.createBiquadFilter(); voxChar.type = 'peaking'; voxChar.frequency.value = 1400; voxChar.Q.value = .9; voxChar.gain.value = 5;
+    voxDrive = ctx.createWaveShaper(); voxDrive.curve = driveCurve(1.8);
+    voxCrush = ctx.createWaveShaper(); voxCrush.curve = crushCurve(16);
+    const sum = ctx.createGain();
+    voxDry = ctx.createGain(); voxDry.gain.value = 1;
+    const ringMul = ctx.createGain(); ringMul.gain.value = 0; // gain is driven by the oscillator
+    voxRingOsc = ctx.createOscillator(); voxRingOsc.type = 'sine'; voxRingOsc.frequency.value = 40;
+    voxRingOsc.connect(ringMul.gain); voxRingOsc.start();
+    voxRing = ctx.createGain(); voxRing.gain.value = 0;
+    const wob = ctx.createDelay(.05); wob.delayTime.value = .006;
+    voxWob = ctx.createGain(); voxWob.gain.value = 0;
+    const lfo = ctx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = .7;
+    const lfoAmt = ctx.createGain(); lfoAmt.gain.value = .0035;
+    lfo.connect(lfoAmt); lfoAmt.connect(wob.delayTime); lfo.start();
+    const peak = ctx.createBiquadFilter(); peak.type = 'peaking'; peak.frequency.value = 2600; peak.Q.value = 1.1; peak.gain.value = 3;
+
+    voxIn.connect(voxChar); voxChar.connect(voxDrive); voxDrive.connect(voxCrush);
+    voxCrush.connect(voxDry); voxDry.connect(sum);
+    voxCrush.connect(ringMul); ringMul.connect(voxRing); voxRing.connect(sum);
+    sum.connect(peak);
+    sum.connect(wob); wob.connect(voxWob); voxWob.connect(peak);
+    peak.connect(master);
     voxDelay = ctx.createDelay(1.5); voxDelay.delayTime.value = .28;
-    const fb = ctx.createGain(); fb.gain.value = .34;
+    voxFb = ctx.createGain(); voxFb.gain.value = .34;
     const wet = ctx.createGain(); wet.gain.value = .3;
-    peak.connect(voxDelay); voxDelay.connect(fb); fb.connect(voxDelay); voxDelay.connect(wet); wet.connect(master);
+    peak.connect(voxDelay); voxDelay.connect(voxFb); voxFb.connect(voxDelay); voxDelay.connect(wet); wet.connect(master);
     streamDest = ctx.createMediaStreamDestination();
     comp.connect(streamDest);
     analyser = ctx.createAnalyser(); analyser.fftSize = 256; analyser.smoothingTimeConstant = .78;
@@ -185,6 +225,30 @@ export const CBAudio = (() => {
     }catch(e){}
   }
   const setVoxDelay = s => { init(); try{ voxDelay.delayTime.setTargetAtTime(s, ctx.currentTime, .05); }catch(e){} };
+
+  // Weirdness scrubs ring modulation, bitcrush, wobble and delay feedback together;
+  // Distortion scrubs the drive. Character re-voices the whole bus.
+  function setVoxFx(next){
+    init();
+    fx = {...fx, ...next};
+    const w = Math.max(0, Math.min(1, fx.weird));
+    const d = Math.max(0, Math.min(1, fx.dist));
+    const ch = CHARACTERS.find(c=> c.id === fx.character) || CHARACTERS[0];
+    try{
+      voxChar.type = ch.filter;
+      voxChar.frequency.value = ch.freq;
+      voxChar.Q.value = ch.q;
+      if(ch.filter === 'peaking') voxChar.gain.value = ch.gain;
+      voxDrive.curve = driveCurve(1 + d*18*ch.drive);
+      voxCrush.curve = crushCurve(Math.max(3, 16 - w*12));
+      voxRing.gain.value = w*.6;
+      voxDry.gain.value = 1 - w*.45;
+      voxWob.gain.value = w*.45;
+      voxRingOsc.frequency.value = ch.ring * (1 + w*1.6);
+      voxFb.gain.value = .3 + w*.28;
+      voxIn.gain.value = 1/(1 + d*1.1); // makeup so drive doesn't just get louder
+    }catch(e){}
+  }
   function decode(arrayBuffer){ init(); return ctx.decodeAudioData(arrayBuffer); }
   function playBuffer(buffer, opts){
     const o = opts || {};
@@ -198,7 +262,7 @@ export const CBAudio = (() => {
     return { source: src, gain: g };
   }
   return {
-    init, resume: rs, unlock, trigger, decode, playBuffer, setFilter, setVoxDelay,
+    init, resume: rs, unlock, trigger, decode, playBuffer, setFilter, setVoxDelay, setVoxFx,
     now: ()=>{ init(); return ctx.currentTime; },
     stream: ()=>{ init(); return streamDest.stream; },
     audioTrack: ()=>{ init(); return streamDest.stream.getAudioTracks()[0]; },
@@ -210,6 +274,8 @@ export const CBAudio = (() => {
 
 // handy for debugging on a phone
 if(typeof window !== 'undefined'){ window.CBAudio = CBAudio; }
+
+export function exposeVoice(){ if(typeof window !== 'undefined') window.CBVoice = CBVoice; }
 
 // CBVoice — the LinkedIn larynx. Prefers the recorded phrase bank (routed through
 // CBAudio's master bus, so it lands in exports); falls back to speechSynthesis,
@@ -231,6 +297,14 @@ export const CBVoice = {
     };
     await Promise.allSettled(Array.from({length:count}, (_,i)=> tryLoad(i)));
     return this.bank.size;
+  },
+  // how long this line actually takes to say, at the given delivery rate —
+  // the randomizer uses this to give every phrase room to finish
+  durationOf(i, text, deliv = .5){
+    const rate = .6 + deliv*.8;
+    const buf = this.bank.get(i);
+    if(buf) return buf.duration / rate;
+    return Math.max(.7, String(text||'').length * .065) / rate; // estimate before the bank loads
   },
   // sinc/deliv/decay are 0–1 registers; voice math per the prototype:
   // pitch = .4 + sinc*1.4, rate = .6 + deliv*.8.
