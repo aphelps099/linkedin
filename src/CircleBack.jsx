@@ -11,7 +11,9 @@ import { Knob } from './components/controls/Knob.jsx';
 import { Kbd } from './components/controls/Kbd.jsx';
 import { Pad, KeyPlate } from './components/pads/Pad.jsx';
 import { StepGrid } from './components/sequencer/StepGrid.jsx';
+import { Monitor } from './components/broadcast/Monitor.jsx';
 import { CBAudio, CBVoice } from './audio.js';
+import { VIDEO_MIMES, AUDIO_MIMES, pickMime, extFor, downloadBlob } from './exporter.js';
 
 const PHRASES = [
   {code:'TH', name:'Thrilled', say:"I'm thrilled to announce"},
@@ -36,19 +38,22 @@ const DRUMS = [
   {name:'Kick', id:'kick'},{name:'Snare', id:'snare'},{name:'Clap', id:'clap'},{name:'Cl. hat', id:'ch'},
   {name:'Op. hat', id:'oh'},{name:'Shaker', id:'shk'},{name:'Cowbell', id:'cow'},{name:'Zap', id:'zap'},
 ];
-const VOICES = [...DRUMS.map(d=>({name:d.name})), {name:'Vox', vox:true}];
-const STEPS = 16, VOXROW = DRUMS.length;
-const seedPattern = () => {
-  const p = VOICES.map(()=> Array(STEPS).fill(0));
+const STEPS = 16, MAX_SAMPLES = 5;
+const voxRowOf = samples => DRUMS.length + samples.length;
+const emptyPattern = n => Array(DRUMS.length + n + 1).fill(0).map(()=> Array(STEPS).fill(0));
+const seedPattern = n => {
+  const p = emptyPattern(n);
   const put = (i, arr, acc=[]) => arr.forEach(s=> p[i][s] = acc.includes(s) ? 2 : 1);
   put(0,[0,3,8,10],[0,8]); put(1,[4,12],[4,12]); put(2,[12]);
   put(3,[0,2,4,6,8,10,12,14],[0,8]); put(4,[7,15]); put(5,[3,7,11,15]);
-  p[VOXROW][0] = 2; p[VOXROW][6] = 6; p[VOXROW][12] = 16; // HU, CB, FS (phrase idx+1)
+  const vr = DRUMS.length + n;
+  p[vr][0] = 2; p[vr][6] = 6; p[vr][12] = 16; // HU, CB, FS (phrase idx+1)
   return p;
 };
+const exhibitLetter = i => String.fromCharCode(65+i);
 
 export default function CircleBack(){
-  const [pattern, setPattern] = React.useState(seedPattern);
+  const [rack, setRack] = React.useState(()=>({samples:[], pattern:seedPattern(0)}));
   const [armed, setArmed] = React.useState(1);
   const [ticker, setTicker] = React.useState('Press a key to opine');
   const [playing, setPlaying] = React.useState(false);
@@ -58,20 +63,63 @@ export default function CircleBack(){
   const [sinc, setSinc] = React.useState(.12);
   const [deliv, setDeliv] = React.useState(.5);
   const [selRow, setSelRow] = React.useState(0);
-  // mutable mirror of state for the scheduler loop (avoids stale closures)
-  const ref = React.useRef({}); Object.assign(ref.current, {pattern, armed, tempo, sinc, deliv, rec, playing});
+  const [loops, setLoops] = React.useState(2);
+  const [exp, setExp] = React.useState(null);   // {mode, total, done}
+  const [take, setTake] = React.useState(null); // {url, name, mode}
+  const bufRef = React.useRef(new Map());       // sample id -> AudioBuffer
+  const expRef = React.useRef(null);
+  const canvasRef = React.useRef(null);
+  const fileRef = React.useRef(null);
+
+  const voxRow = voxRowOf(rack.samples);
+  const VOICES = [
+    ...DRUMS.map(d=>({name:d.name})),
+    ...rack.samples.map((s,i)=>({name:`Exh. ${exhibitLetter(i)}`})),
+    {name:'Vox', vox:true},
+  ];
+  const voxCodes = rack.pattern[voxRow].map(x=> x>0 ? PHRASES[x-1].code : null);
+
+  // mutable mirror of state for the scheduler + monitor render loops (avoids stale closures)
+  const ref = React.useRef({});
+  Object.assign(ref.current, {
+    pattern: rack.pattern, samples: rack.samples, voxRow, armed, tempo, sinc, deliv, rec, playing,
+    pos, tickerText: ticker, voices: VOICES, voxCodes, exporting: !!exp,
+  });
+
+  React.useEffect(()=>{
+    CBVoice.loadBank(`${import.meta.env.BASE_URL}phrases/`, PHRASES.length).catch(()=>{});
+  },[]);
+
   const speak = React.useCallback((i)=>{
     const r = ref.current;
-    CBVoice.speak(PHRASES[i].say, {pitch:.4 + r.sinc*1.4, rate:.6 + r.deliv*.8});
+    CBVoice.speakPhrase(i, PHRASES[i].say, r.sinc, r.deliv);
+    ref.current.spoken = true;
     setTicker(PHRASES[i].say);
   },[]);
   const pressKey = React.useCallback((i)=>{
     setArmed(i); speak(i);
     const r = ref.current;
     if(r.rec && r.playing && r.lastStep !== undefined){
-      const p = r.pattern.map(x=>[...x]); p[VOXROW][r.lastStep] = i+1; setPattern(p);
+      setRack(rk=>{
+        const p = rk.pattern.map(x=>[...x]);
+        p[voxRowOf(rk.samples)][r.lastStep] = i+1;
+        return {...rk, pattern:p};
+      });
     }
   },[speak]);
+
+  const finishExport = React.useCallback(()=>{
+    const ex = expRef.current;
+    if(!ex || ex.finishing) return;
+    ex.finishing = true;
+    const stepMs = 60000/ref.current.tempo/4;
+    setTimeout(()=>{
+      expRef.current = null;
+      try{ if(ex.recorder.state !== 'inactive') ex.recorder.stop(); }catch(e){}
+      setExp(null); setPlaying(false);
+    }, stepMs + 300);
+  },[]);
+
   // lookahead scheduler: 25ms interval, schedules a 120ms horizon against the AudioContext clock
   React.useEffect(()=>{
     if(!playing){ setPos(null); return; }
@@ -81,19 +129,44 @@ export default function CircleBack(){
       const r = ref.current;
       while(nextTime < A.now() + .12){
         const s = step, t = nextTime;
+        const ex = expRef.current;
+        if(ex && !ex.started && s===0){ ex.started = true; try{ ex.recorder.start(); }catch(e){} }
         DRUMS.forEach((d,i)=>{ const v = r.pattern[i][s]; if(v) A.trigger(d.id, v===2?1:.72, t); });
-        const vx = r.pattern[VOXROW][s];
+        r.samples.forEach((sm,ix)=>{
+          const v = r.pattern[DRUMS.length+ix][s];
+          if(v){ const b = bufRef.current.get(sm.id); if(b) A.playBuffer(b, {vel:v===2?1:.72, when:t}); }
+        });
+        const vx = r.pattern[r.voxRow][s];
         const ms = Math.max(0,(t - A.now())*1000);
-        timers.push(setTimeout(()=>{ ref.current.lastStep = s; setPos(s); if(vx) speak(vx-1); }, ms));
+        timers.push(setTimeout(()=>{
+          ref.current.lastStep = s; setPos(s);
+          if(vx) speak(vx-1);
+          const e2 = expRef.current;
+          if(e2 && e2.started && !e2.finishing){
+            e2.remaining--;
+            setExp(x=> x && {...x, done: x.total - e2.remaining});
+            if(e2.remaining <= 0) finishExport();
+          }
+        }, ms));
         nextTime += 60/r.tempo/4;
         step = (s+1)%STEPS;
       }
     }, 25);
-    return ()=>{ clearInterval(iv); timers.forEach(clearTimeout); };
-  },[playing, speak]);
+    return ()=>{
+      clearInterval(iv); timers.forEach(clearTimeout);
+      const ex = expRef.current;
+      if(ex && !ex.finishing){ // playback adjourned mid-take: the take is stricken from the record
+        expRef.current = null; ex.discard = true;
+        try{ if(ex.recorder.state !== 'inactive') ex.recorder.stop(); }catch(e){}
+        setExp(null);
+      }
+    };
+  },[playing, speak, finishExport]);
+
   React.useEffect(()=>{
     const down = e=>{
       if(e.metaKey||e.ctrlKey||e.altKey) return;
+      if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
       if(e.code==='Space'){ e.preventDefault(); setPlaying(x=>!x); return; }
       const k = KEYMAP.indexOf(e.key.toLowerCase());
       if(k>=0 && !e.repeat){ e.preventDefault(); pressKey(k); }
@@ -101,12 +174,78 @@ export default function CircleBack(){
     window.addEventListener('keydown', down);
     return ()=> window.removeEventListener('keydown', down);
   },[pressKey]);
+
   const onGrid = p => {
+    const vr = ref.current.voxRow;
     const q = p.map(r=>[...r]);
-    for(let s=0;s<STEPS;s++) if(q[VOXROW][s]===-1) q[VOXROW][s] = ref.current.armed+1;
-    setPattern(q);
+    for(let s=0;s<STEPS;s++) if(q[vr][s]===-1) q[vr][s] = ref.current.armed+1;
+    setRack(rk=>({...rk, pattern:q}));
   };
-  const voxLabels = VOICES.map((v,i)=> v.vox ? pattern[i].map(x=> x>0 ? PHRASES[x-1].code : null) : null);
+
+  const addExhibits = async files => {
+    for(const f of Array.from(files)){
+      if(ref.current.samples.length >= MAX_SAMPLES){ setTicker('The record is full.'); break; }
+      try{
+        const buf = await CBAudio.decode(await f.arrayBuffer());
+        const id = (crypto.randomUUID && crypto.randomUUID()) || Math.random().toString(36).slice(2);
+        bufRef.current.set(id, buf);
+        setRack(rk=>{
+          if(rk.samples.length >= MAX_SAMPLES) return rk;
+          const pattern = rk.pattern.map(x=>[...x]);
+          pattern.splice(voxRowOf(rk.samples), 0, Array(STEPS).fill(0));
+          const name = f.name.replace(/\.[^.]+$/,'');
+          return {samples:[...rk.samples, {id, name}], pattern};
+        });
+        setTicker(`Exhibit admitted — ${f.name}`);
+      }catch(e){ setTicker('Exhibit rejected — unreadable format'); }
+    }
+  };
+  const removeExhibit = id => {
+    bufRef.current.delete(id);
+    setRack(rk=>{
+      const ix = rk.samples.findIndex(s=>s.id===id);
+      if(ix<0) return rk;
+      const pattern = rk.pattern.map(x=>[...x]);
+      pattern.splice(DRUMS.length+ix, 1);
+      return {samples: rk.samples.filter(s=>s.id!==id), pattern};
+    });
+    setSelRow(0);
+  };
+  const audition = id => { const b = bufRef.current.get(id); if(b) CBAudio.playBuffer(b, {vel:1}); };
+
+  const startExport = mode => {
+    if(expRef.current) return;
+    const mime = pickMime(mode==='video' ? VIDEO_MIMES : AUDIO_MIMES);
+    if(!mime || typeof MediaRecorder === 'undefined'){ setTicker('This browser declines to be recorded.'); return; }
+    CBAudio.init(); CBAudio.resume();
+    const audioTracks = CBAudio.stream().getAudioTracks();
+    let stream;
+    if(mode==='video'){
+      const cv = canvasRef.current; if(!cv) return;
+      stream = new MediaStream([...cv.captureStream(30).getVideoTracks(), ...audioTracks]);
+    } else {
+      stream = new MediaStream(audioTracks);
+    }
+    const recorder = new MediaRecorder(stream, {mimeType:mime, videoBitsPerSecond:8_000_000, audioBitsPerSecond:192_000});
+    const chunks = [];
+    const ext = extFor(mime);
+    const name = mode==='video' ? `thought-leadership.${ext}` : `thought-leadership-audio.${ext}`;
+    const ex = {recorder, remaining: loops*STEPS, started:false, finishing:false, discard:false, mode};
+    recorder.ondataavailable = e => { if(e.data && e.data.size) chunks.push(e.data); };
+    recorder.onstop = () => {
+      if(ex.discard || !chunks.length) return;
+      const blob = new Blob(chunks, {type:mime});
+      const url = downloadBlob(blob, name);
+      setTake(prev=>{ if(prev) URL.revokeObjectURL(prev.url); return {url, name, mode}; });
+      setTicker('Clip circulated to your downloads.');
+    };
+    expRef.current = ex;
+    setExp({mode, total: loops*STEPS, done:0});
+    if(ref.current.playing){ setPlaying(false); setTimeout(()=> setPlaying(true), 60); }
+    else setPlaying(true);
+  };
+
+  const voxLabels = VOICES.map((v)=> v.vox ? voxCodes : null);
   return <Unit>
     <Masthead meta={["Form CB-16","Rev. 2026-08","For internal thought leadership only"]}/>
     <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-end',gap:30}}>
@@ -138,13 +277,50 @@ export default function CircleBack(){
       </Bay>
     </div>
     <Bay title="Sequencer · 16 steps" aside={<Readout>{pos===null?'—':String(pos+1).padStart(2,'0')}</Readout>} style={{marginTop:'var(--space-section)'}}>
-      <StepGrid voices={VOICES} pattern={pattern} onChange={onGrid} playhead={pos} selected={selRow} onSelect={setSelRow} voxLabels={voxLabels}/>
+      <StepGrid voices={VOICES} pattern={rack.pattern} onChange={onGrid} playhead={pos} selected={selRow} onSelect={setSelRow} voxLabels={voxLabels}/>
       <div style={{display:'flex',gap:9,alignItems:'center',marginTop:16,flexWrap:'wrap'}}>
         <Button on={playing} onClick={()=>setPlaying(x=>!x)}>{playing?'Adjourn':'Convene'}</Button>
         <Button variant="rec" on={rec} onClick={()=>setRec(x=>!x)}>Minute-take</Button>
-        <Button onClick={()=>setPattern(seedPattern())}>Load agenda</Button>
-        <Button onClick={()=>setPattern(VOICES.map(()=>Array(STEPS).fill(0)))}>Table it</Button>
+        <Button onClick={()=>setRack(rk=>({...rk, pattern:seedPattern(rk.samples.length)}))}>Load agenda</Button>
+        <Button onClick={()=>setRack(rk=>({...rk, pattern:emptyPattern(rk.samples.length)}))}>Table it</Button>
         <span style={{marginLeft:'auto'}}><Silk muted>Vox cells stamp the armed phrase · drums cycle hit / accent</Silk></span>
+      </div>
+      <div style={{display:'flex',gap:9,alignItems:'center',marginTop:12,flexWrap:'wrap',borderTop:'1px dotted var(--hair)',paddingTop:12}}>
+        <Silk>Exhibits</Silk>
+        {rack.samples.map((s,i)=>
+          <span key={s.id} style={{display:'inline-flex',alignItems:'center',gap:7,border:'var(--rule-frame) solid var(--ink)',background:'var(--white)',padding:'5px 8px'}}>
+            <span onClick={()=>audition(s.id)} role="button" style={{cursor:'pointer',color:'var(--blue)',fontFamily:'var(--mono)',fontSize:10.5}}>▸</span>
+            <span style={{fontFamily:'var(--mono)',fontSize:9.5,letterSpacing:'.08em',textTransform:'uppercase',maxWidth:130,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{exhibitLetter(i)} · {s.name}</span>
+            <span onClick={()=>removeExhibit(s.id)} role="button" aria-label={`Strike exhibit ${exhibitLetter(i)}`} style={{cursor:'pointer',fontFamily:'var(--mono)',fontSize:10.5}}>×</span>
+          </span>)}
+        <Button onClick={()=>fileRef.current && fileRef.current.click()}>Submit exhibit</Button>
+        <input ref={fileRef} type="file" accept="audio/*" multiple style={{display:'none'}}
+          onChange={e=>{ addExhibits(e.target.files); e.target.value=''; }}/>
+        <span style={{marginLeft:'auto'}}><Silk muted>Audio admitted into the record becomes a sequencer row</Silk></span>
+      </div>
+    </Bay>
+    <Bay title="Distribution" aside="Cleared for the feed" style={{marginTop:'var(--space-section)'}}>
+      <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) 280px',gap:'var(--space-col)',alignItems:'start'}}>
+        <Monitor ref={canvasRef} stateRef={ref}/>
+        <div style={{display:'flex',flexDirection:'column',gap:14}}>
+          <div>
+            <div style={{marginBottom:6}}><Silk>Run of show</Silk></div>
+            <div style={{display:'flex',gap:6}}>
+              {[1,2,4].map(n=>
+                <Button key={n} on={loops===n} onClick={()=>setLoops(n)} style={{padding:'7px 11px'}}>{n} {n===1?'loop':'loops'}</Button>)}
+            </div>
+          </div>
+          <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+            <Button variant="rec" on={exp?.mode==='video'} onClick={()=>startExport('video')}>Cut a clip</Button>
+            <Button variant="rec" on={exp?.mode==='audio'} onClick={()=>startExport('audio')}>Audio only</Button>
+          </div>
+          <div><Silk>Status</Silk>{' '}<Readout style={{marginLeft:8}}>{exp ? `ON THE RECORD ${String(Math.min(exp.done,exp.total)).padStart(2,'0')}/${exp.total}` : take ? 'CLEARED FOR THE FEED' : '—'}</Readout></div>
+          {take && (take.mode==='video'
+            ? <video controls src={take.url} style={{width:'100%',border:'var(--rule-frame) solid var(--ink)',display:'block'}}/>
+            : <audio controls src={take.url} style={{width:'100%',display:'block'}}/>)}
+          {take && <a href={take.url} download={take.name} style={{fontFamily:'var(--mono)',fontSize:10.5,color:'var(--blue)'}}>Download again — {take.name}</a>}
+          <Silk muted>Tapes the monitor for the chosen run of show, then downloads a square clip for your LinkedIn feed. Tag someone who needs to hear this.</Silk>
+        </div>
       </div>
     </Bay>
     <div style={{marginTop:26,borderTop:'var(--rule-heavy) solid var(--ink)',paddingTop:10,display:'flex',justifyContent:'space-between',alignItems:'center'}}>

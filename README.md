@@ -2,7 +2,8 @@
 
 A satirical LinkedIn audio mixer: a 16-key phrase sampler that speaks corporate
 clichés ("Humbled and honored to share", "Let's circle back", "Full stop.")
-in time over a live-synthesized WebAudio drum machine. Form CB-16 · Rev. 2026-08 ·
+in time over a live-synthesized WebAudio drum machine — now with an upload
+sampler and a clip exporter for your feed. Form CB-16 · Rev. 2026-08 ·
 For internal thought leadership only.
 
 Built from the design handoff in `design_handoff_circle_back_mixer/` —
@@ -15,7 +16,11 @@ npm install
 npm run dev
 ```
 
-Then open the printed local URL. `npm run build` produces a static bundle in `dist/`.
+Then open the printed local URL. `npm run build` produces a static bundle in
+`dist/` with relative paths, so it also serves from GitHub Pages —
+`.github/workflows/deploy.yml` deploys `main` to Pages automatically
+(enable Pages → Source: GitHub Actions in the repo settings, or trigger the
+workflow manually from the Actions tab).
 
 ## How to play
 
@@ -23,19 +28,41 @@ Then open the printed local URL. `npm run build` produces a static bundle in `di
 - **Space** convenes/adjourns the meeting (play/stop).
 - **Sequencer**: click drum cells to cycle off → hit (blue) → accent (ink); click Vox
   cells to stamp the armed phrase's two-letter code; drag paints.
+- **Exhibits (the sampler)**: *Submit exhibit* uploads audio files (up to five).
+  Each is admitted into the record as its own sequencer row — cells cycle
+  hit/accent like drums. `▸` auditions an exhibit, `×` strikes it.
 - **Minute-take** records: while playing, pressed keys are stamped into the Vox row
   at the current step.
 - **Registers**: drag dials vertically (Shift = fine, double-click = reset,
   wheel = ±3%). Sincerity and Delivery shape the spoken voice; Tempo is 60–200 BPM.
 - **Load agenda** seeds a demo pattern; **Table it** clears the grid.
 
+## Distribution (posting to LinkedIn)
+
+The **Distribution** bay shows the broadcast monitor: corporate blue field,
+white text, white-outlined squares with white fills marking the beats in
+sequence, and the triggered phrase displayed big — rendered live on a
+1080×1080 canvas. **Cut a clip** tapes the monitor plus the master audio bus
+for the chosen run of show (1/2/4 loops) and downloads a square video
+(`thought-leadership.mp4`/`.webm`, depending on browser support) sized for a
+LinkedIn post; **Audio only** downloads just the mix. Upload the file to your
+feed. Tag someone who needs to hear this.
+
+The 16 phrases ship as recorded voice lines (`public/phrases/*.wav`,
+generated text-to-speech) played through WebAudio so they land in exports;
+Sincerity/Delivery bend them via detune/rate. If a phrase file is missing the
+app falls back to the browser's `speechSynthesis`, which browsers cannot
+capture into a recording — you'd get the text on screen but not in the audio.
+
 ## Structure
 
 ```
 src/
   main.jsx                 entry
-  CircleBack.jsx           the mixer screen: state + lookahead scheduler
-  audio.js                 CBAudio drum synth (pure WebAudio, no samples) + CBVoice speech
+  CircleBack.jsx           the mixer screen: state + lookahead scheduler + export flow
+  audio.js                 CBAudio drum synth (pure WebAudio, no samples), sample/phrase
+                           buffer playback, recording tap; CBVoice phrase bank + speech fallback
+  exporter.js              MediaRecorder mime/extension/download helpers
   lexicon.js               full LinkedIn phrase bank (openers / buzzwords / AI tells / closers)
   styles.css, tokens/      design tokens as CSS custom properties
   components/
@@ -43,10 +70,11 @@ src/
     controls/              Button, Knob, Kbd
     pads/                  Pad, KeyPlate
     sequencer/             StepGrid
+    broadcast/             Monitor (the 1080×1080 clip canvas)
+public/phrases/            recorded phrase bank (01.wav … 16.wav)
 design_handoff_circle_back_mixer/   original design handoff (reference)
 ```
 
-Audio starts on first gesture (autoplay policy). Speech uses the browser's
-`speechSynthesis` — the LinkedIn larynx.
+Audio starts on first gesture (autoplay policy).
 
 Circle Back® is not affiliated with your network.

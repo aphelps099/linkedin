@@ -1,6 +1,8 @@
 // CBAudio — drum synth ported from reference/transient-16.html (WebAudio, no samples)
+// Extended for the sampler + clip export: buffer decode/playback and a MediaStream
+// tap on the master bus so everything (drums, exhibits, vox bank) can be recorded.
 export const CBAudio = (() => {
-  let ctx, master, comp, noiseBuf;
+  let ctx, master, comp, noiseBuf, streamDest;
   function init(){
     if(ctx) return;
     ctx = new (window.AudioContext||window.webkitAudioContext)();
@@ -8,6 +10,8 @@ export const CBAudio = (() => {
     comp = ctx.createDynamicsCompressor();
     comp.threshold.value = -6; comp.ratio.value = 12; comp.attack.value = .003; comp.release.value = .15;
     master.connect(comp); comp.connect(ctx.destination);
+    streamDest = ctx.createMediaStreamDestination();
+    comp.connect(streamDest);
     const len = ctx.sampleRate*2, b = ctx.createBuffer(1,len,ctx.sampleRate), d = b.getChannelData(0);
     for(let i=0;i<len;i++) d[i] = Math.random()*2-1;
     noiseBuf = b;
@@ -65,11 +69,61 @@ export const CBAudio = (() => {
       const g = env(t,.85,.22); o.connect(g); g.connect(out); T(o);
     }
   }
-  return { init, resume: rs, trigger, now: ()=>{ init(); return ctx.currentTime; } };
+  function decode(arrayBuffer){ init(); return ctx.decodeAudioData(arrayBuffer); }
+  function playBuffer(buffer, opts){
+    const o = opts || {};
+    init(); rs();
+    const t = o.when===undefined ? ctx.currentTime+.001 : o.when;
+    const src = ctx.createBufferSource(); src.buffer = buffer;
+    if(o.rate!==undefined) src.playbackRate.value = o.rate;
+    if(o.detune) try{ src.detune.value = o.detune; }catch(e){ /* detune unsupported */ }
+    const g = ctx.createGain(); g.gain.value = .9*(o.vel===undefined?1:o.vel);
+    src.connect(g); g.connect(master); src.start(t);
+    return src;
+  }
+  return {
+    init, resume: rs, trigger, decode, playBuffer,
+    now: ()=>{ init(); return ctx.currentTime; },
+    stream: ()=>{ init(); return streamDest.stream; },
+  };
 })();
 
-// CBVoice — the LinkedIn larynx (speech synthesis)
+// CBVoice — the LinkedIn larynx. Prefers the recorded phrase bank (routed through
+// CBAudio's master bus, so it lands in exports); falls back to speechSynthesis,
+// which the browser cannot capture into a recording.
 export const CBVoice = {
+  bank: new Map(),
+  current: null,
+  async loadBank(base, count){
+    const tryLoad = async i => {
+      for(const ext of ['wav','mp3','m4a']){
+        try{
+          const res = await fetch(`${base}${String(i+1).padStart(2,'0')}.${ext}`);
+          if(!res.ok) continue;
+          const buf = await CBAudio.decode(await res.arrayBuffer());
+          this.bank.set(i, buf);
+          return;
+        }catch(e){ /* try next ext */ }
+      }
+    };
+    await Promise.allSettled(Array.from({length:count}, (_,i)=> tryLoad(i)));
+    return this.bank.size;
+  },
+  // sinc/deliv are 0–1 registers; same voice math as the prototype:
+  // pitch = .4 + sinc*1.4, rate = .6 + deliv*.8
+  speakPhrase(i, text, sinc, deliv){
+    const buf = this.bank.get(i);
+    if(buf){
+      try{ this.current && this.current.stop(); }catch(e){ /* already ended */ }
+      this.current = CBAudio.playBuffer(buf, {
+        vel: .95,
+        rate: .6 + deliv*.8,
+        detune: ((.4 + sinc*1.4) - 1) * 1200,
+      });
+      return;
+    }
+    this.speak(text, {pitch:.4 + sinc*1.4, rate:.6 + deliv*.8});
+  },
   speak(text, opts){
     const o = opts || {};
     try{
