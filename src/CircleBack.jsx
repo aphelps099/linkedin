@@ -14,6 +14,8 @@ import { StepGrid } from './components/sequencer/StepGrid.jsx';
 import { Monitor } from './components/broadcast/Monitor.jsx';
 import { CBAudio, CBVoice } from './audio.js';
 import { VIDEO_MIMES, AUDIO_MIMES, pickMime, extFor, downloadBlob } from './exporter.js';
+import { randomPattern } from './randomizer.js';
+import { randomComment } from './feed.js';
 
 const PHRASES = [
   {code:'TH', name:'Thrilled', say:"I'm thrilled to announce"},
@@ -33,7 +35,7 @@ const PHRASES = [
   {code:'SI', name:'Sink in', say:'Let that sink in'},
   {code:'FS', name:'Full stop', say:'Full stop.'},
 ];
-const KEYMAP = '1234qwerasdfzxcv';
+const KEYMAP = '1234qwetasdfzxcv'; // R is reserved: it calls a reorg (randomize)
 const DRUMS = [
   {name:'Kick', id:'kick'},{name:'Snare', id:'snare'},{name:'Clap', id:'clap'},{name:'Cl. hat', id:'ch'},
   {name:'Op. hat', id:'oh'},{name:'Shaker', id:'shk'},{name:'Cowbell', id:'cow'},{name:'Zap', id:'zap'},
@@ -62,8 +64,9 @@ export default function CircleBack(){
   const [tempo, setTempo] = React.useState(96);
   const [sinc, setSinc] = React.useState(.12);
   const [deliv, setDeliv] = React.useState(.5);
+  const [decay, setDecay] = React.useState(.5);
   const [selRow, setSelRow] = React.useState(0);
-  const [loops, setLoops] = React.useState(2);
+  const [loops, setLoops] = React.useState(8); // 8 loops ≈ 20s at 96 BPM — a full director's rotation
   const [exp, setExp] = React.useState(null);   // {mode, total, done}
   const [take, setTake] = React.useState(null); // {url, name, mode}
   const bufRef = React.useRef(new Map());       // sample id -> AudioBuffer
@@ -79,11 +82,13 @@ export default function CircleBack(){
   ];
   const voxCodes = rack.pattern[voxRow].map(x=> x>0 ? PHRASES[x-1].code : null);
 
-  // mutable mirror of state for the scheduler + monitor render loops (avoids stale closures)
+  // mutable mirror of state for the scheduler + monitor render loops (avoids stale closures).
+  // Imperative fields (lastStep, phraseAt, lastKeyAt, spoken, stepCount, comments, eng,
+  // exportStartedAt, sceneDur) live on ref.current directly and are NOT overwritten here.
   const ref = React.useRef({});
   Object.assign(ref.current, {
-    pattern: rack.pattern, samples: rack.samples, voxRow, armed, tempo, sinc, deliv, rec, playing,
-    pos, tickerText: ticker, voices: VOICES, voxCodes, exporting: !!exp,
+    pattern: rack.pattern, samples: rack.samples, voxRow, armed, tempo, sinc, deliv, decay, rec, playing,
+    pos, tickerText: ticker, voices: VOICES, voxCodes, exporting: !!exp, phrases: PHRASES,
   });
 
   React.useEffect(()=>{
@@ -92,11 +97,12 @@ export default function CircleBack(){
 
   const speak = React.useCallback((i)=>{
     const r = ref.current;
-    CBVoice.speakPhrase(i, PHRASES[i].say, r.sinc, r.deliv);
-    ref.current.spoken = true;
+    CBVoice.speakPhrase(i, PHRASES[i].say, r.sinc, r.deliv, r.decay);
+    r.spoken = true; r.phraseAt = performance.now();
     setTicker(PHRASES[i].say);
   },[]);
   const pressKey = React.useCallback((i)=>{
+    ref.current.lastKeyAt = performance.now();
     setArmed(i); speak(i);
     const r = ref.current;
     if(r.rec && r.playing && r.lastStep !== undefined){
@@ -124,13 +130,20 @@ export default function CircleBack(){
   React.useEffect(()=>{
     if(!playing){ setPos(null); return; }
     const A = CBAudio; A.init(); A.resume();
+    // every convene is a fresh post: engagement builds from zero
+    ref.current.stepCount = 0;
+    ref.current.comments = [];
+    ref.current.eng = {reactions:0, reposts:0, comments:0, nextAt: 6 + Math.floor(Math.random()*6)};
     let step = 0, nextTime = A.now() + .06, timers = [];
     const iv = setInterval(()=>{
       const r = ref.current;
       while(nextTime < A.now() + .12){
         const s = step, t = nextTime;
         const ex = expRef.current;
-        if(ex && !ex.started && s===0){ ex.started = true; try{ ex.recorder.start(); }catch(e){} }
+        if(ex && !ex.started && s===0){
+          ex.started = true;
+          try{ ex.recorder.start(); ref.current.exportStartedAt = performance.now(); }catch(e){}
+        }
         DRUMS.forEach((d,i)=>{ const v = r.pattern[i][s]; if(v) A.trigger(d.id, v===2?1:.72, t); });
         r.samples.forEach((sm,ix)=>{
           const v = r.pattern[DRUMS.length+ix][s];
@@ -139,8 +152,22 @@ export default function CircleBack(){
         const vx = r.pattern[r.voxRow][s];
         const ms = Math.max(0,(t - A.now())*1000);
         timers.push(setTimeout(()=>{
-          ref.current.lastStep = s; setPos(s);
+          const rr = ref.current;
+          rr.lastStep = s; setPos(s);
           if(vx) speak(vx-1);
+          // the algorithm at work: reactions tick up, comments roll in
+          rr.stepCount++;
+          const eng = rr.eng;
+          if(eng){
+            eng.reactions += Math.floor(Math.random()*8);
+            if(Math.random() < .06) eng.reposts++;
+            if(rr.stepCount >= eng.nextAt){
+              eng.nextAt = rr.stepCount + 8 + Math.floor(Math.random()*10);
+              eng.comments++;
+              rr.comments.push({...randomComment(), at: performance.now()});
+              if(rr.comments.length > 6) rr.comments.shift();
+            }
+          }
           const e2 = expRef.current;
           if(e2 && e2.started && !e2.finishing){
             e2.remaining--;
@@ -163,17 +190,25 @@ export default function CircleBack(){
     };
   },[playing, speak, finishExport]);
 
+  const doReorg = React.useCallback(()=>{
+    const { pattern, style } = randomPattern(ref.current.samples.length);
+    setRack(rk=> voxRowOf(rk.samples)+1 === pattern.length ? {...rk, pattern} : rk);
+    ref.current.spoken = true; ref.current.phraseAt = performance.now();
+    setTicker(`Reorg complete — ${style} cadence adopted`);
+  },[]);
+
   React.useEffect(()=>{
     const down = e=>{
       if(e.metaKey||e.ctrlKey||e.altKey) return;
       if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
       if(e.code==='Space'){ e.preventDefault(); setPlaying(x=>!x); return; }
+      if(e.key.toLowerCase()==='r' && !e.repeat){ e.preventDefault(); doReorg(); return; }
       const k = KEYMAP.indexOf(e.key.toLowerCase());
       if(k>=0 && !e.repeat){ e.preventDefault(); pressKey(k); }
     };
     window.addEventListener('keydown', down);
     return ()=> window.removeEventListener('keydown', down);
-  },[pressKey]);
+  },[pressKey, doReorg]);
 
   const onGrid = p => {
     const vr = ref.current.voxRow;
@@ -240,6 +275,11 @@ export default function CircleBack(){
       setTicker('Clip circulated to your downloads.');
     };
     expRef.current = ex;
+    // director's run of show: cut between closeup scenes so every take shows
+    // the phrase, the pads, the grid, and the comments
+    const totalSec = loops*STEPS*(60/ref.current.tempo/4);
+    ref.current.sceneDur = Math.min(5, Math.max(2.5, totalSec/4));
+    ref.current.exportStartedAt = performance.now();
     setExp({mode, total: loops*STEPS, done:0});
     if(ref.current.playing){ setPlaying(false); setTimeout(()=> setPlaying(true), 60); }
     else setPlaying(true);
@@ -266,12 +306,13 @@ export default function CircleBack(){
           {PHRASES.map((p,i)=>
             <Pad key={i} index={String(i+1).padStart(2,'0')} name={p.name} hot={armed===i} onTrigger={()=>pressKey(i)}/>)}
         </KeyPlate>
-        <p style={{margin:'10px 0 0',fontSize:10.5,color:'var(--text-meta)'}}>Keys <Kbd>1</Kbd>–<Kbd>4</Kbd> <Kbd>Q</Kbd>–<Kbd>R</Kbd> <Kbd>A</Kbd>–<Kbd>F</Kbd> <Kbd>Z</Kbd>–<Kbd>V</Kbd> speak · <Kbd>space</Kbd> starts the meeting</p>
+        <p style={{margin:'10px 0 0',fontSize:10.5,color:'var(--text-meta)'}}>Keys <Kbd>1</Kbd>–<Kbd>4</Kbd> <Kbd>Q</Kbd> <Kbd>W</Kbd> <Kbd>E</Kbd> <Kbd>T</Kbd> <Kbd>A</Kbd>–<Kbd>F</Kbd> <Kbd>Z</Kbd>–<Kbd>V</Kbd> speak · <Kbd>R</Kbd> calls a reorg · <Kbd>space</Kbd> starts the meeting</p>
       </Bay>
       <Bay title="Registers" aside="Cal. A">
         <div style={{display:'flex',flexDirection:'column',gap:16}}>
           <Knob label="Sincerity" value={sinc} onChange={setSinc}/>
           <Knob label="Delivery" value={deliv} onChange={setDeliv}/>
+          <Knob label="Decay" value={decay} onChange={setDecay}/>
           <Knob label="Tempo" value={(tempo-60)/140} onChange={v=>setTempo(Math.round(60+v*140))} format={()=>tempo+' BPM'}/>
         </div>
       </Bay>
@@ -283,6 +324,7 @@ export default function CircleBack(){
         <Button variant="rec" on={rec} onClick={()=>setRec(x=>!x)}>Minute-take</Button>
         <Button onClick={()=>setRack(rk=>({...rk, pattern:seedPattern(rk.samples.length)}))}>Load agenda</Button>
         <Button onClick={()=>setRack(rk=>({...rk, pattern:emptyPattern(rk.samples.length)}))}>Table it</Button>
+        <Button onClick={doReorg}>Reorg</Button>
         <span style={{marginLeft:'auto'}}><Silk muted>Vox cells stamp the armed phrase · drums cycle hit / accent</Silk></span>
       </div>
       <div style={{display:'flex',gap:9,alignItems:'center',marginTop:12,flexWrap:'wrap',borderTop:'1px dotted var(--hair)',paddingTop:12}}>
@@ -304,10 +346,10 @@ export default function CircleBack(){
         <Monitor ref={canvasRef} stateRef={ref}/>
         <div style={{display:'flex',flexDirection:'column',gap:14}}>
           <div>
-            <div style={{marginBottom:6}}><Silk>Run of show</Silk></div>
+            <div style={{marginBottom:6}}><Silk>Run of show</Silk>{' '}<Readout style={{marginLeft:8}}>≈ {Math.round(loops*STEPS*(60/tempo/4))}s</Readout></div>
             <div style={{display:'flex',gap:6}}>
-              {[1,2,4].map(n=>
-                <Button key={n} on={loops===n} onClick={()=>setLoops(n)} style={{padding:'7px 11px'}}>{n} {n===1?'loop':'loops'}</Button>)}
+              {[4,8,12].map(n=>
+                <Button key={n} on={loops===n} onClick={()=>setLoops(n)} style={{padding:'7px 11px'}}>{n} loops</Button>)}
             </div>
           </div>
           <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
@@ -319,7 +361,7 @@ export default function CircleBack(){
             ? <video controls src={take.url} style={{width:'100%',border:'var(--rule-frame) solid var(--ink)',display:'block'}}/>
             : <audio controls src={take.url} style={{width:'100%',display:'block'}}/>)}
           {take && <a href={take.url} download={take.name} style={{fontFamily:'var(--mono)',fontSize:10.5,color:'var(--blue)'}}>Download again — {take.name}</a>}
-          <Silk muted>Tapes the monitor for the chosen run of show, then downloads a square clip for your LinkedIn feed. Tag someone who needs to hear this.</Silk>
+          <Silk muted>Tapes the monitor for the chosen run of show — cutting between the phrase, the pads, the cadence, and the comments — then downloads a square clip for your LinkedIn feed. Tag someone who needs to hear this.</Silk>
         </div>
       </div>
     </Bay>
