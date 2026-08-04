@@ -8,11 +8,18 @@ const shuffle = a => { const b=[...a]; for(let i=b.length-1;i>0;i--){ const j=ri
 
 export const STYLES = ['All-hands', 'Offsite', 'Sprint review', 'Town hall'];
 
-// Long phrases (0-based indices into PHRASES) need ≥6 empty steps after them.
-const LONG = [0, 1, 2, 3, 8];
-const SHORT = [4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15];
+// Long phrases need ≥6 empty steps after them; pools are computed from the
+// supplied phrase bank by spoken length so an extended bank just works.
+const FALLBACK_LONG = [0, 1, 2, 3, 8];
+const FALLBACK_SHORT = [4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15];
 
-export function randomPattern(nSamples){
+export function randomPattern(nSamples, phrases){
+  let LONG = FALLBACK_LONG, SHORT = FALLBACK_SHORT;
+  if(phrases && phrases.length){
+    LONG = []; SHORT = [];
+    phrases.forEach((p,i)=> ((p.say||'').length >= 30 ? LONG : SHORT).push(i));
+    if(!SHORT.length) SHORT = LONG;
+  }
   const rows = 8 + nSamples + 1;
   const p = Array(rows).fill(0).map(()=> Array(STEPS).fill(0));
   const style = rint(STYLES.length);
@@ -60,7 +67,7 @@ export function randomPattern(nSamples){
   slots.forEach((s, ix) => {
     const next = ix+1 < slots.length ? slots[ix+1] : slots[0] + STEPS;
     const room = next - s;
-    const pool = room >= 6 && chance(.45) ? LONG : SHORT;
+    const pool = room >= 6 && LONG.length && chance(.45) ? LONG : SHORT;
     const phrase = pool[rint(pool.length)];
     p[voxRow][s] = phrase + 1;
     placed.push(phrase);

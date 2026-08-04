@@ -34,6 +34,28 @@ const PHRASES = [
   {code:'AG', name:'Agree?', say:'Agree or disagree?'},
   {code:'SI', name:'Sink in', say:'Let that sink in'},
   {code:'FS', name:'Full stop', say:'Full stop.'},
+  // extended bank — no pads of their own; reachable from the phrase index and the Reorg
+  {code:'EX', name:'Excited', say:"I'm excited to share…"},
+  {code:'RA', name:'Read again', say:'Read that again.'},
+  {code:'HL', name:'Learned', say:"Here's what I learned. 👇"},
+  {code:'CE', name:'Changed', say:'This changed everything for me.'},
+  {code:'MP', name:'Most people', say:"Most people won't understand this. But you will."},
+  {code:'XY', name:'X vs Y', say:"It's not about X. It's about Y."},
+  {code:'NB', name:'Nobody else', say:"I'll say what nobody else will…"},
+  {code:'SM', name:'Small moment', say:'A small moment that taught me a big lesson.'},
+  {code:'NF', name:'Never forget', say:"And then he said something I'll never forget."},
+  {code:'RH', name:'History', say:'The rest is history.'},
+  {code:'GR', name:'Grateful', say:'Grateful for this incredible journey.'},
+  {code:'AT', name:'Amazing team', say:"Couldn't have done it without my amazing team."},
+  {code:'OU', name:'Onwards', say:'Onwards and upwards! 🚀'},
+  {code:'DJ', name:'Delighted', say:'Delighted to have joined…'},
+  {code:'FP', name:'Fast-paced', say:"In today's fast-paced world…"},
+  {code:'PI', name:'Intersection', say:'Passionate about driving impact at the intersection of…'},
+  {code:'JC', name:'A calling', say:'Not just a job — a calling.'},
+  {code:'HT', name:'Hot take', say:'Hot take: teamwork makes a difference.'},
+  {code:'UO', name:'Unpopular', say:'Unpopular opinion: Fridays are great.'},
+  {code:'CS', name:'Synergies', say:"Let's connect and explore synergies."},
+  {code:'DC', name:'Drop a comment', say:'What do you think? Drop a comment below. 👇'},
 ];
 const KEYMAP = '1234qwetasdfzxcv'; // R is reserved: it calls a reorg (randomize)
 const DRUMS = [
@@ -191,7 +213,7 @@ export default function CircleBack(){
   },[playing, speak, finishExport]);
 
   const doReorg = React.useCallback(()=>{
-    const { pattern, style } = randomPattern(ref.current.samples.length);
+    const { pattern, style } = randomPattern(ref.current.samples.length, PHRASES);
     setRack(rk=> voxRowOf(rk.samples)+1 === pattern.length ? {...rk, pattern} : rk);
     ref.current.spoken = true; ref.current.phraseAt = performance.now();
     setTicker(`Reorg complete — ${style} cadence adopted`);
@@ -329,16 +351,18 @@ export default function CircleBack(){
       <span style={{marginLeft:'auto'}}><Silk muted>Type the letters on the keys · R rolls a new beat · Space plays</Silk></span>
     </div>
     <div style={{display:'grid',gridTemplateColumns:'200px 1fr 230px',gap:'var(--space-col)',marginTop:'var(--space-section)'}}>
-      <Bay title="Phrase index" aside="01–16">
-        {PHRASES.map((p,i)=>
-          <div key={i} onClick={()=>pressKey(i)} style={{display:'flex',gap:12,fontSize:11.5,lineHeight:1.9,borderBottom:'1px dotted var(--hair)',cursor:'pointer',fontWeight:armed===i?700:400,color:armed===i?'var(--blue)':'var(--ink)'}}>
-            <Readout style={{lineHeight:'1.9em',fontSize:10.5}}>{String(i+1).padStart(2,'0')}</Readout>
-            <span style={{whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{p.say}</span>
-          </div>)}
+      <Bay title="Phrase index" aside={`01–${String(PHRASES.length).padStart(2,'0')}`}>
+        <div style={{maxHeight:600,overflowY:'auto'}}>
+          {PHRASES.map((p,i)=>
+            <div key={i} onClick={()=>pressKey(i)} style={{display:'flex',gap:12,fontSize:11.5,lineHeight:1.9,borderBottom:'1px dotted var(--hair)',cursor:'pointer',fontWeight:armed===i?700:400,color:armed===i?'var(--blue)':'var(--ink)'}}>
+              <Readout style={{lineHeight:'1.9em',fontSize:10.5}}>{String(i+1).padStart(2,'0')}</Readout>
+              <span style={{whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{p.say}</span>
+            </div>)}
+        </div>
       </Bay>
       <Bay title="Keys" aside="Press to opine">
         <KeyPlate columns={4}>
-          {PHRASES.map((p,i)=>
+          {PHRASES.slice(0,16).map((p,i)=>
             <Pad key={i} index={String(i+1).padStart(2,'0')} hotkey={KEYMAP[i].toUpperCase()} name={p.name} hot={armed===i} onTrigger={()=>pressKey(i)}/>)}
         </KeyPlate>
         <p style={{margin:'10px 0 0',fontSize:10.5,color:'var(--text-meta)'}}>Type the letter shown on each key to speak it · <Kbd>R</Kbd> new random beat · <Kbd>space</Kbd> play/pause · <Kbd>⇧</Kbd><Kbd>↑</Kbd>/<Kbd>↓</Kbd> delivery · <Kbd>⇧</Kbd><Kbd>←</Kbd>/<Kbd>→</Kbd> sincerity</p>
