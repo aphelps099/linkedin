@@ -113,6 +113,28 @@ function drawEq(ctx, x, y, w, h, bars){
   }
 }
 
+// the beat ribbon — one monumental row of the whole bar, legible from the back row
+function drawRibbon(ctx, st, {y, h}){
+  const pattern = st.pattern || [];
+  const n = (pattern[0] && pattern[0].length) || 16;
+  const gap = Math.max(3, (W - 2*M)/n * .18);
+  const bw = ((W - 2*M) - gap*(n-1)) / n;
+  const drumRows = Math.max(0, pattern.length - 1);
+  for(let s=0;s<n;s++){
+    const x = M + s*(bw+gap);
+    let hit = 0;
+    for(let r=0;r<drumRows;r++) hit = Math.max(hit, pattern[r] ? pattern[r][s] : 0);
+    const vox = pattern.length ? pattern[pattern.length-1][s] : 0;
+    if(vox){ ctx.fillStyle = WHITE; ctx.fillRect(x, y - 10, bw, h + 20); }
+    else if(hit){ ctx.fillStyle = hit===2 ? WHITE : 'rgba(255,255,255,.72)'; ctx.fillRect(x, y, bw, h); }
+    else { ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 2; ctx.strokeRect(x, y + h*.3, bw, h*.4); }
+    if(s === st.pos){
+      ctx.strokeStyle = TINT; ctx.lineWidth = 4;
+      ctx.strokeRect(x - 5, y - 15, bw + 10, h + 30);
+    }
+  }
+}
+
 function engagementLine(st){
   const e = st.eng || {reactions:0, reposts:0, comments:0};
   return `${e.reactions.toLocaleString()} REACTIONS · ${e.reposts.toLocaleString()} REPOSTS · ${e.comments.toLocaleString()} COMMENTS`;
@@ -289,15 +311,33 @@ function draw(ctx, st){
     drawEngagement(ctx, st, M, 268, 22, 'left');
     drawComments(ctx, st, now, {x: (W-760)/2, w: 760, bottom: 985, max: 4, scale: 1.15});
   } else {
-    // composite — the live console view
-    drawChip(ctx, st.exporting ? 'ON THE RECORD' : 'NOW PLAYING', M, 186);
+    // the stage — what the room sees
+    const chipW = drawChip(ctx, st.exporting ? 'ON THE RECORD' : 'NOW PLAYING', M, 186);
+    if(st.section){ // GROOVE · BUILD · DROP
+      ctx.font = `700 19px ${SANS}`; ctx.letterSpacing = '3.5px';
+      const label = String(st.section).toUpperCase();
+      const w = ctx.measureText(label).width + 24;
+      ctx.strokeStyle = WHITE; ctx.lineWidth = 3;
+      ctx.strokeRect(M + chipW + 14, 186, w, 38);
+      ctx.fillStyle = WHITE; ctx.textAlign = 'left';
+      ctx.fillText(label, M + chipW + 26, 212);
+      ctx.letterSpacing = '0px';
+    }
     drawStamp(ctx, W - M - 110, 205);
-    const hasComments = st.comments && st.comments.length;
-    drawPhraseBlock(ctx, st, now, {top: 250, bottom: 545, maxW: hasComments ? 520 : W - 2*M, startSize: 92});
-    if(hasComments) drawComments(ctx, st, now, {x: 640, w: 368, bottom: 550, max: 3, scale: .82});
-    drawEq(ctx, M, 566, W - 2*M, 100, 28);
-    drawEngagement(ctx, st, W - M, 692, 16, 'right');
-    drawGridBlock(ctx, st, {top: 706, bottom: 984, labelW: 168, labelSize: 15});
+    drawPhraseBlock(ctx, st, now, {top: 250, bottom: 580, maxW: W - 2*M, startSize: 132});
+    drawEq(ctx, M, 604, W - 2*M, 150, 30);
+    drawRibbon(ctx, st, {y: 790, h: 44});
+    const c = st.comments && st.comments.length ? st.comments[st.comments.length-1] : null;
+    if(c) drawComment(ctx, c, M, 962, W - 2*M, 1.05, Math.min(1, (now - c.at)/280));
+    drawEngagement(ctx, st, W/2, 1005, 19, 'center');
+    // the room breathes on the kick
+    if(st.kickAt){
+      const age = (now - st.kickAt)/1000;
+      if(age < .22){
+        ctx.strokeStyle = `rgba(255,255,255,${(1 - age/.22)*.5})`;
+        ctx.lineWidth = 14; ctx.strokeRect(7, 7, W-14, H-14);
+      }
+    }
   }
 }
 

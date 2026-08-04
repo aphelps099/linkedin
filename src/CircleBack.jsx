@@ -12,10 +12,12 @@ import { Kbd } from './components/controls/Kbd.jsx';
 import { Pad, KeyPlate } from './components/pads/Pad.jsx';
 import { StepGrid } from './components/sequencer/StepGrid.jsx';
 import { Monitor } from './components/broadcast/Monitor.jsx';
+import { StageKey } from './components/stage/StageKey.jsx';
 import { CBAudio, CBVoice } from './audio.js';
 import { VIDEO_MIMES, AUDIO_MIMES, pickMime, extFor, downloadBlob, mp4Support, startMp4Capture } from './exporter.js';
 import { randomPattern } from './randomizer.js';
 import { randomComment } from './feed.js';
+import { makeSong, bandAt } from './song.js';
 
 const PHRASES = [
   {code:'TH', name:'Thrilled', say:"I'm thrilled to announce"},
@@ -57,7 +59,7 @@ const PHRASES = [
   {code:'CS', name:'Synergies', say:"Let's connect and explore synergies."},
   {code:'DC', name:'Drop a comment', say:'What do you think? Drop a comment below. 👇'},
 ];
-const KEYMAP = '1234qwetasdfzxcv'; // R is reserved: it calls a reorg (randomize)
+const KEYMAP = '1234qwetasdfzxcv'; // studio only — on stage, 1/2/3 are the instrument
 const DRUMS = [
   {name:'Kick', id:'kick'},{name:'Snare', id:'snare'},{name:'Clap', id:'clap'},{name:'Cl. hat', id:'ch'},
   {name:'Op. hat', id:'oh'},{name:'Shaker', id:'shk'},{name:'Cowbell', id:'cow'},{name:'Zap', id:'zap'},
@@ -72,12 +74,12 @@ const seedPattern = (n, len=DEFAULT_LEN) => {
   put(0,[0,3,8,10],[0,8]); put(1,[4,12],[4,12]); put(2,[12]);
   put(3,[0,2,4,6,8,10,12,14],[0,8]); put(4,[7,15]); put(5,[3,7,11,15]);
   const vr = DRUMS.length + n;
-  // phrases get the longer runway: HU opens, CB mid-meeting, MP closes the second bar
   p[vr][0] = 2; p[vr][10] = 6;
   if(len >= 32){ p[vr][16] = 21; p[vr][28] = 16; } else p[vr][12] = 16;
   return p;
 };
 const exhibitLetter = i => String.fromCharCode(65+i);
+const SECTIONS = ['Groove', 'Build', 'Drop'];
 
 // narrow-viewport flag for the inline-styled design system (media queries can't reach inline styles)
 function useNarrow(bp = 760){
@@ -93,18 +95,21 @@ function useNarrow(bp = 760){
 
 export default function CircleBack(){
   const [rack, setRack] = React.useState(()=>({samples:[], pattern:seedPattern(0)}));
+  const [song, setSong] = React.useState(makeSong);
   const [armed, setArmed] = React.useState(1);
-  const [ticker, setTicker] = React.useState('Sample mix loaded — press Play');
+  const [ticker, setTicker] = React.useState('Sample mix loaded — press play');
   const [playing, setPlaying] = React.useState(false);
   const [rec, setRec] = React.useState(false);
   const [pos, setPos] = React.useState(null);
-  const [tempo, setTempo] = React.useState(96);
+  const [energy, setEnergy] = React.useState(0);
+  const [tempo, setTempo] = React.useState(112);
   const [sinc, setSinc] = React.useState(.12);
   const [deliv, setDeliv] = React.useState(.5);
   const [decay, setDecay] = React.useState(.5);
   const [selRow, setSelRow] = React.useState(0);
-  const [loops, setLoops] = React.useState(4); // 4 cycles of 32 steps ≈ 20s at 96 BPM
+  const [loops, setLoops] = React.useState(4);
   const [studio, setStudio] = React.useState(false);
+  const [band, setBand] = React.useState(true);
   const [exp, setExp] = React.useState(null);   // {mode, total, done}
   const [take, setTake] = React.useState(null); // {url, name, mode}
   const bufRef = React.useRef(new Map());       // sample id -> AudioBuffer
@@ -122,17 +127,20 @@ export default function CircleBack(){
   const voxCodes = rack.pattern[voxRow].map(x=> x>0 ? PHRASES[x-1].code : null);
 
   // mutable mirror of state for the scheduler + monitor render loops (avoids stale closures).
-  // Imperative fields (lastStep, phraseAt, lastKeyAt, spoken, stepCount, comments, eng,
-  // exportStartedAt, sceneDur) live on ref.current directly and are NOT overwritten here.
-  const ref = React.useRef({});
+  // Imperative fields (lastStep, lastStepAt, phraseAt, lastKeyAt, spoken, stepCount,
+  // comments, eng, exportStartedAt, sceneDur, setlistIx, dropAt) live on ref.current
+  // directly and are NOT overwritten here.
+  const ref = React.useRef({setlistIx:0});
   Object.assign(ref.current, {
     pattern: rack.pattern, samples: rack.samples, voxRow, patLen, armed, tempo, sinc, deliv, decay, rec, playing,
     pos, tickerText: ticker, voices: VOICES, voxCodes, exporting: !!exp, phrases: PHRASES,
+    song, energy, section: SECTIONS[energy], studio, band,
   });
 
   React.useEffect(()=>{
     CBVoice.loadBank(`${import.meta.env.BASE_URL}phrases/`, PHRASES.length).catch(()=>{});
   },[]);
+  React.useEffect(()=>{ CBAudio.setVoxDelay(60/tempo/4*3); },[tempo]);
 
   // mobile audio: unlock/resume inside every real gesture (capture phase runs
   // in the same tap stack, before React handlers) — also re-resumes the
@@ -169,6 +177,53 @@ export default function CircleBack(){
     }
   },[speak]);
 
+  // stage gestures land on the grid: fire on the next 16th so nothing is ever off-beat
+  const quantize = React.useCallback(fn=>{
+    const r = ref.current;
+    if(!r.playing || !r.lastStepAt){ fn(); return; }
+    const stepMs = 60000/r.tempo/4;
+    const wait = stepMs - ((performance.now() - r.lastStepAt) % stepMs);
+    if(wait < 24 || wait > stepMs) fn(); else setTimeout(fn, wait);
+  },[]);
+
+  const setEnergyLevel = React.useCallback((lvl)=>{
+    CBAudio.unlock();
+    setEnergy(lvl);
+    ref.current.energy = lvl;
+    const stepSec = 60/ref.current.tempo/4;
+    if(lvl === 0){ CBAudio.setFilter(18000); }
+    else if(lvl === 1){
+      CBAudio.setFilter(700);                     // duck the room…
+      CBAudio.setFilter(9000, stepSec*12);        // …and open it over three beats
+      CBAudio.trigger('riser', .8, undefined, {dur: stepSec*12});
+    } else {
+      CBAudio.setFilter(20000);                   // slam open
+      CBAudio.trigger('impact', 1);
+      ref.current.dropAt = ref.current.stepCount || 0;
+      quantize(()=> speak(ref.current.song.hook));
+    }
+  },[quantize, speak]);
+
+  const firePhrase = React.useCallback(()=>{
+    CBAudio.unlock();
+    const r = ref.current;
+    const list = r.song.setlist;
+    const i = list[(r.setlistIx || 0) % list.length];
+    r.setlistIx = (r.setlistIx || 0) + 1;
+    r.lastKeyAt = performance.now();
+    setArmed(i);
+    quantize(()=>{
+      speak(i);
+      if(r.rec && r.playing && r.lastStep !== undefined){
+        setRack(rk=>{
+          const p = rk.pattern.map(x=>[...x]);
+          p[voxRowOf(rk.samples)][r.lastStep] = i+1;
+          return {...rk, pattern:p};
+        });
+      }
+    });
+  },[quantize, speak]);
+
   const finishExport = React.useCallback(()=>{
     const ex = expRef.current;
     if(!ex || ex.finishing) return;
@@ -200,6 +255,12 @@ export default function CircleBack(){
           try{ ex.beginCapture(); ref.current.exportStartedAt = performance.now(); }catch(e){}
         }
         DRUMS.forEach((d,i)=>{ const v = r.pattern[i][s]; if(v) A.trigger(d.id, v===2?1:.72, t); });
+        // the band — bass always, arps on build, stabs and sub on the drop
+        if(r.band) bandAt(r.song, s, r.energy).forEach(e=>
+          A.trigger(e.v, e.vel, t, {freq:e.freq, freqs:e.freqs, dur:e.dur, up:e.up}));
+        // build energy adds double-time hats and a snare roll into the drop
+        if(r.energy >= 1 && s % 2 === 1) A.trigger('ch', .4, t);
+        if(r.energy >= 1 && s >= 12 && s % 16 >= 12) A.trigger('snare', .3 + (s%16-12)*.14, t);
         r.samples.forEach((sm,ix)=>{
           const v = r.pattern[DRUMS.length+ix][s];
           if(v){ const b = bufRef.current.get(sm.id); if(b) A.playBuffer(b, {vel:v===2?1:.72, when:t}); }
@@ -208,14 +269,16 @@ export default function CircleBack(){
         const ms = Math.max(0,(t - A.now())*1000);
         timers.push(setTimeout(()=>{
           const rr = ref.current;
-          rr.lastStep = s; setPos(s);
+          rr.lastStep = s; rr.lastStepAt = performance.now();
+          rr.kickAt = rr.pattern[0][s] ? performance.now() : rr.kickAt;
+          setPos(s);
           if(vx) speak(vx-1);
           // the algorithm at work: reactions tick up, comments roll in
           rr.stepCount++;
           const eng = rr.eng;
           if(eng){
-            eng.reactions += Math.floor(Math.random()*8);
-            if(Math.random() < .06) eng.reposts++;
+            eng.reactions += Math.floor(Math.random()*(1 + rr.energy*6)) + rr.energy;
+            if(Math.random() < .06 + rr.energy*.05) eng.reposts++;
             if(rr.stepCount >= eng.nextAt){
               eng.nextAt = rr.stepCount + 8 + Math.floor(Math.random()*10);
               eng.comments++;
@@ -223,6 +286,8 @@ export default function CircleBack(){
               if(rr.comments.length > 6) rr.comments.shift();
             }
           }
+          // the drop is a moment, not a mode — it settles back into the groove
+          if(rr.energy === 2 && rr.stepCount - (rr.dropAt||0) >= 32) setEnergyLevel(0);
           const e2 = expRef.current;
           if(e2 && e2.started && !e2.finishing){
             e2.remaining--;
@@ -243,25 +308,16 @@ export default function CircleBack(){
         setExp(null);
       }
     };
-  },[playing, speak, finishExport]);
+  },[playing, speak, finishExport, setEnergyLevel]);
 
-  const doReorg = React.useCallback(()=>{
+  const newTrack = React.useCallback(()=>{
+    const s = makeSong();
     const { pattern, style } = randomPattern(ref.current.samples.length, PHRASES, ref.current.patLen);
+    setSong(s); ref.current.song = s; ref.current.setlistIx = 0;
     setRack(rk=> voxRowOf(rk.samples)+1 === pattern.length ? {...rk, pattern} : rk);
     ref.current.spoken = true; ref.current.phraseAt = performance.now();
-    setTicker(`Reorg complete — ${style} cadence adopted`);
+    setTicker(`${s.name} — ${style} cadence`);
   },[]);
-
-  const setSteps = n => setRack(rk=>{
-    const cur = rk.pattern[0].length;
-    if(n === cur) return rk;
-    const pattern = rk.pattern.map(row=>{
-      const out = Array(n).fill(0);
-      for(let s=0;s<n;s++) out[s] = s < cur ? row[s] : row[s % cur]; // extend by tiling, shrink by truncating
-      return out;
-    });
-    return {...rk, pattern};
-  });
 
   React.useEffect(()=>{
     const down = e=>{
@@ -277,13 +333,21 @@ export default function CircleBack(){
         else if(e.key==='ArrowLeft') setSinc(v=> Math.max(0, v-step));
         return;
       }
-      if(e.key.toLowerCase()==='r' && !e.repeat){ e.preventDefault(); doReorg(); return; }
-      const k = KEYMAP.indexOf(e.key.toLowerCase());
-      if(k>=0 && !e.repeat){ e.preventDefault(); pressKey(k); }
+      const k = e.key.toLowerCase();
+      if(k==='r' && !e.repeat){ e.preventDefault(); newTrack(); return; }
+      if(!ref.current.studio){ // stage: three keys, nothing else
+        if(e.repeat) return;
+        if(k==='1'||k==='a'){ e.preventDefault(); firePhrase(); }
+        else if(k==='2'||k==='s'){ e.preventDefault(); setEnergyLevel(ref.current.energy===1?0:1); }
+        else if(k==='3'||k==='d'){ e.preventDefault(); setEnergyLevel(2); }
+        return;
+      }
+      const ix = KEYMAP.indexOf(k);
+      if(ix>=0 && !e.repeat){ e.preventDefault(); pressKey(ix); }
     };
     window.addEventListener('keydown', down);
     return ()=> window.removeEventListener('keydown', down);
-  },[pressKey, doReorg]);
+  },[pressKey, newTrack, firePhrase, setEnergyLevel]);
 
   const onGrid = p => {
     const vr = ref.current.voxRow;
@@ -382,8 +446,48 @@ export default function CircleBack(){
     else setPlaying(true);
   };
 
-  const voxLabels = VOICES.map((v)=> v.vox ? voxCodes : null);
   const narrow = useNarrow();
+  // the stage is a blue room: the page itself goes blue behind the broadcast
+  React.useEffect(()=>{
+    const bg = studio ? 'var(--paper)' : 'var(--blue)';
+    document.body.style.background = bg;
+    document.documentElement.style.background = bg;
+  },[studio]);
+
+  const voxLabels = VOICES.map((v)=> v.vox ? voxCodes : null);
+  const stageKeys = <div style={{display:'grid',gridTemplateColumns: narrow ? '1fr' : 'repeat(3,1fr)',gap:narrow?10:14,width:'100%'}}>
+    <StageKey label="Phrase" hint="1 / A" caption="Say the next line" onFire={firePhrase}/>
+    <StageKey label="Build" hint="2 / S" caption="Raise the room" on={energy===1} onFire={()=> setEnergyLevel(energy===1?0:1)}/>
+    <StageKey label="Drop" hint="3 / D" caption="Full stop." on={energy===2} onFire={()=> setEnergyLevel(2)}/>
+  </div>;
+
+  if(!studio) return <div style={{minHeight:'100vh',background:'var(--blue)',color:'#fff',fontFamily:'var(--sans)',
+    padding: narrow ? '14px 14px 26px' : '20px 26px 30px',boxSizing:'border-box',display:'flex',flexDirection:'column',gap:narrow?12:16}}>
+    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:14,flexWrap:'wrap'}}>
+      <span style={{fontSize:narrow?18:22,fontWeight:700,letterSpacing:'-.02em'}}>Circle Back<sup style={{fontSize:9,verticalAlign:10}}>®</sup></span>
+      <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}>
+        <Button onClick={()=>{ CBAudio.unlock(); setPlaying(x=>!x); }}
+          style={{background:playing?'#fff':'transparent',color:playing?'var(--blue)':'#fff',borderColor:'#fff'}}>{playing?'Pause':'Play'}</Button>
+        <Button onClick={newTrack} style={{background:'transparent',color:'#fff',borderColor:'#fff'}}>New track (R)</Button>
+        <Button variant="rec" on={!!exp} onClick={()=>startExport('video')}
+          style={exp?undefined:{background:'transparent',color:'#fff',borderColor:'#fff'}}>{exp?`Taping ${Math.min(exp.done,exp.total)}/${exp.total}`:'Export mp4'}</Button>
+        <Button onClick={()=>setStudio(true)} style={{background:'transparent',color:'#fff',borderColor:'#fff'}}>Audio tools</Button>
+      </div>
+    </div>
+    <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',minHeight:0}}>
+      <Monitor ref={canvasRef} stateRef={ref}
+        style={{border:'2px solid rgba(255,255,255,.32)',width:'auto',height:'auto',maxWidth:'100%',maxHeight: narrow ? '58vh' : '68vh'}}/>
+    </div>
+    {stageKeys}
+    <div style={{display:'flex',justifyContent:'space-between',gap:12,flexWrap:'wrap',opacity:.72,fontSize:9.5,fontWeight:700,letterSpacing:'.16em',textTransform:'uppercase'}}>
+      <span>{song.name} · {tempo} BPM · {SECTIONS[energy]}</span>
+      <span>Space plays · R new track · not affiliated with your network</span>
+    </div>
+    {take && <div style={{display:'flex',gap:12,alignItems:'center',flexWrap:'wrap'}}>
+      <a href={take.url} download={take.name} style={{fontFamily:'var(--mono)',fontSize:11,color:'#fff'}}>↓ {take.name}</a>
+    </div>}
+  </div>;
+
   return <Unit style={narrow ? {padding:'20px 14px'} : undefined}>
     <Masthead meta={narrow ? ["Form CB-16","Rev. 2026-08"] : ["Form CB-16","Rev. 2026-08","For internal thought leadership only"]}/>
     <div style={{display:'flex',flexDirection:narrow?'column':'row',justifyContent:'space-between',alignItems:narrow?'flex-start':'flex-end',gap:narrow?8:30,marginTop:18}}>
@@ -392,14 +496,13 @@ export default function CircleBack(){
     </div>
     <Ticker style={{marginTop:16}}>{ticker}</Ticker>
 
-    {/* the broadcast — front and center, sample mix loaded */}
     <div style={{display:'grid',gridTemplateColumns:narrow?'1fr':'minmax(0,1fr) 280px',gap:narrow?16:'var(--space-col)',alignItems:'start',marginTop:16}}>
       <Monitor ref={canvasRef} stateRef={ref}/>
       <div style={{display:'flex',flexDirection:'column',gap:14}}>
-        <Button style={{padding:'14px 20px'}} onClick={()=>{ CBAudio.unlock(); doReorg(); setPlaying(true); }}>▶ Play a random mix</Button>
+        <Button style={{padding:'14px 20px'}} onClick={()=>{ CBAudio.unlock(); setStudio(false); setPlaying(true); }}>▶ Back to the stage</Button>
         <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
           <Button on={playing} onClick={()=>{ CBAudio.unlock(); setPlaying(x=>!x); }}>{playing?'Pause':'Play'}</Button>
-          <Button onClick={doReorg}>New beat (R)</Button>
+          <Button onClick={newTrack}>New track (R)</Button>
         </div>
         <div>
           <div style={{marginBottom:6}}><Silk>Run of show</Silk>{' '}<Readout style={{marginLeft:8}}>≈ {Math.round(loops*patLen*(60/tempo/4))}s</Readout></div>
@@ -417,17 +520,13 @@ export default function CircleBack(){
           ? <video controls src={take.url} style={{width:'100%',border:'var(--rule-frame) solid var(--ink)',display:'block'}}/>
           : <audio controls src={take.url} style={{width:'100%',display:'block'}}/>)}
         {take && <a href={take.url} download={take.name} style={{fontFamily:'var(--mono)',fontSize:10.5,color:'var(--blue)'}}>Download again — {take.name}</a>}
-        <Silk muted>Exports tape the monitor — the phrase, the pads, the mix, the grid, the comments — into a square clip for your LinkedIn feed.</Silk>
       </div>
     </div>
 
-    {/* the studio, filed under separate cover */}
-    <div style={{marginTop:22,borderTop:'var(--rule-section) solid var(--ink)',paddingTop:12,display:'flex',alignItems:'center',gap:12}}>
-      <Button onClick={()=>setStudio(x=>!x)}>{studio ? 'Close the audio tools' : 'Open the audio tools'}</Button>
-      <Silk muted>{studio ? 'The studio is in session' : 'Make your own LinkedIn remix — keys, registers, sequencer, uploads'}</Silk>
-    </div>
+    <Bay title="Stage keys" aside={`${song.name} · ${SECTIONS[energy]}`} style={{marginTop:'var(--space-section)'}}>
+      {stageKeys}
+    </Bay>
 
-    {studio && <>
     <div style={{display:'grid',gridTemplateColumns:narrow?'1fr':'200px 1fr 230px',gap:narrow?20:'var(--space-col)',marginTop:'var(--space-section)'}}>
       <Bay title="Phrase index" aside={`01–${String(PHRASES.length).padStart(2,'0')}`} style={narrow?{order:3}:undefined}>
         <div style={{maxHeight:narrow?300:600,overflowY:'auto'}}>
@@ -445,7 +544,7 @@ export default function CircleBack(){
         </KeyPlate>
         {narrow
           ? <p style={{margin:'10px 0 0',fontSize:10.5,color:'var(--text-meta)'}}>Tap a key to speak it · tap grid cells to add hits · the armed phrase stamps into Vox</p>
-          : <p style={{margin:'10px 0 0',fontSize:10.5,color:'var(--text-meta)'}}>Type the letter shown on each key to speak it · <Kbd>R</Kbd> new random beat · <Kbd>space</Kbd> play/pause · <Kbd>⇧</Kbd><Kbd>↑</Kbd>/<Kbd>↓</Kbd> delivery · <Kbd>⇧</Kbd><Kbd>←</Kbd>/<Kbd>→</Kbd> sincerity</p>}
+          : <p style={{margin:'10px 0 0',fontSize:10.5,color:'var(--text-meta)'}}>Type the letter shown on each key to speak it · <Kbd>R</Kbd> new track · <Kbd>space</Kbd> play/pause · <Kbd>⇧</Kbd><Kbd>↑</Kbd>/<Kbd>↓</Kbd> delivery · <Kbd>⇧</Kbd><Kbd>←</Kbd>/<Kbd>→</Kbd> sincerity</p>}
       </Bay>
       <Bay title="Registers" aside="Cal. A" style={narrow?{order:2}:undefined}>
         <div style={{display:'flex',flexDirection:narrow?'row':'column',flexWrap:'wrap',gap:16}}>
@@ -468,15 +567,21 @@ export default function CircleBack(){
       <div style={{display:'flex',gap:9,alignItems:'center',marginTop:16,flexWrap:'wrap'}}>
         <Button on={playing} onClick={()=>{ CBAudio.unlock(); setPlaying(x=>!x); }}>{playing?'Pause':'Play'}</Button>
         <Button variant="rec" on={rec} onClick={()=>setRec(x=>!x)}>{rec?'Recording keys':'Record keys'}</Button>
-        <Button onClick={doReorg}>Random beat</Button>
+        <Button onClick={newTrack}>New track</Button>
         <Button onClick={()=>setRack(rk=>({...rk, pattern:seedPattern(rk.samples.length, rk.pattern[0].length)}))}>Demo beat</Button>
-        <Button onClick={()=>setRack(rk=>({...rk, pattern:emptyPattern(rk.samples.length, rk.pattern[0].length)}))}>Clear all</Button>
+        <Button onClick={()=>setRack(rk=>({...rk, pattern:emptyPattern(rk.samples.length, rk.pattern[0].length)}))}>Clear drums</Button>
+        <Button on={band} onClick={()=>{ setBand(b=>{ setTicker(b ? 'Band dismissed — drums only' : 'The band is back'); return !b; }); }}>Band</Button>
         <span style={{display:'inline-flex',gap:6,alignItems:'center',marginLeft:6}}>
           <Silk>Steps</Silk>
           {[16,32,48].map(n=>
-            <Button key={n} on={patLen===n} onClick={()=>setSteps(n)} style={{padding:'7px 10px'}}>{n}</Button>)}
+            <Button key={n} on={patLen===n} onClick={()=>setRack(rk=>{
+              const cur = rk.pattern[0].length;
+              if(n===cur) return rk;
+              const pattern = rk.pattern.map(row=>{ const out = Array(n).fill(0); for(let s=0;s<n;s++) out[s] = s<cur ? row[s] : row[s%cur]; return out; });
+              return {...rk, pattern};
+            })} style={{padding:'7px 10px'}}>{n}</Button>)}
         </span>
-        <span style={{marginLeft:'auto'}}><Silk muted>Longer meetings give long phrases room to land · double-click a track name to clear it</Silk></span>
+        <span style={{marginLeft:'auto'}}><Silk muted>Bass, arps and stabs come from the track · double-click a track name to clear it</Silk></span>
       </div>
       <div style={{display:'flex',gap:9,alignItems:'center',marginTop:12,flexWrap:'wrap',borderTop:'1px dotted var(--hair)',paddingTop:12}}>
         <Silk>Exhibits</Silk>
@@ -492,7 +597,6 @@ export default function CircleBack(){
         <span style={{marginLeft:'auto'}}><Silk muted>Audio admitted into the record becomes a sequencer row</Silk></span>
       </div>
     </Bay>
-    </>}
 
     <div style={{marginTop:26,borderTop:'var(--rule-heavy) solid var(--ink)',paddingTop:10,display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:10}}>
       <Silk muted>An equal opportunity instrument</Silk>

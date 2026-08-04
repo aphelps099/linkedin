@@ -2,14 +2,28 @@
 // Extended for the sampler + clip export: buffer decode/playback and a MediaStream
 // tap on the master bus so everything (drums, exhibits, vox bank) can be recorded.
 export const CBAudio = (() => {
-  let ctx, master, comp, noiseBuf, streamDest, analyser, specArr;
+  let ctx, master, comp, noiseBuf, streamDest, analyser, specArr, lp, voxIn, voxDelay;
   function init(){
     if(ctx) return;
     ctx = new (window.AudioContext||window.webkitAudioContext)();
     master = ctx.createGain(); master.gain.value = .85;
+    // performance filter — the build/drop sweeps this
+    lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 20000; lp.Q.value = 1.2;
     comp = ctx.createDynamicsCompressor();
     comp.threshold.value = -6; comp.ratio.value = 12; comp.attack.value = .003; comp.release.value = .15;
-    master.connect(comp); comp.connect(ctx.destination);
+    master.connect(lp); lp.connect(comp); comp.connect(ctx.destination);
+    // the vox bus — mild drive + presence peak + dotted-eighth delay (the talkbox trick)
+    voxIn = ctx.createGain();
+    const shaper = ctx.createWaveShaper();
+    const curve = new Float32Array(1024);
+    for(let i=0;i<1024;i++){ const x = i/511.5 - 1; curve[i] = Math.tanh(x*1.8); }
+    shaper.curve = curve;
+    const peak = ctx.createBiquadFilter(); peak.type = 'peaking'; peak.frequency.value = 1400; peak.Q.value = .9; peak.gain.value = 5;
+    voxIn.connect(shaper); shaper.connect(peak); peak.connect(master);
+    voxDelay = ctx.createDelay(1.5); voxDelay.delayTime.value = .28;
+    const fb = ctx.createGain(); fb.gain.value = .34;
+    const wet = ctx.createGain(); wet.gain.value = .3;
+    peak.connect(voxDelay); voxDelay.connect(fb); fb.connect(voxDelay); voxDelay.connect(wet); wet.connect(master);
     streamDest = ctx.createMediaStreamDestination();
     comp.connect(streamDest);
     analyser = ctx.createAnalyser(); analyser.fftSize = 256; analyser.smoothingTimeConstant = .78;
@@ -67,8 +81,9 @@ export const CBAudio = (() => {
   function osc(type,f,t){ const o = ctx.createOscillator(); o.type = type; o.frequency.setValueAtTime(f,t); o.start(t); return o; }
   function filt(type,f,q){ const b = ctx.createBiquadFilter(); b.type = type; b.frequency.value = f; if(q!==undefined) b.Q.value = q; return b; }
   const METAL = [2,3,4.16,5.43,6.79,8.21];
-  function trigger(v, vel=1, when){
+  function trigger(v, vel=1, when, P){
     init(); rs();
+    P = P || {};
     const t = when===undefined ? ctx.currentTime+.001 : when;
     const out = ctx.createGain(); out.gain.value = .8*vel; out.connect(master);
     const T = x => x.stop(t+4);
@@ -109,7 +124,67 @@ export const CBAudio = (() => {
       const o = osc('sine',1900,t); o.frequency.exponentialRampToValueAtTime(55,t+.16);
       const g = env(t,.85,.22); o.connect(g); g.connect(out); T(o);
     }
+    // ---- the band: pitched voices, driven by song.js ----
+    else if(v==='sub'){
+      const f = P.freq||55, d = P.dur||.42;
+      const o = osc('sine',f,t); const g = env(t,1,d,.006); o.connect(g); g.connect(out); T(o);
+    } else if(v==='bass'){
+      const f = P.freq||82, d = P.dur||.2;
+      const flt = filt('lowpass', f*3.2, 7);
+      flt.frequency.setValueAtTime(Math.min(f*9, 3200), t);
+      flt.frequency.exponentialRampToValueAtTime(Math.max(f*1.6, 60), t+d*.9);
+      const g = env(t,.95,d,.004);
+      [0,-7].forEach((c,i)=>{ const o = osc(i?'square':'sawtooth', f*Math.pow(2,c/1200), t); o.connect(flt); T(o); });
+      flt.connect(g); g.connect(out);
+      const s = osc('sine', f/2, t); const sg = env(t,.5,d*.8,.004); s.connect(sg); sg.connect(out); T(s);
+    } else if(v==='arp'){
+      const f = P.freq||440, d = P.dur||.13;
+      const flt = filt('lowpass', 5200, 6);
+      flt.frequency.setValueAtTime(6800, t); flt.frequency.exponentialRampToValueAtTime(900, t+d);
+      const g = env(t,.5,d,.003);
+      [-6, 6].forEach(c=>{ const o = osc('sawtooth', f*Math.pow(2,c/1200), t); o.connect(flt); T(o); });
+      flt.connect(g); g.connect(out);
+    } else if(v==='stab'){
+      const freqs = P.freqs||[220,277,330], d = P.dur||.26;
+      const flt = filt('lowpass', 4200, 4);
+      flt.frequency.setValueAtTime(5200, t); flt.frequency.exponentialRampToValueAtTime(1100, t+d);
+      const g = env(t,.42,d,.004);
+      freqs.forEach(f=> [-8,8].forEach(c=>{ const o = osc('sawtooth', f*Math.pow(2,c/1200), t); o.connect(flt); T(o); }));
+      flt.connect(g); g.connect(out);
+    } else if(v==='blip'){
+      const f = P.freq||1760;
+      const o = osc('square', f, t); o.frequency.exponentialRampToValueAtTime(f*(P.up?2:.55), t+.05);
+      const g = env(t,.3,.06,.002); o.connect(g); g.connect(out); T(o);
+    } else if(v==='impact'){
+      const o = osc('sine',110,t); o.frequency.exponentialRampToValueAtTime(32,t+.5);
+      const g = env(t,1,.85,.004); o.connect(g); g.connect(out); T(o);
+      const nz = noise(t,.7), hp = filt('highpass',300), ng = env(t,.55,.6,.004);
+      nz.connect(hp); hp.connect(ng); ng.connect(out);
+    } else if(v==='riser'){
+      const d = P.dur||2;
+      const nz = noise(t,d), bp = filt('bandpass',400,4);
+      bp.frequency.setValueAtTime(320,t); bp.frequency.exponentialRampToValueAtTime(7200,t+d);
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(.0001,t);
+      g.gain.exponentialRampToValueAtTime(.5,t+d);
+      g.gain.exponentialRampToValueAtTime(.0001,t+d+.12);
+      nz.connect(bp); bp.connect(g); g.connect(out);
+      const o = osc('sawtooth',200,t); o.frequency.exponentialRampToValueAtTime(2400,t+d);
+      const og = env(t,.16,d,.4); o.connect(og); og.connect(out); o.stop(t+d+.2);
+    }
   }
+  // performance filter sweep — the whole mix ducks and opens
+  function setFilter(hz, seconds){
+    init();
+    const t = ctx.currentTime;
+    try{
+      lp.frequency.cancelScheduledValues(t);
+      lp.frequency.setValueAtTime(Math.max(60, lp.frequency.value), t);
+      if(seconds) lp.frequency.exponentialRampToValueAtTime(Math.max(60, hz), t + seconds);
+      else lp.frequency.setTargetAtTime(Math.max(60, hz), t, .02);
+    }catch(e){}
+  }
+  const setVoxDelay = s => { init(); try{ voxDelay.delayTime.setTargetAtTime(s, ctx.currentTime, .05); }catch(e){} };
   function decode(arrayBuffer){ init(); return ctx.decodeAudioData(arrayBuffer); }
   function playBuffer(buffer, opts){
     const o = opts || {};
@@ -119,11 +194,11 @@ export const CBAudio = (() => {
     if(o.rate!==undefined) src.playbackRate.value = o.rate;
     if(o.detune) try{ src.detune.value = o.detune; }catch(e){ /* detune unsupported */ }
     const g = ctx.createGain(); g.gain.value = .9*(o.vel===undefined?1:o.vel);
-    src.connect(g); g.connect(master); src.start(t);
+    src.connect(g); g.connect(o.bus === 'vox' ? voxIn : master); src.start(t);
     return { source: src, gain: g };
   }
   return {
-    init, resume: rs, unlock, trigger, decode, playBuffer,
+    init, resume: rs, unlock, trigger, decode, playBuffer, setFilter, setVoxDelay,
     now: ()=>{ init(); return ctx.currentTime; },
     stream: ()=>{ init(); return streamDest.stream; },
     audioTrack: ()=>{ init(); return streamDest.stream.getAudioTracks()[0]; },
@@ -178,6 +253,7 @@ export const CBVoice = {
         vel: .95,
         rate: .6 + deliv*.8,
         detune: ((.4 + sinc*1.4) - 1) * 1200,
+        bus: 'vox', // through the drive + delay chain
       });
       return;
     }
