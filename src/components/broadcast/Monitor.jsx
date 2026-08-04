@@ -25,14 +25,17 @@ function wrapText(ctx, text, maxW){
   return lines;
 }
 
-function fitText(ctx, text, maxW, maxLines, startSize, minSize){
+// maxH keeps the block inside its zone — without it, long phrases overflow
+// downward and collide with whatever is beneath them
+function fitText(ctx, text, maxW, maxLines, startSize, minSize, maxH){
   let size = startSize, lines;
   for(;;){
     ctx.font = `700 ${size}px ${SANS}`; ctx.letterSpacing = `${(-0.035*size).toFixed(1)}px`;
     lines = wrapText(ctx, text, maxW);
     const tooWide = lines.some(l => ctx.measureText(l).width > maxW); // unbreakable long words
-    if((lines.length <= maxLines && !tooWide) || size <= minSize) break;
-    size -= 8;
+    const tooTall = maxH ? lines.length * size * 1.04 > maxH : false;
+    if((lines.length <= maxLines && !tooWide && !tooTall) || size <= minSize) break;
+    size -= 6;
   }
   return { size, lines };
 }
@@ -114,6 +117,61 @@ function drawEq(ctx, x, y, w, h, bars){
   }
 }
 
+// The ASCII horizon — the beat machine rendered as translucent character
+// weather behind the type. Columns are sequencer steps, rows are a drifting
+// horizon, density comes off the spectrum. Rows are painted as whole strings
+// so the whole field costs a few dozen draws, not a few thousand.
+const RAMP = ' ·░▒▓█';
+function drawAsciiField(ctx, st, now, opts){
+  const o = opts || {};
+  const alpha = o.alpha === undefined ? .16 : o.alpha;
+  const cols = o.cols || 56, rows = o.rows || 30;
+  const cw = W/cols, ch = H/rows;
+  const spec = CBAudio.spectrum();
+  const pattern = st.pattern || [];
+  const steps = (pattern[0] && pattern[0].length) || 16;
+  const drums = Math.max(0, pattern.length - 1);
+  const t = now/1000;
+
+  // per-column energy: what the sequencer is doing at that step + what the mix is doing
+  const colE = new Array(cols);
+  for(let c=0;c<cols;c++){
+    const step = Math.floor(c/cols*steps);
+    let hit = 0;
+    for(let r=0;r<drums;r++) hit = Math.max(hit, pattern[r] ? pattern[r][step] : 0);
+    let e = 0;
+    if(spec){ const bin = Math.floor(c/cols * spec.length*.72); e = (spec[bin]||0)/255; }
+    colE[c] = e*.62 + (hit === 2 ? .34 : hit ? .2 : 0) + (step === st.pos ? .42 : 0);
+  }
+
+  ctx.save();
+  ctx.font = `${Math.round(ch*.96)}px ${MONO}`;
+  ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  for(let r=0;r<rows;r++){
+    // the horizon: dense at the vanishing line, thinning toward the edges
+    const d = Math.abs(r/(rows-1) - .5) * 2;
+    const horizon = Math.pow(1 - d, 1.7);
+    const drift = .5 + .5*Math.sin(t*.55 + r*.42);
+    let line = '';
+    let rowSum = 0;
+    for(let c=0;c<cols;c++){
+      const v = Math.max(0, Math.min(1, colE[c]*(.45 + horizon*.85) + horizon*.34*drift));
+      rowSum += v;
+      line += RAMP[Math.min(RAMP.length-1, Math.floor(v*(RAMP.length-1) + .12))];
+    }
+    const rowA = alpha * (.42 + (rowSum/cols)*1.15);
+    ctx.fillStyle = `rgba(255,255,255,${Math.min(.9, rowA).toFixed(3)})`;
+    ctx.fillText(line, 0, r*ch + ch/2);
+  }
+  // the playhead column reads through the weather
+  if(st.pos != null && steps){
+    const c = Math.floor(st.pos/steps*cols);
+    ctx.fillStyle = `rgba(159,200,234,${Math.min(.5, alpha*2.4).toFixed(3)})`;
+    ctx.fillRect(c*cw, 0, Math.max(cw, 3), H);
+  }
+  ctx.restore();
+}
+
 // the beat ribbon — one monumental row of the whole bar, legible from the back row
 function drawRibbon(ctx, st, {y, h}){
   const pattern = st.pattern || [];
@@ -148,10 +206,10 @@ function drawEngagement(ctx, st, x, y, size, align){
   ctx.letterSpacing = '0px'; ctx.textAlign = 'left';
 }
 
-function drawPhraseBlock(ctx, st, now, {top, bottom, maxW, startSize}){
+function drawPhraseBlock(ctx, st, now, {top, bottom, maxW, startSize, maxLines}){
   const spoken = !!st.spoken;
   const full = spoken ? `“${st.tickerText}”` : 'It’s not an instrument. It’s a journey.';
-  const { size, lines } = fitText(ctx, full, maxW, 4, startSize, 44);
+  const { size, lines } = fitText(ctx, full, maxW, maxLines || 4, startSize, 40, bottom - top);
   const { partial, cursorOn } = spoken ? reveal(st, full, now) : { partial: full, cursorOn: false };
   ctx.font = `700 ${size}px ${SANS}`; ctx.letterSpacing = `${(-0.035*size).toFixed(1)}px`;
   ctx.fillStyle = spoken ? WHITE : TINT; ctx.textAlign = 'left';
@@ -520,6 +578,9 @@ function draw(ctx, st){
   } else {
     if(scene === 'plate') scene = 'phrase'; // library still loading
     drawChrome(ctx, st);
+    // the beat machine, translucent, underneath the type
+    if(scene === 'composite') drawAsciiField(ctx, st, now, {alpha:.15});
+    else if(scene === 'phrase') drawAsciiField(ctx, st, now, {alpha:.1});
   }
 
   if(scene === 'phrase'){
@@ -533,9 +594,9 @@ function draw(ctx, st){
   } else if(scene === 'plate'){
     drawPlateScene(ctx, st, now);
   } else if(scene === 'eq'){
+    drawAsciiField(ctx, st, now, {alpha:.5, cols:64, rows:34});
     drawChip(ctx, 'THE MIX', M, 186);
-    drawPhraseBlock(ctx, st, now, {top: 240, bottom: 420, maxW: W - 2*M, startSize: 64});
-    drawEq(ctx, M, 460, W - 2*M, 490, 22);
+    drawPhraseBlock(ctx, st, now, {top: 420, bottom: 700, maxW: W - 2*M, startSize: 92, maxLines: 3});
     drawEngagement(ctx, st, M, 995, 18, 'left');
   } else if(scene === 'grid'){
     drawChip(ctx, 'THE CADENCE', M, 186);
@@ -557,11 +618,10 @@ function draw(ctx, st){
       ctx.letterSpacing = '0px';
     }
     drawStamp(ctx, W - M - 110, 205);
-    drawPhraseBlock(ctx, st, now, {top: 248, bottom: 560, maxW: W - 2*M, startSize: 132});
-    drawEq(ctx, M, 584, W - 2*M, 136, 30);
-    drawRibbon(ctx, st, {y: 752, h: 40});
+    // the phrase is the only loud thing; everything else is weather behind it
+    drawPhraseBlock(ctx, st, now, {top: 268, bottom: 726, maxW: W - 2*M, startSize: 132});
     const c = st.comments && st.comments.length ? st.comments[st.comments.length-1] : null;
-    if(c) drawCommentRow(ctx, c, M, 832, W - 2*M, 1.05, Math.min(1, (now - c.at)/280));
+    if(c) drawCommentRow(ctx, c, M, 800, W - 2*M, 1.02, Math.min(1, (now - c.at)/280));
     drawEngagement(ctx, st, W/2, 1002, 19, 'center');
     // the room breathes on the kick
     if(st.kickAt){
