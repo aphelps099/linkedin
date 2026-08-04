@@ -105,6 +105,14 @@ const seedPattern = (n, len=DEFAULT_LEN) => {
   if(len >= 48) p[vr][32] = 16;                  // Full stop.
   return p;
 };
+// A locked Vox row stays empty: the beat plays, and phrases only happen when
+// you press a key. Nothing loops a phrase at you.
+const applyVoxLock = (pattern, nSamples, locked) => {
+  if(!locked) return pattern;
+  const p = pattern.map(r=>[...r]);
+  p[DRUMS.length + nSamples] = Array(p[0].length).fill(0);
+  return p;
+};
 const exhibitLetter = i => String.fromCharCode(65+i);
 const SECTIONS = ['Groove', 'Build', 'Drop'];
 
@@ -121,7 +129,8 @@ function useNarrow(bp = 760){
 }
 
 export default function CircleBack(){
-  const [rack, setRack] = React.useState(()=>({samples:[], pattern:seedPattern(0)}));
+  const [voxLocked, setVoxLocked] = React.useState(true);
+  const [rack, setRack] = React.useState(()=>({samples:[], pattern:applyVoxLock(seedPattern(0), 0, true)}));
   const [song, setSong] = React.useState(makeSong);
   const [armed, setArmed] = React.useState(1);
   const [ticker, setTicker] = React.useState('Sample mix loaded — press play');
@@ -167,7 +176,7 @@ export default function CircleBack(){
   Object.assign(ref.current, {
     pattern: rack.pattern, samples: rack.samples, voxRow, patLen, armed, tempo, sinc, deliv, decay, rec, playing,
     pos, tickerText: ticker, voices: VOICES, voxCodes, exporting: !!exp, phrases: PHRASES,
-    song, energy, section: SECTIONS[energy], studio, band, remix,
+    song, energy, section: SECTIONS[energy], studio, band, remix, voxLocked,
   });
 
   React.useEffect(()=>{
@@ -212,7 +221,7 @@ export default function CircleBack(){
     ref.current.lastKeyAt = performance.now();
     setArmed(i); speak(i);
     const r = ref.current;
-    if(r.rec && r.playing && r.lastStep !== undefined){
+    if(r.rec && r.playing && !r.voxLocked && r.lastStep !== undefined){
       setRack(rk=>{
         const p = rk.pattern.map(x=>[...x]);
         p[voxRowOf(rk.samples)][r.lastStep] = i+1;
@@ -258,7 +267,7 @@ export default function CircleBack(){
     setArmed(i);
     quantize(()=>{
       speak(i);
-      if(r.rec && r.playing && r.lastStep !== undefined){
+      if(r.rec && r.playing && !r.voxLocked && r.lastStep !== undefined){
         setRack(rk=>{
           const p = rk.pattern.map(x=>[...x]);
           p[voxRowOf(rk.samples)][r.lastStep] = i+1;
@@ -365,7 +374,8 @@ export default function CircleBack(){
       i => CBVoice.durationOf(i, PHRASES[i].say, r.deliv),
     );
     setSong(s); ref.current.song = s; ref.current.setlistIx = 0;
-    setRack(rk=> voxRowOf(rk.samples)+1 === pattern.length ? {...rk, pattern} : rk);
+    setRack(rk=> voxRowOf(rk.samples)+1 === pattern.length
+      ? {...rk, pattern: applyVoxLock(pattern, rk.samples.length, r.voxLocked)} : rk);
     ref.current.spoken = true; ref.current.phraseAt = performance.now();
     setTicker(`${s.name} — ${style} cadence`);
   },[]);
@@ -400,6 +410,8 @@ export default function CircleBack(){
       if(v){ byStep[step] = opt.lines[k % opt.lines.length].text; k++; }
     });
     r.remixByStep = byStep;
+    // a remix is the one thing that writes the Vox row, so it takes the lock off
+    setVoxLocked(false); r.voxLocked = false;
     setRack(rk=> voxRowOf(rk.samples)+1 === pattern.length ? {...rk, pattern} : rk);
     setTempo(remixTempo);
     r.spoken = true; r.phraseAt = performance.now();
@@ -435,7 +447,12 @@ export default function CircleBack(){
         return;
       }
       const k = e.key.toLowerCase();
-      if(k==='r' && !e.repeat){ e.preventDefault(); newTrack(); return; }
+      if(k==='r' && !e.repeat){
+        e.preventDefault();
+        if(e.shiftKey){ CBAudio.unlock(); quantize(()=> speak(ref.current.armed)); } // say it again
+        else newTrack();
+        return;
+      }
       if(!ref.current.studio){ // stage: three keys, nothing else
         if(e.repeat) return;
         if(k==='1'||k==='a'){ e.preventDefault(); firePhrase(); }
@@ -451,9 +468,11 @@ export default function CircleBack(){
   },[pressKey, newTrack, firePhrase, setEnergyLevel, quantize, speak]);
 
   const onGrid = p => {
-    const vr = ref.current.voxRow;
-    const q = p.map(r=>[...r]);
-    for(let s=0;s<q[vr].length;s++) if(q[vr][s]===-1) q[vr][s] = ref.current.armed+1;
+    const r = ref.current;
+    const vr = r.voxRow;
+    const q = p.map(row=>[...row]);
+    for(let s=0;s<q[vr].length;s++) if(q[vr][s]===-1) q[vr][s] = r.armed+1;
+    if(r.voxLocked) q[vr] = Array(q[vr].length).fill(0);
     setRack(rk=>({...rk, pattern:q}));
   };
 
@@ -557,6 +576,23 @@ export default function CircleBack(){
   };
 
   const narrow = useNarrow();
+  const toggleVoxLock = () => setVoxLocked(locked=>{
+    const next = !locked;
+    ref.current.voxLocked = next;
+    if(next) setRack(rk=>({...rk, pattern: applyVoxLock(rk.pattern, rk.samples.length, true)}));
+    setTicker(next ? 'Vox locked — phrases only when you press a key' : 'Vox live — the sequencer may speak');
+    return next;
+  });
+  // a plain radio: filled when the row is locked shut
+  const voxRadio = tone => <span onClick={toggleVoxLock} role="radio" aria-checked={voxLocked} aria-label="Lock vox"
+    style={{display:'inline-flex',alignItems:'center',gap:8,cursor:'pointer',userSelect:'none'}}>
+    <span style={{width:14,height:14,borderRadius:'50%',border:`2px solid ${tone==='light'?'#fff':'var(--ink)'}`,
+      display:'inline-flex',alignItems:'center',justifyContent:'center',flex:'none'}}>
+      {voxLocked && <span style={{width:6,height:6,borderRadius:'50%',background:tone==='light'?'#fff':'var(--blue)'}}/>}
+    </span>
+    <span style={{fontSize:9.5,fontWeight:700,letterSpacing:'.16em',textTransform:'uppercase',
+      color:tone==='light'?'#fff':'var(--ink)'}}>Vox locked</span>
+  </span>;
   // the stage is a blue room: the page itself goes blue behind the broadcast
   React.useEffect(()=>{
     const bg = studio ? 'var(--paper)' : 'var(--blue)';
@@ -609,7 +645,10 @@ export default function CircleBack(){
     </div>
     <div style={{display:'flex',justifyContent:'space-between',gap:12,flexWrap:'wrap',opacity:.72,fontSize:9.5,fontWeight:700,letterSpacing:'.16em',textTransform:'uppercase'}}>
       <span>{remix ? `Your remix · index ${remix.score} · ${remix.rank}` : song.name} · {tempo} BPM · {SECTIONS[energy]}</span>
-      <span>Space plays · ← → phrases · R new track · not affiliated with your network</span>
+      <span style={{display:'inline-flex',gap:18,alignItems:'center',flexWrap:'wrap'}}>
+        {voxRadio('light')}
+        <span>Space starts the song · ← → phrases · ⇧R repeats · R new track</span>
+      </span>
     </div>
     {take && <div style={{display:'flex',gap:12,alignItems:'center',flexWrap:'wrap'}}>
       <a href={take.url} download={take.name} style={{fontFamily:'var(--mono)',fontSize:11,color:'#fff'}}>↓ {take.name}</a>
@@ -678,7 +717,7 @@ export default function CircleBack(){
         </KeyPlate>
         {narrow
           ? <p style={{margin:'10px 0 0',fontSize:10.5,color:'var(--text-meta)'}}>Tap a key to speak it · tap grid cells to add hits · the armed phrase stamps into Vox</p>
-          : <p style={{margin:'10px 0 0',fontSize:10.5,color:'var(--text-meta)'}}>Type the letter shown on each key to speak it · <Kbd>R</Kbd> new track · <Kbd>space</Kbd> play/pause · <Kbd>⇧</Kbd><Kbd>↑</Kbd>/<Kbd>↓</Kbd> delivery · <Kbd>⇧</Kbd><Kbd>←</Kbd>/<Kbd>→</Kbd> sincerity</p>}
+          : <p style={{margin:'10px 0 0',fontSize:10.5,color:'var(--text-meta)'}}>Type the letter on each key to speak it · <Kbd>←</Kbd><Kbd>→</Kbd> scrub phrases · <Kbd>⇧</Kbd><Kbd>R</Kbd> repeat · <Kbd>R</Kbd> new track · <Kbd>space</Kbd> start the song · <Kbd>⇧</Kbd><Kbd>↑</Kbd>/<Kbd>↓</Kbd> delivery</p>}
       </Bay>
       <Bay title="Registers" aside="Cal. A" style={narrow?{order:2}:undefined}>
         <div style={{display:'flex',flexDirection:narrow?'row':'column',flexWrap:'wrap',gap:16}}>
@@ -725,7 +764,8 @@ export default function CircleBack(){
               return {...rk, pattern};
             })} style={{padding:'7px 10px'}}>{n}</Button>)}
         </span>
-        <span style={{marginLeft:'auto'}}><Silk muted>Bass, arps and stabs come from the track · double-click a track name to clear it</Silk></span>
+        <span style={{marginLeft:8}}>{voxRadio('ink')}</span>
+        <span style={{marginLeft:'auto'}}><Silk muted>Locked keeps the Vox row empty · double-click a track name to clear it</Silk></span>
       </div>
       <div style={{display:'flex',gap:9,alignItems:'center',marginTop:12,flexWrap:'wrap',borderTop:'1px dotted var(--hair)',paddingTop:12}}>
         <Silk>Exhibits</Silk>
