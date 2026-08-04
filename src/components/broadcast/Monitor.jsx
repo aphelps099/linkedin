@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, forwardRef } from 'react';
+import { CBAudio } from '../../audio.js';
 
 // The broadcast monitor — the clip the feed sees, rendered live.
 // Corporate blue field, white text, white-outlined squares with white fills
@@ -9,7 +10,7 @@ const W = 1080, H = 1080, M = 72;
 const BLUE = '#0a66c2', TINT = '#9fc8ea', WHITE = '#ffffff', INK = '#111111';
 const SANS = '"Helvetica Neue", Helvetica, Arial, sans-serif';
 const MONO = '"IBM Plex Mono", Menlo, Consolas, monospace';
-const SCENES = ['phrase', 'pads', 'grid', 'feed'];
+const SCENES = ['phrase', 'pads', 'eq', 'grid', 'feed'];
 
 function wrapText(ctx, text, maxW){
   const words = text.split(' ');
@@ -88,6 +89,29 @@ function drawStamp(ctx, x, y){
   ctx.fillText('APPROVED — HR', 0, 6);
   ctx.restore();
   ctx.letterSpacing = '0px';
+}
+
+// the equalizer — monumental white bars off the master bus analyser
+function drawEq(ctx, x, y, w, h, bars){
+  const spec = CBAudio.spectrum();
+  const gap = Math.max(4, (w/bars)*.22);
+  const bw = (w - gap*(bars-1)) / bars;
+  for(let i=0;i<bars;i++){
+    let v = 0;
+    if(spec){
+      // skip the DC end, spread bars across the musical range of the bins
+      const from = 2 + Math.floor(i/bars * (spec.length*.75));
+      const to = 2 + Math.floor((i+1)/bars * (spec.length*.75));
+      for(let b=from;b<Math.max(to,from+1);b++) v = Math.max(v, spec[b]||0);
+      v /= 255;
+    }
+    const bh = Math.max(h*.03, v*h);
+    const bx = x + i*(bw+gap);
+    ctx.fillStyle = 'rgba(255,255,255,.92)';
+    ctx.fillRect(bx, y + h - bh, bw, bh);
+    ctx.fillStyle = TINT; // cap mark
+    ctx.fillRect(bx, y + h - bh - 8, bw, 4);
+  }
 }
 
 function engagementLine(st){
@@ -252,6 +276,11 @@ function draw(ctx, st){
   } else if(scene === 'pads'){
     drawChip(ctx, 'PRESS TO OPINE', M, 186);
     drawPadsBlock(ctx, st, now, {top: 250, bottom: 990});
+  } else if(scene === 'eq'){
+    drawChip(ctx, 'THE MIX', M, 186);
+    drawPhraseBlock(ctx, st, now, {top: 240, bottom: 420, maxW: W - 2*M, startSize: 64});
+    drawEq(ctx, M, 460, W - 2*M, 490, 22);
+    drawEngagement(ctx, st, M, 995, 18, 'left');
   } else if(scene === 'grid'){
     drawChip(ctx, 'THE CADENCE', M, 186);
     drawGridBlock(ctx, st, {top: 260, bottom: 990, labelW: 200, labelSize: 19});
@@ -264,10 +293,11 @@ function draw(ctx, st){
     drawChip(ctx, st.exporting ? 'ON THE RECORD' : 'NOW PLAYING', M, 186);
     drawStamp(ctx, W - M - 110, 205);
     const hasComments = st.comments && st.comments.length;
-    drawPhraseBlock(ctx, st, now, {top: 270, bottom: 640, maxW: hasComments ? 520 : W - 2*M, startSize: 96});
-    if(hasComments) drawComments(ctx, st, now, {x: 640, w: 368, bottom: 645, max: 3, scale: .82});
-    drawEngagement(ctx, st, W - M, 682, 16, 'right');
-    drawGridBlock(ctx, st, {top: 700, bottom: 984, labelW: 168, labelSize: 15});
+    drawPhraseBlock(ctx, st, now, {top: 250, bottom: 545, maxW: hasComments ? 520 : W - 2*M, startSize: 92});
+    if(hasComments) drawComments(ctx, st, now, {x: 640, w: 368, bottom: 550, max: 3, scale: .82});
+    drawEq(ctx, M, 566, W - 2*M, 100, 28);
+    drawEngagement(ctx, st, W - M, 692, 16, 'right');
+    drawGridBlock(ctx, st, {top: 706, bottom: 984, labelW: 168, labelSize: 15});
   }
 }
 

@@ -24,8 +24,12 @@ workflow manually from the Actions tab).
 
 ## How to play
 
-- **Keys** `1234` `qwer` `asdf` `zxcv` (or click/tap) speak the 16 phrases and arm them.
-- **Space** convenes/adjourns the meeting (play/stop).
+- **▶ Play a random mix** — the one-button experience: rolls a random beat with
+  phrases booked in, and plays it.
+- **Keys** — every pad shows its keyboard letter (`1234` `qwet` `asdf` `zxcv`);
+  type it (or click/tap) to speak the phrase and arm it.
+- **Space** plays/pauses. **Shift+↑/↓** drives Delivery; **Shift+←/→** drives Sincerity.
+- **Double-click a track name** in the sequencer to clear that track.
 - **Sequencer**: click drum cells to cycle off → hit (blue) → accent (ink); click Vox
   cells to stamp the armed phrase's two-letter code; drag paints.
 - **Exhibits (the sampler)**: *Submit exhibit* uploads audio files (up to five).
@@ -58,9 +62,15 @@ engagement counters), **the pads** (the 4×4 key plate), **the cadence**
 (the full beat grid), and **the comments** (the fake feed arriving in real
 time). **Cut a clip** tapes it plus the master audio bus for the chosen run
 of show (4/8/12 loops — ≈10/20/30s at 96 BPM, one scene per quarter) and
-downloads a square video (`thought-leadership.mp4`/`.webm`, depending on
-browser support) sized for a LinkedIn post; **Audio only** downloads just
-the mix. Upload the file to your feed. Tag someone who needs to hear this.
+downloads a square video sized for a LinkedIn post; **Export audio** downloads
+just the mix. The monitor also carries a live equalizer off the master bus —
+in the composite view and as its own scene.
+
+Video export uses WebCodecs + mp4-muxer to produce a real **H.264 + AAC
+`thought-leadership.mp4`** (what LinkedIn, X, QuickTime, and phones expect)
+wherever the browser supports those encoders (desktop Chrome/Edge); elsewhere
+it falls back to MediaRecorder's best available format (usually `.webm`).
+Upload the file to your feed. Tag someone who needs to hear this.
 
 The 16 phrases ship as recorded voice lines (`public/phrases/*.wav`,
 generated text-to-speech) played through WebAudio so they land in exports;

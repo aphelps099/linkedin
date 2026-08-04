@@ -2,7 +2,7 @@
 // Extended for the sampler + clip export: buffer decode/playback and a MediaStream
 // tap on the master bus so everything (drums, exhibits, vox bank) can be recorded.
 export const CBAudio = (() => {
-  let ctx, master, comp, noiseBuf, streamDest;
+  let ctx, master, comp, noiseBuf, streamDest, analyser, specArr;
   function init(){
     if(ctx) return;
     ctx = new (window.AudioContext||window.webkitAudioContext)();
@@ -12,6 +12,9 @@ export const CBAudio = (() => {
     master.connect(comp); comp.connect(ctx.destination);
     streamDest = ctx.createMediaStreamDestination();
     comp.connect(streamDest);
+    analyser = ctx.createAnalyser(); analyser.fftSize = 256; analyser.smoothingTimeConstant = .78;
+    comp.connect(analyser);
+    specArr = new Uint8Array(analyser.frequencyBinCount);
     const len = ctx.sampleRate*2, b = ctx.createBuffer(1,len,ctx.sampleRate), d = b.getChannelData(0);
     for(let i=0;i<len;i++) d[i] = Math.random()*2-1;
     noiseBuf = b;
@@ -85,6 +88,9 @@ export const CBAudio = (() => {
     init, resume: rs, trigger, decode, playBuffer,
     now: ()=>{ init(); return ctx.currentTime; },
     stream: ()=>{ init(); return streamDest.stream; },
+    audioTrack: ()=>{ init(); return streamDest.stream.getAudioTracks()[0]; },
+    sampleRate: ()=>{ init(); return ctx.sampleRate; },
+    spectrum: ()=>{ if(!analyser) return null; analyser.getByteFrequencyData(specArr); return specArr; },
   };
 })();
 
