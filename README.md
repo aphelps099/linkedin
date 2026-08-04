@@ -24,8 +24,11 @@ workflow manually from the Actions tab).
 
 ## How to play
 
-- **▶ Play a random mix** — the one-button experience: rolls a random beat with
-  phrases booked in, and plays it.
+The broadcast monitor sits at the very top with a sample mix loaded — press
+**Play** to hear it, or **▶ Play a random mix** for a fresh beat with phrases
+booked in. **Open the audio tools** unfolds the studio (keys, registers,
+sequencer, uploads) to make your own remix.
+
 - **Keys** — every pad shows its keyboard letter (`1234` `qwet` `asdf` `zxcv`);
   type it (or click/tap) to speak the phrase and arm it. The **phrase index**
   carries the full 37-phrase bank — the 16 keys plus an extended reserve
@@ -35,7 +38,9 @@ workflow manually from the Actions tab).
 - **Space** plays/pauses. **Shift+↑/↓** drives Delivery; **Shift+←/→** drives Sincerity.
 - **Double-click a track name** in the sequencer to clear that track.
 - **Sequencer**: click drum cells to cycle off → hit (blue) → accent (ink); click Vox
-  cells to stamp the armed phrase's two-letter code; drag paints.
+  cells to stamp the armed phrase's two-letter code; drag paints. **Steps 16/32/48**
+  set the meeting length (default 32) — longer meetings give long phrases room to
+  finish before the next one lands; extending tiles the current pattern.
 - **Exhibits (the sampler)**: *Submit exhibit* uploads audio files (up to five).
   Each is admitted into the record as its own sequencer row — cells cycle
   hit/accent like drums. `▸` auditions an exhibit, `×` strikes it.

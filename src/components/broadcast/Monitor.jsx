@@ -107,10 +107,9 @@ function drawEq(ctx, x, y, w, h, bars){
     }
     const bh = Math.max(h*.03, v*h);
     const bx = x + i*(bw+gap);
-    ctx.fillStyle = 'rgba(255,255,255,.92)';
+    ctx.fillStyle = v > .04 ? 'rgba(255,255,255,.92)' : 'rgba(255,255,255,.35)';
     ctx.fillRect(bx, y + h - bh, bw, bh);
-    ctx.fillStyle = TINT; // cap mark
-    ctx.fillRect(bx, y + h - bh - 8, bw, 4);
+    if(v > .04){ ctx.fillStyle = TINT; ctx.fillRect(bx, y + h - bh - 8, bw, 4); } // cap mark, live bars only
   }
 }
 
@@ -153,26 +152,27 @@ function drawPhraseBlock(ctx, st, now, {top, bottom, maxW, startSize}){
 function drawGridBlock(ctx, st, {top, bottom, labelW, labelSize}){
   const voices = st.voices || [], pattern = st.pattern || [];
   const rows = voices.length;
+  const stepsN = (pattern[0] && pattern[0].length) || 16;
   const pitchY = (bottom - top) / Math.max(rows, 1);
-  const pitchX = (W - 2*M - labelW) / 16;
+  const pitchX = (W - 2*M - labelW) / stepsN;
   const side = Math.min(pitchX, pitchY) * .8;
   for(let i=0;i<rows;i++){
     const cy = top + i*pitchY + pitchY/2;
     ctx.fillStyle = TINT; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
     ctx.font = `500 ${labelSize}px ${MONO}`; ctx.letterSpacing = '1px';
     ctx.fillText(String(voices[i].name || '').toUpperCase().slice(0,13), M, cy);
-    for(let s=0;s<16;s++){
+    for(let s=0;s<stepsN;s++){
       const cx = M + labelW + s*pitchX + pitchX/2;
       const x = cx - side/2, yy = cy - side/2;
       const val = pattern[i] ? pattern[i][s] : 0;
       if(val){
         ctx.fillStyle = WHITE; ctx.fillRect(x, yy, side, side);
-        if(voices[i].vox){
+        if(voices[i].vox && side >= 16){
           ctx.fillStyle = BLUE; ctx.textAlign = 'center';
           ctx.font = `700 ${Math.round(side*.42)}px ${MONO}`;
           ctx.fillText((st.voxCodes && st.voxCodes[s]) || '••', cx, cy + 1);
           ctx.textAlign = 'left'; ctx.font = `500 ${labelSize}px ${MONO}`;
-        } else if(val === 2){
+        } else if(!voices[i].vox && val === 2){
           ctx.fillStyle = BLUE;
           const d = Math.max(6, side*.24);
           ctx.fillRect(cx - d/2, cy - d/2, d, d);
