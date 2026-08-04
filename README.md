@@ -121,6 +121,25 @@ Sincerity/Delivery bend them via detune/rate. If a phrase file is missing the
 app falls back to the browser's `speechSynthesis`, which browsers cannot
 capture into a recording — you'd get the text on screen but not in the audio.
 
+## Brand assets
+
+The favicon and the social share card are **drawn by the same canvas vocabulary
+as the broadcast monitor** — the wordmark monogram, the masthead rule, the beat
+ribbon with its playhead frame, the equalizer, and the HR stamp. Regenerate them
+with:
+
+```sh
+npm i -D playwright-core   # only needed to regenerate
+node scripts/make-brand-assets.mjs
+```
+
+That writes `public/favicon-16.png`, `favicon-32.png`, `apple-touch-icon.png`,
+`icon-192.png`, `icon-512.png`, and `og.png` (1200×630).
+
+**If the site moves to another domain**, update the absolute URLs — every social
+scraper requires them — in the `og:url` / `og:image` / `twitter:image` tags in
+`index.html`. `site.webmanifest` uses relative paths and needs no change.
+
 ## Structure
 
 ```
