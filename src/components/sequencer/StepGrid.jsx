@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 // Sequencer as a ruled Swiss table: 1px ink grid, blue = hit, ink = accent,
 // vox rows print 2-letter phrase codes. Click cycles, drag paints.
 // Vox cells use a -1 "current armed phrase" sentinel resolved by the consumer via onChange.
-export function StepGrid({ voices, steps = 16, pattern, onChange, playhead = null, selected, onSelect, onClearRow, voxLabels }) {
+export function StepGrid({ voices, steps = 16, pattern, onChange, playhead = null, selected, onSelect, onClearRow, voxLabels, labelW = 110 }) {
   // Controlled when `pattern` is provided — render straight from the prop so the
   // grid can never lag a row behind `voices` (rows are added/removed by the sampler).
   const [inner, setInner] = useState(() => voices.map(() => Array(steps).fill(0)));
@@ -26,7 +26,7 @@ export function StepGrid({ voices, steps = 16, pattern, onChange, playhead = nul
     const p = pat.map(r => [...r]); p[i][s] = painting.current; commit(p);
   };
   const border = '1px solid var(--ink)';
-  return <div style={{ display: 'grid', gridTemplateColumns: `110px repeat(${steps},1fr)`, borderTop: border, borderLeft: border, fontFamily: 'var(--sans)' }}>
+  return <div style={{ display: 'grid', gridTemplateColumns: `${labelW}px repeat(${steps},1fr)`, borderTop: border, borderLeft: border, fontFamily: 'var(--sans)' }}>
     {voices.map((v, i) => {
       const isSel = selected === i;
       return <React.Fragment key={i}>

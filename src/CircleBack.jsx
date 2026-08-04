@@ -79,6 +79,18 @@ const seedPattern = (n, len=DEFAULT_LEN) => {
 };
 const exhibitLetter = i => String.fromCharCode(65+i);
 
+// narrow-viewport flag for the inline-styled design system (media queries can't reach inline styles)
+function useNarrow(bp = 760){
+  const [narrow, setNarrow] = React.useState(()=> typeof window !== 'undefined' && window.matchMedia(`(max-width:${bp}px)`).matches);
+  React.useEffect(()=>{
+    const mq = window.matchMedia(`(max-width:${bp}px)`);
+    const fn = e => setNarrow(e.matches);
+    if(mq.addEventListener) mq.addEventListener('change', fn); else mq.addListener(fn);
+    return ()=>{ if(mq.removeEventListener) mq.removeEventListener('change', fn); else mq.removeListener(fn); };
+  },[bp]);
+  return narrow;
+}
+
 export default function CircleBack(){
   const [rack, setRack] = React.useState(()=>({samples:[], pattern:seedPattern(0)}));
   const [armed, setArmed] = React.useState(1);
@@ -355,16 +367,17 @@ export default function CircleBack(){
   };
 
   const voxLabels = VOICES.map((v)=> v.vox ? voxCodes : null);
-  return <Unit>
-    <Masthead meta={["Form CB-16","Rev. 2026-08","For internal thought leadership only"]}/>
-    <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-end',gap:30,marginTop:18}}>
-      <h1 style={{margin:0,fontSize:40,lineHeight:.96,letterSpacing:'-.045em',fontWeight:700,color:'var(--blue)'}}>The professional phrase organ.</h1>
-      <p style={{margin:0,fontSize:13,lineHeight:1.45,maxWidth:400}}>The LinkedIn remixer — corporate phrases, spoken in time over a live drum machine. <b style={{color:'var(--blue)'}}>It’s not an instrument. It’s a journey.</b></p>
+  const narrow = useNarrow();
+  return <Unit style={narrow ? {padding:'20px 14px'} : undefined}>
+    <Masthead meta={narrow ? ["Form CB-16","Rev. 2026-08"] : ["Form CB-16","Rev. 2026-08","For internal thought leadership only"]}/>
+    <div style={{display:'flex',flexDirection:narrow?'column':'row',justifyContent:'space-between',alignItems:narrow?'flex-start':'flex-end',gap:narrow?8:30,marginTop:18}}>
+      <h1 style={{margin:0,fontSize:narrow?30:40,lineHeight:.96,letterSpacing:'-.045em',fontWeight:700,color:'var(--blue)'}}>The professional phrase organ.</h1>
+      <p style={{margin:0,fontSize:narrow?12.5:13,lineHeight:1.45,maxWidth:400}}>The LinkedIn remixer — corporate phrases, spoken in time over a live drum machine. <b style={{color:'var(--blue)'}}>It’s not an instrument. It’s a journey.</b></p>
     </div>
     <Ticker style={{marginTop:16}}>{ticker}</Ticker>
 
     {/* the broadcast — front and center, sample mix loaded */}
-    <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) 280px',gap:'var(--space-col)',alignItems:'start',marginTop:16}}>
+    <div style={{display:'grid',gridTemplateColumns:narrow?'1fr':'minmax(0,1fr) 280px',gap:narrow?16:'var(--space-col)',alignItems:'start',marginTop:16}}>
       <Monitor ref={canvasRef} stateRef={ref}/>
       <div style={{display:'flex',flexDirection:'column',gap:14}}>
         <Button style={{padding:'14px 20px'}} onClick={()=>{ doReorg(); setPlaying(true); }}>▶ Play a random mix</Button>
@@ -399,9 +412,9 @@ export default function CircleBack(){
     </div>
 
     {studio && <>
-    <div style={{display:'grid',gridTemplateColumns:'200px 1fr 230px',gap:'var(--space-col)',marginTop:'var(--space-section)'}}>
-      <Bay title="Phrase index" aside={`01–${String(PHRASES.length).padStart(2,'0')}`}>
-        <div style={{maxHeight:600,overflowY:'auto'}}>
+    <div style={{display:'grid',gridTemplateColumns:narrow?'1fr':'200px 1fr 230px',gap:narrow?20:'var(--space-col)',marginTop:'var(--space-section)'}}>
+      <Bay title="Phrase index" aside={`01–${String(PHRASES.length).padStart(2,'0')}`} style={narrow?{order:3}:undefined}>
+        <div style={{maxHeight:narrow?300:600,overflowY:'auto'}}>
           {PHRASES.map((p,i)=>
             <div key={i} onClick={()=>pressKey(i)} style={{display:'flex',gap:12,fontSize:11.5,lineHeight:1.9,borderBottom:'1px dotted var(--hair)',cursor:'pointer',fontWeight:armed===i?700:400,color:armed===i?'var(--blue)':'var(--ink)'}}>
               <Readout style={{lineHeight:'1.9em',fontSize:10.5}}>{String(i+1).padStart(2,'0')}</Readout>
@@ -409,15 +422,17 @@ export default function CircleBack(){
             </div>)}
         </div>
       </Bay>
-      <Bay title="Keys" aside="Press to opine">
+      <Bay title="Keys" aside="Press to opine" style={narrow?{order:1}:undefined}>
         <KeyPlate columns={4}>
           {PHRASES.slice(0,16).map((p,i)=>
-            <Pad key={i} index={String(i+1).padStart(2,'0')} hotkey={KEYMAP[i].toUpperCase()} name={p.name} hot={armed===i} onTrigger={()=>pressKey(i)}/>)}
+            <Pad key={i} index={String(i+1).padStart(2,'0')} hotkey={narrow?undefined:KEYMAP[i].toUpperCase()} name={p.name} hot={armed===i} onTrigger={()=>pressKey(i)}/>)}
         </KeyPlate>
-        <p style={{margin:'10px 0 0',fontSize:10.5,color:'var(--text-meta)'}}>Type the letter shown on each key to speak it · <Kbd>R</Kbd> new random beat · <Kbd>space</Kbd> play/pause · <Kbd>⇧</Kbd><Kbd>↑</Kbd>/<Kbd>↓</Kbd> delivery · <Kbd>⇧</Kbd><Kbd>←</Kbd>/<Kbd>→</Kbd> sincerity</p>
+        {narrow
+          ? <p style={{margin:'10px 0 0',fontSize:10.5,color:'var(--text-meta)'}}>Tap a key to speak it · tap grid cells to add hits · the armed phrase stamps into Vox</p>
+          : <p style={{margin:'10px 0 0',fontSize:10.5,color:'var(--text-meta)'}}>Type the letter shown on each key to speak it · <Kbd>R</Kbd> new random beat · <Kbd>space</Kbd> play/pause · <Kbd>⇧</Kbd><Kbd>↑</Kbd>/<Kbd>↓</Kbd> delivery · <Kbd>⇧</Kbd><Kbd>←</Kbd>/<Kbd>→</Kbd> sincerity</p>}
       </Bay>
-      <Bay title="Registers" aside="Cal. A">
-        <div style={{display:'flex',flexDirection:'column',gap:16}}>
+      <Bay title="Registers" aside="Cal. A" style={narrow?{order:2}:undefined}>
+        <div style={{display:'flex',flexDirection:narrow?'row':'column',flexWrap:'wrap',gap:16}}>
           <Knob label="Sincerity" value={sinc} onChange={setSinc}/>
           <Knob label="Delivery" value={deliv} onChange={setDeliv}/>
           <Knob label="Decay" value={decay} onChange={setDecay}/>
@@ -426,9 +441,14 @@ export default function CircleBack(){
       </Bay>
     </div>
     <Bay title={`Sequencer · ${patLen} steps`} aside={<Readout>{pos===null?'—':String(pos+1).padStart(2,'0')}</Readout>} style={{marginTop:'var(--space-section)'}}>
-      <StepGrid voices={VOICES} steps={patLen} pattern={rack.pattern} onChange={onGrid} playhead={pos} selected={selRow} onSelect={setSelRow}
-        onClearRow={i=> setRack(rk=>{ const pattern = rk.pattern.map(x=>[...x]); pattern[i] = Array(rk.pattern[i].length).fill(0); return {...rk, pattern}; })}
-        voxLabels={voxLabels}/>
+      <div style={{overflowX:'auto',WebkitOverflowScrolling:'touch'}}>
+        <div style={{minWidth: narrow ? 84 + patLen*24 : undefined}}>
+          <StepGrid voices={VOICES} steps={patLen} pattern={rack.pattern} onChange={onGrid} playhead={pos} selected={selRow} onSelect={setSelRow}
+            labelW={narrow?84:110}
+            onClearRow={i=> setRack(rk=>{ const pattern = rk.pattern.map(x=>[...x]); pattern[i] = Array(rk.pattern[i].length).fill(0); return {...rk, pattern}; })}
+            voxLabels={voxLabels}/>
+        </div>
+      </div>
       <div style={{display:'flex',gap:9,alignItems:'center',marginTop:16,flexWrap:'wrap'}}>
         <Button on={playing} onClick={()=>setPlaying(x=>!x)}>{playing?'Pause':'Play'}</Button>
         <Button variant="rec" on={rec} onClick={()=>setRec(x=>!x)}>{rec?'Recording keys':'Record keys'}</Button>
@@ -458,9 +478,9 @@ export default function CircleBack(){
     </Bay>
     </>}
 
-    <div style={{marginTop:26,borderTop:'var(--rule-heavy) solid var(--ink)',paddingTop:10,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+    <div style={{marginTop:26,borderTop:'var(--rule-heavy) solid var(--ink)',paddingTop:10,display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:10}}>
       <Silk muted>An equal opportunity instrument</Silk>
-      <Silk muted>Circle Back® is not affiliated with your network</Silk>
+      {!narrow && <Silk muted>Circle Back® is not affiliated with your network</Silk>}
       <Stamp>Approved — HR</Stamp>
     </div>
   </Unit>;
