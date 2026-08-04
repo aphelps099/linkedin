@@ -145,7 +145,9 @@ export const CBVoice = {
     const o = opts || {};
     try{
       speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
+      // emoji live in the display copy, not in the larynx
+      const clean = String(text).replace(/[\p{Extended_Pictographic}\u{FE0F}]/gu, '').trim();
+      const u = new SpeechSynthesisUtterance(clean);
       u.pitch = o.pitch===undefined ? 1 : o.pitch;
       u.rate = o.rate===undefined ? 1 : o.rate;
       u.volume = o.volume===undefined ? 1 : o.volume;

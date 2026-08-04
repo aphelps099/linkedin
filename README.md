@@ -27,7 +27,11 @@ workflow manually from the Actions tab).
 - **▶ Play a random mix** — the one-button experience: rolls a random beat with
   phrases booked in, and plays it.
 - **Keys** — every pad shows its keyboard letter (`1234` `qwet` `asdf` `zxcv`);
-  type it (or click/tap) to speak the phrase and arm it.
+  type it (or click/tap) to speak the phrase and arm it. The **phrase index**
+  carries the full 37-phrase bank — the 16 keys plus an extended reserve
+  ("Most people won't understand this. But you will.", "Hot take: teamwork
+  makes a difference.", "Onwards and upwards! 🚀") reachable by click and
+  drawn on by the randomizer.
 - **Space** plays/pauses. **Shift+↑/↓** drives Delivery; **Shift+←/→** drives Sincerity.
 - **Double-click a track name** in the sequencer to clear that track.
 - **Sequencer**: click drum cells to cycle off → hit (blue) → accent (ink); click Vox
