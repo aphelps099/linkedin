@@ -15,7 +15,7 @@ import { StepGrid } from './components/sequencer/StepGrid.jsx';
 import { Monitor } from './components/broadcast/Monitor.jsx';
 import { StageKey } from './components/stage/StageKey.jsx';
 import { RemixPanel } from './components/remix/RemixPanel.jsx';
-import { analyze } from './remix.js';
+import { analyze, optimize } from './remix.js';
 import { CBAudio, CBVoice, CHARACTERS, exposeVoice } from './audio.js';
 import { VIDEO_MIMES, AUDIO_MIMES, pickMime, extFor, downloadBlob, mp4Support, startMp4Capture } from './exporter.js';
 import { randomPattern } from './randomizer.js';
@@ -61,6 +61,28 @@ const PHRASES = [
   {code:'UO', name:'Unpopular', say:'Unpopular opinion: Fridays are great.'},
   {code:'CS', name:'Synergies', say:"Let's connect and explore synergies."},
   {code:'DC', name:'Drop a comment', say:'What do you think? Drop a comment below. 👇'},
+  // the optimizer's vocabulary — short lingo the machine can actually say,
+  // which is what lets a rewritten post survive into the exported video
+  {code:'BN', name:'Big news', say:'Big news.'},
+  {code:'PN', name:'Personal news', say:'Some personal news.'},
+  {code:'QU', name:'Quick update', say:'A quick update.'},
+  {code:'JX', name:'Journey continues', say:'The journey continues.'},
+  {code:'LL', name:'Lessons', say:'Lessons learned.'},
+  {code:'TK', name:'Takeaway', say:"Here's the takeaway."},
+  {code:'JG', name:'Just started', say:"We're just getting started."},
+  {code:'MC', name:'More to come', say:'More to come.'},
+  {code:'ST', name:'Stay tuned', say:'Stay tuned.'},
+  {code:'PT', name:'Proud team', say:'Proud of this team.'},
+  {code:'MU', name:'Milestone', say:'Milestone unlocked.'},
+  {code:'TP', name:'Personal one', say:"This one's personal."},
+  {code:'LB', name:"Let's build", say:"Let's build."},
+  {code:'WS', name:'Watch this space', say:'Watch this space.'},
+  {code:'ND', name:'Numbers', say:"The numbers don't lie."},
+  {code:'XB', name:'Execution', say:'Execution beats strategy.'},
+  {code:'CU', name:'Culture', say:'Culture is everything.'},
+  {code:'FB', name:'Feedback', say:'Feedback is a gift.'},
+  {code:'FD', name:'Failure', say:'Failure is just data.'},
+  {code:'MO', name:'Momentum', say:'Momentum compounds.'},
 ];
 const KEYMAP = '1234qwetasdfzxcv'; // studio only — on stage, 1/2/3 are the instrument
 const DRUMS = [
@@ -113,6 +135,7 @@ export default function CircleBack(){
   const [decay, setDecay] = React.useState(.5);
   const [weird, setWeird] = React.useState(.15);
   const [dist, setDist] = React.useState(.12);
+  const [pitch, setPitch] = React.useState(.5); // 0..1 → −12..+12 semitones
   const [character, setCharacter] = React.useState('boardroom');
   const [selRow, setSelRow] = React.useState(0);
   const [loops, setLoops] = React.useState(4);
@@ -154,6 +177,7 @@ export default function CircleBack(){
   },[]);
   React.useEffect(()=>{ CBAudio.setVoxDelay(60/tempo/4*3); },[tempo]);
   React.useEffect(()=>{ CBAudio.setVoxFx({weird, dist, character}); },[weird, dist, character]);
+  React.useEffect(()=>{ CBVoice.pitch = Math.round((pitch - .5) * 24); },[pitch]);
 
   // mobile audio: unlock/resume inside every real gesture (capture phase runs
   // in the same tap stack, before React handlers) — also re-resumes the
@@ -178,12 +202,9 @@ export default function CircleBack(){
     r.spoken = true; r.phraseAt = performance.now();
     setTicker(display || PHRASES[i].say);
   },[]);
-  const speakOverRemix = React.useCallback((i)=>{
+  const speakOverRemix = React.useCallback((i, step)=>{
     const r = ref.current;
-    const rx = r.remix;
-    if(!rx || !rx.lines.length){ speak(i); return; }
-    const line = rx.lines[(r.lineIx || 0) % rx.lines.length];
-    r.lineIx = (r.lineIx || 0) + 1;
+    const line = r.remixByStep && r.remixByStep[step];
     speak(i, line);
   },[speak]);
   const pressKey = React.useCallback((i)=>{
@@ -295,7 +316,7 @@ export default function CircleBack(){
           rr.lastStep = s; rr.lastStepAt = performance.now();
           rr.kickAt = rr.pattern[0][s] ? performance.now() : rr.kickAt;
           setPos(s);
-          if(vx) speakOverRemix(vx-1);
+          if(vx) speakOverRemix(vx-1, s);
           // the algorithm at work: reactions tick up, comments roll in
           rr.stepCount++;
           const eng = rr.eng;
@@ -354,24 +375,35 @@ export default function CircleBack(){
   const buildRemix = React.useCallback(text=>{
     const rx = analyze(text || '');
     if(!rx.lines.length){ setTicker('Nothing to remix — paste a post first.'); return; }
+    const opt = optimize(text || '', PHRASES);
+    rx.optimized = opt;
     const r = ref.current;
-    r.remix = rx; r.lineIx = 0;
+    r.remix = rx;
     setRemix(rx);
     const s = makeSong();
     setSong(s); r.song = s; r.setlistIx = 0;
-    const pool = rx.phrases.length ? rx.phrases : s.setlist;
     const remixTempo = rx.score >= 60 ? 124 : rx.score >= 30 ? 112 : 104;
-    // 48 steps: a longer meeting fits more of their lines per loop
+    // the optimized post, in order — the vox says it, the screen reads it
+    const pool = opt.lines.map(l=> l.phrase);
     const { pattern } = randomPattern(
       r.samples.length, PHRASES, 48,
       60/remixTempo/4,
       i => CBVoice.durationOf(i, PHRASES[i].say, r.deliv),
-      pool,
+      pool, true,
     );
+    // map each stamped step to the optimized line it performs, so the display
+    // always matches what is being said
+    const voxRow = voxRowOf(r.samples);
+    const byStep = {};
+    let k = 0;
+    pattern[voxRow].forEach((v, step)=>{
+      if(v){ byStep[step] = opt.lines[k % opt.lines.length].text; k++; }
+    });
+    r.remixByStep = byStep;
     setRack(rk=> voxRowOf(rk.samples)+1 === pattern.length ? {...rk, pattern} : rk);
     setTempo(remixTempo);
     r.spoken = true; r.phraseAt = performance.now();
-    setTicker(rx.hook ? rx.hook.text : rx.lines[0]);
+    setTicker(opt.lines[0] ? opt.lines[0].text : rx.lines[0]);
     setRemixOpen(false); setStudio(false);
     CBAudio.unlock(); setPlaying(true);
   },[]);
@@ -560,7 +592,9 @@ export default function CircleBack(){
         style={{border:'2px solid rgba(255,255,255,.32)',width:'auto',height:'auto',maxWidth:'100%',maxHeight: narrow ? '58vh' : '68vh'}}/>
     </div>
     {stageKeys}
-    <div style={{display:'grid',gridTemplateColumns:narrow?'1fr':'1fr 1fr auto',gap:narrow?12:18,alignItems:'end'}}>
+    <div style={{display:'grid',gridTemplateColumns:narrow?'1fr':'1fr 1fr 1fr auto',gap:narrow?12:18,alignItems:'end'}}>
+      <Scrubber tone="light" label="Pitch" value={pitch} onChange={setPitch}
+        format={v=>{ const s = Math.round((v-.5)*24); return `${s>0?'+':''}${s} st`; }}/>
       <Scrubber tone="light" label="Weirdness" value={weird} onChange={setWeird}/>
       <Scrubber tone="light" label="Distortion" value={dist} onChange={setDist}/>
       <Button onClick={()=> setCharacter(c=>{
@@ -654,6 +688,8 @@ export default function CircleBack(){
           <Knob label="Tempo" value={(tempo-60)/140} onChange={v=>setTempo(Math.round(60+v*140))} format={()=>tempo+' BPM'}/>
         </div>
         <div style={{display:'flex',flexDirection:'column',gap:12,marginTop:16,borderTop:'1px dotted var(--hair)',paddingTop:14}}>
+          <Scrubber label="Pitch" value={pitch} onChange={setPitch}
+            format={v=>{ const s = Math.round((v-.5)*24); return `${s>0?'+':''}${s} st`; }}/>
           <Scrubber label="Weirdness" value={weird} onChange={setWeird}/>
           <Scrubber label="Distortion" value={dist} onChange={setDist}/>
           <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>

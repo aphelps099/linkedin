@@ -310,6 +310,8 @@ export const CBVoice = {
   // pitch = .4 + sinc*1.4, rate = .6 + deliv*.8.
   // decay governs what happens to the PREVIOUS phrase when a new one lands:
   // 0 = choked instantly (the chair recognizes no one), 1 = rings out in full.
+  // pitch is a semitone offset (-12..+12) applied on top of Sincerity
+  pitch: 0,
   speakPhrase(i, text, sinc, deliv, decay){
     const d = decay===undefined ? .5 : decay;
     const buf = this.bank.get(i);
@@ -326,7 +328,7 @@ export const CBVoice = {
       this.current = CBAudio.playBuffer(buf, {
         vel: .95,
         rate: .6 + deliv*.8,
-        detune: ((.4 + sinc*1.4) - 1) * 1200,
+        detune: ((.4 + sinc*1.4) - 1) * 1200 + this.pitch*100,
         bus: 'vox', // through the drive + delay chain
       });
       return;
@@ -340,7 +342,7 @@ export const CBVoice = {
       // emoji live in the display copy, not in the larynx
       const clean = String(text).replace(/[\p{Extended_Pictographic}\u{FE0F}]/gu, '').trim();
       const u = new SpeechSynthesisUtterance(clean);
-      u.pitch = o.pitch===undefined ? 1 : o.pitch;
+      u.pitch = Math.max(0, Math.min(2, (o.pitch===undefined ? 1 : o.pitch) + CBVoice.pitch/12));
       u.rate = o.rate===undefined ? 1 : o.rate;
       u.volume = o.volume===undefined ? 1 : o.volume;
       speechSynthesis.speak(u);
