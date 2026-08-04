@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, forwardRef } from 'react';
 import { CBAudio } from '../../audio.js';
 import { loadLibrary, libraryReady, currentPlate, advancePlate } from '../../library.js';
+import { drawAsciiField } from '../../ascii.js';
 
 // The broadcast monitor — the clip the feed sees, rendered live.
 // Corporate blue field, white text, white-outlined squares with white fills
@@ -118,61 +119,6 @@ function drawEq(ctx, x, y, w, h, bars){
     ctx.fillRect(bx, y + h - bh, bw, bh);
     if(v > .04){ ctx.fillStyle = TINT; ctx.fillRect(bx, y + h - bh - 8, bw, 4); } // cap mark, live bars only
   }
-}
-
-// The ASCII horizon — the beat machine rendered as translucent character
-// weather behind the type. Columns are sequencer steps, rows are a drifting
-// horizon, density comes off the spectrum. Rows are painted as whole strings
-// so the whole field costs a few dozen draws, not a few thousand.
-const RAMP = ' ·░▒▓█';
-function drawAsciiField(ctx, st, now, opts){
-  const o = opts || {};
-  const alpha = o.alpha === undefined ? .16 : o.alpha;
-  const cols = o.cols || 56, rows = o.rows || 30;
-  const cw = W/cols, ch = H/rows;
-  const spec = CBAudio.spectrum();
-  const pattern = st.pattern || [];
-  const steps = (pattern[0] && pattern[0].length) || 16;
-  const drums = Math.max(0, pattern.length - 1);
-  const t = now/1000;
-
-  // per-column energy: what the sequencer is doing at that step + what the mix is doing
-  const colE = new Array(cols);
-  for(let c=0;c<cols;c++){
-    const step = Math.floor(c/cols*steps);
-    let hit = 0;
-    for(let r=0;r<drums;r++) hit = Math.max(hit, pattern[r] ? pattern[r][step] : 0);
-    let e = 0;
-    if(spec){ const bin = Math.floor(c/cols * spec.length*.72); e = (spec[bin]||0)/255; }
-    colE[c] = e*.62 + (hit === 2 ? .34 : hit ? .2 : 0) + (step === st.pos ? .42 : 0);
-  }
-
-  ctx.save();
-  ctx.font = `${Math.round(ch*.96)}px ${MONO}`;
-  ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-  for(let r=0;r<rows;r++){
-    // the horizon: dense at the vanishing line, thinning toward the edges
-    const d = Math.abs(r/(rows-1) - .5) * 2;
-    const horizon = Math.pow(1 - d, 1.7);
-    const drift = .5 + .5*Math.sin(t*.55 + r*.42);
-    let line = '';
-    let rowSum = 0;
-    for(let c=0;c<cols;c++){
-      const v = Math.max(0, Math.min(1, colE[c]*(.45 + horizon*.85) + horizon*.34*drift));
-      rowSum += v;
-      line += RAMP[Math.min(RAMP.length-1, Math.floor(v*(RAMP.length-1) + .12))];
-    }
-    const rowA = alpha * (.42 + (rowSum/cols)*1.15);
-    ctx.fillStyle = `rgba(255,255,255,${Math.min(.9, rowA).toFixed(3)})`;
-    ctx.fillText(line, 0, r*ch + ch/2);
-  }
-  // the playhead column reads through the weather
-  if(st.pos != null && steps){
-    const c = Math.floor(st.pos/steps*cols);
-    ctx.fillStyle = `rgba(159,200,234,${Math.min(.5, alpha*2.4).toFixed(3)})`;
-    ctx.fillRect(c*cw, 0, Math.max(cw, 3), H);
-  }
-  ctx.restore();
 }
 
 // the beat ribbon — one monumental row of the whole bar, legible from the back row
@@ -422,6 +368,52 @@ function drawCommentRow(ctx, c, x, y, w, s, alpha){
   return bubbleH + 34*s;
 }
 
+// Comments as they actually feel: little popups that slide in from the edge,
+// hold for a beat, and leave. Nothing stacks up into a wall.
+const POP_LIFE = 5.2, POP_IN = .34, POP_OUT = .8;
+function drawFloatingComments(ctx, st, now, {x, w, bottom, max = 3}){
+  const list = (st.comments || [])
+    .map(c => ({c, age:(now - c.at)/1000}))
+    .filter(v => v.age >= 0 && v.age < POP_LIFE)
+    .slice(-max);
+  let y = bottom;
+  for(let i=list.length-1;i>=0;i--){
+    const {c, age} = list[i];
+    const inT = easeOut(age/POP_IN);
+    const outT = age > POP_LIFE - POP_OUT ? easeOut((age - (POP_LIFE - POP_OUT))/POP_OUT) : 0;
+    const alpha = Math.min(inT, 1 - outT);
+    if(alpha <= .02) continue;
+    const s = .96;
+    const pad = 16*s, av = 40*s;
+    ctx.font = `400 ${19*s}px ${SANS}`;
+    const body = wrapText(ctx, c.text, w - av - 3*pad).slice(0,2);
+    const h = pad + 22*s + body.length*(24*s) + pad*.7;
+    const dx = (1 - inT)*70 + outT*40;     // in from the right, out to the right
+    const dy = -outT*26;                   // and drifting up as it goes
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.translate(dx, dy);
+    ctx.fillStyle = 'rgba(255,255,255,.96)';
+    roundRect(ctx, x, y - h, w, h, 12*s); ctx.fill();
+    drawAvatar(ctx, x + pad, y - h + pad, av, c.initials);
+    const tx = x + pad + av + 12*s;
+    let ty = y - h + pad + 15*s;
+    ctx.textAlign = 'left';
+    ctx.font = `600 ${16.5*s}px ${SANS}`; ctx.fillStyle = FEED_TEXT;
+    ctx.fillText(c.name, tx, ty);
+    const nw = ctx.measureText(c.name).width;
+    ctx.font = `400 ${13.5*s}px ${SANS}`; ctx.fillStyle = FEED_MUTED;
+    ctx.fillText(`· ${c.degree}`, tx + nw + 7*s, ty);
+    ty += 23*s;
+    ctx.font = `400 ${19*s}px ${SANS}`; ctx.fillStyle = FEED_TEXT;
+    for(const line of body){ ctx.fillText(line, tx, ty); ty += 24*s; }
+    if(c.likes > 0) drawReactions(ctx, (c.reactions||['like']).slice(0,2), c.likes, x + w - 78*s, y - h + 16*s, s*.8);
+    ctx.restore();
+    y -= h + 12;
+    if(y < 260) break;
+  }
+}
+
 function drawComments(ctx, st, now, {x, w, bottom, max, scale}){
   const list = (st.comments || []).slice(-max);
   let y = bottom;
@@ -651,8 +643,8 @@ function draw(ctx, st){
     if(scene === 'plate') scene = 'phrase'; // library still loading
     drawChrome(ctx, st);
     // the beat machine, translucent, underneath the type
-    if(scene === 'composite') drawAsciiField(ctx, st, now, {alpha:.15});
-    else if(scene === 'phrase') drawAsciiField(ctx, st, now, {alpha:.1});
+    if(scene === 'composite') drawAsciiField(ctx, st, now, {width:W, height:H, cell:19, alpha:.15});
+    else if(scene === 'phrase') drawAsciiField(ctx, st, now, {width:W, height:H, cell:19, alpha:.1});
   }
 
   if(scene === 'phrase'){
@@ -666,7 +658,7 @@ function draw(ctx, st){
   } else if(scene === 'plate'){
     drawPlateScene(ctx, st, now);
   } else if(scene === 'eq'){
-    drawAsciiField(ctx, st, now, {alpha:.5, cols:64, rows:34});
+    drawAsciiField(ctx, st, now, {width:W, height:H, cell:17, alpha:.5});
     drawChip(ctx, 'THE MIX', M, 186);
     drawPhraseBlock(ctx, st, now, {top: 420, bottom: 700, maxW: W - 2*M, startSize: 92, maxLines: 3});
     drawEngagement(ctx, st, M, 995, 18, 'left');
@@ -692,8 +684,7 @@ function draw(ctx, st){
     drawStamp(ctx, W - M - 110, 205);
     // the phrase is the only loud thing; everything else is weather behind it
     drawPhraseBlock(ctx, st, now, {top: 268, bottom: 726, maxW: W - 2*M, startSize: 132});
-    const c = st.comments && st.comments.length ? st.comments[st.comments.length-1] : null;
-    if(c) drawCommentRow(ctx, c, M, 800, W - 2*M, 1.02, Math.min(1, (now - c.at)/280));
+    drawFloatingComments(ctx, st, now, {x: W - M - 470, w: 470, bottom: 966});
     drawEngagement(ctx, st, W/2, 1002, 19, 'center');
     // the room breathes on the kick
     if(st.kickAt){
