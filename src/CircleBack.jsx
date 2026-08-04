@@ -62,24 +62,39 @@ const DRUMS = [
   {name:'Kick', id:'kick'},{name:'Snare', id:'snare'},{name:'Clap', id:'clap'},{name:'Cl. hat', id:'ch'},
   {name:'Op. hat', id:'oh'},{name:'Shaker', id:'shk'},{name:'Cowbell', id:'cow'},{name:'Zap', id:'zap'},
 ];
-const STEPS = 16, MAX_SAMPLES = 5;
+const DEFAULT_LEN = 32, MAX_SAMPLES = 5;
 const voxRowOf = samples => DRUMS.length + samples.length;
-const emptyPattern = n => Array(DRUMS.length + n + 1).fill(0).map(()=> Array(STEPS).fill(0));
-const seedPattern = n => {
-  const p = emptyPattern(n);
-  const put = (i, arr, acc=[]) => arr.forEach(s=> p[i][s] = acc.includes(s) ? 2 : 1);
+const emptyPattern = (n, len=DEFAULT_LEN) => Array(DRUMS.length + n + 1).fill(0).map(()=> Array(len).fill(0));
+// the sample mix: the classic 16-step agenda, tiled across the meeting
+const seedPattern = (n, len=DEFAULT_LEN) => {
+  const p = emptyPattern(n, len);
+  const put = (i, arr, acc=[]) => arr.forEach(s=>{ for(let o=s;o<len;o+=16) p[i][o] = acc.includes(s) ? 2 : 1; });
   put(0,[0,3,8,10],[0,8]); put(1,[4,12],[4,12]); put(2,[12]);
   put(3,[0,2,4,6,8,10,12,14],[0,8]); put(4,[7,15]); put(5,[3,7,11,15]);
   const vr = DRUMS.length + n;
-  p[vr][0] = 2; p[vr][6] = 6; p[vr][12] = 16; // HU, CB, FS (phrase idx+1)
+  // phrases get the longer runway: HU opens, CB mid-meeting, MP closes the second bar
+  p[vr][0] = 2; p[vr][10] = 6;
+  if(len >= 32){ p[vr][16] = 21; p[vr][28] = 16; } else p[vr][12] = 16;
   return p;
 };
 const exhibitLetter = i => String.fromCharCode(65+i);
 
+// narrow-viewport flag for the inline-styled design system (media queries can't reach inline styles)
+function useNarrow(bp = 760){
+  const [narrow, setNarrow] = React.useState(()=> typeof window !== 'undefined' && window.matchMedia(`(max-width:${bp}px)`).matches);
+  React.useEffect(()=>{
+    const mq = window.matchMedia(`(max-width:${bp}px)`);
+    const fn = e => setNarrow(e.matches);
+    if(mq.addEventListener) mq.addEventListener('change', fn); else mq.addListener(fn);
+    return ()=>{ if(mq.removeEventListener) mq.removeEventListener('change', fn); else mq.removeListener(fn); };
+  },[bp]);
+  return narrow;
+}
+
 export default function CircleBack(){
   const [rack, setRack] = React.useState(()=>({samples:[], pattern:seedPattern(0)}));
   const [armed, setArmed] = React.useState(1);
-  const [ticker, setTicker] = React.useState('Press a key to opine');
+  const [ticker, setTicker] = React.useState('Sample mix loaded — press Play');
   const [playing, setPlaying] = React.useState(false);
   const [rec, setRec] = React.useState(false);
   const [pos, setPos] = React.useState(null);
@@ -88,7 +103,8 @@ export default function CircleBack(){
   const [deliv, setDeliv] = React.useState(.5);
   const [decay, setDecay] = React.useState(.5);
   const [selRow, setSelRow] = React.useState(0);
-  const [loops, setLoops] = React.useState(8); // 8 loops ≈ 20s at 96 BPM — a full director's rotation
+  const [loops, setLoops] = React.useState(4); // 4 cycles of 32 steps ≈ 20s at 96 BPM
+  const [studio, setStudio] = React.useState(false);
   const [exp, setExp] = React.useState(null);   // {mode, total, done}
   const [take, setTake] = React.useState(null); // {url, name, mode}
   const bufRef = React.useRef(new Map());       // sample id -> AudioBuffer
@@ -96,6 +112,7 @@ export default function CircleBack(){
   const canvasRef = React.useRef(null);
   const fileRef = React.useRef(null);
 
+  const patLen = rack.pattern[0].length;
   const voxRow = voxRowOf(rack.samples);
   const VOICES = [
     ...DRUMS.map(d=>({name:d.name})),
@@ -109,12 +126,27 @@ export default function CircleBack(){
   // exportStartedAt, sceneDur) live on ref.current directly and are NOT overwritten here.
   const ref = React.useRef({});
   Object.assign(ref.current, {
-    pattern: rack.pattern, samples: rack.samples, voxRow, armed, tempo, sinc, deliv, decay, rec, playing,
+    pattern: rack.pattern, samples: rack.samples, voxRow, patLen, armed, tempo, sinc, deliv, decay, rec, playing,
     pos, tickerText: ticker, voices: VOICES, voxCodes, exporting: !!exp, phrases: PHRASES,
   });
 
   React.useEffect(()=>{
     CBVoice.loadBank(`${import.meta.env.BASE_URL}phrases/`, PHRASES.length).catch(()=>{});
+  },[]);
+
+  // mobile audio: unlock/resume inside every real gesture (capture phase runs
+  // in the same tap stack, before React handlers) — also re-resumes the
+  // context after iOS interruptions like calls or backgrounding
+  React.useEffect(()=>{
+    const u = ()=> CBAudio.unlock();
+    window.addEventListener('pointerdown', u, true);
+    window.addEventListener('keydown', u, true);
+    window.addEventListener('touchend', u, true);
+    return ()=>{
+      window.removeEventListener('pointerdown', u, true);
+      window.removeEventListener('keydown', u, true);
+      window.removeEventListener('touchend', u, true);
+    };
   },[]);
 
   const speak = React.useCallback((i)=>{
@@ -124,6 +156,7 @@ export default function CircleBack(){
     setTicker(PHRASES[i].say);
   },[]);
   const pressKey = React.useCallback((i)=>{
+    CBAudio.unlock();
     ref.current.lastKeyAt = performance.now();
     setArmed(i); speak(i);
     const r = ref.current;
@@ -198,7 +231,7 @@ export default function CircleBack(){
           }
         }, ms));
         nextTime += 60/r.tempo/4;
-        step = (s+1)%STEPS;
+        step = (s+1)%r.patLen;
       }
     }, 25);
     return ()=>{
@@ -213,11 +246,22 @@ export default function CircleBack(){
   },[playing, speak, finishExport]);
 
   const doReorg = React.useCallback(()=>{
-    const { pattern, style } = randomPattern(ref.current.samples.length, PHRASES);
+    const { pattern, style } = randomPattern(ref.current.samples.length, PHRASES, ref.current.patLen);
     setRack(rk=> voxRowOf(rk.samples)+1 === pattern.length ? {...rk, pattern} : rk);
     ref.current.spoken = true; ref.current.phraseAt = performance.now();
     setTicker(`Reorg complete — ${style} cadence adopted`);
   },[]);
+
+  const setSteps = n => setRack(rk=>{
+    const cur = rk.pattern[0].length;
+    if(n === cur) return rk;
+    const pattern = rk.pattern.map(row=>{
+      const out = Array(n).fill(0);
+      for(let s=0;s<n;s++) out[s] = s < cur ? row[s] : row[s % cur]; // extend by tiling, shrink by truncating
+      return out;
+    });
+    return {...rk, pattern};
+  });
 
   React.useEffect(()=>{
     const down = e=>{
@@ -244,7 +288,7 @@ export default function CircleBack(){
   const onGrid = p => {
     const vr = ref.current.voxRow;
     const q = p.map(r=>[...r]);
-    for(let s=0;s<STEPS;s++) if(q[vr][s]===-1) q[vr][s] = ref.current.armed+1;
+    for(let s=0;s<q[vr].length;s++) if(q[vr][s]===-1) q[vr][s] = ref.current.armed+1;
     setRack(rk=>({...rk, pattern:q}));
   };
 
@@ -258,7 +302,7 @@ export default function CircleBack(){
         setRack(rk=>{
           if(rk.samples.length >= MAX_SAMPLES) return rk;
           const pattern = rk.pattern.map(x=>[...x]);
-          pattern.splice(voxRowOf(rk.samples), 0, Array(STEPS).fill(0));
+          pattern.splice(voxRowOf(rk.samples), 0, Array(rk.pattern[0].length).fill(0));
           const name = f.name.replace(/\.[^.]+$/,'');
           return {samples:[...rk.samples, {id, name}], pattern};
         });
@@ -277,12 +321,13 @@ export default function CircleBack(){
     });
     setSelRow(0);
   };
-  const audition = id => { const b = bufRef.current.get(id); if(b) CBAudio.playBuffer(b, {vel:1}); };
+  const audition = id => { CBAudio.unlock(); const b = bufRef.current.get(id); if(b) CBAudio.playBuffer(b, {vel:1}); };
 
   const startExport = async mode => {
     if(expRef.current) return;
-    CBAudio.init(); CBAudio.resume();
-    const ex = {remaining: loops*STEPS, started:false, finishing:false, discard:false, mode};
+    CBAudio.unlock();
+    const totalSteps = loops * ref.current.patLen;
+    const ex = {remaining: totalSteps, started:false, finishing:false, discard:false, mode};
     if(mode==='video' && canvasRef.current && await mp4Support(CBAudio.sampleRate())){
       // real H.264 + AAC mp4 via WebCodecs — plays everywhere the feed does
       const name = 'thought-leadership.mp4';
@@ -328,31 +373,64 @@ export default function CircleBack(){
     }
     expRef.current = ex;
     // director's run of show: cut between closeup scenes so every take shows
-    // the phrase, the pads, the grid, and the comments
-    const totalSec = loops*STEPS*(60/ref.current.tempo/4);
+    // the phrase, the pads, the mix, the grid, and the comments
+    const totalSec = totalSteps*(60/ref.current.tempo/4);
     ref.current.sceneDur = Math.min(5, Math.max(2.5, totalSec/5));
     ref.current.exportStartedAt = performance.now();
-    setExp({mode, total: loops*STEPS, done:0});
+    setExp({mode, total: totalSteps, done:0});
     if(ref.current.playing){ setPlaying(false); setTimeout(()=> setPlaying(true), 60); }
     else setPlaying(true);
   };
 
   const voxLabels = VOICES.map((v)=> v.vox ? voxCodes : null);
-  return <Unit>
-    <Masthead meta={["Form CB-16","Rev. 2026-08","For internal thought leadership only"]}/>
-    <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-end',gap:30}}>
-      <h1 style={{margin:'26px 0 0',fontSize:64,lineHeight:.94,letterSpacing:'-.045em',fontWeight:700,color:'var(--blue)'}}>The professional<br/>phrase organ.</h1>
-      <p style={{margin:0,fontSize:15,lineHeight:1.45,maxWidth:380}}>Sixteen keys of fluent LinkedIn, spoken in time over a live drum machine. <b style={{color:'var(--blue)'}}>It’s not an instrument. It’s a journey.</b></p>
+  const narrow = useNarrow();
+  return <Unit style={narrow ? {padding:'20px 14px'} : undefined}>
+    <Masthead meta={narrow ? ["Form CB-16","Rev. 2026-08"] : ["Form CB-16","Rev. 2026-08","For internal thought leadership only"]}/>
+    <div style={{display:'flex',flexDirection:narrow?'column':'row',justifyContent:'space-between',alignItems:narrow?'flex-start':'flex-end',gap:narrow?8:30,marginTop:18}}>
+      <h1 style={{margin:0,fontSize:narrow?30:40,lineHeight:.96,letterSpacing:'-.045em',fontWeight:700,color:'var(--blue)'}}>The professional phrase organ.</h1>
+      <p style={{margin:0,fontSize:narrow?12.5:13,lineHeight:1.45,maxWidth:400}}>The LinkedIn remixer — corporate phrases, spoken in time over a live drum machine. <b style={{color:'var(--blue)'}}>It’s not an instrument. It’s a journey.</b></p>
     </div>
-    <Ticker style={{marginTop:24}}>{ticker}</Ticker>
-    <div style={{display:'flex',gap:9,alignItems:'center',marginTop:14,flexWrap:'wrap'}}>
-      <Button style={{padding:'12px 20px'}} onClick={()=>{ doReorg(); setPlaying(true); }}>▶ Play a random mix</Button>
-      <Button on={playing} onClick={()=>setPlaying(x=>!x)}>{playing?'Pause':'Play'}</Button>
-      <span style={{marginLeft:'auto'}}><Silk muted>Type the letters on the keys · R rolls a new beat · Space plays</Silk></span>
+    <Ticker style={{marginTop:16}}>{ticker}</Ticker>
+
+    {/* the broadcast — front and center, sample mix loaded */}
+    <div style={{display:'grid',gridTemplateColumns:narrow?'1fr':'minmax(0,1fr) 280px',gap:narrow?16:'var(--space-col)',alignItems:'start',marginTop:16}}>
+      <Monitor ref={canvasRef} stateRef={ref}/>
+      <div style={{display:'flex',flexDirection:'column',gap:14}}>
+        <Button style={{padding:'14px 20px'}} onClick={()=>{ CBAudio.unlock(); doReorg(); setPlaying(true); }}>▶ Play a random mix</Button>
+        <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+          <Button on={playing} onClick={()=>{ CBAudio.unlock(); setPlaying(x=>!x); }}>{playing?'Pause':'Play'}</Button>
+          <Button onClick={doReorg}>New beat (R)</Button>
+        </div>
+        <div>
+          <div style={{marginBottom:6}}><Silk>Run of show</Silk>{' '}<Readout style={{marginLeft:8}}>≈ {Math.round(loops*patLen*(60/tempo/4))}s</Readout></div>
+          <div style={{display:'flex',gap:6}}>
+            {[2,4,8].map(n=>
+              <Button key={n} on={loops===n} onClick={()=>setLoops(n)} style={{padding:'7px 11px'}}>{n} loops</Button>)}
+          </div>
+        </div>
+        <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+          <Button variant="rec" on={exp?.mode==='video'} onClick={()=>startExport('video')}>Export video (mp4)</Button>
+          <Button variant="rec" on={exp?.mode==='audio'} onClick={()=>startExport('audio')}>Export audio</Button>
+        </div>
+        <div><Silk>Status</Silk>{' '}<Readout style={{marginLeft:8}}>{exp ? `ON THE RECORD ${String(Math.min(exp.done,exp.total)).padStart(2,'0')}/${exp.total}` : take ? 'CLEARED FOR THE FEED' : '—'}</Readout></div>
+        {take && (take.mode==='video'
+          ? <video controls src={take.url} style={{width:'100%',border:'var(--rule-frame) solid var(--ink)',display:'block'}}/>
+          : <audio controls src={take.url} style={{width:'100%',display:'block'}}/>)}
+        {take && <a href={take.url} download={take.name} style={{fontFamily:'var(--mono)',fontSize:10.5,color:'var(--blue)'}}>Download again — {take.name}</a>}
+        <Silk muted>Exports tape the monitor — the phrase, the pads, the mix, the grid, the comments — into a square clip for your LinkedIn feed.</Silk>
+      </div>
     </div>
-    <div style={{display:'grid',gridTemplateColumns:'200px 1fr 230px',gap:'var(--space-col)',marginTop:'var(--space-section)'}}>
-      <Bay title="Phrase index" aside={`01–${String(PHRASES.length).padStart(2,'0')}`}>
-        <div style={{maxHeight:600,overflowY:'auto'}}>
+
+    {/* the studio, filed under separate cover */}
+    <div style={{marginTop:22,borderTop:'var(--rule-section) solid var(--ink)',paddingTop:12,display:'flex',alignItems:'center',gap:12}}>
+      <Button onClick={()=>setStudio(x=>!x)}>{studio ? 'Close the audio tools' : 'Open the audio tools'}</Button>
+      <Silk muted>{studio ? 'The studio is in session' : 'Make your own LinkedIn remix — keys, registers, sequencer, uploads'}</Silk>
+    </div>
+
+    {studio && <>
+    <div style={{display:'grid',gridTemplateColumns:narrow?'1fr':'200px 1fr 230px',gap:narrow?20:'var(--space-col)',marginTop:'var(--space-section)'}}>
+      <Bay title="Phrase index" aside={`01–${String(PHRASES.length).padStart(2,'0')}`} style={narrow?{order:3}:undefined}>
+        <div style={{maxHeight:narrow?300:600,overflowY:'auto'}}>
           {PHRASES.map((p,i)=>
             <div key={i} onClick={()=>pressKey(i)} style={{display:'flex',gap:12,fontSize:11.5,lineHeight:1.9,borderBottom:'1px dotted var(--hair)',cursor:'pointer',fontWeight:armed===i?700:400,color:armed===i?'var(--blue)':'var(--ink)'}}>
               <Readout style={{lineHeight:'1.9em',fontSize:10.5}}>{String(i+1).padStart(2,'0')}</Readout>
@@ -360,15 +438,17 @@ export default function CircleBack(){
             </div>)}
         </div>
       </Bay>
-      <Bay title="Keys" aside="Press to opine">
+      <Bay title="Keys" aside="Press to opine" style={narrow?{order:1}:undefined}>
         <KeyPlate columns={4}>
           {PHRASES.slice(0,16).map((p,i)=>
-            <Pad key={i} index={String(i+1).padStart(2,'0')} hotkey={KEYMAP[i].toUpperCase()} name={p.name} hot={armed===i} onTrigger={()=>pressKey(i)}/>)}
+            <Pad key={i} index={String(i+1).padStart(2,'0')} hotkey={narrow?undefined:KEYMAP[i].toUpperCase()} name={p.name} hot={armed===i} onTrigger={()=>pressKey(i)}/>)}
         </KeyPlate>
-        <p style={{margin:'10px 0 0',fontSize:10.5,color:'var(--text-meta)'}}>Type the letter shown on each key to speak it · <Kbd>R</Kbd> new random beat · <Kbd>space</Kbd> play/pause · <Kbd>⇧</Kbd><Kbd>↑</Kbd>/<Kbd>↓</Kbd> delivery · <Kbd>⇧</Kbd><Kbd>←</Kbd>/<Kbd>→</Kbd> sincerity</p>
+        {narrow
+          ? <p style={{margin:'10px 0 0',fontSize:10.5,color:'var(--text-meta)'}}>Tap a key to speak it · tap grid cells to add hits · the armed phrase stamps into Vox</p>
+          : <p style={{margin:'10px 0 0',fontSize:10.5,color:'var(--text-meta)'}}>Type the letter shown on each key to speak it · <Kbd>R</Kbd> new random beat · <Kbd>space</Kbd> play/pause · <Kbd>⇧</Kbd><Kbd>↑</Kbd>/<Kbd>↓</Kbd> delivery · <Kbd>⇧</Kbd><Kbd>←</Kbd>/<Kbd>→</Kbd> sincerity</p>}
       </Bay>
-      <Bay title="Registers" aside="Cal. A">
-        <div style={{display:'flex',flexDirection:'column',gap:16}}>
+      <Bay title="Registers" aside="Cal. A" style={narrow?{order:2}:undefined}>
+        <div style={{display:'flex',flexDirection:narrow?'row':'column',flexWrap:'wrap',gap:16}}>
           <Knob label="Sincerity" value={sinc} onChange={setSinc}/>
           <Knob label="Delivery" value={deliv} onChange={setDeliv}/>
           <Knob label="Decay" value={decay} onChange={setDecay}/>
@@ -376,17 +456,27 @@ export default function CircleBack(){
         </div>
       </Bay>
     </div>
-    <Bay title="Sequencer · 16 steps" aside={<Readout>{pos===null?'—':String(pos+1).padStart(2,'0')}</Readout>} style={{marginTop:'var(--space-section)'}}>
-      <StepGrid voices={VOICES} pattern={rack.pattern} onChange={onGrid} playhead={pos} selected={selRow} onSelect={setSelRow}
-        onClearRow={i=> setRack(rk=>{ const pattern = rk.pattern.map(x=>[...x]); pattern[i] = Array(STEPS).fill(0); return {...rk, pattern}; })}
-        voxLabels={voxLabels}/>
+    <Bay title={`Sequencer · ${patLen} steps`} aside={<Readout>{pos===null?'—':String(pos+1).padStart(2,'0')}</Readout>} style={{marginTop:'var(--space-section)'}}>
+      <div style={{overflowX:'auto',WebkitOverflowScrolling:'touch'}}>
+        <div style={{minWidth: narrow ? 84 + patLen*24 : undefined}}>
+          <StepGrid voices={VOICES} steps={patLen} pattern={rack.pattern} onChange={onGrid} playhead={pos} selected={selRow} onSelect={setSelRow}
+            labelW={narrow?84:110}
+            onClearRow={i=> setRack(rk=>{ const pattern = rk.pattern.map(x=>[...x]); pattern[i] = Array(rk.pattern[i].length).fill(0); return {...rk, pattern}; })}
+            voxLabels={voxLabels}/>
+        </div>
+      </div>
       <div style={{display:'flex',gap:9,alignItems:'center',marginTop:16,flexWrap:'wrap'}}>
-        <Button on={playing} onClick={()=>setPlaying(x=>!x)}>{playing?'Pause':'Play'}</Button>
+        <Button on={playing} onClick={()=>{ CBAudio.unlock(); setPlaying(x=>!x); }}>{playing?'Pause':'Play'}</Button>
         <Button variant="rec" on={rec} onClick={()=>setRec(x=>!x)}>{rec?'Recording keys':'Record keys'}</Button>
         <Button onClick={doReorg}>Random beat</Button>
-        <Button onClick={()=>setRack(rk=>({...rk, pattern:seedPattern(rk.samples.length)}))}>Demo beat</Button>
-        <Button onClick={()=>setRack(rk=>({...rk, pattern:emptyPattern(rk.samples.length)}))}>Clear all</Button>
-        <span style={{marginLeft:'auto'}}><Silk muted>Click cells to add hits · double-click a track name to clear it · Vox cells stamp the armed phrase</Silk></span>
+        <Button onClick={()=>setRack(rk=>({...rk, pattern:seedPattern(rk.samples.length, rk.pattern[0].length)}))}>Demo beat</Button>
+        <Button onClick={()=>setRack(rk=>({...rk, pattern:emptyPattern(rk.samples.length, rk.pattern[0].length)}))}>Clear all</Button>
+        <span style={{display:'inline-flex',gap:6,alignItems:'center',marginLeft:6}}>
+          <Silk>Steps</Silk>
+          {[16,32,48].map(n=>
+            <Button key={n} on={patLen===n} onClick={()=>setSteps(n)} style={{padding:'7px 10px'}}>{n}</Button>)}
+        </span>
+        <span style={{marginLeft:'auto'}}><Silk muted>Longer meetings give long phrases room to land · double-click a track name to clear it</Silk></span>
       </div>
       <div style={{display:'flex',gap:9,alignItems:'center',marginTop:12,flexWrap:'wrap',borderTop:'1px dotted var(--hair)',paddingTop:12}}>
         <Silk>Exhibits</Silk>
@@ -402,33 +492,11 @@ export default function CircleBack(){
         <span style={{marginLeft:'auto'}}><Silk muted>Audio admitted into the record becomes a sequencer row</Silk></span>
       </div>
     </Bay>
-    <Bay title="Distribution" aside="Cleared for the feed" style={{marginTop:'var(--space-section)'}}>
-      <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) 280px',gap:'var(--space-col)',alignItems:'start'}}>
-        <Monitor ref={canvasRef} stateRef={ref}/>
-        <div style={{display:'flex',flexDirection:'column',gap:14}}>
-          <div>
-            <div style={{marginBottom:6}}><Silk>Run of show</Silk>{' '}<Readout style={{marginLeft:8}}>≈ {Math.round(loops*STEPS*(60/tempo/4))}s</Readout></div>
-            <div style={{display:'flex',gap:6}}>
-              {[4,8,12].map(n=>
-                <Button key={n} on={loops===n} onClick={()=>setLoops(n)} style={{padding:'7px 11px'}}>{n} loops</Button>)}
-            </div>
-          </div>
-          <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
-            <Button variant="rec" on={exp?.mode==='video'} onClick={()=>startExport('video')}>Export video (mp4)</Button>
-            <Button variant="rec" on={exp?.mode==='audio'} onClick={()=>startExport('audio')}>Export audio</Button>
-          </div>
-          <div><Silk>Status</Silk>{' '}<Readout style={{marginLeft:8}}>{exp ? `ON THE RECORD ${String(Math.min(exp.done,exp.total)).padStart(2,'0')}/${exp.total}` : take ? 'CLEARED FOR THE FEED' : '—'}</Readout></div>
-          {take && (take.mode==='video'
-            ? <video controls src={take.url} style={{width:'100%',border:'var(--rule-frame) solid var(--ink)',display:'block'}}/>
-            : <audio controls src={take.url} style={{width:'100%',display:'block'}}/>)}
-          {take && <a href={take.url} download={take.name} style={{fontFamily:'var(--mono)',fontSize:10.5,color:'var(--blue)'}}>Download again — {take.name}</a>}
-          <Silk muted>Tapes the monitor for the chosen run of show — cutting between the phrase, the pads, the cadence, and the comments — then downloads a square clip for your LinkedIn feed. Tag someone who needs to hear this.</Silk>
-        </div>
-      </div>
-    </Bay>
-    <div style={{marginTop:26,borderTop:'var(--rule-heavy) solid var(--ink)',paddingTop:10,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+    </>}
+
+    <div style={{marginTop:26,borderTop:'var(--rule-heavy) solid var(--ink)',paddingTop:10,display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:10}}>
       <Silk muted>An equal opportunity instrument</Silk>
-      <Silk muted>Circle Back® is not affiliated with your network</Silk>
+      {!narrow && <Silk muted>Circle Back® is not affiliated with your network</Silk>}
       <Stamp>Approved — HR</Stamp>
     </div>
   </Unit>;
