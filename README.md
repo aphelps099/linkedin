@@ -22,12 +22,30 @@ Then open the printed local URL. `npm run build` produces a static bundle in
 (enable Pages → Source: GitHub Actions in the repo settings, or trigger the
 workflow manually from the Actions tab).
 
-## How to play
+## The stage
 
-The broadcast monitor sits at the very top with a sample mix loaded — press
-**Play** to hear it, or **▶ Play a random mix** for a fresh beat with phrases
-booked in. **Open the audio tools** unfolds the studio (keys, registers,
-sequencer, uploads) to make your own remix.
+The app opens as a blue room: the broadcast fills the screen, and there are
+**three keys**. That's the instrument.
+
+| Key | Does |
+| --- | --- |
+| **Phrase** (`1` / `A`) | Says the next line of the track's setlist, quantized to the next 16th so it always lands on the grid |
+| **Build** (`2` / `S`) | Raises the room — filter ducks then opens over three beats, arps enter, hats double, a riser climbs, snares roll |
+| **Drop** (`3` / `D`) | Slams the filter open with an impact hit, chord stabs and sub arrive, and the hook phrase fires. Settles back to the groove after two bars |
+
+`Space` plays/pauses · `R` generates a whole new track · **Audio tools** opens
+the studio for anyone who wants to program it by hand.
+
+## The band
+
+Every track is produced before you touch anything. `src/song.js` picks a key,
+a chord progression (i–VI–III–VII, i–VII–VI–V, i–iv–VI–V, or a major
+discotheque turn), a bassline rhythm, an arpeggio direction, chord-stab
+placement, and a phrase setlist. The bass plays from the first bar; arps and
+computer blips arrive on the build; stabs and sub-bass land on the drop. All
+of it is synthesized live — no samples — through a master filter the
+performance keys sweep, with the spoken phrases running through a drive +
+dotted-eighth delay bus.
 
 - **Keys** — every pad shows its keyboard letter (`1234` `qwet` `asdf` `zxcv`);
   type it (or click/tap) to speak the phrase and arm it. The **phrase index**
@@ -95,12 +113,14 @@ src/
   CircleBack.jsx           the mixer screen: state + lookahead scheduler + export flow
   audio.js                 CBAudio drum synth (pure WebAudio, no samples), sample/phrase
                            buffer playback, recording tap; CBVoice phrase bank + speech fallback
-  exporter.js              MediaRecorder mime/extension/download helpers
-  randomizer.js            the Reorg — style-based pattern randomizer
+  exporter.js              WebCodecs mp4 pipeline + MediaRecorder fallback helpers
+  song.js                  the house band — key, chords, bass, arps, stabs, setlist
+  randomizer.js            the Reorg — style-based drum pattern randomizer
   feed.js                  the engagement engine's fake comment pool
   lexicon.js               full LinkedIn phrase bank (openers / buzzwords / AI tells / closers)
   styles.css, tokens/      design tokens as CSS custom properties
   components/
+    stage/                 StageKey — the three performance keys
     chassis/               Unit, Masthead, Ticker, Bay, Silk, Readout, Stamp
     controls/              Button, Knob, Kbd
     pads/                  Pad, KeyPlate
