@@ -155,6 +155,95 @@ export function translate(line){
   return null;
 }
 
+// ---- the optimizer ----
+// Rewrites the pasted post into short LinkedIn lingo. Every produced line is
+// backed by a recording in the phrase bank, so the machine can actually say it
+// (and so it survives into the exported video — the browser's own speech
+// synthesis cannot be recorded).
+const INTENTS = [
+  {id:'exit',     re:/laid off|let go|redundan|restructur|my last day|leaving|departing|resign|stepping (down|away)|end of an era/i,
+   open:[39, 3], mid:[26, 41, 42], close:[15, 28]},
+  {id:'newjob',   re:/new (job|role|position|chapter|adventure)|joining|thrilled to join|i'?m starting|joined the team/i,
+   open:[38, 2], mid:[29, 47, 44], close:[46, 28]},
+  {id:'promo',    re:/promot|new title|stepping into|elevated|has been appointed|proud to share/i,
+   open:[38, 1], mid:[47, 48, 26], close:[45, 28]},
+  {id:'launch',   re:/launch|shipp|releas|introduc|now live|we built|announcing|beta|v1|version/i,
+   open:[0, 38], mid:[48, 44, 52], close:[51, 50]},
+  {id:'milestone',re:/anniversar|\byears?\b|million|billion|funding|raised|series [abc]|acquir|award|record/i,
+   open:[38, 48], mid:[47, 26, 52], close:[44, 45]},
+  {id:'lesson',   re:/learned|lesson|taught me|realiz|takeaway|reflect|mistake|failure|advice/i,
+   open:[40, 42], mid:[43, 56, 53], close:[14, 17]},
+  {id:'hiring',   re:/hiring|we'?re looking|open role|join our team|apply|candidate|recruit/i,
+   open:[40, 47], mid:[54, 44, 50], close:[35, 36]},
+  {id:'gratitude',re:/thank|grateful|appreciat|honou?red|humbled|shout ?out/i,
+   open:[1, 26], mid:[47, 41, 27], close:[45, 12]},
+];
+const GENERIC = {open:[40, 16], mid:[4, 5, 31], close:[12, 36]};
+const STOP = new Set(['this','that','with','from','have','been','they','their','there','which','about','after','over','into','were','what','when','will','your','ours','more','than','then','some','just','very','much','many','most','also','only','even','still','being','other','these','those','because','while','would','could','should','every','first','last','next','years','year','team','work','role','time','today','people','company']);
+
+// their proper nouns — the only part of the post the machine cannot say,
+// so they go on screen instead
+function keyNouns(text){
+  const hits = [];
+  const sentences = text.split(/(?<=[.!?])\s+|\n+/);
+  for(const s of sentences){
+    const words = s.trim().split(/\s+/);
+    let run = [];
+    const flush = ()=>{ if(run.length) hits.push(run.join(' ')); run = []; };
+    words.forEach((w, i)=>{
+      const bare = w.replace(/^[^A-Za-z0-9]+/, '').replace(/[^A-Za-z0-9&']+$/, '');
+      const proper = bare.length >= 3
+        && /^[A-Z][A-Za-z0-9&']*$/.test(bare)
+        && !STOP.has(bare.toLowerCase());
+      // capitalised runs stay together: "Northwind Systems", not two names
+      if(proper && i > 0) run.push(bare);
+      else flush();
+    });
+    flush();
+  }
+  const counts = new Map();
+  hits.forEach(h=> counts.set(h, (counts.get(h)||0) + 1));
+  return [...counts.entries()]
+    .sort((a,b)=> b[1]-a[1] || b[0].length-a[0].length)
+    .map(e=> e[0].slice(0, 34))
+    .slice(0, 3);
+}
+
+// Build the optimized post. Returns lines of {text, phrase} where `phrase` is
+// the bank index whose recording speaks it.
+export function optimize(text, phraseBank){
+  const src = truncateWords(text);
+  const nouns = keyNouns(src);
+  const say = i => (phraseBank && phraseBank[i] ? phraseBank[i].say : '');
+
+  const intents = INTENTS.filter(it=> it.re.test(src));
+  const chosen = intents.length ? intents.slice(0, 2) : [GENERIC];
+
+  const picked = [];
+  const push = i => { if(i !== undefined && !picked.includes(i)) picked.push(i); };
+  chosen.forEach((it, n)=>{
+    push(it.open[n % it.open.length]);
+    it.mid.slice(0, intents.length > 1 ? 2 : 3).forEach(push);
+    push(it.close[n % it.close.length]);
+  });
+  // anything they already said in fluent LinkedIn earns its place
+  for(const [re, idx] of MATCHES) if(re.test(src)) push(idx);
+  const order = picked.slice(0, 9);
+
+  return {
+    intents: chosen.map(c=> c.id),
+    nouns,
+    lines: order.map((idx, n)=>{
+      let text = say(idx);
+      // weave their subject into the line the audience reads
+      const weave = noun => `${text.replace(/[.…!?]+$/,'')} — ${noun.replace(/[.…]+$/,'')}.`;
+      if(nouns[0] && n === 1) text = weave(nouns[0]);
+      else if(nouns[1] && n === 4) text = weave(nouns[1]);
+      return {text, phrase: idx};
+    }),
+  };
+}
+
 export function analyze(text){
   const src = truncateWords(text);
   const words = wordCount(src);

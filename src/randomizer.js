@@ -16,7 +16,9 @@ const FALLBACK_SHORT = [4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15];
 
 // stepSec: seconds per 16th at the current tempo · stepsFor(i): seconds phrase i takes to say
 // pool: restrict the vox to these phrase indices (a remix uses the jargon the author wrote)
-export function randomPattern(nSamples, phrases, len = 16, stepSec = .14, stepsFor = null, pool = null){
+// ordered: walk the pool in sequence instead of picking at random — a remix is
+// a post, and a post has an order
+export function randomPattern(nSamples, phrases, len = 16, stepSec = .14, stepsFor = null, pool = null, ordered = false){
   let LONG = FALLBACK_LONG, SHORT = FALLBACK_SHORT;
   if(phrases && phrases.length){
     LONG = []; SHORT = [];
@@ -91,18 +93,26 @@ export function randomPattern(nSamples, phrases, len = 16, stepSec = .14, stepsF
     const secs = stepsFor ? stepsFor(i) : 1.6;
     return Math.ceil(secs / Math.max(.05, stepSec)) + 2; // + a half-beat to breathe
   };
-  let cursor = rint(2) * 4;              // start on a strong beat
-  let guard = 0;
+  let cursor = ordered ? 0 : rint(2) * 4;   // an ordered post opens on the one
+  let guard = 0, seq = 0;
   while(cursor < len && guard++ < 32){
-    // a remix wants more of the author's lines to land, so it leans short
-    const wantLong = LONG.length && chance(pool && pool.length ? .25 : .45);
-    let idx = (wantLong ? LONG : SHORT)[rint((wantLong ? LONG : SHORT).length)];
-    let need = roomFor(idx);
-    // if the long line won't finish before the loop ends, take a short one instead
-    if(cursor + need > len){
-      idx = SHORT[rint(SHORT.length)];
+    let idx, need;
+    if(ordered && pool && pool.length){
+      idx = pool[seq % pool.length];
       need = roomFor(idx);
-      if(cursor + need > len) break;
+      if(cursor + need > len) break;        // the rest carries into the next loop
+      seq++;
+    } else {
+      // a remix wants more of the author's lines to land, so it leans short
+      const wantLong = LONG.length && chance(pool && pool.length ? .25 : .45);
+      idx = (wantLong ? LONG : SHORT)[rint((wantLong ? LONG : SHORT).length)];
+      need = roomFor(idx);
+      // if the long line won't finish before the loop ends, take a short one instead
+      if(cursor + need > len){
+        idx = SHORT[rint(SHORT.length)];
+        need = roomFor(idx);
+        if(cursor + need > len) break;
+      }
     }
     p[voxRow][cursor] = idx + 1;
     placed.push(idx);

@@ -58,6 +58,17 @@ export function RemixPanel({ onRemix, onClose, result, narrow }){
             </span>)}
           {!result.markers.length && <span style={{fontSize:12,color:'var(--text-meta)'}}>No detectable thought leadership. Suspicious.</span>}
         </div>
+        {result.optimized && result.optimized.lines.length > 0 && <div>
+          <div style={{fontSize:9.5,fontWeight:700,letterSpacing:'.16em',textTransform:'uppercase',color:'var(--text-meta)',marginBottom:5}}>Your post, optimized</div>
+          <div style={{border:'var(--rule-frame) solid var(--ink)',padding:'10px 12px',background:'var(--paper)'}}>
+            {result.optimized.lines.map((l,i)=>
+              <div key={i} style={{fontSize:13.5,lineHeight:1.65,fontWeight:i===0?700:400}}>{l.text}</div>)}
+          </div>
+          <div style={{fontSize:10.5,color:'var(--text-meta)',marginTop:4}}>
+            Spoken by the organ, in this order · detected: {result.optimized.intents.join(', ')}
+            {result.optimized.nouns.length ? ` · subject: ${result.optimized.nouns.join(', ')}` : ''}
+          </div>
+        </div>}
         {result.translations.length > 0 && <div>
           <div style={{fontSize:9.5,fontWeight:700,letterSpacing:'.16em',textTransform:'uppercase',color:'var(--text-meta)',marginBottom:5}}>What it says · What it means</div>
           {result.translations.map((t,i)=>
