@@ -1,0 +1,19 @@
+:root{
+/* swiss corporate palette — 2a */
+--paper:#f6f5f1; /* page */
+--white:#ffffff; /* cards, keys */
+--ink:#111111; /* text, rules, borders */
+--ink-40:#11111166; /* muted meta */
+--hair:#11111122; /* dotted/hairline rules */
+--blue:#0a66c2; /* THE corporate blue — accents, fills, active */
+--blue-light:#9fc8ea; /* secondary tint on blue fields */
+--blue-dark:#084d92; /* hover */
+/* semantic */
+--surface-page:var(--paper);
+--surface-card:var(--white);
+--surface-field:var(--blue);
+--text-body:var(--ink);
+--text-meta:var(--ink-40);
+--accent:var(--blue);
+--danger:var(--ink); /* record latches ink-black */
+}

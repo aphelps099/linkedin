@@ -1,0 +1,13 @@
+:root{
+/* rule weights — hierarchy is drawn, never shadowed */
+--rule-heavy:3px; /* masthead, footer */
+--rule-section:2px; /* column headers */
+--rule-frame:1.5px; /* key plates, dials, buttons */
+--rule-grid:1px; /* sequencer cells */
+--rule-inner:.75px; /* key separators inside a plate */
+--radius-none:0px; /* @kind radius */
+--shadow-none:none; /* @kind shadow */
+/* states */
+--press-invert:var(--ink); /* press = invert to ink */
+--ease-ui:.08s; /* @kind other */
+}
