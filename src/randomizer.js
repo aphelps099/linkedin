@@ -15,12 +15,18 @@ const FALLBACK_LONG = [0, 1, 2, 3, 8];
 const FALLBACK_SHORT = [4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15];
 
 // stepSec: seconds per 16th at the current tempo · stepsFor(i): seconds phrase i takes to say
-export function randomPattern(nSamples, phrases, len = 16, stepSec = .14, stepsFor = null){
+// pool: restrict the vox to these phrase indices (a remix uses the jargon the author wrote)
+export function randomPattern(nSamples, phrases, len = 16, stepSec = .14, stepsFor = null, pool = null){
   let LONG = FALLBACK_LONG, SHORT = FALLBACK_SHORT;
   if(phrases && phrases.length){
     LONG = []; SHORT = [];
-    phrases.forEach((p,i)=> ((p.say||'').length >= 30 ? LONG : SHORT).push(i));
-    if(!SHORT.length) SHORT = LONG;
+    const allowed = pool && pool.length ? new Set(pool) : null;
+    phrases.forEach((p,i)=>{
+      if(allowed && !allowed.has(i)) return;
+      ((p.say||'').length >= 30 ? LONG : SHORT).push(i);
+    });
+    if(!SHORT.length) SHORT = LONG.length ? LONG : [0];
+    if(!LONG.length) LONG = [];
   }
   const bars = Math.max(1, Math.round(len/16));
   len = bars*16;
@@ -88,7 +94,8 @@ export function randomPattern(nSamples, phrases, len = 16, stepSec = .14, stepsF
   let cursor = rint(2) * 4;              // start on a strong beat
   let guard = 0;
   while(cursor < len && guard++ < 32){
-    const wantLong = LONG.length && chance(.45);
+    // a remix wants more of the author's lines to land, so it leans short
+    const wantLong = LONG.length && chance(pool && pool.length ? .25 : .45);
     let idx = (wantLong ? LONG : SHORT)[rint((wantLong ? LONG : SHORT).length)];
     let need = roomFor(idx);
     // if the long line won't finish before the loop ends, take a short one instead

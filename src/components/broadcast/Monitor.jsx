@@ -237,31 +237,127 @@ function drawPadsBlock(ctx, st, now, {top, bottom}){
   ctx.letterSpacing = '0px';
 }
 
-function drawComment(ctx, c, x, y, w, s, alpha){
+// ---- the comment section, rendered like the real thing ----
+const FEED_TEXT = 'rgba(0,0,0,.9)';
+const FEED_MUTED = 'rgba(0,0,0,.6)';
+const FEED_FAINT = 'rgba(0,0,0,.08)';
+const BUBBLE = '#f2f2f2';
+const REACTION = {
+  like:    {fill:'#378fe9', glyph:'thumb'},
+  insight: {fill:'#f5bb5c', glyph:'bulb'},
+  love:    {fill:'#df704d', glyph:'heart'},
+};
+
+function roundRect(ctx, x, y, w, h, r){
+  if(ctx.roundRect){ ctx.beginPath(); ctx.roundRect(x, y, w, h, r); return; }
+  ctx.beginPath();
+  ctx.moveTo(x+r, y); ctx.arcTo(x+w, y, x+w, y+h, r); ctx.arcTo(x+w, y+h, x, y+h, r);
+  ctx.arcTo(x, y+h, x, y, r); ctx.arcTo(x, y, x+w, y, r); ctx.closePath();
+}
+
+// avatar: initials on a soft disc, the way LinkedIn renders a photoless member
+function drawAvatar(ctx, x, y, d, initials, opts){
+  const o = opts || {};
   ctx.save();
-  ctx.globalAlpha = alpha;
-  const pad = 16*s;
-  ctx.font = `400 ${19*s}px ${SANS}`;
-  const body = wrapText(ctx, c.text, w - 2*pad).slice(0,2);
-  const h = pad + 22*s + 19*s + body.length*(24*s) + 26*s + pad*.7;
-  ctx.fillStyle = WHITE; ctx.fillRect(x, y - h, w, h);
-  ctx.textAlign = 'left';
-  let ty = y - h + pad + 15*s;
-  ctx.fillStyle = BLUE;
-  ctx.font = `700 ${18*s}px ${SANS}`;
-  ctx.fillText(`${c.name} · ${c.degree}`, x + pad, ty, w - 2*pad);
-  ty += 19*s;
-  ctx.fillStyle = 'rgba(10,102,194,.6)';
-  ctx.font = `400 ${13*s}px ${SANS}`;
-  ctx.fillText(c.title, x + pad, ty, w - 2*pad);
-  ty += 24*s;
-  ctx.fillStyle = INK; ctx.font = `400 ${19*s}px ${SANS}`;
-  for(const line of body){ ctx.fillText(line, x + pad, ty); ty += 24*s; }
-  ctx.fillStyle = 'rgba(17,17,17,.45)';
-  ctx.font = `500 ${13*s}px ${MONO}`;
-  ctx.fillText(`${c.age} · LIKE · REPLY · ${c.likes}`, x + pad, y - pad*.85);
+  ctx.beginPath(); ctx.arc(x + d/2, y + d/2, d/2, 0, Math.PI*2);
+  ctx.fillStyle = o.fill || '#c3d9ee'; ctx.fill();
+  ctx.clip();
+  ctx.fillStyle = o.color || '#0a66c2';
+  ctx.font = `600 ${d*.38}px ${SANS}`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(initials || '··', x + d/2, y + d/2 + d*.02);
   ctx.restore();
-  return h;
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+}
+
+function drawGlyph(ctx, kind, cx, cy, r){
+  ctx.fillStyle = '#fff';
+  if(kind === 'heart'){
+    const s = r*.62;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy + s*.62);
+    ctx.bezierCurveTo(cx - s*1.3, cy - s*.28, cx - s*.45, cy - s*1.05, cx, cy - s*.34);
+    ctx.bezierCurveTo(cx + s*.45, cy - s*1.05, cx + s*1.3, cy - s*.28, cx, cy + s*.62);
+    ctx.fill();
+  } else if(kind === 'bulb'){
+    ctx.beginPath(); ctx.arc(cx, cy - r*.14, r*.42, 0, Math.PI*2); ctx.fill();
+    ctx.fillRect(cx - r*.2, cy + r*.24, r*.4, r*.32);
+  } else { // thumb
+    ctx.fillRect(cx - r*.52, cy - r*.06, r*.28, r*.56);      // fist
+    ctx.beginPath();
+    roundRect(ctx, cx - r*.16, cy - r*.44, r*.66, r*.94, r*.16);
+    ctx.fill();
+    ctx.fillRect(cx - r*.06, cy - r*.62, r*.16, r*.3);        // thumb
+  }
+}
+
+// the overlapping reaction pill: 👍💡❤️ 47
+function drawReactions(ctx, kinds, count, x, y, s, opts){
+  const o = opts || {};
+  const d = 22*s, step = d*.72;
+  kinds.forEach((k, i)=>{
+    const cx = x + d/2 + i*step, cy = y;
+    ctx.beginPath(); ctx.arc(cx, cy, d/2 + 1.5*s, 0, Math.PI*2);
+    ctx.fillStyle = o.ring || '#fff'; ctx.fill();
+    ctx.beginPath(); ctx.arc(cx, cy, d/2, 0, Math.PI*2);
+    ctx.fillStyle = (REACTION[k]||REACTION.like).fill; ctx.fill();
+    drawGlyph(ctx, (REACTION[k]||REACTION.like).glyph, cx, cy, d/2);
+  });
+  const tx = x + d + (kinds.length-1)*step + 7*s;
+  ctx.fillStyle = o.color || FEED_MUTED;
+  ctx.font = `400 ${15*s}px ${SANS}`;
+  ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  ctx.fillText(String(count), tx, y + 1);
+  ctx.textBaseline = 'alphabetic';
+  return tx + ctx.measureText(String(count)).width;
+}
+
+// one comment: avatar + rounded bubble (name · degree, headline, body) + action row
+function drawCommentRow(ctx, c, x, y, w, s, alpha){
+  ctx.save();
+  ctx.globalAlpha = alpha === undefined ? 1 : alpha;
+  const av = 44*s, gap = 10*s, pad = 14*s;
+  const bx = x + av + gap, bw = w - av - gap;
+  ctx.font = `400 ${17*s}px ${SANS}`;
+  const body = wrapText(ctx, c.text, bw - 2*pad).slice(0,3);
+  const bubbleH = pad + 20*s + 17*s + body.length*(23*s) + pad*.8;
+
+  drawAvatar(ctx, x, y, av, c.initials);
+  ctx.fillStyle = BUBBLE;
+  roundRect(ctx, bx, y, bw, bubbleH, 10*s); ctx.fill();
+
+  let ty = y + pad + 15*s;
+  ctx.textAlign = 'left';
+  ctx.font = `600 ${17*s}px ${SANS}`; ctx.fillStyle = FEED_TEXT;
+  ctx.fillText(c.name, bx + pad, ty);
+  const nameW = ctx.measureText(c.name).width;
+  ctx.font = `400 ${14*s}px ${SANS}`; ctx.fillStyle = FEED_MUTED;
+  ctx.fillText(`· ${c.degree}`, bx + pad + nameW + 7*s, ty);
+  ctx.textAlign = 'right';
+  ctx.fillText(c.age, bx + bw - pad, ty);
+  ctx.textAlign = 'left';
+  ty += 19*s;
+  ctx.font = `400 ${13.5*s}px ${SANS}`; ctx.fillStyle = FEED_MUTED;
+  ctx.fillText(c.title, bx + pad, ty, bw - 2*pad - 40*s);
+  ty += 22*s;
+  ctx.font = `400 ${17*s}px ${SANS}`; ctx.fillStyle = FEED_TEXT;
+  for(const line of body){ ctx.fillText(line, bx + pad, ty); ty += 23*s; }
+
+  // reaction pill straddles the bubble's bottom edge, as it does in the feed
+  if(c.likes > 0) drawReactions(ctx, c.reactions || ['like'], c.likes, bx + bw - 92*s, y + bubbleH, s);
+
+  const actionY = y + bubbleH + 22*s;
+  ctx.font = `600 ${14*s}px ${SANS}`; ctx.fillStyle = FEED_MUTED;
+  let ax = bx + pad;
+  ['Like','Reply'].forEach((label, i)=>{
+    ctx.fillText(label, ax, actionY);
+    ax += ctx.measureText(label).width;
+    ctx.fillText(' · ', ax, actionY); ax += ctx.measureText(' · ').width;
+  });
+  if(c.replies) ctx.fillText(`${c.replies} ${c.replies===1?'reply':'replies'}`, ax, actionY);
+  else ctx.fillText('Share', ax, actionY);
+  ctx.restore();
+  return bubbleH + 34*s;
 }
 
 function drawComments(ctx, st, now, {x, w, bottom, max, scale}){
@@ -269,11 +365,79 @@ function drawComments(ctx, st, now, {x, w, bottom, max, scale}){
   let y = bottom;
   for(let i=list.length-1; i>=0; i--){
     const c = list[i];
-    const age = (now - c.at)/1000;
-    const a = Math.min(1, age/.28);
-    const h = drawComment(ctx, c, x, y - (1-a)*24, w, scale, a);
-    y -= h + 14*scale;
+    const a = Math.min(1, (now - c.at)/280);
+    const h = drawCommentRow(ctx, c, x, 0, w, scale, a); // measure
+    y -= h;
+    drawCommentRow(ctx, c, x, y + (1-a)*20, w, scale, a);
+    y -= 12*scale;
     if(y < 240) break;
+  }
+}
+
+// the whole post, as it appears in the feed — header, body, engagement bar, thread
+function drawFeedScene(ctx, st, now){
+  const x = 54, y = 200, w = W - 108, h = H - y - 74;
+  ctx.fillStyle = '#fff';
+  roundRect(ctx, x, y, w, h, 14); ctx.fill();
+
+  const pad = 30;
+  let cy = y + pad;
+  drawAvatar(ctx, x + pad, cy, 64, 'CB', {fill:'#0a66c2', color:'#fff'});
+  ctx.textAlign = 'left';
+  ctx.font = `600 22px ${SANS}`; ctx.fillStyle = FEED_TEXT;
+  ctx.fillText('Circle Back®', x + pad + 78, cy + 24);
+  ctx.font = `400 16px ${SANS}`; ctx.fillStyle = FEED_MUTED;
+  ctx.fillText('The Professional Phrase Organ · Form CB-16', x + pad + 78, cy + 46);
+  ctx.font = `400 15px ${SANS}`;
+  ctx.fillText('now · Edited · 🌐', x + pad + 78, cy + 66);
+  ctx.textAlign = 'right';
+  ctx.font = `600 20px ${SANS}`; ctx.fillStyle = '#0a66c2';
+  ctx.fillText('+ Follow', x + w - pad, cy + 26);
+  ctx.textAlign = 'left';
+  cy += 92;
+
+  // the post itself — whatever the organ last said
+  const post = st.spoken && st.tickerText ? st.tickerText : 'It’s not an instrument. It’s a journey.';
+  ctx.fillStyle = FEED_TEXT;
+  let size = 30, lines;
+  for(;;){
+    ctx.font = `400 ${size}px ${SANS}`;
+    lines = wrapText(ctx, post, w - 2*pad);
+    if(lines.length <= 3 || size <= 19) break;
+    size -= 2;
+  }
+  lines.slice(0,3).forEach(l=>{ cy += size*1.34; ctx.fillText(l, x + pad, cy); });
+  cy += 16;
+  ctx.fillStyle = '#0a66c2'; ctx.font = `400 ${size*.9}px ${SANS}`;
+  cy += size*1.2;
+  ctx.fillText('#thoughtleadership #synergy #hiring', x + pad, cy);
+  cy += 26;
+
+  // engagement bar
+  const e = st.eng || {reactions:0, reposts:0, comments:0};
+  drawReactions(ctx, ['like','insight','love'], e.reactions.toLocaleString(), x + pad, cy + 12, 1.15);
+  ctx.textAlign = 'right';
+  ctx.font = `400 17px ${SANS}`; ctx.fillStyle = FEED_MUTED;
+  ctx.fillText(`${e.comments} comments · ${e.reposts} reposts`, x + w - pad, cy + 18);
+  ctx.textAlign = 'left';
+  cy += 34;
+  ctx.strokeStyle = FEED_FAINT; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(x + pad, cy); ctx.lineTo(x + w - pad, cy); ctx.stroke();
+  cy += 22;
+
+  // the thread
+  const list = (st.comments || []).slice(-3);
+  ctx.font = `600 16px ${SANS}`; ctx.fillStyle = FEED_MUTED;
+  ctx.fillText('Most relevant', x + pad, cy + 6);
+  cy += 24;
+  for(const c of list){
+    if(cy > y + h - 80) break;
+    const a = Math.min(1, (now - c.at)/280);
+    cy += drawCommentRow(ctx, c, x + pad, cy + (1-a)*16, w - 2*pad, 1.02, a) + 6;
+  }
+  if(!list.length){
+    ctx.font = `400 18px ${SANS}`; ctx.fillStyle = FEED_MUTED;
+    ctx.fillText('Be the first to comment on this.', x + pad, cy + 24);
   }
 }
 
@@ -307,9 +471,8 @@ function draw(ctx, st){
     drawChip(ctx, 'THE CADENCE', M, 186);
     drawGridBlock(ctx, st, {top: 260, bottom: 990, labelW: 200, labelSize: 19});
   } else if(scene === 'feed'){
-    drawChip(ctx, 'THE COMMENTS ARE IN', M, 186);
-    drawEngagement(ctx, st, M, 268, 22, 'left');
-    drawComments(ctx, st, now, {x: (W-760)/2, w: 760, bottom: 985, max: 4, scale: 1.15});
+    drawChip(ctx, 'THE COMMENTS ARE IN', M, 152);
+    drawFeedScene(ctx, st, now);
   } else {
     // the stage — what the room sees
     const chipW = drawChip(ctx, st.exporting ? 'ON THE RECORD' : 'NOW PLAYING', M, 186);
@@ -324,12 +487,12 @@ function draw(ctx, st){
       ctx.letterSpacing = '0px';
     }
     drawStamp(ctx, W - M - 110, 205);
-    drawPhraseBlock(ctx, st, now, {top: 250, bottom: 580, maxW: W - 2*M, startSize: 132});
-    drawEq(ctx, M, 604, W - 2*M, 150, 30);
-    drawRibbon(ctx, st, {y: 790, h: 44});
+    drawPhraseBlock(ctx, st, now, {top: 248, bottom: 560, maxW: W - 2*M, startSize: 132});
+    drawEq(ctx, M, 584, W - 2*M, 136, 30);
+    drawRibbon(ctx, st, {y: 752, h: 40});
     const c = st.comments && st.comments.length ? st.comments[st.comments.length-1] : null;
-    if(c) drawComment(ctx, c, M, 962, W - 2*M, 1.05, Math.min(1, (now - c.at)/280));
-    drawEngagement(ctx, st, W/2, 1005, 19, 'center');
+    if(c) drawCommentRow(ctx, c, M, 832, W - 2*M, 1.05, Math.min(1, (now - c.at)/280));
+    drawEngagement(ctx, st, W/2, 1002, 19, 'center');
     // the room breathes on the kick
     if(st.kickAt){
       const age = (now - st.kickAt)/1000;

@@ -14,6 +14,8 @@ import { Pad, KeyPlate } from './components/pads/Pad.jsx';
 import { StepGrid } from './components/sequencer/StepGrid.jsx';
 import { Monitor } from './components/broadcast/Monitor.jsx';
 import { StageKey } from './components/stage/StageKey.jsx';
+import { RemixPanel } from './components/remix/RemixPanel.jsx';
+import { analyze } from './remix.js';
 import { CBAudio, CBVoice, CHARACTERS, exposeVoice } from './audio.js';
 import { VIDEO_MIMES, AUDIO_MIMES, pickMime, extFor, downloadBlob, mp4Support, startMp4Capture } from './exporter.js';
 import { randomPattern } from './randomizer.js';
@@ -116,6 +118,8 @@ export default function CircleBack(){
   const [loops, setLoops] = React.useState(4);
   const [studio, setStudio] = React.useState(false);
   const [band, setBand] = React.useState(true);
+  const [remixOpen, setRemixOpen] = React.useState(false);
+  const [remix, setRemix] = React.useState(null);
   const [exp, setExp] = React.useState(null);   // {mode, total, done}
   const [take, setTake] = React.useState(null); // {url, name, mode}
   const bufRef = React.useRef(new Map());       // sample id -> AudioBuffer
@@ -140,7 +144,7 @@ export default function CircleBack(){
   Object.assign(ref.current, {
     pattern: rack.pattern, samples: rack.samples, voxRow, patLen, armed, tempo, sinc, deliv, decay, rec, playing,
     pos, tickerText: ticker, voices: VOICES, voxCodes, exporting: !!exp, phrases: PHRASES,
-    song, energy, section: SECTIONS[energy], studio, band,
+    song, energy, section: SECTIONS[energy], studio, band, remix,
   });
 
   React.useEffect(()=>{
@@ -166,12 +170,22 @@ export default function CircleBack(){
     };
   },[]);
 
-  const speak = React.useCallback((i)=>{
+  // The machine speaks the jargon; when a remix is loaded, the screen shows the
+  // author's own line instead — their words, our voice.
+  const speak = React.useCallback((i, display)=>{
     const r = ref.current;
     CBVoice.speakPhrase(i, PHRASES[i].say, r.sinc, r.deliv, r.decay);
     r.spoken = true; r.phraseAt = performance.now();
-    setTicker(PHRASES[i].say);
+    setTicker(display || PHRASES[i].say);
   },[]);
+  const speakOverRemix = React.useCallback((i)=>{
+    const r = ref.current;
+    const rx = r.remix;
+    if(!rx || !rx.lines.length){ speak(i); return; }
+    const line = rx.lines[(r.lineIx || 0) % rx.lines.length];
+    r.lineIx = (r.lineIx || 0) + 1;
+    speak(i, line);
+  },[speak]);
   const pressKey = React.useCallback((i)=>{
     CBAudio.unlock();
     ref.current.lastKeyAt = performance.now();
@@ -260,7 +274,7 @@ export default function CircleBack(){
         const s = step, t = nextTime;
         const ex = expRef.current;
         if(ex && !ex.started && s===0){
-          ex.started = true;
+          ex.started = true; ex.arming = false;
           try{ ex.beginCapture(); ref.current.exportStartedAt = performance.now(); }catch(e){}
         }
         DRUMS.forEach((d,i)=>{ const v = r.pattern[i][s]; if(v) A.trigger(d.id, v===2?1:.72, t); });
@@ -281,12 +295,12 @@ export default function CircleBack(){
           rr.lastStep = s; rr.lastStepAt = performance.now();
           rr.kickAt = rr.pattern[0][s] ? performance.now() : rr.kickAt;
           setPos(s);
-          if(vx) speak(vx-1);
+          if(vx) speakOverRemix(vx-1);
           // the algorithm at work: reactions tick up, comments roll in
           rr.stepCount++;
           const eng = rr.eng;
           if(eng){
-            eng.reactions += Math.floor(Math.random()*(1 + rr.energy*6)) + rr.energy;
+            eng.reactions += 1 + Math.floor(Math.random()*(2 + rr.energy*7));
             if(Math.random() < .06 + rr.energy*.05) eng.reposts++;
             if(rr.stepCount >= eng.nextAt){
               eng.nextAt = rr.stepCount + 8 + Math.floor(Math.random()*10);
@@ -311,13 +325,15 @@ export default function CircleBack(){
     return ()=>{
       clearInterval(iv); timers.forEach(clearTimeout);
       const ex = expRef.current;
-      if(ex && !ex.finishing){ // playback adjourned mid-take: the take is stricken from the record
+      // An arming take is mid-handover: startExport bounces playback so the
+      // recording can begin cleanly at step 0. Only a genuine stop discards it.
+      if(ex && !ex.finishing && !ex.arming){
         expRef.current = null;
         if(ex.finish) ex.finish(true).catch(()=>{});
         setExp(null);
       }
     };
-  },[playing, speak, finishExport, setEnergyLevel]);
+  },[playing, speakOverRemix, finishExport, setEnergyLevel]);
 
   const newTrack = React.useCallback(()=>{
     const s = makeSong();
@@ -333,10 +349,49 @@ export default function CircleBack(){
     setTicker(`${s.name} — ${style} cadence`);
   },[]);
 
+  // Build the remix: their lines on screen, the phrases they actually wrote in
+  // the vox row, the arrangement scaled to how much thought leadership was found.
+  const buildRemix = React.useCallback(text=>{
+    const rx = analyze(text || '');
+    if(!rx.lines.length){ setTicker('Nothing to remix — paste a post first.'); return; }
+    const r = ref.current;
+    r.remix = rx; r.lineIx = 0;
+    setRemix(rx);
+    const s = makeSong();
+    setSong(s); r.song = s; r.setlistIx = 0;
+    const pool = rx.phrases.length ? rx.phrases : s.setlist;
+    const remixTempo = rx.score >= 60 ? 124 : rx.score >= 30 ? 112 : 104;
+    // 48 steps: a longer meeting fits more of their lines per loop
+    const { pattern } = randomPattern(
+      r.samples.length, PHRASES, 48,
+      60/remixTempo/4,
+      i => CBVoice.durationOf(i, PHRASES[i].say, r.deliv),
+      pool,
+    );
+    setRack(rk=> voxRowOf(rk.samples)+1 === pattern.length ? {...rk, pattern} : rk);
+    setTempo(remixTempo);
+    r.spoken = true; r.phraseAt = performance.now();
+    setTicker(rx.hook ? rx.hook.text : rx.lines[0]);
+    setRemixOpen(false); setStudio(false);
+    CBAudio.unlock(); setPlaying(true);
+  },[]);
+
   React.useEffect(()=>{
     const down = e=>{
       if(e.metaKey||e.ctrlKey||e.altKey) return;
       if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+      // step through the phrase bank — the preview is a flip-book
+      if(!e.shiftKey && (e.key==='ArrowRight' || e.key==='ArrowLeft')){
+        e.preventDefault();
+        if(e.repeat) return;
+        const dir = e.key==='ArrowRight' ? 1 : -1;
+        const next = (ref.current.armed + dir + PHRASES.length) % PHRASES.length;
+        CBAudio.unlock();
+        ref.current.lastKeyAt = performance.now();
+        setArmed(next);
+        quantize(()=> speak(next));
+        return;
+      }
       if(e.code==='Space'){ e.preventDefault(); setPlaying(x=>!x); return; }
       if(e.shiftKey && e.key.startsWith('Arrow')){
         e.preventDefault();
@@ -361,7 +416,7 @@ export default function CircleBack(){
     };
     window.addEventListener('keydown', down);
     return ()=> window.removeEventListener('keydown', down);
-  },[pressKey, newTrack, firePhrase, setEnergyLevel]);
+  },[pressKey, newTrack, firePhrase, setEnergyLevel, quantize, speak]);
 
   const onGrid = p => {
     const vr = ref.current.voxRow;
@@ -402,10 +457,19 @@ export default function CircleBack(){
   const audition = id => { CBAudio.unlock(); const b = bufRef.current.get(id); if(b) CBAudio.playBuffer(b, {vel:1}); };
 
   const startExport = async mode => {
+    try{ await beginExport(mode); }
+    catch(e){
+      console.warn('export failed', e);
+      expRef.current = null; setExp(null);
+      setTicker(`Recording declined — ${e && e.message ? e.message : 'unsupported in this browser'}`);
+    }
+  };
+
+  const beginExport = async mode => {
     if(expRef.current) return;
     CBAudio.unlock();
     const totalSteps = loops * ref.current.patLen;
-    const ex = {remaining: totalSteps, started:false, finishing:false, discard:false, mode};
+    const ex = {remaining: totalSteps, started:false, finishing:false, discard:false, arming:true, mode};
     if(mode==='video' && canvasRef.current && await mp4Support(CBAudio.sampleRate())){
       // real H.264 + AAC mp4 via WebCodecs — plays everywhere the feed does
       const name = 'thought-leadership.mp4';
@@ -480,6 +544,8 @@ export default function CircleBack(){
     <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:14,flexWrap:'wrap'}}>
       <span style={{fontSize:narrow?18:22,fontWeight:700,letterSpacing:'-.02em'}}>Circle Back<sup style={{fontSize:9,verticalAlign:10}}>®</sup></span>
       <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}>
+        <Button onClick={()=> setRemixOpen(o=>!o)}
+          style={{background:remixOpen?'#fff':'var(--ink)',color:remixOpen?'var(--blue)':'#fff',borderColor:remixOpen?'#fff':'var(--ink)'}}>Build your remix</Button>
         <Button onClick={()=>{ CBAudio.unlock(); setPlaying(x=>!x); }}
           style={{background:playing?'#fff':'transparent',color:playing?'var(--blue)':'#fff',borderColor:'#fff'}}>{playing?'Pause':'Play'}</Button>
         <Button onClick={newTrack} style={{background:'transparent',color:'#fff',borderColor:'#fff'}}>New track (R)</Button>
@@ -488,6 +554,7 @@ export default function CircleBack(){
         <Button onClick={()=>setStudio(true)} style={{background:'transparent',color:'#fff',borderColor:'#fff'}}>Audio tools</Button>
       </div>
     </div>
+    {remixOpen && <RemixPanel narrow={narrow} result={remix} onRemix={buildRemix} onClose={()=>setRemixOpen(false)}/>}
     <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',minHeight:0}}>
       <Monitor ref={canvasRef} stateRef={ref}
         style={{border:'2px solid rgba(255,255,255,.32)',width:'auto',height:'auto',maxWidth:'100%',maxHeight: narrow ? '58vh' : '68vh'}}/>
@@ -507,8 +574,8 @@ export default function CircleBack(){
       </Button>
     </div>
     <div style={{display:'flex',justifyContent:'space-between',gap:12,flexWrap:'wrap',opacity:.72,fontSize:9.5,fontWeight:700,letterSpacing:'.16em',textTransform:'uppercase'}}>
-      <span>{song.name} · {tempo} BPM · {SECTIONS[energy]}</span>
-      <span>Space plays · R new track · not affiliated with your network</span>
+      <span>{remix ? `Your remix · index ${remix.score} · ${remix.rank}` : song.name} · {tempo} BPM · {SECTIONS[energy]}</span>
+      <span>Space plays · ← → phrases · R new track · not affiliated with your network</span>
     </div>
     {take && <div style={{display:'flex',gap:12,alignItems:'center',flexWrap:'wrap'}}>
       <a href={take.url} download={take.name} style={{fontFamily:'var(--mono)',fontSize:11,color:'#fff'}}>↓ {take.name}</a>
@@ -522,6 +589,12 @@ export default function CircleBack(){
       <p style={{margin:0,fontSize:narrow?12.5:13,lineHeight:1.45,maxWidth:400}}>The LinkedIn remixer — corporate phrases, spoken in time over a live drum machine. <b style={{color:'var(--blue)'}}>It’s not an instrument. It’s a journey.</b></p>
     </div>
     <Ticker style={{marginTop:16}}>{ticker}</Ticker>
+    <div style={{marginTop:14}}>
+      <Button onClick={()=> setRemixOpen(o=>!o)} style={{padding:'12px 18px'}}>Build your remix</Button>
+    </div>
+    {remixOpen && <div style={{marginTop:12}}>
+      <RemixPanel narrow={narrow} result={remix} onRemix={buildRemix} onClose={()=>setRemixOpen(false)}/>
+    </div>}
 
     <div style={{display:'grid',gridTemplateColumns:narrow?'1fr':'minmax(0,1fr) 280px',gap:narrow?16:'var(--space-col)',alignItems:'start',marginTop:16}}>
       <Monitor ref={canvasRef} stateRef={ref}/>
