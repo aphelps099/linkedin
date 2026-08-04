@@ -4,14 +4,16 @@ import React, { useState, useRef, useEffect } from 'react';
 // vox rows print 2-letter phrase codes. Click cycles, drag paints.
 // Vox cells use a -1 "current armed phrase" sentinel resolved by the consumer via onChange.
 export function StepGrid({ voices, steps = 16, pattern, onChange, playhead = null, selected, onSelect, voxLabels }) {
-  const [pat, setPat] = useState(() => pattern || voices.map(() => Array(steps).fill(0)));
-  useEffect(() => { if (pattern) setPat(pattern); }, [pattern]);
+  // Controlled when `pattern` is provided — render straight from the prop so the
+  // grid can never lag a row behind `voices` (rows are added/removed by the sampler).
+  const [inner, setInner] = useState(() => voices.map(() => Array(steps).fill(0)));
+  const pat = pattern || inner;
   const painting = useRef(null);
   useEffect(() => {
     const up = () => painting.current = null;
     window.addEventListener('pointerup', up); return () => window.removeEventListener('pointerup', up);
   }, []);
-  const commit = p => { setPat(p); onChange && onChange(p); };
+  const commit = p => { if (!pattern) setInner(p); onChange && onChange(p); };
   const cycle = (i, s) => {
     const p = pat.map(r => [...r]);
     if (voices[i].vox) { p[i][s] = p[i][s] ? 0 : -1; painting.current = p[i][s]; }
