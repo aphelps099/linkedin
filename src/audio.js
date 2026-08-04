@@ -79,7 +79,7 @@ export const CBAudio = (() => {
     if(o.detune) try{ src.detune.value = o.detune; }catch(e){ /* detune unsupported */ }
     const g = ctx.createGain(); g.gain.value = .9*(o.vel===undefined?1:o.vel);
     src.connect(g); g.connect(master); src.start(t);
-    return src;
+    return { source: src, gain: g };
   }
   return {
     init, resume: rs, trigger, decode, playBuffer,
@@ -109,12 +109,23 @@ export const CBVoice = {
     await Promise.allSettled(Array.from({length:count}, (_,i)=> tryLoad(i)));
     return this.bank.size;
   },
-  // sinc/deliv are 0–1 registers; same voice math as the prototype:
-  // pitch = .4 + sinc*1.4, rate = .6 + deliv*.8
-  speakPhrase(i, text, sinc, deliv){
+  // sinc/deliv/decay are 0–1 registers; voice math per the prototype:
+  // pitch = .4 + sinc*1.4, rate = .6 + deliv*.8.
+  // decay governs what happens to the PREVIOUS phrase when a new one lands:
+  // 0 = choked instantly (the chair recognizes no one), 1 = rings out in full.
+  speakPhrase(i, text, sinc, deliv, decay){
+    const d = decay===undefined ? .5 : decay;
     const buf = this.bank.get(i);
     if(buf){
-      try{ this.current && this.current.stop(); }catch(e){ /* already ended */ }
+      const prev = this.current;
+      if(prev && d < .97){
+        const rel = .02 + d*1.2;
+        try{
+          const now = CBAudio.now();
+          prev.gain.gain.setTargetAtTime(0, now, Math.max(.01, rel/3));
+          prev.source.stop(now + rel + .1);
+        }catch(e){ /* already ended */ }
+      }
       this.current = CBAudio.playBuffer(buf, {
         vel: .95,
         rate: .6 + deliv*.8,
