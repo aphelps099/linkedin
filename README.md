@@ -36,6 +36,22 @@ The app opens as a blue room: the broadcast fills the screen, and there are
 `Space` plays/pauses · `R` generates a whole new track · **Audio tools** opens
 the studio for anyone who wants to program it by hand.
 
+Two scrubbers sit under the keys:
+
+- **Weirdness** — ring modulation, bitcrush, wobble and delay feedback, all on
+  one fader. At zero it's a person; at one it's the machine that replaced them.
+- **Distortion** — how hard the phrase bus is driven.
+
+The button beside them cycles the **corporate distortions**: *Boardroom*
+(clean presence), *Conference call* (telephone band), *All-hands PA*
+(megaphone), *Reply-all* (metallic, heavy feedback), *Bandwidth* (everything
+below 2.2 kHz, nothing above).
+
+Phrases are placed with the room they need: the randomizer measures each
+recorded line's real duration at the current tempo and delivery rate, then
+refuses to schedule the next phrase until the current one has finished
+speaking, plus a half-beat to breathe.
+
 ## The band
 
 Every track is produced before you touch anything. `src/song.js` picks a key,

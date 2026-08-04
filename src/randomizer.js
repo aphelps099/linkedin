@@ -14,7 +14,8 @@ export const STYLES = ['All-hands', 'Offsite', 'Sprint review', 'Town hall'];
 const FALLBACK_LONG = [0, 1, 2, 3, 8];
 const FALLBACK_SHORT = [4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15];
 
-export function randomPattern(nSamples, phrases, len = 16){
+// stepSec: seconds per 16th at the current tempo · stepsFor(i): seconds phrase i takes to say
+export function randomPattern(nSamples, phrases, len = 16, stepSec = .14, stepsFor = null){
   let LONG = FALLBACK_LONG, SHORT = FALLBACK_SHORT;
   if(phrases && phrases.length){
     LONG = []; SHORT = [];
@@ -75,25 +76,31 @@ export function randomPattern(nSamples, phrases, len = 16){
     if(chance(.5)){ const r = chance(.6)?1:2; p[r][off-2] = Math.max(p[r][off-2],1); if(chance(.5)) p[r][off-1] = 2; }
   }
 
-  // ---- vox: phrases across the whole meeting, with breathing room ----
+  // ---- vox: nobody talks over anybody ----
+  // Each line is given as many steps as it actually takes to say (measured from
+  // the recorded bank), plus a beat of silence, before the next one may start.
   const voxRow = 8 + nSamples;
-  const want = 2*bars + 1 + rint(bars+1);
-  const candidates = [];
-  for(let s=0;s<len;s+=2) candidates.push(s);
-  const slots = [];
-  for(const s of shuffle(candidates)){
-    if(slots.length >= want) break;
-    if(slots.every(x => Math.abs(x-s) >= 3)) slots.push(s);
-  }
-  slots.sort((a,b)=>a-b);
   const placed = [];
-  slots.forEach((s, ix) => {
-    const next = ix+1 < slots.length ? slots[ix+1] : slots[0] + len;
-    const room = next - s;
-    const pool = room >= 6 && LONG.length && chance(room >= 10 ? .6 : .45) ? LONG : SHORT;
-    const phrase = pool[rint(pool.length)];
-    p[voxRow][s] = phrase + 1;
-    placed.push(phrase);
-  });
+  const roomFor = i => {
+    const secs = stepsFor ? stepsFor(i) : 1.6;
+    return Math.ceil(secs / Math.max(.05, stepSec)) + 2; // + a half-beat to breathe
+  };
+  let cursor = rint(2) * 4;              // start on a strong beat
+  let guard = 0;
+  while(cursor < len && guard++ < 32){
+    const wantLong = LONG.length && chance(.45);
+    let idx = (wantLong ? LONG : SHORT)[rint((wantLong ? LONG : SHORT).length)];
+    let need = roomFor(idx);
+    // if the long line won't finish before the loop ends, take a short one instead
+    if(cursor + need > len){
+      idx = SHORT[rint(SHORT.length)];
+      need = roomFor(idx);
+      if(cursor + need > len) break;
+    }
+    p[voxRow][cursor] = idx + 1;
+    placed.push(idx);
+    cursor += need + rint(3)*2;          // a little extra air, sometimes
+    cursor = Math.ceil(cursor/2)*2;      // land on an even step
+  }
   return { pattern: p, style: STYLES[style], placed };
 }

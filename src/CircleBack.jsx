@@ -8,12 +8,13 @@ import { Readout } from './components/chassis/Readout.jsx';
 import { Stamp } from './components/chassis/Stamp.jsx';
 import { Button } from './components/controls/Button.jsx';
 import { Knob } from './components/controls/Knob.jsx';
+import { Scrubber } from './components/controls/Scrubber.jsx';
 import { Kbd } from './components/controls/Kbd.jsx';
 import { Pad, KeyPlate } from './components/pads/Pad.jsx';
 import { StepGrid } from './components/sequencer/StepGrid.jsx';
 import { Monitor } from './components/broadcast/Monitor.jsx';
 import { StageKey } from './components/stage/StageKey.jsx';
-import { CBAudio, CBVoice } from './audio.js';
+import { CBAudio, CBVoice, CHARACTERS, exposeVoice } from './audio.js';
 import { VIDEO_MIMES, AUDIO_MIMES, pickMime, extFor, downloadBlob, mp4Support, startMp4Capture } from './exporter.js';
 import { randomPattern } from './randomizer.js';
 import { randomComment } from './feed.js';
@@ -73,9 +74,11 @@ const seedPattern = (n, len=DEFAULT_LEN) => {
   const put = (i, arr, acc=[]) => arr.forEach(s=>{ for(let o=s;o<len;o+=16) p[i][o] = acc.includes(s) ? 2 : 1; });
   put(0,[0,3,8,10],[0,8]); put(1,[4,12],[4,12]); put(2,[12]);
   put(3,[0,2,4,6,8,10,12,14],[0,8]); put(4,[7,15]); put(5,[3,7,11,15]);
+  // phrases get a wide berth in the sample mix — short lines, far apart
   const vr = DRUMS.length + n;
-  p[vr][0] = 2; p[vr][10] = 6;
-  if(len >= 32){ p[vr][16] = 21; p[vr][28] = 16; } else p[vr][12] = 16;
+  p[vr][0] = 2;                                  // Humbled
+  if(len >= 32) p[vr][16] = 6;                   // Circle back
+  if(len >= 48) p[vr][32] = 16;                  // Full stop.
   return p;
 };
 const exhibitLetter = i => String.fromCharCode(65+i);
@@ -106,6 +109,9 @@ export default function CircleBack(){
   const [sinc, setSinc] = React.useState(.12);
   const [deliv, setDeliv] = React.useState(.5);
   const [decay, setDecay] = React.useState(.5);
+  const [weird, setWeird] = React.useState(.15);
+  const [dist, setDist] = React.useState(.12);
+  const [character, setCharacter] = React.useState('boardroom');
   const [selRow, setSelRow] = React.useState(0);
   const [loops, setLoops] = React.useState(4);
   const [studio, setStudio] = React.useState(false);
@@ -139,8 +145,11 @@ export default function CircleBack(){
 
   React.useEffect(()=>{
     CBVoice.loadBank(`${import.meta.env.BASE_URL}phrases/`, PHRASES.length).catch(()=>{});
+    exposeVoice();
+    if(typeof window !== 'undefined') window.CBState = ref.current; // on-device debugging
   },[]);
   React.useEffect(()=>{ CBAudio.setVoxDelay(60/tempo/4*3); },[tempo]);
+  React.useEffect(()=>{ CBAudio.setVoxFx({weird, dist, character}); },[weird, dist, character]);
 
   // mobile audio: unlock/resume inside every real gesture (capture phase runs
   // in the same tap stack, before React handlers) — also re-resumes the
@@ -312,7 +321,12 @@ export default function CircleBack(){
 
   const newTrack = React.useCallback(()=>{
     const s = makeSong();
-    const { pattern, style } = randomPattern(ref.current.samples.length, PHRASES, ref.current.patLen);
+    const r = ref.current;
+    const { pattern, style } = randomPattern(
+      r.samples.length, PHRASES, r.patLen,
+      60/r.tempo/4,
+      i => CBVoice.durationOf(i, PHRASES[i].say, r.deliv),
+    );
     setSong(s); ref.current.song = s; ref.current.setlistIx = 0;
     setRack(rk=> voxRowOf(rk.samples)+1 === pattern.length ? {...rk, pattern} : rk);
     ref.current.spoken = true; ref.current.phraseAt = performance.now();
@@ -479,6 +493,19 @@ export default function CircleBack(){
         style={{border:'2px solid rgba(255,255,255,.32)',width:'auto',height:'auto',maxWidth:'100%',maxHeight: narrow ? '58vh' : '68vh'}}/>
     </div>
     {stageKeys}
+    <div style={{display:'grid',gridTemplateColumns:narrow?'1fr':'1fr 1fr auto',gap:narrow?12:18,alignItems:'end'}}>
+      <Scrubber tone="light" label="Weirdness" value={weird} onChange={setWeird}/>
+      <Scrubber tone="light" label="Distortion" value={dist} onChange={setDist}/>
+      <Button onClick={()=> setCharacter(c=>{
+          const i = CHARACTERS.findIndex(x=>x.id===c);
+          const next = CHARACTERS[(i+1) % CHARACTERS.length];
+          setTicker(`Distortion — ${next.name}`);
+          return next.id;
+        })}
+        style={{background:'transparent',color:'#fff',borderColor:'#fff',whiteSpace:'nowrap'}}>
+        {(CHARACTERS.find(c=>c.id===character)||CHARACTERS[0]).name}
+      </Button>
+    </div>
     <div style={{display:'flex',justifyContent:'space-between',gap:12,flexWrap:'wrap',opacity:.72,fontSize:9.5,fontWeight:700,letterSpacing:'.16em',textTransform:'uppercase'}}>
       <span>{song.name} · {tempo} BPM · {SECTIONS[energy]}</span>
       <span>Space plays · R new track · not affiliated with your network</span>
@@ -552,6 +579,14 @@ export default function CircleBack(){
           <Knob label="Delivery" value={deliv} onChange={setDeliv}/>
           <Knob label="Decay" value={decay} onChange={setDecay}/>
           <Knob label="Tempo" value={(tempo-60)/140} onChange={v=>setTempo(Math.round(60+v*140))} format={()=>tempo+' BPM'}/>
+        </div>
+        <div style={{display:'flex',flexDirection:'column',gap:12,marginTop:16,borderTop:'1px dotted var(--hair)',paddingTop:14}}>
+          <Scrubber label="Weirdness" value={weird} onChange={setWeird}/>
+          <Scrubber label="Distortion" value={dist} onChange={setDist}/>
+          <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+            {CHARACTERS.map(c=>
+              <Button key={c.id} on={character===c.id} onClick={()=>setCharacter(c.id)} style={{padding:'6px 8px'}}>{c.name}</Button>)}
+          </div>
         </div>
       </Bay>
     </div>
