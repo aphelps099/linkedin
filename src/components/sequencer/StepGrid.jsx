@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 // Sequencer as a ruled Swiss table: 1px ink grid, blue = hit, ink = accent,
 // vox rows print 2-letter phrase codes. Click cycles, drag paints.
 // Vox cells use a -1 "current armed phrase" sentinel resolved by the consumer via onChange.
-export function StepGrid({ voices, steps = 16, pattern, onChange, playhead = null, selected, onSelect, voxLabels }) {
+export function StepGrid({ voices, steps = 16, pattern, onChange, playhead = null, selected, onSelect, onClearRow, voxLabels }) {
   // Controlled when `pattern` is provided — render straight from the prop so the
   // grid can never lag a row behind `voices` (rows are added/removed by the sampler).
   const [inner, setInner] = useState(() => voices.map(() => Array(steps).fill(0)));
@@ -31,7 +31,9 @@ export function StepGrid({ voices, steps = 16, pattern, onChange, playhead = nul
       const isSel = selected === i;
       return <React.Fragment key={i}>
         <div onClick={() => onSelect && onSelect(i)}
-          style={{ border, borderTop: 'none', borderLeft: 'none', height: 'var(--seq-cell-h)', display: 'flex', alignItems: 'center', padding: '0 10px', fontSize: 'var(--label-size)', fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', cursor: 'pointer', background: isSel ? 'var(--ink)' : 'var(--white)', color: isSel ? '#fff' : 'var(--ink)', boxSizing: 'border-box' }}>{v.name}</div>
+          onDoubleClick={() => onClearRow && onClearRow(i)}
+          title="Double-click to clear this track"
+          style={{ border, borderTop: 'none', borderLeft: 'none', height: 'var(--seq-cell-h)', display: 'flex', alignItems: 'center', padding: '0 10px', fontSize: 'var(--label-size)', fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none', background: isSel ? 'var(--ink)' : 'var(--white)', color: isSel ? '#fff' : 'var(--ink)', boxSizing: 'border-box' }}>{v.name}</div>
         {pat[i].map((val, s) => {
           const isPh = s === playhead;
           let bg = 'var(--white)', txt = null;

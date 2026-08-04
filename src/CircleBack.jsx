@@ -13,7 +13,7 @@ import { Pad, KeyPlate } from './components/pads/Pad.jsx';
 import { StepGrid } from './components/sequencer/StepGrid.jsx';
 import { Monitor } from './components/broadcast/Monitor.jsx';
 import { CBAudio, CBVoice } from './audio.js';
-import { VIDEO_MIMES, AUDIO_MIMES, pickMime, extFor, downloadBlob } from './exporter.js';
+import { VIDEO_MIMES, AUDIO_MIMES, pickMime, extFor, downloadBlob, mp4Support, startMp4Capture } from './exporter.js';
 import { randomPattern } from './randomizer.js';
 import { randomComment } from './feed.js';
 
@@ -121,7 +121,7 @@ export default function CircleBack(){
     const stepMs = 60000/ref.current.tempo/4;
     setTimeout(()=>{
       expRef.current = null;
-      try{ if(ex.recorder.state !== 'inactive') ex.recorder.stop(); }catch(e){}
+      if(ex.finish) ex.finish(false).catch(e=> console.warn('export finish', e));
       setExp(null); setPlaying(false);
     }, stepMs + 300);
   },[]);
@@ -142,7 +142,7 @@ export default function CircleBack(){
         const ex = expRef.current;
         if(ex && !ex.started && s===0){
           ex.started = true;
-          try{ ex.recorder.start(); ref.current.exportStartedAt = performance.now(); }catch(e){}
+          try{ ex.beginCapture(); ref.current.exportStartedAt = performance.now(); }catch(e){}
         }
         DRUMS.forEach((d,i)=>{ const v = r.pattern[i][s]; if(v) A.trigger(d.id, v===2?1:.72, t); });
         r.samples.forEach((sm,ix)=>{
@@ -183,8 +183,8 @@ export default function CircleBack(){
       clearInterval(iv); timers.forEach(clearTimeout);
       const ex = expRef.current;
       if(ex && !ex.finishing){ // playback adjourned mid-take: the take is stricken from the record
-        expRef.current = null; ex.discard = true;
-        try{ if(ex.recorder.state !== 'inactive') ex.recorder.stop(); }catch(e){}
+        expRef.current = null;
+        if(ex.finish) ex.finish(true).catch(()=>{});
         setExp(null);
       }
     };
@@ -202,6 +202,15 @@ export default function CircleBack(){
       if(e.metaKey||e.ctrlKey||e.altKey) return;
       if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
       if(e.code==='Space'){ e.preventDefault(); setPlaying(x=>!x); return; }
+      if(e.shiftKey && e.key.startsWith('Arrow')){
+        e.preventDefault();
+        const step = .05;
+        if(e.key==='ArrowUp') setDeliv(v=> Math.min(1, v+step));
+        else if(e.key==='ArrowDown') setDeliv(v=> Math.max(0, v-step));
+        else if(e.key==='ArrowRight') setSinc(v=> Math.min(1, v+step));
+        else if(e.key==='ArrowLeft') setSinc(v=> Math.max(0, v-step));
+        return;
+      }
       if(e.key.toLowerCase()==='r' && !e.repeat){ e.preventDefault(); doReorg(); return; }
       const k = KEYMAP.indexOf(e.key.toLowerCase());
       if(k>=0 && !e.repeat){ e.preventDefault(); pressKey(k); }
@@ -248,37 +257,58 @@ export default function CircleBack(){
   };
   const audition = id => { const b = bufRef.current.get(id); if(b) CBAudio.playBuffer(b, {vel:1}); };
 
-  const startExport = mode => {
+  const startExport = async mode => {
     if(expRef.current) return;
-    const mime = pickMime(mode==='video' ? VIDEO_MIMES : AUDIO_MIMES);
-    if(!mime || typeof MediaRecorder === 'undefined'){ setTicker('This browser declines to be recorded.'); return; }
     CBAudio.init(); CBAudio.resume();
-    const audioTracks = CBAudio.stream().getAudioTracks();
-    let stream;
-    if(mode==='video'){
-      const cv = canvasRef.current; if(!cv) return;
-      stream = new MediaStream([...cv.captureStream(30).getVideoTracks(), ...audioTracks]);
+    const ex = {remaining: loops*STEPS, started:false, finishing:false, discard:false, mode};
+    if(mode==='video' && canvasRef.current && await mp4Support(CBAudio.sampleRate())){
+      // real H.264 + AAC mp4 via WebCodecs — plays everywhere the feed does
+      const name = 'thought-leadership.mp4';
+      ex.beginCapture = ()=>{
+        ex.capture = startMp4Capture({canvas: canvasRef.current, audioTrack: CBAudio.audioTrack(), sampleRate: CBAudio.sampleRate()});
+      };
+      ex.finish = async discard => {
+        const blob = ex.capture ? await ex.capture.stop(discard) : null;
+        if(blob && !discard){
+          const url = downloadBlob(blob, name);
+          setTake(prev=>{ if(prev) URL.revokeObjectURL(prev.url); return {url, name, mode}; });
+          setTicker('Clip circulated to your downloads.');
+        }
+      };
     } else {
-      stream = new MediaStream(audioTracks);
+      const mime = pickMime(mode==='video' ? VIDEO_MIMES : AUDIO_MIMES);
+      if(!mime || typeof MediaRecorder === 'undefined'){ setTicker('This browser declines to be recorded.'); return; }
+      const audioTracks = CBAudio.stream().getAudioTracks();
+      let stream;
+      if(mode==='video'){
+        const cv = canvasRef.current; if(!cv) return;
+        stream = new MediaStream([...cv.captureStream(30).getVideoTracks(), ...audioTracks]);
+      } else {
+        stream = new MediaStream(audioTracks);
+      }
+      const recorder = new MediaRecorder(stream, {mimeType:mime, videoBitsPerSecond:8_000_000, audioBitsPerSecond:192_000});
+      const chunks = [];
+      const ext = extFor(mime);
+      const name = mode==='video' ? `thought-leadership.${ext}` : `thought-leadership-audio.${ext}`;
+      recorder.ondataavailable = e => { if(e.data && e.data.size) chunks.push(e.data); };
+      recorder.onstop = () => {
+        if(ex.discard || !chunks.length) return;
+        const blob = new Blob(chunks, {type:mime});
+        const url = downloadBlob(blob, name);
+        setTake(prev=>{ if(prev) URL.revokeObjectURL(prev.url); return {url, name, mode}; });
+        setTicker('Clip circulated to your downloads.');
+      };
+      ex.beginCapture = ()=> recorder.start();
+      ex.finish = async discard => {
+        ex.discard = !!discard;
+        try{ if(recorder.state !== 'inactive') recorder.stop(); }catch(e){}
+      };
     }
-    const recorder = new MediaRecorder(stream, {mimeType:mime, videoBitsPerSecond:8_000_000, audioBitsPerSecond:192_000});
-    const chunks = [];
-    const ext = extFor(mime);
-    const name = mode==='video' ? `thought-leadership.${ext}` : `thought-leadership-audio.${ext}`;
-    const ex = {recorder, remaining: loops*STEPS, started:false, finishing:false, discard:false, mode};
-    recorder.ondataavailable = e => { if(e.data && e.data.size) chunks.push(e.data); };
-    recorder.onstop = () => {
-      if(ex.discard || !chunks.length) return;
-      const blob = new Blob(chunks, {type:mime});
-      const url = downloadBlob(blob, name);
-      setTake(prev=>{ if(prev) URL.revokeObjectURL(prev.url); return {url, name, mode}; });
-      setTicker('Clip circulated to your downloads.');
-    };
     expRef.current = ex;
     // director's run of show: cut between closeup scenes so every take shows
     // the phrase, the pads, the grid, and the comments
     const totalSec = loops*STEPS*(60/ref.current.tempo/4);
-    ref.current.sceneDur = Math.min(5, Math.max(2.5, totalSec/4));
+    ref.current.sceneDur = Math.min(5, Math.max(2.5, totalSec/5));
     ref.current.exportStartedAt = performance.now();
     setExp({mode, total: loops*STEPS, done:0});
     if(ref.current.playing){ setPlaying(false); setTimeout(()=> setPlaying(true), 60); }
@@ -293,7 +323,12 @@ export default function CircleBack(){
       <p style={{margin:0,fontSize:15,lineHeight:1.45,maxWidth:380}}>Sixteen keys of fluent LinkedIn, spoken in time over a live drum machine. <b style={{color:'var(--blue)'}}>It’s not an instrument. It’s a journey.</b></p>
     </div>
     <Ticker style={{marginTop:24}}>{ticker}</Ticker>
-    <div style={{display:'grid',gridTemplateColumns:'250px 1fr 230px',gap:'var(--space-col)',marginTop:'var(--space-section)'}}>
+    <div style={{display:'flex',gap:9,alignItems:'center',marginTop:14,flexWrap:'wrap'}}>
+      <Button style={{padding:'12px 20px'}} onClick={()=>{ doReorg(); setPlaying(true); }}>▶ Play a random mix</Button>
+      <Button on={playing} onClick={()=>setPlaying(x=>!x)}>{playing?'Pause':'Play'}</Button>
+      <span style={{marginLeft:'auto'}}><Silk muted>Type the letters on the keys · R rolls a new beat · Space plays</Silk></span>
+    </div>
+    <div style={{display:'grid',gridTemplateColumns:'200px 1fr 230px',gap:'var(--space-col)',marginTop:'var(--space-section)'}}>
       <Bay title="Phrase index" aside="01–16">
         {PHRASES.map((p,i)=>
           <div key={i} onClick={()=>pressKey(i)} style={{display:'flex',gap:12,fontSize:11.5,lineHeight:1.9,borderBottom:'1px dotted var(--hair)',cursor:'pointer',fontWeight:armed===i?700:400,color:armed===i?'var(--blue)':'var(--ink)'}}>
@@ -304,9 +339,9 @@ export default function CircleBack(){
       <Bay title="Keys" aside="Press to opine">
         <KeyPlate columns={4}>
           {PHRASES.map((p,i)=>
-            <Pad key={i} index={String(i+1).padStart(2,'0')} name={p.name} hot={armed===i} onTrigger={()=>pressKey(i)}/>)}
+            <Pad key={i} index={String(i+1).padStart(2,'0')} hotkey={KEYMAP[i].toUpperCase()} name={p.name} hot={armed===i} onTrigger={()=>pressKey(i)}/>)}
         </KeyPlate>
-        <p style={{margin:'10px 0 0',fontSize:10.5,color:'var(--text-meta)'}}>Keys <Kbd>1</Kbd>–<Kbd>4</Kbd> <Kbd>Q</Kbd> <Kbd>W</Kbd> <Kbd>E</Kbd> <Kbd>T</Kbd> <Kbd>A</Kbd>–<Kbd>F</Kbd> <Kbd>Z</Kbd>–<Kbd>V</Kbd> speak · <Kbd>R</Kbd> calls a reorg · <Kbd>space</Kbd> starts the meeting</p>
+        <p style={{margin:'10px 0 0',fontSize:10.5,color:'var(--text-meta)'}}>Type the letter shown on each key to speak it · <Kbd>R</Kbd> new random beat · <Kbd>space</Kbd> play/pause · <Kbd>⇧</Kbd><Kbd>↑</Kbd>/<Kbd>↓</Kbd> delivery · <Kbd>⇧</Kbd><Kbd>←</Kbd>/<Kbd>→</Kbd> sincerity</p>
       </Bay>
       <Bay title="Registers" aside="Cal. A">
         <div style={{display:'flex',flexDirection:'column',gap:16}}>
@@ -318,14 +353,16 @@ export default function CircleBack(){
       </Bay>
     </div>
     <Bay title="Sequencer · 16 steps" aside={<Readout>{pos===null?'—':String(pos+1).padStart(2,'0')}</Readout>} style={{marginTop:'var(--space-section)'}}>
-      <StepGrid voices={VOICES} pattern={rack.pattern} onChange={onGrid} playhead={pos} selected={selRow} onSelect={setSelRow} voxLabels={voxLabels}/>
+      <StepGrid voices={VOICES} pattern={rack.pattern} onChange={onGrid} playhead={pos} selected={selRow} onSelect={setSelRow}
+        onClearRow={i=> setRack(rk=>{ const pattern = rk.pattern.map(x=>[...x]); pattern[i] = Array(STEPS).fill(0); return {...rk, pattern}; })}
+        voxLabels={voxLabels}/>
       <div style={{display:'flex',gap:9,alignItems:'center',marginTop:16,flexWrap:'wrap'}}>
-        <Button on={playing} onClick={()=>setPlaying(x=>!x)}>{playing?'Adjourn':'Convene'}</Button>
-        <Button variant="rec" on={rec} onClick={()=>setRec(x=>!x)}>Minute-take</Button>
-        <Button onClick={()=>setRack(rk=>({...rk, pattern:seedPattern(rk.samples.length)}))}>Load agenda</Button>
-        <Button onClick={()=>setRack(rk=>({...rk, pattern:emptyPattern(rk.samples.length)}))}>Table it</Button>
-        <Button onClick={doReorg}>Reorg</Button>
-        <span style={{marginLeft:'auto'}}><Silk muted>Vox cells stamp the armed phrase · drums cycle hit / accent</Silk></span>
+        <Button on={playing} onClick={()=>setPlaying(x=>!x)}>{playing?'Pause':'Play'}</Button>
+        <Button variant="rec" on={rec} onClick={()=>setRec(x=>!x)}>{rec?'Recording keys':'Record keys'}</Button>
+        <Button onClick={doReorg}>Random beat</Button>
+        <Button onClick={()=>setRack(rk=>({...rk, pattern:seedPattern(rk.samples.length)}))}>Demo beat</Button>
+        <Button onClick={()=>setRack(rk=>({...rk, pattern:emptyPattern(rk.samples.length)}))}>Clear all</Button>
+        <span style={{marginLeft:'auto'}}><Silk muted>Click cells to add hits · double-click a track name to clear it · Vox cells stamp the armed phrase</Silk></span>
       </div>
       <div style={{display:'flex',gap:9,alignItems:'center',marginTop:12,flexWrap:'wrap',borderTop:'1px dotted var(--hair)',paddingTop:12}}>
         <Silk>Exhibits</Silk>
@@ -335,7 +372,7 @@ export default function CircleBack(){
             <span style={{fontFamily:'var(--mono)',fontSize:9.5,letterSpacing:'.08em',textTransform:'uppercase',maxWidth:130,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{exhibitLetter(i)} · {s.name}</span>
             <span onClick={()=>removeExhibit(s.id)} role="button" aria-label={`Strike exhibit ${exhibitLetter(i)}`} style={{cursor:'pointer',fontFamily:'var(--mono)',fontSize:10.5}}>×</span>
           </span>)}
-        <Button onClick={()=>fileRef.current && fileRef.current.click()}>Submit exhibit</Button>
+        <Button onClick={()=>fileRef.current && fileRef.current.click()}>Upload sound</Button>
         <input ref={fileRef} type="file" accept="audio/*" multiple style={{display:'none'}}
           onChange={e=>{ addExhibits(e.target.files); e.target.value=''; }}/>
         <span style={{marginLeft:'auto'}}><Silk muted>Audio admitted into the record becomes a sequencer row</Silk></span>
@@ -353,8 +390,8 @@ export default function CircleBack(){
             </div>
           </div>
           <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
-            <Button variant="rec" on={exp?.mode==='video'} onClick={()=>startExport('video')}>Cut a clip</Button>
-            <Button variant="rec" on={exp?.mode==='audio'} onClick={()=>startExport('audio')}>Audio only</Button>
+            <Button variant="rec" on={exp?.mode==='video'} onClick={()=>startExport('video')}>Export video (mp4)</Button>
+            <Button variant="rec" on={exp?.mode==='audio'} onClick={()=>startExport('audio')}>Export audio</Button>
           </div>
           <div><Silk>Status</Silk>{' '}<Readout style={{marginLeft:8}}>{exp ? `ON THE RECORD ${String(Math.min(exp.done,exp.total)).padStart(2,'0')}/${exp.total}` : take ? 'CLEARED FOR THE FEED' : '—'}</Readout></div>
           {take && (take.mode==='video'
