@@ -155,6 +155,7 @@ export default function CircleBack(){
   const [band, setBand] = React.useState(true);
   const [remixOpen, setRemixOpen] = React.useState(false);
   const [remix, setRemix] = React.useState(null);
+  const [handoff, setHandoff] = React.useState(''); // post handed over from LinkedIn Lessons
   const [exp, setExp] = React.useState(null);   // {mode, total, done}
   const [take, setTake] = React.useState(null); // {url, name, mode}
   const bufRef = React.useRef(new Map());       // sample id -> AudioBuffer
@@ -439,6 +440,24 @@ export default function CircleBack(){
     CBAudio.unlock(); setPlaying(true);
   },[]);
 
+  // LinkedIn Lessons hands a finished post over via the URL hash ("Turn It
+  // Into a Beat"). Stage it in the remix panel — playback still needs a
+  // gesture, so the user reads their post and presses Remix it.
+  React.useEffect(()=>{
+    const m = location.hash.match(/^#beat=(.+)$/);
+    if(!m) return;
+    history.replaceState(null, '', location.pathname + location.search);
+    let text = '';
+    try{ text = decodeURIComponent(m[1]); }catch{ return; }
+    if(!text.trim()) return;
+    const rx = analyze(text);
+    rx.optimized = optimize(text, PHRASES);
+    setRemix(rx);
+    setHandoff(text);
+    setRemixOpen(true);
+    setTicker('Post received from LinkedIn Lessons — press Remix it.');
+  },[]);
+
   React.useEffect(()=>{
     const down = e=>{
       if(e.metaKey||e.ctrlKey||e.altKey) return;
@@ -652,7 +671,7 @@ export default function CircleBack(){
       </div>
     </div>
     {remixOpen && <div style={{position:'relative',zIndex:1}}>
-      <RemixPanel narrow={narrow} result={remix} onRemix={buildRemix} onClose={()=>setRemixOpen(false)}/>
+      <RemixPanel narrow={narrow} result={remix} initial={handoff} onRemix={buildRemix} onClose={()=>setRemixOpen(false)}/>
     </div>}
     <div style={{position:'relative',zIndex:1,flex:1,display:'flex',alignItems:'center',justifyContent:'center',minHeight:0}}>
       <Monitor ref={canvasRef} stateRef={ref}
@@ -700,7 +719,7 @@ export default function CircleBack(){
       <Button onClick={()=> setRemixOpen(o=>!o)} style={{padding:'12px 18px'}}>Build your remix</Button>
     </div>
     {remixOpen && <div style={{marginTop:12}}>
-      <RemixPanel narrow={narrow} result={remix} onRemix={buildRemix} onClose={()=>setRemixOpen(false)}/>
+      <RemixPanel narrow={narrow} result={remix} initial={handoff} onRemix={buildRemix} onClose={()=>setRemixOpen(false)}/>
     </div>}
 
     <div style={{display:'grid',gridTemplateColumns:narrow?'1fr':'minmax(0,1fr) 280px',gap:narrow?16:'var(--space-col)',alignItems:'start',marginTop:16}}>

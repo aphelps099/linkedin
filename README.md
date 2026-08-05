@@ -22,6 +22,46 @@ Then open the printed local URL. `npm run build` produces a static bundle in
 (enable Pages → Source: GitHub Actions in the repo settings, or trigger the
 workflow manually from the Actions tab).
 
+The build is multi-page: the mixer at `/` and **LinkedIn Lessons™** at
+`/lessons/`.
+
+## LinkedIn Lessons™ (the post generator)
+
+*What are we pretending to be humbled about today?* — a guided post generator
+disguised as satire, at `/lessons/`. Create a better LinkedIn post, or make it
+dramatically worse.
+
+Lessons is a **complementary toolset that stands on its own** — it is not a
+mod of the mixer. Circle Back's screens, keys, and flow are untouched; the
+only connection is a one-way door (below) that Lessons can send a finished
+post through.
+
+- **Six categories**: Announce Something, Teach a Lesson, Sell Without
+  Selling, Manufacture Urgency, AI Thought Leadership, and Roast My Post.
+- **A Mad Libs interview** — one question at a time, and the form talks back
+  ("Excellent. Let's make Sarah's employment feel historically significant.").
+- **The LinkedInification dial** — five levels, from **1 · Almost Human**
+  (clear, useful, genuinely publishable) to **5 · Corporate Hallucination**
+  (an ordinary Tuesday becomes a transformational moment for the global
+  business community). Same seed, same facts: the dial escalates the *same*
+  post, and the Thought Leadership Index never goes down when the dial goes up.
+- **The result page** shows the post in a LinkedIn-style preview with
+  diagnostics — humble-brag score, buzzword density, gratitude inflation,
+  dramatic one-liners, journey references, and the probability someone
+  comments "Well deserved!" — plus Copy, Make It Worse, Make It Human,
+  Add More Synergy, Add a Personal Struggle, Founder Voice, and Roast This
+  Post.
+- **Roast My Post** takes a pasted draft and returns a full roast and jargon
+  analysis, a genuinely improved version, and a painfully LinkedIn version.
+- **Turn It Into a Beat** — the one-way door. Lessons hands the finished
+  post to the mixer via a `#beat=` URL hash; Circle Back opens with the
+  remix panel staged and the post already analyzed, one press away from
+  becoming a track. Arrive without the hash and the mixer behaves exactly
+  as it always has.
+
+Everything is template-driven and seeded (`src/lessons/generator.js`) —
+no network, nothing leaves the browser.
+
 ## The stage
 
 The app opens as a blue room: the broadcast fills the screen, and there are
@@ -154,6 +194,12 @@ src/
   randomizer.js            the Reorg — style-based drum pattern randomizer
   feed.js                  the engagement engine's fake comment pool
   lexicon.js               full LinkedIn phrase bank (openers / buzzwords / AI tells / closers)
+  lessons/
+    main.jsx               /lessons/ entry
+    Lessons.jsx            the generator screens: categories → interview → result
+    categories.js          the six interview flows and their reactions
+    generator.js           seeded template engine, the dial, transforms, roast, humanizer
+    score.js               post diagnostics (reuses remix.js's Thought Leadership Index)
   styles.css, tokens/      design tokens as CSS custom properties
   components/
     stage/                 StageKey — the three performance keys

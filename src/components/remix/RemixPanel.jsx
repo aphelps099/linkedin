@@ -17,8 +17,9 @@ Let's connect and explore synergies. Thoughts? 👇
 #thoughtleadership #synergy #opentowork`;
 
 // The front door: paste a post, get a remix. Everything happens in the browser.
-export function RemixPanel({ onRemix, onClose, result, narrow }){
-  const [text, setText] = React.useState('');
+// `initial` arrives when LinkedIn Lessons hands a finished post over.
+export function RemixPanel({ onRemix, onClose, result, narrow, initial }){
+  const [text, setText] = React.useState(initial || '');
   const words = wordCount(text);
   const over = words > MAX_WORDS;
   return <div style={{background:'#fff',color:'var(--ink)',border:'var(--rule-frame) solid var(--ink)',padding:narrow?16:22,display:'flex',flexDirection:'column',gap:12}}>
