@@ -176,6 +176,15 @@ node scripts/make-brand-assets.mjs
 That writes `public/favicon-16.png`, `favicon-32.png`, `apple-touch-icon.png`,
 `icon-192.png`, `icon-512.png`, and `og.png` (1200×630).
 
+LinkedIn Lessons has its own set, drawn by the same hand — the `LL` monogram
+with the LinkedInification dial where the mixer has its beat ribbon:
+
+```sh
+node scripts/make-lessons-assets.mjs
+```
+
+That writes the `public/lessons-*` icons and `lessons-og.png` (1200×630).
+
 The site is live at **https://linkedinbeats.com**. The `og:url` / `og:image` /
 `twitter:image` / `canonical` tags in `index.html` hold that origin absolutely,
 because every social scraper requires an absolute URL — update them there if the
