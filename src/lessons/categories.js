@@ -154,10 +154,10 @@ export const CATEGORIES = [
   },
   {
     id: 'roast',
-    form: 'LL-06',
-    name: 'Roast My Post',
-    subtitle: 'Paste your draft. Receive a better version, a worse version, and consequences.',
-    paste: true, // special flow: one big textarea instead of an interview
+    form: 'RM-1',
+    name: 'Roast My LinkedIn',
+    subtitle: 'Post, headline or About section. Four inspectors, intensity up to HR Violation.',
+    href: '../roast/', // its own tool now — this door leads out
   },
 ];
 

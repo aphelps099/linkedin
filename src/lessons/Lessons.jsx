@@ -4,7 +4,7 @@ import { Unit } from '../components/chassis/Unit.jsx';
 import { Masthead } from '../components/chassis/Masthead.jsx';
 import { Ticker } from '../components/chassis/Ticker.jsx';
 import { CATEGORIES, byId } from './categories.js';
-import { LEVELS, generate, humanize, linkedinify, roast, newSeed } from './generator.js';
+import { LEVELS, generate, roast, newSeed } from './generator.js';
 import { scorePost } from './score.js';
 
 // LINKEDIN LESSONS — a guided post generator disguised as satire.
@@ -264,69 +264,17 @@ function Result({ catId, answers, narrow, onHome, onReinterview }){
   </>;
 }
 
-function Roast({ narrow, onHome }){
-  const [draft, setDraft] = React.useState('');
-  const [result, setResult] = React.useState(null); // {original, s, lines, better, worse}
-  const [copied, setCopied] = React.useState(null);
-
-  const file = () => {
-    const t = draft.trim();
-    if(!t) return;
-    const s = scorePost(t);
-    setResult({ original: t, s, lines: roast(t, { score: s.index }), better: humanize(t), worse: linkedinify(t, newSeed()) });
-  };
-  const copy = async (t, which) => { await copyText(t); setCopied(which); setTimeout(() => setCopied(null), 1600); };
-
-  const panel = (title, text, which, tone) => <div style={{ background: '#fff', border: `var(--rule-frame) solid ${tone || 'var(--ink)'}`, padding: '12px 14px' }}>
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
-      <span style={{ ...LABEL, color: tone || 'var(--ink)' }}>{title}</span>
-      <Button onClick={() => copy(text, which)} style={{ padding: '6px 10px' }}>{copied === which ? 'Copied ✓' : 'Copy'}</Button>
-    </div>
-    {text.split(/\n{2,}/).map((p, i) => <p key={i} style={{ margin: i ? '10px 0 0' : 0, fontSize: 13.5, lineHeight: 1.55, whiteSpace: 'pre-wrap' }}>{p}</p>)}
-  </div>;
-
-  return <>
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, marginTop: 18, flexWrap: 'wrap' }}>
-      <span style={{ fontSize: narrow ? 22 : 27, fontWeight: 700, letterSpacing: '-.03em', color: 'var(--blue)' }}>Roast my post</span>
-      <span style={META}>Form LL-06 · Complaints are processed locally</span>
-    </div>
-    <div style={{ marginTop: 14, background: '#fff', border: 'var(--rule-frame) solid var(--ink)', padding: narrow ? 16 : 22,
-      display: 'flex', flexDirection: 'column', gap: 10 }}>
-      <span style={META}>Paste your draft. It never leaves your browser.</span>
-      <textarea value={draft} onChange={e => setDraft(e.target.value)} rows={narrow ? 7 : 9}
-        placeholder="Paste your LinkedIn post here. Yes, that one."
-        style={{ width: '100%', boxSizing: 'border-box', resize: 'vertical', padding: 12, fontFamily: 'var(--sans)', fontSize: 14,
-          lineHeight: 1.5, border: 'var(--rule-frame) solid var(--ink)', borderRadius: 0, background: 'var(--paper)', outline: 'none' }}/>
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        <Button onClick={file} style={{ padding: '12px 18px' }}>File the complaint</Button>
-        <Button onClick={onHome}>← Back</Button>
-      </div>
-    </div>
-    {result && <div style={{ display: 'grid', gridTemplateColumns: narrow ? '1fr' : '340px minmax(0,1fr)', gap: narrow ? 14 : 'var(--space-col)', marginTop: 16, alignItems: 'start' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <Metrics s={result.s}/>
-        <div style={{ background: '#fff', border: 'var(--rule-frame) solid var(--blue)', padding: '12px 14px' }}>
-          <div style={{ ...LABEL, color: 'var(--blue)', marginBottom: 6 }}>The roast</div>
-          {result.lines.map((l, i) => <div key={i} style={{ fontSize: 13, lineHeight: 1.6, borderBottom: '1px dotted var(--hair)', padding: '4px 0' }}>
-            <span style={{ color: 'var(--blue)', fontWeight: 700 }}>→ </span>{l}</div>)}
-        </div>
-        <Button onClick={() => { location.href = '../#beat=' + encodeURIComponent(result.original); }}>Turn it into a beat ♫</Button>
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {panel('The useful version', result.better, 'better', 'var(--ink)')}
-        {panel('The painfully LinkedIn version', result.worse, 'worse', 'var(--blue)')}
-      </div>
-    </div>}
-  </>;
-}
-
 // ---- app ----------------------------------------------------------------
 
 export default function Lessons(){
   const narrow = useNarrow();
   const [screen, setScreen] = React.useState({ view: 'home' });
 
-  const onPick = id => setScreen(byId(id).paste ? { view: 'roast' } : { view: 'interview', catId: id });
+  const onPick = id => {
+    const c = byId(id);
+    if(c.href){ location.href = c.href; return; } // Roast is its own tool now
+    setScreen({ view: 'interview', catId: id });
+  };
   const home = () => setScreen({ view: 'home' });
 
   return <Unit style={narrow ? { padding: '20px 14px' } : undefined}>
@@ -337,7 +285,6 @@ export default function Lessons(){
       onDone={answers => setScreen({ view: 'result', catId: screen.catId, answers })}/>}
     {screen.view === 'result' && <Result catId={screen.catId} answers={screen.answers} narrow={narrow} onHome={home}
       onReinterview={() => setScreen({ view: 'interview', catId: screen.catId, answers: screen.answers })}/>}
-    {screen.view === 'roast' && <Roast narrow={narrow} onHome={home}/>}
     <div style={{ marginTop: 30, borderTop: 'var(--rule-heavy) solid var(--ink)', paddingTop: 10,
       display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', ...META }}>
       <span>LinkedIn Lessons™ is not affiliated with your network.</span>

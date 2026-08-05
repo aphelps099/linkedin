@@ -13,6 +13,8 @@ export default defineConfig({
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
         // LinkedIn Lessons — the guided post generator, served at /lessons/
         lessons: fileURLToPath(new URL('./lessons/index.html', import.meta.url)),
+        // Roast My LinkedIn — the inspection office, served at /roast/
+        roast: fileURLToPath(new URL('./roast/index.html', import.meta.url)),
       },
     },
   },

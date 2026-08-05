@@ -22,8 +22,30 @@ Then open the printed local URL. `npm run build` produces a static bundle in
 (enable Pages → Source: GitHub Actions in the repo settings, or trigger the
 workflow manually from the Actions tab).
 
-The build is multi-page: the mixer at `/` and **LinkedIn Lessons™** at
-`/lessons/`.
+The build is multi-page: the mixer at `/`, **LinkedIn Lessons™** at
+`/lessons/`, and **Roast My LinkedIn™** at `/roast/`.
+
+## Roast My LinkedIn™ (the inspection office)
+
+*Present your personal brand for inspection*, at `/roast/`. Paste a post, a
+headline, or an About section and choose your inspector and your fate:
+
+- **Four personas**, each with a mild and a savage register: The McKinsey
+  Partner, The Burned-Out Recruiter, The Gen-Z Intern, and The Algorithm.
+  Switching personas re-reads the same findings in a new voice, live.
+- **Four intensities**: Gentle Feedback → Peer Review → Performance Review →
+  HR Violation.
+- **27 findings** across the three input kinds — journey counts, humble
+  brags, pipe-separated identity crises, "Top Voice" badges, third-person
+  bios, "passionate about", and the rest of the genre.
+- **The roast card** — a 1080×1080 canvas verdict (score, rank, top lines,
+  the ROASTED — OFFICIAL stamp) rendered in the browser and downloadable,
+  sized for the feed that caused this.
+- **Redemption**: every roast ends with the version you should actually use
+  (the Lessons humanizer for posts and bios; a de-inflated rewrite for
+  headlines). Posts can also go straight to the mixer as a beat.
+
+Engine checks: `node scripts/check-roast.mjs`.
 
 ## LinkedIn Lessons™ (the post generator)
 
@@ -36,8 +58,9 @@ mod of the mixer. Circle Back's screens, keys, and flow are untouched; the
 only connection is a one-way door (below) that Lessons can send a finished
 post through.
 
-- **Six categories**: Announce Something, Teach a Lesson, Sell Without
-  Selling, Manufacture Urgency, AI Thought Leadership, and Roast My Post.
+- **Six doors**: Announce Something, Teach a Lesson, Sell Without Selling,
+  Manufacture Urgency, AI Thought Leadership — and Roast My LinkedIn, which
+  leads out to its own tool at `/roast/`.
 - **A Mad Libs interview** — one question at a time, and the form talks back
   ("Excellent. Let's make Sarah's employment feel historically significant.").
 - **The LinkedInification dial** — five levels, from **1 · Almost Human**
@@ -51,8 +74,6 @@ post through.
   comments "Well deserved!" — plus Copy, Make It Worse, Make It Human,
   Add More Synergy, Add a Personal Struggle, Founder Voice, and Roast This
   Post.
-- **Roast My Post** takes a pasted draft and returns a full roast and jargon
-  analysis, a genuinely improved version, and a painfully LinkedIn version.
 - **Turn It Into a Beat** — the one-way door. Lessons hands the finished
   post to the mixer via a `#beat=` URL hash; Circle Back opens with the
   remix panel staged and the post already analyzed, one press away from
