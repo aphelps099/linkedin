@@ -24,7 +24,7 @@ export const CHARACTERS = [
 
 export const CBAudio = (() => {
   let ctx, master, comp, noiseBuf, streamDest, analyser, specArr, lp, voxIn, voxDelay,
-      voxChar, voxDrive, voxCrush, voxDry, voxRing, voxRingOsc, voxWob, voxFb;
+      voxChar, voxDrive, voxCrush, voxDry, voxRing, voxRingOsc, voxWob, voxFb, voxVerb;
   let fx = {weird:0, dist:.12, character:'boardroom'};
   function init(){
     if(ctx) return;
@@ -60,6 +60,21 @@ export const CBAudio = (() => {
     sum.connect(peak);
     sum.connect(wob); wob.connect(voxWob); voxWob.connect(peak);
     peak.connect(master);
+    // a room to put the voice in — synthesized impulse, exponential decay
+    const irLen = Math.floor(ctx.sampleRate * 2.1);
+    const ir = ctx.createBuffer(2, irLen, ctx.sampleRate);
+    for(let c=0;c<2;c++){
+      const d = ir.getChannelData(c);
+      for(let i=0;i<irLen;i++){
+        const decay = Math.pow(1 - i/irLen, 2.6);
+        d[i] = (Math.random()*2 - 1) * decay;
+      }
+    }
+    const conv = ctx.createConvolver(); conv.buffer = ir;
+    voxVerb = ctx.createGain(); voxVerb.gain.value = .08;   // a little room by default
+    const verbOut = ctx.createGain(); verbOut.gain.value = .9;
+    peak.connect(voxVerb); voxVerb.connect(conv); conv.connect(verbOut); verbOut.connect(master);
+
     voxDelay = ctx.createDelay(1.5); voxDelay.delayTime.value = .28;
     voxFb = ctx.createGain(); voxFb.gain.value = .34;
     const wet = ctx.createGain(); wet.gain.value = .3;
@@ -225,6 +240,7 @@ export const CBAudio = (() => {
     }catch(e){}
   }
   const setVoxDelay = s => { init(); try{ voxDelay.delayTime.setTargetAtTime(s, ctx.currentTime, .05); }catch(e){} };
+  const setVoxVerb = amt => { init(); try{ voxVerb.gain.setTargetAtTime(amt, ctx.currentTime, .03); }catch(e){} };
 
   // Weirdness scrubs ring modulation, bitcrush, wobble and delay feedback together;
   // Distortion scrubs the drive. Character re-voices the whole bus.
@@ -262,7 +278,7 @@ export const CBAudio = (() => {
     return { source: src, gain: g };
   }
   return {
-    init, resume: rs, unlock, trigger, decode, playBuffer, setFilter, setVoxDelay, setVoxFx,
+    init, resume: rs, unlock, trigger, decode, playBuffer, setFilter, setVoxDelay, setVoxVerb, setVoxFx,
     now: ()=>{ init(); return ctx.currentTime; },
     stream: ()=>{ init(); return streamDest.stream; },
     audioTrack: ()=>{ init(); return streamDest.stream.getAudioTracks()[0]; },
@@ -312,8 +328,19 @@ export const CBVoice = {
   // 0 = choked instantly (the chair recognizes no one), 1 = rings out in full.
   // pitch is a semitone offset (-12..+12) applied on top of Sincerity
   pitch: 0,
+  // The read cycle: two of every five lines come out at the set pitch, the
+  // other three jump two octaves — which lands much closer to a natural
+  // speaking voice than the Sincerity register does on its own. Every so
+  // often a read is dunked in reverb, for no reason anyone could defend.
+  reads: 0,
+  readOffset(){
+    const n = this.reads++ % 5;
+    return n < 2 ? 0 : 24;
+  },
   speakPhrase(i, text, sinc, deliv, decay){
     const d = decay===undefined ? .5 : decay;
+    const octave = this.readOffset();
+    CBAudio.setVoxVerb(Math.random() < .22 ? .55 : .08);
     const buf = this.bank.get(i);
     if(buf){
       const prev = this.current;
@@ -328,12 +355,12 @@ export const CBVoice = {
       this.current = CBAudio.playBuffer(buf, {
         vel: .95,
         rate: .6 + deliv*.8,
-        detune: ((.4 + sinc*1.4) - 1) * 1200 + this.pitch*100,
+        detune: ((.4 + sinc*1.4) - 1) * 1200 + (this.pitch + octave)*100,
         bus: 'vox', // through the drive + delay chain
       });
       return;
     }
-    this.speak(text, {pitch:.4 + sinc*1.4, rate:.6 + deliv*.8});
+    this.speak(text, {pitch:(.4 + sinc*1.4) + octave/12, rate:.6 + deliv*.8});
   },
   speak(text, opts){
     const o = opts || {};

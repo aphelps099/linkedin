@@ -16,6 +16,7 @@ import { Monitor } from './components/broadcast/Monitor.jsx';
 import { StageKey } from './components/stage/StageKey.jsx';
 import { Backdrop } from './components/stage/Backdrop.jsx';
 import { ArrowKey } from './components/stage/ArrowKey.jsx';
+import { CommentCards } from './components/stage/CommentCards.jsx';
 import { RemixPanel } from './components/remix/RemixPanel.jsx';
 import { analyze, optimize } from './remix.js';
 import { CBAudio, CBVoice, CHARACTERS, exposeVoice } from './audio.js';
@@ -280,6 +281,21 @@ export default function CircleBack(){
     });
   },[quantize, speak]);
 
+  // every fifth push forward raises the room on its own — the build arrives
+  // without anyone having to know there is a build
+  const stepPhrase = React.useCallback(dir => {
+    CBAudio.unlock();
+    const r = ref.current;
+    const next = (r.armed + dir + PHRASES.length) % PHRASES.length;
+    r.lastKeyAt = performance.now();
+    setArmed(next);
+    quantize(()=> speak(next));
+    if(dir > 0){
+      r.forward = (r.forward || 0) + 1;
+      if(r.forward % 5 === 0) setEnergyLevel(r.energy === 2 ? 2 : 1);
+    }
+  },[quantize, speak, setEnergyLevel]);
+
   const finishExport = React.useCallback(()=>{
     const ex = expRef.current;
     if(!ex || ex.finishing) return;
@@ -431,12 +447,7 @@ export default function CircleBack(){
       if(!e.shiftKey && (e.key==='ArrowRight' || e.key==='ArrowLeft')){
         e.preventDefault();
         if(e.repeat) return;
-        const dir = e.key==='ArrowRight' ? 1 : -1;
-        const next = (ref.current.armed + dir + PHRASES.length) % PHRASES.length;
-        CBAudio.unlock();
-        ref.current.lastKeyAt = performance.now();
-        setArmed(next);
-        quantize(()=> speak(next));
+        stepPhrase(e.key==='ArrowRight' ? 1 : -1);
         return;
       }
       if(e.code==='Space'){ e.preventDefault(); setPlaying(x=>!x); return; }
@@ -468,7 +479,7 @@ export default function CircleBack(){
     };
     window.addEventListener('keydown', down);
     return ()=> window.removeEventListener('keydown', down);
-  },[pressKey, newTrack, firePhrase, setEnergyLevel, quantize, speak]);
+  },[pressKey, newTrack, firePhrase, setEnergyLevel, quantize, speak, stepPhrase]);
 
   const onGrid = p => {
     const r = ref.current;
@@ -604,13 +615,7 @@ export default function CircleBack(){
   },[studio]);
 
   const voxLabels = VOICES.map((v)=> v.vox ? voxCodes : null);
-  const stepPhrase = dir => {
-    CBAudio.unlock();
-    const next = (ref.current.armed + dir + PHRASES.length) % PHRASES.length;
-    ref.current.lastKeyAt = performance.now();
-    setArmed(next);
-    quantize(()=> speak(next));
-  };
+  // the studio keeps the full key set; the stage keeps only the arrows
   const stageKeys = tone => <div style={{display:'grid',
     gridTemplateColumns: narrow ? '1fr 1fr' : '104px repeat(3,1fr) 104px',gap:narrow?10:14,width:'100%'}}>
     <ArrowKey tone={tone} dir="left" hint="Change phrase" onFire={()=>stepPhrase(-1)}/>
@@ -621,6 +626,11 @@ export default function CircleBack(){
     <StageKey tone={tone} label="Drop" hint="3 / D" caption="Full stop." on={energy===2} onFire={()=> setEnergyLevel(2)}
       style={narrow?{gridColumn:'1 / -1'}:undefined}/>
     <ArrowKey tone={tone} dir="right" hint="Change phrase" onFire={()=>stepPhrase(1)}/>
+  </div>;
+  const stageArrows = <div style={{display:'grid',gridTemplateColumns:'104px 1fr 104px',gap:narrow?10:14,alignItems:'stretch'}}>
+    <ArrowKey dir="left" hint="Change phrase" onFire={()=>stepPhrase(-1)}/>
+    <CommentCards stateRef={ref} narrow={narrow}/>
+    <ArrowKey dir="right" hint="Change phrase" onFire={()=>stepPhrase(1)}/>
   </div>;
 
   if(!studio) return <div style={{position:'relative',minHeight:'100vh',background:'var(--blue)',color:'#fff',fontFamily:'var(--sans)',
@@ -650,7 +660,7 @@ export default function CircleBack(){
           backdropFilter:'blur(14px) saturate(1.15)', WebkitBackdropFilter:'blur(14px) saturate(1.15)',
           boxShadow:'inset 0 1px 0 rgba(255,255,255,.35), 0 24px 70px rgba(4,42,82,.34)'}}/>
     </div>
-    <div style={{position:'relative',zIndex:1}}>{stageKeys('light')}</div>
+    <div style={{position:'relative',zIndex:1}}>{stageArrows}</div>
     <div style={{position:'relative',zIndex:1,display:'grid',gridTemplateColumns:narrow?'1fr':'1fr 1fr 1fr auto',gap:narrow?12:18,alignItems:'end'}}>
       <Scrubber tone="light" label="Pitch" value={pitch} onChange={setPitch}
         format={v=>{ const s = Math.round((v-.5)*24); return `${s>0?'+':''}${s} st`; }}/>
@@ -670,7 +680,7 @@ export default function CircleBack(){
       <span>{remix ? `Your remix · index ${remix.score} · ${remix.rank}` : song.name} · {tempo} BPM · {SECTIONS[energy]}</span>
       <span style={{display:'inline-flex',gap:18,alignItems:'center',flexWrap:'wrap'}}>
         {voxRadio('light')}
-        <span>Space starts the song · ← → phrases · ⇧R repeats · R new track</span>
+        <span>Space starts the song · ← → change phrase · 2 build · 3 drop · ⇧R repeats · R new track</span>
       </span>
     </div>
     {take && <div style={{position:'relative',zIndex:1,display:'flex',gap:12,alignItems:'center',flexWrap:'wrap'}}>
