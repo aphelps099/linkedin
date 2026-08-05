@@ -112,8 +112,11 @@ The mixer can generate the optimized performance lines with OpenAI
 `gpt-4o-mini-tts`, so names, products, acronyms, and numbers become part of
 the exported beat instead of display-only copy. The full pasted post is still
 analyzed locally; only the short performance lines are sent for speech
-generation. If the voice endpoint is unavailable, the mixer falls back to the
-recorded phrase archive and changes the display copy to match what it can say.
+generation. The default performance is a duet: the polished recorded archive
+voice delivers the official corporate lines, while the generated compliance
+robot handles the post-specific subject and punchline. If the voice endpoint
+is unavailable, the mixer falls back to the recorded phrase archive and
+changes the display copy to match what it can say.
 
 Local development reads `OPENAI_API_KEY` and serves `/api/voice` through the
 Vite development server. Production uses the Cloudflare Worker in `worker/`:

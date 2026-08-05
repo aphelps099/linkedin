@@ -422,9 +422,31 @@ export default function CircleBack(){
     let voiceBuffers = [];
     setTicker('Voice procurement in progress — please hold.');
     try{
-      const voice = await requestRemixVoice(opt.lines.map(line=>line.text));
-      voiceBuffers = voice.buffers;
-      rx.voice = {provider:voice.provider, status:'generated'};
+      // The archive host keeps the immaculate corporate polish. The contractor
+      // handles the incriminating proper noun and the compliance punchline.
+      if(opt.lines[3]){
+        opt = {
+          ...opt,
+          lines:opt.lines.map((line, index)=> index === 3
+            ? {...line, text:'Please congratulate accordingly.'}
+            : line),
+        };
+      }
+      const contractorIndices = opt.lines
+        .map((_, index)=>index)
+        .filter(index=>index % 2 === 1);
+      const voice = await requestRemixVoice(contractorIndices.map(index=>opt.lines[index].text));
+      voiceBuffers = Array(opt.lines.length).fill(null);
+      contractorIndices.forEach((lineIndex, clipIndex)=>{
+        voiceBuffers[lineIndex] = voice.buffers[clipIndex];
+      });
+      rx.voice = {
+        provider:voice.provider,
+        status:'generated',
+        mode:'archive-contractor-duet',
+        archiveLines:opt.lines.length - contractorIndices.length,
+        generatedLines:contractorIndices.length,
+      };
     }catch(error){
       console.warn('dynamic remix voice unavailable', error);
       // If the contractor is unavailable, the display must match the archive
@@ -472,6 +494,7 @@ export default function CircleBack(){
     r.remixSequence = opt.lines.map((line, index)=>({
       ...line,
       buffer:voiceBuffers[index] || null,
+      voiceRole:voiceBuffers[index] ? 'contractor' : 'archive',
     }));
     r.remixSequenceIx = 0;
     // a remix is the one thing that writes the Vox row, so it takes the lock off

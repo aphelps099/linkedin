@@ -15,5 +15,5 @@ export function Button({ on, variant = 'default', children, style, ...rest }) {
     onMouseLeave={e => { setHover(false); setPress(false); rest.onMouseLeave && rest.onMouseLeave(e); }}
     onMouseDown={e => { setPress(true); rest.onMouseDown && rest.onMouseDown(e); }}
     onMouseUp={e => { setPress(false); rest.onMouseUp && rest.onMouseUp(e); }}
-    style={{ fontFamily: 'var(--sans)', fontSize: 'var(--label-size)', letterSpacing: 'var(--label-tracking)', textTransform: 'uppercase', fontWeight: 700, color, background: bg, border: `var(--rule-frame) solid ${border}`, borderRadius: 0, padding: '10px 15px', cursor: 'pointer', transition: 'background var(--ease-ui), color var(--ease-ui)', ...style }}>{children}</button>;
+    style={{ fontFamily: 'var(--sans)', fontSize: 'var(--label-size)', letterSpacing: 'var(--label-tracking)', textTransform: 'uppercase', fontWeight: 700, color, background: bg, borderWidth: 'var(--rule-frame)', borderStyle: 'solid', borderColor: border, borderRadius: 0, padding: '10px 15px', cursor: 'pointer', transition: 'background var(--ease-ui), color var(--ease-ui)', ...style }}>{children}</button>;
 }

@@ -77,7 +77,9 @@ export function RemixPanel({ onRemix, onClose, result, narrow, initial }){
               <div key={i} style={{fontSize:13.5,lineHeight:1.65,fontWeight:i===0?700:400}}>{l.text}</div>)}
           </div>
           <div style={{fontSize:10.5,color:'var(--text-meta)',marginTop:4}}>
-            {result.voice?.status === 'generated' ? 'Performed by the OpenAI voice contractor' : 'Performed from the local phrase archive'}
+            {result.voice?.status === 'generated'
+              ? 'Performed by the archive spokesperson + OpenAI voice contractor'
+              : 'Performed from the local phrase archive'}
             {' · '}detected: {result.optimized.intents.join(', ')}
             {result.optimized.nouns.length ? ` · subject: ${result.optimized.nouns.join(', ')}` : ''}
           </div>
@@ -91,7 +93,7 @@ export function RemixPanel({ onRemix, onClose, result, narrow, initial }){
         </div>}
         <div style={{fontSize:11,color:'var(--text-meta)'}}>
           {result.voice?.status === 'generated'
-            ? `${result.optimized.lines.length} performance lines filed · all voiced for export`
+            ? `${result.optimized.lines.length} performance lines filed · ${result.voice.archiveLines} archive + ${result.voice.generatedLines} generated`
             : `${result.optimized?.lines.length || result.lines.length} archive lines filed · local voice coverage confirmed`}
         </div>
       </div>
