@@ -17,6 +17,14 @@ export function scorePost(text){
   const rx = analyze(t);
   const words = rx.words || 1;
 
+  // analyze() scores marker density per word, which explodes on very short
+  // posts — two clean sentences plus a hashtag would read as Peak LinkedIn.
+  // Floor the denominator at 60 words by padding with neutral filler.
+  let indexed = rx;
+  if(rx.words > 0 && rx.words < 60){
+    indexed = analyze(t + '\n\n' + Array(60 - rx.words).fill('and').join(' '));
+  }
+
   const paras = t.split(/\n{2,}/).map(p => p.trim()).filter(Boolean);
   const oneLiners = paras.filter(p => p.length <= 60 && !/^#/.test(p) && !p.includes('\n')).length;
 
@@ -33,19 +41,19 @@ export function scorePost(text){
     `Runaway gratitude event (+${gratitudeInflation})`;
 
   const humbleBrag = Math.min(100, Math.round(
-    count(t, HUMBLE) * 22 + count(t, BRAG) * 7 + oneLiners * 3 + rx.score * 0.25
+    count(t, HUMBLE) * 22 + count(t, BRAG) * 7 + oneLiners * 3 + indexed.score * 0.25
   ));
 
   const journeys = count(t, JOURNEY);
 
   const congrats = /\b(welcome|congrat\w*|promot\w*|joined|joining|milestone|proud to)\b/i.test(t);
   const wellDeserved = Math.min(99, Math.round(
-    8 + (congrats ? 34 : 0) + rx.score * 0.45 + oneLiners * 2 + Math.min(gratitude, 4) * 3
+    8 + (congrats ? 34 : 0) + indexed.score * 0.45 + oneLiners * 2 + Math.min(gratitude, 4) * 3
   ));
 
   return {
-    index: rx.score,          // Thought Leadership Index 0–100
-    rank: rx.rank,            // its named rank
+    index: indexed.score,     // Thought Leadership Index 0–100
+    rank: indexed.rank,       // its named rank
     markers: rx.markers,      // what the index found
     humbleBrag,               // %
     buzz, buzzDensity,        // count + per-100-words

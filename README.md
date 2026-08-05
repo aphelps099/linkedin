@@ -22,8 +22,53 @@ Then open the printed local URL. `npm run build` produces a static bundle in
 (enable Pages → Source: GitHub Actions in the repo settings, or trigger the
 workflow manually from the Actions tab).
 
-The build is multi-page: the mixer at `/` and **LinkedIn Lessons™** at
-`/lessons/`.
+The build is multi-page: the mixer at `/`, **LinkedIn Lessons™** at
+`/lessons/`, **Roast My LinkedIn™** at `/roast/`, and **The Museum of
+Professional Communication** at `/museum/`.
+
+## The Museum of Professional Communication (`/museum/`)
+
+*Authors anonymized. Clichés immortal.* Three wings:
+
+- **The Collection** — twelve curated exhibits, every one synthetic: fiction
+  written in the style of the genre it commemorates, displayed as redacted
+  documents with curator plaques, inspector quotes, and a live Thought
+  Leadership Index. Each exhibit can be sent to Roast or performed as a beat.
+- **The Redaction Office** — the submission door. Paste a post and it is
+  anonymized *in the browser, before anything is sent anywhere*: names,
+  companies, handles, emails, links, and impressive numbers become
+  placeholders (`[ANONYMOUS VISIONARY]`, `[REDACTED FORTUNE 500 COMPANY]`,
+  `[IMPRESSIVE SUM]`). The preview is exactly what would be submitted;
+  submitting opens a curated review (a GitHub issue) — nothing publishes
+  automatically. The genre goes on the wall. The person does not.
+- **The Historical Archive** — a placard history of the professional
+  internet, from the 2003 founding through the broetry period, the weeping
+  executive, and the delve era. The events are real; the tone is a museum's.
+
+Engine checks: `node scripts/check-museum.mjs` (redaction leak tests,
+determinism, exhibit completeness).
+
+## Roast My LinkedIn™ (the inspection office)
+
+*Present your personal brand for inspection*, at `/roast/`. Paste a post, a
+headline, or an About section and choose your inspector and your fate:
+
+- **Four personas**, each with a mild and a savage register: The McKinsey
+  Partner, The Burned-Out Recruiter, The Gen-Z Intern, and The Algorithm.
+  Switching personas re-reads the same findings in a new voice, live.
+- **Four intensities**: Gentle Feedback → Peer Review → Performance Review →
+  HR Violation.
+- **27 findings** across the three input kinds — journey counts, humble
+  brags, pipe-separated identity crises, "Top Voice" badges, third-person
+  bios, "passionate about", and the rest of the genre.
+- **The roast card** — a 1080×1080 canvas verdict (score, rank, top lines,
+  the ROASTED — OFFICIAL stamp) rendered in the browser and downloadable,
+  sized for the feed that caused this.
+- **Redemption**: every roast ends with the version you should actually use
+  (the Lessons humanizer for posts and bios; a de-inflated rewrite for
+  headlines). Posts can also go straight to the mixer as a beat.
+
+Engine checks: `node scripts/check-roast.mjs`.
 
 ## LinkedIn Lessons™ (the post generator)
 
@@ -36,8 +81,9 @@ mod of the mixer. Circle Back's screens, keys, and flow are untouched; the
 only connection is a one-way door (below) that Lessons can send a finished
 post through.
 
-- **Six categories**: Announce Something, Teach a Lesson, Sell Without
-  Selling, Manufacture Urgency, AI Thought Leadership, and Roast My Post.
+- **Six doors**: Announce Something, Teach a Lesson, Sell Without Selling,
+  Manufacture Urgency, AI Thought Leadership — and Roast My LinkedIn, which
+  leads out to its own tool at `/roast/`.
 - **A Mad Libs interview** — one question at a time, and the form talks back
   ("Excellent. Let's make Sarah's employment feel historically significant.").
 - **The LinkedInification dial** — five levels, from **1 · Almost Human**
@@ -51,8 +97,6 @@ post through.
   comments "Well deserved!" — plus Copy, Make It Worse, Make It Human,
   Add More Synergy, Add a Personal Struggle, Founder Voice, and Roast This
   Post.
-- **Roast My Post** takes a pasted draft and returns a full roast and jargon
-  analysis, a genuinely improved version, and a painfully LinkedIn version.
 - **Turn It Into a Beat** — the one-way door. Lessons hands the finished
   post to the mixer via a `#beat=` URL hash; Circle Back opens with the
   remix panel staged and the post already analyzed, one press away from
@@ -175,6 +219,15 @@ node scripts/make-brand-assets.mjs
 
 That writes `public/favicon-16.png`, `favicon-32.png`, `apple-touch-icon.png`,
 `icon-192.png`, `icon-512.png`, and `og.png` (1200×630).
+
+LinkedIn Lessons has its own set, drawn by the same hand — the `LL` monogram
+with the LinkedInification dial where the mixer has its beat ribbon:
+
+```sh
+node scripts/make-lessons-assets.mjs
+```
+
+That writes the `public/lessons-*` icons and `lessons-og.png` (1200×630).
 
 The site is live at **https://linkedinbeats.com**. The `og:url` / `og:image` /
 `twitter:image` / `canonical` tags in `index.html` hold that origin absolutely,
