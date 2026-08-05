@@ -386,7 +386,10 @@ export const CBVoice = {
     const d = decay===undefined ? .5 : decay;
     const octave = this.readOffset();
     CBAudio.setVoxVerb(Math.random() < .22 ? .55 : .08);
-    const buf = overrideBuffer || this.bank.get(i);
+    // A dynamic remix line must never borrow a prerecorded phrase just because
+    // its generated clip is late or unavailable. In that case the browser's
+    // native speech voice says the actual line instead.
+    const buf = overrideBuffer || (voiceRole === 'browser' ? null : this.bank.get(i));
     if(buf){
       const prev = this.current;
       if(prev && d < .97){

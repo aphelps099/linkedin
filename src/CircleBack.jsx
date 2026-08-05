@@ -486,7 +486,9 @@ export default function CircleBack(){
     const voiceErrors = Array(opt.lines.length).fill(null);
     let sequenceReady = false;
 
-    setTicker('Voice procurement in progress — please hold.');
+    // The stage is the user's performance, not a system-status console. Keep
+    // their first selected line visible while voice clips are being generated.
+    setTicker(opt.lines[0]?.sourceText || opt.lines[0]?.text || 'Preparing remix.');
     const requests = opt.lines.map((line, index)=>
       requestRemixVoiceClip(
         {text:line.text, role:line.voiceRole},
@@ -552,10 +554,7 @@ export default function CircleBack(){
         ...current,
         optimized:{
           ...current.optimized,
-          lines:opt.lines.map((line, index)=>({
-            ...line,
-            text:voiceResults[index] ? line.text : line.archiveText,
-          })),
+          lines:opt.lines,
         },
         voice:{
           ...current.voice,
@@ -565,7 +564,8 @@ export default function CircleBack(){
         },
       }));
       if(generatedLines === 0){
-        setTicker('Voice contractor unavailable — archive recording authorized.');
+        const firstLine = opt.lines[0]?.sourceText || opt.lines[0]?.text;
+        if(firstLine) setTicker(firstLine);
       }
       return {generatedLines, errors:voiceErrors.filter(Boolean)};
     });
@@ -579,10 +579,7 @@ export default function CircleBack(){
     };
     rx.optimized = {
       ...opt,
-      lines:opt.lines.map((line, index)=>({
-        ...line,
-        text:voiceResults[index] ? line.text : line.archiveText,
-      })),
+      lines:opt.lines,
     };
     const r = ref.current;
     r.remix = rx;
@@ -611,7 +608,7 @@ export default function CircleBack(){
       if(v){
         const lineIndex = k % opt.lines.length;
         const result = voiceResults[lineIndex];
-        byStep[step] = result ? opt.lines[lineIndex].text : opt.lines[lineIndex].archiveText;
+        byStep[step] = opt.lines[lineIndex].text;
         if(result) audioByStep[step] = result.buffer;
         lineByStep[step] = lineIndex;
         k++;
@@ -622,9 +619,9 @@ export default function CircleBack(){
     r.remixLineByStep = lineByStep;
     r.remixSequence = opt.lines.map((line, index)=>({
       ...line,
-      text:voiceResults[index] ? line.text : line.archiveText,
+      text:line.text,
       buffer:voiceResults[index]?.buffer || null,
-      voiceRole:voiceResults[index] ? line.voiceRole : 'archive',
+      voiceRole:voiceResults[index] ? line.voiceRole : 'browser',
       status:voiceResults[index] ? 'ready' : 'pending',
     }));
     sequenceReady = true;

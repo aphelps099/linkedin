@@ -124,22 +124,28 @@ run independently, and playback can begin as soon as line one is ready while
 the remaining filings arrive. Play and Export reuse the same decoded takes.
 
 The full pasted post is still analyzed locally; only four short performance
-lines are sent for speech generation. Every line retains a matching phrase-
-archive substitute, so a timeout or failed request remains audible and the
-display changes to the words the archive can actually say.
+lines are sent for speech generation. If a request fails, the browser's native
+speech voice performs the same selected line. The stage never replaces the
+author's words with an unrelated archive phrase.
 
-Local development reads `OPENAI_API_KEY` and serves `/api/voice` through the
-Vite development server. Production uses the Cloudflare Worker in `worker/`:
+Production on Railway builds the Vite application and starts the Express
+server in `server/index.js`. Add `OPENAI_API_KEY` as a Railway service variable;
+the server owns `/api/voice`, while all other routes serve the application.
+`/api/health` reports whether voice is configured without exposing the key.
+The included `railway.json` supplies the build, start, and health-check settings.
+
+The Cloudflare Worker in `worker/` remains available as an alternative voice
+endpoint:
 
 ```sh
 npx wrangler secret put OPENAI_API_KEY
 npx wrangler deploy
 ```
 
-Set `VITE_VOICE_API_URL` at build time if the Worker is deployed on a separate
-origin. If it is routed through `linkedinbeats.com/api/voice`, no client
-configuration is required. The API key belongs only in the Worker secret store
-and must never be exposed through a `VITE_` variable or committed to GitHub.
+Set `VITE_VOICE_API_URL` at build time only if the Worker is deployed on a
+separate origin. For the default Railway deployment, no client configuration
+is required. The API key belongs only in a server-side secret store and must
+never be exposed through a `VITE_` variable or committed to GitHub.
 
 ## The stage
 

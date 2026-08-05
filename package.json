@@ -7,10 +7,12 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "start": "node server/index.js",
     "preview": "vite preview",
     "check:voice": "node scripts/check-voice.mjs"
   },
   "dependencies": {
+    "express": "^4.21.2",
     "lucide-react": "^0.468.0",
     "mp4-muxer": "^5.2.2",
     "react": "^18.3.1",
