@@ -329,6 +329,11 @@ export const CBVoice = {
     if(buf) return buf.duration / rate;
     return Math.max(.7, String(text||'').length * .065) / rate; // estimate before the bank loads
   },
+  durationOfBuffer(buffer, deliv = .5){
+    if(!buffer) return 1.6;
+    const rate = (.6 + deliv*.8) * Math.pow(2, SLOWEST_READ/12);
+    return buffer.duration / rate;
+  },
   // sinc/deliv/decay are 0–1 registers; voice math per the prototype:
   // pitch = .4 + sinc*1.4, rate = .6 + deliv*.8.
   // decay governs what happens to the PREVIOUS phrase when a new one lands:
@@ -338,11 +343,11 @@ export const CBVoice = {
   // Every so often a read is dunked in reverb, for no reason anyone could defend.
   reads: 0,
   readOffset(){ return READ_CYCLE[this.reads++ % READ_CYCLE.length]; },
-  speakPhrase(i, text, sinc, deliv, decay){
+  speakPhrase(i, text, sinc, deliv, decay, overrideBuffer){
     const d = decay===undefined ? .5 : decay;
     const octave = this.readOffset();
     CBAudio.setVoxVerb(Math.random() < .22 ? .55 : .08);
-    const buf = this.bank.get(i);
+    const buf = overrideBuffer || this.bank.get(i);
     if(buf){
       const prev = this.current;
       if(prev && d < .97){

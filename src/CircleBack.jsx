@@ -24,6 +24,7 @@ import { VIDEO_MIMES, AUDIO_MIMES, pickMime, extFor, downloadBlob, mp4Support, s
 import { randomPattern } from './randomizer.js';
 import { randomComment } from './feed.js';
 import { makeSong, bandAt } from './song.js';
+import { requestRemixVoice } from './voice.js';
 
 const PHRASES = [
   {code:'TH', name:'Thrilled', say:"I'm thrilled to announce"},
@@ -210,16 +211,23 @@ export default function CircleBack(){
 
   // The machine speaks the jargon; when a remix is loaded, the screen shows the
   // author's own line instead — their words, our voice.
-  const speak = React.useCallback((i, display)=>{
+  const speak = React.useCallback((i, display, buffer)=>{
     const r = ref.current;
-    CBVoice.speakPhrase(i, PHRASES[i].say, r.sinc, r.deliv, r.decay);
+    CBVoice.speakPhrase(i, display || PHRASES[i].say, r.sinc, r.deliv, r.decay, buffer);
     r.spoken = true; r.phraseAt = performance.now();
     setTicker(display || PHRASES[i].say);
   },[]);
   const speakOverRemix = React.useCallback((i, step)=>{
     const r = ref.current;
+    if(r.remixSequence && r.remixSequence.length){
+      const item = r.remixSequence[r.remixSequenceIx % r.remixSequence.length];
+      r.remixSequenceIx++;
+      speak(item.phrase, item.text, item.buffer);
+      return;
+    }
     const line = r.remixByStep && r.remixByStep[step];
-    speak(i, line);
+    const buffer = r.remixAudioByStep && r.remixAudioByStep[step];
+    speak(i, line, buffer);
   },[speak]);
   const pressKey = React.useCallback((i)=>{
     CBAudio.unlock();
@@ -315,6 +323,7 @@ export default function CircleBack(){
     const A = CBAudio; A.init(); A.resume();
     // every convene is a fresh post: engagement builds from zero
     ref.current.stepCount = 0;
+    ref.current.remixSequenceIx = 0;
     ref.current.comments = [];
     ref.current.eng = {reactions:0, reposts:0, comments:0, nextAt: 6 + Math.floor(Math.random()*6)};
     let step = 0, nextTime = A.now() + .06, timers = [];
@@ -402,10 +411,31 @@ export default function CircleBack(){
 
   // Build the remix: their lines on screen, the phrases they actually wrote in
   // the vox row, the arrangement scaled to how much thought leadership was found.
-  const buildRemix = React.useCallback(text=>{
+  const buildRemix = React.useCallback(async text=>{
+    CBAudio.unlock();
     const rx = analyze(text || '');
     if(!rx.lines.length){ setTicker('Nothing to remix — paste a post first.'); return; }
-    const opt = optimize(text || '', PHRASES);
+    let opt = optimize(text || '', PHRASES);
+    // Four loops is the default export. Give each loop a different line so the
+    // finished clip progresses through a compact four-part performance.
+    opt = {...opt, lines:opt.lines.slice(0, 4)};
+    let voiceBuffers = [];
+    setTicker('Voice procurement in progress — please hold.');
+    try{
+      const voice = await requestRemixVoice(opt.lines.map(line=>line.text));
+      voiceBuffers = voice.buffers;
+      rx.voice = {provider:voice.provider, status:'generated'};
+    }catch(error){
+      console.warn('dynamic remix voice unavailable', error);
+      // If the contractor is unavailable, the display must match the archive
+      // recording. Never put words on screen that the fallback cannot say.
+      opt = {
+        ...opt,
+        lines: opt.lines.map(line=>({...line, text:PHRASES[line.phrase].say})),
+      };
+      rx.voice = {provider:'local', status:'fallback', error:error.message};
+      setTicker('Voice contractor unavailable — archive recording authorized.');
+    }
     rx.optimized = opt;
     const r = ref.current;
     r.remix = rx;
@@ -418,18 +448,32 @@ export default function CircleBack(){
     const { pattern } = randomPattern(
       r.samples.length, PHRASES, 48,
       60/remixTempo/4,
-      i => CBVoice.durationOf(i, PHRASES[i].say, r.deliv),
+      (i, sequence) => voiceBuffers[sequence % voiceBuffers.length]
+        ? CBVoice.durationOfBuffer(voiceBuffers[sequence % voiceBuffers.length], r.deliv)
+        : CBVoice.durationOf(i, PHRASES[i].say, r.deliv),
       pool, true,
     );
     // map each stamped step to the optimized line it performs, so the display
     // always matches what is being said
     const voxRow = voxRowOf(r.samples);
     const byStep = {};
+    const audioByStep = {};
     let k = 0;
     pattern[voxRow].forEach((v, step)=>{
-      if(v){ byStep[step] = opt.lines[k % opt.lines.length].text; k++; }
+      if(v){
+        const lineIndex = k % opt.lines.length;
+        byStep[step] = opt.lines[lineIndex].text;
+        if(voiceBuffers[lineIndex]) audioByStep[step] = voiceBuffers[lineIndex];
+        k++;
+      }
     });
     r.remixByStep = byStep;
+    r.remixAudioByStep = audioByStep;
+    r.remixSequence = opt.lines.map((line, index)=>({
+      ...line,
+      buffer:voiceBuffers[index] || null,
+    }));
+    r.remixSequenceIx = 0;
     // a remix is the one thing that writes the Vox row, so it takes the lock off
     setVoxLocked(false); r.voxLocked = false;
     setRack(rk=> voxRowOf(rk.samples)+1 === pattern.length ? {...rk, pattern} : rk);
@@ -437,7 +481,7 @@ export default function CircleBack(){
     r.spoken = true; r.phraseAt = performance.now();
     setTicker(opt.lines[0] ? opt.lines[0].text : rx.lines[0]);
     setRemixOpen(false); setStudio(false);
-    CBAudio.unlock(); setPlaying(true);
+    setPlaying(true);
   },[]);
 
   // LinkedIn Lessons hands a finished post over via the URL hash ("Turn It

@@ -89,8 +89,8 @@ export function randomPattern(nSamples, phrases, len = 16, stepSec = .14, stepsF
   // the recorded bank), plus a beat of silence, before the next one may start.
   const voxRow = 8 + nSamples;
   const placed = [];
-  const roomFor = i => {
-    const secs = stepsFor ? stepsFor(i) : 1.6;
+  const roomFor = (i, sequence = 0) => {
+    const secs = stepsFor ? stepsFor(i, sequence) : 1.6;
     return Math.ceil(secs / Math.max(.05, stepSec)) + 2; // + a half-beat to breathe
   };
   let cursor = ordered ? 0 : rint(2) * 4;   // an ordered post opens on the one
@@ -99,7 +99,7 @@ export function randomPattern(nSamples, phrases, len = 16, stepSec = .14, stepsF
     let idx, need;
     if(ordered && pool && pool.length){
       idx = pool[seq % pool.length];
-      need = roomFor(idx);
+      need = roomFor(idx, seq);
       if(cursor + need > len) break;        // the rest carries into the next loop
       seq++;
     } else {
