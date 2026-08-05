@@ -943,7 +943,7 @@ export default function CircleBack(){
         Educational outcomes subject to engagement.
       </div>
       <p style={{margin:'14px 0 0',fontSize:11,lineHeight:1.5,color:'var(--text-meta)'}}>
-        Humbly and proudly created by{' '}
+        Circle Back® is honored and humbled to have been built by{' '}
         <a
           href="https://www.linkedin.com/in/aaroncphelps"
           target="_blank"
