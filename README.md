@@ -31,6 +31,11 @@ The build is multi-page: the mixer at `/` and **LinkedIn Lessons™** at
 disguised as satire, at `/lessons/`. Create a better LinkedIn post, or make it
 dramatically worse.
 
+Lessons is a **complementary toolset that stands on its own** — it is not a
+mod of the mixer. Circle Back's screens, keys, and flow are untouched; the
+only connection is a one-way door (below) that Lessons can send a finished
+post through.
+
 - **Six categories**: Announce Something, Teach a Lesson, Sell Without
   Selling, Manufacture Urgency, AI Thought Leadership, and Roast My Post.
 - **A Mad Libs interview** — one question at a time, and the form talks back
@@ -48,9 +53,11 @@ dramatically worse.
   Post.
 - **Roast My Post** takes a pasted draft and returns a full roast and jargon
   analysis, a genuinely improved version, and a painfully LinkedIn version.
-- **Turn It Into a Beat** hands the finished post to the mixer via a
-  `#beat=` URL hash — Circle Back opens with the remix panel staged and the
-  post already analyzed, one press away from becoming a track.
+- **Turn It Into a Beat** — the one-way door. Lessons hands the finished
+  post to the mixer via a `#beat=` URL hash; Circle Back opens with the
+  remix panel staged and the post already analyzed, one press away from
+  becoming a track. Arrive without the hash and the mixer behaves exactly
+  as it always has.
 
 Everything is template-driven and seeded (`src/lessons/generator.js`) —
 no network, nothing leaves the browser.

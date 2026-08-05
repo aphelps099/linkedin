@@ -662,8 +662,6 @@ export default function CircleBack(){
       <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}>
         <Button onClick={()=> setRemixOpen(o=>!o)}
           style={{background:remixOpen?'#fff':'var(--ink)',color:remixOpen?'var(--blue)':'#fff',borderColor:remixOpen?'#fff':'var(--ink)'}}>Build your remix</Button>
-        <Button onClick={()=> location.assign('./lessons/')}
-          style={{background:'transparent',color:'#fff',borderColor:'#fff'}}>Write a post</Button>
         <Button onClick={()=>{ CBAudio.unlock(); setPlaying(x=>!x); }}
           style={{background:playing?'#fff':'transparent',color:playing?'var(--blue)':'#fff',borderColor:'#fff'}}>{playing?'Pause':'Play'}</Button>
         <Button onClick={newTrack} style={{background:'transparent',color:'#fff',borderColor:'#fff'}}>New track (R)</Button>
@@ -717,9 +715,8 @@ export default function CircleBack(){
       <p style={{margin:0,fontSize:narrow?12.5:13,lineHeight:1.45,maxWidth:400}}>The LinkedIn remixer — corporate phrases, spoken in time over a live drum machine. <b style={{color:'var(--blue)'}}>It’s not an instrument. It’s a journey.</b></p>
     </div>
     <Ticker style={{marginTop:16}}>{ticker}</Ticker>
-    <div style={{marginTop:14,display:'flex',gap:8,flexWrap:'wrap'}}>
+    <div style={{marginTop:14}}>
       <Button onClick={()=> setRemixOpen(o=>!o)} style={{padding:'12px 18px'}}>Build your remix</Button>
-      <Button onClick={()=> location.assign('./lessons/')} style={{padding:'12px 18px'}}>Write a post — LinkedIn Lessons™</Button>
     </div>
     {remixOpen && <div style={{marginTop:12}}>
       <RemixPanel narrow={narrow} result={remix} initial={handoff} onRemix={buildRemix} onClose={()=>setRemixOpen(false)}/>
