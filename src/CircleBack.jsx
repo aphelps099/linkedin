@@ -1,5 +1,5 @@
 import React from 'react';
-import { Settings, Shuffle, Upload, X } from 'lucide-react';
+import { ChevronRight, Settings, Shuffle, Upload, X } from 'lucide-react';
 import { Unit } from './components/chassis/Unit.jsx';
 import { Masthead } from './components/chassis/Masthead.jsx';
 import { Ticker } from './components/chassis/Ticker.jsx';
@@ -673,11 +673,11 @@ export default function CircleBack(){
     const down = e=>{
       if(e.metaKey||e.ctrlKey||e.altKey) return;
       if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
-      // step through the phrase bank — the preview is a flip-book
-      if(!e.shiftKey && (e.key==='ArrowRight' || e.key==='ArrowLeft')){
+      // the performance advances; it does not browse backward
+      if(!e.shiftKey && e.key==='ArrowRight'){
         e.preventDefault();
         if(e.repeat) return;
-        stepPhrase(e.key==='ArrowRight' ? 1 : -1);
+        stepPhrase(1);
         return;
       }
       if(e.code==='Space'){ e.preventDefault(); setPlaying(x=>!x); return; }
@@ -852,23 +852,35 @@ export default function CircleBack(){
   },[studio]);
 
   const voxLabels = VOICES.map((v)=> v.vox ? voxCodes : null);
-  // the studio keeps the full key set; the stage keeps only the arrows
+  // phrase navigation only moves forward, keeping the performance sequential
   const stageKeys = tone => <div style={{display:'grid',
-    gridTemplateColumns: narrow ? '1fr 1fr' : '104px repeat(3,1fr) 104px',gap:narrow?10:14,width:'100%'}}>
-    <ArrowKey tone={tone} dir="left" hint="Change phrase" onFire={()=>stepPhrase(-1)}/>
+    gridTemplateColumns: narrow ? '1fr' : 'repeat(3,1fr) 104px',gap:narrow?10:14,width:'100%'}}>
     <StageKey tone={tone} label="Phrase" hint="1 / A" caption="Say the next line" onFire={firePhrase}
       style={narrow?{gridColumn:'1 / -1'}:undefined}/>
     <StageKey tone={tone} label="Build" hint="2 / S" caption="Raise the room" on={energy===1} onFire={()=> setEnergyLevel(energy===1?0:1)}
       style={narrow?{gridColumn:'1 / -1'}:undefined}/>
     <StageKey tone={tone} label="Drop" hint="3 / D" caption="Full stop." on={energy===2} onFire={()=> setEnergyLevel(2)}
       style={narrow?{gridColumn:'1 / -1'}:undefined}/>
-    <ArrowKey tone={tone} dir="right" hint="Change phrase" onFire={()=>stepPhrase(1)}/>
+    <ArrowKey tone={tone} dir="right" hint="Next phrase" onFire={()=>stepPhrase(1)}/>
   </div>;
-  const stageArrows = <div style={{display:'grid',gridTemplateColumns:'104px minmax(0,1fr) 104px',
-    gap:narrow?10:14,alignItems:'stretch',height:104}}>
-    <ArrowKey dir="left" hint="Change phrase" onFire={()=>stepPhrase(-1)} style={{minHeight:0,height:'100%'}}/>
-    <CommentCards stateRef={ref} narrow={narrow}/>
-    <ArrowKey dir="right" hint="Change phrase" onFire={()=>stepPhrase(1)} style={{minHeight:0,height:'100%'}}/>
+  const stageArrows = <div style={{display:'grid',
+    gridTemplateColumns:narrow?'minmax(0,1fr)':'minmax(0,1fr) 146px',
+    gap:narrow?8:14,alignItems:'stretch'}}>
+    <div style={{height:104,minWidth:0}}>
+      <CommentCards stateRef={ref} narrow={narrow}/>
+    </div>
+    <button
+      type="button"
+      data-testid="button-next-phrase"
+      aria-label="Next phrase"
+      onClick={()=>stepPhrase(1)}
+      style={{minHeight:narrow?44:104,border:'2px solid #fff',background:'rgba(255,255,255,.06)',color:'#fff',
+        display:'flex',alignItems:'center',justifyContent:'center',gap:8,padding:narrow?'9px 14px':'14px 12px',
+        fontFamily:'var(--sans)',fontSize:narrow?11:10,fontWeight:750,letterSpacing:'.13em',textTransform:'uppercase',
+        cursor:'pointer',touchAction:'manipulation',WebkitTapHighlightColor:'transparent'}}>
+      <span>Next phrase</span>
+      <ChevronRight size={narrow?18:22} strokeWidth={2.2} aria-hidden="true"/>
+    </button>
   </div>;
 
   if(!studio) return <div style={{position:'relative',minHeight:'100vh',background:'var(--blue)',color:'#fff',fontFamily:'var(--sans)',
@@ -970,7 +982,7 @@ export default function CircleBack(){
       <span>{remix ? `Your remix · index ${remix.score} · ${remix.rank}` : song.name} · {tempo} BPM · {SECTIONS[energy]}</span>
       <span style={{display:'inline-flex',gap:18,alignItems:'center',flexWrap:'wrap'}}>
         {voxRadio('light')}
-        <span>Play runs the show · ← → override phrase · 2 build · 3 drop · ⇧R repeats · R new track</span>
+        <span>Play runs the show · → next phrase · 2 build · 3 drop · ⇧R repeats · R new track</span>
       </span>
     </div>
     {audioDrawer && <>
