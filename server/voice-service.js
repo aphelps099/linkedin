@@ -4,9 +4,10 @@ const MAX_LINES = 9;
 const MAX_LINE_LENGTH = 180;
 
 export const VOICE_INSTRUCTIONS = [
-  'Deadpan corporate compliance robot.',
-  'Crisp, clipped cadence.',
-  'Completely serious and slightly ominous.',
+  'Synthetic corporate compliance machine, not a human narrator.',
+  'Use a flat pitch, precise consonants, and a crisp, clipped cadence.',
+  'Sound like an expensive building-access terminal delivering a formal violation.',
+  'Completely serious, emotionally blank, and slightly ominous.',
   'Never sound cheerful, inspirational, or conversational.',
   'No dramatic pauses; deliver the line as one compact rhythmic sample.',
   'Treat punctuation as rhythmic direction.',

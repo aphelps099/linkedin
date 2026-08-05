@@ -211,9 +211,9 @@ export default function CircleBack(){
 
   // The machine speaks the jargon; when a remix is loaded, the screen shows the
   // author's own line instead — their words, our voice.
-  const speak = React.useCallback((i, display, buffer)=>{
+  const speak = React.useCallback((i, display, buffer, voiceRole)=>{
     const r = ref.current;
-    CBVoice.speakPhrase(i, display || PHRASES[i].say, r.sinc, r.deliv, r.decay, buffer);
+    CBVoice.speakPhrase(i, display || PHRASES[i].say, r.sinc, r.deliv, r.decay, buffer, voiceRole);
     r.spoken = true; r.phraseAt = performance.now();
     setTicker(display || PHRASES[i].say);
   },[]);
@@ -222,7 +222,7 @@ export default function CircleBack(){
     if(r.remixSequence && r.remixSequence.length){
       const item = r.remixSequence[r.remixSequenceIx % r.remixSequence.length];
       r.remixSequenceIx++;
-      speak(item.phrase, item.text, item.buffer);
+      speak(item.phrase, item.text, item.buffer, item.voiceRole);
       return;
     }
     const line = r.remixByStep && r.remixByStep[step];
@@ -422,19 +422,30 @@ export default function CircleBack(){
     let voiceBuffers = [];
     setTicker('Voice procurement in progress — please hold.');
     try{
-      // The archive host keeps the immaculate corporate polish. The contractor
-      // handles the incriminating proper noun and the compliance punchline.
-      if(opt.lines[3]){
+      // Three immaculate archive reads establish the corporate broadcast. The
+      // generated compliance robot interrupts once, at the end, to identify
+      // the incriminating proper noun and file the punchline.
+      if(opt.lines.length){
+        const robotIndex = opt.lines.length - 1;
+        const subject = opt.nouns[0];
         opt = {
           ...opt,
-          lines:opt.lines.map((line, index)=> index === 3
-            ? {...line, text:'Please congratulate accordingly.'}
-            : line),
+          lines:opt.lines.map((line, index)=>{
+            if(index === robotIndex){
+              return {
+                ...line,
+                text:subject
+                  ? `Custom subject detected: ${subject}. Milestone unlocked. Please congratulate accordingly.`
+                  : 'Milestone detected. Please congratulate accordingly.',
+              };
+            }
+            // The optimizer weaves the subject into line two for display. The
+            // archive read must show the exact words the spokeswoman performs.
+            return {...line, text:PHRASES[line.phrase].say};
+          }),
         };
       }
-      const contractorIndices = opt.lines
-        .map((_, index)=>index)
-        .filter(index=>index % 2 === 1);
+      const contractorIndices = opt.lines.length ? [opt.lines.length - 1] : [];
       const voice = await requestRemixVoice(contractorIndices.map(index=>opt.lines[index].text));
       voiceBuffers = Array(opt.lines.length).fill(null);
       contractorIndices.forEach((lineIndex, clipIndex)=>{
@@ -443,7 +454,7 @@ export default function CircleBack(){
       rx.voice = {
         provider:voice.provider,
         status:'generated',
-        mode:'archive-contractor-duet',
+        mode:'archive-robot-interruption',
         archiveLines:opt.lines.length - contractorIndices.length,
         generatedLines:contractorIndices.length,
       };
@@ -494,7 +505,7 @@ export default function CircleBack(){
     r.remixSequence = opt.lines.map((line, index)=>({
       ...line,
       buffer:voiceBuffers[index] || null,
-      voiceRole:voiceBuffers[index] ? 'contractor' : 'archive',
+      voiceRole:voiceBuffers[index] ? 'robot' : 'archive',
     }));
     r.remixSequenceIx = 0;
     // a remix is the one thing that writes the Vox row, so it takes the lock off

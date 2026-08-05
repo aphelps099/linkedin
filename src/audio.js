@@ -274,7 +274,24 @@ export const CBAudio = (() => {
     if(o.rate!==undefined) src.playbackRate.value = o.rate;
     if(o.detune) try{ src.detune.value = o.detune; }catch(e){ /* detune unsupported */ }
     const g = ctx.createGain(); g.gain.value = .9*(o.vel===undefined?1:o.vel);
-    src.connect(g); g.connect(o.bus === 'vox' ? voxIn : master); src.start(t);
+    if(o.robot){
+      // One generated line plays as a visibly different machine in the room:
+      // narrow intercom bandwidth plus a restrained 34 Hz ring modulation.
+      // The archive spokeswoman never enters this branch, preserving her polish.
+      const intercom = ctx.createBiquadFilter();
+      intercom.type = 'bandpass'; intercom.frequency.value = 1650; intercom.Q.value = .72;
+      const dry = ctx.createGain(); dry.gain.value = .62;
+      const ring = ctx.createGain(); ring.gain.value = .34;
+      const carrier = ctx.createOscillator(); carrier.type = 'sine'; carrier.frequency.value = 34;
+      const depth = ctx.createGain(); depth.gain.value = .28;
+      carrier.connect(depth); depth.connect(ring.gain);
+      src.connect(intercom); intercom.connect(dry); intercom.connect(ring);
+      dry.connect(g); ring.connect(g);
+      carrier.start(t); carrier.stop(t + buffer.duration + 1);
+    } else {
+      src.connect(g);
+    }
+    g.connect(o.bus === 'vox' ? voxIn : master); src.start(t);
     return { source: src, gain: g };
   }
   return {
@@ -343,7 +360,7 @@ export const CBVoice = {
   // Every so often a read is dunked in reverb, for no reason anyone could defend.
   reads: 0,
   readOffset(){ return READ_CYCLE[this.reads++ % READ_CYCLE.length]; },
-  speakPhrase(i, text, sinc, deliv, decay, overrideBuffer){
+  speakPhrase(i, text, sinc, deliv, decay, overrideBuffer, voiceRole){
     const d = decay===undefined ? .5 : decay;
     const octave = this.readOffset();
     CBAudio.setVoxVerb(Math.random() < .22 ? .55 : .08);
@@ -360,9 +377,11 @@ export const CBVoice = {
       }
       this.current = CBAudio.playBuffer(buf, {
         vel: .95,
-        rate: .6 + deliv*.8,
-        detune: ((.4 + sinc*1.4) - 1) * 1200 + (this.pitch + octave)*100,
+        rate: (.6 + deliv*.8) * (voiceRole === 'robot' ? .94 : 1),
+        detune: ((.4 + sinc*1.4) - 1) * 1200 + (this.pitch + octave)*100
+          + (voiceRole === 'robot' ? -240 : 0),
         bus: 'vox', // through the drive + delay chain
+        robot: voiceRole === 'robot',
       });
       return;
     }
