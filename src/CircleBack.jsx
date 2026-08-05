@@ -454,15 +454,15 @@ export default function CircleBack(){
     setTicker(`${s.name} — ${style} cadence`);
   },[]);
 
-  // Build the remix: four concise lines from their post, spoken dynamically.
-  // Phrase-bank indices remain attached only for truthful audio fallback.
+  // Build the remix as call-and-response: concise post facts alternate with
+  // short corporate commands. Phrase-bank indices remain attached for fallback.
   const buildRemix = React.useCallback(async text=>{
     CBAudio.unlock();
     if(voiceJobRef.current?.controller) voiceJobRef.current.controller.abort('replaced');
     const rx = analyze(text || '');
     if(!rx.lines.length){ setTicker('Nothing to remix — paste a post first.'); return; }
     let opt = optimize(text || '', PHRASES);
-    opt = {...opt, lines:opt.lines.slice(0, 4)};
+    opt = {...opt, lines:opt.lines.slice(0, 6)};
     const clean = value=>String(value || '').replace(/\s+/g, ' ').trim().slice(0, 180);
     const archiveLines = opt.lines.map(line=>PHRASES[line.phrase].say);
     opt = {
@@ -474,7 +474,7 @@ export default function CircleBack(){
           text:generatedText,
           sourceText:generatedText,
           archiveText:archiveLines[index],
-          voiceRole:index === opt.lines.length - 1 ? 'robot' : 'announcer',
+          voiceRole:line.kind === 'corporate' ? 'robot' : 'announcer',
         };
       }),
     };
@@ -922,7 +922,7 @@ export default function CircleBack(){
     {aboutOpen && <div
       role="dialog"
       aria-label="About LinkedIn Training"
-      style={{position:'fixed',zIndex:31,top:narrow?102:70,left:narrow?14:26,width:narrow?'calc(100vw - 28px)':380,boxSizing:'border-box',background:'var(--paper)',color:'var(--ink)',border:'var(--rule-frame) solid var(--ink)',padding:narrow?18:22,boxShadow:'10px 12px 0 rgba(4,42,82,.3)'}}>
+      style={{position:'fixed',zIndex:31,top:narrow?88:70,left:narrow?14:26,width:narrow?'calc(100vw - 28px)':500,maxWidth:'calc(100vw - 52px)',boxSizing:'border-box',background:'var(--paper)',color:'var(--ink)',border:'var(--rule-frame) solid var(--ink)',padding:narrow?18:22,boxShadow:'10px 12px 0 rgba(4,42,82,.3)'}}>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'start',gap:18}}>
         <div>
           <div style={{fontFamily:'var(--mono)',fontSize:9.5,fontWeight:700,letterSpacing:'.16em',textTransform:'uppercase',color:'var(--blue)'}}>About · Form LT-1</div>
@@ -933,22 +933,25 @@ export default function CircleBack(){
           <X size={17} aria-hidden="true"/>
         </button>
       </div>
-      <p style={{fontSize:14,lineHeight:1.55,margin:'18px 0 10px'}}>
-        Learn which terms, phrases, and patterns help optimize your LinkedIn post — and which ones push it into thought-leadership singularity.
+      <p style={{fontSize:15,lineHeight:1.45,margin:'18px 0 14px',maxWidth:'42ch'}}>
+        Spot what helps your post — and what pushes it toward thought-leadership singularity.
       </p>
-      <p style={{fontSize:12,lineHeight:1.55,margin:0,color:'var(--text-meta)'}}>
-        Paste a post to inspect its language, hear the corporate genre performed back to you, and leave with a cleaner sense of what to keep, cut, or never say again.
-      </p>
-      <div style={{marginTop:18,borderTop:'1px solid var(--hair)',paddingTop:10,fontFamily:'var(--mono)',fontSize:9.5,letterSpacing:'.1em',textTransform:'uppercase'}}>
+      <div style={{display:'grid',gridTemplateColumns:narrow?'1fr':'repeat(3, 1fr)',borderTop:'1px solid var(--hair)',borderBottom:'1px solid var(--hair)'}}>
+        {['Inspect the language','Hear the genre','Keep the human part'].map((item,index)=>
+          <span key={item} style={{padding:narrow?'8px 0':'10px 12px',borderLeft:!narrow&&index?'1px solid var(--hair)':'none',borderTop:narrow&&index?'1px solid var(--hair)':'none',fontFamily:'var(--mono)',fontSize:9,letterSpacing:'.08em',textTransform:'uppercase'}}>
+            {item}
+          </span>)}
+      </div>
+      <div style={{marginTop:14,fontFamily:'var(--mono)',fontSize:9.5,letterSpacing:'.1em',textTransform:'uppercase'}}>
         Educational outcomes subject to engagement.
       </div>
-      <p style={{margin:'14px 0 0',fontSize:11,lineHeight:1.5,color:'var(--text-meta)'}}>
+      <p style={{margin:'14px 0 0',paddingTop:12,borderTop:'1px dotted var(--hair)',fontSize:11,lineHeight:1.45,color:'var(--text-meta)'}}>
         Circle Back® is honored and humbled to have been built by{' '}
         <a
           href="https://www.linkedin.com/in/aaroncphelps"
           target="_blank"
           rel="noreferrer"
-          style={{color:'var(--blue)',fontWeight:700,textUnderlineOffset:3}}>
+          style={{color:'var(--blue)',fontWeight:700,textUnderlineOffset:3,whiteSpace:'nowrap'}}>
           Aaron Phelps
         </a>.
       </p>

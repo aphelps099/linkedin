@@ -178,6 +178,51 @@ const INTENTS = [
 ];
 const GENERIC = {open:[40, 16], mid:[4, 5, 31], close:[12, 36]};
 const STOP = new Set(['this','that','with','from','have','been','they','their','there','which','about','after','over','into','were','what','when','will','your','ours','more','than','then','some','just','very','much','many','most','also','only','even','still','being','other','these','those','because','while','would','could','should','every','first','last','next','years','year','team','work','role','time','today','people','company']);
+const CORPORATE_STINGS = [
+  {text:'OPTIMIZE.', phrase:6},
+  {text:'SYNERGIZE.', phrase:4},
+  {text:'LEVERAGE.', phrase:6},
+  {text:'ALIGN.', phrase:5},
+  {text:'SCALE.', phrase:11},
+  {text:'ACTIVATE.', phrase:51},
+];
+
+function shortenPerformanceLine(value){
+  let line = clean(value)
+    .replace(/\bhttps?:\/\/\S+/gi, '')
+    .replace(/\[[^\]]+\]\([^)]+\)/g, '')
+    .replace(/(?:\s*#\w+)+\s*$/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  // Prefer a usable acronym over asking the voice model to perform a full
+  // institutional name before it reaches the actual news.
+  line = line.replace(
+    /^(?:the\s+)?[^.!?()]{18,90}\s+\(([A-Za-z][A-Za-z0-9& -]{1,20})\)\s+(?=(?:is|are|has|have|seeks?|invites?|announces?)\b)/i,
+    '$1 ',
+  );
+  line = line
+    .replace(/^now open through\s+(.+?)[.!]?$/i, 'Applications close $1.')
+    .replace(/\s+through RFQ\s+#[^,.;]+/i, '')
+    .replace(/^please share this opportunity or tag someone.*joining our network[.!]?$/i, 'Tag someone who should join the network.');
+  line = line.replace(/^whether you['’]re interested[^,]*,\s*/i, '');
+  line = line.replace(/^(?:and|but|so)\s+/i, '');
+
+  const words = line.split(/\s+/).filter(Boolean);
+  if(words.length <= 13 && line.length <= 82) return line;
+
+  // A sentence may still be syntactically complete before its promotional
+  // tail. Take the first performable clause rather than cutting mid-word.
+  const clauses = line.split(/,\s+|;\s+|\s+[—–-]\s+|\s+(?:and|but|while|because)\s+/i);
+  const complete = clauses.find(part=>{
+    const count = part.trim().split(/\s+/).length;
+    return count >= 4 && count <= 13 && part.trim().length <= 82;
+  });
+  if(complete) return clean(complete).replace(/[,:;–—-]+$/, '') + '.';
+
+  const clipped = words.slice(0, 11).join(' ').replace(/[,:;–—-]+$/, '');
+  return clipped ? `${clipped}.` : '';
+}
 
 // their proper nouns — the only part of the post the machine cannot say,
 // so they go on screen instead
@@ -242,27 +287,48 @@ export function optimize(text, phraseBank){
   const selected = candidates
     .slice()
     .sort((a,b)=> b.score-a.score || a.index-b.index)
-    .slice(0, 4)
+    .slice(0, 3)
     .sort((a,b)=> a.index-b.index);
 
   // Very short posts still need a complete sequence. Repeat the author's own
   // lines rather than inventing copy or silently replacing them with the bank.
   if(selected.length){
     let cursor = 0;
-    while(selected.length < 4){
+    while(selected.length < 3){
       selected.push({...selected[cursor % selected.length], index:src.length + cursor});
       cursor++;
     }
   }
 
+  const postLines = selected
+    .map((line, n)=>{
+      const text = shortenPerformanceLine(line.text);
+      return {
+        text,
+        sourceText:text,
+        originalText:line.text.slice(0, 180),
+        phrase:fallback[n % fallback.length] ?? 40,
+        kind:'post',
+      };
+    })
+    .filter(line=>line.text);
+  const stingOffset = src.length % CORPORATE_STINGS.length;
+  const stings = Array.from({length:3}, (_, index)=>({
+    ...CORPORATE_STINGS[(stingOffset + index) % CORPORATE_STINGS.length],
+    sourceText:CORPORATE_STINGS[(stingOffset + index) % CORPORATE_STINGS.length].text,
+    originalText:'',
+    kind:'corporate',
+  }));
+  const performance = [];
+  for(let index = 0; index < Math.max(postLines.length, stings.length); index++){
+    if(postLines[index]) performance.push(postLines[index]);
+    if(stings[index]) performance.push(stings[index]);
+  }
+
   return {
     intents: chosen.map(c=> c.id),
     nouns,
-    lines: selected.map((line, n)=>({
-      text:line.text.slice(0, 180),
-      sourceText:line.text.slice(0, 180),
-      phrase:fallback[n % fallback.length] ?? 40,
-    })),
+    lines: performance,
   };
 }
 
