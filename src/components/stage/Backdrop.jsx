@@ -23,7 +23,7 @@ export function Backdrop({ stateRef, focusRef }){
         ctx.fillStyle = '#0a66c2';
         ctx.fillRect(0, 0, w, h);
         drawAsciiField(ctx, stateRef.current || {}, now, {
-          width: w, height: h, cell: 76, alpha: .3, playhead: false,
+          width: w, height: h, cell: 76, alpha: .3,
         });
         // the ramp centres on the monitor, so the eye lands on the words
         const box = focusRef && focusRef.current ? focusRef.current.getBoundingClientRect() : null;

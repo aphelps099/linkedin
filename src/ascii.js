@@ -14,7 +14,7 @@ export function drawAsciiField(ctx, st, now, opts){
   const cell = o.cell || 19;                 // character cell width in px
   const cols = Math.max(8, Math.ceil(W/cell));
   const rows = Math.max(6, Math.ceil(H/(cell*1.85)));
-  const cw = W/cols, ch = H/rows;
+  const ch = H/rows;
   const spec = CBAudio.spectrum();
   const pattern = st.pattern || [];
   const steps = (pattern[0] && pattern[0].length) || 16;
@@ -49,11 +49,8 @@ export function drawAsciiField(ctx, st, now, opts){
     ctx.fillStyle = `rgba(255,255,255,${Math.min(.9, rowA).toFixed(3)})`;
     ctx.fillText(line, 0, r*ch + ch/2);
   }
-  if(st.pos != null && steps && o.playhead !== false){
-    const c = Math.floor(st.pos/steps*cols);
-    ctx.fillStyle = `rgba(159,200,234,${Math.min(.5, alpha*2.4).toFixed(3)})`;
-    ctx.fillRect(c*cw, 0, Math.max(cw, 3), H);
-  }
+  // No playhead band: a full-height bar cut straight through the type. The
+  // beat already reads in the column density.
   ctx.restore();
 }
 
