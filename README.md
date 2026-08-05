@@ -49,9 +49,11 @@ mixer. The Museum then continues into three institutional functions:
   `[IMPRESSIVE SUM]`). The preview is exactly what would be submitted;
   submitting opens a curated review (a GitHub issue) — nothing publishes
   automatically. The genre goes on the wall. The person does not.
-- **The Historical Archive** — a placard history of the professional
-  internet, from the 2003 founding through the broetry period, the weeping
-  executive, and the delve era. The events are real; the tone is a museum's.
+- **The Historical Archive** — a separate dark, editorial timeline entered
+  through the Museum footer credit (`#archive`). It traces the professional
+  internet from the 2003 founding through broetry, the weeping executive, and
+  the delve era with grain, scroll reveals, keyboard controls, and a
+  reduced-motion presentation. The events are real; the tone is a museum's.
 
 Engine checks: `node scripts/check-museum.mjs` (redaction leak tests,
 determinism, exhibit completeness).

@@ -2,9 +2,9 @@ import React from 'react';
 import { Button } from '../components/controls/Button.jsx';
 import { Masthead } from '../components/chassis/Masthead.jsx';
 import { EXHIBITS } from './exhibits.js';
-import { TIMELINE } from './timeline.js';
 import { redact } from './redactor.js';
 import { GalleryRoom } from './GalleryRoom.jsx';
+import { HistoricalArchive } from './HistoricalArchive.jsx';
 import { RedactedText } from './RedactedText.jsx';
 import { ROOMS, exhibitsForRoom } from './rooms.js';
 
@@ -91,9 +91,18 @@ function RedactionOffice({ narrow }){
 
 export default function Museum(){
   const narrow = useNarrow();
+  const [archiveOpen, setArchiveOpen] = React.useState(() => window.location.hash === '#archive');
   const room = ROOMS[0];
   const roomExhibits = React.useMemo(() => exhibitsForRoom(room, EXHIBITS), [room]);
-  return <div className="museum-shell">
+
+  React.useEffect(() => {
+    const onHashChange = () => setArchiveOpen(window.location.hash === '#archive');
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
+
+  return <>
+  <div className="museum-shell">
     <Masthead logo="The Museum of Professional Communication" mark=""
       meta={narrow ? ['Form MM-1'] : ['Form MM-1', 'Est. 2026', 'Admission free']}/>
     <div className="museum-intro">
@@ -113,29 +122,20 @@ export default function Museum(){
     </p>
     <RedactionOffice narrow={narrow}/>
 
-    <SectionRule no="III" title="The Historical Archive"/>
-    <div style={{ marginTop: 14, background: '#fff', border: 'var(--rule-frame) solid var(--ink)', padding: narrow ? '4px 16px' : '6px 22px' }}>
-      {TIMELINE.map((t, i) =>
-        <div key={i} style={{ display: 'grid', gridTemplateColumns: narrow ? '52px 1fr' : '72px 220px 1fr', gap: 12,
-          padding: '12px 0', borderBottom: i < TIMELINE.length - 1 ? '1px dotted var(--hair)' : 'none', alignItems: 'baseline' }}>
-          <span style={{ fontFamily: 'var(--mono)', fontSize: 13, fontWeight: 700, color: 'var(--blue)' }}>{t.year}</span>
-          {narrow
-            ? <span style={{ fontSize: 13, lineHeight: 1.5 }}><b>{t.title}.</b> <span style={{ whiteSpace: 'pre-wrap' }}>{t.note}</span></span>
-            : <>
-                <span style={{ fontSize: 13.5, fontWeight: 700 }}>{t.title}</span>
-                <span style={{ fontSize: 13, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{t.note}</span>
-              </>}
-        </div>)}
-    </div>
-
-    <div style={{ marginTop: 30, borderTop: 'var(--rule-heavy) solid var(--ink)', paddingTop: 10,
-      display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', ...META }}>
-      <span>The museum is not affiliated with your network. The gift shop is the tools.</span>
-      <span style={{ display: 'inline-flex', gap: 16, flexWrap: 'wrap' }}>
+    <footer className="museum-footer">
+      <div>
+        <a className="museum-archive-door" href="#archive" onClick={() => setArchiveOpen(true)}>
+          © Digital Creative 2026
+        </a>
+        <span>The museum is not affiliated with your network. The gift shop is the tools.</span>
+      </div>
+      <nav aria-label="More Circle Back tools">
         <a href="../lessons/" style={{ color: 'var(--blue)' }}>Write one — Lessons™</a>
         <a href="../roast/" style={{ color: 'var(--blue)' }}>Judge one — Roast™</a>
         <a href="../" style={{ color: 'var(--blue)' }}>Perform one — Circle Back®</a>
-      </span>
-    </div>
-  </div>;
+      </nav>
+    </footer>
+  </div>
+  <HistoricalArchive open={archiveOpen} onClose={() => setArchiveOpen(false)}/>
+  </>;
 }

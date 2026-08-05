@@ -127,9 +127,10 @@ and shareable.
   motion default to the same collection as a readable list.
 - The exhibit inspector is the share-and-handoff object: full artifact,
   curator note, index, and direct doors to Roast or the mixer.
-- The existing Redaction Office and Historical Archive remain below the first
-  room for now. They can become dedicated rooms after the gallery interaction
-  proves itself.
+- The Redaction Office remains below the first room. The Historical Archive is
+  now a separate dark timeline entered through the footer copyright, with a
+  stable `#archive` URL, scroll reveals, keyboard dismissal, and reduced-motion
+  support.
 
 #### Next Museum increment
 
