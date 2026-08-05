@@ -64,6 +64,17 @@ export default function Roast(){
   const persona = PERSONAS.find(p => p.id === personaId);
   const level = INTENSITIES[intensity - 1];
 
+  // arriving with #roast=<text> (e.g. a museum exhibit) files it immediately
+  React.useEffect(() => {
+    const m = location.hash.match(/^#roast=(.+)$/);
+    if(!m) return;
+    history.replaceState(null, '', location.pathname + location.search);
+    try {
+      const text = decodeURIComponent(m[1]);
+      if(text.trim()){ setKind('post'); setDraft(text); setFiled(true); }
+    } catch { /* malformed hash: ignore */ }
+  }, []);
+
   // recomputes live once filed — switching persona or intensity re-roasts
   const result = React.useMemo(
     () => (filed && draft.trim()) ? roastIt({ kind, text: draft, personaId, intensity, seed }) : null,
@@ -158,6 +169,7 @@ export default function Roast(){
       <span>Roast My LinkedIn™ is not affiliated with your network.</span>
       <span style={{ display: 'inline-flex', gap: 16, flexWrap: 'wrap' }}>
         <a href="../lessons/" style={{ color: 'var(--blue)' }}>Write a post — LinkedIn Lessons™</a>
+        <a href="../museum/" style={{ color: 'var(--blue)' }}>Visit the Museum</a>
         <a href="../" style={{ color: 'var(--blue)' }}>Turn one into a beat — Circle Back®</a>
       </span>
     </div>

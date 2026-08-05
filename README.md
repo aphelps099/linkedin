@@ -23,7 +23,30 @@ Then open the printed local URL. `npm run build` produces a static bundle in
 workflow manually from the Actions tab).
 
 The build is multi-page: the mixer at `/`, **LinkedIn Lessons™** at
-`/lessons/`, and **Roast My LinkedIn™** at `/roast/`.
+`/lessons/`, **Roast My LinkedIn™** at `/roast/`, and **The Museum of
+Professional Communication** at `/museum/`.
+
+## The Museum of Professional Communication (`/museum/`)
+
+*Authors anonymized. Clichés immortal.* Three wings:
+
+- **The Collection** — twelve curated exhibits, every one synthetic: fiction
+  written in the style of the genre it commemorates, displayed as redacted
+  documents with curator plaques, inspector quotes, and a live Thought
+  Leadership Index. Each exhibit can be sent to Roast or performed as a beat.
+- **The Redaction Office** — the submission door. Paste a post and it is
+  anonymized *in the browser, before anything is sent anywhere*: names,
+  companies, handles, emails, links, and impressive numbers become
+  placeholders (`[ANONYMOUS VISIONARY]`, `[REDACTED FORTUNE 500 COMPANY]`,
+  `[IMPRESSIVE SUM]`). The preview is exactly what would be submitted;
+  submitting opens a curated review (a GitHub issue) — nothing publishes
+  automatically. The genre goes on the wall. The person does not.
+- **The Historical Archive** — a placard history of the professional
+  internet, from the 2003 founding through the broetry period, the weeping
+  executive, and the delve era. The events are real; the tone is a museum's.
+
+Engine checks: `node scripts/check-museum.mjs` (redaction leak tests,
+determinism, exhibit completeness).
 
 ## Roast My LinkedIn™ (the inspection office)
 

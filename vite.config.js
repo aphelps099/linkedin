@@ -15,6 +15,8 @@ export default defineConfig({
         lessons: fileURLToPath(new URL('./lessons/index.html', import.meta.url)),
         // Roast My LinkedIn — the inspection office, served at /roast/
         roast: fileURLToPath(new URL('./roast/index.html', import.meta.url)),
+        // The Museum of Professional Communication, served at /museum/
+        museum: fileURLToPath(new URL('./museum/index.html', import.meta.url)),
       },
     },
   },
