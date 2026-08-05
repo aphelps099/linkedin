@@ -273,6 +273,19 @@ export const CBAudio = (() => {
     const src = ctx.createBufferSource(); src.buffer = buffer;
     if(o.rate!==undefined) src.playbackRate.value = o.rate;
     if(o.detune) try{ src.detune.value = o.detune; }catch(e){ /* detune unsupported */ }
+    if(o.warble){
+      // A restrained tape/terminal drift. Even at maximum this is cents, not
+      // semitones, so the voice moves without becoming a novelty voice.
+      const lfo = ctx.createOscillator();
+      const depth = ctx.createGain();
+      lfo.type = 'sine';
+      lfo.frequency.value = .55 + o.warble*.75;
+      depth.gain.value = 3 + o.warble*12;
+      try{
+        lfo.connect(depth); depth.connect(src.detune);
+        lfo.start(t); lfo.stop(t + buffer.duration + 1);
+      }catch(e){ /* detune modulation unsupported */ }
+    }
     const g = ctx.createGain(); g.gain.value = .9*(o.vel===undefined?1:o.vel);
     if(o.robot){
       // An early corporate speech terminal: restricted telephone bandwidth,
@@ -319,10 +332,12 @@ export function exposeVoice(){ if(typeof window !== 'undefined') window.CBVoice 
 // CBVoice — the LinkedIn larynx. Prefers the recorded phrase bank (routed through
 // CBAudio's master bus, so it lands in exports); falls back to speechSynthesis,
 // which the browser cannot capture into a recording.
-// The read cycle in semitones: the voice sits five up by default, drops to
-// four, and every fifth line comes in at three. Modest lifts — never a chipmunk.
-const READ_CYCLE = [5, 4, 5, 4, 3];
-const SLOWEST_READ = Math.min(...READ_CYCLE);   // the least lift runs longest
+// Tiny tonal differences keep repeated reads alive without turning the speaker
+// into a chipmunk. Values are cents, and lean slightly below the source voice.
+const READ_CYCLE = [0, -35, 15, -70, -105];
+const SLOWEST_READ = Math.min(...READ_CYCLE);
+const deliveryRate = deliv => .9 + deliv*.2; // deliberate 0.90x → brisk 1.10x
+const sincerityDetune = sinc => -120 + sinc*100; // warm -1.2st → neutral -0.2st
 
 export const CBVoice = {
   bank: new Map(),
@@ -347,18 +362,19 @@ export const CBVoice = {
   durationOf(i, text, deliv = .5){
     // detune moves playback speed with pitch, so the least-lifted read is the
     // longest; the sequencer budgets for that or the next phrase talks over it
-    const rate = (.6 + deliv*.8) * Math.pow(2, SLOWEST_READ/12);
+    const rate = deliveryRate(deliv) * Math.pow(2, SLOWEST_READ/1200);
     const buf = this.bank.get(i);
     if(buf) return buf.duration / rate;
     return Math.max(.7, String(text||'').length * .065) / rate; // estimate before the bank loads
   },
   durationOfBuffer(buffer, deliv = .5){
     if(!buffer) return 1.6;
-    const rate = (.6 + deliv*.8) * Math.pow(2, SLOWEST_READ/12);
+    const rate = deliveryRate(deliv) * Math.pow(2, SLOWEST_READ/1200);
     return buffer.duration / rate;
   },
-  // sinc/deliv/decay are 0–1 registers; voice math per the prototype:
-  // pitch = .4 + sinc*1.4, rate = .6 + deliv*.8.
+  // Sincerity is tonal posture, not a pitch fader: it moves from a warmer,
+  // faintly unstable read toward a polished neutral read. Delivery controls a
+  // deliberately narrow cadence range close to normal conversation.
   // decay governs what happens to the PREVIOUS phrase when a new one lands:
   // 0 = choked instantly (the chair recognizes no one), 1 = rings out in full.
   // pitch is a semitone offset (-12..+12) applied on top of Sincerity
@@ -383,17 +399,22 @@ export const CBVoice = {
       }
       this.current = CBAudio.playBuffer(buf, {
         vel: .95,
-        // The mainframe is brisk and fixed-pitch. "Slow human" is not a robot.
-        rate: voiceRole === 'robot' ? 1.08 : .6 + deliv*.8,
+        // The mainframe is only slightly slow. The character comes from its
+        // restricted signal, not from dragging a normal voice into the floor.
+        rate: voiceRole === 'robot' ? .96 : deliveryRate(deliv),
         detune: voiceRole === 'robot'
           ? -60
-          : ((.4 + sinc*1.4) - 1) * 1200 + (this.pitch + octave)*100,
+          : sincerityDetune(sinc) + this.pitch*100 + octave,
         bus: 'vox', // through the drive + delay chain
         robot: voiceRole === 'robot',
+        warble: voiceRole === 'robot' ? .24 : .15 + (1-sinc)*.55,
       });
       return;
     }
-    this.speak(text, {pitch:(.4 + sinc*1.4) + octave/12, rate:.6 + deliv*.8});
+    this.speak(text, {
+      pitch: Math.max(.75, Math.min(1, 1 + (sincerityDetune(sinc) + octave)/1200)),
+      rate: deliveryRate(deliv),
+    });
   },
   speak(text, opts){
     const o = opts || {};

@@ -149,7 +149,7 @@ export default function CircleBack(){
   const [decay, setDecay] = React.useState(.5);
   const [weird, setWeird] = React.useState(.15);
   const [dist, setDist] = React.useState(.12);
-  const [pitch, setPitch] = React.useState(.5); // 0..1 → −12..+12 semitones
+  const [pitch, setPitch] = React.useState(.8); // 0..1 → −8..+2 semitones
   const [character, setCharacter] = React.useState('boardroom');
   const [selRow, setSelRow] = React.useState(0);
   const [loops, setLoops] = React.useState(4);
@@ -195,7 +195,7 @@ export default function CircleBack(){
   },[]);
   React.useEffect(()=>{ CBAudio.setVoxDelay(60/tempo/4*3); },[tempo]);
   React.useEffect(()=>{ CBAudio.setVoxFx({weird, dist, character}); },[weird, dist, character]);
-  React.useEffect(()=>{ CBVoice.pitch = Math.round((pitch - .5) * 24); },[pitch]);
+  React.useEffect(()=>{ CBVoice.pitch = Math.round(-8 + pitch * 10); },[pitch]);
   React.useEffect(()=>{
     const close = e=>{
       if(e.key !== 'Escape') return;
@@ -241,6 +241,19 @@ export default function CircleBack(){
     const buffer = r.remixAudioByStep && r.remixAudioByStep[step];
     speak(i, line, buffer);
   },[speak]);
+  const speakNextShowLine = React.useCallback(()=>{
+    const r = ref.current;
+    if(r.remixSequence && r.remixSequence.length){
+      const item = r.remixSequence[r.remixSequenceIx % r.remixSequence.length];
+      r.remixSequenceIx++;
+      speak(item.phrase, item.text, item.buffer, item.voiceRole);
+      return;
+    }
+    const list = r.song.setlist;
+    const i = list[(r.setlistIx || 0) % list.length];
+    r.setlistIx = (r.setlistIx || 0) + 1;
+    speak(i);
+  },[speak]);
   const pressKey = React.useCallback((i)=>{
     CBAudio.unlock();
     ref.current.lastKeyAt = performance.now();
@@ -264,7 +277,7 @@ export default function CircleBack(){
     if(wait < 24 || wait > stepMs) fn(); else setTimeout(fn, wait);
   },[]);
 
-  const setEnergyLevel = React.useCallback((lvl)=>{
+  const setEnergyLevel = React.useCallback((lvl, options)=>{
     CBAudio.unlock();
     setEnergy(lvl);
     ref.current.energy = lvl;
@@ -278,7 +291,7 @@ export default function CircleBack(){
       CBAudio.setFilter(20000);                   // slam open
       CBAudio.trigger('impact', 1);
       ref.current.dropAt = ref.current.stepCount || 0;
-      quantize(()=> speak(ref.current.song.hook));
+      if(!options || options.speakHook !== false) quantize(()=> speak(ref.current.song.hook));
     }
   },[quantize, speak]);
 
@@ -335,7 +348,9 @@ export default function CircleBack(){
     const A = CBAudio; A.init(); A.resume();
     // every convene is a fresh post: engagement builds from zero
     ref.current.stepCount = 0;
+    ref.current.setlistIx = 0;
     ref.current.remixSequenceIx = 0;
+    ref.current.lastKeyAt = 0;
     ref.current.comments = [];
     ref.current.eng = {reactions:0, reposts:0, comments:0, nextAt: 6 + Math.floor(Math.random()*6)};
     let step = 0, nextTime = A.now() + .06, timers = [];
@@ -366,7 +381,22 @@ export default function CircleBack(){
           rr.lastStep = s; rr.lastStepAt = performance.now();
           rr.kickAt = rr.pattern[0][s] ? performance.now() : rr.kickAt;
           setPos(s);
-          if(vx) speakOverRemix(vx-1, s);
+          const manualIdle = !rr.lastKeyAt || performance.now() - rr.lastKeyAt > 6500;
+          const actLength = Math.max(16, rr.patLen);
+          const showStep = rr.stepCount % (actLength * 4);
+          const act = Math.floor(showStep / actLength);
+          const actOpening = showStep % actLength === 0;
+          if(rr.studio){
+            if(vx) speakOverRemix(vx-1, s);
+          } else if(manualIdle && actOpening){
+            // Play means "run the show": Groove → Groove → Build → Drop.
+            // Each act advances the post by one line. A manual phrase control
+            // pauses the director briefly rather than fighting the performer.
+            if(act === 0) setEnergyLevel(0);
+            if(act === 2) setEnergyLevel(1);
+            if(act === 3) setEnergyLevel(2, {speakHook:false});
+            speakNextShowLine();
+          }
           // the algorithm at work: reactions tick up, comments roll in
           rr.stepCount++;
           const eng = rr.eng;
@@ -404,7 +434,7 @@ export default function CircleBack(){
         setExp(null);
       }
     };
-  },[playing, speakOverRemix, finishExport, setEnergyLevel]);
+  },[playing, speakOverRemix, speakNextShowLine, finishExport, setEnergyLevel]);
 
   const newTrack = React.useCallback(()=>{
     const s = makeSong();
@@ -655,7 +685,7 @@ export default function CircleBack(){
         if(blob && !discard){
           const url = downloadBlob(blob, name);
           setTake(prev=>{ if(prev) URL.revokeObjectURL(prev.url); return {url, name, mode}; });
-          setTicker('Clip circulated to your downloads.');
+          setTicker('MP4 filed with embedded audio.');
         }
       };
     } else {
@@ -679,7 +709,7 @@ export default function CircleBack(){
         const blob = new Blob(chunks, {type:mime});
         const url = downloadBlob(blob, name);
         setTake(prev=>{ if(prev) URL.revokeObjectURL(prev.url); return {url, name, mode}; });
-        setTicker('Clip circulated to your downloads.');
+        setTicker(mode==='video' ? 'Video filed with embedded audio.' : 'Audio file circulated to your downloads.');
       };
       ex.beginCapture = ()=> recorder.start();
       ex.finish = async discard => {
@@ -763,6 +793,7 @@ export default function CircleBack(){
         <Button onClick={()=> setRemixOpen(o=>!o)}
           style={{background:remixOpen?'#fff':'var(--ink)',color:remixOpen?'var(--blue)':'#fff',borderColor:remixOpen?'#fff':'var(--ink)'}}>Build your remix</Button>
         <Button onClick={()=>{ CBAudio.unlock(); setPlaying(x=>!x); }}
+          title={playing?'Pause performance':'Play auto-directed performance'}
           style={{background:playing?'#fff':'transparent',color:playing?'var(--blue)':'#fff',borderColor:'#fff'}}>{playing?'Pause':'Play'}</Button>
         <Button
           aria-label="Shuffle to a new track"
@@ -772,8 +803,8 @@ export default function CircleBack(){
           <Shuffle size={17} strokeWidth={1.8} aria-hidden="true"/>
         </Button>
         <Button
-          aria-label={exp ? `Exporting MP4, ${Math.min(exp.done,exp.total)} of ${exp.total}` : 'Export MP4'}
-          title="Export MP4"
+          aria-label={exp ? `Exporting MP4 with audio, ${Math.min(exp.done,exp.total)} of ${exp.total}` : 'Export MP4 with audio'}
+          title="Export MP4 with audio"
           variant="rec"
           on={!!exp}
           onClick={()=>startExport('video')}
@@ -831,7 +862,7 @@ export default function CircleBack(){
       <span>{remix ? `Your remix · index ${remix.score} · ${remix.rank}` : song.name} · {tempo} BPM · {SECTIONS[energy]}</span>
       <span style={{display:'inline-flex',gap:18,alignItems:'center',flexWrap:'wrap'}}>
         {voxRadio('light')}
-        <span>Space starts the song · ← → change phrase · 2 build · 3 drop · ⇧R repeats · R new track</span>
+        <span>Play runs the show · ← → override phrase · 2 build · 3 drop · ⇧R repeats · R new track</span>
       </span>
     </div>
     {audioDrawer && <>
@@ -863,11 +894,14 @@ export default function CircleBack(){
               <Knob label="Decay" value={decay} onChange={setDecay}/>
               <Knob label="Tempo" value={(tempo-60)/140} onChange={v=>setTempo(Math.round(60+v*140))} format={()=>tempo+' BPM'}/>
             </div>
+            <p style={{margin:'16px 0 0',fontSize:12,lineHeight:1.5,color:'var(--text-meta)'}}>
+              Sincerity adjusts tonal polish and subtle warble, not vocal height. Delivery moves from deliberate to brisk while staying close to natural speech.
+            </p>
           </Bay>
           <Bay title="Signal treatment" aside="Use responsibly">
             <div style={{display:'flex',flexDirection:'column',gap:16}}>
               <Scrubber label="Pitch" value={pitch} onChange={setPitch}
-                format={v=>{ const s = Math.round((v-.5)*24); return `${s>0?'+':''}${s} st`; }}/>
+                format={v=>{ const s = Math.round(-8+v*10); return `${s>0?'+':''}${s} st`; }}/>
               <Scrubber label="Weirdness" value={weird} onChange={setWeird}/>
               <Scrubber label="Distortion" value={dist} onChange={setDist}/>
             </div>
@@ -884,14 +918,16 @@ export default function CircleBack(){
         <Bay title="Export filing" aside={`≈ ${Math.round(loops*patLen*(60/tempo/4))} seconds`} style={{marginTop:26}}>
           <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}>
             {[2,4,8].map(n=><Button key={n} on={loops===n} onClick={()=>setLoops(n)}>{n} loops</Button>)}
-            <Button variant="rec" on={exp?.mode==='video'} onClick={()=>startExport('video')}>Export MP4</Button>
+            <Button variant="rec" on={exp?.mode==='video'} onClick={()=>startExport('video')}>Export MP4 + audio</Button>
             <Button variant="rec" on={exp?.mode==='audio'} onClick={()=>startExport('audio')}>Export audio</Button>
           </div>
         </Bay>
       </aside>
     </>}
     {take && <div style={{position:'relative',zIndex:1,display:'flex',gap:12,alignItems:'center',flexWrap:'wrap'}}>
-      <a href={take.url} download={take.name} style={{fontFamily:'var(--mono)',fontSize:11,color:'#fff'}}>↓ {take.name}</a>
+      <a href={take.url} download={take.name} style={{fontFamily:'var(--mono)',fontSize:11,color:'#fff'}}>
+        ↓ {take.name}{take.mode==='video' ? ' · audio embedded' : ''}
+      </a>
     </div>}
   </div>;
 
