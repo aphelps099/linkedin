@@ -846,6 +846,16 @@ export default function CircleBack(){
       <div style={{marginTop:18,borderTop:'1px solid var(--hair)',paddingTop:10,fontFamily:'var(--mono)',fontSize:9.5,letterSpacing:'.1em',textTransform:'uppercase'}}>
         Educational outcomes subject to engagement.
       </div>
+      <p style={{margin:'14px 0 0',fontSize:11,lineHeight:1.5,color:'var(--text-meta)'}}>
+        Humbly and proudly created by{' '}
+        <a
+          href="https://www.linkedin.com/in/aaroncphelps"
+          target="_blank"
+          rel="noreferrer"
+          style={{color:'var(--blue)',fontWeight:700,textUnderlineOffset:3}}>
+          Aaron Phelps
+        </a>.
+      </p>
     </div>}
     {remixOpen && <div style={{position:'relative',zIndex:1}}>
       <RemixPanel narrow={narrow} result={remix} initial={handoff} onRemix={buildRemix} onClose={()=>setRemixOpen(false)}/>
