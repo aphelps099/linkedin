@@ -136,9 +136,10 @@ node scripts/make-brand-assets.mjs
 That writes `public/favicon-16.png`, `favicon-32.png`, `apple-touch-icon.png`,
 `icon-192.png`, `icon-512.png`, and `og.png` (1200×630).
 
-**If the site moves to another domain**, update the absolute URLs — every social
-scraper requires them — in the `og:url` / `og:image` / `twitter:image` tags in
-`index.html`. `site.webmanifest` uses relative paths and needs no change.
+The site is live at **https://linkedinbeats.com**. The `og:url` / `og:image` /
+`twitter:image` / `canonical` tags in `index.html` hold that origin absolutely,
+because every social scraper requires an absolute URL — update them there if the
+site ever moves. `site.webmanifest` uses relative paths and needs no change.
 
 ## Structure
 
