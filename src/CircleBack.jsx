@@ -15,6 +15,7 @@ import { StepGrid } from './components/sequencer/StepGrid.jsx';
 import { Monitor } from './components/broadcast/Monitor.jsx';
 import { StageKey } from './components/stage/StageKey.jsx';
 import { Backdrop } from './components/stage/Backdrop.jsx';
+import { ArrowKey } from './components/stage/ArrowKey.jsx';
 import { RemixPanel } from './components/remix/RemixPanel.jsx';
 import { analyze, optimize } from './remix.js';
 import { CBAudio, CBVoice, CHARACTERS, exposeVoice } from './audio.js';
@@ -178,6 +179,7 @@ export default function CircleBack(){
     pattern: rack.pattern, samples: rack.samples, voxRow, patLen, armed, tempo, sinc, deliv, decay, rec, playing,
     pos, tickerText: ticker, voices: VOICES, voxCodes, exporting: !!exp, phrases: PHRASES,
     song, energy, section: SECTIONS[energy], studio, band, remix, voxLocked,
+    glass: !studio,
   });
 
   React.useEffect(()=>{
@@ -602,10 +604,23 @@ export default function CircleBack(){
   },[studio]);
 
   const voxLabels = VOICES.map((v)=> v.vox ? voxCodes : null);
-  const stageKeys = tone => <div style={{display:'grid',gridTemplateColumns: narrow ? '1fr' : 'repeat(3,1fr)',gap:narrow?10:14,width:'100%'}}>
-    <StageKey tone={tone} label="Phrase" hint="1 / A" caption="Say the next line" onFire={firePhrase}/>
-    <StageKey tone={tone} label="Build" hint="2 / S" caption="Raise the room" on={energy===1} onFire={()=> setEnergyLevel(energy===1?0:1)}/>
-    <StageKey tone={tone} label="Drop" hint="3 / D" caption="Full stop." on={energy===2} onFire={()=> setEnergyLevel(2)}/>
+  const stepPhrase = dir => {
+    CBAudio.unlock();
+    const next = (ref.current.armed + dir + PHRASES.length) % PHRASES.length;
+    ref.current.lastKeyAt = performance.now();
+    setArmed(next);
+    quantize(()=> speak(next));
+  };
+  const stageKeys = tone => <div style={{display:'grid',
+    gridTemplateColumns: narrow ? '1fr 1fr' : '104px repeat(3,1fr) 104px',gap:narrow?10:14,width:'100%'}}>
+    <ArrowKey tone={tone} dir="left" hint="Change phrase" onFire={()=>stepPhrase(-1)}/>
+    <StageKey tone={tone} label="Phrase" hint="1 / A" caption="Say the next line" onFire={firePhrase}
+      style={narrow?{gridColumn:'1 / -1'}:undefined}/>
+    <StageKey tone={tone} label="Build" hint="2 / S" caption="Raise the room" on={energy===1} onFire={()=> setEnergyLevel(energy===1?0:1)}
+      style={narrow?{gridColumn:'1 / -1'}:undefined}/>
+    <StageKey tone={tone} label="Drop" hint="3 / D" caption="Full stop." on={energy===2} onFire={()=> setEnergyLevel(2)}
+      style={narrow?{gridColumn:'1 / -1'}:undefined}/>
+    <ArrowKey tone={tone} dir="right" hint="Change phrase" onFire={()=>stepPhrase(1)}/>
   </div>;
 
   if(!studio) return <div style={{position:'relative',minHeight:'100vh',background:'var(--blue)',color:'#fff',fontFamily:'var(--sans)',
@@ -630,7 +645,10 @@ export default function CircleBack(){
     </div>}
     <div style={{position:'relative',zIndex:1,flex:1,display:'flex',alignItems:'center',justifyContent:'center',minHeight:0}}>
       <Monitor ref={canvasRef} stateRef={ref}
-        style={{border:'2px solid rgba(255,255,255,.32)',width:'auto',height:'auto',maxWidth:'100%',maxHeight: narrow ? '58vh' : '68vh'}}/>
+        style={{border:'1px solid rgba(255,255,255,.42)',width:'auto',height:'auto',maxWidth:'100%',
+          maxHeight: narrow ? '58vh' : '68vh',
+          backdropFilter:'blur(14px) saturate(1.15)', WebkitBackdropFilter:'blur(14px) saturate(1.15)',
+          boxShadow:'inset 0 1px 0 rgba(255,255,255,.35), 0 24px 70px rgba(4,42,82,.34)'}}/>
     </div>
     <div style={{position:'relative',zIndex:1}}>{stageKeys('light')}</div>
     <div style={{position:'relative',zIndex:1,display:'grid',gridTemplateColumns:narrow?'1fr':'1fr 1fr 1fr auto',gap:narrow?12:18,alignItems:'end'}}>

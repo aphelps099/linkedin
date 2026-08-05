@@ -2,6 +2,7 @@ import React, { useEffect, useRef, forwardRef } from 'react';
 import { CBAudio } from '../../audio.js';
 import { loadLibrary, libraryReady, currentPlate, advancePlate } from '../../library.js';
 import { drawAsciiField } from '../../ascii.js';
+import { drawGrain } from '../../grain.js';
 
 // The broadcast monitor — the clip the feed sees, rendered live.
 // Corporate blue field, white text, white-outlined squares with white fills
@@ -56,7 +57,12 @@ function reveal(st, text, now){
 }
 
 function drawChrome(ctx, st, noFill){
-  if(!noFill){ ctx.fillStyle = BLUE; ctx.fillRect(0,0,W,H); }
+  if(!noFill){
+    // glass on the stage, solid on the record: an exported frame must not be
+    // see-through, but live the room should read through the pane
+    ctx.fillStyle = (st.glass && !st.exporting) ? 'rgba(10,102,194,.46)' : BLUE;
+    ctx.fillRect(0,0,W,H);
+  }
   ctx.fillStyle = WHITE; ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
   ctx.font = `700 46px ${SANS}`; ctx.letterSpacing = '-0.9px';
   ctx.fillText('Circle Back', M, 116);
@@ -625,6 +631,7 @@ function draw(ctx, st){
   const now = performance.now();
   ctx.setTransform(1,0,0,1,0,0);
   ctx.letterSpacing = '0px';
+  ctx.clearRect(0, 0, W, H);
 
   let scene = 'composite';
   if(st.exporting && st.exportStartedAt){
@@ -695,6 +702,7 @@ function draw(ctx, st){
       }
     }
   }
+  drawGrain(ctx, W, H, .07);
 }
 
 export const Monitor = forwardRef(function Monitor({ stateRef, style }, ref){

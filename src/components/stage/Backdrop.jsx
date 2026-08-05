@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { drawAsciiField, drawFocusRamp } from '../../ascii.js';
+import { drawGrain } from '../../grain.js';
 
 // The room the stage stands in: the equalizer at four times scale, filling the
 // browser window behind everything, with a gradient ramp that burns brightest
@@ -23,7 +24,7 @@ export function Backdrop({ stateRef, focusRef }){
         ctx.fillStyle = '#0a66c2';
         ctx.fillRect(0, 0, w, h);
         drawAsciiField(ctx, stateRef.current || {}, now, {
-          width: w, height: h, cell: 76, alpha: .3, playhead: false,
+          width: w, height: h, cell: 76, alpha: .3,
         });
         // the ramp centres on the monitor, so the eye lands on the words
         const box = focusRef && focusRef.current ? focusRef.current.getBoundingClientRect() : null;
@@ -33,6 +34,7 @@ export function Backdrop({ stateRef, focusRef }){
         // corners, so the room frames the words instead of competing with them
         const inner = box ? Math.max(box.width, box.height)*.38 : Math.min(w,h)*.26;
         drawFocusRamp(ctx, {width:w, height:h, cx, cy, inner, outer: inner + Math.min(w, h)*.52});
+        drawGrain(ctx, w, h, .085);
       }catch(e){ /* keep the room lit */ }
       raf = requestAnimationFrame(loop);
     };
