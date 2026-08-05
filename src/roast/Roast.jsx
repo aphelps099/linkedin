@@ -448,9 +448,11 @@ export default function Roast() {
                   </div>
                   <div className="rm-verdict__copy">
                     <span className="rm-result-label">Verdict of {persona.name}</span>
-                    <p>{result.opener}</p>
-                    {result.lines.map((line, index) => <p key={index}><strong>{index + 1}.</strong> {line}</p>)}
-                    <p>{result.closer}</p>
+                    <p className="rm-verdict__opener">{result.opener}</p>
+                    <ol className="rm-verdict__findings">
+                      {result.lines.map((line, index) => <li key={index}>{line}</li>)}
+                    </ol>
+                    <p className="rm-verdict__closer">{result.closer}</p>
                   </div>
                 </div>
 
