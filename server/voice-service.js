@@ -1,15 +1,16 @@
 const MODEL = 'gpt-4o-mini-tts';
-const VOICE = 'onyx';
+const VOICE = 'alloy';
 const MAX_LINES = 9;
 const MAX_LINE_LENGTH = 180;
 
 export const VOICE_INSTRUCTIONS = [
-  'Synthetic corporate compliance machine, not a human narrator.',
-  'Use a flat pitch, precise consonants, and a crisp, clipped cadence.',
-  'Sound like an expensive building-access terminal delivering a formal violation.',
-  'Completely serious, emotionally blank, and slightly ominous.',
+  'Vintage 1980s corporate text-to-speech terminal, not a human narrator.',
+  'Use rigidly flat pitch, precise consonants, and a brisk, clipped cadence.',
+  'Speak each status field distinctly, like a mainframe reading an audit record.',
+  'Emotionally blank, mechanical, and authoritative.',
   'Never sound cheerful, inspirational, or conversational.',
-  'No dramatic pauses; deliver the line as one compact rhythmic sample.',
+  'Do not speak slowly and do not add dramatic pauses.',
+  'Deliver the line as one compact rhythmic machine sample.',
   'Treat punctuation as rhythmic direction.',
 ].join(' ');
 

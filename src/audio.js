@@ -275,18 +275,24 @@ export const CBAudio = (() => {
     if(o.detune) try{ src.detune.value = o.detune; }catch(e){ /* detune unsupported */ }
     const g = ctx.createGain(); g.gain.value = .9*(o.vel===undefined?1:o.vel);
     if(o.robot){
-      // One generated line plays as a visibly different machine in the room:
-      // narrow intercom bandwidth plus a restrained 34 Hz ring modulation.
-      // The archive spokeswoman never enters this branch, preserving her polish.
-      const intercom = ctx.createBiquadFilter();
-      intercom.type = 'bandpass'; intercom.frequency.value = 1650; intercom.Q.value = .72;
-      const dry = ctx.createGain(); dry.gain.value = .62;
+      // An early corporate speech terminal: restricted telephone bandwidth,
+      // coarse amplitude resolution, a hard carrier and a tiny metal enclosure.
+      // This is intentionally unlike the global musical vox effects.
+      const high = ctx.createBiquadFilter();
+      high.type = 'highpass'; high.frequency.value = 320; high.Q.value = .8;
+      const low = ctx.createBiquadFilter();
+      low.type = 'lowpass'; low.frequency.value = 3100; low.Q.value = 1.15;
+      const quantize = ctx.createWaveShaper(); quantize.curve = crushCurve(5);
+      const dry = ctx.createGain(); dry.gain.value = .44;
       const ring = ctx.createGain(); ring.gain.value = .34;
-      const carrier = ctx.createOscillator(); carrier.type = 'sine'; carrier.frequency.value = 34;
-      const depth = ctx.createGain(); depth.gain.value = .28;
+      const carrier = ctx.createOscillator(); carrier.type = 'square'; carrier.frequency.value = 72;
+      const depth = ctx.createGain(); depth.gain.value = .3;
+      const enclosure = ctx.createDelay(.05); enclosure.delayTime.value = .011;
+      const enclosureGain = ctx.createGain(); enclosureGain.gain.value = .2;
       carrier.connect(depth); depth.connect(ring.gain);
-      src.connect(intercom); intercom.connect(dry); intercom.connect(ring);
-      dry.connect(g); ring.connect(g);
+      src.connect(high); high.connect(low); low.connect(quantize);
+      quantize.connect(dry); quantize.connect(ring); quantize.connect(enclosure);
+      dry.connect(g); ring.connect(g); enclosure.connect(enclosureGain); enclosureGain.connect(g);
       carrier.start(t); carrier.stop(t + buffer.duration + 1);
     } else {
       src.connect(g);
@@ -377,9 +383,11 @@ export const CBVoice = {
       }
       this.current = CBAudio.playBuffer(buf, {
         vel: .95,
-        rate: (.6 + deliv*.8) * (voiceRole === 'robot' ? .94 : 1),
-        detune: ((.4 + sinc*1.4) - 1) * 1200 + (this.pitch + octave)*100
-          + (voiceRole === 'robot' ? -240 : 0),
+        // The mainframe is brisk and fixed-pitch. "Slow human" is not a robot.
+        rate: voiceRole === 'robot' ? 1.08 : .6 + deliv*.8,
+        detune: voiceRole === 'robot'
+          ? -60
+          : ((.4 + sinc*1.4) - 1) * 1200 + (this.pitch + octave)*100,
         bus: 'vox', // through the drive + delay chain
         robot: voiceRole === 'robot',
       });

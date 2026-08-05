@@ -23,7 +23,8 @@ const clips = await generateVoiceClips({
 assert.equal(calls.length, 2);
 assert.equal(calls[0].url, 'https://api.openai.com/v1/audio/speech');
 assert.equal(calls[0].body.model, 'gpt-4o-mini-tts');
-assert.equal(calls[0].body.voice, 'onyx');
+assert.equal(calls[0].body.voice, 'alloy');
+assert.match(calls[0].body.instructions, /Vintage 1980s corporate text-to-speech terminal/);
 assert.equal(calls[0].authorization, 'Bearer test-key');
 assert.equal(clips[0].contentType, 'audio/mpeg');
 assert.ok(clips[0].audio);

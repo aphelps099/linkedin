@@ -435,8 +435,8 @@ export default function CircleBack(){
               return {
                 ...line,
                 text:subject
-                  ? `Custom subject detected: ${subject}. Milestone unlocked. Please congratulate accordingly.`
-                  : 'Milestone detected. Please congratulate accordingly.',
+                  ? `System notice. Subject: ${subject}. Milestone status: unlocked. Congratulation protocol: required.`
+                  : 'System notice. Milestone status: unlocked. Congratulation protocol: required.',
               };
             }
             // The optimizer weaves the subject into line two for display. The

@@ -115,6 +115,9 @@ analyzed locally; only the short performance lines are sent for speech
 generation. The default performance is a 3+1 duet: the polished recorded
 archive voice delivers three official corporate lines, then the generated
 compliance robot interrupts once with the post-specific subject and punchline.
+The interruption is treated as an early corporate speech terminal: brisk,
+narrow-band, quantized, carrier-modulated, and deliberately unlike a slowed
+human voice.
 If the voice endpoint
 is unavailable, the mixer falls back to the recorded phrase archive and
 changes the display copy to match what it can say.
