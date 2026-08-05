@@ -1,4 +1,5 @@
 import React from 'react';
+import { Settings, Shuffle, Upload, X } from 'lucide-react';
 import { Unit } from './components/chassis/Unit.jsx';
 import { Masthead } from './components/chassis/Masthead.jsx';
 import { Ticker } from './components/chassis/Ticker.jsx';
@@ -153,6 +154,8 @@ export default function CircleBack(){
   const [selRow, setSelRow] = React.useState(0);
   const [loops, setLoops] = React.useState(4);
   const [studio, setStudio] = React.useState(false);
+  const [audioDrawer, setAudioDrawer] = React.useState(false);
+  const [aboutOpen, setAboutOpen] = React.useState(false);
   const [band, setBand] = React.useState(true);
   const [remixOpen, setRemixOpen] = React.useState(false);
   const [remix, setRemix] = React.useState(null);
@@ -193,6 +196,15 @@ export default function CircleBack(){
   React.useEffect(()=>{ CBAudio.setVoxDelay(60/tempo/4*3); },[tempo]);
   React.useEffect(()=>{ CBAudio.setVoxFx({weird, dist, character}); },[weird, dist, character]);
   React.useEffect(()=>{ CBVoice.pitch = Math.round((pitch - .5) * 24); },[pitch]);
+  React.useEffect(()=>{
+    const close = e=>{
+      if(e.key !== 'Escape') return;
+      setAudioDrawer(false);
+      setAboutOpen(false);
+    };
+    window.addEventListener('keydown', close);
+    return ()=>window.removeEventListener('keydown', close);
+  },[]);
 
   // mobile audio: unlock/resume inside every real gesture (capture phase runs
   // in the same tap stack, before React handlers) — also re-resumes the
@@ -736,18 +748,74 @@ export default function CircleBack(){
     isolation:'isolate'}}>
     <Backdrop stateRef={ref} focusRef={canvasRef}/>
     <div style={{position:'relative',zIndex:1,display:'flex',justifyContent:'space-between',alignItems:'center',gap:14,flexWrap:'wrap'}}>
-      <span style={{fontSize:narrow?18:22,fontWeight:700,letterSpacing:'-.02em'}}>Circle Back<sup style={{fontSize:9,verticalAlign:10}}>®</sup></span>
+      <span style={{display:'inline-flex',alignItems:'baseline',gap:12,flexWrap:'wrap'}}>
+        <span style={{fontSize:narrow?18:22,fontWeight:700,letterSpacing:'-.02em'}}>Circle Back<sup style={{fontSize:9,verticalAlign:10}}>®</sup></span>
+        <span style={{fontFamily:'var(--mono)',fontSize:9,fontWeight:700,letterSpacing:'.16em',textTransform:'uppercase',opacity:.72}}>LinkedIn Training</span>
+        <button
+          type="button"
+          aria-expanded={aboutOpen}
+          onClick={()=>setAboutOpen(v=>!v)}
+          style={{appearance:'none',border:0,borderBottom:'1px solid rgba(255,255,255,.75)',padding:'1px 0',background:'transparent',color:'#fff',fontFamily:'var(--sans)',fontSize:10,fontWeight:700,letterSpacing:'.13em',textTransform:'uppercase',cursor:'pointer'}}>
+          About
+        </button>
+      </span>
       <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}>
         <Button onClick={()=> setRemixOpen(o=>!o)}
           style={{background:remixOpen?'#fff':'var(--ink)',color:remixOpen?'var(--blue)':'#fff',borderColor:remixOpen?'#fff':'var(--ink)'}}>Build your remix</Button>
         <Button onClick={()=>{ CBAudio.unlock(); setPlaying(x=>!x); }}
           style={{background:playing?'#fff':'transparent',color:playing?'var(--blue)':'#fff',borderColor:'#fff'}}>{playing?'Pause':'Play'}</Button>
-        <Button onClick={newTrack} style={{background:'transparent',color:'#fff',borderColor:'#fff'}}>New track (R)</Button>
-        <Button variant="rec" on={!!exp} onClick={()=>startExport('video')}
-          style={exp?undefined:{background:'transparent',color:'#fff',borderColor:'#fff'}}>{exp?`Taping ${Math.min(exp.done,exp.total)}/${exp.total}`:'Export mp4'}</Button>
-        <Button onClick={()=>setStudio(true)} style={{background:'transparent',color:'#fff',borderColor:'#fff'}}>Audio tools</Button>
+        <Button
+          aria-label="Shuffle to a new track"
+          title="New track (R)"
+          onClick={newTrack}
+          style={{background:'transparent',color:'#fff',borderColor:'#fff',padding:9,width:38,height:38,display:'inline-grid',placeItems:'center'}}>
+          <Shuffle size={17} strokeWidth={1.8} aria-hidden="true"/>
+        </Button>
+        <Button
+          aria-label={exp ? `Exporting MP4, ${Math.min(exp.done,exp.total)} of ${exp.total}` : 'Export MP4'}
+          title="Export MP4"
+          variant="rec"
+          on={!!exp}
+          onClick={()=>startExport('video')}
+          style={exp
+            ? {height:38,display:'inline-flex',alignItems:'center',gap:7}
+            : {background:'transparent',color:'#fff',borderColor:'#fff',padding:9,width:38,height:38,display:'inline-grid',placeItems:'center'}}>
+          <Upload size={17} strokeWidth={1.8} aria-hidden="true"/>
+          {exp && <span>{Math.min(exp.done,exp.total)}/{exp.total}</span>}
+        </Button>
+        <Button
+          aria-label="Open audio tools"
+          title="Audio tools"
+          onClick={()=>setAudioDrawer(true)}
+          style={{background:'transparent',color:'#fff',borderColor:'#fff',padding:9,width:38,height:38,display:'inline-grid',placeItems:'center'}}>
+          <Settings size={17} strokeWidth={1.8} aria-hidden="true"/>
+        </Button>
       </div>
     </div>
+    {aboutOpen && <div
+      role="dialog"
+      aria-label="About LinkedIn Training"
+      style={{position:'fixed',zIndex:31,top:narrow?102:70,left:narrow?14:26,width:narrow?'calc(100vw - 28px)':380,boxSizing:'border-box',background:'var(--paper)',color:'var(--ink)',border:'var(--rule-frame) solid var(--ink)',padding:narrow?18:22,boxShadow:'10px 12px 0 rgba(4,42,82,.3)'}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'start',gap:18}}>
+        <div>
+          <div style={{fontFamily:'var(--mono)',fontSize:9.5,fontWeight:700,letterSpacing:'.16em',textTransform:'uppercase',color:'var(--blue)'}}>About · Form LT-1</div>
+          <h2 style={{margin:'7px 0 0',fontSize:23,lineHeight:1.05,letterSpacing:'-.035em'}}>LinkedIn Training</h2>
+        </div>
+        <button type="button" aria-label="Close About" onClick={()=>setAboutOpen(false)}
+          style={{display:'grid',placeItems:'center',width:34,height:34,border:'var(--rule-frame) solid var(--ink)',background:'transparent',cursor:'pointer'}}>
+          <X size={17} aria-hidden="true"/>
+        </button>
+      </div>
+      <p style={{fontSize:14,lineHeight:1.55,margin:'18px 0 10px'}}>
+        Learn which terms, phrases, and patterns help optimize your LinkedIn post — and which ones push it into thought-leadership singularity.
+      </p>
+      <p style={{fontSize:12,lineHeight:1.55,margin:0,color:'var(--text-meta)'}}>
+        Paste a post to inspect its language, hear the corporate genre performed back to you, and leave with a cleaner sense of what to keep, cut, or never say again.
+      </p>
+      <div style={{marginTop:18,borderTop:'1px solid var(--hair)',paddingTop:10,fontFamily:'var(--mono)',fontSize:9.5,letterSpacing:'.1em',textTransform:'uppercase'}}>
+        Educational outcomes subject to engagement.
+      </div>
+    </div>}
     {remixOpen && <div style={{position:'relative',zIndex:1}}>
       <RemixPanel narrow={narrow} result={remix} initial={handoff} onRemix={buildRemix} onClose={()=>setRemixOpen(false)}/>
     </div>}
@@ -759,21 +827,6 @@ export default function CircleBack(){
           boxShadow:'inset 0 1px 0 rgba(255,255,255,.35), 0 24px 70px rgba(4,42,82,.34)'}}/>
     </div>
     <div style={{position:'relative',zIndex:1}}>{stageArrows}</div>
-    <div style={{position:'relative',zIndex:1,display:'grid',gridTemplateColumns:narrow?'1fr':'1fr 1fr 1fr auto',gap:narrow?12:18,alignItems:'end'}}>
-      <Scrubber tone="light" label="Pitch" value={pitch} onChange={setPitch}
-        format={v=>{ const s = Math.round((v-.5)*24); return `${s>0?'+':''}${s} st`; }}/>
-      <Scrubber tone="light" label="Weirdness" value={weird} onChange={setWeird}/>
-      <Scrubber tone="light" label="Distortion" value={dist} onChange={setDist}/>
-      <Button onClick={()=> setCharacter(c=>{
-          const i = CHARACTERS.findIndex(x=>x.id===c);
-          const next = CHARACTERS[(i+1) % CHARACTERS.length];
-          setTicker(`Distortion — ${next.name}`);
-          return next.id;
-        })}
-        style={{background:'transparent',color:'#fff',borderColor:'#fff',whiteSpace:'nowrap'}}>
-        {(CHARACTERS.find(c=>c.id===character)||CHARACTERS[0]).name}
-      </Button>
-    </div>
     <div style={{position:'relative',zIndex:1,display:'flex',justifyContent:'space-between',gap:12,flexWrap:'wrap',opacity:.72,fontSize:9.5,fontWeight:700,letterSpacing:'.16em',textTransform:'uppercase'}}>
       <span>{remix ? `Your remix · index ${remix.score} · ${remix.rank}` : song.name} · {tempo} BPM · {SECTIONS[energy]}</span>
       <span style={{display:'inline-flex',gap:18,alignItems:'center',flexWrap:'wrap'}}>
@@ -781,6 +834,62 @@ export default function CircleBack(){
         <span>Space starts the song · ← → change phrase · 2 build · 3 drop · ⇧R repeats · R new track</span>
       </span>
     </div>
+    {audioDrawer && <>
+      <button
+        type="button"
+        aria-label="Close audio tools"
+        onClick={()=>setAudioDrawer(false)}
+        style={{position:'fixed',zIndex:39,inset:0,border:0,background:'rgba(3,31,60,.46)',backdropFilter:'blur(2px)',cursor:'default'}}/>
+      <aside
+        role="dialog"
+        aria-modal="true"
+        aria-label="Audio tools"
+        style={{position:'fixed',zIndex:40,top:0,right:0,bottom:0,width:narrow?'calc(100vw - 28px)':'70vw',maxWidth:980,minWidth:narrow?0:620,boxSizing:'border-box',overflowY:'auto',background:'var(--paper)',color:'var(--ink)',borderLeft:'var(--rule-heavy) solid var(--ink)',boxShadow:'-24px 0 70px rgba(2,31,59,.32)',padding:narrow?'22px 18px 32px':'30px 34px 42px'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'start',gap:20,borderBottom:'var(--rule-heavy) solid var(--ink)',paddingBottom:18}}>
+          <div>
+            <div style={{fontFamily:'var(--mono)',fontSize:9.5,fontWeight:700,letterSpacing:'.18em',textTransform:'uppercase',color:'var(--blue)'}}>Audio tools · Form AT-70</div>
+            <h2 style={{fontSize:narrow?27:36,lineHeight:1,letterSpacing:'-.045em',margin:'8px 0 0'}}>Adjust the corporate signal.</h2>
+          </div>
+          <Button onClick={()=>setAudioDrawer(false)} style={{display:'inline-flex',alignItems:'center',gap:8,whiteSpace:'nowrap'}}>
+            <X size={16} aria-hidden="true"/> Close
+          </Button>
+        </div>
+
+        <div style={{display:'grid',gridTemplateColumns:narrow?'1fr':'1fr 1fr',gap:narrow?24:34,marginTop:26}}>
+          <Bay title="Performance" aside="Human factors">
+            <div style={{display:'flex',gap:20,flexWrap:'wrap'}}>
+              <Knob label="Sincerity" value={sinc} onChange={setSinc}/>
+              <Knob label="Delivery" value={deliv} onChange={setDeliv}/>
+              <Knob label="Decay" value={decay} onChange={setDecay}/>
+              <Knob label="Tempo" value={(tempo-60)/140} onChange={v=>setTempo(Math.round(60+v*140))} format={()=>tempo+' BPM'}/>
+            </div>
+          </Bay>
+          <Bay title="Signal treatment" aside="Use responsibly">
+            <div style={{display:'flex',flexDirection:'column',gap:16}}>
+              <Scrubber label="Pitch" value={pitch} onChange={setPitch}
+                format={v=>{ const s = Math.round((v-.5)*24); return `${s>0?'+':''}${s} st`; }}/>
+              <Scrubber label="Weirdness" value={weird} onChange={setWeird}/>
+              <Scrubber label="Distortion" value={dist} onChange={setDist}/>
+            </div>
+          </Bay>
+        </div>
+
+        <Bay title="Voice environment" aside={(CHARACTERS.find(c=>c.id===character)||CHARACTERS[0]).name} style={{marginTop:26}}>
+          <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+            {CHARACTERS.map(c=>
+              <Button key={c.id} on={character===c.id} onClick={()=>setCharacter(c.id)}>{c.name}</Button>)}
+          </div>
+        </Bay>
+
+        <Bay title="Export filing" aside={`≈ ${Math.round(loops*patLen*(60/tempo/4))} seconds`} style={{marginTop:26}}>
+          <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}>
+            {[2,4,8].map(n=><Button key={n} on={loops===n} onClick={()=>setLoops(n)}>{n} loops</Button>)}
+            <Button variant="rec" on={exp?.mode==='video'} onClick={()=>startExport('video')}>Export MP4</Button>
+            <Button variant="rec" on={exp?.mode==='audio'} onClick={()=>startExport('audio')}>Export audio</Button>
+          </div>
+        </Bay>
+      </aside>
+    </>}
     {take && <div style={{position:'relative',zIndex:1,display:'flex',gap:12,alignItems:'center',flexWrap:'wrap'}}>
       <a href={take.url} download={take.name} style={{fontFamily:'var(--mono)',fontSize:11,color:'#fff'}}>↓ {take.name}</a>
     </div>}
