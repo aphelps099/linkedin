@@ -22,7 +22,9 @@ export async function requestRemixVoiceClip(clip, {signal, retries=1, timeout=15
       const response = await fetch(endpoint(), {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({clips:[clip]}),
+        // `lines` keeps the currently deployed v1 Worker speaking during the
+        // v2 rollout. The v2 Worker prefers `clips` so it can honor voice roles.
+        body: JSON.stringify({clips:[clip], lines:[clip.text]}),
         signal:controller.signal,
       });
       const payload = await response.json().catch(()=>({}));
