@@ -112,19 +112,17 @@ no network, nothing leaves the browser.
 
 ## Post-specific remix voice
 
-The mixer can generate the optimized performance lines with OpenAI
-`gpt-4o-mini-tts`, so names, products, acronyms, and numbers become part of
-the exported beat instead of display-only copy. The full pasted post is still
-analyzed locally; only the short performance lines are sent for speech
-generation. The default performance is a 3+1 duet: the polished recorded
-archive voice delivers three official corporate lines, then the generated
-compliance robot interrupts once with the post-specific subject and punchline.
-The interruption is treated as an early corporate speech terminal: brisk,
-narrow-band, quantized, carrier-modulated, and deliberately unlike a slowed
-human voice.
-If the voice endpoint
-is unavailable, the mixer falls back to the recorded phrase archive and
-changes the display copy to match what it can say.
+The mixer generates a four-act performance with OpenAI `gpt-4o-mini-tts`, so
+names, products, acronyms, and numbers become spoken material instead of
+display-only copy. Three lines use a polished corporate announcer; a vintage
+1980s compliance mainframe interrupts for the final filing. The four requests
+run independently, and playback can begin as soon as line one is ready while
+the remaining filings arrive. Play and Export reuse the same decoded takes.
+
+The full pasted post is still analyzed locally; only four short performance
+lines are sent for speech generation. Every line retains a matching phrase-
+archive substitute, so a timeout or failed request remains audible and the
+display changes to the words the archive can actually say.
 
 Local development reads `OPENAI_API_KEY` and serves `/api/voice` through the
 Vite development server. Production uses the Cloudflare Worker in `worker/`:

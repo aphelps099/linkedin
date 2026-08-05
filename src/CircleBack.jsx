@@ -25,7 +25,7 @@ import { VIDEO_MIMES, AUDIO_MIMES, pickMime, extFor, downloadBlob, mp4Support, s
 import { randomPattern } from './randomizer.js';
 import { randomComment } from './feed.js';
 import { makeSong, bandAt } from './song.js';
-import { requestRemixVoice } from './voice.js';
+import { requestRemixVoiceClip } from './voice.js';
 
 const PHRASES = [
   {code:'TH', name:'Thrilled', say:"I'm thrilled to announce"},
@@ -164,6 +164,7 @@ export default function CircleBack(){
   const [take, setTake] = React.useState(null); // {url, name, mode}
   const bufRef = React.useRef(new Map());       // sample id -> AudioBuffer
   const expRef = React.useRef(null);
+  const voiceJobRef = React.useRef(null);
   const canvasRef = React.useRef(null);
   const fileRef = React.useRef(null);
 
@@ -220,6 +221,8 @@ export default function CircleBack(){
       window.removeEventListener('touchend', u, true);
     };
   },[]);
+
+  React.useEffect(()=>()=> voiceJobRef.current?.controller?.abort('unmounted'), []);
 
   // The machine speaks the jargon; when a remix is loaded, the screen shows the
   // author's own line instead — their words, our voice.
@@ -455,63 +458,144 @@ export default function CircleBack(){
   // the vox row, the arrangement scaled to how much thought leadership was found.
   const buildRemix = React.useCallback(async text=>{
     CBAudio.unlock();
+    if(voiceJobRef.current?.controller) voiceJobRef.current.controller.abort('replaced');
     const rx = analyze(text || '');
     if(!rx.lines.length){ setTicker('Nothing to remix — paste a post first.'); return; }
     let opt = optimize(text || '', PHRASES);
     // Four loops is the default export. Give each loop a different line so the
     // finished clip progresses through a compact four-part performance.
     opt = {...opt, lines:opt.lines.slice(0, 4)};
-    let voiceBuffers = [];
-    setTicker('Voice procurement in progress — please hold.');
-    try{
-      // Three immaculate archive reads establish the corporate broadcast. The
-      // generated compliance robot interrupts once, at the end, to identify
-      // the incriminating proper noun and file the punchline.
-      if(opt.lines.length){
-        const robotIndex = opt.lines.length - 1;
-        const subject = opt.nouns[0];
-        opt = {
-          ...opt,
-          lines:opt.lines.map((line, index)=>{
-            if(index === robotIndex){
-              return {
-                ...line,
-                text:subject
-                  ? `System notice. Subject: ${subject}. Milestone status: unlocked. Congratulation protocol: required.`
-                  : 'System notice. Milestone status: unlocked. Congratulation protocol: required.',
-              };
-            }
-            // The optimizer weaves the subject into line two for display. The
-            // archive read must show the exact words the spokeswoman performs.
-            return {...line, text:PHRASES[line.phrase].say};
-          }),
+    const subject = opt.nouns[0];
+    const clean = value=>String(value || '').replace(/\s+/g, ' ').trim().slice(0, 180);
+    const archiveLines = opt.lines.map(line=>PHRASES[line.phrase].say);
+    const evidence = clean(rx.hook?.text);
+    opt = {
+      ...opt,
+      lines:opt.lines.map((line, index)=>{
+        let generatedText = clean(line.text);
+        if(index === 0 && subject){
+          generatedText = clean(`${line.text.replace(/[.…!?]+$/,'')}. Subject: ${subject}.`);
+        } else if(index === 2 && evidence){
+          generatedText = evidence;
+        } else if(index === opt.lines.length - 1){
+          generatedText = subject
+            ? `System notice. Subject: ${subject}. Milestone status: unlocked. Congratulation protocol: required.`
+            : 'System notice. Milestone status: unlocked. Congratulation protocol: required.';
+        }
+        return {
+          ...line,
+          text:generatedText,
+          archiveText:archiveLines[index],
+          voiceRole:index === opt.lines.length - 1 ? 'robot' : 'announcer',
         };
+      }),
+    };
+
+    const controller = new AbortController();
+    const job = {controller, promise:null, pending:true};
+    voiceJobRef.current = job;
+    const voiceResults = Array(opt.lines.length).fill(null);
+    const voiceErrors = Array(opt.lines.length).fill(null);
+    let sequenceReady = false;
+
+    setTicker('Voice procurement in progress — please hold.');
+    const requests = opt.lines.map((line, index)=>
+      requestRemixVoiceClip(
+        {text:line.text, role:line.voiceRole},
+        {signal:controller.signal, retries:index === 0 ? 0 : 1, timeout:12000},
+      ).then(result=>{
+        if(voiceJobRef.current !== job) return result;
+        voiceResults[index] = result;
+        if(sequenceReady){
+          const r = ref.current;
+          const item = r.remixSequence?.[index];
+          if(item){
+            item.buffer = result.buffer;
+            item.text = line.text;
+            item.voiceRole = line.voiceRole;
+            item.status = 'ready';
+          }
+          Object.entries(r.remixLineByStep || {}).forEach(([step, lineIndex])=>{
+            if(lineIndex === index){
+              r.remixAudioByStep[step] = result.buffer;
+              r.remixByStep[step] = line.text;
+            }
+          });
+          setRemix(current=>{
+            if(!current) return current;
+            const generatedLines = voiceResults.filter(Boolean).length;
+            return {
+              ...current,
+              optimized:{
+                ...current.optimized,
+                lines:current.optimized.lines.map((currentLine, lineIndex)=>
+                  lineIndex === index ? {...currentLine, text:line.text} : currentLine),
+              },
+              voice:{
+                ...current.voice,
+                status:generatedLines === opt.lines.length ? 'generated' : 'progressive',
+                generatedLines,
+                archiveLines:opt.lines.length - generatedLines,
+              },
+            };
+          });
+        }
+        return result;
+      }).catch(error=>{
+        if(controller.signal.aborted) return null;
+        voiceErrors[index] = error;
+        console.warn(`dynamic remix voice line ${index + 1} unavailable`, error);
+        return null;
+      }),
+    );
+
+    // Playback starts when line one has either arrived or formally fallen back.
+    // The other requests are already in flight and usually file before their act.
+    await requests[0];
+    if(voiceJobRef.current !== job) return;
+    const allVoices = Promise.all(requests).then(()=>{
+      if(voiceJobRef.current !== job) return {generatedLines:0, errors:[]};
+      const generatedLines = voiceResults.filter(Boolean).length;
+      job.pending = false;
+      const status = generatedLines === opt.lines.length
+        ? 'generated'
+        : generatedLines > 0 ? 'partial' : 'fallback';
+      setRemix(current=>current && ({
+        ...current,
+        optimized:{
+          ...current.optimized,
+          lines:opt.lines.map((line, index)=>({
+            ...line,
+            text:voiceResults[index] ? line.text : line.archiveText,
+          })),
+        },
+        voice:{
+          ...current.voice,
+          status,
+          generatedLines,
+          archiveLines:opt.lines.length - generatedLines,
+        },
+      }));
+      if(generatedLines === 0){
+        setTicker('Voice contractor unavailable — archive recording authorized.');
       }
-      const contractorIndices = opt.lines.length ? [opt.lines.length - 1] : [];
-      const voice = await requestRemixVoice(contractorIndices.map(index=>opt.lines[index].text));
-      voiceBuffers = Array(opt.lines.length).fill(null);
-      contractorIndices.forEach((lineIndex, clipIndex)=>{
-        voiceBuffers[lineIndex] = voice.buffers[clipIndex];
-      });
-      rx.voice = {
-        provider:voice.provider,
-        status:'generated',
-        mode:'archive-robot-interruption',
-        archiveLines:opt.lines.length - contractorIndices.length,
-        generatedLines:contractorIndices.length,
-      };
-    }catch(error){
-      console.warn('dynamic remix voice unavailable', error);
-      // If the contractor is unavailable, the display must match the archive
-      // recording. Never put words on screen that the fallback cannot say.
-      opt = {
-        ...opt,
-        lines: opt.lines.map(line=>({...line, text:PHRASES[line.phrase].say})),
-      };
-      rx.voice = {provider:'local', status:'fallback', error:error.message};
-      setTicker('Voice contractor unavailable — archive recording authorized.');
-    }
-    rx.optimized = opt;
+      return {generatedLines, errors:voiceErrors.filter(Boolean)};
+    });
+    job.promise = allVoices;
+    rx.voice = {
+      provider:voiceResults.find(Boolean)?.provider || 'openai',
+      status:'progressive',
+      mode:'generated-duet',
+      archiveLines:opt.lines.length - voiceResults.filter(Boolean).length,
+      generatedLines:voiceResults.filter(Boolean).length,
+    };
+    rx.optimized = {
+      ...opt,
+      lines:opt.lines.map((line, index)=>({
+        ...line,
+        text:voiceResults[index] ? line.text : line.archiveText,
+      })),
+    };
     const r = ref.current;
     r.remix = rx;
     setRemix(rx);
@@ -523,8 +607,8 @@ export default function CircleBack(){
     const { pattern } = randomPattern(
       r.samples.length, PHRASES, 48,
       60/remixTempo/4,
-      (i, sequence) => voiceBuffers[sequence % voiceBuffers.length]
-        ? CBVoice.durationOfBuffer(voiceBuffers[sequence % voiceBuffers.length], r.deliv)
+      (i, sequence) => voiceResults[sequence % voiceResults.length]?.buffer
+        ? CBVoice.durationOfBuffer(voiceResults[sequence % voiceResults.length].buffer, r.deliv)
         : CBVoice.durationOf(i, PHRASES[i].say, r.deliv),
       pool, true,
     );
@@ -533,22 +617,29 @@ export default function CircleBack(){
     const voxRow = voxRowOf(r.samples);
     const byStep = {};
     const audioByStep = {};
+    const lineByStep = {};
     let k = 0;
     pattern[voxRow].forEach((v, step)=>{
       if(v){
         const lineIndex = k % opt.lines.length;
-        byStep[step] = opt.lines[lineIndex].text;
-        if(voiceBuffers[lineIndex]) audioByStep[step] = voiceBuffers[lineIndex];
+        const result = voiceResults[lineIndex];
+        byStep[step] = result ? opt.lines[lineIndex].text : opt.lines[lineIndex].archiveText;
+        if(result) audioByStep[step] = result.buffer;
+        lineByStep[step] = lineIndex;
         k++;
       }
     });
     r.remixByStep = byStep;
     r.remixAudioByStep = audioByStep;
+    r.remixLineByStep = lineByStep;
     r.remixSequence = opt.lines.map((line, index)=>({
       ...line,
-      buffer:voiceBuffers[index] || null,
-      voiceRole:voiceBuffers[index] ? 'robot' : 'archive',
+      text:voiceResults[index] ? line.text : line.archiveText,
+      buffer:voiceResults[index]?.buffer || null,
+      voiceRole:voiceResults[index] ? line.voiceRole : 'archive',
+      status:voiceResults[index] ? 'ready' : 'pending',
     }));
+    sequenceReady = true;
     r.remixSequenceIx = 0;
     // a remix is the one thing that writes the Vox row, so it takes the lock off
     setVoxLocked(false); r.voxLocked = false;
@@ -661,7 +752,14 @@ export default function CircleBack(){
   const audition = id => { CBAudio.unlock(); const b = bufRef.current.get(id); if(b) CBAudio.playBuffer(b, {vel:1}); };
 
   const startExport = async mode => {
-    try{ await beginExport(mode); }
+    try{
+      const voiceJob = voiceJobRef.current;
+      if(voiceJob?.pending){
+        setTicker('Finalizing voice filings before export.');
+        await voiceJob.promise;
+      }
+      await beginExport(mode);
+    }
     catch(e){
       console.warn('export failed', e);
       expRef.current = null; setExp(null);

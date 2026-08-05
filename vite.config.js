@@ -21,6 +21,7 @@ function localVoiceApi(){
             const body = JSON.parse(raw || '{}');
             const gatewayToken = process.env.CUSTOM_CRED_API_OPENAI_COM_TOKEN;
             const clips = await generateVoiceClips({
+              clips:body.clips,
               lines:body.lines,
               apiKey:process.env.OPENAI_API_KEY,
               apiBaseUrl:process.env.CUSTOM_CRED_API_OPENAI_COM_URL

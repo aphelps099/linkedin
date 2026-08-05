@@ -78,7 +78,11 @@ export function RemixPanel({ onRemix, onClose, result, narrow, initial }){
           </div>
           <div style={{fontSize:10.5,color:'var(--text-meta)',marginTop:4}}>
             {result.voice?.status === 'generated'
-              ? 'Performed by the archive spokesperson + OpenAI compliance robot'
+              ? 'Performed by the OpenAI announcer + compliance mainframe'
+              : result.voice?.status === 'partial'
+                ? 'Generated voice + truthful archive coverage'
+              : result.voice?.status === 'progressive'
+                ? 'Voice filings arriving · performance may begin'
               : 'Performed from the local phrase archive'}
             {' · '}detected: {result.optimized.intents.join(', ')}
             {result.optimized.nouns.length ? ` · subject: ${result.optimized.nouns.join(', ')}` : ''}
@@ -93,8 +97,12 @@ export function RemixPanel({ onRemix, onClose, result, narrow, initial }){
         </div>}
         <div style={{fontSize:11,color:'var(--text-meta)'}}>
           {result.voice?.status === 'generated'
-            ? `${result.optimized.lines.length} performance lines filed · ${result.voice.archiveLines} archive + ${result.voice.generatedLines} compliance robot`
-            : `${result.optimized?.lines.length || result.lines.length} archive lines filed · local voice coverage confirmed`}
+            ? `${result.voice.generatedLines} generated performance lines filed · 3 announcer + 1 compliance mainframe`
+            : result.voice?.status === 'partial'
+              ? `${result.voice.generatedLines}/${result.optimized.lines.length} generated lines filed · archive coverage substituted where needed`
+            : result.voice?.status === 'progressive'
+              ? `${result.voice.generatedLines}/${result.optimized.lines.length} generated lines filed · archive coverage remains active`
+              : `${result.optimized?.lines.length || result.lines.length} archive lines filed · local voice coverage confirmed`}
         </div>
       </div>
     </div>}

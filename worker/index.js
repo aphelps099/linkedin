@@ -32,6 +32,7 @@ export default {
     try{
       const body = await request.json();
       const clips = await generateVoiceClips({
+        clips: body.clips,
         lines: body.lines,
         apiKey: env.OPENAI_API_KEY,
       });
