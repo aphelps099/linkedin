@@ -155,6 +155,7 @@ export default function CircleBack(){
   const [band, setBand] = React.useState(true);
   const [remixOpen, setRemixOpen] = React.useState(false);
   const [remix, setRemix] = React.useState(null);
+  const [handoff, setHandoff] = React.useState(''); // post handed over from LinkedIn Lessons
   const [exp, setExp] = React.useState(null);   // {mode, total, done}
   const [take, setTake] = React.useState(null); // {url, name, mode}
   const bufRef = React.useRef(new Map());       // sample id -> AudioBuffer
@@ -439,6 +440,24 @@ export default function CircleBack(){
     CBAudio.unlock(); setPlaying(true);
   },[]);
 
+  // LinkedIn Lessons hands a finished post over via the URL hash ("Turn It
+  // Into a Beat"). Stage it in the remix panel — playback still needs a
+  // gesture, so the user reads their post and presses Remix it.
+  React.useEffect(()=>{
+    const m = location.hash.match(/^#beat=(.+)$/);
+    if(!m) return;
+    history.replaceState(null, '', location.pathname + location.search);
+    let text = '';
+    try{ text = decodeURIComponent(m[1]); }catch{ return; }
+    if(!text.trim()) return;
+    const rx = analyze(text);
+    rx.optimized = optimize(text, PHRASES);
+    setRemix(rx);
+    setHandoff(text);
+    setRemixOpen(true);
+    setTicker('Post received from LinkedIn Lessons — press Remix it.');
+  },[]);
+
   React.useEffect(()=>{
     const down = e=>{
       if(e.metaKey||e.ctrlKey||e.altKey) return;
@@ -643,6 +662,8 @@ export default function CircleBack(){
       <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}>
         <Button onClick={()=> setRemixOpen(o=>!o)}
           style={{background:remixOpen?'#fff':'var(--ink)',color:remixOpen?'var(--blue)':'#fff',borderColor:remixOpen?'#fff':'var(--ink)'}}>Build your remix</Button>
+        <Button onClick={()=> location.assign('./lessons/')}
+          style={{background:'transparent',color:'#fff',borderColor:'#fff'}}>Write a post</Button>
         <Button onClick={()=>{ CBAudio.unlock(); setPlaying(x=>!x); }}
           style={{background:playing?'#fff':'transparent',color:playing?'var(--blue)':'#fff',borderColor:'#fff'}}>{playing?'Pause':'Play'}</Button>
         <Button onClick={newTrack} style={{background:'transparent',color:'#fff',borderColor:'#fff'}}>New track (R)</Button>
@@ -652,7 +673,7 @@ export default function CircleBack(){
       </div>
     </div>
     {remixOpen && <div style={{position:'relative',zIndex:1}}>
-      <RemixPanel narrow={narrow} result={remix} onRemix={buildRemix} onClose={()=>setRemixOpen(false)}/>
+      <RemixPanel narrow={narrow} result={remix} initial={handoff} onRemix={buildRemix} onClose={()=>setRemixOpen(false)}/>
     </div>}
     <div style={{position:'relative',zIndex:1,flex:1,display:'flex',alignItems:'center',justifyContent:'center',minHeight:0}}>
       <Monitor ref={canvasRef} stateRef={ref}
@@ -696,11 +717,12 @@ export default function CircleBack(){
       <p style={{margin:0,fontSize:narrow?12.5:13,lineHeight:1.45,maxWidth:400}}>The LinkedIn remixer — corporate phrases, spoken in time over a live drum machine. <b style={{color:'var(--blue)'}}>It’s not an instrument. It’s a journey.</b></p>
     </div>
     <Ticker style={{marginTop:16}}>{ticker}</Ticker>
-    <div style={{marginTop:14}}>
+    <div style={{marginTop:14,display:'flex',gap:8,flexWrap:'wrap'}}>
       <Button onClick={()=> setRemixOpen(o=>!o)} style={{padding:'12px 18px'}}>Build your remix</Button>
+      <Button onClick={()=> location.assign('./lessons/')} style={{padding:'12px 18px'}}>Write a post — LinkedIn Lessons™</Button>
     </div>
     {remixOpen && <div style={{marginTop:12}}>
-      <RemixPanel narrow={narrow} result={remix} onRemix={buildRemix} onClose={()=>setRemixOpen(false)}/>
+      <RemixPanel narrow={narrow} result={remix} initial={handoff} onRemix={buildRemix} onClose={()=>setRemixOpen(false)}/>
     </div>}
 
     <div style={{display:'grid',gridTemplateColumns:narrow?'1fr':'minmax(0,1fr) 280px',gap:narrow?16:'var(--space-col)',alignItems:'start',marginTop:16}}>
