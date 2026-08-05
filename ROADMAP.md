@@ -13,15 +13,14 @@ tool should end in a shareable object and a clear door into another tool.
 
 ### Dynamic Voice v2: every post becomes a real performance
 
-Today, OpenAI generates the post-specific compliance interruption while the
-first three lines use the fixed archive. The next milestone should let the
-remix say every useful name, product, acronym, number, and punchline in the
-user's post.
+OpenAI now generates all four post-specific performance lines. The phrase
+archive remains available only as a truthful audio fallback when a dynamic
+voice request fails.
 
 #### Experience
 
-- Generate a compact four-line performance from the post:
-  **setup → corporate escalation → incriminating phrase → compliance punchline**.
+- Select a compact four-line performance directly from the post, preserving
+  the author's names, products, acronyms, numbers, and punchlines.
 - Begin the show as soon as the first clip is ready. Generate the remaining
   clips in parallel and file them into the arrangement progressively.
 - Keep Play simple. No model picker, provider picker, or prompt controls in the

@@ -155,11 +155,9 @@ export function translate(line){
   return null;
 }
 
-// ---- the optimizer ----
-// Rewrites the pasted post into short LinkedIn lingo. Every produced line is
-// backed by a recording in the phrase bank, so the machine can actually say it
-// (and so it survives into the exported video — the browser's own speech
-// synthesis cannot be recorded).
+// ---- the performance editor ----
+// Pulls a four-beat sequence from the author's actual post. The phrase index on
+// each line is fallback audio only; dynamic voice speaks `text` verbatim.
 const INTENTS = [
   {id:'exit',     re:/laid off|let go|redundan|restructur|my last day|leaving|departing|resign|stepping (down|away)|end of an era/i,
    open:[39, 3], mid:[26, 41, 42], close:[15, 28]},
@@ -214,33 +212,57 @@ function keyNouns(text){
 export function optimize(text, phraseBank){
   const src = truncateWords(text);
   const nouns = keyNouns(src);
-  const say = i => (phraseBank && phraseBank[i] ? phraseBank[i].say : '');
-
   const intents = INTENTS.filter(it=> it.re.test(src));
   const chosen = intents.length ? intents.slice(0, 2) : [GENERIC];
 
-  const picked = [];
-  const push = i => { if(i !== undefined && !picked.includes(i)) picked.push(i); };
+  const fallback = [];
+  const push = i => { if(i !== undefined && !fallback.includes(i)) fallback.push(i); };
   chosen.forEach((it, n)=>{
     push(it.open[n % it.open.length]);
     it.mid.slice(0, intents.length > 1 ? 2 : 3).forEach(push);
     push(it.close[n % it.close.length]);
   });
-  // anything they already said in fluent LinkedIn earns its place
   for(const [re, idx] of MATCHES) if(re.test(src)) push(idx);
-  const order = picked.slice(0, 9);
+
+  const candidates = toLines(src)
+    .map((value, index)=>{
+      const text = clean(value)
+        .replace(/(?:\s*#\w+)+\s*$/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      let score = hookScore(text);
+      if(/\d/.test(text)) score += 2;
+      if(/\b(I|we|my|our)\b/i.test(text)) score += 1;
+      if(text.length >= 24 && text.length <= 145) score += 3;
+      if(text.length > 180) score -= 4;
+      return {text, index, score};
+    })
+    .filter(line=> line.text.length >= 8 && !/^(?:#\w+\s*)+$/.test(line.text));
+
+  const selected = candidates
+    .slice()
+    .sort((a,b)=> b.score-a.score || a.index-b.index)
+    .slice(0, 4)
+    .sort((a,b)=> a.index-b.index);
+
+  // Very short posts still need a complete sequence. Repeat the author's own
+  // lines rather than inventing copy or silently replacing them with the bank.
+  if(selected.length){
+    let cursor = 0;
+    while(selected.length < 4){
+      selected.push({...selected[cursor % selected.length], index:src.length + cursor});
+      cursor++;
+    }
+  }
 
   return {
     intents: chosen.map(c=> c.id),
     nouns,
-    lines: order.map((idx, n)=>{
-      let text = say(idx);
-      // weave their subject into the line the audience reads
-      const weave = noun => `${text.replace(/[.…!?]+$/,'')} — ${noun.replace(/[.…]+$/,'')}.`;
-      if(nouns[0] && n === 1) text = weave(nouns[0]);
-      else if(nouns[1] && n === 4) text = weave(nouns[1]);
-      return {text, phrase: idx};
-    }),
+    lines: selected.map((line, n)=>({
+      text:line.text.slice(0, 180),
+      sourceText:line.text.slice(0, 180),
+      phrase:fallback[n % fallback.length] ?? 40,
+    })),
   };
 }
 

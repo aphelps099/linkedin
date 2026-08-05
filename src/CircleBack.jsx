@@ -454,37 +454,25 @@ export default function CircleBack(){
     setTicker(`${s.name} — ${style} cadence`);
   },[]);
 
-  // Build the remix: their lines on screen, the phrases they actually wrote in
-  // the vox row, the arrangement scaled to how much thought leadership was found.
+  // Build the remix: four concise lines from their post, spoken dynamically.
+  // Phrase-bank indices remain attached only for truthful audio fallback.
   const buildRemix = React.useCallback(async text=>{
     CBAudio.unlock();
     if(voiceJobRef.current?.controller) voiceJobRef.current.controller.abort('replaced');
     const rx = analyze(text || '');
     if(!rx.lines.length){ setTicker('Nothing to remix — paste a post first.'); return; }
     let opt = optimize(text || '', PHRASES);
-    // Four loops is the default export. Give each loop a different line so the
-    // finished clip progresses through a compact four-part performance.
     opt = {...opt, lines:opt.lines.slice(0, 4)};
-    const subject = opt.nouns[0];
     const clean = value=>String(value || '').replace(/\s+/g, ' ').trim().slice(0, 180);
     const archiveLines = opt.lines.map(line=>PHRASES[line.phrase].say);
-    const evidence = clean(rx.hook?.text);
     opt = {
       ...opt,
       lines:opt.lines.map((line, index)=>{
-        let generatedText = clean(line.text);
-        if(index === 0 && subject){
-          generatedText = clean(`${line.text.replace(/[.…!?]+$/,'')}. Subject: ${subject}.`);
-        } else if(index === 2 && evidence){
-          generatedText = evidence;
-        } else if(index === opt.lines.length - 1){
-          generatedText = subject
-            ? `System notice. Subject: ${subject}. Milestone status: unlocked. Congratulation protocol: required.`
-            : 'System notice. Milestone status: unlocked. Congratulation protocol: required.';
-        }
+        const generatedText = clean(line.text);
         return {
           ...line,
           text:generatedText,
+          sourceText:generatedText,
           archiveText:archiveLines[index],
           voiceRole:index === opt.lines.length - 1 ? 'robot' : 'announcer',
         };
@@ -647,6 +635,7 @@ export default function CircleBack(){
     setTempo(remixTempo);
     r.spoken = true; r.phraseAt = performance.now();
     setTicker(opt.lines[0] ? opt.lines[0].text : rx.lines[0]);
+    setHandoff(text);
     setRemixOpen(false); setStudio(false);
     setPlaying(true);
   },[]);
