@@ -233,6 +233,108 @@ input.rm-input {
   opacity: .78;
 }
 
+.rm-severity {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 1.35fr);
+  gap: 1.5rem 2rem;
+  align-items: end;
+  padding: 1.4rem;
+  border: var(--rule-frame) solid var(--ink);
+  background: var(--white);
+}
+
+.rm-severity__readout {
+  display: flex;
+  min-height: 8.25rem;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.rm-severity__level {
+  margin-bottom: auto;
+  color: var(--blue);
+  font-family: var(--mono);
+  font-size: .8rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.rm-severity__readout strong {
+  font-size: clamp(1.7rem, 3vw, 2.7rem);
+  line-height: .98;
+  letter-spacing: -.045em;
+}
+
+.rm-severity__readout > span:last-child {
+  max-width: 34rem;
+  margin-top: .6rem;
+  color: var(--rm-muted);
+  font-size: .9rem;
+  line-height: 1.45;
+}
+
+.rm-severity__control {
+  padding: 1.4rem 0 .2rem;
+}
+
+.rm-severity__range {
+  --rm-fill: calc((var(--rm-level) - 1) / 3 * 100%);
+  width: 100%;
+  height: 3rem;
+  margin: 0;
+  appearance: none;
+  border: var(--rule-frame) solid var(--ink);
+  border-radius: 0;
+  outline: 0;
+  background:
+    linear-gradient(90deg, var(--blue) 0 var(--rm-fill), var(--paper) var(--rm-fill) 100%);
+  cursor: ew-resize;
+  touch-action: pan-y;
+}
+
+.rm-severity__range:focus-visible {
+  box-shadow: 0 0 0 3px var(--white), 0 0 0 5px var(--blue);
+}
+
+.rm-severity__range::-webkit-slider-thumb {
+  width: 1.35rem;
+  height: 3.8rem;
+  appearance: none;
+  border: var(--rule-frame) solid var(--ink);
+  border-radius: 0;
+  background: var(--white);
+  cursor: grab;
+}
+
+.rm-severity__range::-moz-range-thumb {
+  width: 1.35rem;
+  height: 3.8rem;
+  border: var(--rule-frame) solid var(--ink);
+  border-radius: 0;
+  background: var(--white);
+  cursor: grab;
+}
+
+.rm-severity__ticks {
+  display: flex;
+  justify-content: space-between;
+  margin-top: .8rem;
+  color: var(--rm-muted);
+  font-family: var(--mono);
+  font-size: .72rem;
+}
+
+.rm-severity__ticks .is-active {
+  color: var(--blue);
+  font-weight: 700;
+}
+
+.rm-severity > button {
+  grid-column: 1 / -1;
+  justify-content: center;
+}
+
 .rm-case-strip {
   display: flex;
   justify-content: space-between;
@@ -532,6 +634,20 @@ input.rm-input {
 
   .rm-choice__robot {
     margin-bottom: .7rem;
+  }
+
+  .rm-severity {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .rm-severity__readout {
+    min-height: 7.25rem;
+  }
+
+  .rm-severity__control {
+    padding-top: .8rem;
   }
 
   .rm-notes {

@@ -63,6 +63,58 @@ function ChoiceStage({ eyebrow, title, options, onChoose, onBack, type }) {
   );
 }
 
+function SeverityStage({ value, onChange, onAuthorize, onBack }) {
+  const selected = INTENSITIES[value - 1];
+  return (
+    <>
+      <div className="rm-stage__body">
+        <div className="rm-stage__eyebrow">Step 03 / Severity authorization</div>
+        <h2>How much honesty has Legal approved?</h2>
+        <div className="rm-severity">
+          <div className="rm-severity__readout" aria-live="polite">
+            <span className="rm-severity__level">Level / 0{selected.n}</span>
+            <strong>{selected.name}</strong>
+            <span>{selected.blurb}</span>
+          </div>
+          <div className="rm-severity__control">
+            <input
+              aria-label="Roast severity"
+              aria-valuetext={`${selected.name}. ${selected.blurb}`}
+              className="rm-severity__range"
+              data-testid="slider-intensity"
+              max="4"
+              min="1"
+              onChange={event => onChange(Number(event.target.value))}
+              step="1"
+              style={{ '--rm-level': value }}
+              type="range"
+              value={value}
+            />
+            <div className="rm-severity__ticks" aria-hidden="true">
+              {INTENSITIES.map(option => (
+                <span className={option.n <= value ? 'is-active' : ''} key={option.n}>
+                  0{option.n}
+                </span>
+              ))}
+            </div>
+          </div>
+          <Button
+            data-testid="button-authorize-intensity"
+            onClick={() => onAuthorize(selected)}
+            style={{ minHeight: 48, alignSelf: 'stretch' }}
+          >
+            Authorize level 0{selected.n} / Begin inspection
+          </Button>
+        </div>
+      </div>
+      <div className="rm-case-strip">
+        <button data-testid="button-back" onClick={onBack} type="button">Esc / Back</button>
+        <span>Drag to adjust · arrow keys fine-tune · 1–4 authorize immediately.</span>
+      </div>
+    </>
+  );
+}
+
 function InspectionStage({ draft, result, persona, revealed, onCancel }) {
   const total = Math.max(1, result.findings.length);
   return (
@@ -332,13 +384,11 @@ export default function Roast() {
             )}
 
             {phase === 'intensity' && (
-              <ChoiceStage
-                eyebrow="Step 03 / Severity authorization"
+              <SeverityStage
+                value={intensity}
+                onChange={setIntensity}
                 onBack={() => setPhase('persona')}
-                onChoose={chooseIntensity}
-                options={INTENSITIES}
-                title="How much honesty has Legal approved?"
-                type="intensity"
+                onAuthorize={chooseIntensity}
               />
             )}
 
