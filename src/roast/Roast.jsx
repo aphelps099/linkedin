@@ -6,172 +6,439 @@ import { KINDS, roastIt } from './roastEngine.js';
 import { PERSONAS, INTENSITIES } from './personas.js';
 import { drawRoastCard, downloadCanvas } from './card.js';
 import { newSeed } from '../lessons/generator.js';
+import { MarkedDocument } from './MarkedDocument.jsx';
+import './roast.css';
 
-// ROAST MY LINKEDIN — paste your post, headline, or About section.
-// Four personas × four intensities. Every roast ends in redemption.
+const PERSONA_ROBOTS = ['[::] / STRATEGY', '[--] / TALENT', '[^^] / INTERN', '[01] / SYSTEM'];
+const PHASE_LABELS = {
+  intake: 'Intake',
+  persona: 'Inspector assignment',
+  intensity: 'Severity authorization',
+  inspecting: 'Automated inspection',
+  result: 'Official findings',
+};
 
-const LABEL = { fontSize: 'var(--label-size)', fontWeight: 700, letterSpacing: 'var(--label-tracking)', textTransform: 'uppercase' };
-const META = { ...LABEL, color: 'var(--text-meta)' };
-
-async function copyText(t){
-  try { await navigator.clipboard.writeText(t); }
-  catch {
-    const ta = document.createElement('textarea');
-    ta.value = t; document.body.appendChild(ta); ta.select();
-    try { document.execCommand('copy'); } finally { document.body.removeChild(ta); }
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    document.body.appendChild(textarea);
+    textarea.select();
+    try { document.execCommand('copy'); } finally { document.body.removeChild(textarea); }
   }
 }
 
-function useNarrow(){
-  const [narrow, setNarrow] = React.useState(() => window.innerWidth < 880);
-  React.useEffect(() => {
-    const on = () => setNarrow(window.innerWidth < 880);
-    window.addEventListener('resize', on);
-    return () => window.removeEventListener('resize', on);
-  }, []);
-  return narrow;
+function ChoiceStage({ eyebrow, title, options, onChoose, onBack, type }) {
+  return (
+    <>
+      <div className="rm-stage__body">
+        <div className="rm-stage__eyebrow">{eyebrow}</div>
+        <h2>{title}</h2>
+        <div className="rm-choice-grid">
+          {options.map((option, index) => (
+            <button
+              className="rm-choice"
+              data-testid={`button-${type}-${option.id ?? option.n}`}
+              key={option.id ?? option.n}
+              onClick={() => onChoose(option)}
+              type="button"
+            >
+              <span className="rm-choice__key">{index + 1}</span>
+              <span className="rm-choice__robot">
+                {type === 'persona' ? PERSONA_ROBOTS[index] : `LEVEL / 0${option.n}`}
+              </span>
+              <span className="rm-choice__name">{option.name}</span>
+              <span className="rm-choice__detail">{option.tagline ?? option.blurb}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="rm-case-strip">
+        <button data-testid="button-back" onClick={onBack} type="button">Esc / Back</button>
+        <span>Press 1–4 to authorize without further meetings.</span>
+      </div>
+    </>
+  );
 }
 
-function Segmented({ label, options, value, onChange, render }){
-  return <div>
-    <div style={{ ...LABEL, marginBottom: 8 }}>{label}</div>
-    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      {options.map(o => {
-        const on = o.id === value || o.n === value;
-        return <button key={o.id || o.n} onClick={() => onChange(o.id ?? o.n)}
-          style={{ border: 'var(--rule-frame) solid var(--ink)', borderRadius: 0, cursor: 'pointer', padding: '9px 12px',
-            background: on ? 'var(--blue)' : '#fff', color: on ? '#fff' : 'var(--ink)',
-            fontFamily: 'var(--sans)', fontWeight: 700, fontSize: 12, transition: 'background var(--ease-ui)' }}>
-          {render ? render(o) : o.name}
-        </button>;
-      })}
-    </div>
-  </div>;
+function InspectionStage({ draft, result, persona, revealed, onCancel }) {
+  const total = Math.max(1, result.findings.length);
+  return (
+    <>
+      <div className="rm-stage__body">
+        <div className="rm-inspection">
+          <MarkedDocument
+            findings={result.findings}
+            scanning
+            text={draft}
+            visibleCount={revealed}
+          />
+          <aside className="rm-notes" aria-live="polite" data-testid="status-inspection">
+            <div className="rm-robot-status">
+              <span>{PERSONA_ROBOTS[PERSONAS.indexOf(persona)]} online</span>
+              <span className="rm-robot-status__light" aria-hidden="true" />
+            </div>
+            {result.clean && revealed > 0 && (
+              <div className="rm-note">
+                <strong>00 / ANOMALY</strong><br />
+                No violations located. Human authorship remains plausible.
+              </div>
+            )}
+            {result.lines.slice(0, revealed).map((line, index) => (
+              <div className="rm-note" key={index}>
+                <strong>{String(index + 1).padStart(2, '0')} / FINDING</strong><br />
+                {line}
+              </div>
+            ))}
+            <div className="rm-progress">
+              Evidence filed: {Math.min(revealed, total)} / {total}<br />
+              Verdict withheld pending completion.
+            </div>
+          </aside>
+        </div>
+      </div>
+      <div className="rm-case-strip">
+        <button data-testid="button-cancel-inspection" onClick={onCancel} type="button">Esc / Cancel inspection</button>
+        <span>Marks first. Score second. Policy is policy.</span>
+      </div>
+    </>
+  );
 }
 
-export default function Roast(){
-  const narrow = useNarrow();
+export default function Roast() {
   const [kind, setKind] = React.useState('post');
   const [draft, setDraft] = React.useState('');
   const [personaId, setPersonaId] = React.useState('recruiter');
   const [intensity, setIntensity] = React.useState(2);
   const [seed, setSeed] = React.useState(newSeed);
-  const [filed, setFiled] = React.useState(false);
+  const [phase, setPhase] = React.useState('intake');
+  const [revealed, setRevealed] = React.useState(0);
   const [copied, setCopied] = React.useState(false);
   const cardRef = React.useRef(null);
 
-  const kindDef = KINDS.find(k => k.id === kind);
-  const persona = PERSONAS.find(p => p.id === personaId);
+  const kindDef = KINDS.find(item => item.id === kind);
+  const persona = PERSONAS.find(item => item.id === personaId);
   const level = INTENSITIES[intensity - 1];
+  const result = React.useMemo(
+    () => draft.trim() ? roastIt({ kind, text: draft, personaId, intensity, seed }) : null,
+    [draft, kind, personaId, intensity, seed],
+  );
 
-  // arriving with #roast=<text> (e.g. a museum exhibit) files it immediately
   React.useEffect(() => {
-    const m = location.hash.match(/^#roast=(.+)$/);
-    if(!m) return;
+    const match = location.hash.match(/^#roast=(.+)$/);
+    if (!match) return;
     history.replaceState(null, '', location.pathname + location.search);
     try {
-      const text = decodeURIComponent(m[1]);
-      if(text.trim()){ setKind('post'); setDraft(text); setFiled(true); }
-    } catch { /* malformed hash: ignore */ }
+      const text = decodeURIComponent(match[1]);
+      if (text.trim()) {
+        setKind('post');
+        setDraft(text);
+        setPhase('persona');
+      }
+    } catch {
+      // A malformed museum handoff is ignored; the intake remains usable.
+    }
   }, []);
 
-  // recomputes live once filed — switching persona or intensity re-roasts
-  const result = React.useMemo(
-    () => (filed && draft.trim()) ? roastIt({ kind, text: draft, personaId, intensity, seed }) : null,
-    [filed, draft, kind, personaId, intensity, seed]);
+  React.useEffect(() => {
+    if (phase !== 'inspecting' || !result) return undefined;
+    const total = Math.max(1, result.findings.length);
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    setRevealed(0);
+
+    if (reduced) {
+      setRevealed(total);
+      const done = window.setTimeout(() => setPhase('result'), 40);
+      return () => window.clearTimeout(done);
+    }
+
+    let count = 0;
+    let finish;
+    const ticker = window.setInterval(() => {
+      count += 1;
+      setRevealed(Math.min(count, total));
+      if (count >= total) {
+        window.clearInterval(ticker);
+        finish = window.setTimeout(() => setPhase('result'), 720);
+      }
+    }, 560);
+
+    return () => {
+      window.clearInterval(ticker);
+      if (finish) window.clearTimeout(finish);
+    };
+  }, [phase, result]);
 
   React.useEffect(() => {
-    if(result && cardRef.current)
-      drawRoastCard(cardRef.current, { personaName: persona.name, intensityName: level.name, score: result.score, lines: result.lines });
-  }, [result, persona, level]);
+    if (phase === 'result' && result && cardRef.current) {
+      drawRoastCard(cardRef.current, {
+        personaName: persona.name,
+        intensityName: level.name,
+        score: result.score,
+        lines: result.lines,
+      });
+    }
+  }, [phase, result, persona, level]);
 
-  const copy = async t => { await copyText(t); setCopied(true); setTimeout(() => setCopied(false), 1600); };
+  React.useEffect(() => {
+    const onKeyDown = event => {
+      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return;
+      if (event.key === 'Escape') {
+        if (phase === 'persona') setPhase('intake');
+        if (phase === 'intensity') setPhase('persona');
+        if (phase === 'inspecting' || phase === 'result') setPhase('intensity');
+        return;
+      }
+      const index = Number(event.key) - 1;
+      if (index < 0 || index > 3) return;
+      if (phase === 'persona') {
+        const chosen = PERSONAS[index];
+        if (chosen) {
+          setPersonaId(chosen.id);
+          setPhase('intensity');
+        }
+      } else if (phase === 'intensity') {
+        const chosen = INTENSITIES[index];
+        if (chosen) {
+          setIntensity(chosen.n);
+          setSeed(newSeed());
+          setPhase('inspecting');
+        }
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [phase]);
 
-  return <Unit style={narrow ? { padding: '20px 14px' } : undefined}>
-    <Masthead logo="Roast My LinkedIn" mark="™"
-      meta={narrow ? ['Form RM-1', 'Rev. 2026-08'] : ['Form RM-1', 'Rev. 2026-08', 'Complaints processed locally']}/>
-    <div style={{ display: 'flex', flexDirection: narrow ? 'column' : 'row', justifyContent: 'space-between',
-      alignItems: narrow ? 'flex-start' : 'flex-end', gap: narrow ? 10 : 30, marginTop: 18 }}>
-      <h1 style={{ margin: 0, fontSize: narrow ? 28 : 40, lineHeight: 1.02, letterSpacing: '-.045em', fontWeight: 700,
-        color: 'var(--blue)', maxWidth: 520 }}>Present your personal brand for inspection.</h1>
-      <p style={{ margin: 0, fontSize: narrow ? 12.5 : 13, lineHeight: 1.45, maxWidth: 380 }}>
-        Four inspectors. Four intensity settings. Every roast ends with the version you should actually use.
-        {' '}<b style={{ color: 'var(--blue)' }}>Nothing leaves your browser.</b>
-      </p>
-    </div>
+  const begin = () => {
+    if (draft.trim()) setPhase('persona');
+  };
 
-    <div style={{ marginTop: 20, background: '#fff', border: 'var(--rule-frame) solid var(--ink)', padding: narrow ? 16 : 22,
-      display: 'flex', flexDirection: 'column', gap: 14 }}>
-      <Segmented label="What are we inspecting?" options={KINDS} value={kind}
-        onChange={id => { setKind(id); setFiled(false); }}/>
-      {kind === 'headline'
-        ? <input value={draft} onChange={e => setDraft(e.target.value)} placeholder={kindDef.hint}
-            onKeyDown={e => { if(e.key === 'Enter' && draft.trim()) setFiled(true); }}
-            style={{ width: '100%', boxSizing: 'border-box', padding: 12, fontFamily: 'var(--sans)', fontSize: 15,
-              border: 'var(--rule-frame) solid var(--ink)', borderRadius: 0, background: 'var(--paper)', outline: 'none' }}/>
-        : <textarea value={draft} onChange={e => setDraft(e.target.value)} rows={narrow ? 6 : 8} placeholder={kindDef.hint}
-            style={{ width: '100%', boxSizing: 'border-box', resize: 'vertical', padding: 12, fontFamily: 'var(--sans)', fontSize: 14,
-              lineHeight: 1.5, border: 'var(--rule-frame) solid var(--ink)', borderRadius: 0, background: 'var(--paper)', outline: 'none' }}/>}
-      <div style={{ display: 'grid', gridTemplateColumns: narrow ? '1fr' : '1fr 1fr', gap: 14 }}>
-        <Segmented label="Who's inspecting?" options={PERSONAS} value={personaId} onChange={setPersonaId}/>
-        <Segmented label="Roast intensity" options={INTENSITIES} value={intensity} onChange={setIntensity}
-          render={o => `${o.n} · ${o.name}`}/>
-      </div>
-      <div style={{ display: 'flex', gap: 10, alignItems: 'baseline', flexWrap: 'wrap' }}>
-        <Button onClick={() => { if(draft.trim()){ setSeed(newSeed()); setFiled(true); } }} style={{ padding: '12px 18px' }}>
-          File the complaint</Button>
-        <span style={{ ...META, fontSize: 8.5 }}>{persona.tagline} · {level.blurb}</span>
-      </div>
-    </div>
+  const chooseIntensity = chosen => {
+    setIntensity(chosen.n);
+    setSeed(newSeed());
+    setPhase('inspecting');
+  };
 
-    {result && <div style={{ display: 'grid', gridTemplateColumns: narrow ? '1fr' : 'minmax(0,1fr) 400px',
-      gap: narrow ? 14 : 'var(--space-col)', marginTop: 16, alignItems: 'start' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <div style={{ background: '#fff', border: 'var(--rule-frame) solid var(--blue)', padding: '14px 16px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
-            <span style={{ ...LABEL, color: 'var(--blue)' }}>The verdict of {persona.name}</span>
-            <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-meta)' }}>
-              index {result.score.index} · {result.score.rank}</span>
-          </div>
-          <div style={{ fontSize: 13.5, lineHeight: 1.55, fontStyle: 'italic', color: 'var(--text-meta)' }}>{result.opener}</div>
-          <div style={{ margin: '10px 0' }}>
-            {result.lines.map((l, i) =>
-              <div key={i} style={{ fontSize: 14, lineHeight: 1.6, borderBottom: '1px dotted var(--hair)', padding: '6px 0', whiteSpace: 'pre-wrap' }}>
-                <span style={{ color: 'var(--blue)', fontWeight: 700 }}>→ </span>{l}</div>)}
-          </div>
-          <div style={{ fontSize: 13.5, lineHeight: 1.55, fontStyle: 'italic', color: 'var(--text-meta)' }}>{result.closer}</div>
-        </div>
-        <div style={{ background: '#fff', border: 'var(--rule-frame) solid var(--ink)', padding: '14px 16px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
-            <span style={LABEL}>{kind === 'headline' ? 'The headline you should actually use' : 'The version you should actually post'}</span>
-            <Button onClick={() => copy(result.useful)} style={{ padding: '6px 10px' }}>{copied ? 'Copied ✓' : 'Copy'}</Button>
-          </div>
-          {result.useful.split(/\n{2,}/).map((p, i) =>
-            <p key={i} style={{ margin: i ? '10px 0 0' : 0, fontSize: 13.5, lineHeight: 1.55, whiteSpace: 'pre-wrap' }}>{p}</p>)}
-        </div>
-        {kind === 'post' && <div>
-          <Button onClick={() => { location.href = '../#beat=' + encodeURIComponent(draft); }}>Turn the original into a beat ♫</Button>
-        </div>}
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <div style={{ ...LABEL }}>The roast card — save it, post it</div>
-        <canvas ref={cardRef} style={{ width: '100%', height: 'auto', border: 'var(--rule-frame) solid var(--ink)', display: 'block' }}/>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <Button onClick={() => downloadCanvas(cardRef.current, 'roast-card.png')} style={{ padding: '11px 16px' }}>Download card</Button>
-          <Button onClick={() => setSeed(newSeed())}>Re-roast</Button>
-        </div>
-        <span style={{ ...META, fontSize: 8.5 }}>1080×1080 — sized for the feed that caused this.</span>
-      </div>
-    </div>}
+  const copy = async text => {
+    await copyText(text);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1600);
+  };
 
-    <div style={{ marginTop: 30, borderTop: 'var(--rule-heavy) solid var(--ink)', paddingTop: 10,
-      display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', ...META }}>
-      <span>Roast My LinkedIn™ is not affiliated with your network.</span>
-      <span style={{ display: 'inline-flex', gap: 16, flexWrap: 'wrap' }}>
-        <a href="../lessons/" style={{ color: 'var(--blue)' }}>Write a post — LinkedIn Lessons™</a>
-        <a href="../museum/" style={{ color: 'var(--blue)' }}>Visit the Museum</a>
-        <a href="../" style={{ color: 'var(--blue)' }}>Turn one into a beat — Circle Back®</a>
-      </span>
-    </div>
-  </Unit>;
+  const restart = () => {
+    setDraft('');
+    setPhase('intake');
+    setRevealed(0);
+  };
+
+  return (
+    <Unit>
+      <main className="rm-app" id="main">
+        <Masthead
+          logo="Roast My LinkedIn"
+          mark="™"
+          meta={['Form RM-1', 'Rev. 2026-08']}
+        />
+
+        <section className="rm-hero" aria-labelledby="roast-title">
+          <h1 id="roast-title">Present your personal brand for inspection.</h1>
+          <p>
+            Submit a post, headline, or About section. An assigned inspector will mark the evidence,
+            issue a score, and return the version you should actually use.{' '}
+            <span className="rm-privacy">Nothing leaves your browser.</span>
+          </p>
+        </section>
+
+        {phase !== 'result' && (
+          <section className="rm-stage" aria-label={PHASE_LABELS[phase]}>
+            <header className="rm-stage__bar">
+              <span>RM-1 / {PHASE_LABELS[phase]}</span>
+              <span>Case status: {phase === 'inspecting' ? 'under review' : 'action required'}</span>
+            </header>
+
+            {phase === 'intake' && (
+              <div className="rm-stage__body">
+                <div className="rm-stage__eyebrow">Step 01 / Material intake</div>
+                <h2>What are we documenting today?</h2>
+                <fieldset className="rm-fieldset">
+                  <legend>Material type</legend>
+                  <div className="rm-kind-grid">
+                    {KINDS.map(item => (
+                      <button
+                        className={`rm-kind ${kind === item.id ? 'is-selected' : ''}`}
+                        data-testid={`button-kind-${item.id}`}
+                        key={item.id}
+                        onClick={() => setKind(item.id)}
+                        type="button"
+                      >
+                        {item.name}
+                      </button>
+                    ))}
+                  </div>
+                </fieldset>
+                <label className="rm-label" htmlFor="roast-draft">Material for inspection</label>
+                {kind === 'headline' ? (
+                  <input
+                    className="rm-input"
+                    data-testid="input-roast-draft"
+                    id="roast-draft"
+                    onChange={event => setDraft(event.target.value)}
+                    onKeyDown={event => {
+                      if (event.key === 'Enter' && draft.trim()) begin();
+                    }}
+                    placeholder={kindDef.hint}
+                    value={draft}
+                  />
+                ) : (
+                  <textarea
+                    className="rm-input"
+                    data-testid="input-roast-draft"
+                    id="roast-draft"
+                    onChange={event => setDraft(event.target.value)}
+                    placeholder={kindDef.hint}
+                    rows={7}
+                    value={draft}
+                  />
+                )}
+                <div className="rm-intake__footer">
+                  <Button
+                    data-testid="button-file-complaint"
+                    disabled={!draft.trim()}
+                    onClick={begin}
+                    style={{ opacity: draft.trim() ? 1 : .45, minHeight: 44 }}
+                  >
+                    File the complaint
+                  </Button>
+                  <span className="rm-fineprint">Retention policy: zero seconds. Transmission policy: absolutely not.</span>
+                </div>
+              </div>
+            )}
+
+            {phase === 'persona' && (
+              <ChoiceStage
+                eyebrow="Step 02 / Inspector assignment"
+                onBack={() => setPhase('intake')}
+                onChoose={chosen => {
+                  setPersonaId(chosen.id);
+                  setPhase('intensity');
+                }}
+                options={PERSONAS}
+                title="Who should review the incident?"
+                type="persona"
+              />
+            )}
+
+            {phase === 'intensity' && (
+              <ChoiceStage
+                eyebrow="Step 03 / Severity authorization"
+                onBack={() => setPhase('persona')}
+                onChoose={chooseIntensity}
+                options={INTENSITIES}
+                title="How much honesty has Legal approved?"
+                type="intensity"
+              />
+            )}
+
+            {phase === 'inspecting' && result && (
+              <InspectionStage
+                draft={draft}
+                onCancel={() => setPhase('intensity')}
+                persona={persona}
+                result={result}
+                revealed={revealed}
+              />
+            )}
+          </section>
+        )}
+
+        {phase === 'result' && result && (
+          <>
+            <section className="rm-result" aria-label="Official inspection findings">
+              <div className="rm-result__main">
+                <MarkedDocument
+                  findings={result.findings}
+                  text={draft}
+                  visibleCount={result.findings.length}
+                />
+                <div className="rm-rewrite">
+                  <div className="rm-rewrite__header">
+                    <span className="rm-result-label">
+                      {kind === 'headline' ? 'The headline you should actually use' : 'The version you should actually post'}
+                    </span>
+                    <Button data-testid="button-copy-rewrite" onClick={() => copy(result.useful)}>
+                      {copied ? 'Copied' : 'Copy clean version'}
+                    </Button>
+                  </div>
+                  <div className="rm-rewrite__text" data-testid="text-clean-rewrite">{result.useful}</div>
+                </div>
+                <div className="rm-result-actions">
+                  <Button data-testid="button-new-inspection" onClick={restart}>Inspect another</Button>
+                  {kind === 'post' && (
+                    <Button
+                      data-testid="button-turn-into-beat"
+                      onClick={() => { location.href = `../#beat=${encodeURIComponent(draft)}`; }}
+                    >
+                      Turn the original into a beat
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              <aside className="rm-result__rail">
+                <div className="rm-verdict" data-testid="status-verdict">
+                  <div className="rm-verdict__top">
+                    <div>
+                      <div className="rm-score" data-testid="text-index-score">{result.score.index}</div>
+                      <div className="rm-rank">{result.score.rank}</div>
+                    </div>
+                    <div className="rm-stamp">Inspected<br />with concerns</div>
+                  </div>
+                  <div className="rm-verdict__copy">
+                    <span className="rm-result-label">Verdict of {persona.name}</span>
+                    <p>{result.opener}</p>
+                    {result.lines.map((line, index) => <p key={index}><strong>{index + 1}.</strong> {line}</p>)}
+                    <p>{result.closer}</p>
+                  </div>
+                </div>
+
+                <div className="rm-share">
+                  <span className="rm-result-label">Roast receipt / 1080 × 1080</span>
+                  <canvas ref={cardRef} data-testid="canvas-roast-card" />
+                  <div className="rm-result-actions">
+                    <Button
+                      data-testid="button-download-card"
+                      onClick={() => downloadCanvas(cardRef.current, 'roast-card.png')}
+                    >
+                      Download receipt
+                    </Button>
+                    <Button
+                      data-testid="button-reroast"
+                      onClick={() => {
+                        setSeed(newSeed());
+                        setPhase('inspecting');
+                      }}
+                    >
+                      Re-inspect
+                    </Button>
+                  </div>
+                </div>
+              </aside>
+            </section>
+          </>
+        )}
+
+        <footer className="rm-footer">
+          <span>Approved — HR / Not affiliated with your network.</span>
+          <nav aria-label="More Circle Back tools">
+            <a href="../lessons/">Write one</a>
+            <a href="../museum/">Visit the Museum</a>
+            <a href="../">Make a beat</a>
+          </nav>
+        </footer>
+      </main>
+    </Unit>
+  );
 }
