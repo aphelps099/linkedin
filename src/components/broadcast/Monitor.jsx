@@ -374,52 +374,6 @@ function drawCommentRow(ctx, c, x, y, w, s, alpha){
   return bubbleH + 34*s;
 }
 
-// Comments as they actually feel: little popups that slide in from the edge,
-// hold for a beat, and leave. Nothing stacks up into a wall.
-const POP_LIFE = 5.2, POP_IN = .34, POP_OUT = .8;
-function drawFloatingComments(ctx, st, now, {x, w, bottom, max = 3}){
-  const list = (st.comments || [])
-    .map(c => ({c, age:(now - c.at)/1000}))
-    .filter(v => v.age >= 0 && v.age < POP_LIFE)
-    .slice(-max);
-  let y = bottom;
-  for(let i=list.length-1;i>=0;i--){
-    const {c, age} = list[i];
-    const inT = easeOut(age/POP_IN);
-    const outT = age > POP_LIFE - POP_OUT ? easeOut((age - (POP_LIFE - POP_OUT))/POP_OUT) : 0;
-    const alpha = Math.min(inT, 1 - outT);
-    if(alpha <= .02) continue;
-    const s = .96;
-    const pad = 16*s, av = 40*s;
-    ctx.font = `400 ${19*s}px ${SANS}`;
-    const body = wrapText(ctx, c.text, w - av - 3*pad).slice(0,2);
-    const h = pad + 22*s + body.length*(24*s) + pad*.7;
-    const dx = (1 - inT)*70 + outT*40;     // in from the right, out to the right
-    const dy = -outT*26;                   // and drifting up as it goes
-    ctx.save();
-    ctx.globalAlpha = alpha;
-    ctx.translate(dx, dy);
-    ctx.fillStyle = 'rgba(255,255,255,.96)';
-    roundRect(ctx, x, y - h, w, h, 12*s); ctx.fill();
-    drawAvatar(ctx, x + pad, y - h + pad, av, c.initials);
-    const tx = x + pad + av + 12*s;
-    let ty = y - h + pad + 15*s;
-    ctx.textAlign = 'left';
-    ctx.font = `600 ${16.5*s}px ${SANS}`; ctx.fillStyle = FEED_TEXT;
-    ctx.fillText(c.name, tx, ty);
-    const nw = ctx.measureText(c.name).width;
-    ctx.font = `400 ${13.5*s}px ${SANS}`; ctx.fillStyle = FEED_MUTED;
-    ctx.fillText(`· ${c.degree}`, tx + nw + 7*s, ty);
-    ty += 23*s;
-    ctx.font = `400 ${19*s}px ${SANS}`; ctx.fillStyle = FEED_TEXT;
-    for(const line of body){ ctx.fillText(line, tx, ty); ty += 24*s; }
-    if(c.likes > 0) drawReactions(ctx, (c.reactions||['like']).slice(0,2), c.likes, x + w - 78*s, y - h + 16*s, s*.8);
-    ctx.restore();
-    y -= h + 12;
-    if(y < 260) break;
-  }
-}
-
 function drawComments(ctx, st, now, {x, w, bottom, max, scale}){
   const list = (st.comments || []).slice(-max);
   let y = bottom;
@@ -691,7 +645,6 @@ function draw(ctx, st){
     drawStamp(ctx, W - M - 110, 205);
     // the phrase is the only loud thing; everything else is weather behind it
     drawPhraseBlock(ctx, st, now, {top: 268, bottom: 726, maxW: W - 2*M, startSize: 132});
-    drawFloatingComments(ctx, st, now, {x: W - M - 470, w: 470, bottom: 966});
     drawEngagement(ctx, st, W/2, 1002, 19, 'center');
     // the room breathes on the kick
     if(st.kickAt){

@@ -627,10 +627,11 @@ export default function CircleBack(){
       style={narrow?{gridColumn:'1 / -1'}:undefined}/>
     <ArrowKey tone={tone} dir="right" hint="Change phrase" onFire={()=>stepPhrase(1)}/>
   </div>;
-  const stageArrows = <div style={{display:'grid',gridTemplateColumns:'104px 1fr 104px',gap:narrow?10:14,alignItems:'stretch'}}>
-    <ArrowKey dir="left" hint="Change phrase" onFire={()=>stepPhrase(-1)}/>
+  const stageArrows = <div style={{display:'grid',gridTemplateColumns:'104px minmax(0,1fr) 104px',
+    gap:narrow?10:14,alignItems:'stretch',height:104}}>
+    <ArrowKey dir="left" hint="Change phrase" onFire={()=>stepPhrase(-1)} style={{minHeight:0,height:'100%'}}/>
     <CommentCards stateRef={ref} narrow={narrow}/>
-    <ArrowKey dir="right" hint="Change phrase" onFire={()=>stepPhrase(1)}/>
+    <ArrowKey dir="right" hint="Change phrase" onFire={()=>stepPhrase(1)} style={{minHeight:0,height:'100%'}}/>
   </div>;
 
   if(!studio) return <div style={{position:'relative',minHeight:'100vh',background:'var(--blue)',color:'#fff',fontFamily:'var(--sans)',

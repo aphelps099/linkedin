@@ -296,6 +296,9 @@ export function exposeVoice(){ if(typeof window !== 'undefined') window.CBVoice 
 // CBVoice — the LinkedIn larynx. Prefers the recorded phrase bank (routed through
 // CBAudio's master bus, so it lands in exports); falls back to speechSynthesis,
 // which the browser cannot capture into a recording.
+// a fifth down: unmistakably slower and deeper, still intelligible
+const DEEP_READ = -7;
+
 export const CBVoice = {
   bank: new Map(),
   current: null,
@@ -317,7 +320,9 @@ export const CBVoice = {
   // how long this line actually takes to say, at the given delivery rate —
   // the randomizer uses this to give every phrase room to finish
   durationOf(i, text, deliv = .5){
-    const rate = .6 + deliv*.8;
+    // detune slows playback, so a deep read runs longer than a flat one; the
+    // sequencer budgets for the slowest read or the next phrase talks over it
+    const rate = (.6 + deliv*.8) * Math.pow(2, DEEP_READ/12);
     const buf = this.bank.get(i);
     if(buf) return buf.duration / rate;
     return Math.max(.7, String(text||'').length * .065) / rate; // estimate before the bank loads
@@ -329,13 +334,13 @@ export const CBVoice = {
   // pitch is a semitone offset (-12..+12) applied on top of Sincerity
   pitch: 0,
   // The read cycle: two of every five lines come out at the set pitch, the
-  // other three jump two octaves — which lands much closer to a natural
-  // speaking voice than the Sincerity register does on its own. Every so
-  // often a read is dunked in reverb, for no reason anyone could defend.
+  // other three drop a fifth — slower and deeper, the voice of a man who has
+  // seen the roadmap. Nothing is ever pitched up; that way lies chipmunks.
+  // Every so often a read is dunked in reverb, for no reason anyone could defend.
   reads: 0,
   readOffset(){
     const n = this.reads++ % 5;
-    return n < 2 ? 0 : 24;
+    return n < 2 ? 0 : DEEP_READ;
   },
   speakPhrase(i, text, sinc, deliv, decay){
     const d = decay===undefined ? .5 : decay;
