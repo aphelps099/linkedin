@@ -431,7 +431,7 @@ export default function Roast() {
         )}
 
         <footer className="rm-footer">
-          <span>Approved — HR / Not affiliated with your network.</span>
+          <span>© Digital Creative 2026 · Approved — HR / Not affiliated with your network.</span>
           <nav aria-label="More Circle Back tools">
             <a href="../lessons/">Write one</a>
             <a href="../museum/">Visit the Museum</a>

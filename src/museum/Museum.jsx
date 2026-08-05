@@ -130,7 +130,7 @@ export default function Museum(){
 
     <div style={{ marginTop: 30, borderTop: 'var(--rule-heavy) solid var(--ink)', paddingTop: 10,
       display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', ...META }}>
-      <span>The museum is not affiliated with your network. The gift shop is the tools.</span>
+      <span>© Digital Creative 2026 · The museum is not affiliated with your network. The gift shop is the tools.</span>
       <span style={{ display: 'inline-flex', gap: 16, flexWrap: 'wrap' }}>
         <a href="../lessons/" style={{ color: 'var(--blue)' }}>Write one — Lessons™</a>
         <a href="../roast/" style={{ color: 'var(--blue)' }}>Judge one — Roast™</a>

@@ -287,7 +287,7 @@ export default function Lessons(){
       onReinterview={() => setScreen({ view: 'interview', catId: screen.catId, answers: screen.answers })}/>}
     <div style={{ marginTop: 30, borderTop: 'var(--rule-heavy) solid var(--ink)', paddingTop: 10,
       display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', ...META }}>
-      <span>LinkedIn Lessons™ is not affiliated with your network.</span>
+      <span>© Digital Creative 2026 · LinkedIn Lessons™ is not affiliated with your network.</span>
       <span style={{ display: 'inline-flex', gap: 16, flexWrap: 'wrap' }}>
         <a href="../museum/" style={{ color: 'var(--blue)' }}>Visit the Museum</a>
         <a href="../" style={{ color: 'var(--blue)' }}>Turn any post into a beat at Circle Back® →</a>

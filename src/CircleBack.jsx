@@ -979,10 +979,10 @@ export default function CircleBack(){
     </div>
     <div style={{position:'relative',zIndex:1}}>{stageArrows}</div>
     <div style={{position:'relative',zIndex:1,display:'flex',justifyContent:'space-between',gap:12,flexWrap:'wrap',opacity:.72,fontSize:9.5,fontWeight:700,letterSpacing:'.16em',textTransform:'uppercase'}}>
-      <span>{remix ? `Your remix · index ${remix.score} · ${remix.rank}` : song.name} · {tempo} BPM · {SECTIONS[energy]}</span>
+      <span>© Digital Creative 2026 · {remix ? `Your remix · index ${remix.score} · ${remix.rank}` : song.name} · {tempo} BPM · {SECTIONS[energy]}</span>
       <span style={{display:'inline-flex',gap:18,alignItems:'center',flexWrap:'wrap'}}>
         {voxRadio('light')}
-        <span>Play runs the show · → next phrase · 2 build · 3 drop · ⇧R repeats · R new track</span>
+        <span>Play runs the show · → next phrase · 2 build · 3 drop · Shift+R repeats · R new track</span>
       </span>
     </div>
     {audioDrawer && <>
@@ -1179,7 +1179,7 @@ export default function CircleBack(){
     </Bay>
 
     <div style={{marginTop:26,borderTop:'var(--rule-heavy) solid var(--ink)',paddingTop:10,display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:10}}>
-      <Silk muted>An equal opportunity instrument</Silk>
+      <Silk muted>© Digital Creative 2026 · An equal opportunity instrument</Silk>
       {!narrow && <Silk muted>Circle Back® is not affiliated with your network</Silk>}
       <Stamp>Approved — HR</Stamp>
     </div>
