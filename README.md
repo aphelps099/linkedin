@@ -6,6 +6,10 @@ in time over a live-synthesized WebAudio drum machine — now with an upload
 sampler and a clip exporter for your feed. Form CB-16 · Rev. 2026-08 ·
 For internal thought leadership only.
 
+See [ROADMAP.md](ROADMAP.md) for the current Now / Next / Later product plan,
+including Dynamic Voice v2, the Museum gallery prototype, export reliability,
+and the serious grader direction.
+
 Built from the design handoff in `design_handoff_circle_back_mixer/` —
 Swiss International Style played dead straight as corporate bureaucracy.
 
