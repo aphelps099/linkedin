@@ -274,7 +274,30 @@ export const CBAudio = (() => {
     if(o.rate!==undefined) src.playbackRate.value = o.rate;
     if(o.detune) try{ src.detune.value = o.detune; }catch(e){ /* detune unsupported */ }
     const g = ctx.createGain(); g.gain.value = .9*(o.vel===undefined?1:o.vel);
-    src.connect(g); g.connect(o.bus === 'vox' ? voxIn : master); src.start(t);
+    if(o.robot){
+      // An early corporate speech terminal: restricted telephone bandwidth,
+      // coarse amplitude resolution, a hard carrier and a tiny metal enclosure.
+      // This is intentionally unlike the global musical vox effects.
+      const high = ctx.createBiquadFilter();
+      high.type = 'highpass'; high.frequency.value = 320; high.Q.value = .8;
+      const low = ctx.createBiquadFilter();
+      low.type = 'lowpass'; low.frequency.value = 3100; low.Q.value = 1.15;
+      const quantize = ctx.createWaveShaper(); quantize.curve = crushCurve(5);
+      const dry = ctx.createGain(); dry.gain.value = .44;
+      const ring = ctx.createGain(); ring.gain.value = .34;
+      const carrier = ctx.createOscillator(); carrier.type = 'square'; carrier.frequency.value = 72;
+      const depth = ctx.createGain(); depth.gain.value = .3;
+      const enclosure = ctx.createDelay(.05); enclosure.delayTime.value = .011;
+      const enclosureGain = ctx.createGain(); enclosureGain.gain.value = .2;
+      carrier.connect(depth); depth.connect(ring.gain);
+      src.connect(high); high.connect(low); low.connect(quantize);
+      quantize.connect(dry); quantize.connect(ring); quantize.connect(enclosure);
+      dry.connect(g); ring.connect(g); enclosure.connect(enclosureGain); enclosureGain.connect(g);
+      carrier.start(t); carrier.stop(t + buffer.duration + 1);
+    } else {
+      src.connect(g);
+    }
+    g.connect(o.bus === 'vox' ? voxIn : master); src.start(t);
     return { source: src, gain: g };
   }
   return {
@@ -329,6 +352,11 @@ export const CBVoice = {
     if(buf) return buf.duration / rate;
     return Math.max(.7, String(text||'').length * .065) / rate; // estimate before the bank loads
   },
+  durationOfBuffer(buffer, deliv = .5){
+    if(!buffer) return 1.6;
+    const rate = (.6 + deliv*.8) * Math.pow(2, SLOWEST_READ/12);
+    return buffer.duration / rate;
+  },
   // sinc/deliv/decay are 0–1 registers; voice math per the prototype:
   // pitch = .4 + sinc*1.4, rate = .6 + deliv*.8.
   // decay governs what happens to the PREVIOUS phrase when a new one lands:
@@ -338,11 +366,11 @@ export const CBVoice = {
   // Every so often a read is dunked in reverb, for no reason anyone could defend.
   reads: 0,
   readOffset(){ return READ_CYCLE[this.reads++ % READ_CYCLE.length]; },
-  speakPhrase(i, text, sinc, deliv, decay){
+  speakPhrase(i, text, sinc, deliv, decay, overrideBuffer, voiceRole){
     const d = decay===undefined ? .5 : decay;
     const octave = this.readOffset();
     CBAudio.setVoxVerb(Math.random() < .22 ? .55 : .08);
-    const buf = this.bank.get(i);
+    const buf = overrideBuffer || this.bank.get(i);
     if(buf){
       const prev = this.current;
       if(prev && d < .97){
@@ -355,9 +383,13 @@ export const CBVoice = {
       }
       this.current = CBAudio.playBuffer(buf, {
         vel: .95,
-        rate: .6 + deliv*.8,
-        detune: ((.4 + sinc*1.4) - 1) * 1200 + (this.pitch + octave)*100,
+        // The mainframe is brisk and fixed-pitch. "Slow human" is not a robot.
+        rate: voiceRole === 'robot' ? 1.08 : .6 + deliv*.8,
+        detune: voiceRole === 'robot'
+          ? -60
+          : ((.4 + sinc*1.4) - 1) * 1200 + (this.pitch + octave)*100,
         bus: 'vox', // through the drive + delay chain
+        robot: voiceRole === 'robot',
       });
       return;
     }

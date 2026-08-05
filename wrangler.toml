@@ -1,0 +1,6 @@
+name = "circle-back-voice"
+main = "worker/index.js"
+compatibility_date = "2026-08-05"
+
+[vars]
+ALLOWED_ORIGINS = "https://linkedinbeats.com,https://www.linkedinbeats.com,https://aphelps099.github.io"

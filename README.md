@@ -106,6 +106,35 @@ post through.
 Everything is template-driven and seeded (`src/lessons/generator.js`) —
 no network, nothing leaves the browser.
 
+## Post-specific remix voice
+
+The mixer can generate the optimized performance lines with OpenAI
+`gpt-4o-mini-tts`, so names, products, acronyms, and numbers become part of
+the exported beat instead of display-only copy. The full pasted post is still
+analyzed locally; only the short performance lines are sent for speech
+generation. The default performance is a 3+1 duet: the polished recorded
+archive voice delivers three official corporate lines, then the generated
+compliance robot interrupts once with the post-specific subject and punchline.
+The interruption is treated as an early corporate speech terminal: brisk,
+narrow-band, quantized, carrier-modulated, and deliberately unlike a slowed
+human voice.
+If the voice endpoint
+is unavailable, the mixer falls back to the recorded phrase archive and
+changes the display copy to match what it can say.
+
+Local development reads `OPENAI_API_KEY` and serves `/api/voice` through the
+Vite development server. Production uses the Cloudflare Worker in `worker/`:
+
+```sh
+npx wrangler secret put OPENAI_API_KEY
+npx wrangler deploy
+```
+
+Set `VITE_VOICE_API_URL` at build time if the Worker is deployed on a separate
+origin. If it is routed through `linkedinbeats.com/api/voice`, no client
+configuration is required. The API key belongs only in the Worker secret store
+and must never be exposed through a `VITE_` variable or committed to GitHub.
+
 ## The stage
 
 The app opens as a blue room: the broadcast fills the screen, and there are
