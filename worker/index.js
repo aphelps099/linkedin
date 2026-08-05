@@ -35,8 +35,10 @@ export default {
         clips: body.clips,
         lines: body.lines,
         apiKey: env.OPENAI_API_KEY,
+        elevenLabsApiKey:env.ELEVENLABS_API_KEY,
+        elevenLabsVoiceId:env.ELEVENLABS_VOICE_ID,
       });
-      return Response.json({clips, provider:'openai'}, {headers});
+      return Response.json({clips, provider:'elevenlabs+openai'}, {headers});
     }catch(error){
       const status = /required|array|configured/i.test(error.message) ? 400 : 502;
       return Response.json({error:error.message || 'Voice generation failed'}, {status, headers});

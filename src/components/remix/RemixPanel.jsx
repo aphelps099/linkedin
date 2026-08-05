@@ -65,7 +65,7 @@ export function RemixPanel({ onRemix, onClose, result, narrow, initial }){
       </span>
     </div>
     <div style={{fontSize:11,color:'var(--text-meta)',lineHeight:1.5}}>
-      Nothing you paste is stored. Only the six short performance beats are sent for speech generation.
+      Nothing you paste is stored. Only the short performance beats are sent for speech generation.
     </div>
     {previewLines.length > 0 && <div style={{borderTop:'var(--rule-section) solid var(--ink)',paddingTop:14}}>
       <div style={{display:'flex',justifyContent:'space-between',gap:12,alignItems:'baseline',flexWrap:'wrap',marginBottom:8}}>
@@ -77,13 +77,13 @@ export function RemixPanel({ onRemix, onClose, result, narrow, initial }){
           <div key={index} style={{display:'grid',gridTemplateColumns:'28px 1fr',gap:8,padding:'8px 10px',
             borderBottom:index < previewLines.length-1?'1px dotted var(--hair)':'none',fontSize:12.5,lineHeight:1.45}}>
             <span style={{fontFamily:'var(--mono)',fontSize:10,color:'var(--blue)',fontWeight:700}}>{String(index+1).padStart(2,'0')}</span>
-            <span style={line.kind === 'corporate' ? {fontFamily:'var(--mono)',fontWeight:700,letterSpacing:'.12em',color:'var(--blue)'} : undefined}>
+            <span style={line.kind !== 'post' ? {fontFamily:'var(--mono)',fontWeight:700,letterSpacing:'.12em',color:'var(--blue)'} : undefined}>
               {line.sourceText || line.text}
             </span>
           </div>)}
       </div>
       <div style={{fontSize:10.5,color:'var(--text-meta)',marginTop:6}}>
-        {result.voice?.generatedLines || 0}/{previewLines.length} dynamic voice clips ready · corporate commands use the compliance mainframe
+        {result.voice?.generatedLines || 0}/{previewLines.length} dynamic clips ready · ElevenLabs host + compliance mainframe
       </div>
     </div>}
   </div>;

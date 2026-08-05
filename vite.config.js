@@ -27,8 +27,13 @@ function localVoiceApi(){
               apiBaseUrl:process.env.CUSTOM_CRED_API_OPENAI_COM_URL
                 || 'https://api.openai.com',
               gatewayToken,
+              elevenLabsApiKey:process.env.ELEVENLABS_API_KEY,
+              elevenLabsBaseUrl:process.env.CUSTOM_CRED_API_ELEVENLABS_IO_URL
+                || 'https://api.elevenlabs.io',
+              elevenLabsGatewayToken:process.env.CUSTOM_CRED_API_ELEVENLABS_IO_TOKEN,
+              elevenLabsVoiceId:process.env.ELEVENLABS_VOICE_ID,
             });
-            res.end(JSON.stringify({clips, provider:'openai'}));
+            res.end(JSON.stringify({clips, provider:'elevenlabs+openai'}));
           }catch(error){
             res.statusCode = /required|array|configured/i.test(error.message) ? 400 : 502;
             res.end(JSON.stringify({error:error.message || 'Voice generation failed'}));

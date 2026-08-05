@@ -1,5 +1,7 @@
 const MODEL = 'gpt-4o-mini-tts';
-const MAX_LINES = 4;
+const ELEVEN_MODEL = 'eleven_multilingual_v2';
+export const DEFAULT_ELEVENLABS_VOICE_ID = 'hpp4J3VqNfWAUOO0d1Us';
+const MAX_LINES = 8;
 const MAX_LINE_LENGTH = 180;
 
 export const ANNOUNCER_INSTRUCTIONS = [
@@ -59,11 +61,51 @@ export async function generateVoiceClips({
   apiKey,
   apiBaseUrl = 'https://api.openai.com',
   gatewayToken,
+  elevenLabsApiKey,
+  elevenLabsBaseUrl = 'https://api.elevenlabs.io',
+  elevenLabsGatewayToken,
+  elevenLabsVoiceId = DEFAULT_ELEVENLABS_VOICE_ID,
   fetchImpl = fetch,
 }){
-  if(!apiKey && !gatewayToken) throw new Error('OPENAI_API_KEY is not configured');
   const clean = normalizeVoiceRequests(clips || lines);
   return Promise.all(clean.map(async item=>{
+    if(item.role === 'announcer'){
+      if(!elevenLabsApiKey && !elevenLabsGatewayToken){
+        throw new Error('ELEVENLABS_API_KEY is not configured');
+      }
+      const response = await fetchImpl(
+        `${elevenLabsBaseUrl.replace(/\/$/, '')}/v1/text-to-speech/${elevenLabsVoiceId}?output_format=mp3_44100_128`,
+        {
+          method:'POST',
+          headers:{
+            ...(elevenLabsGatewayToken
+              ? {'x-api-key':elevenLabsGatewayToken}
+              : {'xi-api-key':elevenLabsApiKey}),
+            'Content-Type':'application/json',
+          },
+          body:JSON.stringify({
+            text:item.text,
+            model_id:ELEVEN_MODEL,
+            voice_settings:{
+              stability:0.52,
+              similarity_boost:0.8,
+              style:0.24,
+              use_speaker_boost:true,
+              speed:1.0,
+            },
+          }),
+        },
+      );
+      if(!response.ok){
+        let detail = '';
+        try{ detail = (await response.json())?.detail?.message || ''; }catch{}
+        throw new Error(detail || `ElevenLabs voice request failed (${response.status})`);
+      }
+      const bytes = new Uint8Array(await response.arrayBuffer());
+      return {audio:bytesToBase64(bytes), contentType:'audio/mpeg', role:item.role};
+    }
+
+    if(!apiKey && !gatewayToken) throw new Error('OPENAI_API_KEY is not configured');
     const profile = PROFILES[item.role];
     const response = await fetchImpl(`${apiBaseUrl.replace(/\/$/, '')}/v1/audio/speech`, {
       method: 'POST',

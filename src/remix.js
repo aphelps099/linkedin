@@ -324,6 +324,13 @@ export function optimize(text, phraseBank){
     if(postLines[index]) performance.push(postLines[index]);
     if(stings[index]) performance.push(stings[index]);
   }
+  performance.push({
+    text:'COMPLIANCE VERIFIED.',
+    sourceText:'COMPLIANCE VERIFIED.',
+    originalText:'',
+    phrase:40,
+    kind:'compliance',
+  });
 
   return {
     intents: chosen.map(c=> c.id),

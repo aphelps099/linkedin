@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {
   ANNOUNCER_INSTRUCTIONS,
+  DEFAULT_ELEVENLABS_VOICE_ID,
   ROBOT_INSTRUCTIONS,
   generateVoiceClips,
   normalizeVoiceLines,
@@ -32,8 +33,9 @@ const clips = await generateVoiceClips({
     {text:'Chat G P T.', role:'robot'},
   ],
   apiKey:'test-key',
+  elevenLabsApiKey:'eleven-key',
   fetchImpl:async (url, options)=>{
-    calls.push({url, body:JSON.parse(options.body), authorization:options.headers.Authorization});
+    calls.push({url, body:JSON.parse(options.body), headers:options.headers});
     return new Response(new Uint8Array([1, 2, 3]), {
       status:200,
       headers:{'Content-Type':'audio/wav'},
@@ -42,22 +44,21 @@ const clips = await generateVoiceClips({
 });
 
 assert.equal(calls.length, 2);
-assert.equal(calls[0].url, 'https://api.openai.com/v1/audio/speech');
-assert.equal(calls[0].body.model, 'gpt-4o-mini-tts');
-assert.equal(calls[0].body.voice, 'shimmer');
-assert.match(calls[0].body.instructions, /corporate broadcast announcer/);
+assert.equal(calls[0].url, `https://api.elevenlabs.io/v1/text-to-speech/${DEFAULT_ELEVENLABS_VOICE_ID}?output_format=mp3_44100_128`);
+assert.equal(calls[0].body.model_id, 'eleven_multilingual_v2');
+assert.equal(calls[0].headers['xi-api-key'], 'eleven-key');
 assert.equal(calls[1].body.voice, 'alloy');
 assert.match(calls[1].body.instructions, /Vintage 1980s corporate text-to-speech terminal/);
 assert.equal(calls[1].body.response_format, 'wav');
-assert.equal(calls[0].authorization, 'Bearer test-key');
-assert.equal(clips[0].contentType, 'audio/wav');
+assert.equal(calls[1].headers.Authorization, 'Bearer test-key');
+assert.equal(clips[0].contentType, 'audio/mpeg');
 assert.equal(clips[0].role, 'announcer');
 assert.equal(clips[1].role, 'robot');
 assert.ok(clips[0].audio);
 
 const gatewayCalls = [];
 await generateVoiceClips({
-  lines:['Approved.'],
+  clips:[{text:'Approved.', role:'robot'}],
   apiBaseUrl:'https://credential-gateway.example',
   gatewayToken:'gateway-token',
   fetchImpl:async (url, options)=>{

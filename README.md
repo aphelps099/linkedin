@@ -129,8 +129,10 @@ speech voice performs the same selected line. The stage never replaces the
 author's words with an unrelated archive phrase.
 
 Production on Railway builds the Vite application and starts the Express
-server in `server/index.js`. Add `OPENAI_API_KEY` as a Railway service variable;
-the server owns `/api/voice`, while all other routes serve the application.
+server in `server/index.js`. Add `OPENAI_API_KEY` and `ELEVENLABS_API_KEY` as
+Railway service variables. `ELEVENLABS_VOICE_ID` is optional and defaults to
+the Circle Back lady; the server owns `/api/voice`, while all other routes
+serve the application.
 `/api/health` reports whether voice is configured without exposing the key.
 The included `railway.json` supplies the build, start, and health-check settings.
 
@@ -139,6 +141,7 @@ endpoint:
 
 ```sh
 npx wrangler secret put OPENAI_API_KEY
+npx wrangler secret put ELEVENLABS_API_KEY
 npx wrangler deploy
 ```
 

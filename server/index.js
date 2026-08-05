@@ -19,8 +19,12 @@ app.post('/api/voice', async (req, res)=>{
       apiKey:process.env.OPENAI_API_KEY,
       apiBaseUrl:process.env.CUSTOM_CRED_API_OPENAI_COM_URL || 'https://api.openai.com',
       gatewayToken:process.env.CUSTOM_CRED_API_OPENAI_COM_TOKEN,
+      elevenLabsApiKey:process.env.ELEVENLABS_API_KEY,
+      elevenLabsBaseUrl:process.env.CUSTOM_CRED_API_ELEVENLABS_IO_URL || 'https://api.elevenlabs.io',
+      elevenLabsGatewayToken:process.env.CUSTOM_CRED_API_ELEVENLABS_IO_TOKEN,
+      elevenLabsVoiceId:process.env.ELEVENLABS_VOICE_ID,
     });
-    res.json({clips, provider:'openai'});
+    res.json({clips, provider:'elevenlabs+openai'});
   }catch(error){
     const message = error?.message || 'Voice generation failed';
     const status = /required|array|configured/i.test(message) ? 400 : 502;
@@ -32,8 +36,8 @@ app.get('/api/health', (_req, res)=>{
   res.json({
     ok:true,
     voiceConfigured:Boolean(
-      process.env.OPENAI_API_KEY ||
-      process.env.CUSTOM_CRED_API_OPENAI_COM_TOKEN
+      (process.env.OPENAI_API_KEY || process.env.CUSTOM_CRED_API_OPENAI_COM_TOKEN) &&
+      (process.env.ELEVENLABS_API_KEY || process.env.CUSTOM_CRED_API_ELEVENLABS_IO_TOKEN)
     ),
   });
 });

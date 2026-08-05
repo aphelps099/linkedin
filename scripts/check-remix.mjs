@@ -12,12 +12,14 @@ Please share this opportunity or tag someone in the comments who should consider
 const phraseBank = Array.from({length:60}, (_, index)=>({say:`Phrase ${index}`}));
 const result = optimize(post, phraseBank);
 
-assert.equal(result.lines.length, 6);
+assert.equal(result.lines.length, 7);
 assert.deepEqual(result.lines.map(line=>line.kind), [
   'post', 'corporate', 'post', 'corporate', 'post', 'corporate',
+  'compliance',
 ]);
 assert.ok(result.lines.filter(line=>line.kind === 'post').every(line=>line.text.length <= 82));
 assert.ok(result.lines.some(line=>/NorCal SBDC is seeking experienced Business Advisors/i.test(line.text)));
 assert.ok(result.lines.filter(line=>line.kind === 'corporate').every(line=>/^[A-Z]+\.$/.test(line.text)));
+assert.equal(result.lines.at(-1).text, 'COMPLIANCE VERIFIED.');
 
 console.log(result.lines.map((line, index)=>`${String(index + 1).padStart(2, '0')} ${line.text}`).join('\\n'));

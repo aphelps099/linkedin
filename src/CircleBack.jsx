@@ -474,7 +474,7 @@ export default function CircleBack(){
           text:generatedText,
           sourceText:generatedText,
           archiveText:archiveLines[index],
-          voiceRole:line.kind === 'corporate' ? 'robot' : 'announcer',
+          voiceRole:line.kind === 'compliance' ? 'robot' : 'announcer',
         };
       }),
     };
