@@ -32,7 +32,11 @@ Professional Communication** at `/museum/`.
 
 ## The Museum of Professional Communication (`/museum/`)
 
-*Authors anonymized. Clichés immortal.* Three wings:
+*Authors anonymized. Clichés immortal.* The current experience opens in a
+curated 2.5D **Hall of Humble Brags** on desktop and an accessible exhibit list
+on mobile or reduced-motion devices. Select any framed work to open its
+inspection plaque, Thought Leadership Index, and handoffs to Roast or the
+mixer. The Museum then continues into three institutional functions:
 
 - **The Collection** — twelve curated exhibits, every one synthetic: fiction
   written in the style of the genre it commemorates, displayed as redacted

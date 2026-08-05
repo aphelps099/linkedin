@@ -103,6 +103,8 @@ Official references:
 
 ### Museum gallery prototype
 
+Status: **Room 01 prototype implemented.**
+
 Build the Museum as curated 2.5D rooms, not a free-roaming 3D world. It should
 feel spatial and memorable while remaining fast, readable, keyboard-accessible,
 and shareable.
@@ -115,6 +117,29 @@ and shareable.
 - **Engagement Bait Annex:** polls, “agree?”, and manufactured vulnerability.
 - **Redaction Office:** anonymize a submission locally and preview its placard.
 - **Special Exhibition:** a rotating weekly theme or leaderboard.
+
+#### Implemented foundation
+
+- Room metadata lives in `src/museum/rooms.js`; exhibits are assigned by ID
+  instead of embedded in layout code.
+- `GalleryRoom` owns room navigation, responsive presentation, and exhibit
+  inspection. Desktop gets a curated 2.5D wall sequence; mobile and reduced
+  motion default to the same collection as a readable list.
+- The exhibit inspector is the share-and-handoff object: full artifact,
+  curator note, index, and direct doors to Roast or the mixer.
+- The existing Redaction Office and Historical Archive remain below the first
+  room for now. They can become dedicated rooms after the gallery interaction
+  proves itself.
+
+#### Next Museum increment
+
+- Add a compact lobby that makes the room model legible without becoming a
+  product dashboard.
+- Add the Delve Wing using the same room schema and `GalleryRoom` component.
+- Give each exhibit a stable URL so a specific artifact can be shared and
+  reopened directly.
+- Add an exhibit-specific screenshot/export treatment before introducing any
+  free-roaming navigation.
 
 #### Interaction
 
@@ -193,7 +218,7 @@ handoff action without instruction.
 1. Full four-line Dynamic Voice v2 on the current OpenAI contractor.
 2. Blind OpenAI versus Cartesia voice bake-off.
 3. Export compatibility and share screen.
-4. One-room Museum prototype.
+4. One-room Museum prototype. **Implemented.**
 5. Unified shell and handoff contract.
 6. Serious grader destination.
 7. Extension, teams, weekly index, and direct publishing.
