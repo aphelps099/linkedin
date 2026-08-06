@@ -98,6 +98,8 @@ export default defineConfig({
         museum: fileURLToPath(new URL('./museum/index.html', import.meta.url)),
         // The Company Store — Circle Back merchandise, served at /store/
         store: fileURLToPath(new URL('./store/index.html', import.meta.url)),
+        // LinkedIn Beats — the umbrella-brand homepage (future home), served at /v2/
+        v2: fileURLToPath(new URL('./v2/index.html', import.meta.url)),
       },
     },
   },
