@@ -166,7 +166,11 @@ export default function Store(){
           <button className="cs-close" onClick={() => setDrawer(false)} aria-label="Close the order form">×</button>
         </div>
         {cart.length === 0 &&
-          <div className="cs-empty"><span>Awaiting merchandise</span></div>}
+          <div className="cs-empty">
+            <img className="cs-barry" src="../barry/barry-coo.png" width="200" height="156"
+              alt="Barry from Compliance, a pixel-art pigeon in a top hat, says: coo. coo." />
+            <span>Awaiting merchandise</span>
+          </div>}
         <div className="cs-cart-list">
           {cart.map((c, i) =>
             <div key={c.sku + (c.size || '') + i} className="cs-cart-row">
