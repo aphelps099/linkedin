@@ -28,8 +28,25 @@ workflow manually from the Actions tab).
 
 The build is multi-page: the mixer at `/`, **LinkedIn Lessons™** at
 `/lessons/`, **Roast My LinkedIn™** at `/roast/`, **The Museum of
-Professional Communication** at `/museum/`, and **The Company Store** at
-`/store/`.
+Professional Communication** at `/museum/`, **The Company Store** at
+`/store/`, and the **LinkedIn Beats** umbrella homepage at `/v2/`.
+
+## LinkedIn Beats homepage (`/v2/`)
+
+The future home of LinkedIn Beats — the umbrella brand over the mixer,
+Lessons, Roast, the Museum and the Store — recreated from the handoff in
+`design_handoff_linkedin_beats_site/` and served at `/v2/` (visiting `/v2`
+301-redirects to it). "The Loud Filing": a rotating hero, a marquee of
+clichés, the **Drop a beat** rig (a corporate iPod driving the real CB-16
+phrase organ — it reuses the mixer's `Pad`/`KeyPlate`/`StepGrid`
+components), a Daily Beat splash, a persona-switching **Wrapped** card,
+**Cringe Bingo** (paste a post → regex detection → a downloadable 1080×1080
+comment card), a Barry interlude, a merch strip, and a final CTA. Pure
+client-side, no accounts, no telemetry; clipboard shares and a canvas PNG
+are the only outputs. Cross-links point at the live tools (`../roast/`,
+`../store/`, `../` for the studio). The campaign voice deliberately bends
+the base system (offset ink shadows, slight rotations, one marquee) — that
+is intended, not drift.
 
 ## The Company Store (`/store/`)
 
