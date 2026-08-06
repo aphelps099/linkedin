@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/circle-back-design-system-7570bbda-e708-4b97-b795-1ecfb5d33fd1/tokens/fonts.css">
+  <link rel="stylesheet" href="_ds/circle-back-design-system-7570bbda-e708-4b97-b795-1ecfb5d33fd1/tokens/colors.css">
+  <link rel="stylesheet" href="_ds/circle-back-design-system-7570bbda-e708-4b97-b795-1ecfb5d33fd1/tokens/typography.css">
+  <link rel="stylesheet" href="_ds/circle-back-design-system-7570bbda-e708-4b97-b795-1ecfb5d33fd1/tokens/spacing.css">
+  <link rel="stylesheet" href="_ds/circle-back-design-system-7570bbda-e708-4b97-b795-1ecfb5d33fd1/tokens/effects.css">
+  <link rel="stylesheet" href="_ds/circle-back-design-system-7570bbda-e708-4b97-b795-1ecfb5d33fd1/tokens/base.css">
+  <link rel="stylesheet" href="_ds/circle-back-design-system-7570bbda-e708-4b97-b795-1ecfb5d33fd1/styles.css">
+  <script src="_ds/circle-back-design-system-7570bbda-e708-4b97-b795-1ecfb5d33fd1/_ds_bundle.js"></script>
+  <script src="roast-data.js"></script>
+  <style>
+    body { margin:0; background:#f6f5f1; }
+    a { color:#0a66c2; } a:hover { color:#111111; }
+    @keyframes cbBlink { 0%,55% { opacity:1; } 56%,100% { opacity:0; } }
+    @keyframes cbRise { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+  </style>
+</helmet>
+<div style="min-height:100vh;background:#f6f5f1;color:#111111;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;min-width:1180px;max-width:1440px;margin:0 auto;border-left:1.5px solid #111111;border-right:1.5px solid #111111">
+  <header style="display:flex;align-items:center;justify-content:space-between;padding:16px 44px;border-bottom:3px solid #111111">
+    <a href="LinkedIn Beats Homepage.dc.html" style="text-decoration:none;color:#111111;font:700 19px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.02em">LinkedIn <b style="background:#0a66c2;color:#ffffff;padding:5px 8px;display:inline-block;transform:rotate(-2deg)">Beats</b><span style="color:#0a66c2">▮</span></a>
+    <nav style="display:flex;gap:24px;font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase">
+      <a href="LinkedIn Beats Homepage.dc.html" style="color:#111111;text-decoration:none">← The homepage</a>
+      <a href="store/CompanyStore.dc.html" style="color:#111111;text-decoration:none">The Store</a>
+      <a href="About.dc.html" style="color:#111111;text-decoration:none">About</a>
+    </nav>
+    <span style="font:400 10px/1 'IBM Plex Mono',monospace;color:#11111166">Form RM-1 · Rev. 2026-08</span>
+  </header>
+
+  <div style="background:#ffffff;color:#111111;padding:64px 44px;border-bottom:2px solid #111111;display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:40px;align-items:center">
+    <div>
+      <p style="margin:0 0 18px;font:700 10px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#11111166">The office of Barry · Complaints processed locally</p>
+      <h1 style="margin:0;font:700 76px/.84 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.055em;color:#0a66c2">Barry will see you now.</h1>
+      <p style="margin:22px 0 0;max-width:560px;font-size:15px;line-height:1.5;font-weight:500">Bring a post for roasting, hand one over for rewriting, or arrive with nothing and leave with a post. <b style="color:#0a66c2">Everything is generated in your browser. Nothing is sent anywhere.</b></p>
+      <div style="display:flex;gap:10px;margin-top:28px;flex-wrap:wrap">
+        <sc-for list="{{modes}}" as="m" hint-placeholder-count="3">
+          <button onClick="{{m.pick}}" style="border:1.5px solid #111111;padding:0;display:flex;flex-direction:column;align-items:flex-start;background:{{m.bg}};color:{{m.fg}};cursor:pointer;box-shadow:4px 4px 0 #111111;text-align:left" style-hover="background:#111111;color:#ffffff"><span style="padding:12px 16px 4px;font:700 13px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase">{{m.name}}</span><span style="padding:0 16px 12px;font:400 9px/1.4 'IBM Plex Mono',monospace;opacity:.75">{{m.sub}}</span></button>
+        </sc-for>
+      </div>
+    </div>
+    <div style="text-align:center">
+      <img src="public/barry/barry-flagged-brand.png" alt="Barry, the Chief Inspector: flagged for review" style="width:260px;image-rendering:pixelated">
+      <p style="margin:10px 0 0;font:400 8.5px/1.5 'IBM Plex Mono',monospace;color:#11111166">BARRY · CHIEF INSPECTOR<br>HE HAS SEEN YOUR DRAFTS</p>
+    </div>
+  </div>
+
+  <sc-if value="{{isForm}}" hint-placeholder-val="{{true}}">
+    <div style="padding:56px 44px 80px">
+      <div style="border:3px solid #111111;background:#ffffff;box-shadow:14px 14px 0 #111111;max-width:1000px;margin:0 auto">
+        <div style="display:flex;justify-content:space-between;padding:14px 22px;border-bottom:2px solid #111111;font:400 10px/1 'IBM Plex Mono',monospace"><span>INSPECTION FORM · RM-1</span><span style="color:#11111166">FIELDS MARKED ▮ ARE MANDATORY. ALL FIELDS ARE MARKED ▮.</span></div>
+        <div style="padding:26px 22px;border-bottom:1px dotted #11111122">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-bottom:10px">
+            <span style="font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase">Section 1 · What are we inspecting</span>
+            <span style="font:400 10px/1 'IBM Plex Mono',monospace;color:#11111166">{{kindHint}}</span>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+            <sc-for list="{{kinds}}" as="k" hint-placeholder-count="3">
+              <button onClick="{{k.pick}}" style="border:1.5px solid #111111;padding:11px 16px;background:{{k.bg}};color:{{k.fg}};font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;box-shadow:3px 3px 0 #111111" style-hover="background:#111111;color:#ffffff">{{k.name}}</button>
+            </sc-for>
+          </div>
+          <textarea value="{{text}}" onChange="{{setText}}" rows="8" style="width:100%;box-sizing:border-box;border:1.5px solid #111111;background:#f6f5f1;padding:16px;font:400 13.5px/1.55 'Helvetica Neue',Helvetica,Arial,sans-serif;resize:vertical;outline:none"></textarea>
+          <p style="margin:8px 0 0;font:400 8.5px/1 'IBM Plex Mono',monospace;color:#11111166">A SPECIMEN IS PRELOADED. YOURS WORKS BEST.</p>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px dotted #11111122">
+          <div style="padding:26px 22px;border-right:1px dotted #11111122">
+            <span style="display:block;font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px">Section 2 · The inspector on duty</span>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <sc-for list="{{personas}}" as="p" hint-placeholder-count="4">
+                <button onClick="{{p.pick}}" style="border:1.5px solid #111111;padding:11px 14px;background:{{p.bg}};color:{{p.fg}};font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;box-shadow:3px 3px 0 #111111" style-hover="background:#111111;color:#ffffff">{{p.name}}</button>
+              </sc-for>
+            </div>
+            <p style="margin:12px 0 0;font:400 11px/1.5 'IBM Plex Mono',monospace;color:#0a66c2">{{personaTagline}}</p>
+          </div>
+          <div style="padding:26px 22px">
+            <span style="display:block;font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px">Section 3 · Roast intensity</span>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <sc-for list="{{intensities}}" as="v" hint-placeholder-count="4">
+                <button onClick="{{v.pick}}" style="border:1.5px solid #111111;padding:11px 14px;background:{{v.bg}};color:{{v.fg}};font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;box-shadow:3px 3px 0 #111111" style-hover="background:#111111;color:#ffffff">{{v.name}}</button>
+              </sc-for>
+            </div>
+            <p style="margin:12px 0 0;font:400 11px/1.5 'IBM Plex Mono',monospace;color:#0a66c2">{{intensityBlurb}}</p>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:20px;padding:20px 22px">
+          <button onClick="{{fileComplaint}}" style="border:1.5px solid #111111;background:#0a66c2;color:#ffffff;padding:0;display:flex;box-shadow:6px 6px 0 #111111;font:700 11px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer" style-hover="background:#111111"><span style="padding:17px 19px">File the complaint</span><span style="padding:17px 16px;border-left:1.5px solid #111111;background:#ecd7a4;color:#111111">No mercy →</span></button>
+          <span style="font:400 9px/1.5 'IBM Plex Mono',monospace;color:#11111166;text-align:right">BY CONTINUING YOU AGREE TO BE PERCEIVED.<br>PROCESSED LOCALLY · NOTHING IS SENT ANYWHERE</span>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isVerdict}}" hint-placeholder-val="{{false}}">
+    <div style="padding:56px 44px 80px">
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:36px;align-items:start;max-width:1160px;margin:0 auto">
+        <div style="display:flex;flex-direction:column;gap:18px">
+          <div style="border:3px solid #0a66c2;background:#ffffff;box-shadow:10px 10px 0 #111111;padding:20px 22px;animation:cbRise .38s cubic-bezier(.2,.8,.3,1)">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:10px">
+              <span style="font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#0a66c2">The verdict of {{personaName}}</span>
+              <span style="font:400 10px/1 'IBM Plex Mono',monospace;color:#11111166">INDEX {{vIndex}} · {{vRank}}</span>
+            </div>
+            <p style="margin:0;font-size:13.5px;line-height:1.55;font-style:italic;color:#11111166">{{vOpener}}</p>
+            <div style="margin:10px 0">
+              <sc-for list="{{vLines}}" as="l" hint-placeholder-count="4">
+                <p style="margin:0;font-size:14px;line-height:1.6;border-bottom:1px dotted #11111122;padding:7px 0;white-space:pre-wrap"><span style="color:#0a66c2;font-weight:700">→ </span>{{l.text}}</p>
+              </sc-for>
+            </div>
+            <p style="margin:0;font-size:13.5px;line-height:1.55;font-style:italic;color:#11111166">{{vCloser}}</p>
+          </div>
+          <div style="border:3px solid #111111;background:#ffffff;box-shadow:10px 10px 0 #111111;padding:20px 22px">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap">
+              <span style="font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase">The version you should actually post</span>
+              <div style="display:flex;gap:8px">
+                <button onClick="{{copyUseful}}" style="border:1.5px solid #111111;background:#ffffff;color:#111111;padding:10px 14px;font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer" style-hover="background:#111111;color:#ffffff">{{copyLabel}}</button>
+                <button onClick="{{postUseful}}" style="border:1.5px solid #111111;background:#0a66c2;color:#ffffff;padding:10px 14px;font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;box-shadow:3px 3px 0 #111111;cursor:pointer" style-hover="background:#111111">Post it to LinkedIn →</button>
+              </div>
+            </div>
+            <sc-for list="{{vUseful}}" as="pp" hint-placeholder-count="3">
+              <p style="margin:0 0 10px;font-size:13.5px;line-height:1.55;white-space:pre-wrap">{{pp.text}}</p>
+            </sc-for>
+            <p style="margin:4px 0 0;font:400 8.5px/1.5 'IBM Plex Mono',monospace;color:#11111166">OPENS YOUR COMPOSER, PRE-WRITTEN. REDEMPTION IS ONE CLICK AWAY.</p>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center">
+            <button onClick="{{reRoast}}" style="border:1.5px solid #111111;background:#ffffff;color:#111111;padding:13px 17px;font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer" style-hover="background:#111111;color:#ffffff">Re-roast ×</button>
+            <a href="https://linkedinbeats.com" style="font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#0a66c2;text-decoration:none" style-hover="color:#111111">Turn the original into a beat ♫</a>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <span style="font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase">The roast card — save it, post it</span>
+          <div style="aspect-ratio:1/1;background:#0a66c2;color:#ffffff;border:3px solid #111111;box-shadow:10px 10px 0 #111111;transform:rotate(-.6deg);padding:6.5%;box-sizing:border-box;display:flex;flex-direction:column;gap:4%">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;border-bottom:3px solid #ffffff;padding-bottom:2.5%">
+              <span style="font:700 15px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.02em;white-space:nowrap">Roast My LinkedIn<sup style="font-size:8px;vertical-align:5px">™</sup></span>
+              <span style="font:700 7px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;opacity:.82">Form RM-1</span>
+            </div>
+            <div style="display:flex;gap:5%;align-items:flex-end">
+              <span style="font:700 62px/0.85 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.05em">{{vIndex}}</span>
+              <span style="padding-bottom:2%"><span style="display:block;font:700 13px/1.1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.02em">{{vRank}}</span><span style="display:block;font:700 6.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;opacity:.78;margin-top:4px">Thought Leadership Index · 0—100</span></span>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;gap:2.4%;min-height:0;overflow:hidden">
+              <sc-for list="{{cardLines}}" as="c" hint-placeholder-count="4">
+                <p style="margin:0;font-size:10.5px;line-height:1.34;display:flex;gap:5px"><span style="font-weight:700;opacity:.85">→</span><span>{{c.text}}</span></p>
+              </sc-for>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;border-top:1.5px solid rgba(255,255,255,.42);padding-top:2.5%">
+              <span style="font:400 7.5px/1.4 'IBM Plex Mono',monospace">{{personaName}} · {{intensityName}}</span>
+              <span style="border:2px solid #ffffff;font:700 7px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.2em;text-transform:uppercase;padding:5px 7px;transform:rotate(-4deg);flex:none">Roasted — Official</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button onClick="{{downloadCard}}" style="border:1.5px solid #111111;background:#ecd7a4;color:#111111;padding:12px 16px;font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;box-shadow:3px 3px 0 #111111;cursor:pointer" style-hover="background:#111111;color:#ffffff">Download card ↓</button>
+            <button onClick="{{postVerdict}}" style="border:1.5px solid #111111;background:#ffffff;color:#111111;padding:12px 16px;font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer" style-hover="background:#111111;color:#ffffff">Post my verdict →</button>
+          </div>
+          <span style="font:400 8.5px/1.5 'IBM Plex Mono',monospace;color:#11111166">1080×1080 — SIZED FOR THE FEED THAT CAUSED THIS. ATTACH IT TO THE PRE-WRITTEN POST.</span>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isRewrite}}" hint-placeholder-val="{{false}}">
+    <div style="padding:56px 44px 80px">
+      <div style="border:3px solid #111111;background:#ffffff;box-shadow:14px 14px 0 #111111;max-width:1000px;margin:0 auto">
+        <div style="display:flex;justify-content:space-between;padding:14px 22px;border-bottom:2px solid #111111;font:400 10px/1 'IBM Plex Mono',monospace"><span>REWRITE ORDER · RW-2</span><span style="color:#11111166">SAME FACTS. DIFFERENT ENERGY.</span></div>
+        <div style="padding:26px 22px;border-bottom:1px dotted #11111122">
+          <span style="display:block;font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px">Section 1 · The post as written</span>
+          <textarea value="{{text}}" onChange="{{setText}}" rows="7" style="width:100%;box-sizing:border-box;border:1.5px solid #111111;background:#f6f5f1;padding:16px;font:400 13.5px/1.55 'Helvetica Neue',Helvetica,Arial,sans-serif;resize:vertical;outline:none"></textarea>
+        </div>
+        <div style="padding:26px 22px;border-bottom:1px dotted #11111122">
+          <span style="display:block;font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px">Section 2 · The treatment</span>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <sc-for list="{{rwKinds}}" as="k" hint-placeholder-count="4">
+              <button onClick="{{k.pick}}" style="border:1.5px solid #111111;padding:11px 14px;background:{{k.bg}};color:{{k.fg}};font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;box-shadow:3px 3px 0 #111111" style-hover="background:#111111;color:#ffffff">{{k.name}}</button>
+            </sc-for>
+          </div>
+          <p style="margin:12px 0 0;font:400 11px/1.5 'IBM Plex Mono',monospace;color:#0a66c2">{{rwBlurb}}</p>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:20px;padding:20px 22px">
+          <button onClick="{{doRewrite}}" style="border:1.5px solid #111111;background:#0a66c2;color:#ffffff;padding:0;display:flex;box-shadow:6px 6px 0 #111111;font:700 11px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer" style-hover="background:#111111"><span style="padding:17px 19px">File for rewrite</span><span style="padding:17px 16px;border-left:1.5px solid #111111;background:#ecd7a4;color:#111111">Same facts →</span></button>
+          <span style="font:400 9px/1.5 'IBM Plex Mono',monospace;color:#11111166;text-align:right">BARRY DOES NOT JUDGE. BARRY EDITS.<br>PROCESSED LOCALLY</span>
+        </div>
+      </div>
+      <sc-if value="{{hasRw}}" hint-placeholder-val="{{false}}">
+        <div style="border:3px solid #0a66c2;background:#ffffff;box-shadow:10px 10px 0 #111111;max-width:1000px;margin:24px auto 0;padding:20px 22px;animation:cbRise .38s cubic-bezier(.2,.8,.3,1)">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap">
+            <span style="font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#0a66c2">The rewrite — {{rwName}}</span>
+            <div style="display:flex;gap:8px">
+              <button onClick="{{copyRw}}" style="border:1.5px solid #111111;background:#ffffff;color:#111111;padding:10px 14px;font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer" style-hover="background:#111111;color:#ffffff">{{copyLabel}}</button>
+              <button onClick="{{postRw}}" style="border:1.5px solid #111111;background:#0a66c2;color:#ffffff;padding:10px 14px;font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;box-shadow:3px 3px 0 #111111;cursor:pointer" style-hover="background:#111111">Post it to LinkedIn →</button>
+              <button onClick="{{roastRw}}" style="border:1.5px solid #111111;background:#ffffff;color:#111111;padding:10px 14px;font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer" style-hover="background:#111111;color:#ffffff">Roast it →</button>
+            </div>
+          </div>
+          <sc-for list="{{rwParas}}" as="pp" hint-placeholder-count="3">
+            <p style="margin:0 0 10px;font-size:13.5px;line-height:1.55;white-space:pre-wrap">{{pp.text}}</p>
+          </sc-for>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isCreate}}" hint-placeholder-val="{{false}}">
+    <div style="padding:56px 44px 80px">
+      <div style="border:3px solid #111111;background:#ffffff;box-shadow:14px 14px 0 #111111;max-width:1000px;margin:0 auto">
+        <div style="display:flex;justify-content:space-between;padding:14px 22px;border-bottom:2px solid #111111;font:400 10px/1 'IBM Plex Mono',monospace"><span>CREATION REQUISITION · CR-3</span><span style="color:#11111166">ARRIVE WITH NOTHING. LEAVE WITH A POST.</span></div>
+        <div style="padding:26px 22px;border-bottom:1px dotted #11111122">
+          <span style="display:block;font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px">Section 1 · What are we pretending to announce</span>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <sc-for list="{{cats}}" as="c" hint-placeholder-count="6">
+              <button onClick="{{c.pick}}" style="border:1.5px solid #111111;padding:11px 14px;background:{{c.bg}};color:{{c.fg}};font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;box-shadow:3px 3px 0 #111111" style-hover="background:#111111;color:#ffffff">{{c.name}}</button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;border-bottom:1px dotted #11111122">
+          <div style="padding:22px;border-right:1px dotted #11111122">
+            <span style="display:block;font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;margin-bottom:8px">{{l1}}</span>
+            <input value="{{f1}}" onChange="{{setF1}}" placeholder="{{p1}}" style="width:100%;box-sizing:border-box;border:1.5px solid #111111;background:#f6f5f1;padding:12px;font:400 13px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;outline:none">
+          </div>
+          <div style="padding:22px;border-right:1px dotted #11111122">
+            <span style="display:block;font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;margin-bottom:8px">{{l2}}</span>
+            <input value="{{f2}}" onChange="{{setF2}}" placeholder="{{p2}}" style="width:100%;box-sizing:border-box;border:1.5px solid #111111;background:#f6f5f1;padding:12px;font:400 13px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;outline:none">
+          </div>
+          <div style="padding:22px">
+            <span style="display:block;font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;margin-bottom:8px">{{l3}}</span>
+            <input value="{{f3}}" onChange="{{setF3}}" placeholder="{{p3}}" style="width:100%;box-sizing:border-box;border:1.5px solid #111111;background:#f6f5f1;padding:12px;font:400 13px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;outline:none">
+          </div>
+        </div>
+        <div style="padding:26px 22px;border-bottom:1px dotted #11111122">
+          <span style="display:block;font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px">Section 3 · LinkedInification level</span>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <sc-for list="{{crLevels}}" as="v" hint-placeholder-count="4">
+              <button onClick="{{v.pick}}" style="border:1.5px solid #111111;padding:11px 14px;background:{{v.bg}};color:{{v.fg}};font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;box-shadow:3px 3px 0 #111111" style-hover="background:#111111;color:#ffffff">{{v.name}}</button>
+            </sc-for>
+          </div>
+          <p style="margin:12px 0 0;font:400 11px/1.5 'IBM Plex Mono',monospace;color:#0a66c2">{{crBlurb}}</p>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:20px;padding:20px 22px">
+          <button onClick="{{doCreate}}" style="border:1.5px solid #111111;background:#0a66c2;color:#ffffff;padding:0;display:flex;box-shadow:6px 6px 0 #111111;font:700 11px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer" style-hover="background:#111111"><span style="padding:17px 19px">Generate the post</span><span style="padding:17px 16px;border-left:1.5px solid #111111;background:#ecd7a4;color:#111111">From nothing →</span></button>
+          <span style="font:400 9px/1.5 'IBM Plex Mono',monospace;color:#11111166;text-align:right">BLANK FIELDS ARE FILLED WITH SPECIMENS.<br>PROCESSED LOCALLY</span>
+        </div>
+      </div>
+      <sc-if value="{{hasCr}}" hint-placeholder-val="{{false}}">
+        <div style="border:3px solid #0a66c2;background:#ffffff;box-shadow:10px 10px 0 #111111;max-width:1000px;margin:24px auto 0;padding:20px 22px;animation:cbRise .38s cubic-bezier(.2,.8,.3,1)">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap">
+            <span style="font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#0a66c2">The post — {{crCatName}}, level {{crLevelNo}}</span>
+            <div style="display:flex;gap:8px">
+              <button onClick="{{copyCr}}" style="border:1.5px solid #111111;background:#ffffff;color:#111111;padding:10px 14px;font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer" style-hover="background:#111111;color:#ffffff">{{copyLabel}}</button>
+              <button onClick="{{postCr}}" style="border:1.5px solid #111111;background:#0a66c2;color:#ffffff;padding:10px 14px;font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;box-shadow:3px 3px 0 #111111;cursor:pointer" style-hover="background:#111111">Post it to LinkedIn →</button>
+              <button onClick="{{roastCr}}" style="border:1.5px solid #111111;background:#ffffff;color:#111111;padding:10px 14px;font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer" style-hover="background:#111111;color:#ffffff">Roast it →</button>
+            </div>
+          </div>
+          <sc-for list="{{crParas}}" as="pp" hint-placeholder-count="3">
+            <p style="margin:0 0 10px;font-size:13.5px;line-height:1.55;white-space:pre-wrap">{{pp.text}}</p>
+          </sc-for>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <footer style="display:flex;justify-content:space-between;align-items:center;padding:30px 44px;border-top:3px solid #111111;gap:30px">
+    <span style="font:700 15px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.02em">LinkedIn <b style="background:#0a66c2;color:#ffffff;padding:4px 7px;display:inline-block;transform:rotate(-2deg)">Beats</b><span style="color:#0a66c2">▮</span></span>
+    <span style="font-size:11px;color:#11111166">Roast My LinkedIn™ is not affiliated with your network. Every roast ends in redemption.</span>
+    <x-import component-from-global-scope="CircleBackDesignSystem_7570bb.Stamp" hint-size="auto,60px">Roasted — Official</x-import>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;startPersona&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;algorithm&quot;,&quot;options&quot;:[&quot;partner&quot;,&quot;recruiter&quot;,&quot;intern&quot;,&quot;algorithm&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Defaults&quot;},&quot;startIntensity&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:4,&quot;min&quot;:1,&quot;max&quot;:4,&quot;step&quot;:1,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Defaults&quot;}}">
+class Component extends DCLogic {
+  state = { stage: 'form', kind: 'post', personaId: 'algorithm', intensity: 4, text: '', edited: false, result: null, copied: false,
+    mode: 'roast', rwKind: 'humanize', rwOut: null, cat: 'hiring', crLevel: 2, f1: '', f2: '', f3: '', crOut: null };
+  humanize(t) {
+    let s = String(t).replace(/[\u{1F300}-\u{1FAFF}\u{2700}-\u{27BF}\u{2b50}\u{2705}]/gu, '').replace(/#\w+/g, '')
+      .replace(/\b(agree|thoughts)\?/gi, '').replace(/let that sink in\.?/gi, '').replace(/read that again\.?/gi, '');
+    const MAP = [[/\bleverag(e|ing|es|ed)\b/gi, 'use'], [/\bsynerg(y|ies|istic)\b/gi, 'teamwork'], [/\butiliz(e|ing|es|ed)\b/gi, 'use'],
+      [/\becosystem\b/gi, 'company'], [/\b(humbled|honou?red|blessed) and (excited|thrilled|honou?red)\b/gi, 'glad'],
+      [/\b(humbled|honou?red|blessed)\b/gi, 'glad'], [/\bthrilled\b/gi, 'happy'], [/\bincredible\b/gi, 'good'], [/\bamazing\b/gi, 'good'],
+      [/\bgame-?chang(er|ing)\b/gi, 'useful'], [/\bcategory-defining\b/gi, 'new'], [/\bfast-paced\b/gi, 'busy'],
+      [/\bwild ride\b/gi, 'lot of work'], [/\bjourney\b/gi, 'stretch'], [/\bpassionate\b/gi, 'serious'], [/\bvisionary\b/gi, 'manager']];
+    for (const [re, to] of MAP) s = s.replace(re, to);
+    const lines = s.split('\n');
+    const out = []; let buf = [];
+    for (const ln of lines) {
+      const words = ln.trim().split(/\s+/).filter(Boolean);
+      if (words.length && words.length <= 3) { buf.push(ln.trim()); continue; }
+      if (buf.length) { out.push(buf.join(' ')); buf = []; }
+      out.push(ln);
+    }
+    if (buf.length) out.push(buf.join(' '));
+    return out.join('\n').replace(/\n{3,}/g, '\n\n').replace(/[ \t]{2,}/g, ' ').trim();
+  }
+  sentences(t) { return String(t).replace(/\n+/g, ' ').split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(Boolean); }
+  shorten(t) {
+    const ss = this.sentences(this.humanize(t));
+    if (ss.length <= 3) return ss.join(' ');
+    return [ss[0], ss[1], ss[ss.length - 1]].join(' ');
+  }
+  hookify(t) {
+    const ss = this.sentences(String(t));
+    if (ss.length < 2) return t;
+    let hook = ss.findIndex(s => /\d/.test(s));
+    if (hook <= 0) hook = ss.findIndex((s, i) => i > 0 && /^I\b/.test(s));
+    if (hook <= 0) return 'Here is what actually happened.\n\n' + ss.join(' ');
+    const rest = ss.filter((_, i) => i !== hook);
+    return ss[hook] + '\n\n' + rest.join(' ');
+  }
+  corporate(t, extreme) {
+    let s = this.humanize(t);
+    const MAP = [[/\buse(d|s)?\b/gi, 'leverage'], [/\bhelp(ed|s)?\b/gi, 'empower'], [/\bteam\b/gi, 'cross-functional family'],
+      [/\bgood\b/gi, 'world-class'], [/\bmade\b/gi, 'architected'], [/\bwork\b/gi, 'impact'], [/\bidea\b/gi, 'paradigm'],
+      [/\bproblems?\b/gi, 'growth opportunities'], [/\bjob\b/gi, 'journey']];
+    for (const [re, to] of MAP) s = s.replace(re, to);
+    let ss = this.sentences(s);
+    if (extreme && ss.length > 1) ss.splice(1, 0, 'Read that again.');
+    let out = "I'm humbled and thrilled to share this.\n\n" + ss.join('\n\n');
+    out += extreme
+      ? '\n\nOne.\nPost.\nAt.\nA.\nTime.\n\nAgree? 👇\n\n#thoughtleadership #synergy #blessed #journey 🚀🚀🚀'
+      : '\n\nAgree? 👇\n\n#thoughtleadership #synergy 🚀';
+    return out;
+  }
+  componentDidMount() {
+    if (!this.state.text && window.RM) this.setState({ text: window.RM.SAMPLES.post });
+    if (this.props.startPersona) this.setState({ personaId: this.props.startPersona });
+    if (this.props.startIntensity) this.setState({ intensity: this.props.startIntensity });
+  }
+  componentWillUnmount() { clearTimeout(this.copyTimer); }
+  copy(t) {
+    try { navigator.clipboard && navigator.clipboard.writeText(t).catch(() => {}); } catch (e) {}
+    this.setState({ copied: true });
+    clearTimeout(this.copyTimer);
+    this.copyTimer = setTimeout(() => this.setState({ copied: false }), 2400);
+  }
+  drawCard() {
+    const r = this.state.result; if (!r) return null;
+    const RM = window.RM;
+    const persona = RM.PERSONAS.find(p => p.id === this.state.personaId).name;
+    const level = RM.INTENSITIES.find(v => v.n === this.state.intensity).name;
+    const S = 1080, c = document.createElement('canvas'); c.width = S; c.height = S;
+    const x = c.getContext('2d');
+    x.fillStyle = '#0a66c2'; x.fillRect(0, 0, S, S);
+    x.strokeStyle = '#111111'; x.lineWidth = 16; x.strokeRect(8, 8, S - 16, S - 16);
+    const sans = (w, px) => x.font = w + ' ' + px + 'px "Helvetica Neue", Helvetica, Arial, sans-serif';
+    x.fillStyle = '#ffffff';
+    sans(700, 44); x.fillText('Roast My LinkedIn™', 70, 118);
+    sans(700, 20); x.textAlign = 'right'; x.fillText('FORM RM-1', S - 70, 112); x.textAlign = 'left';
+    x.fillRect(70, 145, S - 140, 6);
+    sans(700, 200); x.fillText(String(r.score.index), 70, 360);
+    const iw = x.measureText(String(r.score.index)).width;
+    sans(700, 40); x.fillText(r.score.rank, 90 + iw, 330);
+    sans(700, 17); x.fillText('THOUGHT LEADERSHIP INDEX · 0—100', 90 + iw, 358);
+    // findings, wrapped
+    sans(400, 30); let y = 450;
+    const wrap = (t, maxW) => { const words = t.split(' '); const lines = []; let cur = '';
+      for (const w of words) { const test = cur ? cur + ' ' + w : w;
+        if (x.measureText(test).width > maxW && cur) { lines.push(cur); cur = w; } else cur = test; }
+      if (cur) lines.push(cur); return lines; };
+    for (const l of r.lines.slice(0, 4)) {
+      const lines = wrap('→  ' + l, S - 180);
+      for (const ln of lines.slice(0, 3)) { if (y > 900) break; x.fillText(ln, 70, y); y += 42; }
+      y += 16;
+    }
+    x.fillRect(70, 950, S - 140, 2);
+    x.font = '400 22px "IBM Plex Mono", monospace'; x.fillText(persona + ' · ' + level, 70, 1000);
+    x.save(); x.translate(S - 200, 985); x.rotate(-4 * Math.PI / 180);
+    sans(700, 22); const st = 'ROASTED — OFFICIAL'; const stw = x.measureText(st).width;
+    x.strokeStyle = '#ffffff'; x.lineWidth = 4; x.strokeRect(-stw / 2 - 18, -28, stw + 36, 52);
+    x.textAlign = 'center'; x.fillText(st, 0, 8); x.restore(); x.textAlign = 'left';
+    return c;
+  }
+  renderVals() {
+    const RM = window.RM || { KINDS: [], PERSONAS: [], INTENSITIES: [], SAMPLES: {} };
+    const st = this.state;
+    const kinds = (RM.KINDS || []).map(k => ({
+      name: k.name,
+      bg: st.kind === k.id ? '#0a66c2' : '#ffffff', fg: st.kind === k.id ? '#ffffff' : '#111111',
+      pick: () => this.setState(s => ({ kind: k.id, text: s.edited ? s.text : RM.SAMPLES[k.id], edited: s.edited }))
+    }));
+    const personas = (RM.PERSONAS || []).map(p => ({
+      name: p.name,
+      bg: st.personaId === p.id ? '#0a66c2' : '#ffffff', fg: st.personaId === p.id ? '#ffffff' : '#111111',
+      pick: () => this.setState({ personaId: p.id })
+    }));
+    const intensities = (RM.INTENSITIES || []).map(v => ({
+      name: v.n + ' · ' + v.name,
+      bg: st.intensity === v.n ? (v.n === 4 ? '#111111' : '#0a66c2') : '#ffffff', fg: st.intensity === v.n ? '#ffffff' : '#111111',
+      pick: () => this.setState({ intensity: v.n })
+    }));
+    const curKind = (RM.KINDS || []).find(k => k.id === st.kind) || {};
+    const curPersona = (RM.PERSONAS || []).find(p => p.id === st.personaId) || {};
+    const curLevel = (RM.INTENSITIES || []).find(v => v.n === st.intensity) || {};
+    const r = st.result;
+    const composer = (text) => window.open('https://www.linkedin.com/feed/?shareActive=true&text=' + encodeURIComponent(text), '_blank');
+    const MODES = [
+      { id: 'roast', name: 'Roast', sub: '"84% CEREMONIAL GRATITUDE."' },
+      { id: 'rewrite', name: 'Rewrite', sub: 'SAME FACTS. DIFFERENT ENERGY.' },
+      { id: 'create', name: 'Create', sub: 'ARRIVE WITH NOTHING.' }
+    ];
+    const RW_KINDS = [
+      { id: 'humanize', name: 'Humanize it', blurb: 'Buzzwords out. Emoji out. A person emerges.' },
+      { id: 'shorten', name: 'Shorten it', blurb: 'Three sentences. Nobody has ever complained.' },
+      { id: 'hook', name: 'Fix the hook', blurb: 'Your best line was buried in paragraph three. Barry found it.' },
+      { id: 'corporate', name: 'Maximum corporate', blurb: 'The other direction. God help us all.' }
+    ];
+    const CATS = [
+      { id: 'hiring', name: 'Hiring', l: ['The role', 'The team', 'What they should like'], p: ['Staff engineer', 'Payments', 'hard problems'], make: (a, b, c) => "We're hiring a " + a + '. The ' + b + ' team is small and the problems are real. If you like ' + c + ", I'd like to talk. Details in the comments." },
+      { id: 'announcement', name: 'Announcement', l: ['The news', 'How long it took', 'Who to thank'], p: ['we shipped v2', 'nine months', 'the team'], make: (a, b, c) => 'Today ' + a + '. It took ' + b + ' and it would not exist without ' + c + ". Here's what's next: more of the same, but better." },
+      { id: 'insight', name: 'Insight', l: ['Years in the field', 'The field', 'The lesson'], p: ['twelve', 'product', 'tools matter less than trust'], make: (a, b, c) => 'After ' + a + ' years in ' + b + ', one thing keeps being true: ' + c + '. Everything else is noise.' },
+      { id: 'aifomo', name: 'AI FOMO', l: ['The AI tool', 'The task', 'How fast'], p: ['Claude', 'write my quarterly review', '11 seconds'], make: (a, b, c) => 'I asked ' + a + ' to ' + b + '. It did it in ' + c + '. I have complicated feelings about this, and I am posting through them.' },
+      { id: 'sales', name: 'Sales', l: ['The pain point', 'The product', 'The offer'], p: ['unanswered follow-ups', 'the Per My Last Email tote', '20% off'], make: (a, b, c) => 'If ' + a + ' is costing you sleep, we built ' + b + '. It fixes exactly that, and this month it is ' + c + '. No demo call required.' },
+      { id: 'promotion', name: 'Promotion', l: ['The new title', 'The company', 'What changes'], p: ['VP of Thought Leadership', 'the same company', 'the number of meetings'], make: (a, b, c) => "I'm starting a new role as " + a + ' at ' + b + '. Same me — the only difference is ' + c + '.' }
+    ];
+    const CR_LEVELS = [
+      { n: 1, name: '1 · Almost Human', blurb: 'A post a person would write. Suspicious.' },
+      { n: 2, name: '2 · Professional', blurb: 'Clean, direct, employable.' },
+      { n: 3, name: '3 · Thought Leader', blurb: 'The gratitude arrives. The hashtags follow.' },
+      { n: 4, name: '4 · Corporate Hallucination', blurb: 'Same facts. Unrecognizable. Magnificent.' }
+    ];
+    const curRw = RW_KINDS.find(k => k.id === st.rwKind);
+    const curCat = CATS.find(c => c.id === st.cat);
+    const curCrLevel = CR_LEVELS.find(v => v.n === st.crLevel);
+    return {
+      isForm: st.mode === 'roast' && st.stage === 'form', isVerdict: st.mode === 'roast' && st.stage === 'verdict',
+      isRewrite: st.mode === 'rewrite', isCreate: st.mode === 'create',
+      modes: MODES.map(m => ({
+        name: m.name, sub: m.sub,
+        bg: st.mode === m.id ? '#0a66c2' : '#ffffff', fg: st.mode === m.id ? '#ffffff' : '#111111',
+        pick: () => this.setState({ mode: m.id })
+      })),
+      rwKinds: RW_KINDS.map(k => ({
+        name: k.name,
+        bg: st.rwKind === k.id ? (k.id === 'corporate' ? '#111111' : '#0a66c2') : '#ffffff', fg: st.rwKind === k.id ? '#ffffff' : '#111111',
+        pick: () => this.setState({ rwKind: k.id })
+      })),
+      rwBlurb: curRw.blurb, rwName: curRw.name,
+      doRewrite: () => {
+        const src = st.text || (RM.SAMPLES ? RM.SAMPLES.post : '');
+        const out = st.rwKind === 'humanize' ? this.humanize(src) : st.rwKind === 'shorten' ? this.shorten(src)
+          : st.rwKind === 'hook' ? this.hookify(src) : this.corporate(src, true);
+        this.setState({ rwOut: out });
+      },
+      hasRw: !!st.rwOut,
+      rwParas: (st.rwOut || '').split(/\n{2,}/).map(text => ({ text })),
+      copyRw: () => this.copy(st.rwOut || ''),
+      postRw: () => composer(st.rwOut || ''),
+      roastRw: () => this.setState({ mode: 'roast', stage: 'form', text: st.rwOut || st.text, edited: true }),
+      cats: CATS.map(c => ({
+        name: c.name,
+        bg: st.cat === c.id ? '#0a66c2' : '#ffffff', fg: st.cat === c.id ? '#ffffff' : '#111111',
+        pick: () => this.setState({ cat: c.id, crOut: null })
+      })),
+      l1: curCat.l[0], l2: curCat.l[1], l3: curCat.l[2],
+      p1: curCat.p[0], p2: curCat.p[1], p3: curCat.p[2],
+      f1: st.f1, f2: st.f2, f3: st.f3,
+      setF1: e => this.setState({ f1: e.target.value }),
+      setF2: e => this.setState({ f2: e.target.value }),
+      setF3: e => this.setState({ f3: e.target.value }),
+      crLevels: CR_LEVELS.map(v => ({
+        name: v.name,
+        bg: st.crLevel === v.n ? (v.n === 4 ? '#111111' : '#0a66c2') : '#ffffff', fg: st.crLevel === v.n ? '#ffffff' : '#111111',
+        pick: () => this.setState({ crLevel: v.n })
+      })),
+      crBlurb: curCrLevel.blurb, crCatName: curCat.name, crLevelNo: st.crLevel,
+      doCreate: () => {
+        const base = curCat.make(st.f1 || curCat.p[0], st.f2 || curCat.p[1], st.f3 || curCat.p[2]);
+        const out = st.crLevel <= 2 ? (st.crLevel === 1 ? this.humanize(base) : base) : this.corporate(base, st.crLevel === 4);
+        this.setState({ crOut: out });
+      },
+      hasCr: !!st.crOut,
+      crParas: (st.crOut || '').split(/\n{2,}/).map(text => ({ text })),
+      copyCr: () => this.copy(st.crOut || ''),
+      postCr: () => composer(st.crOut || ''),
+      roastCr: () => this.setState({ mode: 'roast', stage: 'form', text: st.crOut || '', edited: true }),
+      kinds, personas, intensities,
+      kindHint: (curKind.hint || '').toUpperCase(),
+      personaTagline: curPersona.tagline || '',
+      intensityBlurb: curLevel.blurb || '',
+      text: st.text,
+      setText: (e) => this.setState({ text: e.target.value, edited: true }),
+      fileComplaint: () => {
+        if (!window.RM) return;
+        const result = window.RM.roastIt({ kind: st.kind, text: st.text || RM.SAMPLES[st.kind], personaId: st.personaId, intensity: st.intensity });
+        this.setState({ result, stage: 'verdict' });
+      },
+      reRoast: () => this.setState({ stage: 'form', result: null }),
+      personaName: curPersona.name || '', intensityName: curLevel.name || '',
+      vIndex: r ? r.score.index : '', vRank: r ? r.score.rank : '',
+      vOpener: r ? r.opener : '', vCloser: r ? r.closer : '',
+      vLines: r ? r.lines.map(text => ({ text })) : [],
+      cardLines: r ? r.lines.slice(0, 4).map(text => ({ text })) : [],
+      vUseful: r ? r.useful.split(/\n{2,}/).map(text => ({ text })) : [],
+      copyLabel: st.copied ? 'Copied ✓' : 'Copy',
+      copyUseful: () => this.copy(r ? r.useful : ''),
+      postUseful: () => composer(r ? r.useful : ''),
+      postVerdict: () => composer('I presented my personal brand for inspection. Index ' + (r ? r.score.index : '') + ' — "' + (r ? r.score.rank : '') + '." The algorithm would like to see me in its office. Get yours: linkedinbeats.com/roast'),
+      downloadCard: () => {
+        const c = this.drawCard(); if (!c) return;
+        const a = document.createElement('a');
+        a.download = 'roast-card.png'; a.href = c.toDataURL('image/png'); a.click();
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

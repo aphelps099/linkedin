@@ -1,0 +1,22 @@
+:root{
+/* rule weights — hierarchy is drawn, never shadowed */
+--rule-heavy:3px;    /* masthead, footer */
+--rule-section:2px;  /* column headers, stage keys */
+--rule-frame:1.5px;  /* key plates, dials, buttons, cards */
+--rule-grid:1px;     /* sequencer cells, hairlines */
+--rule-inner:.75px;  /* key separators inside a plate */
+--rule-dotted:1px dotted var(--hair);
+--radius-none:0px;
+--shadow-none:none;
+/* states */
+--press-invert:var(--ink);  /* hover AND press = invert to ink */
+--latch-on:var(--blue);     /* latched control = blue fill */
+--latch-rec:var(--ink);     /* record latches ink */
+--ease-ui:.08s; /* @kind other */
+--ease-key:.07s; /* @kind other */
+--flash-pad:130ms; /* @kind other */
+--flash-key:140ms; /* @kind other */
+/* the stage's one exception: the broadcast monitor floats on the blue room */
+--stage-glass:blur(14px) saturate(1.15); /* @kind other */
+--stage-lift:inset 0 1px 0 rgba(255,255,255,.35), 0 24px 70px rgba(4,42,82,.34); /* @kind shadow */
+}

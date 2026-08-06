@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  
+  <link rel="stylesheet" href="_ds/circle-back-design-system-7570bbda-e708-4b97-b795-1ecfb5d33fd1/tokens/fonts.css">
+  <link rel="stylesheet" href="_ds/circle-back-design-system-7570bbda-e708-4b97-b795-1ecfb5d33fd1/tokens/colors.css">
+  <link rel="stylesheet" href="_ds/circle-back-design-system-7570bbda-e708-4b97-b795-1ecfb5d33fd1/tokens/typography.css">
+  <link rel="stylesheet" href="_ds/circle-back-design-system-7570bbda-e708-4b97-b795-1ecfb5d33fd1/tokens/spacing.css">
+  <link rel="stylesheet" href="_ds/circle-back-design-system-7570bbda-e708-4b97-b795-1ecfb5d33fd1/tokens/effects.css">
+  <link rel="stylesheet" href="_ds/circle-back-design-system-7570bbda-e708-4b97-b795-1ecfb5d33fd1/tokens/base.css">
+  <link rel="stylesheet" href="_ds/circle-back-design-system-7570bbda-e708-4b97-b795-1ecfb5d33fd1/styles.css">
+  <script src="_ds/circle-back-design-system-7570bbda-e708-4b97-b795-1ecfb5d33fd1/_ds_bundle.js"></script>
+  <script src="image-slot.js"></script>
+  <style>
+    body { margin:0; background:#f6f5f1; }
+    a { color:#0a66c2; } a:hover { color:#111111; }
+    @keyframes cbBlink { 0%,55% { opacity:1; } 56%,100% { opacity:0; } }
+    @keyframes cbRise { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+    @keyframes cbMarquee { to { transform:translateX(-50%); } }
+    @keyframes cbSpin { to { transform:rotate(360deg); } }
+    @keyframes cbEq { to { height:100%; } }
+  </style>
+</helmet>
+<div style="min-height:100vh;background:#f6f5f1;color:#111111;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;min-width:1180px;max-width:1440px;margin:0 auto;border-left:1.5px solid #111111;border-right:1.5px solid #111111;overflow:hidden">
+      <header style="display:flex;align-items:center;justify-content:space-between;padding:16px 44px;border-bottom:3px solid #111111">
+        <span style="font:700 19px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.02em">LinkedIn <b style="background:#0a66c2;color:#ffffff;padding:5px 8px;display:inline-block;transform:rotate(-2deg)">Beats</b><span style="color:#0a66c2">▮</span></span>
+        <nav style="display:flex;gap:24px;font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase">
+          <a href="#beats-3" style="color:#111111;text-decoration:none">The Beats</a>
+          <a href="#wrapped-3" style="color:#111111;text-decoration:none">Your Wrapped</a>
+          <a href="#bingo-3" style="color:#111111;text-decoration:none">Bingo</a>
+          <a href="#merch-3" style="color:#111111;text-decoration:none">Merch</a>
+          <a href="About.dc.html" style="color:#111111;text-decoration:none">About</a>
+        </nav>
+        <button onClick="{{openRoast}}" style="border:1.5px solid #111111;background:#0a66c2;color:#ffffff;padding:12px 16px;box-shadow:4px 4px 0 #111111;font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;cursor:pointer" style-hover="background:#111111">Roast me <span style="font-family:'IBM Plex Mono',monospace;background:#111111;padding:2px 5px;margin-left:6px">R</span></button>
+      </header>
+
+      <div style="display:grid;grid-template-columns:minmax(0,1.02fr) minmax(0,.98fr)">
+        <div style="padding:70px 40px 64px 44px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start">
+          <p style="margin:0 0 22px;font:700 11px/1.2 'Helvetica Neue',Helvetica,Arial,sans-serif;text-transform:uppercase;letter-spacing:.13em"><span style="background:#0a66c2;color:#ffffff;padding:6px 8px;margin-right:8px">Bulletin</span> Everyone is saying the exact same thing.</p>
+          <h1 style="margin:0;font:700 70px/.88 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.05em">The soundtrack of<span style="display:block;height:74px;line-height:74px;color:#0a66c2;white-space:nowrap">{{claim}}<span style="animation:cbBlink 1s step-end infinite">▮</span></span>professionals.</h1>
+          <p style="margin:28px 0 26px;max-width:560px;font-size:17px;line-height:1.4;font-weight:500">Roast your LinkedIn. Assemble a legally distinct thought-leadership anthem. Send it to the coworker who posts like a hostage negotiator.</p>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+            <button onClick="{{openRoast}}" style="border:1.5px solid #111111;background:#0a66c2;color:#ffffff;padding:0;display:flex;box-shadow:6px 6px 0 #111111;font:700 11px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer" style-hover="background:#111111"><span style="padding:17px 19px">Roast my LinkedIn</span><span style="padding:17px 16px;border-left:1.5px solid #111111;background:#ffffff;color:#111111">It's free →</span></button>
+            <button onClick="{{sendCoworker}}" style="border:1.5px solid #111111;background:transparent;color:#111111;padding:16px 19px;font:700 11px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer" style-hover="background:#111111;color:#ffffff">Send to a coworker ↗</button>
+            <sc-if value="{{copied}}" hint-placeholder-val="{{false}}"><span style="font:400 10px/1 'IBM Plex Mono',monospace;color:#0a66c2">✓ COPIED — CLEARED FOR THE FEED</span></sc-if>
+          </div>
+          <p style="margin:20px 0 0;font:700 10px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.05em;color:#11111166">No login. No coaching funnel. Mild emotional damage.</p>
+        </div>
+        <div style="background:#0a66c2;border-left:1.5px solid #111111;position:relative;min-height:640px;overflow:hidden;background-image:radial-gradient(rgba(17,17,17,.28) 1.3px,transparent 1.3px);background-size:14px 14px">
+          <image-slot id="hero-record" shape="rect" placeholder=" " style="position:absolute;inset:0"></image-slot>
+          <span style="position:absolute;left:4%;bottom:8%;border:1.5px solid #111111;background:#ffffff;color:#111111;padding:10px 13px;font:700 9.5px/1.5 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;max-width:250px;pointer-events:none;display:{{recordDisplay2}}">Drop hero photo — record player on a conference table</span>
+          <div style="position:absolute;inset:0;pointer-events:none;display:{{recordDisplay}};place-items:center">
+            <div style="width:58%;aspect-ratio:1;border:3px solid #111111;border-radius:50%;background:repeating-radial-gradient(circle at center,#ffffff 0 5px,#9fc8ea 6px 8px,#ffffff 9px 17px);box-shadow:14px 15px 0 #111111;display:grid;place-items:center;position:relative;animation:cbSpin 16s linear infinite">
+              <div style="position:absolute;inset:6%;border:2px solid rgba(17,17,17,.5);border-radius:50%"></div>
+              <div style="width:44%;aspect-ratio:1;border:3px solid #111111;border-radius:50%;background:#0a66c2;color:#ffffff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px">
+                <small style="font:700 8px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.15em">NOW PLAYING</small>
+                <b style="font:700 18px/.95 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.04em;margin:8px 0">SYNERGY<br>IN B2B MINOR</b>
+                <span style="font:400 8px/1.3 'IBM Plex Mono',monospace">2:47 · FEAT. THE ALGORITHM</span>
+              </div>
+            </div>
+          </div>
+          <span style="position:absolute;left:4%;top:14%;border:2px solid #111111;background:#ffffff;color:#0a66c2;padding:12px 18px;transform:rotate(-12deg);font:700 14px/1.15 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.02em;box-shadow:4px 4px 0 #111111;pointer-events:none">#OPEN<br>TO WORK</span>
+          <span style="position:absolute;right:5%;bottom:16%;border:2px solid #111111;background:#ecd7a4;color:#111111;padding:18px 14px;border-radius:50%;transform:rotate(9deg);font:700 14px/1.1 'Helvetica Neue',Helvetica,Arial,sans-serif;box-shadow:4px 4px 0 #111111;pointer-events:none">Q3<br>BANGER</span>
+          <span style="position:absolute;bottom:20px;right:22px;color:#ffffff;font:700 10px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;transform:rotate(-2deg);pointer-events:none">It has thoughts. None are its own.</span>
+        </div>
+      </div>
+
+      <div style="border-top:2px solid #111111;border-bottom:2px solid #111111;background:#084d92;color:#ffffff;overflow:hidden;height:56px;display:flex;align-items:center">
+        <div style="display:flex;width:max-content;white-space:nowrap;animation:cbMarquee 28s linear infinite">
+          <span style="font:700 18px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;text-transform:uppercase;letter-spacing:-.01em;margin-right:34px">I'm thrilled to announce <b style="color:#9fc8ea;margin-left:26px">▮</b></span>
+          <span style="font:700 18px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;text-transform:uppercase;letter-spacing:-.01em;margin-right:34px">Let that sink in <b style="color:#9fc8ea;margin-left:26px">▮</b></span>
+          <span style="font:700 18px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;text-transform:uppercase;letter-spacing:-.01em;margin-right:34px">Agree? <b style="color:#9fc8ea;margin-left:26px">▮</b></span>
+          <span style="font:700 18px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;text-transform:uppercase;letter-spacing:-.01em;margin-right:34px">We're not just building a company <b style="color:#9fc8ea;margin-left:26px">▮</b></span>
+          <span style="font:700 18px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;text-transform:uppercase;letter-spacing:-.01em;margin-right:34px">Here's what nobody tells you <b style="color:#9fc8ea;margin-left:26px">▮</b></span>
+          <span style="font:700 18px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;text-transform:uppercase;letter-spacing:-.01em;margin-right:34px">I'm thrilled to announce <b style="color:#9fc8ea;margin-left:26px">▮</b></span>
+          <span style="font:700 18px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;text-transform:uppercase;letter-spacing:-.01em;margin-right:34px">Let that sink in <b style="color:#9fc8ea;margin-left:26px">▮</b></span>
+          <span style="font:700 18px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;text-transform:uppercase;letter-spacing:-.01em;margin-right:34px">Agree? <b style="color:#9fc8ea;margin-left:26px">▮</b></span>
+          <span style="font:700 18px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;text-transform:uppercase;letter-spacing:-.01em;margin-right:34px">We're not just building a company <b style="color:#9fc8ea;margin-left:26px">▮</b></span>
+          <span style="font:700 18px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;text-transform:uppercase;letter-spacing:-.01em;margin-right:34px">Here's what nobody tells you <b style="color:#9fc8ea;margin-left:26px">▮</b></span>
+        </div>
+      </div>
+
+      <div id="beats-3" style="padding:80px 44px 95px;background:#084d92 url('assets/ascii-field.png') repeat;background-size:570px 570px;border-bottom:2px solid #111111">
+        <div style="display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:end;margin-bottom:40px;color:#ffffff">
+          <div>
+            <p style="margin:0 0 16px;font:700 10px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#9fc8ea">Form CB-16 · The professional phrase organ</p>
+            <h2 style="margin:0;font:700 84px/.8 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.055em">Drop a beat.<br>Cite your sources.</h2>
+          </div>
+          <p style="margin:0;font-size:17px;line-height:1.45;font-weight:500">Sixteen keys of certified corporate vocabulary over a live drum machine. Strike a key. Paint the grid. It's not an instrument. It's a journey.</p>
+        </div>
+        <div style="display:grid;grid-template-columns:370px minmax(0,1fr);gap:36px;align-items:start">
+          <div style="border:3px solid #111111;border-radius:30px;background:#f6f5f1;box-shadow:10px 10px 0 #111111;padding:24px 24px 30px">
+            <div style="border:2px solid #111111;border-radius:8px;background:#084d92;color:#ffffff;overflow:hidden">
+              <div style="display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.22);font:400 8.5px/1 'IBM Plex Mono',monospace;color:#9fc8ea"><span style="white-space:nowrap">NOW PLAYING · {{trackNo}} OF 5</span><span>{{playGlyph}} {{posTime}}</span></div>
+              <div style="padding:14px 14px 10px">
+                <b style="display:block;font:700 17px/1.15 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.02em">{{curTrack}}</b>
+                <span style="display:block;margin-top:3px;font:400 10px/1 'IBM Plex Mono',monospace;color:#9fc8ea">LINKEDIN BEATS · FEAT. THE ALGORITHM</span>
+                <span style="display:block;margin:12px 0 4px;height:4px;background:rgba(255,255,255,.22);position:relative"><i style="position:absolute;left:0;top:0;bottom:0;width:34%;background:#9fc8ea"></i></span>
+                <span style="display:flex;justify-content:space-between;font:400 8px/1 'IBM Plex Mono',monospace;color:#9fc8ea"><span>{{posTime}}</span><span>-{{curDur}}</span></span>
+              </div>
+              <sc-for list="{{trackRows}}" as="t" hint-placeholder-count="5">
+                <button onClick="{{t.pick}}" style="display:flex;justify-content:space-between;gap:12px;width:100%;text-align:left;border:0;border-top:1px solid rgba(255,255,255,.12);background:{{t.podBg}};color:{{t.podFg}};padding:7px 14px;font:400 10px/1.3 'IBM Plex Mono',monospace;cursor:pointer">{{t.label}}<span>{{t.mark}}</span></button>
+              </sc-for>
+              <div style="padding:8px 14px;border-top:1px solid rgba(255,255,255,.22);font:400 8.5px/1.4 'IBM Plex Mono',monospace;color:#9fc8ea;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">ON THE RECORD · "{{lastPhrase}}"<span style="animation:cbBlink 1s step-end infinite">▮</span></div>
+            </div>
+            <div style="width:216px;height:216px;border:2.5px solid #111111;border-radius:50%;background:#ffffff;margin:26px auto 0;position:relative">
+              <span style="position:absolute;top:16px;left:50%;transform:translateX(-50%);font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.16em;color:#11111166">MENU</span>
+              <button onClick="{{prevTrack}}" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);border:0;background:none;font:700 12px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;cursor:pointer;padding:8px" style-hover="color:#0a66c2">◀◀</button>
+              <button onClick="{{nextTrack}}" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);border:0;background:none;font:700 12px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;cursor:pointer;padding:8px" style-hover="color:#0a66c2">▶▶</button>
+              <button onClick="{{togglePlay}}" style="position:absolute;bottom:14px;left:50%;transform:translateX(-50%);border:0;background:none;font:700 11px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;cursor:pointer;padding:8px" style-hover="color:#0a66c2">▶ ◼</button>
+              <button onClick="{{togglePlay}}" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:76px;height:76px;border:2px solid #111111;border-radius:50%;background:{{playBg}};color:{{playFg}};font:700 9px/1.3 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.1em;cursor:pointer" style-hover="background:#111111;color:#ffffff">{{playWord}}</button>
+            </div>
+            <p style="margin:20px 0 0;text-align:center;font:400 8.5px/1.5 'IBM Plex Mono',monospace;color:#11111166">CORPORATE LISTENING DEVICE · MODEL LB-01<br>DO NOT OPERATE DURING ALL-HANDS</p>
+          </div>
+          <div style="border:3px solid #111111;background:#f6f5f1;box-shadow:16px 16px 0 #111111;transform:rotate(-.3deg)">
+            <div style="display:flex;align-items:stretch;border-bottom:2px solid #111111">
+              <div style="display:flex;align-items:center;gap:10px;padding:16px 20px;border-right:2px solid #111111;white-space:nowrap">
+                <span style="font:700 15px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.02em">Circle Back<sup style="font-size:8px;vertical-align:6px">®</sup></span>
+                <span style="font:400 9px/1 'IBM Plex Mono',monospace;color:#11111166">CB-16</span>
+              </div>
+              <div style="flex:1;display:flex;align-items:center;background:#111111;color:#ffffff;padding:0 20px;min-width:0;overflow:hidden">
+                <span style="font:400 12px/1 'IBM Plex Mono',monospace;letter-spacing:.04em;color:#9fc8ea;white-space:nowrap;text-overflow:ellipsis;overflow:hidden">THE INSTRUMENT REPORTS TO THE DEVICE. STRIKE A KEY.</span>
+              </div>
+              <div style="display:flex;align-items:center;padding:12px 20px;border-left:2px solid #111111">
+                <span style="font:400 9px/1 'IBM Plex Mono',monospace;color:#11111166;white-space:nowrap">CAL. A · 112 BPM</span>
+              </div>
+            </div>
+            <div style="padding:22px;border-bottom:2px solid #111111">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
+                <span style="font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase">The keys</span>
+                <span style="font:400 9px/1 'IBM Plex Mono',monospace;color:#11111166;white-space:nowrap">HOTKEYS 1—V</span>
+              </div>
+              <x-import component-from-global-scope="CircleBackDesignSystem_7570bb.KeyPlate" columns="{{four}}" hint-size="100%,300px">
+                <sc-for list="{{pads}}" as="p" hint-placeholder-count="16">
+                  <x-import component-from-global-scope="CircleBackDesignSystem_7570bb.Pad" index="{{p.index}}" hotkey="{{p.key}}" name="{{p.name}}" hot="{{p.hot}}" on-trigger="{{p.trigger}}" hint-size="100%,70px"></x-import>
+                </sc-for>
+              </x-import>
+            </div>
+            <div style="padding:22px;display:flex;flex-direction:column">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
+                <span style="font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase">The minutes</span>
+                <span style="font:400 9px/1 'IBM Plex Mono',monospace;color:#11111166;white-space:nowrap">CLICK CYCLES · DRAG PAINTS</span>
+              </div>
+              <div style="overflow-x:auto">
+                <x-import component-from-global-scope="CircleBackDesignSystem_7570bb.StepGrid" voices="{{voices}}" steps="{{sixteen}}" pattern="{{pattern}}" on-change="{{setPattern}}" playhead="{{playhead}}" selected="{{selRow}}" on-select="{{selectRow}}" vox-labels="{{voxLabels}}" hint-size="100%,130px"></x-import>
+              </div>
+              <div style="margin-top:16px;display:flex;justify-content:space-between;align-items:center;gap:14px">
+                <span style="font:400 9px/1.5 'IBM Plex Mono',monospace;color:#11111166">EVERYTHING IS GENERATED IN YOUR BROWSER. NOTHING IS SENT ANYWHERE.</span>
+                <a href="https://linkedinbeats.com" style="font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#0a66c2;text-decoration:none;white-space:nowrap" style-hover="color:#111111">Open the full studio →</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:130px 1fr 230px;border-bottom:2px solid #111111;min-height:240px">
+        <div style="background:#111111;color:#ffffff;display:grid;place-items:center;padding:20px 0"><span style="writing-mode:vertical-rl;transform:rotate(180deg);font:700 20px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.1em">THE DAILY BEAT</span></div>
+        <div style="padding:44px 5%;background-image:repeating-linear-gradient(0deg,transparent 0 27px,#11111112 27px 28px)">
+          <p style="margin:0 0 16px;font:700 10px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#11111166">Business</p>
+          <h2 style="margin:0 0 12px;font:700 50px/.95 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.05em">Local man announces promotion with the bravery of a wartime correspondent.</h2>
+          <span style="font-size:15px;line-height:1.45;color:#11111166">"I couldn't have done it without the team," confirms man who absolutely could have.</span>
+        </div>
+        <div style="border-left:1.5px solid #111111;background:#ecd7a4;background-image:radial-gradient(rgba(17,17,17,.16) 1px,transparent 1px);background-size:9px 9px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:26px">
+          <b style="font:700 54px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.07em">14,208</b>
+          <span style="font:700 10px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.1em;margin-top:6px">IMPRESSIONS</span>
+          <small style="margin-top:18px;border-top:2px solid #111111;padding-top:9px;font-size:11px">3 people read it</small>
+        </div>
+      </div>
+
+      <div id="wrapped-3" style="background:#0a66c2;background-image:radial-gradient(rgba(255,255,255,.16) 1.2px,transparent 1.2px);background-size:16px 16px;padding:80px 5% 95px;border-bottom:2px solid #111111">
+        <div style="display:grid;grid-template-columns:.7fr 1.4fr .7fr;align-items:end;gap:34px;margin-bottom:44px;color:#ffffff">
+          <p style="margin:0;font:700 10px/1.5 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase">Your professional listening habits</p>
+          <h2 style="margin:0;font:700 84px/.84 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.05em">You posted.<br>The algorithm endured.</h2>
+          <span style="font:500 16px/1.35 'Helvetica Neue',Helvetica,Arial,sans-serif">Turn a profile into a brutally shareable year-in-review.</span>
+        </div>
+        <div style="display:flex;justify-content:center;gap:8px;margin-bottom:-2px;position:relative;z-index:2">
+          <sc-for list="{{tabs}}" as="t" hint-placeholder-count="3">
+            <button onClick="{{t.select}}" style="border:1.5px solid #111111;padding:12px 17px;background:{{t.bg}};color:{{t.fg}};font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;box-shadow:3px 3px 0 #111111" style-hover="background:#111111;color:#ffffff">{{t.name}} mode</button>
+          </sc-for>
+        </div>
+        <div style="max-width:1040px;margin:auto;border:3px solid #111111;background:#f6f5f1;box-shadow:14px 14px 0 #111111;transform:rotate(-.4deg)">
+          <div style="display:flex;justify-content:space-between;padding:16px 22px;border-bottom:2px solid #111111;font:700 10px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.09em"><span>LINKEDIN BEATS <b style="background:#0a66c2;color:#ffffff;padding:4px">WRAPPED</b></span><span>JAN—DEC 2026</span></div>
+          <div style="padding:36px;text-align:center;background:#ecd7a4;border-bottom:2px solid #111111">
+            <small style="font:700 10px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.15em">YOUR UNOFFICIAL TITLE</small>
+            <h3 style="margin:12px 0 0;font:700 72px/.86 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.05em">{{wTitle}}</h3>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr)">
+            <div style="padding:30px 22px;min-height:210px;border-right:2px solid #111111;display:flex;flex-direction:column"><small style="font:700 8.5px/1.3 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.13em">POSTS PUBLISHED</small><b style="font:700 68px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.06em;color:#0a66c2;margin:18px 0 12px">{{wPosts}}</b><span style="font-size:11px;font-weight:700;margin-top:auto">That is between you and HR.</span></div>
+            <div style="padding:30px 22px;min-height:210px;border-right:2px solid #111111;display:flex;flex-direction:column"><small style="font:700 8.5px/1.3 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.13em">HUMBLE / BRAG RATIO</small><b style="font:700 68px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.06em;color:#0a66c2;margin:18px 0 12px">{{wHumble}}</b><span style="font-size:11px;font-weight:700;margin-top:auto">A delicate balance.</span></div>
+            <div style="padding:30px 22px;min-height:210px;border-right:2px solid #111111;display:flex;flex-direction:column"><small style="font:700 8.5px/1.3 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.13em">DRAMATIC LINE BREAKS</small><b style="font:700 68px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.06em;color:#0a66c2;margin:18px 0 12px">{{wLines}}</b><span style="font-size:11px;font-weight:700;margin-top:auto">One.<br>Word.<br>At. A. Time.</span></div>
+            <div style="padding:30px 22px;min-height:210px;display:flex;flex-direction:column"><small style="font:700 8.5px/1.3 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.13em">WORD OF THE YEAR</small><b style="font:700 40px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.04em;margin:26px 0 12px">"{{wWord}}"</b><span style="font-size:11px;font-weight:700;margin-top:auto">Used with extraordinary courage.</span></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;border-top:2px solid #111111;padding:15px 18px;font:700 10px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.06em">
+            <span>TOP 0.4% OF PEOPLE WHO SAID "AUTHENTIC"</span>
+            <button onClick="{{shareWrapped}}" style="background:#111111;color:#ffffff;border:0;padding:13px 17px;font:700 10px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase;cursor:pointer" style-hover="background:#0a66c2">Share my results ↗</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="bingo-3" style="display:grid;grid-template-columns:.78fr 1.22fr;background:#111111;border-bottom:2px solid #111111">
+        <div style="color:#ffffff;padding:90px 44px;background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.05) 0 2px,transparent 2px 16px)">
+          <p style="margin:0 0 24px;font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase">Play along during your next scroll</p>
+          <h2 style="margin:0 0 32px;font:700 110px/.74 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.06em">LINKEDIN<br><i style="color:#9fc8ea;font-style:normal">CRINGE</i><br>BINGO.</h2>
+          <p style="margin:0 0 30px;max-width:460px;font-size:17px;line-height:1.45;font-weight:500">Tap what you see. Get four in a row. Send the evidence to the group chat that keeps you employed.</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button onClick="{{toggleScore}}" style="border:1.5px solid #ffffff;background:#ffffff;color:#111111;padding:15px 19px;font:700 10px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;box-shadow:4px 4px 0 rgba(255,255,255,.42)" style-hover="background:#0a66c2;color:#ffffff">Score someone's post ▸</button>
+            <button onClick="{{clearC}}" style="border:1.5px solid #ffffff;background:transparent;color:#ffffff;padding:15px 19px;font:700 10px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer" style-hover="background:#ffffff;color:#111111">Clear the evidence ×</button>
+          </div>
+          <sc-if value="{{scoreOpen}}" hint-placeholder-val="{{false}}">
+            <div style="margin-top:22px;border:2px solid #ffffff;padding:16px;animation:cbRise .38s cubic-bezier(.2,.8,.3,1)">
+              <p style="margin:0 0 8px;font:400 9px/1 'IBM Plex Mono',monospace;color:#9fc8ea">EXHIBIT INTAKE · PASTE THE POST IN QUESTION</p>
+              <textarea value="{{postText}}" onChange="{{setPostText}}" rows="5" placeholder="Paste their post here. You know the one." style="width:100%;box-sizing:border-box;border:1.5px solid #ffffff;background:transparent;color:#ffffff;padding:12px;font:400 12.5px/1.5 'Helvetica Neue',Helvetica,Arial,sans-serif;resize:vertical;outline:none"></textarea>
+              <div style="display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap">
+                <button onClick="{{runDetection}}" style="border:1.5px solid #ffffff;background:#0a66c2;color:#ffffff;padding:12px 15px;font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer" style-hover="background:#ffffff;color:#111111">Run the detection ▸</button>
+                <sc-if value="{{scored}}" hint-placeholder-val="{{false}}">
+                  <button onClick="{{downloadBingo}}" style="border:1.5px solid #ffffff;background:#ffffff;color:#111111;padding:12px 15px;font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer" style-hover="background:#0a66c2;color:#ffffff">Download comment card ↓</button>
+                  <button onClick="{{copyCaption}}" style="border:1.5px solid #ffffff;background:transparent;color:#ffffff;padding:12px 15px;font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer" style-hover="background:#ffffff;color:#111111">Copy the caption</button>
+                </sc-if>
+              </div>
+              <sc-if value="{{scored}}" hint-placeholder-val="{{false}}">
+                <p style="margin:12px 0 0;font:400 9px/1.6 'IBM Plex Mono',monospace;color:#9fc8ea">DETECTED {{countC}} · MARKED ON THE GRID → ATTACH THE CARD AS YOUR COMMENT. THAT IS THE WHOLE MOVE.</p>
+              </sc-if>
+            </div>
+          </sc-if>
+        </div>
+        <div style="background:#9fc8ea;background-image:radial-gradient(rgba(17,17,17,.14) 1.2px,transparent 1.2px);background-size:16px 16px;border-left:1.5px solid #111111;padding:70px 4%;display:flex;flex-direction:column;justify-content:center">
+          <div style="border:3px solid #111111;background:#f6f5f1;box-shadow:12px 12px 0 #111111;transform:rotate(1deg)">
+            <div style="padding:15px 20px;background:#ecd7a4;border-bottom:2px solid #111111;display:flex;justify-content:space-between;gap:16px;font:700 10px/1.4 'Helvetica Neue',Helvetica,Arial,sans-serif"><span>FREE SPACE:</span><b style="max-width:62%;text-align:right">"I asked AI to make this sound human."</b></div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#111111">
+              <sc-for list="{{cellsC}}" as="c" hint-placeholder-count="16">
+                <button onClick="{{c.toggle}}" style="aspect-ratio:1.05;border:0;padding:8px;background:{{c.bg}};color:{{c.fg}};font:700 12px/1.25 'Helvetica Neue',Helvetica,Arial,sans-serif;cursor:pointer;position:relative" style-hover="background:#9fc8ea;color:#111111"><b style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-14deg);font:700 58px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#9fc8ea;opacity:{{c.markOp}};pointer-events:none">✓</b><span style="position:relative;z-index:1">{{c.label}}</span></button>
+              </sc-for>
+            </div>
+          </div>
+          <button onClick="{{shareBingoC}}" style="margin:26px 8% 0;border:2px solid #111111;background:#ffffff;color:#111111;padding:16px;font:700 11px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase;box-shadow:5px 5px 0 #111111;cursor:pointer" style-hover="background:#111111;color:#ffffff">Share my card <span style="background:#111111;color:#ffffff;padding:4px 7px;margin-left:8px;font-family:'IBM Plex Mono',monospace">{{countC}}</span> ↗</button>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:150px 1fr auto;gap:34px;align-items:center;padding:40px 44px;background:#ecd7a4;background-image:repeating-linear-gradient(-45deg,rgba(17,17,17,.06) 0 10px,transparent 10px 22px);border-bottom:2px solid #111111">
+        <img src="public/barry/barry.png" alt="Barry, the company pigeon, wearing a top hat and a conference lanyard" style="width:76px;image-rendering:pixelated;transform:rotate(-4deg);display:block">
+        <div>
+          <p style="margin:0 0 8px;font:700 9.5px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase">Barry (Compliance) has reviewed your work</p>
+          <h2 style="margin:0;font:700 48px/.95 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.05em;text-wrap:pretty">He would like a word.</h2>
+        </div>
+        <button onClick="{{openRoast}}" style="border:1.5px solid #111111;background:#0a66c2;color:#ffffff;padding:17px 19px;font:700 11px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;box-shadow:6px 6px 0 #111111;cursor:pointer" style-hover="background:#111111">Get your roast receipt →</button>
+      </div>
+
+      <div id="merch-3" style="padding:90px 44px;border-bottom:2px solid #111111">
+        <div style="display:grid;grid-template-columns:1.2fr .8fr;gap:10%;align-items:end;margin-bottom:50px">
+          <div>
+            <p style="margin:0 0 16px;font:700 10px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase">Office supplies for the spiritually tired</p>
+            <h2 style="margin:0;font:700 104px/.78 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.06em">Wear your<br>boundaries.</h2>
+          </div>
+          <div>
+            <p style="margin:0 0 22px;font-size:17px;line-height:1.45;font-weight:500">Real merch for surviving fake urgency. Designed for Slack huddles, airport lounges, and all-hands meetings that could have been a GIF.</p>
+            <a href="store/CompanyStore.dc.html" style="display:inline-block;border:1.5px solid #111111;background:#ecd7a4;color:#111111;padding:16px 19px;font:700 11px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;box-shadow:4px 4px 0 #111111" style-hover="background:#111111;color:#ffffff">Shop career apparel ↗</a>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:22px">
+          <a href="store/CompanyStore.dc.html" style="display:block;border:2px solid #111111;background:#ffffff;box-shadow:7px 7px 0 #111111;color:#111111;text-decoration:none">
+            <div style="aspect-ratio:1.12;background:#9fc8ea;background-image:radial-gradient(rgba(17,17,17,.18) 1.3px,transparent 1.3px);background-size:11px 11px;border-bottom:2px solid #111111;display:grid;place-items:center;position:relative;overflow:hidden"><i style="position:absolute;width:67%;height:75%;background:#111111;clip-path:polygon(27% 0,42% 12%,58% 12%,73% 0,100% 19%,87% 39%,77% 31%,77% 100%,23% 100%,23% 31%,13% 39%,0 19%)"></i><span style="position:relative;z-index:2;color:#ffffff;text-align:center;font:700 30px/.88 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.04em;transform:rotate(-3deg)">DEEPLY<br>HUMBLED</span></div>
+            <div style="display:flex;justify-content:space-between;padding:18px"><span><b style="display:block;font:700 15px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;margin-bottom:7px">DEEPLY HUMBLED TEE</b><span style="font-size:11px">100% cotton. 0% humility.</span></span><b style="font-size:18px">$32</b></div>
+            <span style="display:block;border-top:2px solid #111111;background:#0a66c2;color:#ffffff;padding:15px;text-align:center;font:700 11px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase">Add to career cart +</span>
+          </a>
+          <a href="store/CompanyStore.dc.html" style="display:block;border:2px solid #111111;background:#ffffff;box-shadow:7px 7px 0 #111111;color:#111111;text-decoration:none">
+            <div style="aspect-ratio:1.12;background:#0a66c2;background-image:radial-gradient(rgba(255,255,255,.2) 1.3px,transparent 1.3px);background-size:11px 11px;border-bottom:2px solid #111111;display:grid;place-items:center;position:relative;overflow:hidden"><i style="position:absolute;width:64%;height:45%;background:#111111;border-radius:50% 50% 15% 15%;top:25%"></i><i style="position:absolute;width:35%;height:14%;background:#111111;border-radius:0 70% 70% 0;right:7%;top:52%;transform:rotate(8deg)"></i><span style="position:relative;z-index:2;color:#ffffff;text-align:center;font:700 30px/.88 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.04em;transform:rotate(-3deg)">CIRCLE<br>BACK</span></div>
+            <div style="display:flex;justify-content:space-between;padding:18px"><span><b style="display:block;font:700 15px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;margin-bottom:7px">CIRCLE BACK CAP</b><span style="font-size:11px">Adjustable. Like the deadline.</span></span><b style="font-size:18px">$28</b></div>
+            <span style="display:block;border-top:2px solid #111111;background:#0a66c2;color:#ffffff;padding:15px;text-align:center;font:700 11px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase">Add to career cart +</span>
+          </a>
+          <a href="store/CompanyStore.dc.html" style="display:block;border:2px solid #111111;background:#ffffff;box-shadow:7px 7px 0 #111111;color:#111111;text-decoration:none">
+            <div style="aspect-ratio:1.12;background:#ecd7a4;background-image:radial-gradient(rgba(17,17,17,.16) 1.3px,transparent 1.3px);background-size:11px 11px;border-bottom:2px solid #111111;display:grid;place-items:center;position:relative;overflow:hidden"><i style="position:absolute;width:61%;height:67%;background:#111111;clip-path:polygon(10% 14%,35% 14%,35% 2%,65% 2%,65% 14%,90% 14%,100% 100%,0 100%)"></i><span style="position:relative;z-index:2;color:#ffffff;text-align:center;font:700 26px/.9 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.04em;transform:rotate(-3deg)">PER MY<br>LAST EMAIL</span></div>
+            <div style="display:flex;justify-content:space-between;padding:18px"><span><b style="display:block;font:700 15px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;margin-bottom:7px">PER MY LAST EMAIL TOTE</b><span style="font-size:11px">Carries 14 unanswered follow-ups.</span></span><b style="font-size:18px">$24</b></div>
+            <span style="display:block;border-top:2px solid #111111;background:#0a66c2;color:#ffffff;padding:15px;text-align:center;font:700 11px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase">Add to career cart +</span>
+          </a>
+        </div>
+      </div>
+
+      <div style="padding:110px 20px;background:#084d92;background-image:radial-gradient(rgba(17,17,17,.28) 1.3px,transparent 1.3px);background-size:14px 14px;color:#ffffff;text-align:center;border-bottom:2px solid #111111;position:relative;overflow:hidden">
+        <span style="position:absolute;left:2%;top:8%;font:700 240px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#9fc8ea;opacity:.2;transform:rotate(-20deg);pointer-events:none">↗</span>
+        <span style="position:absolute;right:2%;bottom:8%;font:700 240px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#9fc8ea;opacity:.2;transform:rotate(160deg);pointer-events:none">↗</span>
+        <p style="margin:0;font:700 10px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;position:relative">Know someone who needs this?</p>
+        <h2 style="margin:28px 0 42px;font:700 112px/.78 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.06em;position:relative">Stage a professional<br>intervention.</h2>
+        <button onClick="{{sendCoworker}}" style="border:3px solid #111111;background:#ffffff;color:#111111;padding:22px 27px;font:700 15px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase;box-shadow:8px 8px 0 #111111;cursor:pointer;position:relative" style-hover="background:#111111;color:#ffffff">Send to a coworker <span style="margin-left:16px">↗</span></button>
+        <small style="display:block;margin-top:24px;font:700 12px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;position:relative">Anonymous-ish. Loving-ish. Extremely shareable.</small>
+      </div>
+
+      <footer style="display:flex;justify-content:space-between;align-items:center;padding:34px 44px;gap:30px">
+        <span style="font:700 17px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.02em">LinkedIn <b style="background:#0a66c2;color:#ffffff;padding:4px 7px;display:inline-block;transform:rotate(-2deg)">Beats</b><span style="color:#0a66c2">▮</span></span>
+        <span style="font-size:12px;color:#11111166">We make professional networking slightly less professional. Not affiliated with your network.</span>
+        <x-import component-from-global-scope="CircleBackDesignSystem_7570bb.Stamp" hint-size="auto,60px">Humbled — Allegedly</x-import>
+      </footer>
+    </div>
+
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#0a66c2"/><text x="50" y="60" font-family="Helvetica,Arial,sans-serif" font-size="26" font-weight="bold" fill="#ffffff" text-anchor="middle">LB▎</text></svg></template>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;rotateClaims&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Hero&quot;},&quot;claimSeconds&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:2.2,&quot;min&quot;:1,&quot;max&quot;:6,&quot;step&quot;:0.1,&quot;unit&quot;:&quot;s&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Hero&quot;}}">
+class Component extends DCLogic {
+  state = {
+    claimIdx: 0,
+    persona: 'founder',
+    checkedA: [false,true,true,false, false,true,false,false, true,false,true,false, false,false,false,false],
+    checkedB: [false,true,false,false, true,false,false,false],
+    checkedC: [false,true,true,false, false,true,false,false, true,false,true,false, false,false,false,false],
+    subB: false,
+    copied: false,
+    scoreOpen: false,
+    postText: '',
+    scored: false,
+    adIdx: 0,
+    padHot: -1,
+    lastPhrase: null,
+    roastStep: 0,
+    playing: false,
+    pos: 0,
+    trackIdx: 0,
+    selRow: 0,
+    pattern: [
+      [2,0,0,0, 1,0,0,0, 2,0,0,0, 1,0,1,0],
+      [0,0,0,0, 2,0,0,0, 0,0,0,0, 2,0,0,1],
+      [1,0,1,0, 1,0,1,1, 1,0,1,0, 1,1,0,1],
+      [1,0,0,0, 0,0,6,0, 0,0,12,0, 0,0,8,0]
+    ]
+  };
+  togglePlay() {
+    if (this.seqTimer) { clearInterval(this.seqTimer); this.seqTimer = null; this.setState({ playing: false, pos: 0 }); return; }
+    this.setState({ playing: true, pos: 0 });
+    this.seqTimer = setInterval(() => this.setState(s => ({ pos: (s.pos + 1) % 16 })), 134);
+  }
+  trigger(i, line) {
+    clearTimeout(this.padTimer);
+    this.setState({ padHot: i, lastPhrase: line });
+    this.padTimer = setTimeout(() => this.setState({ padHot: -1 }), 130);
+  }
+  runRoast() {
+    if (this.roastTimer) return;
+    this.setState({ roastStep: 1 });
+    this.roastTimer = setInterval(() => {
+      this.setState(s => {
+        const n = s.roastStep + 1;
+        if (n >= 5) { clearInterval(this.roastTimer); this.roastTimer = null; }
+        return { roastStep: Math.min(5, n) };
+      });
+    }, 650);
+  }
+  componentDidMount() {
+    // hide the drawn record once a real hero photo is dropped into the slot
+    this.slotTimer = setInterval(async () => {
+      try {
+        const r = await fetch('.image-slots.state.json', { cache: 'no-store' });
+        if (!r.ok) return;
+        const txt = await r.text();
+        const filled = txt.includes('"hero-record"');
+        if (filled !== this.state.heroFilled) this.setState({ heroFilled: filled });
+      } catch (e) {}
+    }, 2000);
+    this.timer = setInterval(() => {
+      if (this.props.rotateClaims === false) return;
+      this.setState(s => ({ claimIdx: (s.claimIdx + 1) % 4 }));
+    }, (this.props.claimSeconds ?? 2.2) * 1000);
+  }
+  componentWillUnmount() { clearInterval(this.timer); clearTimeout(this.noteTimer); clearTimeout(this.padTimer); clearInterval(this.roastTimer); clearInterval(this.seqTimer); clearInterval(this.slotTimer); }
+  copy(text) {
+    try { navigator.clipboard && navigator.clipboard.writeText(text).catch(() => {}); } catch (e) {}
+    this.setState({ copied: true });
+    clearTimeout(this.noteTimer);
+    this.noteTimer = setTimeout(() => this.setState({ copied: false }), 2600);
+  }
+  renderVals() {
+    const CLAIMS = ['deeply humbled', 'beyond excited', 'truly honored', 'very thrilled'];
+    const STAGE = ["I'm humbled to announce", 'Let that sink in', 'We are a family', 'Agree?'];
+    const PHRASES_A = ['Agree?','Let that sink in','Humbled','Game-changer','My why','Plot twist','Unpopular opinion','Read that again','Thoughts?','10x','Disrupting','I failed','Value-add','No one talks about',"We're a family",'Link in comments'];
+    const PHRASES_B = ['Humbled','Let that sink in','Agree?','Plot twist','Thoughts?','10x','Read that again','My why'];
+    const PERSONAS = {
+      founder:   { name: 'Founder',   title: 'Chief Executive Storyteller', posts: '247', humble: '96%', lines: '1,108', word: 'journey' },
+      ai:        { name: 'AI expert', title: 'Prompt Visionary',            posts: '611', humble: '12%', lines: '4,392', word: 'agents' },
+      recruiter: { name: 'Recruiter', title: 'People Person Person',        posts: '384', humble: '83%', lines: '2,019', word: 'rockstar' }
+    };
+    const cells = (labels, key) => labels.map((label, i) => {
+      const on = this.state[key][i];
+      return {
+        label,
+        bg: on ? '#0a66c2' : '#ffffff',
+        fg: on ? '#ffffff' : '#111111',
+        mark: on ? '\u2713' : '\u00b7',
+        toggle: () => this.setState(s => { const a = s[key].slice(); a[i] = !a[i]; return { [key]: a }; })
+      };
+    });
+    const tabs = Object.keys(PERSONAS).map(k => ({
+      name: PERSONAS[k].name,
+      bg: this.state.persona === k ? '#0a66c2' : '#ffffff',
+      fg: this.state.persona === k ? '#ffffff' : '#111111',
+      select: () => this.setState({ persona: k })
+    }));
+    const P = PERSONAS[this.state.persona];
+    const nA = this.state.checkedA.filter(Boolean).length;
+    const nB = this.state.checkedB.filter(Boolean).length;
+    const PADS = [
+      { name: 'Humbled', line: 'Humbled and honored to share' },
+      { name: 'Thrilled', line: "I'm thrilled to announce" },
+      { name: 'Synergy', line: 'Unlocking cross-functional synergies' },
+      { name: 'Circle Back', line: "Let's circle back on this" },
+      { name: 'Journey', line: 'It has been quite the journey' },
+      { name: 'Agree?', line: 'Agree?' },
+      { name: 'Thoughts?', line: 'Thoughts?' },
+      { name: 'Sink In', line: 'Let that sink in' },
+      { name: '10x', line: 'A true 10x mindset' },
+      { name: 'Disrupt', line: 'We are disrupting the space' },
+      { name: 'My Why', line: 'I found my why' },
+      { name: 'Plot Twist', line: 'Plot twist:' },
+      { name: 'Family', line: "We're not a company, we're a family" },
+      { name: 'Rockstar', line: 'Looking for a rockstar' },
+      { name: 'Pivot', line: 'The pivot was the plan all along' },
+      { name: 'Onwards', line: 'Onwards and upwards! \ud83d\ude80' }
+    ];
+    const KEYS = '1234QWETASDFZXCV';
+    const pads = PADS.map((p, i) => ({
+      index: String(i + 1).padStart(2, '0'),
+      key: KEYS[i],
+      name: p.name,
+      hot: this.state.padHot === i,
+      trigger: () => this.trigger(i, p.line)
+    }));
+    const AD_PAGES = [
+      { bg: '#0a66c2', fg: '#ffffff', kicker: 'FORM CB-16 · PAGE 01', text: "It's not an instrument." },
+      { bg: '#ffffff', fg: '#0a66c2', kicker: 'FORM CB-16 · PAGE 02', text: "It's a journey." },
+      { bg: '#0a66c2', fg: '#ffffff', kicker: 'MEASURED RESULTS', text: '312% more qualified leads.' },
+      { bg: '#ffffff', fg: '#0a66c2', kicker: 'CALL TO ACTION', text: 'Try the phrase organ →' }
+    ];
+    const ad = AD_PAGES[this.state.adIdx];
+    const FINDINGS = [
+      "Opens with 'I'm humbled.' Proceeds to brag for 214 words.",
+      'Numbered list promised. Emotional arc delivered instead.',
+      "The word 'journey' appears three times. You commuted.",
+      "Ends with 'Agree?' The reader was not consulted."
+    ];
+    const step = this.state.roastStep;
+    const TRACKS = [
+      { label: 'Synergy in B2B Minor', dur: '2:47' },
+      { label: 'Let That Sink In (Remix)', dur: '3:12' },
+      { label: 'Per My Last Email', dur: '2:58' },
+      { label: 'Thrilled to Announce', dur: '2:31' },
+      { label: 'We Are a Family (Live)', dur: '4:04' }
+    ];
+    return {
+      pads,
+      lastPhrase: this.state.lastPhrase ?? 'STRIKE A KEY. IT SPEAKS IN TIME.',
+      four: 4,
+      adBg: ad.bg, adFg: ad.fg, adKicker: ad.kicker, adText: ad.text,
+      adCount: (this.state.adIdx + 1) + '/4',
+      adPrev: () => this.setState(s => ({ adIdx: (s.adIdx + 3) % 4 })),
+      adNext: () => this.setState(s => ({ adIdx: (s.adIdx + 1) % 4 })),
+      findings: FINDINGS.map((text, i) => ({ text, shown: step > i })),
+      roastScore: Math.min(96, step * 24),
+      roastIdle: step === 0,
+      roastStarted: step > 0,
+      roastDone: step >= 5,
+      runRoast: () => this.runRoast(),
+      resetRoast: () => { clearInterval(this.roastTimer); this.roastTimer = null; this.setState({ roastStep: 0 }); },
+      claim: CLAIMS[this.state.claimIdx],
+      recordDisplay: this.state.heroFilled ? 'none' : 'grid',
+      recordDisplay2: this.state.heroFilled ? 'none' : 'inline-block',
+
+      stagePhrase: STAGE[this.state.claimIdx],
+      cellsA: cells(PHRASES_A, 'checkedA'),
+      cellsB: cells(PHRASES_B, 'checkedB'),
+      cellsC: cells(PHRASES_A, 'checkedC').map(c => ({ ...c, markOp: c.mark === '\u2713' ? .88 : 0 })),
+      scoreOpen: this.state.scoreOpen,
+      toggleScore: () => this.setState(s => ({ scoreOpen: !s.scoreOpen })),
+      postText: this.state.postText,
+      setPostText: (e) => this.setState({ postText: e.target.value }),
+      scored: this.state.scored,
+      runDetection: () => {
+        const t = this.state.postText || '';
+        const RES = [/agree\?/i, /let that sink in/i, /humbled/i, /game-?chang/i, /my why/i, /plot twist/i, /unpopular opinion/i, /read that again/i, /thoughts\?/i, /\b10x\b/i, /disrupt/i, /\bi failed\b/i, /value-?add/i, /no ?(one|body) talks about/i, /we('| a)?re a family|we are a family/i, /link in (the )?comments/i];
+        this.setState({ checkedC: RES.map(re => re.test(t)), scored: true });
+      },
+      downloadBingo: () => {
+        const S = 1080, c = document.createElement('canvas'); c.width = S; c.height = S;
+        const x = c.getContext('2d');
+        const hits = this.state.checkedC, n = hits.filter(Boolean).length;
+        x.fillStyle = '#f6f5f1'; x.fillRect(0, 0, S, S);
+        x.strokeStyle = '#111111'; x.lineWidth = 12; x.strokeRect(6, 6, S - 12, S - 12);
+        const sans = (w, px) => x.font = w + ' ' + px + 'px "Helvetica Neue", Helvetica, Arial, sans-serif';
+        x.fillStyle = '#111111'; sans(700, 42); x.fillText('LinkedIn Cringe Bingo', 60, 96);
+        x.font = '400 20px "IBM Plex Mono", monospace'; x.textAlign = 'right';
+        x.fillText('FORM BD-16 · OFFICIAL', S - 60, 90); x.textAlign = 'left';
+        x.fillRect(60, 122, S - 120, 5);
+        const gx = 60, gy = 160, cw = (S - 120) / 4, ch = 190;
+        for (let i = 0; i < 16; i++) {
+          const col = i % 4, row = Math.floor(i / 4), px = gx + col * cw, py = gy + row * ch;
+          x.fillStyle = hits[i] ? '#0a66c2' : '#ffffff'; x.fillRect(px, py, cw, ch);
+          x.strokeStyle = '#111111'; x.lineWidth = 3; x.strokeRect(px, py, cw, ch);
+          if (hits[i]) { x.fillStyle = 'rgba(159,200,234,.85)'; sans(700, 110); x.textAlign = 'center'; x.fillText('\u2713', px + cw / 2, py + ch / 2 + 40); }
+          x.fillStyle = hits[i] ? '#ffffff' : '#111111'; sans(700, 24); x.textAlign = 'center';
+          const words = ['Agree?','Let that sink in','Humbled','Game-changer','My why','Plot twist','Unpopular opinion','Read that again','Thoughts?','10x','Disrupting','I failed','Value-add','No one talks about',"We're a family",'Link in comments'][i].split(' ');
+          let line = '', lines = [];
+          for (const w of words) { const test = line ? line + ' ' + w : w; if (x.measureText(test).width > cw - 30 && line) { lines.push(line); line = w; } else line = test; }
+          lines.push(line);
+          lines.forEach((ln, li) => x.fillText(ln, px + cw / 2, py + ch / 2 - (lines.length - 1) * 14 + li * 28 + 8));
+          x.textAlign = 'left';
+        }
+        x.fillStyle = '#111111'; x.font = '400 22px "IBM Plex Mono", monospace';
+        x.fillText(n + '/16 OBSERVED IN THE POST ABOVE \u00b7 LINKEDINBEATS.COM', 60, S - 42);
+        x.save(); x.translate(S - 190, S - 60); x.rotate(-4 * Math.PI / 180);
+        sans(700, 22); x.textAlign = 'center'; const st = 'VERIFIED \u2014 BD-16';
+        const stw = x.measureText(st).width; x.strokeStyle = '#0a66c2'; x.lineWidth = 4;
+        x.strokeRect(-stw / 2 - 16, -26, stw + 32, 48); x.fillStyle = '#0a66c2'; x.fillText(st, 0, 6);
+        x.restore(); x.textAlign = 'left';
+        const a = document.createElement('a'); a.download = 'cringe-bingo-bd16.png'; a.href = c.toDataURL('image/png'); a.click();
+      },
+      copyCaption: () => this.copy('Official Cliché Detection Grid, Form BD-16: this post scored ' + this.state.checkedC.filter(Boolean).length + '/16. Verified by Barry (Compliance). linkedinbeats.com'),
+      countC: this.state.checkedC.filter(Boolean).length + '/16',
+      clearC: () => this.setState({ checkedC: PHRASES_A.map(() => false) }),
+      shareBingoC: () => this.copy('LinkedIn Cringe Bingo: ' + this.state.checkedC.filter(Boolean).length + '/16 squares before lunch. Beat that. https://linkedinbeats.com'),
+      voices: [{ name: 'Kick' }, { name: 'Snare' }, { name: 'Hat' }, { name: 'Vox', vox: true }],
+      sixteen: 16,
+      pattern: this.state.pattern,
+      setPattern: (p) => this.setState({ pattern: p }),
+      playhead: this.state.playing ? this.state.pos : null,
+      selRow: this.state.selRow,
+      selectRow: (r) => this.setState({ selRow: r }),
+      voxLabels: [null, null, null, PADS.map(p => p.name.replace(/[^A-Za-z0-9]/g, '').slice(0, 2).toUpperCase())],
+      togglePlay: () => this.togglePlay(),
+      playing: this.state.playing,
+      playBg: this.state.playing ? '#0a66c2' : '#ffffff',
+      playFg: this.state.playing ? '#ffffff' : '#111111',
+      playLabel: this.state.playing ? 'Adjourn ◼' : 'Convene ▶',
+      eqState: this.state.playing ? 'running' : 'paused',
+      playGlyph: this.state.playing ? '◼' : '▶',
+      playWord: this.state.playing ? 'ADJOURN' : 'CONVENE',
+      posTime: '0:' + String(this.state.pos * 2).padStart(2, '0'),
+      trackNo: this.state.trackIdx + 1,
+      curTrack: TRACKS[this.state.trackIdx].label,
+      curDur: TRACKS[this.state.trackIdx].dur,
+      prevTrack: () => this.setState(s => ({ trackIdx: (s.trackIdx + TRACKS.length - 1) % TRACKS.length })),
+      nextTrack: () => this.setState(s => ({ trackIdx: (s.trackIdx + 1) % TRACKS.length })),
+      trackRows: TRACKS.map((t, i) => ({
+        label: (i + 1) + '. ' + t.label,
+        dur: t.dur,
+        mark: i === this.state.trackIdx ? '▸' : '',
+        podBg: i === this.state.trackIdx ? '#ffffff' : 'transparent',
+        podFg: i === this.state.trackIdx ? '#084d92' : '#ffffff',
+        pick: () => this.setState({ trackIdx: i })
+      })),
+      countA: nA + '/16',
+      countB: nB + '/8',
+      clearA: () => this.setState({ checkedA: PHRASES_A.map(() => false) }),
+      clearB: () => this.setState({ checkedB: PHRASES_B.map(() => false) }),
+      tabs,
+      wTitle: P.title, wPosts: P.posts, wHumble: P.humble, wLines: P.lines, wWord: P.word,
+      copied: this.state.copied,
+      subB: this.state.subB,
+      notSubB: !this.state.subB,
+      doSub: () => this.setState({ subB: true }),
+      openRoast: () => { window.location.href = 'Roast.dc.html'; },
+      openMixer: () => window.open('https://linkedinbeats.com', '_blank'),
+      sendCoworker: () => this.copy('No pressure, but your LinkedIn has been placed on a performance improvement plan. https://linkedinbeats.com'),
+      shareWrapped: () => this.copy('Apparently I am a ' + P.title + '. This explains a lot. https://linkedinbeats.com'),
+      shareBingo: () => this.copy('Cliché Detection Grid, Form BD-16: ' + nA + '/16 specimens observed before lunch. https://linkedinbeats.com'),
+      isTrue: true,
+      stampAngle: -5
+    };
+  }
+}
+</script>
+</body>
+</html>

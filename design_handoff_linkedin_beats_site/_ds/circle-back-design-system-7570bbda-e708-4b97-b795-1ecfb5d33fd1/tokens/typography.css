@@ -1,0 +1,37 @@
+:root{
+--sans:"Helvetica Neue", Helvetica, Arial, sans-serif; /* @kind font */
+--mono:"IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace; /* @kind font */
+/* display — 104px on posters, 64px in app, 40px on product headers */
+--h1-size:104px;
+--h1-size-app:64px;
+--h1-size-screen:40px;
+--h1-tracking:-.045em;
+--h1-leading:.94;
+--h1-weight:700;
+--h2-size:27px;        /* interview question, section head */
+--h2-tracking:-.03em;
+--h3-size:19px;        /* card title, screen title */
+--h3-tracking:-.02em;
+--dek-size:17px;
+--dek-size-app:13px;
+--dek-leading:1.45;
+--body-size:13.5px;    /* running prose, redacted documents, roast lines */
+--body-leading:1.55;
+/* label: uppercase, bold, tracked — the house label */
+--label-size:9.5px;
+--label-tracking:.16em;
+--label-tracking-meta:.14em; /* masthead meta + sequencer row labels */
+--label-weight:700;
+/* component text */
+--logo-size:19px;
+--key-name-size:11.5px;
+--key-ix-size:10px;
+--index-size:11.5px;
+--readout-size:10.5px;
+--ticker-size:14px;
+--ticker-chip-size:9px;
+--ticker-chip-tracking:.2em;
+--fine-size:8.5px;
+--score-size:56px;     /* Thought Leadership Index numeral */
+--stagekey-size:30px;  /* Phrase / Build / Drop */
+}

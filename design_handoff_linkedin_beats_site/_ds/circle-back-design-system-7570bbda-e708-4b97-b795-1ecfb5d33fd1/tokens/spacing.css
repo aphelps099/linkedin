@@ -1,0 +1,23 @@
+:root{
+--page-max:1120px;
+--space-page-y:34px;
+--space-page-x:44px;
+--space-page-y-narrow:20px;
+--space-page-x-narrow:14px;
+--space-col:30px;      /* column grid gap */
+--space-section:30px;
+--space-head:12px;     /* under section rules */
+--space-meta:28px;     /* masthead meta item gap */
+--card-pad:22px;       /* panel padding, 16px narrow */
+--card-pad-narrow:16px;
+--seq-cell-h:26px;
+--seq-label-w:110px;
+--seq-label-w-narrow:84px;
+--dial-size:74px;
+--key-ratio:1.45/1; /* @kind other */
+--stagekey-h:104px;
+--comment-card-h:104px;
+--btn-pad:10px 15px;
+--btn-pad-lg:12px 18px;
+--btn-pad-sm:6px 10px;
+}

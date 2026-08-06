@@ -1,0 +1,4 @@
+/* Circle Back — webfonts.
+   Sans is the SYSTEM Helvetica Neue stack (no binary ships; nothing to @font-face).
+   Mono is IBM Plex Mono, loaded from Google Fonts exactly as the product does. */
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap");
