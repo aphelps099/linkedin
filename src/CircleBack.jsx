@@ -90,6 +90,7 @@ const PHRASES = [
   {code:'MO', name:'Momentum', say:'Momentum compounds.'},
 ];
 const KEYMAP = '1234qwetasdfzxcv'; // studio only — on stage, 1/2/3 are the instrument
+const REMIX_MAX_RUNTIME_MS = 30_000;
 const DRUMS = [
   {name:'Kick', id:'kick'},{name:'Snare', id:'snare'},{name:'Clap', id:'clap'},{name:'Cl. hat', id:'ch'},
   {name:'Op. hat', id:'oh'},{name:'Shaker', id:'shk'},{name:'Cowbell', id:'cow'},{name:'Zap', id:'zap'},
@@ -247,7 +248,14 @@ export default function CircleBack(){
   const speakNextShowLine = React.useCallback(()=>{
     const r = ref.current;
     if(r.remixSequence && r.remixSequence.length){
-      const item = r.remixSequence[r.remixSequenceIx % r.remixSequence.length];
+      if(r.remixSequenceIx >= r.remixSequence.length){
+        if(!expRef.current){
+          setTicker('Remix complete — compliance filing closed.');
+          setPlaying(false);
+        }
+        return;
+      }
+      const item = r.remixSequence[r.remixSequenceIx];
       r.remixSequenceIx++;
       speak(item.phrase, item.text, item.buffer, item.voiceRole);
       return;
@@ -257,6 +265,19 @@ export default function CircleBack(){
     r.setlistIx = (r.setlistIx || 0) + 1;
     speak(i);
   },[speak]);
+
+  // A remix is a finite performance, not an ambient subscription service.
+  // Sequence completion normally stops it first; this cap catches timing or
+  // scheduler failures without interrupting fixed-duration exports.
+  React.useEffect(()=>{
+    if(!playing || !ref.current.remixSequence?.length) return;
+    const timer = setTimeout(()=>{
+      if(expRef.current) return;
+      setTicker('Remix complete — 30-second filing limit reached.');
+      setPlaying(false);
+    }, REMIX_MAX_RUNTIME_MS);
+    return ()=>clearTimeout(timer);
+  },[playing]);
   const pressKey = React.useCallback((i)=>{
     CBAudio.unlock();
     ref.current.lastKeyAt = performance.now();
@@ -385,7 +406,9 @@ export default function CircleBack(){
           rr.kickAt = rr.pattern[0][s] ? performance.now() : rr.kickAt;
           setPos(s);
           const manualIdle = !rr.lastKeyAt || performance.now() - rr.lastKeyAt > 6500;
-          const actLength = Math.max(16, rr.patLen);
+          // Remix lines advance every six beats so the whole filing lands in
+          // roughly 24 seconds; library tracks keep their roomier arrangement.
+          const actLength = rr.remixSequence?.length ? 24 : Math.max(16, rr.patLen);
           const showStep = rr.stepCount % (actLength * 4);
           const act = Math.floor(showStep / actLength);
           const actOpening = showStep % actLength === 0;
