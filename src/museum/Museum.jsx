@@ -135,6 +135,7 @@ export default function Museum(){
         <a href="../lessons/" style={{ color: 'var(--blue)' }}>Write one — Lessons™</a>
         <a href="../roast/" style={{ color: 'var(--blue)' }}>Judge one — Roast™</a>
         <a href="../" style={{ color: 'var(--blue)' }}>Perform one — Circle Back®</a>
+        <a href="../store/" style={{ color: 'var(--blue)' }}>Wear one — The Company Store</a>
       </span>
     </div>
   </div>;

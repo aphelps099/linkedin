@@ -9,7 +9,8 @@
     "build": "vite build",
     "start": "node server/index.js",
     "preview": "vite preview",
-    "check:voice": "node scripts/check-voice.mjs"
+    "check:voice": "node scripts/check-voice.mjs",
+    "check:store": "node scripts/check-store.mjs"
   },
   "dependencies": {
     "express": "^4.21.2",

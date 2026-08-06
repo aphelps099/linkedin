@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { fileURLToPath } from 'node:url';
 import { generateVoiceClips } from './server/voice-service.js';
+import { createCheckoutSession } from './server/store-service.js';
 
 function localVoiceApi(){
   return {
@@ -44,8 +45,44 @@ function localVoiceApi(){
   };
 }
 
+function localCheckoutApi(){
+  return {
+    name: 'circle-back-local-checkout-api',
+    configureServer(server){
+      server.middlewares.use('/api/checkout', (req, res)=>{
+        if(req.method !== 'POST'){
+          res.statusCode = 405;
+          res.end(JSON.stringify({error:'Method not allowed'}));
+          return;
+        }
+        let raw = '';
+        req.on('data', chunk=>{ raw += chunk; });
+        req.on('end', async ()=>{
+          res.setHeader('Content-Type', 'application/json');
+          try{
+            const body = JSON.parse(raw || '{}');
+            const session = await createCheckoutSession({
+              cart:body.cart,
+              origin:req.headers.origin || 'http://localhost:5173',
+              secretKey:process.env.STRIPE_SECRET_KEY,
+              apiBaseUrl:process.env.STRIPE_API_BASE || 'https://api.stripe.com',
+              flatShippingCents:Number(process.env.STORE_FLAT_SHIPPING_CENTS || 500),
+              shipCountries:(process.env.STORE_SHIP_COUNTRIES || 'US,CA,GB,AU').split(',').map(c=>c.trim()).filter(Boolean),
+            });
+            res.end(JSON.stringify({url:session.url, id:session.id}));
+          }catch(error){
+            const message = error.message || 'Checkout failed';
+            res.statusCode = /required|configured|Unknown|range|size|exceeds/i.test(message) ? 400 : 502;
+            res.end(JSON.stringify({error:message}));
+          }
+        });
+      });
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [react(), localVoiceApi()],
+  plugins: [react(), localVoiceApi(), localCheckoutApi()],
   // Relative base so the built index.html works when served from a
   // GitHub Pages project path (https://<user>.github.io/linkedin/).
   base: './',
@@ -59,6 +96,8 @@ export default defineConfig({
         roast: fileURLToPath(new URL('./roast/index.html', import.meta.url)),
         // The Museum of Professional Communication, served at /museum/
         museum: fileURLToPath(new URL('./museum/index.html', import.meta.url)),
+        // The Company Store — Circle Back merchandise, served at /store/
+        store: fileURLToPath(new URL('./store/index.html', import.meta.url)),
       },
     },
   },

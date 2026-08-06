@@ -27,8 +27,46 @@ Then open the printed local URL. `npm run build` produces a static bundle in
 workflow manually from the Actions tab).
 
 The build is multi-page: the mixer at `/`, **LinkedIn Lessons™** at
-`/lessons/`, **Roast My LinkedIn™** at `/roast/`, and **The Museum of
-Professional Communication** at `/museum/`.
+`/lessons/`, **Roast My LinkedIn™** at `/roast/`, **The Museum of
+Professional Communication** at `/museum/`, and **The Company Store** at
+`/store/`.
+
+## The Company Store (`/store/`)
+
+*The Circle Back® ecosystem · Merchandise division* — Form CS-1, at `/store/`.
+Nine SKUs across Shirts, Hats, Stickers and Posters, built from the design
+handoff in `design_handoff_company_store/`: a filterable product grid with ink
+grid lines, a product detail panel, and an order drawer. Hover inverts to
+solid ink; nothing dims, scales or lifts; all sales final.
+
+The order form persists in `localStorage`. **Submit the order** posts the cart
+(SKUs and quantities only — the server prices everything from the catalog in
+`src/store/products.js`) to `/api/checkout`, which creates a **Stripe Checkout
+Session** and redirects; returning lands back on `/store/` as
+`?order=filed` or `?order=tabled`, in voice. Free shipping over $50 is applied
+server-side as a $0 shipping rate at a $50 subtotal.
+
+Fulfilment is **Printify**: on the `checkout.session.completed` webhook
+(`/api/store/webhook`, signature-verified), the server creates a Printify
+order addressed from the Stripe session and submits it to production. Railway
+service variables:
+
+- `STRIPE_SECRET_KEY` — enables checkout (`/api/health` reports
+  `checkoutConfigured`).
+- `STRIPE_WEBHOOK_SECRET` — the webhook's signing secret.
+- `PRINTIFY_API_KEY`, `PRINTIFY_SHOP_ID` — the shop that prints the goods.
+- `PRINTIFY_SKU_MAP` — JSON mapping local SKUs to Printify products, e.g.
+  `{"CS-101":{"productId":"…","variants":{"S":1,"M":2,"L":3,"XL":4}},"CS-301":{"productId":"…","variantId":5}}`.
+  Orders with unmapped SKUs are left in Stripe and logged, never guessed.
+- `STORE_FLAT_SHIPPING_CENTS` (default `500`), `STORE_SHIP_COUNTRIES`
+  (default `US,CA,GB,AU`), `STORE_PUBLIC_ORIGIN` (defaults to the request
+  origin) — optional tuning.
+
+Without the Stripe key the storefront still runs; submitting reports
+"Checkout is not yet configured. The order was tabled." Product photography
+lives in `public/store/` (regenerate from the handoff with
+`node scripts/make-store-assets.mjs`). Engine checks:
+`node scripts/check-store.mjs`.
 
 ## The Museum of Professional Communication (`/museum/`)
 
@@ -297,6 +335,11 @@ src/
     categories.js          the six interview flows and their reactions
     generator.js           seeded template engine, the dial, transforms, roast, humanizer
     score.js               post diagnostics (reuses remix.js's Thought Leadership Index)
+  store/
+    main.jsx               /store/ entry
+    Store.jsx              the storefront: grid, product detail panel, order drawer
+    products.js            the CS-1 catalog — shared by the page and the server
+    store.css              the store's classes, values verbatim from the handoff
   styles.css, tokens/      design tokens as CSS custom properties
   components/
     stage/                 StageKey — the three performance keys
@@ -306,7 +349,10 @@ src/
     sequencer/             StepGrid
     broadcast/             Monitor (the 1080×1080 clip canvas)
 public/phrases/            recorded phrase bank (01.wav … 16.wav)
+public/store/              product photography (webp, from the handoff uploads)
+server/store-service.js    Stripe Checkout + Printify fulfilment for the store
 design_handoff_circle_back_mixer/   original design handoff (reference)
+design_handoff_company_store/       the Company Store handoff (reference)
 ```
 
 Audio starts on first gesture (autoplay policy).
