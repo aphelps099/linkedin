@@ -93,8 +93,10 @@
 
 /* order drawer */
 .cs-drawer { position: fixed; top: 0; right: 0; bottom: 0; width: 380px; max-width: 92vw; background: var(--white); border-left: 3px solid var(--ink); display: flex; flex-direction: column; padding: 22px 24px; z-index: 50; }
-.cs-empty { margin-top: 20px; border: 2px dashed var(--hair); padding: 36px 16px; text-align: center; }
+.cs-empty { margin-top: 20px; border: 2px dashed var(--hair); padding: 24px 16px 36px; text-align: center; }
 .cs-empty span { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-40); }
+/* Barry from Compliance minds the empty form — ×4 logical pixels, kept crisp */
+.cs-barry { display: block; margin: 0 auto 14px; image-rendering: pixelated; }
 .cs-cart-list { flex: 1; overflow: auto; margin-top: 6px; }
 .cs-cart-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 12px 0; border-bottom: 1px dotted var(--hair); }
 .cs-cart-item { display: flex; flex-direction: column; gap: 3px; }

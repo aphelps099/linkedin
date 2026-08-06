@@ -310,6 +310,27 @@ with the LinkedInification dial where the mixer has its beat ribbon:
 node scripts/make-lessons-assets.mjs
 ```
 
+### Barry from Compliance
+
+<img src="public/barry/barry-noted.png" width="220" alt="Barry from Compliance, a pixel-art pigeon in a top hat, with an ASCII-style speech bubble that says NOTED." />
+
+The Linked Beats mascot: a hand-plotted 48-grid pixel pigeon — top hat,
+cobalt lanyard, laminated badge — who speaks in ASCII-style bubbles set in
+a 3×5 pixel font. Seven flat colors, nearest-neighbor only, no antialiasing
+anywhere. He currently minds the Company Store's empty order form
+("coo. coo."); his approved statements live in `scripts/make-barry.mjs` —
+add a line to `VARIANTS` and regenerate:
+
+```sh
+node scripts/make-barry.mjs
+```
+
+That writes the plain sprite (`public/barry/barry.png`, plus the raw 48-grid
+`barry-48.png`) and one PNG per statement — NOTED. · COO. COO. ·
+PER MY LAST EMAIL. · LET'S CIRCLE BACK. · FLAGGED FOR REVIEW. (the cobalt
+compliance chip) · AS PER POLICY. Display at an integer multiple of the
+logical grid with `image-rendering: pixelated` to keep him crisp.
+
 That writes the `public/lessons-*` icons and `lessons-og.png` (1200×630).
 
 The site is live at **https://linkedinbeats.com**. The `og:url` / `og:image` /
