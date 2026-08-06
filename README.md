@@ -64,9 +64,10 @@ service variables:
 
 Without the Stripe key the storefront still runs; submitting reports
 "Checkout is not yet configured. The order was tabled." Product photography
-lives in `public/store/` (regenerate from the handoff with
-`node scripts/make-store-assets.mjs`). Engine checks:
-`node scripts/check-store.mjs`.
+lives in `public/store/`, and the store's social card (`store-og.png` — the
+CS-1 masthead beside a turntable spinning in a conference room) is composed
+by the same script; regenerate both with `node scripts/make-store-assets.mjs`.
+Engine checks: `node scripts/check-store.mjs`.
 
 ## The Museum of Professional Communication (`/museum/`)
 
