@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="The Company Store" description="Storefront grid, product detail and order drawer for Circle Back merchandise" -->
+<helmet><script src="./ds-base.js"></script><script src="./image-slot.js"></script></helmet>
+<div style="min-height:100vh;background:var(--paper);color:var(--ink);font-family:var(--sans)">
+<div style="max-width:1120px;margin:0 auto;padding:34px 44px 60px">
+<div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;border-bottom:3px solid var(--ink);padding-bottom:10px">
+<span style="font-size:22px;font-weight:700;letter-spacing:-.02em;white-space:nowrap">Circle Back<sup style="font-size:9px;vertical-align:10px">®</sup></span>
+<span style="display:flex;gap:18px;flex-wrap:wrap;justify-content:flex-end;font-size:9.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase"><span>Form CS-1</span><span>Rev. 2026-08</span><span>All sales final</span></span>
+</div>
+<sc-if value="{{ showBanner }}" hint-placeholder-val="{{ true }}">
+<div style="margin-top:14px;background:var(--blue);color:#fff;padding:8px 14px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase">Free shipping over $50 · Printed on demand · Complaints processed locally ▮</div>
+</sc-if>
+<div style="margin:36px 0 0">
+<div style="font-size:9.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--blue)">The Circle Back® ecosystem · Merchandise division</div>
+<h1 style="margin:10px 0 0;font-size:64px;font-weight:700;letter-spacing:-.045em;line-height:.94;color:var(--blue)">The Company Store</h1>
+<p style="margin:16px 0 0;max-width:540px;font-size:13px;line-height:1.45">Shirts, hats, stickers and posters. Designed by the department, printed on demand. <strong style="color:var(--blue)">Everything ships from a printer we have never met.</strong></p>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin:30px 0 18px">
+<div style="display:flex;gap:6px;flex-wrap:wrap">
+<sc-for list="{{ cats }}" as="cat" hint-placeholder-count="5">
+<span><sc-if value="{{ cat.on }}" hint-placeholder-val="{{ false }}"><button onClick="{{ cat.pick }}" style="font-family:var(--sans);font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:8px 14px;border:1.5px solid var(--blue);background:var(--blue);color:var(--white);border-radius:0;cursor:pointer">{{ cat.label }}</button></sc-if><sc-if value="{{ cat.off }}" hint-placeholder-val="{{ true }}"><button onClick="{{ cat.pick }}" style="font-family:var(--sans);font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:8px 14px;border:1.5px solid var(--ink);background:var(--white);color:var(--ink);border-radius:0;cursor:pointer" style-hover="background:var(--ink);color:var(--white)">{{ cat.label }}</button></sc-if></span>
+</sc-for>
+</div>
+<button onClick="{{ openDrawer }}" style="font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:8px 14px;border:1.5px solid var(--ink);background:var(--white);color:var(--ink);border-radius:0;cursor:pointer" style-hover="background:var(--ink);color:var(--white)">Order form · {{ cartCount }}</button>
+</div>
+<sc-if value="{{ isGrid }}" hint-placeholder-val="{{ true }}">
+<div data-screen-label="Storefront grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--ink);border:1.5px solid var(--ink)">
+<sc-for list="{{ items }}" as="item" hint-placeholder-count="6">
+<div style="background:var(--white);display:flex;flex-direction:column">
+<div style="position:relative;aspect-ratio:1/1;border-bottom:1px solid var(--hair)"><sc-if value="{{ item.hasImg }}" hint-placeholder-val="{{ false }}"><img src="{{ item.img }}" alt="{{ item.name }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></sc-if><sc-if value="{{ item.noImg }}" hint-placeholder-val="{{ true }}"><image-slot id="cs-{{ item.sku }}" shape="rect" placeholder="{{ item.ph }}"></image-slot></sc-if></div>
+<div onClick="{{ item.open }}" style="padding:14px 16px 16px;flex:1;display:flex;flex-direction:column;gap:6px;cursor:pointer" style-hover="background:var(--ink);color:var(--white)">
+<div style="font-size:9.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;opacity:.45">{{ item.cat }} · {{ item.sku }}</div>
+<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+<div style="font-size:19px;font-weight:700;letter-spacing:-.02em">{{ item.name }}</div>
+<button onClick="{{ item.open }}" style="font-family:var(--mono);font-size:24px;width:44px;height:44px;flex-shrink:0;border:1.5px solid var(--ink);background:var(--white);color:var(--ink);border-radius:0;cursor:pointer;line-height:1;padding:0" style-hover="background:var(--blue);color:var(--white);border-color:var(--blue)">+</button>
+</div>
+<div style="margin-top:auto;padding-top:8px;font-family:var(--mono);font-size:13px"><sc-if value="{{ showPrices }}" hint-placeholder-val="{{ true }}"><span>{{ item.priceFmt }}</span></sc-if></div>
+</div>
+</div>
+</sc-for>
+<sc-for list="{{ fillers }}" as="f" hint-placeholder-count="0">
+<div style="background:var(--paper);display:flex;align-items:center;justify-content:center;min-height:120px"><span style="font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-40)">Further SKUs pending</span></div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Product detail" style="position:fixed;top:0;right:0;bottom:0;width:560px;max-width:92vw;background:var(--white);border-left:3px solid var(--ink);z-index:60;overflow:auto;padding:22px 28px 30px">
+<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:20px"><span style="font-size:9.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase">Product detail · {{ d.sku }}</span><button onClick="{{ back }}" style="font-family:var(--mono);font-size:16px;width:30px;height:30px;border:1.5px solid var(--ink);background:var(--white);color:var(--ink);border-radius:0;cursor:pointer" style-hover="background:var(--ink);color:var(--white)">×</button></div>
+<div style="display:flex;flex-direction:column;gap:24px">
+<div style="position:relative;aspect-ratio:1/1;border:1.5px solid var(--ink);background:var(--white)"><sc-if value="{{ dHasImg }}" hint-placeholder-val="{{ false }}"><img src="{{ d.img }}" alt="{{ d.name }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></sc-if><sc-if value="{{ dNoImg }}" hint-placeholder-val="{{ true }}"><image-slot id="cs-{{ d.sku }}" shape="rect" placeholder="{{ d.ph }}"></image-slot></sc-if></div>
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="font-size:9.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-40)">{{ d.cat }} · {{ d.sku }}</div>
+<h2 style="margin:0;font-size:40px;font-weight:700;letter-spacing:-.045em;line-height:.98;color:var(--blue)">{{ d.name }}</h2>
+<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+<button onClick="{{ addToOrder }}" style="font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:13px 26px;border:1.5px solid var(--blue);background:var(--blue);color:var(--white);border-radius:0;cursor:pointer;white-space:nowrap" style-hover="background:var(--ink);border-color:var(--ink)">Add to the order</button>
+<div style="display:flex;align-items:center;gap:6px">
+<button onClick="{{ dec }}" style="font-family:var(--mono);font-size:14px;width:32px;height:32px;border:1.5px solid var(--ink);background:var(--white);color:var(--ink);border-radius:0;cursor:pointer" style-hover="background:var(--ink);color:var(--white)">−</button>
+<span style="font-family:var(--mono);font-size:14px;min-width:24px;text-align:center">{{ qty }}</span>
+<button onClick="{{ inc }}" style="font-family:var(--mono);font-size:14px;width:32px;height:32px;border:1.5px solid var(--ink);background:var(--white);color:var(--ink);border-radius:0;cursor:pointer" style-hover="background:var(--ink);color:var(--white)">+</button>
+</div>
+<sc-if value="{{ showPrices }}" hint-placeholder-val="{{ true }}"><span style="font-family:var(--mono);font-size:18px">{{ lineTotal }}</span></sc-if>
+</div>
+<sc-if value="{{ hasSizes }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;align-items:center;gap:10px">
+<span style="font-size:9.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-40)">Size</span>
+<div style="display:flex;gap:6px">
+<sc-for list="{{ sizeOpts }}" as="s" hint-placeholder-count="4">
+<span><sc-if value="{{ s.on }}" hint-placeholder-val="{{ false }}"><button onClick="{{ s.pick }}" style="font-family:var(--sans);font-size:10px;font-weight:700;letter-spacing:.1em;padding:8px 0;width:42px;border:1.5px solid var(--blue);background:var(--blue);color:var(--white);border-radius:0;cursor:pointer">{{ s.label }}</button></sc-if><sc-if value="{{ s.off }}" hint-placeholder-val="{{ true }}"><button onClick="{{ s.pick }}" style="font-family:var(--sans);font-size:10px;font-weight:700;letter-spacing:.1em;padding:8px 0;width:42px;border:1.5px solid var(--ink);background:var(--white);color:var(--ink);border-radius:0;cursor:pointer" style-hover="background:var(--ink);color:var(--white)">{{ s.label }}</button></sc-if></span>
+</sc-for>
+</div>
+</div>
+</sc-if>
+<p style="margin:0;max-width:420px;font-size:13.5px;line-height:1.55">{{ d.desc }}</p>
+<div style="display:inline-block;align-self:flex-start;border:2px solid var(--blue);color:var(--blue);padding:6px 12px;transform:rotate(-4deg);font-size:9.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;margin:4px 0">In stock — print on demand</div>
+<div>
+<sc-for list="{{ d.specRows }}" as="spec" hint-placeholder-count="3">
+<div style="display:flex;justify-content:space-between;gap:16px;padding:8px 0;border-bottom:1px dotted var(--hair)"><span style="font-size:9.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-40)">{{ spec.k }}</span><span style="font-family:var(--mono);font-size:12px">{{ spec.v }}</span></div>
+</sc-for>
+</div>
+</div>
+</div>
+</div>
+</sc-if>
+<div style="margin-top:52px;border-top:3px solid var(--ink);padding-top:12px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap">
+<span style="font-size:9.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-40)">Unlocking Synergistic Rhythms for Professional Communicators · Merchandise printed and shipped by a third party</span>
+<span style="font-size:9.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-40)">Form CS-1 · Rev. 2026-08</span>
+</div>
+</div>
+<sc-if value="{{ drawerOpen }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Order drawer" style="position:fixed;top:0;right:0;bottom:0;width:380px;background:var(--white);border-left:3px solid var(--ink);display:flex;flex-direction:column;padding:22px 24px;z-index:50">
+<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--ink);padding-bottom:10px">
+<span style="font-size:9.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase">Order form · CS-1</span>
+<button onClick="{{ closeDrawer }}" style="font-family:var(--mono);font-size:16px;width:30px;height:30px;border:1.5px solid var(--ink);background:var(--white);color:var(--ink);border-radius:0;cursor:pointer" style-hover="background:var(--ink);color:var(--white)">×</button>
+</div>
+<sc-if value="{{ cartEmpty }}" hint-placeholder-val="{{ true }}">
+<div style="margin-top:20px;border:2px dashed var(--hair);padding:36px 16px;text-align:center"><span style="font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-40)">Awaiting merchandise</span></div>
+</sc-if>
+<div style="flex:1;overflow:auto;margin-top:6px">
+<sc-for list="{{ cartItems }}" as="row" hint-placeholder-count="0">
+<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:12px 0;border-bottom:1px dotted var(--hair)">
+<div style="display:flex;flex-direction:column;gap:3px"><span style="font-size:13.5px;font-weight:700;letter-spacing:-.01em">{{ row.name }}</span><span style="font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-40)">{{ row.meta }}</span></div>
+<div style="display:flex;align-items:baseline;gap:10px"><span style="font-family:var(--mono);font-size:12px">{{ row.lineFmt }}</span><button onClick="{{ row.remove }}" style="font-family:var(--mono);font-size:13px;border:none;background:none;color:var(--ink);cursor:pointer;padding:0" style-hover="color:var(--blue)">×</button></div>
+</div>
+</sc-for>
+</div>
+<div style="border-top:1.5px solid var(--ink);padding-top:12px;display:flex;justify-content:space-between;align-items:baseline">
+<span style="font-size:9.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase">Subtotal</span>
+<span style="font-family:var(--mono);font-size:16px">{{ subtotalFmt }}</span>
+</div>
+<p style="margin:10px 0 14px;font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-40)">Shipping calculated by the fulfilment partner. All sales final.</p>
+<button style="font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:14px;border:1.5px solid var(--ink);background:var(--white);color:var(--ink);border-radius:0;cursor:pointer" style-hover="background:var(--ink);color:var(--white)">Submit the order</button>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showBanner&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Storefront&quot;},&quot;showPrices&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Storefront&quot;}}">
+class Component extends DCLogic {
+  state = { filter: 'All', view: 'grid', sel: null, size: null, qty: 1, cart: [], drawer: false };
+  products = [
+    { sku: 'CS-101', cat: 'Shirts', name: 'The Circle Back Tee', price: 28, sizes: ['S','M','L','XL'], img: 'uploads/aaronphelps_man_in_his_mid_30s_in_the_same_off-white_tee_tuck_6c921634-af9d-49b5-a0ee-6fc92a305af6_0.png', ph: 'Drop mockup — tee, flat lay', desc: 'Heavyweight cotton. The wordmark, front left chest, one colour. That is the entire design.', specs: [['Stock','Heavyweight cotton'],['Print','Screen, one colour'],['Fit','Unisex, true to size']] },
+    { sku: 'CS-102', cat: 'Shirts', name: 'Per My Last Email Tee', price: 28, sizes: ['S','M','L','XL'], img: 'uploads/aaronphelps_1._woman_in_her_mid_30s_wearing_an_off-white_t-sh_75d9b143-7eba-4f0b-ba30-f31fdeb25541_1.png', ph: 'Drop mockup — tee, flat lay', desc: 'For people who have typed it, deleted it, and typed it again. Set in Helvetica across the chest.', specs: [['Stock','Heavyweight cotton'],['Print','Screen, one colour'],['Fit','Unisex, true to size']] },
+    { sku: 'CS-103', cat: 'Shirts', name: 'The Serious Tee', price: 28, sizes: ['S','M','L','XL'], ph: 'Drop mockup — tee, flat lay', desc: 'Says SERIOUS. In Helvetica, obviously. Worn by people who are.', specs: [['Stock','Heavyweight cotton'],['Print','Screen, one colour'],['Fit','Unisex, true to size']] },
+    { sku: 'CS-201', cat: 'Hats', name: 'Thought Leader Cap', price: 24, sizes: null, ph: 'Drop mockup — cap, 3/4 view', desc: 'Unstructured six-panel in corporate blue. Says THOUGHT LEADER and declares nothing else.', specs: [['Body','Unstructured six-panel'],['Embroidery','White, front'],['Size','One size, adjustable']] },
+    { sku: 'CS-202', cat: 'Hats', name: 'Take This Offline Cap', price: 24, sizes: null, img: 'uploads/aaronphelps_woman_in_her_mid_30s_in_business_casual_wearing_a_68ed172e-dd2e-4662-b8f3-a8020a32ca2c_0.png', ph: 'Drop mockup — cap, 3/4 view', desc: 'The meeting-ender, embroidered in white on ink. Wearing it does not end meetings.', specs: [['Body','Unstructured six-panel'],['Embroidery','White, front'],['Size','One size, adjustable']] },
+    { sku: 'CS-301', cat: 'Stickers', name: 'Glyph Set Sticker Sheet', price: 6, sizes: null, ph: 'Drop mockup — sheet, straight on', desc: 'Nine glyphs from the official set, die-cut. The block cursor is the popular one.', specs: [['Material','Matte vinyl, die-cut'],['Sheet','4 × 6 in, 9 stickers'],['Finish','Laptop-grade']] },
+    { sku: 'CS-302', cat: 'Stickers', name: 'Approved — HR Sticker', price: 4, sizes: null, ph: 'Drop mockup — sticker, straight on', desc: 'The rubber stamp, for laptops and water bottles. Confers no actual approval.', specs: [['Material','Matte vinyl, die-cut'],['Size','3 in wide'],['Angle','Pre-tilted, −4°']] },
+    { sku: 'CS-401', cat: 'Posters', name: 'The Tagline Poster', price: 18, sizes: null, ph: 'Drop mockup — poster in frame', desc: '“It’s not an instrument. It’s a journey.” At 104 points, in corporate blue, on paper.', specs: [['Size','18 × 24 in'],['Stock','Matte, 200 gsm'],['Ships','Rolled, in a tube']] },
+    { sku: 'CS-402', cat: 'Posters', name: 'Museum Admission Poster', price: 18, sizes: null, ph: 'Drop mockup — poster in frame', desc: 'Wing I of the Museum of Professional Communication. Admission free; the poster is not.', specs: [['Size','18 × 24 in'],['Stock','Matte, 200 gsm'],['Ships','Rolled, in a tube']] },
+  ];
+  fmt(n) { return '$' + n.toFixed(2); }
+  renderVals() {
+    const S = this.state, set = (o) => this.setState(o);
+    const items = this.products.filter(p => S.filter === 'All' || p.cat === S.filter)
+      .map(p => ({ ...p, priceFmt: this.fmt(p.price), hasImg: !!p.img, noImg: !p.img, open: () => set({ view: 'detail', sel: p.sku, size: p.sizes ? p.sizes[1] : null, qty: 1 }) }));
+    const fillers = Array.from({ length: (3 - (items.length % 3)) % 3 }, (_, i) => ({ id: i }));
+    const cats = ['All', 'Shirts', 'Hats', 'Stickers', 'Posters'].map(c => {
+      const on = c === S.filter;
+      return { label: c, on, off: !on, pick: () => set({ filter: c }) };
+    });
+    const d0 = this.products.find(p => p.sku === S.sel);
+    const d = d0 ? { ...d0, priceFmt: this.fmt(d0.price), specRows: d0.specs.map(s => ({ k: s[0], v: s[1] })) } : { specRows: [] };
+    const sizeOpts = (d0 && d0.sizes ? d0.sizes : []).map(s => {
+      const on = s === S.size;
+      return { label: s, on, off: !on, pick: () => set({ size: s }) };
+    });
+    const cartItems = S.cart.map((c, i) => ({ ...c, lineFmt: this.fmt(c.price * c.qty), meta: c.sku + ' · ' + (c.size ? c.size + ' · ' : '') + 'Qty ' + c.qty, remove: () => set({ cart: S.cart.filter((_, j) => j !== i) }) }));
+    return {
+      showBanner: this.props.showBanner ?? true,
+      showPrices: this.props.showPrices ?? true,
+      isGrid: true, isDetail: S.view === 'detail' && !!d0,
+      items, fillers, cats, d, dHasImg: !!(d0 && d0.img), dNoImg: !!(d0 && !d0.img), hasSizes: sizeOpts.length > 0, sizeOpts, cartItems,
+      qty: S.qty,
+      dec: () => set({ qty: Math.max(1, S.qty - 1) }),
+      inc: () => set({ qty: S.qty + 1 }),
+      lineTotal: d0 ? this.fmt(d0.price * S.qty) : '',
+      back: () => set({ view: 'grid', sel: null }),
+      addToOrder: () => {
+        if (!d0) return;
+        const sz = d0.sizes ? S.size : null;
+        const cart = S.cart.slice();
+        const i = cart.findIndex(c => c.sku === d0.sku && c.size === sz);
+        if (i >= 0) cart[i] = { ...cart[i], qty: cart[i].qty + S.qty };
+        else cart.push({ sku: d0.sku, name: d0.name, price: d0.price, size: sz, qty: S.qty });
+        set({ cart, drawer: true, view: 'grid', sel: null });
+      },
+      drawerOpen: S.drawer,
+      openDrawer: () => set({ drawer: true }),
+      closeDrawer: () => set({ drawer: false }),
+      cartCount: S.cart.reduce((t, c) => t + c.qty, 0),
+      cartEmpty: S.cart.length === 0,
+      subtotalFmt: this.fmt(S.cart.reduce((t, c) => t + c.price * c.qty, 0)),
+    };
+  }
+}
+</script>
+</body>
+</html>

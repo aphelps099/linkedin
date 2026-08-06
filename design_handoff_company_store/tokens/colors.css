@@ -1,0 +1,30 @@
+:root{
+/* swiss corporate palette — the whole thing */
+--paper:#f6f5f1;      /* page */
+--white:#ffffff;      /* cards, keys */
+--ink:#111111;        /* text, rules, borders */
+--ink-40:#11111166;   /* muted meta */
+--hair:#11111122;     /* dotted/hairline rules */
+--blue:#0a66c2;       /* THE corporate blue — accents, fills, active */
+--blue-light:#9fc8ea; /* secondary tint on blue fields (playhead frame) */
+--blue-dark:#084d92;  /* hover, rarely */
+/* on-blue: the stage inverts — white outlines, white fills, blue text */
+--on-blue:#ffffff;
+--on-blue-72:rgba(255,255,255,.72);  /* fine print on the stage */
+--on-blue-42:rgba(255,255,255,.42);  /* monitor frame */
+--on-blue-22:rgba(255,255,255,.22);  /* dashed empty state */
+--avatar-tint:#c3d9ee;               /* comment-card avatar disc */
+/* semantic */
+--surface-page:var(--paper);
+--surface-card:var(--white);
+--surface-field:var(--blue);
+--surface-stage:var(--blue);
+--text-body:var(--ink);
+--text-meta:var(--ink-40);
+--text-invert:#ffffff;
+--accent:var(--blue);
+--danger:var(--ink); /* record latches ink-black */
+--border-default:var(--ink);
+--border-accent:var(--blue);
+--border-hair:var(--hair);
+}

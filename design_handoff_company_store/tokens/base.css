@@ -1,0 +1,6 @@
+html,body{margin:0;background:var(--surface-page)}
+body{font-family:var(--sans);color:var(--text-body);-webkit-font-smoothing:antialiased}
+a{color:var(--blue);text-decoration:none}
+a:hover{color:var(--ink)}
+*{border-radius:0}
+button,input,textarea,select{font-family:inherit}
