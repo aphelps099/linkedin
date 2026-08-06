@@ -47,7 +47,13 @@ function rangesFor(text, findings, visibleCount) {
       range.start < accepted.end && range.end > accepted.start));
 }
 
-export function MarkedDocument({ text, findings, visibleCount, scanning = false }) {
+export function MarkedDocument({
+  text,
+  findings,
+  visibleCount,
+  scanning = false,
+  activeFinding = null,
+}) {
   const ranges = React.useMemo(
     () => rangesFor(text, findings, visibleCount),
     [text, findings, visibleCount],
@@ -59,7 +65,8 @@ export function MarkedDocument({ text, findings, visibleCount, scanning = false 
     if (range.start > cursor) parts.push(text.slice(cursor, range.start));
     parts.push(
       <mark
-        className="rm-mark"
+        className={`rm-mark ${activeFinding === range.findingIndex ? 'is-active' : ''}`}
+        data-finding={range.findingIndex}
         data-mark={range.findingIndex + 1}
         key={`${range.start}-${range.end}-${index}`}
       >

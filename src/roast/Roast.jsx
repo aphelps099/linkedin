@@ -18,6 +18,230 @@ const PHASE_LABELS = {
   result: 'Official findings',
 };
 
+const FINDING_META = {
+  journey: ['Journey inflation', 'Routine event promoted to personal mythology'],
+  humbled: ['Performative humility', 'Self-congratulation filed as modesty'],
+  sink: ['Engagement direction', 'Reader instructed to experience significance'],
+  hashtags: ['Hashtag load', 'Distribution apparatus exceeds editorial need'],
+  rockets: ['Visual propulsion', 'Unverified momentum iconography'],
+  oneliners: ['Broetry formatting', 'Sentence fragmentation for ceremonial weight'],
+  notx: ['Binary revelation', 'Contrast template used as manufactured insight'],
+  longpost: ['Document expansion', 'Feed allocation exceeds operational guidance'],
+  bait: ['Engagement bait', 'Interaction requested before value is established'],
+  gratbrag: ['Performative gratitude', 'Achievement concealed inside appreciation'],
+  aitells: ['AI language probability', 'Synthetic prose marker located'],
+  grindset: ['Grindset language', 'Personal depletion presented as operating model'],
+  buzz: ['Corporate vocabulary', 'Management language density exceeds tolerance'],
+  pipes: ['Title architecture', 'Role stack separated by load-bearing punctuation'],
+  helping: ['Outcome abstraction', 'Claim lacks a measurable object'],
+  inflation: ['Title inflation', 'Seniority unsupported by recognized jurisdiction'],
+  exflex: ['Institutional residue', 'Former employer retained as present credential'],
+  topvoice: ['Platform decoration', 'Algorithmic badge entered as professional title'],
+  hemoji: ['Symbol load', 'Decorative glyphs exceed semantic requirements'],
+  hlong: ['Headline expansion', 'Identity statement exceeds display allocation'],
+  speakerauthor: ['Role accumulation', 'Multiple side quests entered as one occupation'],
+  thirdperson: ['Narrative distance', 'Biography appears to have hired a publicist'],
+  passionate: ['Unverified enthusiasm', 'Emotional claim lacks supporting evidence'],
+  resultsdriven: ['Results claim', 'Performance asserted without a result'],
+  along: ['Biography expansion', 'About section exceeds inspection threshold'],
+  manyhats: ['Staffing disclosure', 'Under-resourcing presented as versatility'],
+};
+
+const EVIDENCE_PATTERNS = {
+  journey: /\bjourney\b/i,
+  humbled: /\bhumbled\b/i,
+  sink: /let that sink in|read that again/i,
+  hashtags: /#\w+/,
+  rockets: /🚀/u,
+  notx: /it'?s not[^.!?\n]{2,70}it'?s (?:about )?/i,
+  bait: /\b(?:agree|thoughts)\?/i,
+  gratbrag: /\b(?:grateful|gratitude|thankful|proud|excited|thrilled)\b/i,
+  aitells: /\b(?:delve|tapestry|testament)\b/i,
+  grindset: /\b(?:5 ?a\.?m\.?|rise and grind|hustle|no days off)\b/i,
+  buzz: /\b(?:synerg\w*|leverag\w*|pivot\w*|bandwidth|alignment|scalable|ecosystem|empower\w*|disrupt\w*|game-?chang\w*|cross-functional|best-in-class)\b/i,
+  pipes: /[|·•]/,
+  helping: /\bhelping\b.{3,60}\b(?:grow|scale|win|thrive|succeed|transform|tell)\w*/i,
+  inflation: /\b(?:visionary|guru|ninja|rockstar|wizard|evangelist|thought leader|dreamer|disruptor|growth hacker)\b/i,
+  exflex: /\bex-[A-Z][\w-]*/,
+  topvoice: /top voice/i,
+  hemoji: /[\u{1F300}-\u{1FAFF}\u{2700}-\u{27BF}\u{2600}-\u{26FF}]/u,
+  speakerauthor: /\b(?:speaker|author|investor|advisor|coach|podcast host)\b/i,
+  passionate: /passionate about/i,
+  resultsdriven: /results-driven|proven track record/i,
+  manyhats: /wear(?:ing)? many hats/i,
+};
+
+function signalState(value) {
+  if (value >= 75) return 'Critical';
+  if (value >= 50) return 'Elevated';
+  if (value >= 25) return 'Observed';
+  return 'Nominal';
+}
+
+function buildSignals(score, findings) {
+  const markerCounts = Object.fromEntries(score.markers.map(marker => [marker.label, marker.count]));
+  const has = key => findings.some(finding => finding.key === key);
+  return [
+    {
+      label: 'Performative gratitude',
+      value: Math.min(100, score.gratitude * 24 + (has('gratbrag') ? 28 : 0)),
+    },
+    {
+      label: 'Corporate vocabulary',
+      value: Math.min(100, Math.round(score.buzzDensity * 14 + (has('buzz') ? 24 : 0))),
+    },
+    {
+      label: 'Engagement bait',
+      value: Math.min(100, (has('bait') ? 72 : 0) + (has('sink') ? 24 : 0)),
+    },
+    {
+      label: 'AI language probability',
+      value: Math.min(100, (markerCounts['AI tells'] || 0) * 44),
+    },
+    {
+      label: 'Journey inflation',
+      value: Math.min(100, score.journeys * 32 + (has('notx') ? 18 : 0)),
+    },
+    {
+      label: 'Hashtag load',
+      value: Math.min(100, (markerCounts.Hashtags || 0) * 13),
+    },
+  ].map(signal => ({ ...signal, state: signalState(signal.value) }));
+}
+
+function evidenceText(text, finding) {
+  const pattern = EVIDENCE_PATTERNS[finding.key];
+  const match = pattern?.exec(text);
+  if (match?.[0]) return match[0].replace(/\s+/g, ' ').trim();
+  if (finding.key === 'oneliners') return `${finding.facts.n} ceremonial one-line paragraphs`;
+  if (['longpost', 'along'].includes(finding.key)) return `${finding.facts.n} words submitted`;
+  if (finding.key === 'hlong') return `${finding.facts.n} headline characters`;
+  return 'Document-level pattern';
+}
+
+function AnimatedScore({ value }) {
+  const [display, setDisplay] = React.useState(0);
+
+  React.useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setDisplay(value);
+      return undefined;
+    }
+    let frame;
+    const started = performance.now();
+    const tick = now => {
+      const progress = Math.min(1, (now - started) / 900);
+      const eased = 1 - ((1 - progress) ** 3);
+      setDisplay(Math.round(value * eased));
+      if (progress < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [value]);
+
+  return <span>{display}</span>;
+}
+
+function DiagnosticRecord({ result }) {
+  const signals = buildSignals(result.score, result.findings);
+  return (
+    <section className="rm-diagnostic" aria-labelledby="diagnostic-title" data-testid="panel-diagnostic">
+      <header className="rm-diagnostic__header">
+        <div>
+          <div className="rm-diagnostic__kicker">Thought Leadership Index</div>
+          <h2 id="diagnostic-title">Document analysis · Form TLI-100</h2>
+        </div>
+        <div className="rm-diagnostic__status">
+          <span className="rm-status-light" aria-hidden="true" />
+          Classification issued
+        </div>
+      </header>
+
+      <div className="rm-diagnostic__reading">
+        <div className="rm-primary-reading">
+          <div className="rm-score" data-testid="text-index-score">
+            <AnimatedScore value={result.score.index} />
+            <span>/100</span>
+          </div>
+          <div className="rm-rank">{result.score.rank}</div>
+          <div className="rm-confidence">Confidence: high · Indicators: {result.findings.length}</div>
+        </div>
+        <div className="rm-classification-stamp">
+          <span>Classification issued</span>
+          <strong>{result.score.rank}</strong>
+        </div>
+      </div>
+
+      <div className="rm-index-scale" aria-label={`Thought Leadership Index score ${result.score.index} out of 100`}>
+        <div className="rm-index-scale__labels" aria-hidden="true">
+          <span>0</span><span>25</span><span>50</span><span>75</span><span>100</span>
+        </div>
+        <div className="rm-index-scale__track">
+          <span className="rm-index-scale__cursor" style={{ '--rm-score': result.score.index }} />
+        </div>
+        <div className="rm-index-scale__caption">
+          <span>Refreshingly human</span>
+          <span>Please log off</span>
+        </div>
+      </div>
+
+      <div className="rm-signals" data-testid="list-diagnostic-signals">
+        {signals.map((signal, index) => (
+          <div className="rm-signal" key={signal.label} style={{ '--rm-order': index }}>
+            <div className="rm-signal__meta">
+              <span>{signal.label}</span>
+              <span>{String(signal.value).padStart(2, '0')} / {signal.state}</span>
+            </div>
+            <div className="rm-signal__track" aria-label={`${signal.label}: ${signal.value}, ${signal.state}`}>
+              <span style={{ '--rm-signal': signal.value }} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function EvidenceRegister({ draft, findings, activeFinding, onSelect }) {
+  return (
+    <aside className="rm-evidence" aria-labelledby="evidence-title">
+      <header className="rm-evidence__header">
+        <div>
+          <span className="rm-result-label">Evidence register</span>
+          <h2 id="evidence-title">{findings.length || 'No'} indicators filed</h2>
+        </div>
+        <span>RM-1/A</span>
+      </header>
+      {findings.length ? (
+        <div className="rm-evidence__list">
+          {findings.map((finding, index) => {
+            const meta = FINDING_META[finding.key] || ['Unclassified indicator', 'Manual review required'];
+            return (
+              <button
+                aria-current={activeFinding === index ? 'true' : undefined}
+                className={`rm-evidence-row ${activeFinding === index ? 'is-active' : ''}`}
+                data-testid={`button-evidence-${index}`}
+                key={`${finding.key}-${index}`}
+                onClick={() => onSelect(index)}
+                type="button"
+              >
+                <span className="rm-evidence-row__number">Flag {String(index + 1).padStart(2, '0')}</span>
+                <strong>“{evidenceText(draft, finding)}”</strong>
+                <span>{meta[0]} · {meta[1]}</span>
+                <span className="rm-evidence-row__weight">Weight +{finding.w}</span>
+              </button>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="rm-evidence__clean">
+          No reportable indicators. Human authorship remains plausible.
+        </div>
+      )}
+    </aside>
+  );
+}
+
 async function copyText(text) {
   try {
     await navigator.clipboard.writeText(text);
@@ -115,7 +339,7 @@ function SeverityStage({ value, onChange, onAuthorize, onBack }) {
   );
 }
 
-function InspectionStage({ draft, result, persona, revealed, onCancel }) {
+function InspectionStage({ draft, result, persona, revealed, onCancel, onSkip }) {
   const total = Math.max(1, result.findings.length);
   return (
     <>
@@ -154,6 +378,7 @@ function InspectionStage({ draft, result, persona, revealed, onCancel }) {
       <div className="rm-case-strip">
         <button data-testid="button-cancel-inspection" onClick={onCancel} type="button">Esc / Cancel inspection</button>
         <span>Marks first. Score second. Policy is policy.</span>
+        <button data-testid="button-skip-inspection" onClick={onSkip} type="button">Skip analysis / Issue classification</button>
       </div>
     </>
   );
@@ -167,6 +392,7 @@ export default function Roast() {
   const [seed, setSeed] = React.useState(newSeed);
   const [phase, setPhase] = React.useState('intake');
   const [revealed, setRevealed] = React.useState(0);
+  const [activeFinding, setActiveFinding] = React.useState(null);
   const [copied, setCopied] = React.useState(false);
   const cardRef = React.useRef(null);
 
@@ -199,6 +425,7 @@ export default function Roast() {
     const total = Math.max(1, result.findings.length);
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     setRevealed(0);
+    setActiveFinding(null);
 
     if (reduced) {
       setRevealed(total);
@@ -284,6 +511,17 @@ export default function Roast() {
     setDraft('');
     setPhase('intake');
     setRevealed(0);
+    setActiveFinding(null);
+  };
+
+  const selectEvidence = index => {
+    setActiveFinding(index);
+    window.requestAnimationFrame(() => {
+      document.querySelector(`[data-finding="${index}"]`)?.scrollIntoView({
+        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+        block: 'center',
+      });
+    });
   };
 
   return (
@@ -396,6 +634,10 @@ export default function Roast() {
               <InspectionStage
                 draft={draft}
                 onCancel={() => setPhase('intensity')}
+                onSkip={() => {
+                  setRevealed(result.findings.length);
+                  setPhase('result');
+                }}
                 persona={persona}
                 result={result}
                 revealed={revealed}
@@ -405,81 +647,93 @@ export default function Roast() {
         )}
 
         {phase === 'result' && result && (
-          <>
-            <section className="rm-result" aria-label="Official inspection findings">
+          <section className="rm-result" aria-label="Official inspection findings">
+            <DiagnosticRecord result={result} />
+
+            <div className="rm-evidence-layout">
               <div className="rm-result__main">
                 <MarkedDocument
+                  activeFinding={activeFinding}
                   findings={result.findings}
                   text={draft}
                   visibleCount={result.findings.length}
                 />
-                <div className="rm-rewrite">
-                  <div className="rm-rewrite__header">
-                    <span className="rm-result-label">
-                      {kind === 'headline' ? 'The headline you should actually use' : 'The version you should actually post'}
-                    </span>
-                    <Button data-testid="button-copy-rewrite" onClick={() => copy(result.useful)}>
-                      {copied ? 'Copied' : 'Copy clean version'}
-                    </Button>
-                  </div>
-                  <div className="rm-rewrite__text" data-testid="text-clean-rewrite">{result.useful}</div>
+              </div>
+              <EvidenceRegister
+                activeFinding={activeFinding}
+                draft={draft}
+                findings={result.findings}
+                onSelect={selectEvidence}
+              />
+            </div>
+
+            <div className="rm-outcome-grid">
+              <div className="rm-verdict" data-testid="status-verdict">
+                <div className="rm-verdict__top">
+                  <span className="rm-result-label">Inspector memorandum / {persona.name}</span>
+                  <div className="rm-stamp">Inspected<br />with concerns</div>
                 </div>
-                <div className="rm-result-actions">
-                  <Button data-testid="button-new-inspection" onClick={restart}>Inspect another</Button>
-                  {kind === 'post' && (
-                    <Button
-                      data-testid="button-turn-into-beat"
-                      onClick={() => { location.href = `../#beat=${encodeURIComponent(draft)}`; }}
-                    >
-                      Turn the original into a beat
-                    </Button>
-                  )}
+                <div className="rm-verdict__copy">
+                  <p className="rm-verdict__opener">{result.opener}</p>
+                  <ol className="rm-verdict__findings">
+                    {result.lines.map((line, index) => <li key={index}>{line}</li>)}
+                  </ol>
+                  <p className="rm-verdict__closer">{result.closer}</p>
                 </div>
               </div>
 
-              <aside className="rm-result__rail">
-                <div className="rm-verdict" data-testid="status-verdict">
-                  <div className="rm-verdict__top">
-                    <div>
-                      <div className="rm-score" data-testid="text-index-score">{result.score.index}</div>
-                      <div className="rm-rank">{result.score.rank}</div>
-                    </div>
-                    <div className="rm-stamp">Inspected<br />with concerns</div>
-                  </div>
-                  <div className="rm-verdict__copy">
-                    <span className="rm-result-label">Verdict of {persona.name}</span>
-                    <p className="rm-verdict__opener">{result.opener}</p>
-                    <ol className="rm-verdict__findings">
-                      {result.lines.map((line, index) => <li key={index}>{line}</li>)}
-                    </ol>
-                    <p className="rm-verdict__closer">{result.closer}</p>
-                  </div>
+              <div className="rm-rewrite">
+                <div className="rm-rewrite__header">
+                  <span className="rm-result-label">
+                    {kind === 'headline' ? 'The headline you should actually use' : 'The version you should actually post'}
+                  </span>
+                  <Button data-testid="button-copy-rewrite" onClick={() => copy(result.useful)}>
+                    {copied ? 'Copied' : 'Copy clean version'}
+                  </Button>
                 </div>
+                <div className="rm-rewrite__text" data-testid="text-clean-rewrite">{result.useful}</div>
+              </div>
+            </div>
 
-                <div className="rm-share">
-                  <span className="rm-result-label">Roast receipt / 1080 × 1080</span>
-                  <canvas ref={cardRef} data-testid="canvas-roast-card" />
-                  <div className="rm-result-actions">
-                    <Button
-                      data-testid="button-download-card"
-                      onClick={() => downloadCanvas(cardRef.current, 'roast-card.png')}
-                    >
-                      Download receipt
-                    </Button>
-                    <Button
-                      data-testid="button-reroast"
-                      onClick={() => {
-                        setSeed(newSeed());
-                        setPhase('inspecting');
-                      }}
-                    >
-                      Re-inspect
-                    </Button>
-                  </div>
+            <div className="rm-result-actions rm-result-actions--primary">
+              <Button data-testid="button-new-inspection" onClick={restart}>Inspect another</Button>
+              {kind === 'post' && (
+                <Button
+                  data-testid="button-turn-into-beat"
+                  onClick={() => { location.href = `../#beat=${encodeURIComponent(draft)}`; }}
+                >
+                  Remix the evidence
+                </Button>
+              )}
+            </div>
+
+            <div className="rm-share">
+              <div className="rm-share__header">
+                <div>
+                  <span className="rm-result-label">Roast receipt</span>
+                  <h2>1080 × 1080 share object</h2>
                 </div>
-              </aside>
-            </section>
-          </>
+                <div className="rm-result-actions">
+                  <Button
+                    data-testid="button-download-card"
+                    onClick={() => downloadCanvas(cardRef.current, 'roast-card.png')}
+                  >
+                    Download receipt
+                  </Button>
+                  <Button
+                    data-testid="button-reroast"
+                    onClick={() => {
+                      setSeed(newSeed());
+                      setPhase('inspecting');
+                    }}
+                  >
+                    Re-inspect
+                  </Button>
+                </div>
+              </div>
+              <canvas ref={cardRef} data-testid="canvas-roast-card" />
+            </div>
+          </section>
         )}
 
         <footer className="rm-footer">
