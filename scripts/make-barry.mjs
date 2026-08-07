@@ -59,11 +59,28 @@ function barryCells(){
   // wing crease
   set(23, 26, 'C'); set(22, 27, 'C'); set(22, 28, 'C');
   set(21, 29, 'C'); set(20, 30, 'C'); set(19, 31, 'C');
-  // the badge
-  set(25, 27, 'W'); set(26, 27, 'W'); set(25, 28, 'W'); set(26, 28, 'W');
+  // the badge — blue, so it still reads once the body is filled white
+  set(25, 27, 'B'); set(26, 27, 'B'); set(25, 28, 'B'); set(26, 28, 'B');
   // legs, toes to the right
   vline(22, 34, 35, 'O'); hline(22, 23, 36, 'O');
   vline(25, 34, 35, 'O'); hline(25, 26, 36, 'O');
+
+  // Body fill. Barry started life as a hollow outline on a magenta page, which
+  // left him nearly invisible the moment he stood on a dark section. Flood the
+  // OUTSIDE from a corner (4-connected, so diagonal pinches stay sealed), then
+  // everything still uncoloured is enclosed — that is his body, and it goes white.
+  const outside = Array.from({ length: N }, () => Array(N).fill(false));
+  const stack = [[0, 0]];
+  while(stack.length){
+    const [x, y] = stack.pop();
+    if(x < 0 || y < 0 || x >= N || y >= N) continue;
+    if(outside[y][x] || g[y][x] !== '.') continue;
+    outside[y][x] = true;
+    stack.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
+  }
+  for(let y = 0; y < N; y++) for(let x = 0; x < N; x++)
+    if(g[y][x] === '.' && !outside[y][x]) set(x, y, 'W');
+
   const cells = [];
   for(let y = 0; y < N; y++) for(let x = 0; x < N; x++)
     if(g[y][x] !== '.') cells.push([x - 17, y - 12, g[y][x]]);
