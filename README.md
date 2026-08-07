@@ -48,6 +48,37 @@ are the only outputs. Cross-links point at the live tools (`../roast/`,
 the base system (offset ink shadows, slight rotations, one marquee) — that
 is intended, not drift.
 
+### The Corporate Phrasebook (the homepage's audio)
+
+The rig on `/v2/` is the real instrument, not a mockup: **CONVENE** starts the
+WebAudio kit playing the sequencer grid (`src/audio.js`, the same engine the
+studio uses), and the Vox row speaks from the recorded phrase bank.
+
+**Striking a key runs a lesson** — the page teaches you the phrase in the
+cadence of a language tape that has been through a compliance review:
+
+```
+"Let's say"   →  the phrase, in the recorded library voice
+~ the beat arrives ~
+                 the phrase, on the downbeat, two or three times
+"Just say"    →  the phrase
+"Remember"    →  the phrase  →  everything phases and decays out
+```
+
+The instructional cues are the browser's own speech voice; the phrase is
+always the recorded bank, so the two speakers never blur. Because every clip
+is a different length (0.5s to 2.7s against a 2.14s bar at 112 BPM), the
+lesson is laid out in **bars, not seconds**: one utterance claims however many
+whole bars it needs, short phrases drill three times and long ones twice, and
+the arc above is identical for all 57 clips. `planLesson()` in
+`src/v2/lesson.js` is pure and pinned by `npm run check:lesson`, which
+verifies the arc against every real clip's duration.
+
+Clips are fetched on demand (the full bank is 9MB — far too much to hand a
+marketing page up front). The sixteen keys are wired to bank indices, so each
+key only carries a phrase the library voice can genuinely say. Barry walks on
+from the left when the beat starts and bobs on the kick.
+
 ## The Company Store (`/store/`)
 
 *The Circle Back® ecosystem · Merchandise division* — Form CS-1, at `/store/`.

@@ -10,7 +10,8 @@
     "start": "node server/index.js",
     "preview": "vite preview",
     "check:voice": "node scripts/check-voice.mjs",
-    "check:store": "node scripts/check-store.mjs"
+    "check:store": "node scripts/check-store.mjs",
+    "check:lesson": "node scripts/check-lesson.mjs"
   },
   "dependencies": {
     "express": "^4.21.2",
