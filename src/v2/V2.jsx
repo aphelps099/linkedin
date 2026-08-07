@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Pad, KeyPlate } from '../components/pads/Pad.jsx';
 import { StepGrid } from '../components/sequencer/StepGrid.jsx';
 import { Stamp } from '../components/chassis/Stamp.jsx';
+import { CBAudio, CBVoice } from '../audio.js';
+import { createDirector, CUES } from './lesson.js';
 
 // LinkedIn Beats — the umbrella-brand homepage ("The Loud Filing"), served at
 // /v2. Ported from design_handoff_linkedin_beats_site/. The Circle Back design
@@ -14,23 +16,28 @@ const CLAIM_SECONDS = 2.2;
 const MARQUEE = ["I'm thrilled to announce", 'Let that sink in', 'Agree?', "We're not just building a company", "Here's what nobody tells you"];
 
 const KEYS = '1234QWETASDFZXCV';
+// The sixteen keys, each wired to a real clip in the recorded phrase bank
+// (public/phrases/, the same bank the studio uses) — `bank` is the 0-based
+// index, `line` is what that recording actually says. Keys only carry phrases
+// the library voice can genuinely speak; anything unrecorded would fall back to
+// the browser voice and break the library/instruction contrast the lesson runs on.
 const PADS = [
-  { name: 'Humbled', line: 'Humbled and honored to share' },
-  { name: 'Thrilled', line: "I'm thrilled to announce" },
-  { name: 'Synergy', line: 'Unlocking cross-functional synergies' },
-  { name: 'Circle Back', line: "Let's circle back on this" },
-  { name: 'Journey', line: 'It has been quite the journey' },
-  { name: 'Agree?', line: 'Agree?' },
-  { name: 'Thoughts?', line: 'Thoughts?' },
-  { name: 'Sink In', line: 'Let that sink in' },
-  { name: '10x', line: 'A true 10x mindset' },
-  { name: 'Disrupt', line: 'We are disrupting the space' },
-  { name: 'My Why', line: 'I found my why' },
-  { name: 'Plot Twist', line: 'Plot twist:' },
-  { name: 'Family', line: "We're not a company, we're a family" },
-  { name: 'Rockstar', line: 'Looking for a rockstar' },
-  { name: 'Pivot', line: 'The pivot was the plan all along' },
-  { name: 'Onwards', line: 'Onwards and upwards! 🚀' },
+  { name: 'Humbled', bank: 1, line: 'Humbled and honored to share' },
+  { name: 'Thrilled', bank: 0, line: "I'm thrilled to announce" },
+  { name: 'Synergy', bank: 4, line: 'Synergy' },
+  { name: 'Circle Back', bank: 5, line: "Let's circle back" },
+  { name: 'Journey', bank: 40, line: 'The journey continues.' },
+  { name: 'Agree?', bank: 13, line: 'Agree or disagree?' },
+  { name: 'Thoughts?', bank: 12, line: 'Thoughts?' },
+  { name: 'Sink In', bank: 14, line: 'Let that sink in' },
+  { name: 'Leverage', bank: 6, line: 'Leverage' },
+  { name: 'Game-Changer', bank: 11, line: 'Game-changer' },
+  { name: 'Delve', bank: 9, line: 'Delve' },
+  { name: 'Read Again', bank: 17, line: 'Read that again.' },
+  { name: 'Amazing Team', bank: 27, line: "Couldn't have done it without my amazing team." },
+  { name: 'Hot Take', bank: 33, line: 'Hot take: teamwork makes a difference.' },
+  { name: 'Pivot', bank: 7, line: 'Pivot' },
+  { name: 'Onwards', bank: 28, line: 'Onwards and upwards! 🚀' },
 ];
 
 const TRACKS = [
@@ -74,9 +81,15 @@ export default function V2() {
   const [selRow, setSelRow] = useState(0);
   const [pattern, setPattern] = useState(INIT_PATTERN);
 
-  const seqTimer = useRef(null);
+  const [stage, setStage] = useState(null);   // which part of the lesson is speaking
+  const [dancing, setDancing] = useState(false);
+  const [bump, setBump] = useState(0);        // incremented on every kick — Barry's jiggle
+
   const padTimer = useRef(null);
   const copyTimer = useRef(null);
+  const director = useRef(null);
+  const patternRef = useRef(pattern);
+  patternRef.current = pattern;
 
   // rotating hero claim — fixed line box, so rotation never reflows
   useEffect(() => {
@@ -84,19 +97,48 @@ export default function V2() {
     return () => clearInterval(t);
   }, []);
 
-  // transport: advance the 16-step position while playing
+  // The real instrument: WebAudio drums off the sequencer grid, and the
+  // recorded phrase bank for the lesson. Nothing is faked with setInterval.
+  useEffect(() => {
+    const d = createDirector({
+      audio: CBAudio,
+      voice: CBVoice,
+      phraseBase: '../phrases/',   // public/phrases/ served from the site root
+      tempo: 112,                  // the rack's CAL. A · 112 BPM
+      onState: s => {
+        setPlaying(s.playing);
+        setPos(s.playing && s.step !== null && s.step !== undefined ? s.step : 0);
+        setStage(s.stage);
+        setDancing(s.playing);
+      },
+    });
+    d.setPads(PADS);
+    d.setPattern(patternRef.current);
+    director.current = d;
+    return () => d.stop();
+  }, []);
+
+  useEffect(() => { director.current && director.current.setPattern(pattern); }, [pattern]);
+
+  // Barry bobs on the kick — the director stamps kickAt, we just count them
+  const lastKick = useRef(0);
   useEffect(() => {
     if (!playing) return;
-    seqTimer.current = setInterval(() => setPos(p => (p + 1) % 16), 134);
-    return () => clearInterval(seqTimer.current);
+    const iv = setInterval(() => {
+      const k = director.current && director.current.getState().kickAt;
+      if (k && k !== lastKick.current) { lastKick.current = k; setBump(b => b + 1); }
+    }, 40);
+    return () => clearInterval(iv);
   }, [playing]);
 
   useEffect(() => () => { clearTimeout(padTimer.current); clearTimeout(copyTimer.current); }, []);
 
+  // Strike a key: flash it, print it on the record, and run the phrasebook lesson.
   const trigger = (i, line) => {
     clearTimeout(padTimer.current);
     setPadHot(i); setLastPhrase(line);
     padTimer.current = setTimeout(() => setPadHot(-1), 130);
+    director.current && director.current.strike(PADS[i]);
   };
 
   // global hotkeys 1234QWETASDFZXCV strike the matching key
@@ -119,7 +161,7 @@ export default function V2() {
     copyTimer.current = setTimeout(() => setCopied(false), 2600);
   };
 
-  const togglePlay = () => { if (playing) { setPlaying(false); setPos(0); } else { setPos(0); setPlaying(true); } };
+  const togglePlay = () => { director.current && director.current.toggleBeat(); };
   const openRoast = () => { window.location.href = '../roast/'; };
   const sendCoworker = () => copy('No pressure, but your LinkedIn has been placed on a performance improvement plan. https://linkedinbeats.com');
 
@@ -170,6 +212,18 @@ export default function V2() {
 
   const P = PERSONAS[persona];
   const posTime = '0:' + String(pos * 2).padStart(2, '0');
+
+  // the rack's teletype narrates the lesson: the cues in the instructional
+  // voice, the phrase itself whenever the library voice has the floor
+  const READOUT = {
+    loading: 'CUEING THE TAPE…',
+    intro: CUES.intro.toUpperCase() + '…',
+    'recap-cue': CUES.recap.toUpperCase() + '…',
+    'closing-cue': CUES.closing.toUpperCase() + '…',
+    decay: 'END OF LESSON',
+  };
+  const spoken = lastPhrase ?? 'STRIKE A KEY. IT SPEAKS IN TIME.';
+  const readout = stage ? (READOUT[stage] || `"${spoken}"`) : `"${spoken}"`;
   const voxLabels = [null, null, null, PADS.map(p => p.name.replace(/[^A-Za-z0-9]/g, '').slice(0, 2).toUpperCase())];
   const wordmark = <span className="lb-wordmark">LinkedIn <b className="lb-beats-chip">Beats</b><span className="lb-cursor">▮</span></span>;
 
@@ -227,6 +281,12 @@ export default function V2() {
 
       {/* Drop a beat */}
       <div id="beats-3" className="lb-beats">
+        {/* Barry supervises the session — he walks on when the beat starts and
+            bobs on every kick. Purely decorative, so he is hidden from readers. */}
+        <div className={'lb-barry-dance' + (dancing ? ' in' : '')} aria-hidden="true">
+          <img src="../barry/barry.png" alt="" className={bump % 2 ? 'a' : 'b'} />
+          <span className="lb-barry-tag">BARRY · COMPLIANCE<br />SUPERVISING</span>
+        </div>
         <div className="lb-beats-head">
           <div>
             <p className="lb-beats-kicker">Form CB-16 · The professional phrase organ</p>
@@ -251,7 +311,7 @@ export default function V2() {
                   style={{ background: on ? '#fff' : 'transparent', color: on ? '#084d92' : '#fff' }}>
                   {(i + 1) + '. ' + t.label}<span>{on ? '▸' : ''}</span></button>;
               })}
-              <div className="lb-teletype">ON THE RECORD · "{lastPhrase ?? 'STRIKE A KEY. IT SPEAKS IN TIME.'}"<span className="lb-blink">▮</span></div>
+              <div className="lb-teletype">ON THE RECORD · {readout}<span className="lb-blink">▮</span></div>
             </div>
             <div className="lb-wheel">
               <span className="lb-wheel-menu">MENU</span>
