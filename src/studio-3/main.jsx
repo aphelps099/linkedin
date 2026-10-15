@@ -1,0 +1,10 @@
+import React from 'react';
+import {createRoot} from 'react-dom/client';
+import '../styles.css';
+import '../brand/fonts.css';
+import '../studio-2/stage.css';
+import '../home-2/header.css';
+import '../home-2/player.css';
+import './stage.css';
+import CircleBack from '../CircleBack.jsx';
+createRoot(document.getElementById('root')).render(<CircleBack stagePreview racingPreview/>);

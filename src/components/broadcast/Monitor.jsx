@@ -590,13 +590,20 @@ function draw(ctx, st){
 
   // The preview simplifies live chrome only. The original stage and export director stay intact.
   if(st.stagePreview && !st.exporting){
-    ctx.fillStyle = 'rgba(10,102,194,.46)'; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle = st.racingPreview?'rgba(7,87,236,.3)':'rgba(10,102,194,.46)'; ctx.fillRect(0,0,W,H);
     drawAsciiField(ctx, st, now, {width:W,height:H,cell:19,alpha:.15});
     ctx.fillStyle = WHITE; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
     ctx.font = '600 30px "StageHoves", Helvetica, sans-serif';
     ctx.fillText('CIRCLE BACK', M, 112);
-    ctx.textAlign = 'right'; ctx.font = '400 24px "StageMono", monospace';
-    ctx.fillStyle = TINT; ctx.fillText(st.playing?'ON AIR':'PRESS PLAY', W-M,112);
+    ctx.textAlign = 'right';
+    if(st.racingPreview){
+      ctx.font = '600 32px "StageHoves", Helvetica, sans-serif';
+      ctx.fillStyle = WHITE; ctx.fillText(st.playing?'Live':'Press play',W-M,112);
+      if(st.playing){ctx.fillStyle='#42f3ad';ctx.beginPath();ctx.arc(W-M-ctx.measureText('Live').width-23,101,8,0,Math.PI*2);ctx.fill();}
+    }else{
+      ctx.font = '400 24px "StageMono", monospace';
+      ctx.fillStyle = TINT; ctx.fillText(st.playing?'ON AIR':'PRESS PLAY', W-M,112);
+    }
     drawPhraseBlock(ctx, st, now, {top:220,bottom:850,maxW:W-2*M,startSize:144});
     drawRibbon(ctx,st,{y:966,h:13});
     drawGrain(ctx,W,H,.07);
