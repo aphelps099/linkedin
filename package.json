@@ -12,6 +12,7 @@
     "check:voice": "node scripts/check-voice.mjs",
     "check:store": "node scripts/check-store.mjs",
     "check:home": "node scripts/check-home.mjs",
+    "check:studio": "node scripts/check-studio.mjs",
     "check:lesson": "node scripts/check-lesson.mjs"
   },
   "dependencies": {

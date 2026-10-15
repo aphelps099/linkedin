@@ -1,14 +1,13 @@
 import React from 'react';
 import { Button } from '../components/controls/Button.jsx';
-import { Unit } from '../components/chassis/Unit.jsx';
-import { Masthead } from '../components/chassis/Masthead.jsx';
-import { Ticker } from '../components/chassis/Ticker.jsx';
-import { CATEGORIES, byId } from './categories.js';
+import { byId } from './categories.js';
+import { Intake, DEFAULT_ANSWERS } from './Intake.jsx';
+import { Footer } from '../brand/Footer.jsx';
 import { LEVELS, generate, roast, newSeed } from './generator.js';
 import { scorePost } from './score.js';
 
 // LINKEDIN LESSONS — a guided post generator disguised as satire.
-// Category → one-question-at-a-time interview → the LinkedInification dial.
+// A complete corporate intake form → the LinkedInification dial.
 // Level 1 writes the post you should publish; level 5 writes the one you will.
 
 const LABEL = { fontSize: 'var(--label-size)', fontWeight: 700, letterSpacing: 'var(--label-tracking)', textTransform: 'uppercase' };
@@ -19,7 +18,7 @@ async function copyText(t){
   catch {
     const ta = document.createElement('textarea');
     ta.value = t; document.body.appendChild(ta); ta.select();
-    try { document.execCommand('copy'); } finally { document.body.removeChild(ta); }
+    try { if(!document.execCommand('copy')) throw new Error('Copy unavailable'); } finally { document.body.removeChild(ta); }
   }
 }
 
@@ -81,7 +80,7 @@ function Metrics({ s }){
       <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-meta)' }}>{s.words} words</span>
     </div>
     <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, borderBottom: '1px solid var(--hair)', paddingBottom: 8 }}>
-      <span style={{ fontSize: 44, fontWeight: 700, letterSpacing: '-.05em', lineHeight: 1, color: 'var(--blue)' }}>{s.index}</span>
+      <span style={{ fontFamily: 'var(--mono)', fontSize: 44, fontWeight: 700, letterSpacing: '-.05em', lineHeight: 1, color: 'var(--blue)' }}>{s.index}</span>
       <span style={{ fontSize: 12, fontWeight: 700 }}>{s.rank}<br/><span style={{ ...META, fontSize: 8.5 }}>Thought Leadership Index</span></span>
     </div>
     <Metric label="Humble-brag score" value={`${s.humbleBrag}%`}/>
@@ -101,10 +100,10 @@ function Dial({ level, onChange }){
     <div style={{ ...LABEL, marginBottom: 8 }}>LinkedInification level</div>
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6 }}>
       {LEVELS.map(l =>
-        <button key={l.n} onClick={() => onChange(l.n)}
+        <button key={l.n} aria-pressed={l.n===level} aria-label={`Level ${l.n}: ${l.name}`} onClick={() => onChange(l.n)}
           style={{ height: 40, border: 'var(--rule-frame) solid var(--ink)', borderRadius: 0, cursor: 'pointer',
             background: l.n === level ? 'var(--blue)' : l.n < level ? 'var(--blue-light)' : '#fff',
-            color: l.n === level ? '#fff' : 'var(--ink)', fontFamily: 'var(--sans)', fontWeight: 700, fontSize: 15 }}>{l.n}</button>)}
+            color: l.n === level ? '#fff' : 'var(--ink)', fontFamily: 'var(--mono)', fontWeight: 700, fontSize: 15 }}>{l.n}</button>)}
     </div>
     <div style={{ marginTop: 8, fontSize: 13, fontWeight: 700 }}>{cur.n} — {cur.name}</div>
     <div style={{ fontSize: 11.5, color: 'var(--text-meta)', lineHeight: 1.45 }}>{cur.blurb}</div>
@@ -113,108 +112,14 @@ function Dial({ level, onChange }){
 
 // ---- screens ------------------------------------------------------------
 
-function Home({ narrow, onPick }){
-  return <>
-    <div style={{ display: 'flex', flexDirection: narrow ? 'column' : 'row', justifyContent: 'space-between',
-      alignItems: narrow ? 'flex-start' : 'flex-end', gap: narrow ? 10 : 30, marginTop: 18 }}>
-      <h1 style={{ margin: 0, fontSize: narrow ? 28 : 40, lineHeight: 1.02, letterSpacing: '-.045em', fontWeight: 700,
-        color: 'var(--blue)', maxWidth: 560 }}>What are we pretending to be humbled about today?</h1>
-      <p style={{ margin: 0, fontSize: narrow ? 12.5 : 13, lineHeight: 1.45, maxWidth: 380 }}>
-        A guided post generator. Answer a few questions, choose your LinkedInification level, publish.
-        {' '}<b style={{ color: 'var(--blue)' }}>Create a better LinkedIn post — or make it dramatically worse.</b>
-      </p>
-    </div>
-    <div style={{ display: 'grid', gridTemplateColumns: narrow ? '1fr' : '1fr 1fr', gap: 12, marginTop: 22 }}>
-      {CATEGORIES.map(c => <CategoryCard key={c.id} c={c} onPick={onPick}/>)}
-    </div>
-    <div style={{ marginTop: 26, display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', ...META }}>
-      <span>Everything is generated in your browser. Nothing is sent anywhere.</span>
-      <a href="../studio/" style={{ color: 'var(--blue)' }}>Circle Back® — the LinkedIn remixer →</a>
-    </div>
-  </>;
-}
-
-function CategoryCard({ c, onPick }){
-  const [hover, setHover] = React.useState(false);
-  return <button onClick={() => onPick(c.id)} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
-    style={{ textAlign: 'left', cursor: 'pointer', border: 'var(--rule-frame) solid var(--ink)', borderRadius: 0,
-      background: hover ? 'var(--ink)' : '#fff', color: hover ? '#fff' : 'var(--ink)', padding: '16px 18px',
-      fontFamily: 'var(--sans)', transition: 'background var(--ease-ui), color var(--ease-ui)' }}>
-    <div style={{ ...META, color: hover ? '#ffffff99' : 'var(--text-meta)', marginBottom: 6 }}>Form {c.form}</div>
-    <div style={{ fontSize: 19, fontWeight: 700, letterSpacing: '-.02em' }}>{c.name}</div>
-    <div style={{ fontSize: 12.5, lineHeight: 1.45, marginTop: 4, color: hover ? '#ffffffcc' : 'var(--ink)' }}>{c.subtitle}</div>
-  </button>;
-}
-
-function Interview({ cat, narrow, initial, onDone, onHome }){
-  const [answers, setAnswers] = React.useState(initial || {});
-  const [ix, setIx] = React.useState(0);
-  const [reaction, setReaction] = React.useState(null);
-  const [draft, setDraft] = React.useState(() => {
-    const first = cat.steps(initial || {})[0];
-    return (initial && first && initial[first.key]) || '';
-  });
-  const inputRef = React.useRef(null);
-
-  const steps = cat.steps(answers);
-  const step = steps[ix];
-  React.useEffect(() => { inputRef.current && inputRef.current.focus(); }, [ix]);
-
-  const submit = value => {
-    const v = (value !== undefined ? value : draft).trim();
-    const next = { ...answers, [step.key]: v };
-    setAnswers(next);
-    setReaction(step.react ? step.react(v, next) : null);
-    setDraft(next[steps[ix + 1] ? steps[ix + 1].key : ''] || '');
-    if(ix + 1 >= cat.steps(next).length) onDone(next);
-    else setIx(ix + 1);
-  };
-  const back = () => {
-    if(ix === 0) return onHome();
-    setIx(ix - 1); setReaction(null); setDraft(answers[steps[ix - 1].key] || '');
-  };
-
-  return <>
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, marginTop: 18, flexWrap: 'wrap' }}>
-      <span style={{ fontSize: 19, fontWeight: 700, letterSpacing: '-.02em', color: 'var(--blue)' }}>{cat.name}</span>
-      <span style={META}>Question {ix + 1} of {steps.length} · Form {cat.form}</span>
-    </div>
-    {reaction && <Ticker label="The form reacts" style={{ marginTop: 14 }}>{reaction}</Ticker>}
-    <div style={{ marginTop: reaction ? 14 : 18, background: '#fff', border: 'var(--rule-frame) solid var(--ink)', padding: narrow ? 18 : 26 }}>
-      <div style={{ fontSize: narrow ? 21 : 27, fontWeight: 700, letterSpacing: '-.03em', lineHeight: 1.15 }}>{step.ask}</div>
-      {step.type === 'choice'
-        ? <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16 }}>
-            {step.options.map(o => <Button key={o} onClick={() => submit(o)} style={{ padding: '12px 16px' }}>{o}</Button>)}
-          </div>
-        : <>
-            {step.type === 'long'
-              ? <textarea ref={inputRef} value={draft} onChange={e => setDraft(e.target.value)} rows={3}
-                  placeholder={step.placeholder || ''}
-                  style={{ width: '100%', boxSizing: 'border-box', marginTop: 16, padding: 12, fontFamily: 'var(--sans)',
-                    fontSize: 15, lineHeight: 1.5, border: 'var(--rule-frame) solid var(--ink)', borderRadius: 0,
-                    background: 'var(--paper)', outline: 'none', resize: 'vertical' }}/>
-              : <input ref={inputRef} value={draft} onChange={e => setDraft(e.target.value)}
-                  onKeyDown={e => { if(e.key === 'Enter') submit(); }}
-                  placeholder={step.placeholder || ''}
-                  style={{ width: '100%', boxSizing: 'border-box', marginTop: 16, padding: 12, fontFamily: 'var(--sans)',
-                    fontSize: 17, border: 'var(--rule-frame) solid var(--ink)', borderRadius: 0,
-                    background: 'var(--paper)', outline: 'none' }}/>}
-            <div style={{ display: 'flex', gap: 8, marginTop: 14, alignItems: 'center' }}>
-              <Button onClick={() => submit()} style={{ padding: '12px 18px' }}>Next</Button>
-              <span style={{ ...META, fontSize: 8.5 }}>{step.type === 'long' ? '' : 'or press Enter'}</span>
-            </div>
-          </>}
-    </div>
-    <div style={{ marginTop: 12 }}><Button onClick={back}>← Back</Button></div>
-  </>;
-}
-
-function Result({ catId, answers, narrow, onHome, onReinterview }){
-  const [level, setLevel] = React.useState(4);
-  const [seed, setSeed] = React.useState(newSeed);
-  const [flags, setFlags] = React.useState({});
+function Result({ catId, answers, narrow, onHome, onReinterview, settings, setSettings }){
+  const {level,seed,flags}=settings;
+  const setLevel=value=>setSettings(s=>({...s,level:typeof value==='function'?value(s.level):value}));
+  const setSeed=value=>setSettings(s=>({...s,seed:value}));
+  const setFlags=value=>setSettings(s=>({...s,flags:typeof value==='function'?value(s.flags):value}));
   const [roastOpen, setRoastOpen] = React.useState(false);
   const [copied, setCopied] = React.useState(false);
+  const [copyError,setCopyError] = React.useState(false);
 
   const text = React.useMemo(
     () => generate({ category: catId, answers, level, seed, flags }),
@@ -223,7 +128,7 @@ function Result({ catId, answers, narrow, onHome, onReinterview }){
   const roastLines = React.useMemo(
     () => roastOpen ? roast(text, { score: s.index }) : null, [roastOpen, text, s]);
 
-  const copy = async () => { await copyText(text); setCopied(true); setTimeout(() => setCopied(false), 1600); };
+  const copy = async () => { try{await copyText(text);setCopied(true);setCopyError(false);setTimeout(()=>setCopied(false),1600);}catch{setCopyError(true);} };
   const toBeat = () => { location.href = '../studio/#beat=' + encodeURIComponent(text); };
 
   return <>
@@ -246,6 +151,7 @@ function Result({ catId, answers, narrow, onHome, onReinterview }){
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
           <Button onClick={copy} style={{ gridColumn: '1 / -1', padding: '13px 16px', background: copied ? 'var(--blue)' : undefined, color: copied ? '#fff' : undefined, borderColor: copied ? 'var(--blue)' : undefined }}>
             {copied ? 'Copied ✓' : 'Copy post'}</Button>
+          {copyError&&<p role="status" style={{gridColumn:'1/-1',fontSize:12,margin:0}}>Copy was unavailable. Select the post text to copy it.</p>}
           <Button onClick={() => setLevel(l => Math.min(5, l + 1))}>Make it worse</Button>
           <Button onClick={() => setLevel(1)}>Make it human</Button>
           <Button onClick={() => setFlags(f => ({ ...f, synergy: (f.synergy || 0) + 1 }))}>Add more synergy{flags.synergy ? ` ×${flags.synergy}` : ''}</Button>
@@ -267,31 +173,26 @@ function Result({ catId, answers, narrow, onHome, onReinterview }){
 // ---- app ----------------------------------------------------------------
 
 export default function Lessons(){
-  const narrow = useNarrow();
-  const [screen, setScreen] = React.useState({ view: 'home' });
-
-  const onPick = id => {
-    const c = byId(id);
-    if(c.href){ location.href = c.href; return; } // Roast is its own tool now
-    setScreen({ view: 'interview', catId: id });
+  const narrow=useNarrow();
+  const [catId,setCatId]=React.useState('announce');
+  const [drafts,setDrafts]=React.useState(()=>Object.fromEntries(Object.entries(DEFAULT_ANSWERS).map(([key,value])=>[key,{...value}])));
+  const [submission,setSubmission]=React.useState(null);
+  const [view,setView]=React.useState('form');
+  const [settings,setSettings]=React.useState(()=>({level:4,seed:newSeed(),flags:{}}));
+  const headingRef=React.useRef(null);
+  const previousView=React.useRef(view);
+  React.useEffect(()=>{if(previousView.current!==view){headingRef.current?.focus();headingRef.current?.scrollIntoView({block:'start'});previousView.current=view;}},[view]);
+  const onDone=answers=>{
+    if(submission?.catId!==catId)setSettings({level:4,seed:newSeed(),flags:{}});
+    setSubmission({catId,answers});setView('result');
   };
-  const home = () => setScreen({ view: 'home' });
-
-  return <Unit style={narrow ? { padding: '20px 14px' } : undefined}>
-    <Masthead logo="LinkedIn Lessons" mark="™"
-      meta={narrow ? ['Form LL-7', 'Rev. 2026-08'] : ['Form LL-7', 'Rev. 2026-08', 'Guided thought leadership']}/>
-    {screen.view === 'home' && <Home narrow={narrow} onPick={onPick}/>}
-    {screen.view === 'interview' && <Interview cat={byId(screen.catId)} narrow={narrow} onHome={home} initial={screen.answers}
-      onDone={answers => setScreen({ view: 'result', catId: screen.catId, answers })}/>}
-    {screen.view === 'result' && <Result catId={screen.catId} answers={screen.answers} narrow={narrow} onHome={home}
-      onReinterview={() => setScreen({ view: 'interview', catId: screen.catId, answers: screen.answers })}/>}
-    <div style={{ marginTop: 30, borderTop: 'var(--rule-heavy) solid var(--ink)', paddingTop: 10,
-      display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', ...META }}>
-      <span>© Digital Creative 2026 · LinkedIn Lessons™ is not affiliated with your network.</span>
-      <span style={{ display: 'inline-flex', gap: 16, flexWrap: 'wrap' }}>
-        <a href="../museum/" style={{ color: 'var(--blue)' }}>Visit the Museum</a>
-        <a href="../studio/" style={{ color: 'var(--blue)' }}>Turn any post into a beat at Circle Back® →</a>
-      </span>
-    </div>
-  </Unit>;
+  const fresh=()=>{setDrafts(d=>({...d,[catId]:{...DEFAULT_ANSWERS[catId]}}));setSubmission(null);setView('form');setSettings({level:4,seed:newSeed(),flags:{}});};
+  return <div className="ll-app">
+    <a className="ll-skip" href="#lessons-main">Skip to the form</a>
+    <header className="ll-header"><a className="ll-brand" href="../">LINKEDIN BEATS<span>LINKEDIN LESSONS™</span></a><nav aria-label="Main navigation"><a href="../#listen">Listen</a><a href="../studio/">The studio ↗</a><a href="../roast/">Roast my post</a></nav></header>
+    <main id="lessons-main" ref={headingRef} tabIndex={-1}>
+      {view==='form'?<Intake key={catId} catId={catId} answers={drafts[catId]} onPick={setCatId} onChange={answers=>setDrafts(d=>({...d,[catId]:answers}))} onSubmit={onDone}/>:<div className="ll-result"><span className="ll-kicker">FILED / DEPARTMENT OF PERSONAL BRANDING</span><Result catId={submission.catId} answers={submission.answers} narrow={narrow} settings={settings} setSettings={setSettings} onHome={fresh} onReinterview={()=>setView('form')}/></div>}
+    </main>
+    <Footer/>
+  </div>;
 }
