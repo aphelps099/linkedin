@@ -20,3 +20,5 @@
 .merch-poster-quote em { font-style: normal; color: #111; }
 .merch-poster-museum { background: #fff349; color: #111; transform: rotate(4deg); }
 .merch-poster-museum strong { font-size: 12.4cqw; line-height: .98; }
+
+.merch-photo-preview{object-fit:contain;background:#f5f1e7}

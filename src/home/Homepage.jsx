@@ -9,7 +9,7 @@ import {Footer} from '../brand/Footer.jsx';
 import '../brand/fonts.css';
 import './home.css';
 
-const FEATURED = ['CS-102','CS-201','CS-302'].map(sku=>PRODUCTS.find(p=>p.sku===sku));
+const FEATURED = ['CS-104','CS-203','CS-501'].map(sku=>PRODUCTS.find(p=>p.sku===sku));
 const initial={index:0,playing:false,loading:false,elapsed:0,volume:.8,shuffle:false,text:LINES[1],word:-1,error:''};
 
 export default function Homepage(){
@@ -96,7 +96,7 @@ export default function Homepage(){
         <div className="pop-products">{FEATURED.map((p,i)=><a className="pop-product" href={`${toolsBase}store/?product=${p.sku}`} key={p.sku}>
           <div className={`pop-product-image product-${i}`}>
             <ProductVisual product={p} base={base}/><span className="pop-product-index">0{i+1} / {p.cat.toUpperCase()}</span>
-          </div><div className="pop-product-info"><span>{p.name}</span><span>${p.price}</span></div>{isDesignPreview(p)&&<small className="pop-product-note">Design preview</small>}
+          </div><div className="pop-product-info"><span>{p.name}</span><span>{p.previewOnly?'View design ↗':`$${p.price}`}</span></div>{isDesignPreview(p)&&<small className="pop-product-note">Design preview</small>}
         </a>)}</div>
       </section>
 

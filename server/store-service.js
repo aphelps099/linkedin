@@ -14,6 +14,7 @@ export function normalizeCart(raw){
   return raw.map(line => {
     const p = bySku(line?.sku);
     if(!p) throw new Error(`Unknown SKU: ${String(line?.sku)}`);
+    if(p.previewOnly) throw new Error(`Design preview is not available to order: ${p.sku}`);
     const qty = Number(line?.qty);
     if(!Number.isInteger(qty) || qty < 1 || qty > 99) throw new Error(`Quantity out of range for ${p.sku}`);
     const size = p.sizes ? line?.size : null;

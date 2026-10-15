@@ -2,11 +2,23 @@
 // renders from it and the Express server prices checkout from it, so the client
 // can never quote its own prices. Seed catalog from the design handoff; in
 // production this becomes data driven from Printify (see README).
-export const CATEGORIES = ['All', 'Shirts', 'Hats', 'Stickers', 'Posters'];
+export const CATEGORIES = ['All', 'Sweatshirts', 'Hats', 'Mugs', 'Shirts', 'Stickers', 'Posters'];
 
 // img is a filename under public/store/ (served beside the page at /store/);
 // products without photography fall back to the placeholder slot (ph).
 export const PRODUCTS = [
+  { sku: 'CS-104', cat: 'Sweatshirts', name: 'Out of Office Crewneck', price: null, sizes: null, img: 'cs-104.webp', previewOnly: true,
+    ph: 'Design preview — dusty pink crewneck',
+    desc: 'Your status, permanently set. Dusty pink with a small Out of Office chest print and a cobalt full stop. A preview of the new collection; pricing and availability are not yet set.',
+    specs: [['Design', 'Dusty pink crewneck'], ['Artwork', 'Black chest print with cobalt accent'], ['Status', 'Design preview — not yet available']] },
+  { sku: 'CS-203', cat: 'Hats', name: 'Circle Back Cap', price: null, sizes: null, img: 'cs-203.webp', previewOnly: true,
+    ph: 'Design preview — cobalt Circle Back cap',
+    desc: 'A gentle reminder with a very good brim. Cobalt blue, cream Circle Back lettering, and one directional suggestion. A preview of the new collection; pricing and availability are not yet set.',
+    specs: [['Design', 'Cobalt six-panel cap'], ['Artwork', 'Cream lettering and arrow'], ['Status', 'Design preview — not yet available']] },
+  { sku: 'CS-501', cat: 'Mugs', name: 'This Could Have Been an Email Mug', price: null, sizes: null, img: 'cs-501.webp', previewOnly: true,
+    ph: 'Design preview — cream and cobalt mug',
+    desc: 'For meetings that outlast your coffee. Cream with a cobalt rim and a message that should have been sent earlier. A preview of the new collection; pricing and availability are not yet set.',
+    specs: [['Design', 'Cream mug with cobalt rim'], ['Artwork', 'This Could Have Been an Email'], ['Status', 'Design preview — not yet available']] },
   { sku: 'CS-101', cat: 'Shirts', name: 'The Circle Back Tee', price: 28, sizes: ['S', 'M', 'L', 'XL'], img: 'cs-101.webp',
     ph: 'Drop mockup — tee, flat lay',
     desc: 'Heavyweight cotton. The wordmark, front left chest, one colour. That is the entire design.',

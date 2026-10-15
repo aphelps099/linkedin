@@ -16,7 +16,7 @@ function loadCart(){
     const clean = [];
     for(const line of saved){
       const p = bySku(line?.sku), qty = Number(line?.qty);
-      if(!p || !Number.isInteger(qty) || qty < 1 || (p.sizes && !p.sizes.includes(line.size))) continue;
+      if(!p || p.previewOnly || !Number.isInteger(qty) || qty < 1 || (p.sizes && !p.sizes.includes(line.size))) continue;
       const size = p.sizes ? line.size : null;
       const existing = clean.find(c => c.sku === p.sku && c.size === size);
       if(existing) existing.qty = Math.min(99, existing.qty + qty);
@@ -82,7 +82,7 @@ export default function Store(){
   };
   const openBag=()=>{setNote('');setDrawer(true);};
   const addToBag=()=>{
-    if(!d || (d.sizes && !size) || qty>remaining) return;
+    if(!d || d.previewOnly || (d.sizes && !size) || qty>remaining) return;
     const chosen=d.sizes?size:null;
     setCart(prev=>{
       const found=prev.find(c=>c.sku===d.sku&&c.size===chosen);
@@ -113,19 +113,19 @@ export default function Store(){
     {notice&&<div className="shop-notice" role="status"><span>{notice==='filed'?'Order filed. Thank you for your contribution to corporate culture.':'Checkout paused. Your bag is right where you left it.'}</span><button onClick={()=>setNotice(null)} aria-label="Dismiss notice"><X size={18}/></button></div>}
     <main>
       <section className="shop-hero" aria-labelledby="shop-title">
-        <div className="shop-hero-copy"><span className="shop-label">THE COMPANY STORE / COLLECTION 01</span><h1 id="shop-title">OUT OF<br/>OFFICE.</h1><p>For the person behind<br/>the professional persona.</p><a href="#collection" className="shop-primary">SHOP THE COLLECTION <ArrowRight size={22}/></a><span className="shop-hero-fine">SHIRTS. HATS. SMALL ACTS OF NONCOMPLIANCE.</span></div>
-        <button className="shop-campaign" onClick={()=>openDetail(bySku('CS-102'))} aria-label="Shop Per My Last Email Tee">
-          <img src="../store/cs-102.webp" width="1024" height="1024" fetchpriority="high" alt="Off-duty styling with the Per My Last Email Tee"/>
-          <span className="shop-campaign-stamp" aria-hidden="true">PER MY<br/>LAST EMAIL.</span>
-          <span className="shop-campaign-caption"><span>THE AFTER-HOURS UNIFORM</span><span>$28 <ArrowUpRight size={18}/></span></span>
+        <div className="shop-hero-copy"><span className="shop-label">THE COMPANY STORE / COLLECTION 01</span><h1 id="shop-title">OUT OF<br/>OFFICE.</h1><p>For the person behind<br/>the professional persona.</p><a href="#collection" className="shop-primary">SHOP THE COLLECTION <ArrowRight size={22}/></a><span className="shop-hero-fine">SWEATSHIRTS. CAPS. COFFEE BREAKS.</span></div>
+        <button className="shop-campaign" onClick={()=>openDetail(bySku('CS-104'))} aria-label="View Out of Office Crewneck design">
+          <img src="../store/cs-104.webp" style={{objectFit:'contain',background:'#f5f1e7'}} width="1024" height="1024" fetchpriority="high" alt="Dusty pink Out of Office Crewneck — design preview"/>
+
+          <span className="shop-campaign-caption"><span>THE AFTER-HOURS UNIFORM</span><span>DESIGN PREVIEW <ArrowUpRight size={18}/></span></span>
         </button>
       </section>
       <section className="shop-collection" id="collection" aria-labelledby="collection-title">
         <div className="shop-section-head"><div><span className="shop-label">GOOD TASTE. QUESTIONABLE ATTITUDE.</span><h2 id="collection-title">OFFICE ESSENTIALS.</h2></div><p>Wear your boundaries.<br/>Decorate accordingly.</p></div>
         <div className="shop-filter-row"><div className="shop-filters" role="group" aria-label="Filter products">{CATEGORIES.map(c=><button key={c} className={c===filter?'is-selected':''} aria-pressed={c===filter} onClick={()=>setFilter(c)}>{c}</button>)}</div><span className="shop-count" aria-live="polite">{String(items.length).padStart(2,'0')} ITEMS</span></div>
-        <div className="shop-grid">{items.map(p=><button className="shop-product" key={p.sku} onClick={()=>openDetail(p)} aria-label={`View ${p.name}, ${fmt(p.price)}`}>
+        <div className="shop-grid">{items.map(p=><button className="shop-product" key={p.sku} onClick={()=>openDetail(p)} aria-label={`View ${p.name}, ${p.previewOnly?'design preview':fmt(p.price)}`}>
           <div className={`shop-product-image shop-image-${p.sku}`}><ProductVisual product={p}/><span className="shop-product-tag">{p.cat}</span><span className="shop-product-open" aria-hidden="true"><ArrowUpRight size={22}/></span></div>
-          <div className="shop-product-info"><span>{p.name}</span><span>{fmt(p.price)}</span></div><small>{isDesignPreview(p)?'Design preview':'Circle Back®'}</small>
+          <div className="shop-product-info"><span>{p.name}</span><span>{p.previewOnly?'View design ↗':fmt(p.price)}</span></div><small>{isDesignPreview(p)?'Design preview':'Circle Back®'}</small>
         </button>)}</div>
       </section>
       <section className="shop-editorial" aria-labelledby="dress-code"><div><span className="shop-label">AN UPDATED EMPLOYEE HANDBOOK</span><h2 id="dress-code">DRESS CODE:<br/>DON’T REPLY ALL.</h2></div><div><span className="shop-editorial-mark" aria-hidden="true">↗</span><p>Big feelings. Small talk.<br/>A soundtrack for all of it.</p><a className="shop-text-link" href="../#listen">Clock in to Circle Back Radio <ArrowUpRight size={18}/></a></div></section>
@@ -135,10 +135,10 @@ export default function Store(){
     {d&&<Modal kind="product" label="product-title" onClose={closeDetail}>
       <button className="shop-close" onClick={closeDetail} aria-label="Close product detail"><X size={23}/></button>
       <div className="shop-detail-image"><ProductVisual product={d} eager/>{isDesignPreview(d)&&<span className="shop-preview-label">DESIGN PREVIEW</span>}</div>
-      <div className="shop-detail-info"><span className="shop-label">{d.cat} / {d.sku}</span><h2 id="product-title">{d.name}</h2><div className="shop-detail-price">{fmt(d.price)} <span>USD</span></div><p className="shop-description">{d.desc}</p>
-        {d.sizes?<fieldset className="shop-size-field"><legend>SIZE <span>{size||'SELECT YOUR SIZE'}</span></legend><div className="shop-sizes">{d.sizes.map(s=><button key={s} className={s===size?'is-selected':''} aria-pressed={s===size} onClick={()=>{setSize(s);setQty(1);}}>{s}</button>)}</div></fieldset>:<p className="shop-one-size">{d.cat==='Hats'?'ONE SIZE / ADJUSTABLE':'ONE SIZE'}</p>}
-        <div className="shop-add-row"><Quantity value={qty} max={remaining} onChange={setQty}/><button className="shop-primary" onClick={addToBag} disabled={(d.sizes&&!size)||remaining<qty}>{remaining<qty?'BAG LIMIT REACHED':d.sizes&&!size?'SELECT A SIZE':'ADD TO BAG'}<ArrowRight size={20}/></button></div>
-        <p className="shop-detail-shipping">Printed on demand. Free shipping at $50.</p>
+      <div className="shop-detail-info"><span className="shop-label">{d.cat} / {d.sku}</span><h2 id="product-title">{d.name}</h2><div className="shop-detail-price">{d.previewOnly?'DESIGN PREVIEW':<>{fmt(d.price)} <span>USD</span></>}</div><p className="shop-description">{d.desc}</p>
+        {!d.previewOnly&&(d.sizes?<fieldset className="shop-size-field"><legend>SIZE <span>{size||'SELECT YOUR SIZE'}</span></legend><div className="shop-sizes">{d.sizes.map(s=><button key={s} className={s===size?'is-selected':''} aria-pressed={s===size} onClick={()=>{setSize(s);setQty(1);}}>{s}</button>)}</div></fieldset>:<p className="shop-one-size">{d.cat==='Hats'?'ONE SIZE / ADJUSTABLE':'ONE SIZE'}</p>)}
+        {!d.previewOnly&&<div className="shop-add-row"><Quantity value={qty} max={remaining} onChange={setQty}/><button className="shop-primary" onClick={addToBag} disabled={(d.sizes&&!size)||remaining<qty}>{remaining<qty?'BAG LIMIT REACHED':d.sizes&&!size?'SELECT A SIZE':'ADD TO BAG'}<ArrowRight size={20}/></button></div>}
+        <p className="shop-detail-shipping">{d.previewOnly?'Pricing and availability to come. This design is not yet available to order.':'Printed on demand. Free shipping at $50.'}</p>
         <details className="shop-details" open><summary>THE FINE PRINT</summary><dl>{d.specs.map(([key,value])=><div key={key}><dt>{key}</dt><dd>{value}</dd></div>)}</dl></details>
       </div>
     </Modal>}
