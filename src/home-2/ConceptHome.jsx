@@ -1,10 +1,12 @@
 import React, {memo, useEffect, useRef, useState} from 'react';
-import {ArrowDownRight, ArrowRight, ArrowUpRight, Check, ChevronDown, Copy, LoaderCircle, Menu, Pause, Play, SkipBack, SkipForward, Volume2, VolumeX, X} from 'lucide-react';
+import {ArrowDownRight, ArrowUpRight, ChevronDown, LoaderCircle, Pause, Play, SkipBack, SkipForward, Volume2, VolumeX} from 'lucide-react';
 import {TRACKS, LINES, formatTime} from '../home/tracks.js';
 import {PRODUCTS} from '../store/products.js';
-import {linkedinify} from '../lessons/generator.js';
+import {Header} from '../brand/Header.jsx';
+import {Campaigns} from './Campaigns.jsx';
 import {createPortraitRadio} from './portraitRadio.js';
 import './concept.css';
+import './campaigns.css';
 
 const INITIAL = {index:0, playing:false, loading:false, elapsed:0, volume:.8, text:LINES[1], word:-1, mouth:'rest', levels:null, error:''};
 const PORTRAITS = [{index:2,tone:'ice'}, {index:0,tone:'paper'}, {index:1,tone:'pink'}, {index:3,tone:'navy'}];
@@ -33,11 +35,10 @@ const Portrait = memo(function Portrait({base, index, tone, active, playing, loa
 
 export default function ConceptHome({playerFactory=createPortraitRadio}) {
   const base = window.location.pathname.replace(/home-2(?:\/(?:index\.html)?)?$/, '').replace(/\/?$/, '/');
-  const radio = useRef(null), previousVolume = useRef(.8), menuRef = useRef(null), menuTrigger = useRef(null), chooseRef = useRef(null);
-  const [state, setState] = useState(INITIAL), [menuOpen, setMenuOpen] = useState(false), [allTracks, setAllTracks] = useState(false);
+  const radio = useRef(null), previousVolume = useRef(.8), chooseRef = useRef(null);
+  const [state, setState] = useState(INITIAL), [allTracks, setAllTracks] = useState(false);
   const [motion, setMotion] = useState(() => !window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  const [scrub, setScrub] = useState(null), [roastPost,setRoastPost] = useState(''), [ordinary,setOrdinary] = useState('');
-  const [output,setOutput] = useState(''), [copyStatus,setCopyStatus] = useState('');
+  const [scrub, setScrub] = useState(null);
   const track = TRACKS[state.index], seconds = scrub ?? state.elapsed;
   const visiblePortraits = PORTRAITS.map((portrait,i)=>i===3&&state.index===4?{...portrait,index:4}:portrait);
   useEffect(() => {
@@ -56,13 +57,6 @@ export default function ConceptHome({playerFactory=createPortraitRadio}) {
     query.addEventListener('change',update);
     return ()=>query.removeEventListener('change',update);
   },[]);
-  useEffect(() => {
-    if (!menuOpen) return;
-    const key=e=>{if(e.key==='Escape'){setMenuOpen(false);menuTrigger.current?.focus();}};
-    const outside=e=>{if(!menuRef.current?.contains(e.target))setMenuOpen(false);};
-    document.addEventListener('keydown',key);document.addEventListener('pointerdown',outside);
-    return ()=>{document.removeEventListener('keydown',key);document.removeEventListener('pointerdown',outside);};
-  },[menuOpen]);
   const choose = index => {
     setScrub(null);
     if(index===state.index)radio.current?.toggle();
@@ -72,25 +66,9 @@ export default function ConceptHome({playerFactory=createPortraitRadio}) {
   const stableChoose=useRef(index=>chooseRef.current(index)).current;
   const seek = value => {setScrub(null);radio.current?.seek(Number(value));};
   const mute=()=>{if(state.volume){previousVolume.current=state.volume;radio.current?.volume(0);}else radio.current?.volume(previousVolume.current||.8);};
-  const roast=e=>{e.preventDefault();if(roastPost.trim())window.location.assign(`${base}roast/#roast=${encodeURIComponent(roastPost.trim())}`);};
-  const generate=e=>{e.preventDefault();if(!ordinary.trim())return;setOutput(linkedinify(ordinary.trim(),Math.floor(Math.random()*4294967296)));setCopyStatus('');};
-  const copy=async()=>{try{await navigator.clipboard.writeText(output);setCopyStatus('Copied');}catch{setCopyStatus('Select the text above to copy it.');}};
   return <div className={`c2-home ${motion?'':'c2-still'}`}>
     <a className="c2-skip" href="#c2-player">Skip to music player</a>
-    <header className="c2-header" ref={menuRef}>
-      <div className="c2-container c2-header-inner">
-        <a href={base} className="c2-wordmark" aria-label="LinkedIn Beats current homepage">LinkedIn Beats<span>.</span></a>
-        <nav className="c2-navigation" aria-label="Main navigation">
-          <a href="#c2-player">Listen</a><a href="#c2-store">Store</a><a className="c2-tools-nav" href="#c2-tools">Tools</a>
-          <button ref={menuTrigger} className="c2-menu-button" aria-expanded={menuOpen} aria-controls="c2-menu" onClick={()=>setMenuOpen(!menuOpen)}>{menuOpen?'Close':'Menu'}{menuOpen?<X/>:<Menu/>}</button>
-        </nav>
-        <nav id="c2-menu" className="c2-menu" aria-label="More pages" hidden={!menuOpen}>
-          <a href={`${base}lessons/`}>LinkedIn Lessons <ArrowUpRight/></a><a href={`${base}studio/`}>The studio <ArrowUpRight/></a><a href={`${base}roast/`}>Roast my post <ArrowUpRight/></a><a href={`${base}store/`}>Company store <ArrowUpRight/></a>
-          <button className="c2-motion-toggle" aria-pressed={motion} onClick={()=>setMotion(!motion)}>Animate portraits <span>{motion?'On':'Off'}</span></button>
-          <a className="c2-original" href={base}>Current homepage <ArrowUpRight/></a>
-        </nav>
-      </div>
-    </header>
+    <Header base={base} active="Listen" listenHref="#c2-player" onRadio={()=>radio.current?.toggle()} playing={state.playing} loading={state.loading}/>
     <main>
       <section className="c2-hero" aria-labelledby="c2-title">
         <div className="c2-container c2-hero-inner">
@@ -119,27 +97,14 @@ export default function ConceptHome({playerFactory=createPortraitRadio}) {
           <button className="c2-all-tracks" aria-expanded={allTracks} aria-controls="c2-track-list" onClick={()=>setAllTracks(!allTracks)}>All tracks <ChevronDown className={allTracks?'is-open':''}/></button>
         </div>
         {state.error&&<p className="c2-audio-error c2-container" role="alert">{state.error}</p>}
-        <div className="c2-container" id="c2-track-list" hidden={!allTracks}><ol className="c2-track-list">{TRACKS.map((item,index)=><li key={item.title}><button aria-label={`${index===state.index&&state.playing?'Pause':'Play'} ${item.title}`} aria-current={index===state.index?'true':undefined} onClick={()=>choose(index)}><span>{index===state.index&&state.playing?<Pause size={17}/>:<Play size={17}/>}</span><strong>{item.title}</strong><span className="c2-track-genre">{item.genre}</span><time>{formatTime(item.seconds)}</time></button></li>)}</ol></div>
+        <div className="c2-container" id="c2-track-list" hidden={!allTracks}><ol className="c2-track-list">{TRACKS.map((item,index)=><li key={item.title}><button aria-label={`${index===state.index&&state.playing?'Pause':'Play'} ${item.title}`} aria-current={index===state.index?'true':undefined} onClick={()=>choose(index)}><span>{index===state.index&&state.playing?<Pause size={17}/>:<Play size={17}/>}</span><strong>{item.title}</strong><span className="c2-track-genre">{item.genre}</span><time>{formatTime(item.seconds)}</time></button></li>)}</ol><button className="c2-motion-toggle" aria-pressed={motion} onClick={()=>setMotion(!motion)}>Animate portraits <span>{motion?'On':'Off'}</span></button></div>
       </section>
       <section id="c2-store" className="c2-store c2-container" aria-labelledby="c2-store-title">
-        <div className="c2-section-head"><h2 id="c2-store-title">Wear your boundaries.</h2><a className="c2-text-link" href={`${base}store/`}>Explore the collection <ArrowUpRight/></a></div>
-        <div className="c2-products">{FEATURED.map((product,i)=><a className="c2-product" key={product.sku} href={`${base}store/?product=${product.sku}`} aria-label={`Explore ${product.name} — design preview`}><div className="c2-product-image"><img src={`${base}store/${product.img}`} width="1254" height="1254" loading="lazy" alt={product.name}/></div><div className="c2-product-info"><h3>{TITLES[i]}</h3><ArrowUpRight aria-hidden="true"/></div><p>{CAPTIONS[i]}</p></a>)}</div>
-        <p className="c2-collection-note">The next collection. Designs in development.</p>
+        <div className="c2-section-head"><div><p className="c2-eyebrow">The company store</p><h2 id="c2-store-title">Wear your <em>boundaries.</em></h2></div><div className="c2-store-intro"><p>For the life you lead<br/>outside the meeting.</p><a className="c2-text-link" href={`${base}store/`}>Explore the collection <ArrowUpRight/></a></div></div>
+        <div className="c2-products">{FEATURED.map((product,i)=><a className="c2-product" key={product.sku} href={`${base}store/?product=${product.sku}`} aria-label={`Explore ${product.name} — design preview`}><div className="c2-product-image"><img src={`${base}store/${product.img}`} width="1254" height="1254" loading="lazy" alt={product.name}/><span className="c2-product-open" aria-hidden="true"><ArrowUpRight/></span></div><div className="c2-product-info"><h3>{TITLES[i]}</h3><span className={`c2-swatch c2-swatch-${i}`} aria-hidden="true"/></div><p>{CAPTIONS[i]}</p></a>)}</div>
+        <p className="c2-collection-note">A preview of the next collection. Designs in development.</p>
       </section>
-      <section id="c2-tools" className="c2-tools c2-container" aria-label="Tools for professional nonsense">
-        <article className="c2-roast">
-          <div className="c2-tool-title"><h2>Roast my post.</h2><a href={`${base}roast/`} aria-label="Open Roast my post"><ArrowUpRight/></a></div>
-          <p>A second opinion. In red pen.</p>
-          <form onSubmit={roast}><label className="c2-sr" htmlFor="c2-roast-input">Your LinkedIn post</label><textarea className="c2-roast-paper" id="c2-roast-input" required maxLength={10000} rows={4} value={roastPost} onChange={e=>setRoastPost(e.target.value)} placeholder="Humbled to announce another inspiring week of circling back…"/><button className="c2-text-link c2-roast-submit" type="submit">Submit for review <ArrowUpRight/></button></form>
-        </article>
-        <article className="c2-linkedinifier">
-          <div className="c2-tool-title"><h2>The LinkedInifier.</h2><a href={`${base}lessons/`} aria-label="Open LinkedIn Lessons"><ArrowUpRight/></a></div>
-          <p>Small achievement. Big announcement.</p>
-          <form onSubmit={generate}><label className="c2-sr" htmlFor="c2-ordinary">What happened?</label><textarea id="c2-ordinary" required maxLength={2000} rows={4} value={ordinary} onChange={e=>{setOrdinary(e.target.value);setOutput('');setCopyStatus('');}} placeholder="I made a cup of coffee. It was pretty good."/><button className="c2-generate" type="submit">Make it LinkedIn <ArrowRight/></button></form>
-          {output&&<div className="c2-generated" aria-live="polite"><div>{output.split(/\n\n/).map((paragraph,i)=><p key={i}>{paragraph}</p>)}</div><div className="c2-output-actions"><button className="c2-text-link" onClick={copy}>{copyStatus==='Copied'?<Check/>:<Copy/>}{copyStatus==='Copied'?'Copied':'Copy post'}</button><a className="c2-text-link" href={`${base}studio/#beat=${encodeURIComponent(output)}`}>Turn it into a beat <ArrowUpRight/></a></div>{copyStatus&&copyStatus!=='Copied'&&<p role="status">{copyStatus}</p>}</div>}
-        </article>
-      </section>
-      <aside className="c2-studio-strip c2-container"><p>Something to get off your chest?</p><a className="c2-text-link" href={`${base}studio/`}>Put it to a beat <ArrowUpRight/></a></aside>
+      <Campaigns base={base}/>
     </main>
     <footer className="c2-footer c2-container"><p>Independent music for dependent employees.</p><nav aria-label="Creator links"><a href="https://look-serious.com/">Look Serious <ArrowUpRight/></a><a href="https://aaroncphelps.com/">Aaron Phelps <ArrowUpRight/></a><a href="https://www.linkedin.com/in/aaroncphelps/">LinkedIn <ArrowUpRight/></a></nav><small>© {new Date().getFullYear()} LinkedIn Beats. Independent parody. Not affiliated with LinkedIn.</small></footer>
   </div>;

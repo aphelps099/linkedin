@@ -4,7 +4,7 @@ import './fonts.css';
 import './header.css';
 
 const LINKS=[['Listen','#listen'],['Lessons','lessons/'],['Studio','studio/'],['Roast','roast/'],['Store','store/']];
-export function Header({base='/',active,onRadio,playing=false,loading=false,children}){
+export function Header({base='/',active,onRadio,playing=false,loading=false,listenHref,children}){
   const [open,setOpen]=useState(false), root=useRef(null), trigger=useRef(null), id=useId();
   useEffect(()=>{
     if(!open)return;
@@ -21,12 +21,12 @@ export function Header({base='/',active,onRadio,playing=false,loading=false,chil
       <span className="cb-header-tagline">DEPARTMENT OF<br/>PROFESSIONAL<br/>NONSENSE</span>
       <div className="cb-header-actions">
         {children}
-        {onRadio?<button className="cb-header-radio" onClick={onRadio} aria-label={loading?'Cancel radio loading':playing?'Pause radio':'Play radio'}>{radioContents}</button>:<a className="cb-header-radio" href={`${base}#listen`} aria-label="Open Circle Back Radio">{radioContents}</a>}
+        {onRadio?<button className="cb-header-radio" onClick={onRadio} aria-label={loading?'Cancel radio loading':playing?'Pause radio':'Play radio'}>{radioContents}</button>:<a className="cb-header-radio" href={listenHref??`${base}#listen`} aria-label="Open Circle Back Radio">{radioContents}</a>}
         <button className="cb-header-menu" ref={trigger} aria-expanded={open} aria-controls={id} onClick={()=>setOpen(!open)}><span>{open?'Close':'Menu'}</span><span className={`cb-header-burger ${open?'is-open':''}`} aria-hidden="true"><i/><i/></span></button>
       </div>
     </div>
     <nav className="cb-header-directory" id={id} aria-label="Main navigation" hidden={!open}>
-      {LINKS.map(([label,path])=><a href={`${base}${path}`} key={label} aria-current={active===label?'page':undefined} onClick={()=>{setOpen(false);trigger.current?.focus();}}>{label}</a>)}
+      {LINKS.map(([label,path])=><a href={label==='Listen'&&listenHref?listenHref:`${base}${path}`} key={label} aria-current={active===label?'page':undefined} onClick={()=>{setOpen(false);trigger.current?.focus();}}>{label}</a>)}
     </nav>
   </header>;
 }
