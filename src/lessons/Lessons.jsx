@@ -1,7 +1,9 @@
 import React, {useMemo,useRef,useState,useEffect} from 'react';
 import {ConceptHeader} from '../home-2/ConceptHeader.jsx';
 import '../home-2/header.css';
-import {Footer} from '../brand/Footer.jsx';
+import {Check,Copy,MessageSquarePlus,Minus,Plus} from 'lucide-react';
+import {ConceptFooter} from '../home-2/ConceptFooter.jsx';
+import '../home-2/footer.css';
 import {byId} from './categories.js';
 import {DEFAULT_ANSWERS,EXAMPLES,ANNOUNCEMENT_EXAMPLES} from './Intake.jsx';
 import {Sentence,sentenceParts} from './Sentence.jsx';
@@ -19,6 +21,7 @@ export default function Lessons(){
   const [level,setLevel]=useState(3),[seed,setSeed]=useState(newSeed),[flags,setFlags]=useState({});
   const [contextOpen,setContextOpen]=useState(false),[toolsOpen,setToolsOpen]=useState(false),[roastOpen,setRoastOpen]=useState(false);
   const [copyStatus,setCopyStatus]=useState(''),[status,setStatus]=useState('');
+  const copied=copyStatus==='Copied ✓';
   const variants=useRef({}),copyTimer=useRef(null),outputRef=useRef(null);
   useEffect(()=>()=>clearTimeout(copyTimer.current),[]);
   const answers=drafts[catId],cat=byId(catId),steps=cat.steps(answers);
@@ -61,7 +64,7 @@ export default function Lessons(){
             <div className="el-choice-pills">{s.options.map(o=><button type="button" key={o} aria-pressed={(answers[s.key]||s.options[0])===o} onClick={()=>update(s.key,o)}>{o}</button>)}</div>
           </fieldset>)}</div>}
           <Sentence catId={catId} answers={answers} steps={steps} onChange={update}/>
-          <div className="el-fact-actions">{extra.length>0?<button aria-expanded={contextOpen} aria-controls="extra-context" onClick={()=>setContextOpen(!contextOpen)}>{contextOpen?'− Less context':'+ Add context'}</button>:<span/>}<button onClick={example}>Try an example ↗</button></div>
+          <div className="el-fact-actions">{extra.length>0?<button aria-expanded={contextOpen} aria-controls="extra-context" onClick={()=>setContextOpen(!contextOpen)}>{contextOpen?<Minus aria-hidden="true"/>:<MessageSquarePlus aria-hidden="true"/>}<span>{contextOpen?'Less context':'Add context'}</span></button>:<span/>}<button onClick={example}><span>Try an example</span></button></div>
           {extra.length>0&&contextOpen&&<div className="el-context" id="extra-context">{extra.map(s=><label key={s.key} htmlFor={`context-${s.key}`}>{s.ask}<input id={`context-${s.key}`} name={s.key} value={answers[s.key]||''} placeholder={s.placeholder} maxLength={300} onChange={e=>update(s.key,e.target.value)}/></label>)}</div>}
           <p className="el-hint">Click the blue words. Tell the boring truth.</p>
           <p className="el-sr" role="status">{status}</p>
@@ -69,8 +72,8 @@ export default function Lessons(){
         <section className="el-output" aria-labelledby="output-title" ref={outputRef} tabIndex={-1}>
           <h2 className="el-eyebrow" id="output-title"><i/>THE LINKEDIN VERSION</h2>
           <div className="el-post" aria-label="Your supercharged post"><p className={`el-post-lead ${paras[0].length>100?'is-long':''}`}>{paras[0]}</p>{paras.slice(1).map((p,i)=><p key={i}>{p}</p>)}</div>
-          <div className="el-output-actions"><button className="el-copy" onClick={copy}>{copyStatus==='Copied ✓'?copyStatus:'Copy post ↗'}</button><button onClick={()=>regenerate()}>Try another</button><button aria-expanded={toolsOpen} aria-controls="post-tools" onClick={()=>setToolsOpen(!toolsOpen)}>{toolsOpen?'Fewer tools':'More tools +'}</button></div>
-          <p className="el-copy-status" role="status">{copyStatus}</p>
+          <div className="el-output-actions"><button className={`el-copy${copied?' is-copied':''}`} onClick={copy} aria-label={copied?'Copied to clipboard':'Copy to clipboard'} title={copied?'Copied!':'Copy to clipboard'}>{copied?<Check aria-hidden="true"/>:<Copy aria-hidden="true"/>}</button><button onClick={()=>regenerate()}>Try another</button><button className="el-more-tools" aria-expanded={toolsOpen} aria-controls="post-tools" onClick={()=>setToolsOpen(!toolsOpen)}><span>{toolsOpen?'Fewer tools':'More tools'}</span>{toolsOpen?<Minus aria-hidden="true"/>:<Plus aria-hidden="true"/>}</button></div>
+          <p className={copyStatus.startsWith('Copy unavailable')?'el-copy-status':'el-sr'} role="status">{copyStatus}</p>
           {toolsOpen&&<div className="el-tools" id="post-tools">
             <div className="el-modifiers"><button onClick={()=>setLevel(l=>Math.min(5,l+1))} disabled={level===5}>Make it worse</button><button onClick={()=>setLevel(1)}>Make it human</button><button onClick={()=>setFlags(f=>({...f,synergy:(f.synergy||0)+1}))}>Add more synergy{flags.synergy?` ×${flags.synergy}`:''}</button><button aria-pressed={!!flags.struggle} onClick={()=>setFlags(f=>({...f,struggle:!f.struggle}))}>Add a struggle</button><button aria-pressed={!!flags.founder} onClick={()=>setFlags(f=>({...f,founder:!f.founder}))}>Founder voice</button><button aria-expanded={roastOpen} onClick={()=>setRoastOpen(!roastOpen)}>Roast this post</button><a href={`../studio/#beat=${encodeURIComponent(text)}`}>Turn it into a beat ♫</a><button onClick={()=>setFlags({})}>Reset extras</button></div>
             {roastOpen&&<div className="el-roast"><h3>The roast</h3>{roastLines.map((line,i)=><p key={i}>{line}</p>)}</div>}
@@ -79,6 +82,6 @@ export default function Lessons(){
         </section>
       </div>
 
-    </main><Footer/>
+    </main><ConceptFooter base="../"/>
   </div>;
 }
