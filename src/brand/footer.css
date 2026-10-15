@@ -1,23 +1,18 @@
-.brand-footer {
-  margin: 0 3.2%;
-  padding: 26px 0;
-  border-top: 1px solid #11110e;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  color: #11110e;
-  font: 11px/1.6 'Roboto Mono', monospace;
-}
-.brand-footer>div { display: flex; flex-direction: column; gap: 6px; }
-.brand-footer>div>span { font-size: 11px; letter-spacing: .05em; }
-.brand-footer small { font: 10px/1.5 'DM Sans', sans-serif; color: #605e58; }
-.brand-footer nav { display: flex; gap: 24px; flex-wrap: wrap; }
-.brand-footer a { color: inherit; text-decoration: none; padding: 10px 0; }
-.brand-footer a:hover { text-decoration: underline; text-underline-offset: 4px; }
-.brand-footer a:focus-visible { outline: 2px solid #0757ec; outline-offset: 5px; }
-@media(max-width: 650px) {
-  .brand-footer { margin: 0 5%; padding: 24px 0; align-items: flex-start; flex-direction: column; gap: 12px; }
-  .brand-footer nav { gap: 20px; }
-  .brand-footer a { font-size: 10px; }
-}
+.brand-footer{background-color:#0757ec;background-image:radial-gradient(#f5f1e712 .6px,transparent .8px);background-size:4px 4px;color:#f5f1e7;margin:0;padding:50px clamp(24px,4vw,72px) 28px;font-family:'DM Sans',Arial,sans-serif}
+.brand-footer *{box-sizing:border-box}
+.brand-footer .brand-footer-top{display:flex;justify-content:space-between;align-items:center;gap:30px}
+.brand-footer-top>span,.brand-footer-credit,.brand-footer-bottom>span{font:12px/1.5 'Roboto Mono',monospace;letter-spacing:.04em}
+.brand-footer nav{display:flex;flex-wrap:wrap;gap:clamp(22px,3vw,50px)}
+.brand-footer nav a,.brand-footer button{color:#f5f1e7;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:8px;font:500 clamp(16px,1.5vw,22px)/1.5 'DM Sans',sans-serif;padding:8px 0}
+.brand-footer a:hover,.brand-footer button:hover{color:#fff349}
+.brand-footer :is(a,button):focus-visible{outline:2px solid #fff349;outline-offset:7px}
+.brand-footer-wordmark{display:block;width:100%;height:auto;margin:48px 0 10px;overflow:visible;fill:currentColor}
+.brand-footer-wordmark text{font:400 180px 'Anton',Impact,sans-serif;letter-spacing:-.025em}
+.brand-footer .brand-footer-credit{display:flex;align-items:center;justify-content:space-between;gap:24px}
+.brand-footer-credit>span:first-child{display:flex;align-items:center;gap:18px}
+.brand-footer-credit i{display:block;width:16px;height:16px;background:#fff349;flex-shrink:0}
+.brand-footer .brand-footer-bottom{margin-top:48px;padding-top:22px;border-top:1px solid #f5f1e76b;display:flex;align-items:center;gap:28px}
+.brand-footer small{font:12px/1.5 'DM Sans',sans-serif}
+.brand-footer .brand-footer-bottom button{background:none;border:0;border-radius:0;margin-left:auto;cursor:pointer;white-space:nowrap;font-size:14px;box-shadow:none}
+@media(max-width:800px){.brand-footer{padding:32px 24px 24px}.brand-footer .brand-footer-top{align-items:flex-start;flex-direction:column;gap:18px}.brand-footer nav{gap:16px 28px}.brand-footer-wordmark{margin-top:30px}.brand-footer .brand-footer-credit{align-items:flex-start;flex-direction:column;gap:18px}.brand-footer-credit{font-size:10px}.brand-footer .brand-footer-bottom{flex-wrap:wrap;gap:16px 24px;margin-top:32px}.brand-footer small{order:3;flex-basis:100%}.brand-footer-bottom>span{font-size:10px}.brand-footer .brand-footer-bottom button{font-size:13px}}
+@media(prefers-reduced-motion:reduce){.brand-footer{scroll-behavior:auto}}

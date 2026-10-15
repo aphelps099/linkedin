@@ -1,9 +1,9 @@
 import React, {useEffect, useId, useRef, useState} from 'react';
-import {Play, Pause, LoaderCircle, ArrowUpRight} from 'lucide-react';
+import {Play, Pause, LoaderCircle} from 'lucide-react';
 import './fonts.css';
 import './header.css';
 
-const LINKS=[['Listen','The corporate hits.','#listen'],['Lessons','Professional nonsense, perfected.','lessons/'],['Studio','Make some professional noise.','studio/'],['Roast','Submit your personal brand for review.','roast/'],['Store','Wear your boundaries.','store/']];
+const LINKS=[['Listen','#listen'],['Lessons','lessons/'],['Studio','studio/'],['Roast','roast/'],['Store','store/']];
 export function Header({base='/',active,onRadio,playing=false,loading=false,children}){
   const [open,setOpen]=useState(false), root=useRef(null), trigger=useRef(null), id=useId();
   useEffect(()=>{
@@ -26,9 +26,7 @@ export function Header({base='/',active,onRadio,playing=false,loading=false,chil
       </div>
     </div>
     <nav className="cb-header-directory" id={id} aria-label="Main navigation" hidden={!open}>
-      <div className="cb-header-directory-label">COMPANY DIRECTORY <span>PLEASE SELECT YOUR DEPARTMENT.</span></div>
-      {LINKS.map(([label,description,path],i)=><a href={`${base}${path}`} key={label} aria-current={active===label?'page':undefined} onClick={()=>{setOpen(false);trigger.current?.focus();}}><span className="cb-header-number">0{i+1}</span><strong>{label}</strong><span className="cb-header-description">{description}</span><ArrowUpRight aria-hidden="true"/></a>)}
-      <div className="cb-header-signoff">ALL BUSINESS. NO SKIPS.</div>
+      {LINKS.map(([label,path])=><a href={`${base}${path}`} key={label} aria-current={active===label?'page':undefined} onClick={()=>{setOpen(false);trigger.current?.focus();}}>{label}</a>)}
     </nav>
   </header>;
 }
