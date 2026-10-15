@@ -1,6 +1,7 @@
 @font-face{font-family:C2Hoves;src:url('/home-2/fonts/tt-hoves-regular.ttf') format('truetype');font-weight:400;font-display:swap}
 @font-face{font-family:C2Hoves;src:url('/home-2/fonts/tt-hoves-demibold.ttf') format('truetype');font-weight:600;font-display:swap}
 body.studio-three{padding-bottom:0;background:#0757ec}
+body.studio-three #root{display:block}
 .stage2.stage3{--blue:#0757ec;--c2-blue:#0757ec;--c2-electric:#0878ff;--sans:C2Hoves,Arial,sans-serif;--mono:C2Hoves,Arial,sans-serif;width:100%;padding:0 0 max(24px,env(safe-area-inset-bottom))!important;gap:20px!important;-webkit-font-smoothing:antialiased}
 .stage3 [hidden]{display:none!important}
 .stage3 button{font-family:var(--sans);cursor:pointer;touch-action:manipulation}
