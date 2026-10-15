@@ -73,7 +73,7 @@ export const Campaigns = memo(function Campaigns({base='/'}) {
       <div className="c2-container c2-linkedinifier-layout">
         <div className="c2-linkedinifier-copy">
           <p className="c2-eyebrow">The LinkedInifier</p>
-          <h2 id="c2-linkedinifier-title">Small news.<br/><span>Big deal.</span></h2>
+          <h2 id="c2-linkedinifier-title">Small news.<br/><span className="c2-big-deal">Big deal.</span></h2>
           <form className="c2-linkedinifier-form" onSubmit={generate}>
             <label htmlFor="c2-ordinary">What actually happened?</label>
             <textarea name="ordinary" id="c2-ordinary" required maxLength={2000} rows={2} value={ordinary} onChange={e=>{e.target.setCustomValidity('');setOrdinary(e.target.value);setOutput('');setExpanded(false);setCopyStatus('');}} placeholder="I made a cup of coffee. It was pretty good."/>
@@ -82,8 +82,7 @@ export const Campaigns = memo(function Campaigns({base='/'}) {
           </form>
         </div>
         <div className="c2-announcement-stage">
-          <div key={`robot-${approval}`} className={`c2-office-robot ${approval&&output?'is-approving':''}`} aria-hidden="true"><img src={`${base}home-2/office-robot.webp`} width="1448" height="1086" alt="" loading="lazy" decoding="async"/></div>
-          <div key={`stamp-${approval}`} className={`c2-office-robot c2-robot-stamp-front ${approval&&output?'is-approving':''}`} aria-hidden="true"><img src={`${base}home-2/office-robot.webp`} width="1448" height="1086" alt="" loading="lazy" decoding="async"/></div>
+          <div className="c2-office-robot" aria-hidden="true"><img src={`${base}home-2/robot-paper-top.webp`} width="2172" height="724" alt="" loading="lazy" decoding="async"/></div>
           <div className="c2-announcement">
           <div className="c2-announcement-heading"><span>For immediate release</span>{output&&<span key={approval} className={`c2-approval-stamp ${approval?'is-stamping':''}`} aria-hidden="true"><img src={`${base}home-2/approved-stamp.svg`} alt="" width="228" height="80"/></span>}</div>
           <div aria-live="polite" aria-atomic="true">
