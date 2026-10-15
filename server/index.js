@@ -107,6 +107,13 @@ app.get('/api/health', (_req, res)=>{
   });
 });
 
+// The approved concept is now the canonical homepage. Exact page redirects keep
+// /home-2/ artwork and font URLs available. Browsers retain incoming fragments.
+app.get(['/home-2', '/home-2/index.html'], (req, res) => {
+  const query = req.originalUrl.includes('?') ? req.originalUrl.slice(req.originalUrl.indexOf('?')) : '';
+  res.redirect(301, `/${query}`);
+});
+
 app.use(express.static(dist, {
   extensions:['html'],
   maxAge:'1h',

@@ -38,7 +38,7 @@ const Portrait = memo(function Portrait({base, index, tone, active, playing, loa
 });
 
 export default function ConceptHome({playerFactory=createPortraitRadio}) {
-  const base = window.location.pathname.replace(/home-2(?:\/(?:index\.html)?)?$/, '').replace(/\/?$/, '/');
+  const base = window.location.pathname.replace(/home-2(?:\/(?:index\.html)?)?$/, '').replace(/index\.html$/, '').replace(/\/?$/, '/');
   const radio = useRef(null), previousVolume = useRef(.8), chooseRef = useRef(null);
   const [state, setState] = useState(INITIAL), [allTracks, setAllTracks] = useState(false);
   const [motion, setMotion] = useState(() => !window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -46,6 +46,21 @@ export default function ConceptHome({playerFactory=createPortraitRadio}) {
   const track = TRACKS[state.index], seconds = scrub ?? state.elapsed;
   const visiblePortraits = PORTRAITS.map((portrait,i)=>i===3&&state.index===4?{...portrait,index:4}:portrait);
   const activeTone = visiblePortraits.find(p=>p.index===state.index)?.tone || 'paper';
+  useEffect(() => {
+    // Keep earlier homepage section links useful after promoting this design.
+    const anchors = {'#listen':'c2-player', '#store':'c2-store', '#about':'c2-footer'};
+    const followAnchor = (initial=false) => {
+      const hash = window.location.hash;
+      const target = anchors[hash] || (initial && ['#c2-player','#c2-store','#c2-tools','#c2-footer'].includes(hash) ? hash.slice(1) : null);
+      if (!target) return;
+      if (anchors[hash]) window.history.replaceState(null,'',`${window.location.pathname}${window.location.search}#${target}`);
+      document.getElementById(target)?.scrollIntoView({behavior:'instant', block:'start'});
+    };
+    followAnchor(true);
+    const onHashChange = () => followAnchor();
+    window.addEventListener('hashchange',onHashChange);
+    return () => window.removeEventListener('hashchange',onHashChange);
+  }, []);
   useEffect(() => {
     const player = playerFactory({phraseBase:`${base}phrases/`, onState:setState});
     radio.current = player;
