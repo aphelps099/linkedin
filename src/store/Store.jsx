@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {ArrowRight, X, Minus, Plus, ShoppingBag} from 'lucide-react';
+import {ArrowRight, X, Minus, Plus, ShoppingBag, Pause, Play} from 'lucide-react';
 import {PRODUCTS, bySku, fmt} from './products.js';
 import {ProductVisual, isDesignPreview} from './ProductVisual.jsx';
 import {ConceptHeader} from '../home-2/ConceptHeader.jsx';
@@ -63,6 +63,7 @@ function Quantity({value, max=99, onChange, label='Quantity'}){
 }
 
 export default function Store(){
+  const [heroPaused,setHeroPaused] = useState(false);
   const [filter,setFilter] = useState('All'), [sort,setSort] = useState('featured'), [sel,setSel] = useState(null);
   const [size,setSize] = useState(null), [qty,setQty] = useState(1);
   const [cart,setCart] = useState(loadCart), [drawer,setDrawer] = useState(false);
@@ -130,8 +131,11 @@ export default function Store(){
     {notice&&<div className="shop-notice" role="status"><span>{notice==='filed'?'Order filed. Thank you for your contribution to corporate culture.':'Checkout paused. Your bag is right where you left it.'}</span><button onClick={()=>setNotice(null)} aria-label="Dismiss notice"><X size={18}/></button></div>}
     <main>
       <section className="shop-hero" aria-labelledby="shop-title">
-        <h1 id="shop-title" className="shop-visually-hidden">The company store</h1>
-        <div className="shop-hero-art"><img src="../store/linkedin-beats-campaign.webp" width="1424" height="832" fetchpriority="high" alt="LinkedIn Beats campaign: five people in casual clothing in a sunlit parking structure, with the LinkedIn Beats wordmark across the center."/></div>
+        <div className="shop-hero-art">
+          <img className="shop-hero-photo" src="../store/linkedin-beats-store-campaign.webp" width="1536" height="897" fetchpriority="high" style={{animationPlayState:heroPaused?'paused':'running'}} alt="Five people wearing LinkedIn Beats shirts, a pink sweatshirt and a Circle Back cap in a sunlit parking structure."/>
+          <h1 id="shop-title" className="shop-hero-lockup"><img src="../home-2/brand/wordmark-horizontal.svg" width="1087" height="104" alt="LinkedIn Beats"/><span>Store</span></h1>
+          <button type="button" className="shop-hero-motion" onClick={()=>setHeroPaused(paused=>!paused)} aria-label={heroPaused?'Resume hero animation':'Pause hero animation'}>{heroPaused?<Play size={16} fill="currentColor" aria-hidden="true"/>:<Pause size={16} fill="currentColor" aria-hidden="true"/>}</button>
+        </div>
       </section>
       <section className="shop-collection" id="collection" aria-labelledby="collection-title">
         <h2 id="collection-title" className="shop-visually-hidden" tabIndex="-1">Products</h2>
