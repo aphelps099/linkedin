@@ -6,8 +6,10 @@ import {ConceptHeader} from './ConceptHeader.jsx';
 import {Campaigns} from './Campaigns.jsx';
 import {ConceptFooter} from './ConceptFooter.jsx';
 import {createPortraitRadio} from './portraitRadio.js';
+import {PixelSpectrum} from './PixelSpectrum.jsx';
 import '../brand/fonts.css';
 import './concept.css';
+import './player.css';
 import './header.css';
 import './campaigns.css';
 import './footer.css';
@@ -20,7 +22,6 @@ const CAPTIONS = ['Dusty pink', 'Cobalt blue', 'Cream + cobalt'];
 // illustrated head turn introduces the selected singer when playback starts.
 const CROPS = {rest:[142,80], ah:[618,81], ee:[1094,80], oh:[144,540], oo:[621,540], closed:[1096,538]};
 const cropStyle = name => ({left:`${-CROPS[name][0] / 300 * 100}%`, top:`${-CROPS[name][1] / 394 * 100}%`});
-const calmWave = Array.from({length:48}, (_, i) => .1 + Math.abs(Math.sin(i * 1.89) * Math.cos(i * .28)) * .56);
 
 const Portrait = memo(function Portrait({base, index, tone, active, playing, loading, mouth, motion, choose}) {
   const visibleMouth = active && playing ? mouth : 'rest';
@@ -42,7 +43,9 @@ export default function ConceptHome({playerFactory=createPortraitRadio}) {
   const radio = useRef(null), previousVolume = useRef(.8), chooseRef = useRef(null);
   const [state, setState] = useState(INITIAL), [allTracks, setAllTracks] = useState(false);
   const [motion, setMotion] = useState(() => !window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  const [scrub, setScrub] = useState(null);
+  const [scrub, setScrub] = useState(null), [pressedKey, setPressedKey] = useState('');
+  const pressTimer = useRef(null);
+  useEffect(()=>()=>clearTimeout(pressTimer.current),[]);
   const track = TRACKS[state.index], seconds = scrub ?? state.elapsed;
   const visiblePortraits = PORTRAITS.map((portrait,i)=>i===3&&state.index===4?{...portrait,index:4}:portrait);
   const activeTone = visiblePortraits.find(p=>p.index===state.index)?.tone || 'paper';
@@ -85,6 +88,11 @@ export default function ConceptHome({playerFactory=createPortraitRadio}) {
   chooseRef.current=choose;
   const stableChoose=useRef(index=>chooseRef.current(index)).current;
   const seek = value => {setScrub(null);radio.current?.seek(Number(value));};
+  const skip = direction => {
+    setScrub(null); setPressedKey(direction); clearTimeout(pressTimer.current);
+    pressTimer.current=setTimeout(()=>setPressedKey(''),420);
+    radio.current?.[direction]();
+  };
   const mute=()=>{if(state.volume){previousVolume.current=state.volume;radio.current?.volume(0);}else radio.current?.volume(previousVolume.current||.8);};
   return <div className={`c2-home ${motion?'':'c2-still'}`}>
     <a className="c2-skip" href="#c2-player">Skip to music player</a>
@@ -105,19 +113,22 @@ export default function ConceptHome({playerFactory=createPortraitRadio}) {
       </section>
       <section className="c2-player" id="c2-player" aria-label="Circle Back Radio music player">
         <div className="c2-container c2-player-inner">
-          <button className="c2-play" onClick={()=>radio.current?.toggle()} aria-label={state.loading?'Cancel loading':state.playing?'Pause':'Play'}>{state.loading?<LoaderCircle className="c2-spin"/>:state.playing?<Pause fill="currentColor"/>:<Play fill="currentColor"/>}</button>
+          <button type="button" className={`c2-key c2-play ${state.playing||state.loading?'is-active':''}`} aria-pressed={state.playing} onClick={()=>radio.current?.toggle()} aria-label={state.loading?'Cancel loading':state.playing?'Pause':'Play'}>{state.loading?<LoaderCircle className="c2-spin"/>:state.playing?<Pause fill="currentColor"/>:<Play fill="currentColor"/>}</button>
           <div className="c2-now-group">
             <span className={`c2-now-cover c2-${activeTone}`} aria-hidden="true"><span className="c2-portrait-art"><span className="c2-portrait-ink"><img className="c2-sheet" style={cropStyle('rest')} src={`${base}home-2/singing-states.webp`} alt="" width="1536" height="1024"/></span></span></span>
             <div className="c2-now"><strong aria-live="polite">{track.title}</strong><span>{state.loading?'Tuning in…':'Circle Back Radio'}</span></div>
           </div>
-          <div className="c2-scrubber">
-            <div className="c2-wave" aria-hidden="true">{(motion&&state.levels?state.levels:calmWave).map((level,i)=><i key={i} style={{height:`${3+level*34}px`}} className={i/48<seconds/track.seconds?'is-past':''}/>)}</div>
-            <input type="range" aria-label="Track position" aria-valuetext={`${formatTime(seconds)} of ${formatTime(track.seconds)}`} min="0" max={track.seconds} step=".1" value={seconds} style={{'--c2-progress':`${seconds/track.seconds*100}%`}} onChange={e=>setScrub(Number(e.target.value))} onPointerUp={e=>seek(e.currentTarget.value)} onKeyUp={e=>{if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown'].includes(e.key))seek(e.currentTarget.value);}} onBlur={e=>{if(scrub!==null)seek(e.currentTarget.value);}} onPointerCancel={()=>setScrub(null)}/>
+          <div className="c2-player-screen">
+          <div className="c2-scrubber" style={{'--c2-progress':`${seconds/track.seconds*100}%`}}>
+            <PixelSpectrum levels={state.levels} active={motion&&state.playing}/>
+            <span className="c2-seek-rail" aria-hidden="true"/>
+            <input type="range" aria-label="Track position" aria-valuetext={`${formatTime(seconds)} of ${formatTime(track.seconds)}`} min="0" max={track.seconds} step=".1" value={seconds} onChange={e=>setScrub(Number(e.target.value))} onPointerUp={e=>seek(e.currentTarget.value)} onKeyUp={e=>{if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown'].includes(e.key))seek(e.currentTarget.value);}} onBlur={e=>{if(scrub!==null)seek(e.currentTarget.value);}} onPointerCancel={()=>setScrub(null)}/>
           </div>
-          <div className="c2-time"><time>{formatTime(seconds)}</time><span>/</span><time>{formatTime(track.seconds)}</time></div>
-          <div className="c2-next-controls"><button className="c2-previous" aria-label="Previous track or restart" onClick={()=>{setScrub(null);radio.current?.previous();}}><SkipBack fill="currentColor"/></button><button aria-label="Next track" onClick={()=>{setScrub(null);radio.current?.next();}}><SkipForward fill="currentColor"/></button></div>
-          <div className="c2-volume"><button onClick={mute} aria-label={state.volume?'Mute':'Unmute'}>{state.volume?<Volume2/>:<VolumeX/>}</button><input type="range" min="0" max="1" step=".01" value={state.volume} aria-label="Volume" onChange={e=>radio.current?.volume(Number(e.target.value))}/></div>
-          <button className="c2-all-tracks" aria-expanded={allTracks} aria-controls="c2-track-list" onClick={()=>setAllTracks(!allTracks)}>All tracks <ChevronDown className={allTracks?'is-open':''}/></button>
+          <div className="c2-time" aria-hidden="true"><time>{formatTime(seconds)}</time><span>/</span><time>{formatTime(track.seconds)}</time></div>
+          </div>
+          <div className="c2-next-controls" role="group" aria-label="Track controls"><button type="button" className={`c2-key c2-previous ${pressedKey==='previous'?'is-active':''}`} aria-label="Previous track or restart" onClick={()=>skip('previous')}><SkipBack fill="currentColor"/></button><button type="button" className={`c2-key ${pressedKey==='next'?'is-active':''}`} aria-label="Next track" onClick={()=>skip('next')}><SkipForward fill="currentColor"/></button></div>
+          <div className="c2-volume"><button type="button" onClick={mute} aria-pressed={state.volume===0} aria-label={state.volume?'Mute':'Unmute'}>{state.volume?<Volume2/>:<VolumeX/>}</button><input type="range" min="0" max="1" step=".01" value={state.volume} style={{'--c2-volume':`${state.volume*100}%`}} aria-label="Volume" onChange={e=>radio.current?.volume(Number(e.target.value))}/></div>
+          <button type="button" className="c2-key c2-all-tracks" aria-expanded={allTracks} aria-controls="c2-track-list" onClick={()=>setAllTracks(!allTracks)}>Playlist <ChevronDown className={allTracks?'is-open':''}/></button>
         </div>
         {state.error&&<p className="c2-audio-error c2-container" role="alert">{state.error}</p>}
         <div className="c2-container" id="c2-track-list" hidden={!allTracks}><ol className="c2-track-list">{TRACKS.map((item,index)=><li key={item.title}><button aria-label={`${index===state.index&&state.playing?'Pause':'Play'} ${item.title}`} aria-current={index===state.index?'true':undefined} onClick={()=>choose(index)}><span>{index===state.index&&state.playing?<Pause size={17}/>:<Play size={17}/>}</span><strong>{item.title}</strong><span className="c2-track-genre">{item.genre}</span><time>{formatTime(item.seconds)}</time></button></li>)}</ol><button className="c2-motion-toggle" aria-pressed={motion} onClick={()=>setMotion(!motion)}>Animate portraits <span>{motion?'On':'Off'}</span></button></div>
