@@ -945,7 +945,10 @@ export default function CircleBack(){
     remixPanel={<RemixPanel narrow={narrow} result={remix} initial={handoff} onRemix={buildRemix} onClose={()=>setRemixOpen(false)}/>}
     onRemix={()=>setRemixOpen(o=>!o)} remixOpen={remixOpen} onStage={()=>setStudio(false)} onAdvanced={()=>setAdvanced(true)}
     onExport={startExport} onMidi={exportMidi} exporting={exp} take={take} ticker={ticker} loops={loops} onLoops={setLoops}
-    voxLocked={voxLocked} onVoxLock={toggleVoxLock}/>;
+    voxLocked={voxLocked} onVoxLock={toggleVoxLock}
+    pattern={rack.pattern} drums={DRUMS} rec={rec}
+    onRecord={()=>{CBAudio.unlock();if(!rec){setVoxLocked(false);setPlaying(true);}setRec(r=>!r);}}
+    onDrum={i=>{const d=DRUMS[i];if(!d)return;CBAudio.unlock();CBAudio.trigger(d.id,1);const r=ref.current;if(r.rec&&r.playing&&r.lastStep!==undefined)setRack(rk=>{const p=rk.pattern.map(row=>[...row]);p[i][r.lastStep]=2;return {...rk,pattern:p};});}}/>;
 
   if(!studio) return <div style={{position:'relative',minHeight:'100vh',background:'var(--blue)',color:'#fff',fontFamily:'var(--sans)',
     padding: narrow ? '14px 14px 26px' : '20px 26px 30px',boxSizing:'border-box',display:'flex',flexDirection:'column',gap:narrow?12:16,
