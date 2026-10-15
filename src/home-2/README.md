@@ -41,3 +41,5 @@ The Hoves and America files are Latin subsets. Font families and styles are scop
 ## Checks
 
 `npm run check:home` verifies the existing transport. `npm run check:home2` verifies vocal-only motion, silence/pause, frame mapping, all real clip arrangements and adapter lifecycle. `npm run build` includes the new entry without replacing `/`.
+
+The store preview now uses the complete product names, compact TT Hoves captions and larger image areas. The full `/store/` route shares the approved header/footer and links its Listen and LinkedInifier navigation back to this page. Its retail layout is documented in `src/store/README.md`.
