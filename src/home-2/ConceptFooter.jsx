@@ -1,10 +1,10 @@
 import React, {memo} from 'react';
-import {Globe2, Headphones, Linkedin, ShieldCheck} from 'lucide-react';
+import {Linkedin} from 'lucide-react';
 
 const MARKS = [
-  {Icon: Globe2, top: 'Global', bottom: 'nonsense'},
-  {Icon: ShieldCheck, top: 'Synergy', bottom: 'checked'},
-  {Icon: Headphones, top: 'Office', bottom: 'safe-ish'},
+  {slug:'global-nonsense', label:'Certified global nonsense'},
+  {slug:'synergy-checked', label:'Certified synergy checked'},
+  {slug:'office-safe-ish', label:'Certified office safe-ish'},
 ];
 
 export const ConceptFooter = memo(function ConceptFooter({base='/'}) {
@@ -22,9 +22,11 @@ export const ConceptFooter = memo(function ConceptFooter({base='/'}) {
         </div>
         <div className="c2-footer-assurance">
           <ul className="c2-footer-marks" aria-label="Fictional corporate assurance marks">
-            {MARKS.map(({Icon,top,bottom})=><li key={top}>
-              <span className="c2-footer-seal" aria-hidden="true"><Icon/></span>
-              <span>{top}<br/>{bottom}</span>
+            {MARKS.map(({slug,label})=><li key={slug}>
+              <span className="c2-footer-seal" style={{'--seal-art':`url("${base}home-2/brand/certified-${slug}.svg")`}}>
+                <img src={`${base}home-2/brand/certified-${slug}.svg`} width="300" height="444" loading="lazy" alt={`${label} — fictional corporate assurance mark`}/>
+                <span className="c2-footer-metal" aria-hidden="true"/>
+              </span>
             </li>)}
           </ul>
           <p>Internal standards. Entirely made up.</p>
