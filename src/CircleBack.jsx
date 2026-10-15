@@ -28,6 +28,7 @@ import { makeSong, bandAt } from './song.js';
 import { requestRemixVoiceClip } from './voice.js';
 import { StudioDesk } from './studio/StudioDesk.jsx';
 import { StudioControls } from './studio/StudioControls.jsx';
+import { RacingHeader,RacingConsole } from './studio-3/RacingStage.jsx';
 import { GROOVES, createGroove, grooveMidi } from './studio/grooves.js';
 
 const PHRASES = [
@@ -137,7 +138,7 @@ function useNarrow(bp = 760){
   return narrow;
 }
 
-export default function CircleBack({stagePreview=false}){
+export default function CircleBack({stagePreview=false,racingPreview=false}){
   const [initialGroove] = React.useState(()=>createGroove('reply-all'));
   const [grooveId,setGrooveId] = React.useState('reply-all');
   const [advanced,setAdvanced] = React.useState(false);
@@ -196,7 +197,7 @@ export default function CircleBack({stagePreview=false}){
     pattern: rack.pattern, samples: rack.samples, voxRow, patLen, armed, tempo, sinc, deliv, decay, rec, playing,
     pos, tickerText: ticker, voices: VOICES, voxCodes, exporting: !!exp, phrases: PHRASES,
     song, energy, section: SECTIONS[energy], studio, band, remix, voxLocked,
-    glass: !studio, stagePreview,
+    glass: !studio, stagePreview, racingPreview,
   });
 
   React.useEffect(()=>{
@@ -954,11 +955,11 @@ export default function CircleBack({stagePreview=false}){
     onRecord={()=>{CBAudio.unlock();if(!rec){setVoxLocked(false);setPlaying(true);}setRec(r=>!r);}}
     onDrum={i=>{const d=DRUMS[i];if(!d)return;CBAudio.unlock();CBAudio.trigger(d.id,1);const r=ref.current;if(r.rec&&r.playing&&r.lastStep!==undefined)setRack(rk=>{const p=rk.pattern.map(row=>[...row]);p[i][r.lastStep]=2;return {...rk,pattern:p};});}}/>{controls}</>;
 
-  if(!studio) return <div className={stagePreview?'stage2':undefined} style={{position:'relative',minHeight:'100vh',background:'var(--blue)',color:'#fff',fontFamily:'var(--sans)',
+  if(!studio) return <div className={stagePreview?`stage2${racingPreview?' stage3 c2-home':''}`:undefined} style={{position:'relative',minHeight:'100vh',background:'var(--blue)',color:'#fff',fontFamily:'var(--sans)',
     padding: narrow ? '14px 14px 26px' : '20px 26px 30px',boxSizing:'border-box',display:'flex',flexDirection:'column',gap:narrow?12:16,
     isolation:'isolate'}}>
     <Backdrop stateRef={ref} focusRef={canvasRef}/>
-    {stagePreview ? <header className="stage2-header">
+    {racingPreview ? <RacingHeader onAudioTools={()=>setAudioDrawer(true)}/> : stagePreview ? <header className="stage2-header">
       <a href="../" aria-label="LinkedIn Beats home"><img src="../home-2/brand/wordmark-horizontal.svg" alt="LinkedIn Beats"/></a>
       <span className="stage2-label">Studio</span>
       <nav aria-label="Studio navigation"><button onClick={()=>setAudioDrawer(true)}>Mix <Settings size={17}/></button><details onKeyDown={e=>{if(e.key==='Escape'){e.currentTarget.open=false;e.currentTarget.querySelector('summary').focus();}}}><summary>Menu <span aria-hidden="true">☰</span></summary><div>
@@ -1050,7 +1051,12 @@ export default function CircleBack({stagePreview=false}){
           backdropFilter:'blur(14px) saturate(1.15)', WebkitBackdropFilter:'blur(14px) saturate(1.15)',
           boxShadow:'inset 0 1px 0 rgba(255,255,255,.35), 0 24px 70px rgba(4,42,82,.34)'}}/>
     </main>
-    {stagePreview ? <section className="stage2-console" aria-label="Performance controls">
+    {racingPreview ? <RacingConsole playing={playing} songName={remix?'Your remix':song.name} tempo={tempo} energy={energy}
+      onPlay={()=>{CBAudio.unlock();setPlaying(p=>!p);}} onShuffle={newTrack} onPhrase={firePhrase} onEnergy={setEnergyLevel}
+      voxLocked={voxLocked} onVoxLock={toggleVoxLock} onAudioTools={()=>setAudioDrawer(true)}
+      phrases={PHRASES} drums={DRUMS} onPadPhrase={pressKey}
+      onDrum={i=>{const d=DRUMS[i];if(d){CBAudio.unlock();CBAudio.trigger(d.id,1);}}} ticker={ticker}/>
+    : stagePreview ? <section className="stage2-console" aria-label="Performance controls">
       <div className="stage2-transport"><button className="stage2-play" onClick={()=>{CBAudio.unlock();setPlaying(p=>!p);}} aria-label={playing?'Pause performance':'Play performance'}>{playing?'Ⅱ':'▶'}</button>
         <div className="stage2-track"><strong>{remix?'Your remix':song.name}</strong><span>{tempo} BPM · {SECTIONS[energy]}</span></div>
         <button className="stage2-shuffle" onClick={newTrack} aria-label="New track"><Shuffle size={21}/></button>

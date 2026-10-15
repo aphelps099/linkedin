@@ -21,7 +21,8 @@ export function Backdrop({ stateRef, focusRef }){
     const loop = ()=>{
       const now = performance.now();
       try{
-        ctx.fillStyle = '#0a66c2';
+        const blue=stateRef.current?.racingPreview?'#0757ec':'#0a66c2';
+        ctx.fillStyle = blue;
         ctx.fillRect(0, 0, w, h);
         drawAsciiField(ctx, stateRef.current || {}, now, {
           width: w, height: h, cell: 76, alpha: .3,
@@ -33,7 +34,7 @@ export function Backdrop({ stateRef, focusRef }){
         // the field burns around the monitor and is fully spent before the
         // corners, so the room frames the words instead of competing with them
         const inner = box ? Math.max(box.width, box.height)*.38 : Math.min(w,h)*.26;
-        drawFocusRamp(ctx, {width:w, height:h, cx, cy, inner, outer: inner + Math.min(w, h)*.52});
+        drawFocusRamp(ctx, {width:w, height:h, cx, cy, inner, outer: inner + Math.min(w, h)*.52, blue});
         drawGrain(ctx, w, h, .085);
       }catch(e){ /* keep the room lit */ }
       raf = requestAnimationFrame(loop);

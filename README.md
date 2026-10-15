@@ -494,3 +494,10 @@ The approved Home 2 design is live at `/`: singing portraits, Circle Back Radio,
 The homepage player uses a satin silver control bar, softly rounded joined transport keys, and a smoked-glass spectrum display. Active playback and the open Playlist button keep a thin electric-blue perimeter; previous/next briefly illuminate only the pressed half. The volume slider stays visible, and both transport keys remain available on mobile.
 
 The EQ uses the existing audio analyser: 48 segmented blue LED columns rise from a common baseline with briefly held peaks. Paused or motion-disabled states settle to a quiet baseline. Seeking, track selection, loading cancellation, mute, lyric timing, and portrait animation use the existing player. The display and controls wrap into two rows on tablets and three on phones. Styling lives in `src/home-2/player.css`; `PixelSpectrum.jsx` owns only the visual LED updates.
+
+
+### Studio 3 racing test
+
+`/studio-3/` is a separate, noindex test route. It retains Studio 2's live square monitor and the original giant audio-reactive ASCII backdrop. The current site header, Get LinkedInified racing band, cobalt stage, and brushed-silver console align it with the homepage and LinkedInifier.
+
+The default is Play/Pause, Phrase, Build, Drop, shuffle, and auto phrases. Pads open inline beneath the console: eight at a time, four columns on desktop and two on phones, with Phrases/Drums selection and phrase-bank paging. Pads use normal-width TT Hoves, generous spacing, and a fine blue press indicator. Keys 1–8 trigger the visible bank while it is open; the original stage shortcuts apply when closed. Voice environment opens the existing audio controls. No export controls are exposed. `/studio/` and `/studio-2/` retain their existing layouts.

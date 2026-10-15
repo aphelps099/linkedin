@@ -58,9 +58,10 @@ export function drawAsciiField(ctx, st, now, opts){
 // stage and falls away into flat corporate blue at the edges.
 export function drawFocusRamp(ctx, {width, height, cx, cy, inner, outer, blue = '#0a66c2'}){
   const g = ctx.createRadialGradient(cx, cy, inner, cx, cy, outer);
-  g.addColorStop(0, 'rgba(10,102,194,0)');
-  g.addColorStop(.34, 'rgba(10,102,194,.28)');
-  g.addColorStop(.68, 'rgba(10,102,194,.78)');
+  const rgb=[1,3,5].map(p=>parseInt(blue.slice(p,p+2),16)).join(',');
+  g.addColorStop(0, `rgba(${rgb},0)`);
+  g.addColorStop(.34, `rgba(${rgb},.28)`);
+  g.addColorStop(.68, `rgba(${rgb},.78)`);
   g.addColorStop(1, blue);
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, width, height);
