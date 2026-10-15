@@ -26,11 +26,13 @@ export const CHARACTERS = [
 export function createAudioEngine() {
   let ctx, master, comp, noiseBuf, streamDest, analyser, specArr, lp, voxIn, voxDelay,
       voxChar, voxDrive, voxCrush, voxDry, voxRing, voxRingOsc, voxWob, voxFb, voxVerb;
+  const channels = {};
   let fx = {weird:0, dist:.12, character:'boardroom'};
   function init(){
     if(ctx) return;
     ctx = new (window.AudioContext||window.webkitAudioContext)();
     master = ctx.createGain(); master.gain.value = .85;
+    for(const name of ['drums','bass','music','vox','samples']){channels[name]=ctx.createGain();channels[name].gain.value=1;channels[name].connect(master);}
     // performance filter — the build/drop sweeps this
     lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 20000; lp.Q.value = 1.2;
     comp = ctx.createDynamicsCompressor();
@@ -60,7 +62,7 @@ export function createAudioEngine() {
     voxCrush.connect(ringMul); ringMul.connect(voxRing); voxRing.connect(sum);
     sum.connect(peak);
     sum.connect(wob); wob.connect(voxWob); voxWob.connect(peak);
-    peak.connect(master);
+    peak.connect(channels.vox);
     // a room to put the voice in — synthesized impulse, exponential decay
     const irLen = Math.floor(ctx.sampleRate * 2.1);
     const ir = ctx.createBuffer(2, irLen, ctx.sampleRate);
@@ -74,12 +76,12 @@ export function createAudioEngine() {
     const conv = ctx.createConvolver(); conv.buffer = ir;
     voxVerb = ctx.createGain(); voxVerb.gain.value = .08;   // a little room by default
     const verbOut = ctx.createGain(); verbOut.gain.value = .9;
-    peak.connect(voxVerb); voxVerb.connect(conv); conv.connect(verbOut); verbOut.connect(master);
+    peak.connect(voxVerb); voxVerb.connect(conv); conv.connect(verbOut); verbOut.connect(channels.vox);
 
     voxDelay = ctx.createDelay(1.5); voxDelay.delayTime.value = .28;
     voxFb = ctx.createGain(); voxFb.gain.value = .34;
     const wet = ctx.createGain(); wet.gain.value = .3;
-    peak.connect(voxDelay); voxDelay.connect(voxFb); voxFb.connect(voxDelay); voxDelay.connect(wet); wet.connect(master);
+    peak.connect(voxDelay); voxDelay.connect(voxFb); voxFb.connect(voxDelay); voxDelay.connect(wet); wet.connect(channels.vox);
     streamDest = ctx.createMediaStreamDestination();
     comp.connect(streamDest);
     analyser = ctx.createAnalyser(); analyser.fftSize = 256; analyser.smoothingTimeConstant = .78;
@@ -141,7 +143,7 @@ export function createAudioEngine() {
     init(); rs();
     P = P || {};
     const t = when===undefined ? ctx.currentTime+.001 : when;
-    const out = ctx.createGain(); out.gain.value = .8*vel; out.connect(master);
+    const out = ctx.createGain(); out.gain.value = .8*vel; out.connect(channels[['bass','sub'].includes(v)?'bass':['kick','snare','clap','ch','oh','shk','cow','zap'].includes(v)?'drums':'music']);
     const T = x => x.stop(t+4);
     if(v==='kick'){
       const o = osc('sine',150,t); o.frequency.exponentialRampToValueAtTime(46,t+.07);
@@ -311,7 +313,7 @@ export function createAudioEngine() {
     } else {
       src.connect(g);
     }
-    g.connect(o.bus === 'vox' ? voxIn : master); src.start(t, o.offset || 0);
+    g.connect(o.bus === 'vox' ? voxIn : channels.samples); src.start(t, o.offset || 0);
     return { source: src, gain: g };
   }
   return {
@@ -323,6 +325,7 @@ export function createAudioEngine() {
     spectrum: ()=>{ if(!analyser) return null; analyser.getByteFrequencyData(specArr); return specArr; },
     state: ()=> ctx ? ctx.state : 'uninitialized',
     suspend: ()=> ctx?.suspend(),
+    setChannelGain(name,value){init();if(channels[name] && Number.isFinite(value))channels[name].gain.setTargetAtTime(Math.max(0,Math.min(1,value)),ctx.currentTime,.015);},
     setVolume(value){ init(); master.gain.setTargetAtTime(Math.max(0, Math.min(1, value)) * .85, ctx.currentTime, .015); },
     dispose(){
       if(silentEl){
@@ -391,6 +394,7 @@ export const CBVoice = {
   // 0 = choked instantly (the chair recognizes no one), 1 = rings out in full.
   // pitch is a semitone offset (-12..+12) applied on top of Sincerity
   pitch: 0,
+  volume: 1,
   // Every so often a read is dunked in reverb, for no reason anyone could defend.
   reads: 0,
   readOffset(){ return READ_CYCLE[this.reads++ % READ_CYCLE.length]; },
@@ -440,7 +444,7 @@ export const CBVoice = {
       const u = new SpeechSynthesisUtterance(clean);
       u.pitch = Math.max(0, Math.min(2, (o.pitch===undefined ? 1 : o.pitch) + CBVoice.pitch/12));
       u.rate = o.rate===undefined ? 1 : o.rate;
-      u.volume = o.volume===undefined ? 1 : o.volume;
+      u.volume = o.volume===undefined ? this.volume : o.volume;
       speechSynthesis.speak(u);
     }catch(e){ console.warn('speech unavailable', e); }
   }

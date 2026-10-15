@@ -91,12 +91,12 @@ export function bandAt(song, step, energy){
     const note = b===3 ? chord.root + 7 : b===2 ? chord.root + 12 : chord.root;
     ev.push({v:'bass', freq: mtof(note), vel: b===2 ? .95 : .8, dur: energy>=2 ? .22 : .18});
   }
-  if(energy >= 1 && song.arp[s]){
+  if((energy >= 1 || song.arranged) && song.arp[s]){
     ev.push({v:'arp', freq: mtof(arpNote(song, chord, step)), vel: energy>=2 ? .7 : .5, dur: .12});
   }
-  if(energy >= 2){
+  if(energy >= 2 || song.arranged){
     if(song.stab[s]) ev.push({v:'stab', freqs: chord.tones.slice(0,3).map(t=> mtof(t+24)), vel:.8, dur:.3});
-    if(s === 0) ev.push({v:'sub', freq: mtof(chord.root-12), vel:.9, dur:.5});
+    if(energy >= 2 && s === 0) ev.push({v:'sub', freq: mtof(chord.root-12), vel:.9, dur:.5});
   }
   // computer chatter — the machine has opinions
   if(energy >= 1 && (s===7 || s===15) && Math.random() < .5){

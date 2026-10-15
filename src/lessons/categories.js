@@ -1,7 +1,6 @@
-// LINKEDIN LESSONS — the interview.
-// Six categories. Each defines a one-question-at-a-time flow; `steps(answers)`
-// returns the full question list given what's answered so far, so an early
-// choice (e.g. "A product launch") reshapes the questions that follow.
+// LINKEDIN LESSONS — the intake schema.
+// Six categories. `steps(answers)` returns all visible fields; an announcement
+// type (e.g. "A product launch") reshapes the complete form.
 // Every question can `react` to its answer — the form talks back.
 
 const q = (key, ask, opts = {}) => ({ key, ask, type: opts.options ? 'choice' : (opts.long ? 'long' : 'text'), ...opts });

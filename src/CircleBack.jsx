@@ -26,6 +26,8 @@ import { randomPattern } from './randomizer.js';
 import { randomComment } from './feed.js';
 import { makeSong, bandAt } from './song.js';
 import { requestRemixVoiceClip } from './voice.js';
+import { StudioDesk } from './studio/StudioDesk.jsx';
+import { GROOVES, createGroove, grooveMidi } from './studio/grooves.js';
 
 const PHRASES = [
   {code:'TH', name:'Thrilled', say:"I'm thrilled to announce"},
@@ -135,16 +137,22 @@ function useNarrow(bp = 760){
 }
 
 export default function CircleBack(){
+  const [initialGroove] = React.useState(()=>createGroove('reply-all'));
+  const [grooveId,setGrooveId] = React.useState('reply-all');
+  const [advanced,setAdvanced] = React.useState(false);
+  const [mix,setMix] = React.useState({drums:.85,bass:.8,music:.7,vox:1});
+  const [muted,setMuted] = React.useState({});
+  const [masterVolume,setMasterVolume] = React.useState(.8);
   const [voxLocked, setVoxLocked] = React.useState(true);
-  const [rack, setRack] = React.useState(()=>({samples:[], pattern:applyVoxLock(seedPattern(0), 0, true)}));
-  const [song, setSong] = React.useState(makeSong);
+  const [rack, setRack] = React.useState(()=>({samples:[], pattern:initialGroove.pattern}));
+  const [song, setSong] = React.useState(()=>initialGroove.song);
   const [armed, setArmed] = React.useState(1);
-  const [ticker, setTicker] = React.useState('Sample mix loaded — press play');
+  const [ticker, setTicker] = React.useState('Reply-All Disco loaded — press play, then hit a phrase pad');
   const [playing, setPlaying] = React.useState(false);
   const [rec, setRec] = React.useState(false);
   const [pos, setPos] = React.useState(null);
   const [energy, setEnergy] = React.useState(0);
-  const [tempo, setTempo] = React.useState(112);
+  const [tempo, setTempo] = React.useState(initialGroove.bpm);
   const [sinc, setSinc] = React.useState(.12);
   const [deliv, setDeliv] = React.useState(.5);
   const [decay, setDecay] = React.useState(.5);
@@ -154,7 +162,7 @@ export default function CircleBack(){
   const [character, setCharacter] = React.useState('boardroom');
   const [selRow, setSelRow] = React.useState(0);
   const [loops, setLoops] = React.useState(4);
-  const [studio, setStudio] = React.useState(false);
+  const [studio, setStudio] = React.useState(true);
   const [audioDrawer, setAudioDrawer] = React.useState(false);
   const [aboutOpen, setAboutOpen] = React.useState(false);
   const [band, setBand] = React.useState(true);
@@ -195,6 +203,12 @@ export default function CircleBack(){
     exposeVoice();
     if(typeof window !== 'undefined') window.CBState = ref.current; // on-device debugging
   },[]);
+  React.useEffect(()=>{
+    for(const [channel,value] of Object.entries(mix)) CBAudio.setChannelGain(channel,muted[channel]?0:value);
+    CBAudio.setVolume(masterVolume);
+    CBVoice.volume=(muted.vox?0:mix.vox)*masterVolume;
+    if(CBVoice.volume===0 && typeof speechSynthesis!=='undefined') speechSynthesis.cancel();
+  },[mix,muted,masterVolume]);
   React.useEffect(()=>{ CBAudio.setVoxDelay(60/tempo/4*3); },[tempo]);
   React.useEffect(()=>{ CBAudio.setVoxFx({weird, dist, character}); },[weird, dist, character]);
   React.useEffect(()=>{ CBVoice.pitch = Math.round(-8 + pitch * 10); },[pitch]);
@@ -445,7 +459,7 @@ export default function CircleBack(){
             if(e2.remaining <= 0) finishExport();
           }
         }, ms));
-        nextTime += 60/r.tempo/4;
+        nextTime += 60/r.tempo/4 * (1 + (s%2?-1:1)*(r.song.swing||0));
         step = (s+1)%r.patLen;
       }
     }, 25);
@@ -463,6 +477,7 @@ export default function CircleBack(){
   },[playing, speakOverRemix, speakNextShowLine, finishExport, setEnergyLevel]);
 
   const newTrack = React.useCallback(()=>{
+    setGrooveId(null);
     const s = makeSong();
     const r = ref.current;
     const { pattern, style } = randomPattern(
@@ -476,6 +491,30 @@ export default function CircleBack(){
     ref.current.spoken = true; ref.current.phraseAt = performance.now();
     setTicker(`${s.name} — ${style} cadence`);
   },[]);
+
+  const loadGroove = React.useCallback(id=>{
+    CBAudio.unlock();
+    const r=ref.current, g=createGroove(id,r.samples.length);
+    setGrooveId(g.id);setTempo(g.bpm);setSong(g.song);setBand(true);
+    r.song=g.song;r.tempo=g.bpm;r.setlistIx=0;
+    setRack(rk=>{
+      const next=createGroove(id,rk.samples.length).pattern;
+      // Keep uploaded sample and vocal programming when changing the backing groove.
+      for(let row=DRUMS.length;row<next.length;row++){
+        if(row===next.length-1&&r.voxLocked)continue;
+        const previous=rk.pattern[row];if(previous)next[row]=next[row].map((_,i)=>previous[i%previous.length]);
+      }
+      return {...rk,pattern:next};
+    });
+    setTicker(`${g.song.name} — ${g.bpm} BPM. Press a phrase pad to join in.`);
+  },[]);
+  const exportMidi=()=>{
+    const data=grooveMidi({song,pattern:rack.pattern,tempo});
+    const name=`circle-back-${grooveId||'custom-groove'}-${tempo}bpm.mid`;
+    const url=downloadBlob(new Blob([data],{type:'audio/midi'}),name);
+    setTimeout(()=>URL.revokeObjectURL(url),30000);
+    setTicker('Groove MIDI downloaded — drums, bass, chords and arp.');
+  };
 
   // Build the remix as call-and-response: concise post facts alternate with
   // short corporate commands. Phrase-bank indices remain attached for fallback.
@@ -681,7 +720,8 @@ export default function CircleBack(){
   React.useEffect(()=>{
     const down = e=>{
       if(e.metaKey||e.ctrlKey||e.altKey) return;
-      if(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+      if(e.target?.closest('input,textarea,select,[contenteditable="true"],[role="slider"]')) return;
+      if(e.target?.closest('button,a,[role="button"]') && (e.code==='Space'||e.key==='Enter')) return;
       // the performance advances; it does not browse backward
       if(!e.shiftKey && e.key==='ArrowRight'){
         e.preventDefault();
@@ -689,7 +729,7 @@ export default function CircleBack(){
         stepPhrase(1);
         return;
       }
-      if(e.code==='Space'){ e.preventDefault(); setPlaying(x=>!x); return; }
+      if(e.code==='Space'){ e.preventDefault(); if(!e.repeat)setPlaying(x=>!x); return; }
       if(e.shiftKey && e.key.startsWith('Arrow')){
         e.preventDefault();
         const step = .05;
@@ -844,15 +884,15 @@ export default function CircleBack(){
     return next;
   });
   // a plain radio: filled when the row is locked shut
-  const voxRadio = tone => <span onClick={toggleVoxLock} role="radio" aria-checked={voxLocked} aria-label="Lock vox"
-    style={{display:'inline-flex',alignItems:'center',gap:8,cursor:'pointer',userSelect:'none'}}>
+  const voxRadio = tone => <button type="button" onClick={toggleVoxLock} aria-pressed={voxLocked} aria-label="Lock vox"
+    style={{display:'inline-flex',alignItems:'center',gap:8,cursor:'pointer',userSelect:'none',border:0,padding:0,background:'none'}}>
     <span style={{width:14,height:14,borderRadius:'50%',border:`2px solid ${tone==='light'?'#fff':'var(--ink)'}`,
       display:'inline-flex',alignItems:'center',justifyContent:'center',flex:'none'}}>
       {voxLocked && <span style={{width:6,height:6,borderRadius:'50%',background:tone==='light'?'#fff':'var(--blue)'}}/>}
     </span>
     <span style={{fontSize:9.5,fontWeight:700,letterSpacing:'.16em',textTransform:'uppercase',
       color:tone==='light'?'#fff':'var(--ink)'}}>Vox locked</span>
-  </span>;
+  </button>;
   // the stage is a blue room: the page itself goes blue behind the broadcast
   React.useEffect(()=>{
     const bg = studio ? 'var(--paper)' : 'var(--blue)';
@@ -892,6 +932,21 @@ export default function CircleBack(){
     </button>
   </div>;
 
+  if(studio && !advanced) return <StudioDesk
+    playing={playing} pos={pos} tempo={tempo} grooveId={grooveId} song={song} phrases={PHRASES} armed={armed}
+    onPhrase={pressKey} onPlay={()=>{CBAudio.unlock();setPlaying(p=>!p);}}
+    onStop={()=>{setPlaying(false);try{CBVoice.current?.source.stop();if(typeof speechSynthesis!=='undefined')speechSynthesis.cancel();}catch{}}}
+    onGroove={loadGroove} onRandom={()=>{const choices=GROOVES.filter(g=>g.id!==grooveId);loadGroove(choices[Math.floor(Math.random()*choices.length)].id);}}
+    energy={energy} onEnergy={setEnergyLevel} mix={mix} onMix={(id,value)=>setMix(m=>({...m,[id]:value}))}
+    muted={muted} onMute={id=>setMuted(m=>({...m,[id]:!m[id]}))} master={masterVolume} onMaster={setMasterVolume}
+    effects={{sinc,deliv,pitch,weird}} onEffect={(id,value)=>({tempo:setTempo,sinc:setSinc,deliv:setDeliv,pitch:setPitch,weird:setWeird}[id]?.(value))}
+    character={character} onCharacter={setCharacter} band={band} onBand={()=>setBand(b=>!b)}
+    monitor={<Monitor ref={canvasRef} stateRef={ref}/>}
+    remixPanel={<RemixPanel narrow={narrow} result={remix} initial={handoff} onRemix={buildRemix} onClose={()=>setRemixOpen(false)}/>}
+    onRemix={()=>setRemixOpen(o=>!o)} remixOpen={remixOpen} onStage={()=>setStudio(false)} onAdvanced={()=>setAdvanced(true)}
+    onExport={startExport} onMidi={exportMidi} exporting={exp} take={take} ticker={ticker} loops={loops} onLoops={setLoops}
+    voxLocked={voxLocked} onVoxLock={toggleVoxLock}/>;
+
   if(!studio) return <div style={{position:'relative',minHeight:'100vh',background:'var(--blue)',color:'#fff',fontFamily:'var(--sans)',
     padding: narrow ? '14px 14px 26px' : '20px 26px 30px',boxSizing:'border-box',display:'flex',flexDirection:'column',gap:narrow?12:16,
     isolation:'isolate'}}>
@@ -909,6 +964,7 @@ export default function CircleBack(){
         </button>
       </span>
       <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}>
+        <Button onClick={()=>{setStudio(true);setAdvanced(false);}} style={{background:'#fff349',color:'#111',borderColor:'#fff349'}}>Mixing desk</Button>
         <Button onClick={()=> setRemixOpen(o=>!o)}
           style={{background:remixOpen?'#fff':'var(--ink)',color:remixOpen?'var(--blue)':'#fff',borderColor:remixOpen?'#fff':'var(--ink)'}}>Build your remix</Button>
         <Button onClick={()=>{ CBAudio.unlock(); setPlaying(x=>!x); }}
@@ -1064,6 +1120,7 @@ export default function CircleBack(){
   </div>;
 
   return <Unit style={narrow ? {padding:'20px 14px'} : undefined}>
+    <Button onClick={()=>setAdvanced(false)} style={{marginBottom:18}}>← Back to the mixing desk</Button>
     <Masthead meta={narrow ? ["Form CB-16","Rev. 2026-08"] : ["Form CB-16","Rev. 2026-08","For internal thought leadership only"]}/>
     <div style={{display:'flex',flexDirection:narrow?'column':'row',justifyContent:'space-between',alignItems:narrow?'flex-start':'flex-end',gap:narrow?8:30,marginTop:18}}>
       <h1 style={{margin:0,fontSize:narrow?30:40,lineHeight:.96,letterSpacing:'-.045em',fontWeight:700,color:'var(--blue)'}}>The professional phrase organ.</h1>
@@ -1136,7 +1193,7 @@ export default function CircleBack(){
         </div>
         <div style={{display:'flex',flexDirection:'column',gap:12,marginTop:16,borderTop:'1px dotted var(--hair)',paddingTop:14}}>
           <Scrubber label="Pitch" value={pitch} onChange={setPitch}
-            format={v=>{ const s = Math.round((v-.5)*24); return `${s>0?'+':''}${s} st`; }}/>
+            format={v=>{ const s = Math.round(-8+v*10); return `${s>0?'+':''}${s} st`; }}/>
           <Scrubber label="Weirdness" value={weird} onChange={setWeird}/>
           <Scrubber label="Distortion" value={dist} onChange={setDist}/>
           <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
@@ -1164,7 +1221,7 @@ export default function CircleBack(){
         <Button on={band} onClick={()=>{ setBand(b=>{ setTicker(b ? 'Band dismissed — drums only' : 'The band is back'); return !b; }); }}>Band</Button>
         <span style={{display:'inline-flex',gap:6,alignItems:'center',marginLeft:6}}>
           <Silk>Steps</Silk>
-          {[16,32,48].map(n=>
+          {[16,32,48,64].map(n=>
             <Button key={n} on={patLen===n} onClick={()=>setRack(rk=>{
               const cur = rk.pattern[0].length;
               if(n===cur) return rk;
