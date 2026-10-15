@@ -1,6 +1,6 @@
-# Singing portrait homepage concept
+# LinkedIn Beats homepage
 
-An additive route at `/home-2/`. The current homepage and shared branding are not replaced. This concept is excluded from indexing.
+The approved Home 2 design is now the public homepage at `/`, mounted by `src/main.jsx`. The former `/home-2/` page permanently redirects to `/` in production, preserving query strings and browser fragments. Its artwork and fonts remain under `/home-2/`. The HTML entry is retained as a canonicalized static-host fallback. Header/footer home links and store section links point directly to `/`.
 
 ## Interaction
 
@@ -22,7 +22,7 @@ The merchandise section keeps the original three product images, complete produc
 
 The compact revision uses the site's existing Anton headline face throughout the hero, store and campaigns, with TT Hoves for body text and lyrics. Serif italics are removed. Desktop campaigns target an approximately 2.2:1 composition with restrained paper grain; mobile layouts and expanded content grow naturally. The LinkedInifier previews three paragraphs with a Read full post control. Copy and studio actions always use the complete output; clipboard fallback expands the post before selecting it.
 
-The LinkedInifier has a cream input, cobalt action and a separate paper output with consistent body typography. `robot-paper-top.webp` combines the robot, rubber stamp, contact shadow and paper's top edge in one transparent 3:1 illustration. The blank lower strip blends into the HTML card. The artwork remains stationary, so generation never pulls the paper join apart; the fictional APPROVED impression still animates independently and respects reduced motion. Editing removes the previous approval. Output remains immediate, and animations never delay copying or reading. The artwork is loaded only on this concept route.
+The LinkedInifier has a cream input, cobalt action and a separate paper output with consistent body typography. `robot-paper-top.webp` combines the robot, rubber stamp, contact shadow and paper's top edge in one transparent 3:1 illustration. The blank lower strip blends into the HTML card. The artwork remains stationary, so generation never pulls the paper join apart; the fictional APPROVED impression still animates independently and respects reduced motion. Editing removes the previous approval. Output remains immediate, and animations never delay copying or reading. The artwork is loaded by the homepage.
 
 The fidelity revision measures the LinkedInifier against the approved 1774 × 887 image: 77px outer margin, 733px left column, 54px gutter and 833px sheet. One CSS scale unit keeps these relationships consistent on desktop; below 900px the form and output reflow. The subsequent scale refinement reduces the desktop left column and its contents to 95%, while tightening the section's vertical gaps. Only BIG DEAL receives a short layered blue extrusion and a soft cast shadow. The approval mark is an outlined Anton SVG with a single distressed border. The hero and player preserve the reference's headline scale, selected portrait proportions, thumbnail, waveform and centered navigation.
 
@@ -36,11 +36,11 @@ The concept footer uses a quiet corporate-stationery layout, parody fine print, 
 - GT America Extended Medium / Mono Regular: user's `aphelps099/look-serious`, `design-system/assets/fonts/`.
 - GT Alpina Fine Condensed Light Italic: user's `aphelps099/aaroncphelps`, `fonts/`.
 
-The Hoves and America files are Latin subsets. Font families and styles are scoped to this route.
+The Hoves and America files are Latin subsets. Font families and styles remain scoped to the homepage and shared store components.
 
 ## Checks
 
-`npm run check:home` verifies the existing transport. `npm run check:home2` verifies vocal-only motion, silence/pause, frame mapping, all real clip arrangements and adapter lifecycle. `npm run build` includes the new entry without replacing `/`.
+`npm run check:home` verifies the existing transport. `npm run check:home2` verifies vocal-only motion, silence/pause, frame mapping, all real clip arrangements and adapter lifecycle. `npm run build` includes the production root entry. Legacy `#listen`, `#store`, and `#about` links resolve to the corresponding new sections; shared `#beat=` URLs still open the studio, and `#roast` opens the retained roast page. No audio autoplays.
 
 The store preview now uses the complete product names, compact TT Hoves captions and larger image areas. The full `/store/` route shares the approved header/footer and links its Listen and LinkedInifier navigation back to this page. Its retail layout is documented in `src/store/README.md`.
 

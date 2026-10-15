@@ -8,11 +8,11 @@ const MARKS = [
 ];
 
 export const ConceptFooter = memo(function ConceptFooter({base='/'}) {
-  return <footer className="c2-footer">
+  return <footer id="c2-footer" className="c2-footer">
     <div className="c2-container">
       <div className="c2-footer-main">
         <div className="c2-footer-identity">
-          <a className="c2-footer-brand" href={`${base}home-2/`} aria-label="LinkedIn Beats home"><img src={`${base}home-2/brand/wordmark-stacked.svg`} width="562" height="252" alt="LinkedIn Beats" loading="lazy"/></a>
+          <a className="c2-footer-brand" href={base} aria-label="LinkedIn Beats home"><img src={`${base}home-2/brand/wordmark-stacked.svg`} width="562" height="252" alt="LinkedIn Beats" loading="lazy"/></a>
           <p>Independent music<br/>for dependent employees.</p>
         </div>
         <div className="c2-footer-fineprint">

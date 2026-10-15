@@ -19,7 +19,7 @@ export const ConceptHeader = memo(function ConceptHeader({base='/', onRadio, pla
   const label=loading?'Cancel radio loading':playing?'Pause radio':'Play radio';
   return <header className="c2-header" ref={root} onBlurCapture={e=>{if(!e.currentTarget.contains(e.relatedTarget))setOpen(false);}}>
     <div className="c2-container c2-header-row">
-      <a className="c2-header-brand" href={`${base}home-2/`} aria-label="LinkedIn Beats home">
+      <a className="c2-header-brand" href={base} aria-label="LinkedIn Beats home">
         <picture>
           <source media="(max-width: 700px)" srcSet={`${base}home-2/brand/wordmark-stacked.svg`} width="562" height="252"/>
           <img src={`${base}home-2/brand/wordmark-horizontal.svg`} alt="LinkedIn Beats" width="1087" height="104" fetchpriority="high"/>

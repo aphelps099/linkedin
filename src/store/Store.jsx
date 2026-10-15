@@ -127,7 +127,7 @@ export default function Store(){
 
   return <div className="shop-app c2-home">
     <a className="shop-skip" href="#collection">Skip to products</a>
-    <ConceptHeader base="../" homeSectionBase="../home-2/" active="Shop"><button className="shop-header-bag" onClick={openBag} aria-label={`Open bag, ${cartCount} items`}><ShoppingBag size={21} aria-hidden="true"/><span>Bag</span><span className="shop-bag-count">{cartCount}</span></button></ConceptHeader>
+    <ConceptHeader base="../" homeSectionBase="../" active="Shop"><button className="shop-header-bag" onClick={openBag} aria-label={`Open bag, ${cartCount} items`}><ShoppingBag size={21} aria-hidden="true"/><span>Bag</span><span className="shop-bag-count">{cartCount}</span></button></ConceptHeader>
     {notice&&<div className="shop-notice" role="status"><span>{notice==='filed'?'Order filed. Thank you for your contribution to corporate culture.':'Checkout paused. Your bag is right where you left it.'}</span><button onClick={()=>setNotice(null)} aria-label="Dismiss notice"><X size={18}/></button></div>}
     <main>
       <section className="shop-hero" aria-labelledby="shop-title">

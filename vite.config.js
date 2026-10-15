@@ -90,7 +90,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
-        // Isolated singing-portrait homepage concept; the main homepage is retained.
+        // Static-host fallback for the former concept route; production redirects to /.
         home2: fileURLToPath(new URL('./home-2/index.html', import.meta.url)),
         studio: fileURLToPath(new URL('./studio/index.html', import.meta.url)),
         // LinkedIn Lessons — the guided post generator, served at /lessons/
