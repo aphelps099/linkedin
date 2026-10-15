@@ -114,6 +114,13 @@ app.get(['/home-2', '/home-2/index.html'], (req, res) => {
   res.redirect(301, `/${query}`);
 });
 
+// Studio 3 is now the main studio. Retain query strings; browsers carry hashes
+// through this redirect so shared posts still open in the remix panel.
+app.get(['/studio-3', '/studio-3/index.html'], (req, res) => {
+  const query = req.originalUrl.includes('?') ? req.originalUrl.slice(req.originalUrl.indexOf('?')) : '';
+  res.redirect(301, `/studio/${query}`);
+});
+
 app.use(express.static(dist, {
   extensions:['html'],
   maxAge:'1h',

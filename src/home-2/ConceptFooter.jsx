@@ -7,8 +7,8 @@ const MARKS = [
   {slug:'office-safe-ish', label:'Certified office safe-ish'},
 ];
 
-export const ConceptFooter = memo(function ConceptFooter({base='/'}) {
-  return <footer id="c2-footer" className="c2-footer">
+export const ConceptFooter = memo(function ConceptFooter({base='/',variant='light'}) {
+  return <footer id="c2-footer" className={`c2-footer${variant==='dark'?' c2-footer--dark':''}`}>
     <div className="c2-container">
       <div className="c2-footer-main">
         <div className="c2-footer-identity">

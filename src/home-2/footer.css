@@ -136,3 +136,46 @@
   .c2-footer-identity { display: block; }
   .c2-footer-identity p { margin-top: 10px; }
 }
+
+/* Reversed footer for the cobalt performance stage. Keep its typography and
+   spacing self-contained so the light homepage/shop footer stays unchanged. */
+.c2-footer--dark {
+  --c2-blue: #a9d9ff;
+  position: relative;
+  z-index: 1;
+  isolation: isolate;
+  background: #111411;
+  color: #b9c1b8;
+  border-top: 1px solid #ffffff24;
+  padding-block: 44px max(18px, env(safe-area-inset-bottom));
+  font: 400 14px/1.55 C2Hoves, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.c2-footer--dark * { box-sizing: border-box; }
+.c2-footer--dark .c2-container { width: calc(100% - 96px); max-width: 1500px; margin-inline: auto; }
+.c2-footer--dark :is(h2,p) { margin: 0; }
+.c2-footer--dark a { color: inherit; text-decoration: none; touch-action: manipulation; }
+.c2-footer--dark a:hover { color: var(--c2-blue); }
+.c2-footer--dark a:focus-visible { outline: 2px solid var(--c2-blue); outline-offset: 5px; }
+.c2-footer--dark .c2-footer-brand img { filter: brightness(0) invert(1); opacity: .92; }
+.c2-footer--dark .c2-footer-identity p { margin-top: 13px; font-size: 14px; }
+.c2-footer--dark .c2-footer-fineprint h2 { margin-bottom: 12px; color: #f3f0e6; font: 600 14px/1.4 C2Hoves, Arial, sans-serif; letter-spacing: .02em; }
+.c2-footer--dark .c2-footer-fineprint p { font-size: 14px; line-height: 1.6; }
+.c2-footer--dark .c2-footer-fineprint p+p { margin-top: 10px; }
+.c2-footer--dark .c2-footer-assurance p { margin-top: 14px; font-size: 14px; line-height: 1.4; }
+.c2-footer--dark .c2-footer-seal img { filter: invert(1); }
+.c2-footer--dark .c2-footer-metal { filter: brightness(2.8); }
+.c2-footer--dark .c2-footer-bottom { border-top-color: #ffffff24; }
+.c2-footer--dark .c2-footer-bottom>p,.c2-footer--dark .c2-footer-builder { font-size: 14px; }
+.c2-footer--dark .c2-footer-credit { color: #f3f0e6; }
+@media (max-width: 700px) {
+  .c2-footer--dark { padding-top: 32px; }
+  .c2-footer--dark .c2-container { width: calc(100% - 40px); }
+}
+@media (max-width: 650px) {
+  .c2-footer--dark .c2-footer-identity p { margin-top: 0; }
+}
+@media (max-width: 370px) {
+  .c2-footer--dark .c2-container { width: calc(100% - 32px); }
+  .c2-footer--dark .c2-footer-identity p { margin-top: 10px; }
+}
