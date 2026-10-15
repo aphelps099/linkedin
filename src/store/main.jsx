@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import '../styles.css';
+import '../brand/fonts.css';
 import './store.css';
 import Store from './Store.jsx';
 

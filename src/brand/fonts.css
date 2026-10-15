@@ -1,0 +1,18 @@
+@font-face {
+  font-family: 'Anton';
+  src: url('/home/fonts/anton.ttf') format('truetype');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'DM Sans';
+  src: url('/home/fonts/dm-sans.ttf') format('truetype');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Roboto Mono';
+  src: url('/home/fonts/roboto-mono.ttf') format('truetype');
+  font-weight: 400;
+  font-display: swap;
+}
