@@ -1,4 +1,5 @@
 import React, {memo, useRef, useState} from 'react';
+import {flushSync} from 'react-dom';
 import {ArrowRight, ArrowUpRight, Check, Copy} from 'lucide-react';
 import {linkedinify} from '../lessons/generator.js';
 
@@ -17,6 +18,9 @@ export const Campaigns = memo(function Campaigns({base='/'}) {
   const [ordinary, setOrdinary] = useState(MOMENTS[0]);
   const [output, setOutput] = useState(() => linkedinify(MOMENTS[0], 927));
   const [copyStatus, setCopyStatus] = useState('');
+  const [expanded, setExpanded] = useState(false);
+  const paragraphs = output.split(/\n\n/);
+  const visibleParagraphs = expanded ? paragraphs : paragraphs.slice(0, 3).map(p => p.length > 160 ? `${p.slice(0, 160).trimEnd()}…` : p);
 
   const roast = e => {
     e.preventDefault();
@@ -36,6 +40,7 @@ export const Campaigns = memo(function Campaigns({base='/'}) {
       return;
     }
     setOutput(linkedinify(ordinary.trim(), Math.floor(Math.random() * 4294967296)));
+    setExpanded(false);
     setCopyStatus('');
   };
   const tryMoment = () => {
@@ -44,6 +49,7 @@ export const Campaigns = memo(function Campaigns({base='/'}) {
     setOrdinary(next);
     document.getElementById('c2-ordinary')?.setCustomValidity('');
     setOutput(linkedinify(next, Math.floor(Math.random() * 4294967296)));
+    setExpanded(false);
     setCopyStatus('');
   };
   const copy = async () => {
@@ -51,6 +57,8 @@ export const Campaigns = memo(function Campaigns({base='/'}) {
       await navigator.clipboard.writeText(output);
       setCopyStatus('Copied');
     } catch {
+      // Reveal the complete announcement before selecting it for manual copy.
+      flushSync(() => setExpanded(true));
       const selection = window.getSelection(), range = document.createRange();
       range.selectNodeContents(result.current);
       selection.removeAllRanges();
@@ -64,11 +72,11 @@ export const Campaigns = memo(function Campaigns({base='/'}) {
       <div className="c2-container c2-roast-layout">
         <div className="c2-roast-copy">
           <p className="c2-eyebrow">Roast my post</p>
-          <h2 id="c2-roast-title">A little less<br/>thought leader.<br/><em>A little more human.</em></h2>
-          <p className="c2-campaign-intro">Before your network sees it,<br/>let the red pen have a word.</p>
+          <h2 id="c2-roast-title">Less hype.<br/><span>More human.</span></h2>
+          <p className="c2-campaign-intro">Let the red pen see it before your network does.</p>
           <form className="c2-roast-form" onSubmit={roast}>
             <label htmlFor="c2-roast-input">Your LinkedIn post</label>
-            <textarea id="c2-roast-input" ref={roastInput} required maxLength={10000} rows={3} value={roastPost} onChange={e=>{e.target.setCustomValidity('');setRoastPost(e.target.value);}} placeholder="Paste your next big announcement…"/>
+            <textarea id="c2-roast-input" ref={roastInput} required maxLength={10000} rows={2} value={roastPost} onChange={e=>{e.target.setCustomValidity('');setRoastPost(e.target.value);}} placeholder="Paste your next big announcement…"/>
             <div className="c2-roast-actions">
               <button className="c2-roast-submit" type="submit">Meet the red pen <ArrowUpRight/></button>
               <button className="c2-example" type="button" onClick={()=>{setRoastPost(ROAST_EXAMPLE);roastInput.current.setCustomValidity('');roastInput.current.focus();}}>Try the example</button>
@@ -93,25 +101,26 @@ export const Campaigns = memo(function Campaigns({base='/'}) {
       <div className="c2-container c2-linkedinifier-layout">
         <div className="c2-linkedinifier-copy">
           <p className="c2-eyebrow">The LinkedInifier</p>
-          <h2 id="c2-linkedinifier-title">Small news.<br/><em>Big announcement.</em></h2>
-          <p className="c2-campaign-intro">Turn your ordinary Tuesday into<br/>a career-defining moment.</p>
+          <h2 id="c2-linkedinifier-title">Small news.<br/><span>Big deal.</span></h2>
+          <p className="c2-campaign-intro">An ordinary Tuesday. A career-defining announcement.</p>
           <form className="c2-linkedinifier-form" onSubmit={generate}>
             <label htmlFor="c2-ordinary">What actually happened?</label>
-            <textarea name="ordinary" id="c2-ordinary" required maxLength={2000} rows={2} value={ordinary} onChange={e=>{e.target.setCustomValidity('');setOrdinary(e.target.value);setOutput('');setCopyStatus('');}} placeholder="I made a cup of coffee. It was pretty good."/>
+            <textarea name="ordinary" id="c2-ordinary" required maxLength={2000} rows={2} value={ordinary} onChange={e=>{e.target.setCustomValidity('');setOrdinary(e.target.value);setOutput('');setExpanded(false);setCopyStatus('');}} placeholder="I made a cup of coffee. It was pretty good."/>
             <button className="c2-generate" type="submit">Make it LinkedIn <ArrowRight/></button>
             <button className="c2-another-example" type="button" onClick={tryMoment}>Try another ordinary moment</button>
           </form>
         </div>
         <div className="c2-announcement">
-          <div className="c2-announcement-heading"><span>Your big announcement</span><ArrowUpRight aria-hidden="true"/></div>
+          <div className="c2-announcement-heading"><span>For immediate release</span><ArrowUpRight aria-hidden="true"/></div>
           <div aria-live="polite" aria-atomic="true">
             {output ? <div className="c2-generated">
-              <div className="c2-output-text" ref={result}>{output.split(/\n\n/).map((paragraph,i)=><p className={paragraph.startsWith('#')?'c2-hashtags':undefined} key={i}>{paragraph}</p>)}</div>
+              <div className="c2-output-text" id="c2-output-text" ref={result}>{visibleParagraphs.map((paragraph,i)=><p className={paragraph.startsWith('#')?'c2-hashtags':undefined} key={i}>{paragraph}</p>)}</div>
+              <button className="c2-read-post" aria-expanded={expanded} aria-controls="c2-output-text" onClick={()=>setExpanded(!expanded)}>{expanded?'Show less':'Read full post'} <span aria-hidden="true">{expanded?'−':'+'}</span></button>
               <div className="c2-output-actions">
                 <button className="c2-copy" onClick={copy}>{copyStatus==='Copied'?<Check/>:<Copy/>}{copyStatus==='Copied'?'Copied':'Copy post'}</button>
                 <a className="c2-text-link" href={`${base}studio/#beat=${encodeURIComponent(output)}`}>Make it a beat <ArrowUpRight/></a>
               </div>
-            </div> : <div className="c2-announcement-empty"><p>Every little thing<br/>is a <em>big thing.</em></p><span>Your next announcement is one click away.</span></div>}
+            </div> : <div className="c2-announcement-empty"><p>Make a<br/>big deal.</p><span>Your next announcement is one click away.</span></div>}
           </div>
           <p className="c2-copy-status" role="status">{copyStatus&&copyStatus!=='Copied'?copyStatus:''}</p>
         </div>
