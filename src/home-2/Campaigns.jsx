@@ -30,19 +30,6 @@ export const Campaigns = memo(function Campaigns({base='/'}) {
   const paragraphs = output.split(/\n\n/);
   const visibleParagraphs = expanded ? paragraphs : paragraphs.slice(0, 3).map(p => p.length > 160 ? `${p.slice(0, 160).trimEnd()}…` : p);
 
-  const generate = e => {
-    e.preventDefault();
-    const input = e.currentTarget.elements.ordinary;
-    if (!ordinary.trim()) {
-      input.setCustomValidity('Tell us one ordinary thing that happened.');
-      input.reportValidity();
-      return;
-    }
-    setOutput(linkedinify(ordinary.trim(), Math.floor(Math.random() * 4294967296)));
-    setApproval(count=>count+1);
-    setExpanded(false);
-    setCopyStatus('');
-  };
   const tryMoment = () => {
     exampleIndex.current = (exampleIndex.current + 1) % MOMENTS.length;
     const next = MOMENTS[exampleIndex.current];
@@ -74,12 +61,12 @@ export const Campaigns = memo(function Campaigns({base='/'}) {
         <div className="c2-linkedinifier-copy">
           <p className="c2-eyebrow">The LinkedInifier</p>
           <h2 id="c2-linkedinifier-title">Small news.<br/><span className="c2-big-deal">Big deal.</span></h2>
-          <form className="c2-linkedinifier-form" onSubmit={generate}>
+          <div className="c2-linkedinifier-form">
             <label htmlFor="c2-ordinary">What actually happened?</label>
-            <textarea name="ordinary" id="c2-ordinary" required maxLength={2000} rows={2} value={ordinary} onChange={e=>{e.target.setCustomValidity('');setOrdinary(e.target.value);setOutput('');setExpanded(false);setCopyStatus('');}} placeholder="I made a cup of coffee. It was pretty good."/>
-            <button className="c2-generate" type="submit">Make it LinkedIn <ArrowRight/></button>
+            <textarea name="ordinary" id="c2-ordinary" readOnly rows={2} value={ordinary} placeholder="I made a cup of coffee. It was pretty good."/>
+            <a className="c2-generate" href={`${base}lessons/`}>Make it LinkedIn <ArrowRight/></a>
             <button className="c2-another-example" type="button" onClick={tryMoment}>Try another ordinary moment</button>
-          </form>
+          </div>
         </div>
         <div className="c2-announcement-stage">
           <div className="c2-office-robot" aria-hidden="true"><img src={`${base}home-2/robot-paper-top.webp`} width="2172" height="724" alt="" loading="lazy" decoding="async"/></div>

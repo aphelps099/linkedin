@@ -45,3 +45,6 @@ The Hoves and America files are Latin subsets. Font families and styles remain s
 The store preview now uses the complete product names, compact TT Hoves captions and larger image areas. The full `/store/` route shares the approved header/footer and links its Listen and LinkedInifier navigation back to this page. Its retail layout is documented in `src/store/README.md`.
 
 The footer certification marks are outlined vector badges based on the supplied `image(20261015-202030).png` concept. `scripts/make-footer-seals.py` builds the three SVGs with the existing Anton font. Each mark uses a masked graphite gradient and fine grain; a single metallic highlight and small glints run when hovered. The shimmer affects only the dark artwork. Reduced-motion preferences use a static finish, and unsupported masking/forced colors retain the SVG image. The footer remains shared with `/store/`.
+
+
+The LinkedInifier navigation item (desktop and menu, including the store header) and the blue homepage campaign CTA now open `/lessons/`, the full editor. The homepage campaign is an example preview: its sample field is read-only so visitors do not lose a typed draft when following the CTA. Try another ordinary moment, Read full post, Copy post and Make it a beat still work. The lessons editor itself is unchanged.
