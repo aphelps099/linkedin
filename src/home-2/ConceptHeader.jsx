@@ -4,7 +4,7 @@ import {LoaderCircle, Pause, Play} from 'lucide-react';
 export const ConceptHeader = memo(function ConceptHeader({base='/', onRadio, playing=false, loading=false, homeSectionBase='', active, children}) {
   const [open,setOpen]=useState(false);
   const root=useRef(null), trigger=useRef(null), directory=useRef(null), focusFirst=useRef(false), id=useId();
-  const links=[['Listen',`${homeSectionBase}#c2-player`],['LinkedInifier',`${homeSectionBase}#c2-tools`],['Studio',`${base}studio/`],['Shop',`${base}store/`]];
+  const links=[['Listen',`${homeSectionBase}#c2-player`],['LinkedInifier',`${base}lessons/`],['Studio',`${base}studio/`],['Shop',`${base}store/`]];
   useEffect(()=>{
     if(!open)return;
     if(focusFirst.current){focusFirst.current=false;directory.current?.querySelector('a')?.focus();}
