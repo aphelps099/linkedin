@@ -1,388 +1,48 @@
-import {Header} from '../brand/Header.jsx';
 import React from 'react';
-import { Button } from '../components/controls/Button.jsx';
-import { Unit } from '../components/chassis/Unit.jsx';
-import { Masthead } from '../components/chassis/Masthead.jsx';
+import { ArrowUpRight, ArrowRight, Copy, Check, Pencil, ChevronDown, Download } from 'lucide-react';
+import { Header } from '../brand/Header.jsx';
+import { Footer } from '../brand/Footer.jsx';
 import { KINDS, roastIt } from './roastEngine.js';
 import { PERSONAS, INTENSITIES } from './personas.js';
 import { drawRoastCard, downloadCanvas } from './card.js';
 import { newSeed } from '../lessons/generator.js';
 import { MarkedDocument } from './MarkedDocument.jsx';
+import { EDITORIAL_NOTES, evidenceFor, verdictFor } from './editorial.js';
 import './roast.css';
 
-const PERSONA_ROBOTS = ['[::] / STRATEGY', '[--] / TALENT', '[^^] / INTERN', '[01] / SYSTEM'];
-const PHASE_LABELS = {
-  intake: 'Intake',
-  persona: 'Inspector assignment',
-  intensity: 'Severity authorization',
-  inspecting: 'Automated inspection',
-  result: 'Official findings',
+const MAX_LENGTH = 20000;
+const HEAT = ['Gentle', 'Honest', 'Brutal', 'HR violation'];
+const EXAMPLES = {
+  post: 'Humbled and honored to announce that I have successfully completed another Monday.\n\nThis journey has taught me that leadership isn’t a title. It’s a mindset.\n\nAgree?',
+  headline: 'Visionary | Top Voice | ex-Google | Product designer | Speaker | Helping teams build better tools',
+  about: 'I’m passionate about designing useful tools. A results-driven leader with a proven track record, I’ve spent 12 years wearing many hats.\n\nLast year, our team rebuilt the client portal and reduced registration time from 15 minutes to 3.',
 };
+const KIND_LABELS = { post: 'Post', headline: 'Headline', about: 'About' };
 
-const FINDING_META = {
-  journey: ['Journey inflation', 'Routine event promoted to personal mythology'],
-  humbled: ['Performative humility', 'Self-congratulation filed as modesty'],
-  sink: ['Engagement direction', 'Reader instructed to experience significance'],
-  hashtags: ['Hashtag load', 'Distribution apparatus exceeds editorial need'],
-  rockets: ['Visual propulsion', 'Unverified momentum iconography'],
-  oneliners: ['Broetry formatting', 'Sentence fragmentation for ceremonial weight'],
-  notx: ['Binary revelation', 'Contrast template used as manufactured insight'],
-  longpost: ['Document expansion', 'Feed allocation exceeds operational guidance'],
-  bait: ['Engagement bait', 'Interaction requested before value is established'],
-  gratbrag: ['Performative gratitude', 'Achievement concealed inside appreciation'],
-  aitells: ['AI language probability', 'Synthetic prose marker located'],
-  grindset: ['Grindset language', 'Personal depletion presented as operating model'],
-  buzz: ['Corporate vocabulary', 'Management language density exceeds tolerance'],
-  pipes: ['Title architecture', 'Role stack separated by load-bearing punctuation'],
-  helping: ['Outcome abstraction', 'Claim lacks a measurable object'],
-  inflation: ['Title inflation', 'Seniority unsupported by recognized jurisdiction'],
-  exflex: ['Institutional residue', 'Former employer retained as present credential'],
-  topvoice: ['Platform decoration', 'Algorithmic badge entered as professional title'],
-  hemoji: ['Symbol load', 'Decorative glyphs exceed semantic requirements'],
-  hlong: ['Headline expansion', 'Identity statement exceeds display allocation'],
-  speakerauthor: ['Role accumulation', 'Multiple side quests entered as one occupation'],
-  thirdperson: ['Narrative distance', 'Biography appears to have hired a publicist'],
-  passionate: ['Unverified enthusiasm', 'Emotional claim lacks supporting evidence'],
-  resultsdriven: ['Results claim', 'Performance asserted without a result'],
-  along: ['Biography expansion', 'About section exceeds inspection threshold'],
-  manyhats: ['Staffing disclosure', 'Under-resourcing presented as versatility'],
-};
-
-const EVIDENCE_PATTERNS = {
-  journey: /\bjourney\b/i,
-  humbled: /\bhumbled\b/i,
-  sink: /let that sink in|read that again/i,
-  hashtags: /#\w+/,
-  rockets: /🚀/u,
-  notx: /it'?s not[^.!?\n]{2,70}it'?s (?:about )?/i,
-  bait: /\b(?:agree|thoughts)\?/i,
-  gratbrag: /\b(?:grateful|gratitude|thankful|proud|excited|thrilled)\b/i,
-  aitells: /\b(?:delve|tapestry|testament)\b/i,
-  grindset: /\b(?:5 ?a\.?m\.?|rise and grind|hustle|no days off)\b/i,
-  buzz: /\b(?:synerg\w*|leverag\w*|pivot\w*|bandwidth|alignment|scalable|ecosystem|empower\w*|disrupt\w*|game-?chang\w*|cross-functional|best-in-class)\b/i,
-  pipes: /[|·•]/,
-  helping: /\bhelping\b.{3,60}\b(?:grow|scale|win|thrive|succeed|transform|tell)\w*/i,
-  inflation: /\b(?:visionary|guru|ninja|rockstar|wizard|evangelist|thought leader|dreamer|disruptor|growth hacker)\b/i,
-  exflex: /\bex-[A-Z][\w-]*/,
-  topvoice: /top voice/i,
-  hemoji: /[\u{1F300}-\u{1FAFF}\u{2700}-\u{27BF}\u{2600}-\u{26FF}]/u,
-  speakerauthor: /\b(?:speaker|author|investor|advisor|coach|podcast host)\b/i,
-  passionate: /passionate about/i,
-  resultsdriven: /results-driven|proven track record/i,
-  manyhats: /wear(?:ing)? many hats/i,
-};
-
-function signalState(value) {
-  if (value >= 75) return 'Critical';
-  if (value >= 50) return 'Elevated';
-  if (value >= 25) return 'Observed';
-  return 'Nominal';
-}
-
-function buildSignals(score, findings) {
-  const markerCounts = Object.fromEntries(score.markers.map(marker => [marker.label, marker.count]));
-  const has = key => findings.some(finding => finding.key === key);
-  return [
-    {
-      label: 'Performative gratitude',
-      value: Math.min(100, score.gratitude * 24 + (has('gratbrag') ? 28 : 0)),
-    },
-    {
-      label: 'Corporate vocabulary',
-      value: Math.min(100, Math.round(score.buzzDensity * 14 + (has('buzz') ? 24 : 0))),
-    },
-    {
-      label: 'Engagement bait',
-      value: Math.min(100, (has('bait') ? 72 : 0) + (has('sink') ? 24 : 0)),
-    },
-    {
-      label: 'AI language probability',
-      value: Math.min(100, (markerCounts['AI tells'] || 0) * 44),
-    },
-    {
-      label: 'Journey inflation',
-      value: Math.min(100, score.journeys * 32 + (has('notx') ? 18 : 0)),
-    },
-    {
-      label: 'Hashtag load',
-      value: Math.min(100, (markerCounts.Hashtags || 0) * 13),
-    },
-  ].map(signal => ({ ...signal, state: signalState(signal.value) }));
-}
-
-function evidenceText(text, finding) {
-  const pattern = EVIDENCE_PATTERNS[finding.key];
-  const match = pattern?.exec(text);
-  if (match?.[0]) return match[0].replace(/\s+/g, ' ').trim();
-  if (finding.key === 'oneliners') return `${finding.facts.n} ceremonial one-line paragraphs`;
-  if (['longpost', 'along'].includes(finding.key)) return `${finding.facts.n} words submitted`;
-  if (finding.key === 'hlong') return `${finding.facts.n} headline characters`;
-  return 'Document-level pattern';
-}
-
-function AnimatedScore({ value }) {
-  const [display, setDisplay] = React.useState(0);
-
-  React.useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setDisplay(value);
-      return undefined;
-    }
-    let frame;
-    const started = performance.now();
-    const tick = now => {
-      const progress = Math.min(1, (now - started) / 900);
-      const eased = 1 - ((1 - progress) ** 3);
-      setDisplay(Math.round(value * eased));
-      if (progress < 1) frame = requestAnimationFrame(tick);
-    };
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
+function AutoTextarea({ value, className = '', ...props }) {
+  const ref = React.useRef(null);
+  React.useLayoutEffect(() => {
+    if (!ref.current) return;
+    ref.current.style.height = 'auto';
+    ref.current.style.height = `${Math.max(180, ref.current.scrollHeight)}px`;
   }, [value]);
-
-  return <span>{display}</span>;
-}
-
-function DiagnosticRecord({ result }) {
-  const signals = buildSignals(result.score, result.findings);
-  return (
-    <section className="rm-diagnostic" aria-labelledby="diagnostic-title" data-testid="panel-diagnostic">
-      <header className="rm-diagnostic__header">
-        <div>
-          <div className="rm-diagnostic__kicker">Thought Leadership Index</div>
-          <h2 id="diagnostic-title">Document analysis · Form TLI-100</h2>
-        </div>
-        <div className="rm-diagnostic__status">
-          <span className="rm-status-light" aria-hidden="true" />
-          Classification issued
-        </div>
-      </header>
-
-      <div className="rm-diagnostic__reading">
-        <div className="rm-primary-reading">
-          <div className="rm-score" data-testid="text-index-score">
-            <AnimatedScore value={result.score.index} />
-            <span>/100</span>
-          </div>
-          <div className="rm-rank">{result.score.rank}</div>
-          <div className="rm-confidence">Confidence: high · Indicators: {result.findings.length}</div>
-        </div>
-        <div className="rm-classification-stamp">
-          <span>Classification issued</span>
-          <strong>{result.score.rank}</strong>
-        </div>
-      </div>
-
-      <div className="rm-index-scale" aria-label={`Thought Leadership Index score ${result.score.index} out of 100`}>
-        <div className="rm-index-scale__labels" aria-hidden="true">
-          <span>0</span><span>25</span><span>50</span><span>75</span><span>100</span>
-        </div>
-        <div className="rm-index-scale__track">
-          <span className="rm-index-scale__cursor" style={{ '--rm-score': result.score.index }} />
-        </div>
-        <div className="rm-index-scale__caption">
-          <span>Refreshingly human</span>
-          <span>Please log off</span>
-        </div>
-      </div>
-
-      <div className="rm-signals" data-testid="list-diagnostic-signals">
-        {signals.map((signal, index) => (
-          <div className="rm-signal" key={signal.label} style={{ '--rm-order': index }}>
-            <div className="rm-signal__meta">
-              <span>{signal.label}</span>
-              <span>{String(signal.value).padStart(2, '0')} / {signal.state}</span>
-            </div>
-            <div className="rm-signal__track" aria-label={`${signal.label}: ${signal.value}, ${signal.state}`}>
-              <span style={{ '--rm-signal': signal.value }} />
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function EvidenceRegister({ draft, findings, activeFinding, onSelect }) {
-  return (
-    <aside className="rm-evidence" aria-labelledby="evidence-title">
-      <header className="rm-evidence__header">
-        <div>
-          <span className="rm-result-label">Evidence register</span>
-          <h2 id="evidence-title">{findings.length || 'No'} indicators filed</h2>
-        </div>
-        <span>RM-1/A</span>
-      </header>
-      {findings.length ? (
-        <div className="rm-evidence__list">
-          {findings.map((finding, index) => {
-            const meta = FINDING_META[finding.key] || ['Unclassified indicator', 'Manual review required'];
-            return (
-              <button
-                aria-current={activeFinding === index ? 'true' : undefined}
-                className={`rm-evidence-row ${activeFinding === index ? 'is-active' : ''}`}
-                data-testid={`button-evidence-${index}`}
-                key={`${finding.key}-${index}`}
-                onClick={() => onSelect(index)}
-                type="button"
-              >
-                <span className="rm-evidence-row__number">Flag {String(index + 1).padStart(2, '0')}</span>
-                <strong>“{evidenceText(draft, finding)}”</strong>
-                <span>{meta[0]} · {meta[1]}</span>
-                <span className="rm-evidence-row__weight">Weight +{finding.w}</span>
-              </button>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="rm-evidence__clean">
-          No reportable indicators. Human authorship remains plausible.
-        </div>
-      )}
-    </aside>
-  );
+  return <textarea {...props} ref={ref} className={className} value={value} />;
 }
 
 async function copyText(text) {
   try {
     await navigator.clipboard.writeText(text);
+    return true;
   } catch {
-    const textarea = document.createElement('textarea');
-    textarea.value = text;
-    document.body.appendChild(textarea);
-    textarea.select();
-    try { document.execCommand('copy'); } finally { document.body.removeChild(textarea); }
+    const field = document.createElement('textarea');
+    field.value = text;
+    field.style.cssText = 'position:fixed;left:-9999px;top:0';
+    document.body.append(field);
+    field.select();
+    const ok = document.execCommand?.('copy') || false;
+    field.remove();
+    return ok;
   }
-}
-
-function ChoiceStage({ eyebrow, title, options, onChoose, onBack, type }) {
-  return (
-    <>
-      <div className="rm-stage__body">
-        <div className="rm-stage__eyebrow">{eyebrow}</div>
-        <h2>{title}</h2>
-        <div className="rm-choice-grid">
-          {options.map((option, index) => (
-            <button
-              className="rm-choice"
-              data-testid={`button-${type}-${option.id ?? option.n}`}
-              key={option.id ?? option.n}
-              onClick={() => onChoose(option)}
-              type="button"
-            >
-              <span className="rm-choice__key">{index + 1}</span>
-              <span className="rm-choice__robot">
-                {type === 'persona' ? PERSONA_ROBOTS[index] : `LEVEL / 0${option.n}`}
-              </span>
-              <span className="rm-choice__name">{option.name}</span>
-              <span className="rm-choice__detail">{option.tagline ?? option.blurb}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-      <div className="rm-case-strip">
-        <button data-testid="button-back" onClick={onBack} type="button">Esc / Back</button>
-        <span>Press 1–4 to authorize without further meetings.</span>
-      </div>
-    </>
-  );
-}
-
-function SeverityStage({ value, onChange, onAuthorize, onBack }) {
-  const selected = INTENSITIES[value - 1];
-  return (
-    <>
-      <div className="rm-stage__body">
-        <div className="rm-stage__eyebrow">Step 03 / Severity authorization</div>
-        <h2>How much honesty has Legal approved?</h2>
-        <div className="rm-severity">
-          <div className="rm-severity__readout" aria-live="polite">
-            <span className="rm-severity__level">Level / 0{selected.n}</span>
-            <strong>{selected.name}</strong>
-            <span>{selected.blurb}</span>
-          </div>
-          <div className="rm-severity__control">
-            <input
-              aria-label="Roast severity"
-              aria-valuetext={`${selected.name}. ${selected.blurb}`}
-              className="rm-severity__range"
-              data-testid="slider-intensity"
-              max="4"
-              min="1"
-              onChange={event => onChange(Number(event.target.value))}
-              step="1"
-              style={{ '--rm-level': value }}
-              type="range"
-              value={value}
-            />
-            <div className="rm-severity__ticks" aria-hidden="true">
-              {INTENSITIES.map(option => (
-                <span className={option.n <= value ? 'is-active' : ''} key={option.n}>
-                  0{option.n}
-                </span>
-              ))}
-            </div>
-          </div>
-          <Button
-            data-testid="button-authorize-intensity"
-            onClick={() => onAuthorize(selected)}
-            style={{ minHeight: 48, alignSelf: 'stretch' }}
-          >
-            Authorize level 0{selected.n} / Begin inspection
-          </Button>
-        </div>
-      </div>
-      <div className="rm-case-strip">
-        <button data-testid="button-back" onClick={onBack} type="button">Esc / Back</button>
-        <span>Drag to adjust · arrow keys fine-tune · 1–4 authorize immediately.</span>
-      </div>
-    </>
-  );
-}
-
-function InspectionStage({ draft, result, persona, revealed, onCancel, onSkip }) {
-  const total = Math.max(1, result.findings.length);
-  return (
-    <>
-      <div className="rm-stage__body">
-        <div className="rm-inspection">
-          <MarkedDocument
-            findings={result.findings}
-            scanning
-            text={draft}
-            visibleCount={revealed}
-          />
-          <aside className="rm-notes" aria-live="polite" data-testid="status-inspection">
-            <div className="rm-robot-status">
-              <span>{PERSONA_ROBOTS[PERSONAS.indexOf(persona)]} online</span>
-              <span className="rm-robot-status__light" aria-hidden="true" />
-            </div>
-            {result.clean && revealed > 0 && (
-              <div className="rm-note">
-                <strong>00 / ANOMALY</strong><br />
-                No violations located. Human authorship remains plausible.
-              </div>
-            )}
-            {result.lines.slice(0, revealed).map((line, index) => (
-              <div className="rm-note" key={index}>
-                <strong>{String(index + 1).padStart(2, '0')} / FINDING</strong><br />
-                {line}
-              </div>
-            ))}
-            <div className="rm-progress">
-              Evidence filed: {Math.min(revealed, total)} / {total}<br />
-              Verdict withheld pending completion.
-            </div>
-          </aside>
-        </div>
-      </div>
-      <div className="rm-case-strip">
-        <button data-testid="button-cancel-inspection" onClick={onCancel} type="button">Esc / Cancel inspection</button>
-        <span>Marks first. Score second. Policy is policy.</span>
-        <button data-testid="button-skip-inspection" onClick={onSkip} type="button">Skip analysis / Issue classification</button>
-      </div>
-    </>
-  );
 }
 
 export default function Roast() {
@@ -390,20 +50,19 @@ export default function Roast() {
   const [draft, setDraft] = React.useState('');
   const [personaId, setPersonaId] = React.useState('recruiter');
   const [intensity, setIntensity] = React.useState(2);
-  const [seed, setSeed] = React.useState(newSeed);
-  const [phase, setPhase] = React.useState('intake');
-  const [revealed, setRevealed] = React.useState(0);
-  const [activeFinding, setActiveFinding] = React.useState(null);
+  const [review, setReview] = React.useState(null);
+  const [editing, setEditing] = React.useState(true);
+  const [rewrite, setRewrite] = React.useState('');
+  const [activeFinding, setActiveFinding] = React.useState(0);
+  const [showAll, setShowAll] = React.useState(false);
   const [copied, setCopied] = React.useState(false);
-  const cardRef = React.useRef(null);
-
-  const kindDef = KINDS.find(item => item.id === kind);
-  const persona = PERSONAS.find(item => item.id === personaId);
-  const level = INTENSITIES[intensity - 1];
-  const result = React.useMemo(
-    () => draft.trim() ? roastIt({ kind, text: draft, personaId, intensity, seed }) : null,
-    [draft, kind, personaId, intensity, seed],
-  );
+  const [copyError, setCopyError] = React.useState(false);
+  const [notice, setNotice] = React.useState('');
+  const resultRef = React.useRef(null);
+  const copyTimer = React.useRef(null);
+  const result = !editing ? review?.result : null;
+  const verdict = result ? verdictFor(result) : null;
+  const valid = Boolean(draft.trim()) && draft.length <= MAX_LENGTH;
 
   React.useEffect(() => {
     const match = location.hash.match(/^#roast=(.+)$/);
@@ -412,343 +71,180 @@ export default function Roast() {
     try {
       const text = decodeURIComponent(match[1]);
       if (text.trim()) {
-        setKind('post');
         setDraft(text);
-        setPhase('persona');
+        setNotice('Your post is ready. Choose your heat and roast it.');
       }
-    } catch {
-      // A malformed museum handoff is ignored; the intake remains usable.
-    }
+    } catch { /* Leave malformed handoffs at the empty editor. */ }
   }, []);
+  React.useEffect(() => () => window.clearTimeout(copyTimer.current), []);
 
-  React.useEffect(() => {
-    if (phase !== 'inspecting' || !result) return undefined;
-    const total = Math.max(1, result.findings.length);
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    setRevealed(0);
-    setActiveFinding(null);
-
-    if (reduced) {
-      setRevealed(total);
-      const done = window.setTimeout(() => setPhase('result'), 40);
-      return () => window.clearTimeout(done);
-    }
-
-    let count = 0;
-    let finish;
-    const ticker = window.setInterval(() => {
-      count += 1;
-      setRevealed(Math.min(count, total));
-      if (count >= total) {
-        window.clearInterval(ticker);
-        finish = window.setTimeout(() => setPhase('result'), 720);
+  const runRoast = ({ text = draft, nextKind = kind, voice = personaId, heat = intensity, keepRewrite = false, focus = false } = {}) => {
+    if (!text.trim() || text.length > MAX_LENGTH) return;
+    const next = roastIt({ kind: nextKind, text, personaId: voice, intensity: heat, seed: newSeed() });
+    setDraft(text);
+    setReview({ text, kind: nextKind, result: next });
+    setEditing(false);
+    if (!keepRewrite) setRewrite(next.useful);
+    setActiveFinding(0);
+    setShowAll(false);
+    setCopied(false);
+    setCopyError(false);
+    setNotice(next.clean ? 'Roast ready. No familiar clichés found.' : `Roast ready. ${next.findings.length} editing notes.`);
+    if (focus) window.requestAnimationFrame(() => {
+      resultRef.current?.focus({ preventScroll: true });
+      if (window.matchMedia('(max-width: 760px)').matches) {
+        resultRef.current?.scrollIntoView({ block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
       }
-    }, 560);
-
-    return () => {
-      window.clearInterval(ticker);
-      if (finish) window.clearTimeout(finish);
-    };
-  }, [phase, result]);
-
-  React.useEffect(() => {
-    if (phase === 'result' && result && cardRef.current) {
-      drawRoastCard(cardRef.current, {
-        personaName: persona.name,
-        intensityName: level.name,
+    });
+  };
+  const changeHeat = heat => {
+    setIntensity(heat);
+    if (result) runRoast({ heat, keepRewrite: true });
+  };
+  const changeVoice = voice => {
+    setPersonaId(voice);
+    if (result) runRoast({ voice, keepRewrite: true });
+  };
+  const selectFinding = index => {
+    setActiveFinding(index);
+    if (index >= 3) setShowAll(true);
+    const finding = result.findings[index];
+    setNotice(EDITORIAL_NOTES[finding.key]?.[1] || 'Editing note selected.');
+    window.requestAnimationFrame(() => {
+      const note = document.getElementById(`roast-note-${index}`);
+      const box = note?.getBoundingClientRect();
+      if (box && (box.top > window.innerHeight - 100 || box.bottom < 0)) {
+        note.scrollIntoView({ block: 'nearest', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+      }
+    });
+  };
+  const editPost = () => {
+    setEditing(true);
+    setNotice('Editing your original. Roast it again when you are ready.');
+    window.requestAnimationFrame(() => document.getElementById('roast-draft')?.focus({ preventScroll: true }));
+  };
+  const copy = async () => {
+    window.clearTimeout(copyTimer.current);
+    const ok = await copyText(rewrite);
+    setCopied(ok);
+    setCopyError(!ok);
+    setNotice(ok ? 'Your edited cleanup was copied.' : 'Copy is unavailable. Select the cleanup text and copy it manually.');
+    document.getElementById('roast-rewrite')?.focus({ preventScroll: true });
+    if (!ok) document.getElementById('roast-rewrite')?.select();
+    copyTimer.current = window.setTimeout(() => setCopied(false), 2000);
+  };
+  const download = async () => {
+    try {
+      await document.fonts?.ready;
+      const canvas = document.createElement('canvas');
+      drawRoastCard(canvas, {
+        personaName: PERSONAS.find(p => p.id === personaId).name,
+        intensityName: INTENSITIES[intensity - 1].name,
         score: result.score,
         lines: result.lines,
       });
+      downloadCanvas(canvas, 'linkedin-beats-roast.png');
+      setNotice('Your roast card is ready to download.');
+    } catch {
+      setNotice('The card could not be created. You can still copy your cleanup.');
     }
-  }, [phase, result, persona, level]);
-
-  React.useEffect(() => {
-    const onKeyDown = event => {
-      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return;
-      if (event.key === 'Escape') {
-        if (phase === 'persona') setPhase('intake');
-        if (phase === 'intensity') setPhase('persona');
-        if (phase === 'inspecting' || phase === 'result') setPhase('intensity');
-        return;
-      }
-      const index = Number(event.key) - 1;
-      if (index < 0 || index > 3) return;
-      if (phase === 'persona') {
-        const chosen = PERSONAS[index];
-        if (chosen) {
-          setPersonaId(chosen.id);
-          setPhase('intensity');
-        }
-      } else if (phase === 'intensity') {
-        const chosen = INTENSITIES[index];
-        if (chosen) {
-          setIntensity(chosen.n);
-          setSeed(newSeed());
-          setPhase('inspecting');
-        }
-      }
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [phase]);
-
-  const begin = () => {
-    if (draft.trim()) setPhase('persona');
   };
 
-  const chooseIntensity = chosen => {
-    setIntensity(chosen.n);
-    setSeed(newSeed());
-    setPhase('inspecting');
-  };
+  return <div className="rp-page">
+    <Header base="../" active="Roast" />
+    <main className="rp-main" id="main">
+      <div className="rp-workspace">
+        <section className="rp-document-pane" aria-labelledby="roast-title">
+          <p className="rp-eyebrow">ROAST MY POST</p>
+          <h1 id="roast-title">YOUR POST.<br />WITH NOTES.</h1>
+          <div className="rp-editor-bar">
+            <div className="rp-kinds" role="group" aria-label="What are we roasting?">
+              {KINDS.map(item => <button key={item.id} type="button" aria-pressed={kind === item.id} onClick={() => {
+                if (kind === item.id) return;
+                setKind(item.id); setReview(null); setEditing(true); setRewrite(''); setCopied(false); setNotice('');
+              }}>{KIND_LABELS[item.id]}</button>)}
+            </div>
+            {result && <button className="rp-text-button" type="button" onClick={editPost}>Edit original <Pencil size={18} aria-hidden="true" /></button>}
+          </div>
 
-  const copy = async text => {
-    await copyText(text);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1600);
-  };
-
-  const restart = () => {
-    setDraft('');
-    setPhase('intake');
-    setRevealed(0);
-    setActiveFinding(null);
-  };
-
-  const selectEvidence = index => {
-    setActiveFinding(index);
-    window.requestAnimationFrame(() => {
-      document.querySelector(`[data-finding="${index}"]`)?.scrollIntoView({
-        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
-        block: 'center',
-      });
-    });
-  };
-
-  return (
-    <div style={{width:'100%'}}>
-    <Header base="../" active="Roast"/>
-    <Unit style={{margin:'0 auto'}}>
-      <main className="rm-app" id="main">
-        <Masthead
-          logo="Roast My LinkedIn"
-          mark="™"
-          meta={['Form RM-1', 'Rev. 2026-08']}
-        />
-
-        <section className="rm-hero" aria-labelledby="roast-title">
-          <h1 id="roast-title">Present your personal brand for inspection.</h1>
-          <p>
-            Submit a post, headline, or About section. An assigned inspector will mark the evidence,
-            issue a score, and return the version you should actually use.{' '}
-            <span className="rm-privacy">Nothing leaves your browser.</span>
-          </p>
+          {editing ? <div className="rp-intake">
+            <label className="rp-sr-only" htmlFor="roast-draft">Your {KIND_LABELS[kind].toLowerCase()} to roast</label>
+            <textarea id="roast-draft" data-testid="input-roast-draft" className="rp-input" value={draft} maxLength={MAX_LENGTH} rows={7}
+              placeholder={kind === 'post' ? 'Paste your post here.\n\nYes, the one about your journey.' : KINDS.find(item => item.id === kind).hint}
+              onChange={event => { setDraft(event.target.value); setNotice(''); }}
+              onKeyDown={event => { if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') { event.preventDefault(); runRoast({ focus: true }); } }} />
+            <div className="rp-intake-actions">
+              <button type="button" className="rp-text-button" onClick={() => runRoast({ text: EXAMPLES[kind], focus: true })}>Try an example <ArrowUpRight size={20} aria-hidden="true" /></button>
+              {review ? <button type="button" className="rp-text-button" onClick={() => { setDraft(review.text); setEditing(false); setNotice('Back to your last roast.'); }}>Back to notes</button>
+                : <span>Your words stay in this browser.</span>}
+            </div>
+            {draft.length > MAX_LENGTH && <p role="alert">Please shorten your draft to {MAX_LENGTH.toLocaleString()} characters.</p>}
+          </div> : <div className={`rp-markup ${result.findings.length ? '' : 'is-clean'}`}>
+            <MarkedDocument text={review.text} findings={result.findings} activeFinding={activeFinding} onSelect={selectFinding} />
+            {result.findings.length > 0 && <aside className="rp-notes" aria-label="Red pen editing notes">
+              {result.findings.map((finding, index) => {
+                const [title, advice] = EDITORIAL_NOTES[finding.key] || ['A small edit.', 'Make the claim specific.'];
+                const evidence = evidenceFor(review.text, finding);
+                return <section className={`rp-note ${activeFinding === index ? 'is-active' : ''}`} key={finding.key} id={`roast-note-${index}`} hidden={!showAll && index >= 3}>
+                  <button type="button" className="rp-note-title" onClick={() => selectFinding(index)} aria-expanded={activeFinding === index} aria-controls={`roast-advice-${index}`}>
+                    <span aria-hidden="true">↙</span> {title}
+                  </button>
+                  <div className="rp-note-detail" id={`roast-advice-${index}`} hidden={activeFinding !== index}>
+                    <p className="rp-note-roast">{result.lines[index]}</p>
+                    <p className="rp-advice"><strong>Try this</strong>{advice}</p>
+                    {!evidence && <span className="rp-whole-post">A note on the whole {KIND_LABELS[kind].toLowerCase()}.</span>}
+                  </div>
+                </section>;
+              })}
+              {result.findings.length > 3 && <button className="rp-more-notes" type="button" aria-expanded={showAll} onClick={() => { setShowAll(!showAll); if (showAll && activeFinding >= 3) setActiveFinding(0); }}>
+                {showAll ? 'Fewer notes' : `All ${result.findings.length} notes`} <ChevronDown size={18} aria-hidden="true" />
+              </button>}
+            </aside>}
+            {!result.findings.length && <p className="rp-clean-note">No red ink needed.<br />We’re as surprised as you are.</p>}
+          </div>}
         </section>
 
-        {phase !== 'result' && (
-          <section className="rm-stage" aria-label={PHASE_LABELS[phase]}>
-            <header className="rm-stage__bar">
-              <span>RM-1 / {PHASE_LABELS[phase]}</span>
-              <span>Case status: {phase === 'inspecting' ? 'under review' : 'action required'}</span>
-            </header>
-
-            {phase === 'intake' && (
-              <div className="rm-stage__body">
-                <div className="rm-stage__eyebrow">Step 01 / Material intake</div>
-                <h2>What are we documenting today?</h2>
-                <fieldset className="rm-fieldset">
-                  <legend>Material type</legend>
-                  <div className="rm-kind-grid">
-                    {KINDS.map(item => (
-                      <button
-                        className={`rm-kind ${kind === item.id ? 'is-selected' : ''}`}
-                        data-testid={`button-kind-${item.id}`}
-                        key={item.id}
-                        onClick={() => setKind(item.id)}
-                        type="button"
-                      >
-                        {item.name}
-                      </button>
-                    ))}
-                  </div>
-                </fieldset>
-                <label className="rm-label" htmlFor="roast-draft">Material for inspection</label>
-                {kind === 'headline' ? (
-                  <input
-                    className="rm-input"
-                    data-testid="input-roast-draft"
-                    id="roast-draft"
-                    onChange={event => setDraft(event.target.value)}
-                    onKeyDown={event => {
-                      if (event.key === 'Enter' && draft.trim()) begin();
-                    }}
-                    placeholder={kindDef.hint}
-                    value={draft}
-                  />
-                ) : (
-                  <textarea
-                    className="rm-input"
-                    data-testid="input-roast-draft"
-                    id="roast-draft"
-                    onChange={event => setDraft(event.target.value)}
-                    placeholder={kindDef.hint}
-                    rows={7}
-                    value={draft}
-                  />
-                )}
-                <div className="rm-intake__footer">
-                  <Button
-                    data-testid="button-file-complaint"
-                    disabled={!draft.trim()}
-                    onClick={begin}
-                    style={{ opacity: draft.trim() ? 1 : .45, minHeight: 44 }}
-                  >
-                    File the complaint
-                  </Button>
-                  <span className="rm-fineprint">Retention policy: zero seconds. Transmission policy: absolutely not.</span>
-                </div>
-              </div>
-            )}
-
-            {phase === 'persona' && (
-              <ChoiceStage
-                eyebrow="Step 02 / Inspector assignment"
-                onBack={() => setPhase('intake')}
-                onChoose={chosen => {
-                  setPersonaId(chosen.id);
-                  setPhase('intensity');
-                }}
-                options={PERSONAS}
-                title="Who should review the incident?"
-                type="persona"
-              />
-            )}
-
-            {phase === 'intensity' && (
-              <SeverityStage
-                value={intensity}
-                onChange={setIntensity}
-                onBack={() => setPhase('persona')}
-                onAuthorize={chooseIntensity}
-              />
-            )}
-
-            {phase === 'inspecting' && result && (
-              <InspectionStage
-                draft={draft}
-                onCancel={() => setPhase('intensity')}
-                onSkip={() => {
-                  setRevealed(result.findings.length);
-                  setPhase('result');
-                }}
-                persona={persona}
-                result={result}
-                revealed={revealed}
-              />
-            )}
-          </section>
-        )}
-
-        {phase === 'result' && result && (
-          <section className="rm-result" aria-label="Official inspection findings">
-            <DiagnosticRecord result={result} />
-
-            <div className="rm-evidence-layout">
-              <div className="rm-result__main">
-                <MarkedDocument
-                  activeFinding={activeFinding}
-                  findings={result.findings}
-                  text={draft}
-                  visibleCount={result.findings.length}
-                />
-              </div>
-              <EvidenceRegister
-                activeFinding={activeFinding}
-                draft={draft}
-                findings={result.findings}
-                onSelect={selectEvidence}
-              />
+        <aside className={`rp-result ${result ? 'has-result' : ''}`} aria-label="Your roast and cleanup">
+          {result ? <>
+            <p className="rp-eyebrow">THE VERDICT</p>
+            <h2 ref={resultRef} tabIndex={-1}>{verdict[0]}</h2>
+            <p className="rp-verdict-line">{verdict[1]}</p>
+            <div className="rp-rewrite">
+              <label className="rp-eyebrow" htmlFor="roast-rewrite">THE CLEANUP</label>
+              <AutoTextarea id="roast-rewrite" data-testid="text-clean-rewrite" className="rp-cleanup-input" value={rewrite} onChange={event => { setRewrite(event.target.value); setCopied(false); setCopyError(false); }} aria-describedby="roast-cleanup-hint" />
+              <p className="rp-hint" id="roast-cleanup-hint">{result.useful === review.text.trim() ? 'Already fairly plain. Use the notes to make your next edit.' : 'A first pass. Edit it to sound like you.'}</p>
+              <button className="rp-copy" type="button" disabled={!rewrite.trim()} data-testid="button-copy-rewrite" onClick={copy}>
+                {copied ? <Check size={22} aria-hidden="true" /> : <Copy size={22} aria-hidden="true" />}{copied ? 'Copied' : 'Copy cleanup'}<ArrowRight size={23} aria-hidden="true" />
+              </button>
+              {copyError && <p className="rp-hint">Your text is selected. Press ⌘C or Ctrl+C to copy it.</p>}
             </div>
+            <details className="rp-extras"><summary>Keep the evidence <ChevronDown size={18} aria-hidden="true" /></summary><div>
+              <button type="button" className="rp-text-button" onClick={download}><Download size={18} aria-hidden="true" /> Download roast card</button>
+              {kind === 'post' && <a className="rp-text-button" href={`../studio/#beat=${encodeURIComponent(review.text)}`}>Turn it into a beat <ArrowUpRight size={18} aria-hidden="true" /></a>}
+              <button type="button" className="rp-text-button" onClick={() => { setDraft(''); setReview(null); setEditing(true); setRewrite(''); setNotice('Ready for another post.'); window.requestAnimationFrame(() => document.getElementById('roast-draft')?.focus()); }}>Start fresh <ArrowRight size={18} aria-hidden="true" /></button>
+            </div></details>
+          </> : <div className="rp-awaiting">
+            <p className="rp-eyebrow">CONSTRUCTIVE. MOSTLY.</p>
+            <div className="rp-pen-message" aria-hidden="true">Let’s take the<br /><span>“thought leader”</span><br />out of this.</div>
+            <svg className="rp-pen-arrow" viewBox="0 0 220 150" aria-hidden="true"><path d="M185 10c45 78-13 108-150 91m21-22-26 21 28 19" /></svg>
+            <p className="rp-awaiting-copy">Your words. A little red ink.<br />Something better to post.</p>
+          </div>}
+        </aside>
 
-            <div className="rm-outcome-grid">
-              <div className="rm-verdict" data-testid="status-verdict">
-                <div className="rm-verdict__top">
-                  <span className="rm-result-label">Inspector memorandum / {persona.name}</span>
-                  <div className="rm-stamp">Inspected<br />with concerns</div>
-                </div>
-                <div className="rm-verdict__copy">
-                  <p className="rm-verdict__opener">{result.opener}</p>
-                  <ol className="rm-verdict__findings">
-                    {result.lines.map((line, index) => <li key={index}>{line}</li>)}
-                  </ol>
-                  <p className="rm-verdict__closer">{result.closer}</p>
-                </div>
-              </div>
-
-              <div className="rm-rewrite">
-                <div className="rm-rewrite__header">
-                  <span className="rm-result-label">
-                    {kind === 'headline' ? 'The headline you should actually use' : 'The version you should actually post'}
-                  </span>
-                  <Button data-testid="button-copy-rewrite" onClick={() => copy(result.useful)}>
-                    {copied ? 'Copied' : 'Copy clean version'}
-                  </Button>
-                </div>
-                <div className="rm-rewrite__text" data-testid="text-clean-rewrite">{result.useful}</div>
-              </div>
-            </div>
-
-            <div className="rm-result-actions rm-result-actions--primary">
-              <Button data-testid="button-new-inspection" onClick={restart}>Inspect another</Button>
-              {kind === 'post' && (
-                <Button
-                  data-testid="button-turn-into-beat"
-                  onClick={() => { location.href = `../studio/#beat=${encodeURIComponent(draft)}`; }}
-                >
-                  Remix the evidence
-                </Button>
-              )}
-            </div>
-
-            <div className="rm-share">
-              <div className="rm-share__header">
-                <div>
-                  <span className="rm-result-label">Roast receipt</span>
-                  <h2>1080 × 1080 share object</h2>
-                </div>
-                <div className="rm-result-actions">
-                  <Button
-                    data-testid="button-download-card"
-                    onClick={() => downloadCanvas(cardRef.current, 'roast-card.png')}
-                  >
-                    Download receipt
-                  </Button>
-                  <Button
-                    data-testid="button-reroast"
-                    onClick={() => {
-                      setSeed(newSeed());
-                      setPhase('inspecting');
-                    }}
-                  >
-                    Re-inspect
-                  </Button>
-                </div>
-              </div>
-              <canvas ref={cardRef} data-testid="canvas-roast-card" />
-            </div>
-          </section>
-        )}
-
-        <footer className="rm-footer">
-          <span>© Digital Creative 2026 · Approved — HR / Not affiliated with your network.</span>
-          <nav aria-label="More Circle Back tools">
-            <a href="../lessons/">Write one</a>
-            <a href="../museum/">Visit the Museum</a>
-            <a href="../studio/">Make a beat</a>
-          </nav>
-        </footer>
-      </main>
-    </Unit>
-    </div>
-  );
+        <div className="rp-controls">
+          <fieldset className="rp-heat"><legend>How honest?</legend><div>
+            {HEAT.map((label, index) => <button key={label} type="button" aria-pressed={intensity === index + 1} onClick={() => changeHeat(index + 1)}>{label}</button>)}
+          </div></fieldset>
+          <button type="button" className="rp-roast-button" data-testid="button-roast" disabled={!valid} onClick={() => result ? editPost() : runRoast({ focus: true })}>
+            {result ? 'Edit my original' : `Roast my ${kind === 'about' ? 'bio' : kind}`} <ArrowUpRight size={25} aria-hidden="true" />
+          </button>
+          <details className="rp-voice"><summary>Choose an inspector <ChevronDown size={18} aria-hidden="true" /></summary><label>
+            <span className="rp-sr-only">Inspector</span><select value={personaId} onChange={event => changeVoice(event.target.value)}>{PERSONAS.map(persona => <option value={persona.id} key={persona.id}>{persona.name}</option>)}</select>
+          </label></details>
+        </div>
+      </div>
+      <p className="rp-sr-only" role="status" aria-live="polite">{notice}</p>
+    </main>
+    <Footer />
+  </div>;
 }

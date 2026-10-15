@@ -4,8 +4,9 @@
 // the version you should actually use. Entirely local.
 
 import { LINES, FRAMES } from './personas.js';
-import { humanize, mulberry32 } from '../lessons/generator.js';
+import { mulberry32 } from '../lessons/generator.js';
 import { scorePost } from '../lessons/score.js';
+import { cleanDraft } from './editorial.js';
 
 export const KINDS = [
   { id: 'post',     name: 'My post',     hint: 'Paste the draft. Yes, that one.' },
@@ -103,7 +104,7 @@ export function usefulHeadline(t){
 
 export function usefulVersion(kind, t){
   if(kind === 'headline') return usefulHeadline(t);
-  return humanize(t); // posts and About sections both come clean the same way
+  return cleanDraft(t);
 }
 
 // ---- assembly -------------------------------------------------------------
@@ -115,9 +116,9 @@ export function roastIt({ kind, text, personaId, intensity, seed }){
   const tierIx = tier === 'm' ? 0 : 1;
   const maxLines = [2, 4, 5, 7][Math.max(1, Math.min(4, intensity)) - 1];
 
-  const found = (FINDERS[kind] || findPost)(t)
-    .sort((a, b) => b.w - a.w)
-    .slice(0, maxLines);
+  const allFindings = (FINDERS[kind] || findPost)(t.replace(/’/g, "'"))
+    .sort((a, b) => b.w - a.w);
+  const found = allFindings.slice(0, maxLines);
 
   const render = f => {
     const entry = (LINES[f.key] || LINES.clean)[personaId];
@@ -137,6 +138,7 @@ export function roastIt({ kind, text, personaId, intensity, seed }){
     lines,
     closer: pick(rng, frame.close[tier]),
     findings: found,
+    allFindings,
     clean: !found.length,
     score,
     useful: usefulVersion(kind, t),
