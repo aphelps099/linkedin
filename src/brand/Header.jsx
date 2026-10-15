@@ -4,7 +4,7 @@ import './fonts.css';
 import './header.css';
 
 const LINKS=[['Listen','#listen'],['Lessons','lessons/'],['Studio','studio/'],['Roast','roast/'],['Store','store/']];
-export function Header({base='/',active,onRadio,playing=false,loading=false,listenHref,children}){
+export function Header({base='/',active,onRadio,playing=false,loading=false,listenHref,hiddenLinks=[],children}){
   const [open,setOpen]=useState(false), root=useRef(null), trigger=useRef(null), id=useId();
   useEffect(()=>{
     if(!open)return;
@@ -26,7 +26,7 @@ export function Header({base='/',active,onRadio,playing=false,loading=false,list
       </div>
     </div>
     <nav className="cb-header-directory" id={id} aria-label="Main navigation" hidden={!open}>
-      {LINKS.map(([label,path])=><a href={label==='Listen'&&listenHref?listenHref:`${base}${path}`} key={label} aria-current={active===label?'page':undefined} onClick={()=>{setOpen(false);trigger.current?.focus();}}>{label}</a>)}
+      {LINKS.filter(([label])=>!hiddenLinks.includes(label)).map(([label,path])=><a href={label==='Listen'&&listenHref?listenHref:`${base}${path}`} key={label} aria-current={active===label?'page':undefined} onClick={()=>{setOpen(false);trigger.current?.focus();}}>{label}</a>)}
     </nav>
   </header>;
 }

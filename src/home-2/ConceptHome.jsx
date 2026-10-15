@@ -4,9 +4,11 @@ import {TRACKS, LINES, formatTime} from '../home/tracks.js';
 import {PRODUCTS} from '../store/products.js';
 import {Header} from '../brand/Header.jsx';
 import {Campaigns} from './Campaigns.jsx';
+import {ConceptFooter} from './ConceptFooter.jsx';
 import {createPortraitRadio} from './portraitRadio.js';
 import './concept.css';
 import './campaigns.css';
+import './footer.css';
 
 const INITIAL = {index:0, playing:false, loading:false, elapsed:0, volume:.8, text:LINES[1], word:-1, mouth:'rest', levels:null, error:''};
 const PORTRAITS = [{index:2,tone:'ice'}, {index:0,tone:'paper'}, {index:1,tone:'pink'}, {index:3,tone:'navy'}];
@@ -68,7 +70,7 @@ export default function ConceptHome({playerFactory=createPortraitRadio}) {
   const mute=()=>{if(state.volume){previousVolume.current=state.volume;radio.current?.volume(0);}else radio.current?.volume(previousVolume.current||.8);};
   return <div className={`c2-home ${motion?'':'c2-still'}`}>
     <a className="c2-skip" href="#c2-player">Skip to music player</a>
-    <Header base={base} active="Listen" listenHref="#c2-player" onRadio={()=>radio.current?.toggle()} playing={state.playing} loading={state.loading}/>
+    <Header base={base} active="Listen" listenHref="#c2-player" hiddenLinks={['Roast']} onRadio={()=>radio.current?.toggle()} playing={state.playing} loading={state.loading}/>
     <main>
       <section className="c2-hero" aria-labelledby="c2-title">
         <div className="c2-container c2-hero-inner">
@@ -99,13 +101,15 @@ export default function ConceptHome({playerFactory=createPortraitRadio}) {
         {state.error&&<p className="c2-audio-error c2-container" role="alert">{state.error}</p>}
         <div className="c2-container" id="c2-track-list" hidden={!allTracks}><ol className="c2-track-list">{TRACKS.map((item,index)=><li key={item.title}><button aria-label={`${index===state.index&&state.playing?'Pause':'Play'} ${item.title}`} aria-current={index===state.index?'true':undefined} onClick={()=>choose(index)}><span>{index===state.index&&state.playing?<Pause size={17}/>:<Play size={17}/>}</span><strong>{item.title}</strong><span className="c2-track-genre">{item.genre}</span><time>{formatTime(item.seconds)}</time></button></li>)}</ol><button className="c2-motion-toggle" aria-pressed={motion} onClick={()=>setMotion(!motion)}>Animate portraits <span>{motion?'On':'Off'}</span></button></div>
       </section>
-      <section id="c2-store" className="c2-store c2-container" aria-labelledby="c2-store-title">
+      <section id="c2-store" className="c2-store" aria-labelledby="c2-store-title">
+        <div className="c2-container">
         <div className="c2-section-head"><div><p className="c2-eyebrow">The company store</p><h2 id="c2-store-title">Wear your boundaries.</h2></div><div className="c2-store-intro"><p>For the life you lead<br/>outside the meeting.</p><a className="c2-text-link" href={`${base}store/`}>Explore the collection <ArrowUpRight/></a></div></div>
         <div className="c2-products">{FEATURED.map((product,i)=><a className="c2-product" key={product.sku} href={`${base}store/?product=${product.sku}`} aria-label={`Explore ${product.name} — design preview`}><div className="c2-product-image"><img src={`${base}store/${product.img}`} width="1254" height="1254" loading="lazy" alt={product.name}/><span className="c2-product-open" aria-hidden="true"><ArrowUpRight/></span></div><div className="c2-product-info"><h3>{TITLES[i]}</h3><span className={`c2-swatch c2-swatch-${i}`} aria-hidden="true"/></div><p>{CAPTIONS[i]}</p></a>)}</div>
         <p className="c2-collection-note">A preview of the next collection. Designs in development.</p>
+        </div>
       </section>
       <Campaigns base={base}/>
     </main>
-    <footer className="c2-footer c2-container"><p>Independent music for dependent employees.</p><nav aria-label="Creator links"><a href="https://look-serious.com/">Look Serious <ArrowUpRight/></a><a href="https://aaroncphelps.com/">Aaron Phelps <ArrowUpRight/></a><a href="https://www.linkedin.com/in/aaroncphelps/">LinkedIn <ArrowUpRight/></a></nav><small>© {new Date().getFullYear()} LinkedIn Beats. Independent parody. Not affiliated with LinkedIn.</small></footer>
+    <ConceptFooter base={base}/>
   </div>;
 }
