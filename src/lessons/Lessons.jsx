@@ -1,5 +1,6 @@
 import React, {useMemo,useRef,useState,useEffect} from 'react';
-import {Header} from '../brand/Header.jsx';
+import {ConceptHeader} from '../home-2/ConceptHeader.jsx';
+import '../home-2/header.css';
 import {Footer} from '../brand/Footer.jsx';
 import {byId} from './categories.js';
 import {DEFAULT_ANSWERS,EXAMPLES,ANNOUNCEMENT_EXAMPLES} from './Intake.jsx';
@@ -14,10 +15,10 @@ async function copyText(text){
 }
 export default function Lessons(){
   const [catId,setCatId]=useState('announce');
-  const [drafts,setDrafts]=useState(()=>Object.fromEntries(Object.entries(EXAMPLES).map(([k,v])=>[k,{...v}])));
+  const [drafts,setDrafts]=useState(()=>Object.fromEntries(Object.entries(DEFAULT_ANSWERS).map(([k,v])=>[k,{...v}])));
   const [level,setLevel]=useState(3),[seed,setSeed]=useState(newSeed),[flags,setFlags]=useState({});
   const [contextOpen,setContextOpen]=useState(false),[toolsOpen,setToolsOpen]=useState(false),[roastOpen,setRoastOpen]=useState(false);
-  const [copyStatus,setCopyStatus]=useState(''),[status,setStatus]=useState('Example loaded. Edit the blue words to make it yours.');
+  const [copyStatus,setCopyStatus]=useState(''),[status,setStatus]=useState('');
   const variants=useRef({}),copyTimer=useRef(null),outputRef=useRef(null);
   useEffect(()=>()=>clearTimeout(copyTimer.current),[]);
   const answers=drafts[catId],cat=byId(catId),steps=cat.steps(answers);
@@ -37,14 +38,16 @@ export default function Lessons(){
   };
   const pick=id=>{setCatId(id);setContextOpen(false);setToolsOpen(false);setRoastOpen(false);setFlags({});setStatus('');};
   const example=()=>{setDrafts(d=>({...d,[catId]:{...(catId==='announce'?ANNOUNCEMENT_EXAMPLES[answers.kind]:EXAMPLES[catId])}}));setStatus('Example loaded. Edit the blue words to make it yours.');};
-  const clear=()=>{setDrafts(d=>({...d,[catId]:{...DEFAULT_ANSWERS[catId]}}));if(catId==='announce')variants.current={};setFlags({});setStatus('Fresh start. Empty answers use playful stand-ins.');};
   const regenerate=(focus=false)=>{setSeed(newSeed());setStatus('A fresh version, at the same LinkedInification level.');if(focus&&window.innerWidth<800){outputRef.current?.focus({preventScroll:true});outputRef.current?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});}};
   const copy=async()=>{try{await copyText(text);setCopyStatus('Copied ✓');clearTimeout(copyTimer.current);copyTimer.current=setTimeout(()=>setCopyStatus(''),1800);}catch{setCopyStatus('Copy unavailable. Select the post text to copy it.');}};
-  return <div className="ll-app">
+  return <div className="ll-app c2-home">
     <a className="ll-skip" href="#lessons-main">Skip to the editor</a>
-    <Header base="../" active="Lessons"/>
+    <ConceptHeader base="../" homeSectionBase="../" active="LinkedInifier"/>
     <main id="lessons-main">
-      <div className="el-toolbar"><h1>LINKEDIN LESSONS</h1><nav aria-label="Post type">{TABS.map(([id,label])=><button key={id} aria-pressed={id===catId} onClick={()=>pick(id)}>{label}</button>)}</nav></div>
+      <div className="el-toolbar">
+        <h1>The LinkedInifier<span aria-hidden="true">.</span></h1>
+        <div className="el-categories" role="group" aria-label="Post type">{TABS.map(([id,label])=><button type="button" key={id} aria-pressed={id===catId} onClick={()=>pick(id)}>{label}</button>)}</div>
+      </div>
       <div className="el-workspace">
       <section className="el-controls" aria-label="LinkedInification controls">
         <div className="el-level-label"><label htmlFor="linkedinification">LinkedInification</label><output htmlFor="linkedinification">{String(level).padStart(2,'0')}</output><span>{LEVELS[level-1].name}</span></div>
@@ -53,12 +56,15 @@ export default function Lessons(){
       </section>
         <section className="el-facts" aria-labelledby="facts-title">
           <h2 className="el-eyebrow" id="facts-title"><i/>THE ACTUAL EVENT</h2>
-          {choices.length>0&&<div className="el-choices">{choices.map(s=><label key={s.key}><span>{s.key==='kind'?'About':s.key==='source'?'Inspired by':'Related to'}</span><select aria-label={s.ask} value={answers[s.key]||s.options[0]} onChange={e=>update(s.key,e.target.value)}>{s.options.map(o=><option key={o}>{o}</option>)}</select></label>)}</div>}
+          {choices.length>0&&<div className="el-choices">{choices.map(s=><fieldset key={`${catId}-${s.key}`}>
+            <legend className={choices.length===1?'el-sr':''}>{s.key==='source'?'Inspired by':s.key==='topic'?'Related to':s.ask}</legend>
+            <div className="el-choice-pills">{s.options.map(o=><button type="button" key={o} aria-pressed={(answers[s.key]||s.options[0])===o} onClick={()=>update(s.key,o)}>{o}</button>)}</div>
+          </fieldset>)}</div>}
           <Sentence catId={catId} answers={answers} steps={steps} onChange={update}/>
           <div className="el-fact-actions">{extra.length>0?<button aria-expanded={contextOpen} aria-controls="extra-context" onClick={()=>setContextOpen(!contextOpen)}>{contextOpen?'− Less context':'+ Add context'}</button>:<span/>}<button onClick={example}>Try an example ↗</button></div>
           {extra.length>0&&contextOpen&&<div className="el-context" id="extra-context">{extra.map(s=><label key={s.key} htmlFor={`context-${s.key}`}>{s.ask}<input id={`context-${s.key}`} name={s.key} value={answers[s.key]||''} placeholder={s.placeholder} maxLength={300} onChange={e=>update(s.key,e.target.value)}/></label>)}</div>}
           <p className="el-hint">Click the blue words. Tell the boring truth.</p>
-          <div className="el-facts-bottom"><span>{status||'Your answers stay in your browser.'}</span><button onClick={clear}>Start fresh</button></div>
+          <p className="el-sr" role="status">{status}</p>
         </section>
         <section className="el-output" aria-labelledby="output-title" ref={outputRef} tabIndex={-1}>
           <h2 className="el-eyebrow" id="output-title"><i/>THE LINKEDIN VERSION</h2>
