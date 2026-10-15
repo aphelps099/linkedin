@@ -85,7 +85,7 @@ export default function ConceptHome({playerFactory=createPortraitRadio}) {
           </div>
           <div className="c2-choir">
             <div className={`c2-lyrics ${state.playing?'is-singing':''}`} aria-label={`Lyrics: ${state.text}`}><div aria-hidden="true">{state.text.split(/\s+/).map((word,i)=><React.Fragment key={`${state.text}-${i}`}><span className={state.playing&&i===state.word?'is-current':''}>{word}</span>{' '}</React.Fragment>)}</div></div>
-            <div className="c2-portraits">{visiblePortraits.map(({index,tone})=><Portrait key={tone} base={base} index={index} tone={tone} active={state.index===index} playing={state.index===index&&state.playing} loading={state.index===index&&state.loading} mouth={motion&&state.index===index?state.mouth:'rest'} motion={motion} choose={stableChoose}/>)}</div>
+            <div className="c2-portraits" style={{gridTemplateColumns:visiblePortraits.map(({index})=>index===state.index?'1.07fr':'1fr').join(' ')}}>{visiblePortraits.map(({index,tone})=><Portrait key={tone} base={base} index={index} tone={tone} active={state.index===index} playing={state.index===index&&state.playing} loading={state.index===index&&state.loading} mouth={motion&&state.index===index?state.mouth:'rest'} motion={motion} choose={stableChoose}/>)}</div>
           </div>
         </div>
       </section>
@@ -97,7 +97,7 @@ export default function ConceptHome({playerFactory=createPortraitRadio}) {
             <div className="c2-now"><strong aria-live="polite">{track.title}</strong><span>{state.loading?'Tuning in…':'Circle Back Radio'}</span></div>
           </div>
           <div className="c2-scrubber">
-            <div className="c2-wave" aria-hidden="true">{(motion&&state.levels?state.levels:calmWave).map((level,i)=><i key={i} style={{height:`${3+level*25}px`}} className={i/48<seconds/track.seconds?'is-past':''}/>)}</div>
+            <div className="c2-wave" aria-hidden="true">{(motion&&state.levels?state.levels:calmWave).map((level,i)=><i key={i} style={{height:`${3+level*34}px`}} className={i/48<seconds/track.seconds?'is-past':''}/>)}</div>
             <input type="range" aria-label="Track position" aria-valuetext={`${formatTime(seconds)} of ${formatTime(track.seconds)}`} min="0" max={track.seconds} step=".1" value={seconds} style={{'--c2-progress':`${seconds/track.seconds*100}%`}} onChange={e=>setScrub(Number(e.target.value))} onPointerUp={e=>seek(e.currentTarget.value)} onKeyUp={e=>{if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown'].includes(e.key))seek(e.currentTarget.value);}} onBlur={e=>{if(scrub!==null)seek(e.currentTarget.value);}} onPointerCancel={()=>setScrub(null)}/>
           </div>
           <div className="c2-time"><time>{formatTime(seconds)}</time><span>/</span><time>{formatTime(track.seconds)}</time></div>
