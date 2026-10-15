@@ -1,7 +1,2 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './styles.css';
-import './brand/fonts.css';
-import CircleBack from './CircleBack.jsx';
-
-ReactDOM.createRoot(document.getElementById('root')).render(<CircleBack />);
+// The approved racing stage is the canonical studio.
+import './studio-3/main.jsx';

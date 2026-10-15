@@ -29,6 +29,7 @@ import { requestRemixVoiceClip } from './voice.js';
 import { StudioDesk } from './studio/StudioDesk.jsx';
 import { StudioControls } from './studio/StudioControls.jsx';
 import { RacingHeader,RacingConsole } from './studio-3/RacingStage.jsx';
+import { ConceptFooter } from './home-2/ConceptFooter.jsx';
 import { GROOVES, createGroove, grooveMidi } from './studio/grooves.js';
 
 const PHRASES = [
@@ -955,7 +956,7 @@ export default function CircleBack({stagePreview=false,racingPreview=false}){
     onRecord={()=>{CBAudio.unlock();if(!rec){setVoxLocked(false);setPlaying(true);}setRec(r=>!r);}}
     onDrum={i=>{const d=DRUMS[i];if(!d)return;CBAudio.unlock();CBAudio.trigger(d.id,1);const r=ref.current;if(r.rec&&r.playing&&r.lastStep!==undefined)setRack(rk=>{const p=rk.pattern.map(row=>[...row]);p[i][r.lastStep]=2;return {...rk,pattern:p};});}}/>{controls}</>;
 
-  if(!studio) return <div className={stagePreview?`stage2${racingPreview?' stage3 c2-home':''}`:undefined} style={{position:'relative',minHeight:'100vh',background:'var(--blue)',color:'#fff',fontFamily:'var(--sans)',
+  if(!studio) return <><div className={stagePreview?`stage2${racingPreview?' stage3 c2-home':''}`:undefined} style={{position:'relative',minHeight:'100vh',background:'var(--blue)',color:'#fff',fontFamily:'var(--sans)',
     padding: narrow ? '14px 14px 26px' : '20px 26px 30px',boxSizing:'border-box',display:'flex',flexDirection:'column',gap:narrow?12:16,
     isolation:'isolate'}}>
     <Backdrop stateRef={ref} focusRef={canvasRef}/>
@@ -1074,7 +1075,7 @@ export default function CircleBack({stagePreview=false,racingPreview=false}){
     </div>
     </>}
     {controls}
-  </div>;
+  </div>{racingPreview&&<ConceptFooter base="../" variant="dark"/>}</>;
 
   return <Unit style={narrow ? {padding:'20px 14px'} : undefined}>
     <Button onClick={()=>setAdvanced(false)} style={{marginBottom:18}}>← Back to the mixing desk</Button>
