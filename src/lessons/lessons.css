@@ -10,3 +10,26 @@
 @media(max-width:799px){.el-toolbar{align-items:flex-start;flex-direction:column;padding:22px 6%;gap:14px}.el-toolbar nav{gap:8px 20px}.el-workspace{display:flex;flex-direction:column}.el-facts,.el-output{padding:30px 6%}.el-sentence{font-size:clamp(48px,12.5vw,100px)}.el-word.is-long{font-size:clamp(30px,7vw,54px)}.el-sentence-tail{font-size:24px}.el-post .el-post-lead{font-size:clamp(38px,9vw,70px)}.el-post .el-post-lead.is-long{font-size:34px}.el-post p{font-size:19px}.el-controls{padding:24px 6%;gap:18px}.el-level-label{gap:14px;flex-wrap:wrap}.el-level-label label{font-size:19px}.el-level-label output{font-size:44px}.el-level-label>span{font-size:9px}.el-supercharge{font-size:13px;gap:10px}.el-supercharge>span{width:44px;height:44px}.el-slider>div{font-size:8px}.el-eyebrow{font-size:11px}.el-facts-bottom{font-size:9px}.el-diagnostics dl>div{flex-direction:column;gap:3px}.el-diagnostics dd{text-align:left}}
 @media(max-width:420px){.el-controls{grid-template-columns:1fr}.el-level-label{grid-column:auto}.el-supercharge{justify-self:end}.el-output-actions{gap:16px}.el-facts-bottom{align-items:flex-start}}
 @media(prefers-reduced-motion:reduce){.ll-app{scroll-behavior:auto}}
+
+/* Amplification belongs above the result; on small screens it leads the editor. */
+.el-workspace{grid-template-rows:auto 1fr}
+.el-facts{grid-column:1;grid-row:1 / span 2}
+.el-output{grid-column:2;grid-row:2}
+.el-workspace>.el-controls{grid-column:2;grid-row:1;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px 18px;padding:28px 7.2% 22px;background:#0757ec;color:#f5f1e7;border:0;border-bottom:1px solid #f5f1e740;align-items:center}
+.el-controls .el-level-label{grid-column:1;grid-row:1;gap:12px;flex-wrap:wrap}
+.el-controls .el-level-label label{font-size:clamp(16px,1.5vw,23px)}
+.el-controls .el-level-label output{font-size:54px;color:#fff349}
+.el-controls .el-level-label>span{font-size:9px;max-width:90px}
+.el-controls .el-slider{grid-column:1 / -1;grid-row:2;min-width:0}
+.el-controls .el-slider input{background:linear-gradient(to right,#fff349 var(--level),#f5f1e750 var(--level));margin:12px 0 20px}
+.el-controls .el-slider input::-webkit-slider-thumb{background:#fff349}
+.el-controls .el-slider input::-moz-range-thumb{background:#fff349}
+.el-controls .el-slider>div{font-size:10px}
+.el-controls .el-supercharge{grid-column:2;grid-row:1;justify-content:center;flex-direction:row-reverse;gap:8px;padding:14px 17px;background:#fff349;color:#11110e;font-size:14px;min-height:48px}
+.el-controls .el-supercharge>span{width:auto;height:auto;background:none;color:inherit;font-size:22px}
+.el-controls .el-supercharge:hover{background:#f5f1e7}
+.el-controls :focus-visible{outline-color:#fff349}
+.el-controls .el-supercharge:focus-visible{outline-color:#f5f1e7}
+@media(max-width:1150px) and (min-width:800px){.el-workspace>.el-controls{padding:24px 6% 20px;gap:15px 12px}.el-controls .el-level-label{gap:7px}.el-controls .el-level-label label{flex-basis:100%}.el-controls .el-level-label output{font-size:43px}.el-controls .el-supercharge{padding:12px;font-size:12px}}
+@media(max-width:799px){.el-workspace{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto}.el-workspace>.el-controls{grid-column:1;grid-row:1;padding:23px 6% 20px}.el-facts{grid-column:1;grid-row:2}.el-output{grid-column:1;grid-row:3}.el-controls .el-level-label label{font-size:18px}.el-controls .el-level-label output{font-size:44px}}
+@media(max-width:420px){.el-workspace>.el-controls{gap:15px 12px}.el-controls .el-level-label{gap:6px 10px}.el-controls .el-level-label label{flex-basis:100%;font-size:16px}.el-controls .el-supercharge{padding:12px;font-size:12px}.el-controls .el-slider>div{font-size:8px}}

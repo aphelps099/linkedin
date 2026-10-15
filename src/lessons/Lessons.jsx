@@ -46,6 +46,11 @@ export default function Lessons(){
     <main id="lessons-main">
       <div className="el-toolbar"><h1>LINKEDIN LESSONS</h1><nav aria-label="Post type">{TABS.map(([id,label])=><button key={id} aria-pressed={id===catId} onClick={()=>pick(id)}>{label}</button>)}</nav></div>
       <div className="el-workspace">
+      <section className="el-controls" aria-label="LinkedInification controls">
+        <div className="el-level-label"><label htmlFor="linkedinification">LinkedInification</label><output htmlFor="linkedinification">{String(level).padStart(2,'0')}</output><span>{LEVELS[level-1].name}</span></div>
+        <div className="el-slider"><input id="linkedinification" type="range" min="1" max="5" step="1" value={level} aria-valuetext={`${level}: ${LEVELS[level-1].name}`} style={{'--level':`${(level-1)*25}%`}} onChange={e=>setLevel(Number(e.target.value))}/><div><span>Actually human</span><span>Absolutely insufferable</span></div></div>
+        <button className="el-supercharge" onClick={()=>regenerate(true)}><span aria-hidden="true">↗</span>Supercharge</button>
+      </section>
         <section className="el-facts" aria-labelledby="facts-title">
           <h2 className="el-eyebrow" id="facts-title"><i/>THE ACTUAL EVENT</h2>
           {choices.length>0&&<div className="el-choices">{choices.map(s=><label key={s.key}><span>{s.key==='kind'?'About':s.key==='source'?'Inspired by':'Related to'}</span><select aria-label={s.ask} value={answers[s.key]||s.options[0]} onChange={e=>update(s.key,e.target.value)}>{s.options.map(o=><option key={o}>{o}</option>)}</select></label>)}</div>}
@@ -67,11 +72,7 @@ export default function Lessons(){
           </div>}
         </section>
       </div>
-      <section className="el-controls" aria-label="LinkedInification controls">
-        <div className="el-level-label"><label htmlFor="linkedinification">LinkedInification</label><output htmlFor="linkedinification">{String(level).padStart(2,'0')}</output><span>{LEVELS[level-1].name}</span></div>
-        <div className="el-slider"><input id="linkedinification" type="range" min="1" max="5" step="1" value={level} aria-valuetext={`${level}: ${LEVELS[level-1].name}`} style={{'--level':`${(level-1)*25}%`}} onChange={e=>setLevel(Number(e.target.value))}/><div><span>Actually human</span><span>Absolutely insufferable</span></div></div>
-        <button className="el-supercharge" onClick={()=>regenerate(true)}><span aria-hidden="true">↗</span>Supercharge</button>
-      </section>
+
     </main><Footer/>
   </div>;
 }
