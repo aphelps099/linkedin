@@ -1,3 +1,4 @@
+import {Header} from '../brand/Header.jsx';
 import React from 'react';
 import { Button } from '../components/controls/Button.jsx';
 import { Unit } from '../components/chassis/Unit.jsx';
@@ -525,7 +526,9 @@ export default function Roast() {
   };
 
   return (
-    <Unit>
+    <div style={{width:'100%'}}>
+    <Header base="../" active="Roast"/>
+    <Unit style={{margin:'0 auto'}}>
       <main className="rm-app" id="main">
         <Masthead
           logo="Roast My LinkedIn"
@@ -746,5 +749,6 @@ export default function Roast() {
         </footer>
       </main>
     </Unit>
+    </div>
   );
 }

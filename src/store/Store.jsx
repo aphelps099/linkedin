@@ -1,3 +1,4 @@
+import {Header} from '../brand/Header.jsx';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {ArrowUpRight, ArrowRight, X, Minus, Plus} from 'lucide-react';
 import {CATEGORIES, PRODUCTS, bySku, fmt} from './products.js';
@@ -107,10 +108,7 @@ export default function Store(){
 
   return <div className="shop-app">
     <a className="shop-skip" href="#collection">Skip to products</a>
-    <header className="shop-header">
-      <a className="shop-brand" href="../" aria-label="LinkedIn Beats home">LINKEDIN BEATS<span>THE COMPANY STORE</span></a>
-      <nav aria-label="Main navigation"><a href="../#listen">Listen</a><a href="../#roast">Roast my post</a><button onClick={openBag} aria-label={`Open bag, ${cartCount} items`}>Bag <span>({String(cartCount).padStart(2,'0')})</span></button></nav>
-    </header>
+    <Header base="../" active="Store"><button className="cb-header-bag" onClick={openBag} aria-label={`Open bag, ${cartCount} items`}>Bag ({String(cartCount).padStart(2,'0')})</button></Header>
     <div className="shop-announcement">FREE SHIPPING AT $50 <span>·</span> PRINTED ON DEMAND <span>·</span> WORN OFF THE CLOCK</div>
     {notice&&<div className="shop-notice" role="status"><span>{notice==='filed'?'Order filed. Thank you for your contribution to corporate culture.':'Checkout paused. Your bag is right where you left it.'}</span><button onClick={()=>setNotice(null)} aria-label="Dismiss notice"><X size={18}/></button></div>}
     <main>
