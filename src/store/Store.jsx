@@ -135,11 +135,11 @@ export default function Store(){
     {notice&&<div className="shop-notice" role="status"><span>{notice==='filed'?'Order filed. Thank you for your contribution to corporate culture.':'Checkout paused. Your bag is right where you left it.'}</span><button onClick={()=>setNotice(null)} aria-label="Dismiss notice"><X size={18}/></button></div>}
     <main>
       <section className="shop-hero" aria-labelledby="shop-title">
+        <h1 id="shop-title" className="shop-visually-hidden">The company store</h1>
         <div className="shop-hero-art"><img src="../store/linkedin-beats-campaign.webp" width="1424" height="832" fetchpriority="high" alt="LinkedIn Beats campaign: five people in casual clothing in a sunlit parking structure, with the LinkedIn Beats wordmark across the center."/></div>
-        <div className="shop-hero-caption"><div><h1 id="shop-title">The company store</h1><p>Wear your boundaries.</p></div><a href="#collection" className="shop-primary">Explore the collection <ArrowRight size={20} aria-hidden="true"/></a></div>
       </section>
       <section className="shop-collection" id="collection" aria-labelledby="collection-title">
-        <div className="shop-section-head"><h2 id="collection-title" tabIndex="-1">The collection</h2><p>Good things. Questionable office culture.</p></div>
+        <h2 id="collection-title" className="shop-visually-hidden" tabIndex="-1">Products</h2>
         <div className="shop-filter-row"><div className="shop-filters" role="group" aria-label="Filter products">{Object.keys(DEPARTMENTS).map(c=><button key={c} className={c===filter?'is-selected':''} aria-pressed={c===filter} onClick={()=>setFilter(c)}>{c==='All'?'Shop all':c}</button>)}</div><div className="shop-sort"><span className="shop-count" role="status">{items.length} products</span><label htmlFor="shop-sort">Sort by</label><select id="shop-sort" value={sort} onChange={e=>setSort(e.target.value)}><option value="featured">Featured</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="name">Name: A–Z</option></select></div></div>
         <div className="shop-grid">{items.map(p=><article className="shop-product" key={p.sku}>
           <button className={`shop-product-image shop-image-${p.sku}`} onClick={()=>openDetail(p)} aria-label={`View ${p.name}, ${p.previewOnly?'design preview':fmt(p.price)}`}><ProductVisual product={p}/>{p.previewOnly&&<span className="shop-product-tag">Preview</span>}<span className="shop-product-open">View details <Plus size={17} aria-hidden="true"/></span></button>
