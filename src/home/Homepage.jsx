@@ -56,8 +56,10 @@ export default function Homepage(){
         </div>
       </section>
 
+      <section className="pop-listening" aria-labelledby="hits-title">
+      <h2 id="hits-title" className="pop-listening-title">THE CORPORATE HITS.</h2>
       <section id="listen" className={`pop-radio ${state.playing?'is-playing':''}`} aria-label="Circle Back Radio">
-        <div className="pop-radio-meta"><h2><span className="pop-live-dot"/>CIRCLE BACK RADIO</h2><span><span className="pop-now-label">{state.loading?'TUNING IN':state.playing?'NOW PLAYING':'ON THE TURNTABLE'}</span> · {track.title}</span></div>
+        <div className="pop-radio-meta"><h3><span className="pop-live-dot"/>CIRCLE BACK RADIO</h3></div>
         <div className={`pop-lyrics ${state.text.length>35?'is-long':''}`} aria-label={`Lyrics: ${state.text}`}>
           <div aria-hidden="true">{state.text.split(/\s+/).map((word,i)=><React.Fragment key={`${state.text}-${i}`}><span className={i===state.word?'is-current':''}>{word}</span>{' '}</React.Fragment>)}</div>
         </div>
@@ -69,19 +71,22 @@ export default function Homepage(){
             <button className="pop-play" aria-label={state.loading?'Cancel loading':state.playing?'Pause':'Play'} onClick={()=>radio.current?.toggle()}>{state.loading?<LoaderCircle className="pop-spinner"/>:state.playing?<Pause fill="currentColor"/>:<Play fill="currentColor"/>}</button>
             <button className="pop-icon" aria-label="Next track" title="Next track" onClick={()=>radio.current?.next()}><SkipForward fill="currentColor"/></button>
           </div>
+          <div className="pop-current-track"><strong>{track.title}</strong><span>{state.loading?'TUNING IN':state.playing?'NOW PLAYING':'READY WHEN YOU ARE'}</span></div>
           <div className="pop-seek"><time>{formatTime(seconds)}</time><input type="range" min="0" max={track.seconds} step=".1" value={seconds} style={{'--progress':`${seconds/track.seconds*100}%`}} aria-label="Track position" aria-valuetext={`${formatTime(seconds)} of ${formatTime(track.seconds)}`} onChange={e=>setScrub(Number(e.target.value))} onPointerUp={e=>commitSeek(e.currentTarget.value)} onKeyUp={e=>{if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown'].includes(e.key))commitSeek(e.currentTarget.value);}} onBlur={e=>{if(scrub!==null)commitSeek(e.currentTarget.value);}} onPointerCancel={()=>setScrub(null)}/><time>{formatTime(track.seconds)}</time></div>
           <div className="pop-volume"><button className="pop-icon" onClick={mute} aria-label={state.volume?'Mute':'Unmute'}>{state.volume?<Volume2/>:<VolumeX/>}</button><input type="range" min="0" max="1" step=".01" value={state.volume} style={{'--progress':`${state.volume*100}%`}} aria-label="Volume" onChange={e=>radio.current?.volume(e.target.value)}/></div>
         </div>
       </section>
 
       <section className="pop-hits" aria-labelledby="hits-title">
-        <div className="pop-section-head"><div><h2 id="hits-title">THE CORPORATE HITS.</h2><p>Your workday, professionally remixed.</p></div><a className="pop-link" href={studioUrl}>Open the studio <ArrowUpRight size={18}/></a></div>
+
         <ol className="pop-tracklist">{TRACKS.map((item,i)=><li key={item.title}><button className={`pop-track ${i===state.index?'is-selected':''}`} onClick={()=>i===state.index?radio.current?.toggle():radio.current?.play(i)} aria-label={`${i===state.index&&state.playing?'Pause':'Play'} ${item.title}`} aria-current={i===state.index?'true':undefined}>
           <span className="pop-track-number">{String(i+1).padStart(2,'0')}</span>
           <span className="pop-track-symbol" aria-hidden="true">{i===state.index&&state.playing?<span className="pop-equalizer"><i/><i/><i/></span>:<Play size={17} fill="currentColor"/>}</span>
           <span className="pop-track-name">{item.title}<small>{item.genre}</small></span><span className="pop-track-genre">{item.genre}</span><time>{formatTime(item.seconds)}</time>
         </button></li>)}</ol>
-        <div className="pop-track-footnote"><span>5 ORIGINAL MIXES / INFINITE PROFESSIONAL POTENTIAL</span><span>MADE WITH THE CIRCLE BACK PHRASE ORGAN</span></div>
+        <div className="pop-track-footnote"><span>5 ORIGINAL MIXES / ZERO ACTION ITEMS</span><a className="pop-link" href={studioUrl}>Open the studio <ArrowUpRight size={18}/></a></div>
+      </section>
+
       </section>
 
       <section id="roast" className="pop-roast" aria-labelledby="roast-title">
