@@ -5,20 +5,32 @@ body{margin:0;background:#fbf6e8}html{scroll-behavior:smooth;scroll-padding-top:
 .c2-home{--c2-paper:#fbf6e8;--c2-ink:#22241f;--c2-blue:#164be0;--c2-muted:#62675e;color:var(--c2-ink);background:var(--c2-paper);font:400 17px/1.45 C2Hoves,Arial,sans-serif;-webkit-font-smoothing:antialiased}
 .c2-home *{box-sizing:border-box}.c2-home [hidden]{display:none!important}.c2-home :is(h1,h2,h3,p,figure){margin:0}.c2-home :is(button,textarea,input){font:inherit;color:inherit}.c2-home button{cursor:pointer}.c2-home :is(a,button,input,textarea):focus-visible{outline:3px solid #ffb8cb;outline-offset:5px}.c2-home a{color:inherit;text-decoration:none}.c2-home button{border:0;border-radius:0;background:transparent}.c2-home svg{flex-shrink:0;width:20px;height:20px;stroke-width:1.6}.c2-home img{display:block;max-width:100%}.c2-home button:disabled{cursor:wait}.c2-container{width:calc(100% - 96px);max-width:1500px;margin-inline:auto}.c2-sr{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}.c2-skip{position:absolute;left:24px;top:12px;padding:12px 18px;background:#fbf6e8;color:#121212!important;transform:translateY(-200%);z-index:60}.c2-skip:focus{transform:translateY(0)}.c2-text-link{display:inline-flex;align-items:center;justify-content:space-between;gap:13px;padding:4px 0 5px;border-bottom:1px solid currentColor!important;font-size:16px;line-height:1.4}.c2-text-link:hover{color:var(--c2-blue)}
 
+/* The compact welcome emblem uses the LinkedInifier's racing language. */
+.c2-welcome { position: relative; isolation: isolate; overflow: hidden; background: #0b1520; color: #fbf6e8; }
+.c2-welcome::before { content: ''; position: absolute; inset: 0; z-index: -2; background-image: radial-gradient(ellipse at center,#0b1520ed 10%,#0b152060 100%),repeating-conic-gradient(#203144 0% 25%,#0c1825 0% 50%); background-size: auto,8px 8px; }
+.c2-welcome::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: linear-gradient(120deg,transparent 0 16%,#0757ec 16% 43%,transparent 43% 51%,#fbf6e8 51% 58%,transparent 58%) left center / 64px 100% no-repeat,linear-gradient(120deg,transparent 0 16%,#0757ec 16% 43%,transparent 43% 51%,#fbf6e8 51% 58%,transparent 58%) right center / 64px 100% no-repeat; }
+.c2-welcome-inner { min-height: 58px; display: flex; justify-content: space-between; align-items: center; gap: 24px; }
+.c2-welcome p { display: flex; align-items: center; gap: 12px; padding-left: 15px; }
+.c2-welcome p svg { width: 27px; height: 38px; fill: #fff349; }
+.c2-welcome p span { position: relative; font: 400 26px/1.1 Anton,Arial,sans-serif; text-transform: uppercase; letter-spacing: .015em; transform: skewX(-12deg); }
+.c2-welcome p span::after { content: ''; position: absolute; left: 0; right: 0; height: 3px; bottom: -6px; background: #0757ec; }
+.c2-welcome a { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 44px; font-size: 17px; padding-right: 15px; white-space: nowrap; }
+.c2-welcome a:hover { color: #b6dcff; }
+@media(max-width:760px) { .c2-welcome-inner { min-height: 54px; gap: 12px; }.c2-welcome::after { opacity: .6; background-size: 32px 100%; }.c2-welcome p { gap: 7px; padding-left: 0; }.c2-welcome p svg { width: 19px; height: 29px; }.c2-welcome p span { font-size: clamp(18px,3.5vw,23px); }.c2-welcome a { font-size: 14px; padding-right: 0; gap: 5px; }.c2-welcome a svg { width: 18px; height: 18px; } }
+
 /* The choir is the lead artwork; the player stays in the opening viewport. */
 .c2-hero { color: var(--c2-paper); background: #0b4bef; position: relative; isolation: isolate; }
 .c2-hero::before { content: ''; position: absolute; inset: 0; z-index: -1; opacity: .11; pointer-events: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.78' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' opacity='.7' filter='url(%23n)'/%3E%3C/svg%3E"); }
-.c2-hero-inner { display: grid; grid-template-columns: minmax(0, .34fr) minmax(0, .66fr); gap: clamp(30px, 2.65vw, 40px); align-items: center; min-height: 475px; padding-block: clamp(35px, 3.3vw, 50px) clamp(28px, 2vw, 32px); }
+.c2-hero::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: linear-gradient(132deg,transparent 0 69%,#002da633 69% 77%,transparent 77% 83%,#a4d1ff0a 83% 91%,transparent 91%),repeating-linear-gradient(132deg,#ffffff03 0 1px,transparent 1px 5px); mask-image: linear-gradient(#000,transparent 72%); -webkit-mask-image: linear-gradient(#000,transparent 72%); }
+.c2-hero-inner { display: grid; grid-template-columns: minmax(0, .34fr) minmax(0, .66fr); gap: clamp(30px, 2.65vw, 40px); align-items: center; min-height: 450px; padding-block: 32px 28px; }
 .c2-hero-copy, .c2-choir { min-width: 0; }
 .c2-hero h1 { font: 400 clamp(64px, 7.9vw, 126px)/.91 Anton, Arial, sans-serif; letter-spacing: -.025em; text-transform: uppercase; }
 .c2-hero h1 > span { display: block; }
 .c2-hero h1 > .c2-repeat { color: #bfd8f5; }
 .c2-hero-copy > p { font-size: clamp(18px, 1.52vw, 24px); line-height: 1.3; max-width: none; margin-top: 16px; }
 .c2-copy-break { display: none; }
-.c2-home .c2-hero-listen { display: inline-flex; align-items: center; justify-content: center; gap: 17px; margin-top: 16px; min-height: clamp(50px, 3.7vw, 58px); min-width: min(20vw, 304px); padding: 13px 22px; background: #fbf6e8; color: #111410; font-size: clamp(16px, 1.3vw, 20px); font-weight: 600; line-height: 1.3; }
-.c2-home .c2-hero-listen:hover { background: #dce9ff; }
-.c2-hero-listen svg { width: 23px; height: 23px; }
-.c2-lyrics { font: 600 clamp(23px, 2.4vw, 36px)/1.18 C2Hoves, Arial, sans-serif; letter-spacing: -.03em; min-height: 1.2em; display: flex; align-items: center; justify-content: center; text-align: center; margin-bottom: 30px; text-wrap: balance; }
+.c2-lyrics { font: 600 clamp(23px, 2.4vw, 36px)/1.18 C2Hoves, Arial, sans-serif; letter-spacing: -.03em; min-height: 1.2em; display: flex; align-items: center; justify-content: center; text-align: center; margin-bottom: 22px; text-wrap: balance; opacity: 0; transition: opacity .18s; }
+.c2-lyrics.is-singing { opacity: 1; }
 .c2-lyrics span { color: #b2c9ff; opacity: .85; }
 .c2-lyrics.is-singing span { opacity: .6; }
 .c2-lyrics .is-current { color: #fff; opacity: 1 !important; }
@@ -54,21 +66,18 @@ body{margin:0;background:#fbf6e8}html{scroll-behavior:smooth;scroll-padding-top:
 .c2-spin { animation: c2-spin 1s linear infinite; }
 @keyframes c2-spin { to { transform: rotate(360deg); } }
 @media (min-width: 1600px) {
-  .c2-hero-inner { min-height: 515px; }
+  .c2-hero-inner { min-height: 485px; }
 }
 @media (max-width: 1250px) {
   .c2-container { width: calc(100% - 64px); }
   .c2-hero-inner { gap: 30px; min-height: 440px; }
   .c2-hero-copy > p { font-size: clamp(16px, 1.52vw, 19px); }
-  .c2-home .c2-hero-listen { font-size: 15px; padding-inline: 16px; }
   .c2-portrait-title { font-size: 13px; }
 }
 @media (max-width: 1020px) {
   .c2-portrait-meter { height: 12px; gap: 2px; margin-right: 5px; }
   .c2-portrait-meter i { width: 3px; }
   .c2-hero-inner { min-height: 405px; gap: 25px; grid-template-columns: minmax(0, .8fr) minmax(0, 1.6fr); }
-  .c2-hero-listen svg { width: 17px; height: 17px; }
-  .c2-home .c2-hero-listen { min-width: 0; gap: 10px; }
   .c2-hero h1 { font-size: clamp(54px, 6.7vw, 69px); }
   .c2-hero-copy > p { font-size: 16px; }
   .c2-lyrics { font-size: 24px; }
@@ -79,9 +88,8 @@ body{margin:0;background:#fbf6e8}html{scroll-behavior:smooth;scroll-padding-top:
   .c2-container { width: calc(100% - 40px); }
   .c2-hero-inner { grid-template-columns: 1fr; padding-block: 30px; gap: 30px; }
   .c2-hero-copy { display: grid; grid-template-columns: 1fr .8fr; align-items: end; gap: 0 24px; }
-  .c2-hero h1 { grid-row: 1/3; font-size: clamp(56px, 9.4vw, 72px); }
-  .c2-hero-copy > p { margin: 0 0 20px; align-self: end; max-width: 230px; font-size: 17px; }
-  .c2-home .c2-hero-listen { font-size: 14px; align-self: start; justify-self: start; margin: 0; padding-inline: 14px; }
+  .c2-hero h1 { grid-row: auto; font-size: clamp(56px, 9.4vw, 72px); }
+  .c2-hero-copy > p { margin: 0; align-self: end; max-width: 230px; font-size: 17px; }
   .c2-lyrics { font-size: 26px; min-height: 1.2em; margin-bottom: 23px; }
   .c2-portrait-title { font-size: 13px; }
   .c2-portrait-action { width: 28px; height: 28px; right: 8px; bottom: 10px; }
@@ -90,7 +98,6 @@ body{margin:0;background:#fbf6e8}html{scroll-behavior:smooth;scroll-padding-top:
   .c2-hero-copy { display: block; }
   .c2-hero h1 { font-size: clamp(60px, 15vw, 78px); line-height: .96; }
   .c2-hero-copy > p { margin: 18px 0 0; max-width: 100%; font-size: 16px; }
-  .c2-home .c2-hero-listen { margin-top: 20px; min-height: 46px; min-width: 0; }
   .c2-hero-inner { gap: 26px; padding-top: 28px; }
   .c2-lyrics { font-size: 23px; margin-bottom: 20px; min-height: 2.2em; }
   .c2-portraits { gap: 7px; }

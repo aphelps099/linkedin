@@ -1,10 +1,11 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {ArrowRight, X, Minus, Plus, ShoppingBag, Pause, Play} from 'lucide-react';
+import {ArrowRight, X, Minus, Plus, ShoppingBag} from 'lucide-react';
 import {PRODUCTS, bySku, fmt} from './products.js';
 import {ProductVisual, isDesignPreview} from './ProductVisual.jsx';
 import {ConceptHeader} from '../home-2/ConceptHeader.jsx';
 import {ConceptFooter} from '../home-2/ConceptFooter.jsx';
 import {FirstInLine} from './FirstInLine.jsx';
+import {StoreHero} from './StoreHero.jsx';
 import '../home-2/header.css';
 import '../home-2/footer.css';
 
@@ -63,7 +64,6 @@ function Quantity({value, max=99, onChange, label='Quantity'}){
 }
 
 export default function Store(){
-  const [heroPaused,setHeroPaused] = useState(false);
   const [filtersOpen,setFiltersOpen] = useState(false);
   const [filter,setFilter] = useState('All'), [sort,setSort] = useState('featured'), [sel,setSel] = useState(null);
   const [size,setSize] = useState(null), [qty,setQty] = useState(1);
@@ -131,13 +131,7 @@ export default function Store(){
     <ConceptHeader base="../" homeSectionBase="../" active="Shop"><button className="shop-header-bag" onClick={openBag} aria-label={`Open bag, ${cartCount} items`}><ShoppingBag size={21} aria-hidden="true"/><span>Bag</span><span className="shop-bag-count">{cartCount}</span></button></ConceptHeader>
     {notice&&<div className="shop-notice" role="status"><span>{notice==='filed'?'Order filed. Thank you for your contribution to corporate culture.':'Checkout paused. Your bag is right where you left it.'}</span><button onClick={()=>setNotice(null)} aria-label="Dismiss notice"><X size={18}/></button></div>}
     <main>
-      <section className="shop-hero" aria-labelledby="shop-title">
-        <div className="shop-hero-art">
-          <img className="shop-hero-photo" src="../store/linkedin-beats-store-campaign.webp" width="1536" height="897" fetchpriority="high" style={{animationPlayState:heroPaused?'paused':'running'}} alt="Five people wearing LinkedIn Beats shirts, a pink sweatshirt and a Circle Back cap in a sunlit parking structure."/>
-          <h1 id="shop-title" className="shop-hero-lockup"><img src="../home-2/brand/wordmark-horizontal.svg" width="1087" height="104" alt="LinkedIn Beats"/><span>Store</span></h1>
-          <button type="button" className="shop-hero-motion" onClick={()=>setHeroPaused(paused=>!paused)} aria-label={heroPaused?'Resume hero animation':'Pause hero animation'}>{heroPaused?<Play size={16} fill="currentColor" aria-hidden="true"/>:<Pause size={16} fill="currentColor" aria-hidden="true"/>}</button>
-        </div>
-      </section>
+      <StoreHero/>
       <section className="shop-collection" id="collection" aria-labelledby="collection-title">
         <header className="shop-collection-heading"><p className="shop-mobile-only">Shop</p><h2 id="collection-title" tabIndex="-1">The collection</h2></header>
         <button className="shop-mobile-filter-toggle" aria-expanded={filtersOpen} aria-controls="shop-filter-options" onClick={()=>setFiltersOpen(open=>!open)}><span>Filter & sort</span><span aria-hidden="true">{filtersOpen?'−':'+'}</span></button>
