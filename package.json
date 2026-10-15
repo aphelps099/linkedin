@@ -13,6 +13,7 @@
     "check:store": "node scripts/check-store.mjs",
     "check:home": "node scripts/check-home.mjs",
     "check:studio": "node scripts/check-studio.mjs",
+    "check:roast": "node scripts/check-roast.mjs",
     "check:lesson": "node scripts/check-lesson.mjs"
   },
   "dependencies": {
