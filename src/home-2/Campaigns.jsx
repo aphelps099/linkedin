@@ -4,17 +4,26 @@ import {ArrowRight, ArrowUpRight, Check, Copy} from 'lucide-react';
 import {linkedinify} from '../lessons/generator.js';
 
 const MOMENTS = [
-  'I made a cup of coffee. It was pretty good.',
+  'I made a cup of coffee.\nIt was pretty good.',
   'I sent an email. Someone replied.',
   'Our meeting ended five minutes early.',
   'I brought my lunch to work. It was a sandwich.',
 ];
 
+// Match the approved opening example. All submitted inputs still use the real
+// composition engine; copy and the studio handoff always receive the full post.
+const OPENING_POST = [
+  'Humbled and honored to share a small\nbut meaningful milestone.',
+  'Today, I made a cup of coffee.',
+  'A reminder that growth starts with\nshowing up.',
+  ...linkedinify(MOMENTS[0], 927).split(/\n\n/).slice(3),
+].join('\n\n');
+
 // The tool keeps its own state, independent of the radio's animation frames.
 export const Campaigns = memo(function Campaigns({base='/'}) {
   const result = useRef(null), exampleIndex = useRef(0);
   const [ordinary, setOrdinary] = useState(MOMENTS[0]);
-  const [output, setOutput] = useState(() => linkedinify(MOMENTS[0], 927));
+  const [output, setOutput] = useState(OPENING_POST);
   const [copyStatus, setCopyStatus] = useState('');
   const [expanded, setExpanded] = useState(false);
   const [approval, setApproval] = useState(0);
@@ -73,9 +82,10 @@ export const Campaigns = memo(function Campaigns({base='/'}) {
           </form>
         </div>
         <div className="c2-announcement-stage">
-          <div key={approval} className={`c2-office-robot ${approval&&output?'is-approving':''}`} aria-hidden="true"><img src={`${base}home-2/office-robot.webp`} width="1448" height="1086" alt="" loading="lazy" decoding="async"/></div>
+          <div key={`robot-${approval}`} className={`c2-office-robot ${approval&&output?'is-approving':''}`} aria-hidden="true"><img src={`${base}home-2/office-robot.webp`} width="1448" height="1086" alt="" loading="lazy" decoding="async"/></div>
+          <div key={`stamp-${approval}`} className={`c2-office-robot c2-robot-stamp-front ${approval&&output?'is-approving':''}`} aria-hidden="true"><img src={`${base}home-2/office-robot.webp`} width="1448" height="1086" alt="" loading="lazy" decoding="async"/></div>
           <div className="c2-announcement">
-          <div className="c2-announcement-heading"><span>For immediate release</span>{output&&<span key={approval} className={`c2-approval-stamp ${approval?'is-stamping':''}`} aria-hidden="true">Approved</span>}</div>
+          <div className="c2-announcement-heading"><span>For immediate release</span>{output&&<span key={approval} className={`c2-approval-stamp ${approval?'is-stamping':''}`} aria-hidden="true"><img src={`${base}home-2/approved-stamp.svg`} alt="" width="228" height="80"/></span>}</div>
           <div aria-live="polite" aria-atomic="true">
             {output ? <div className="c2-generated">
               <div className="c2-output-text" id="c2-output-text" ref={result}>{visibleParagraphs.map((paragraph,i)=><p className={paragraph.startsWith('#')?'c2-hashtags':undefined} key={i}>{paragraph}</p>)}</div>
