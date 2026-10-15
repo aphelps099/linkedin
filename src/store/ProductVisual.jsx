@@ -1,11 +1,11 @@
 import React from 'react';
 import './product-visual.css';
 
-export const isDesignPreview = product => ['CS-103','CS-201','CS-301','CS-302','CS-401','CS-402'].includes(product.sku);
+export const isDesignPreview = product => product.previewOnly || ['CS-103','CS-201','CS-301','CS-302','CS-401','CS-402'].includes(product.sku);
 
 export function ProductVisual({product, base='../', eager=false}){
   const src=product.img ? `${base}store/${product.img}` : product.sku==='CS-103' ? `${base}store/cs-103.webp` : product.sku==='CS-201' ? `${base}home/thought-leader-cap.webp` : null;
-  if(src) return <img className="merch-photo" src={src} alt={product.name+(isDesignPreview(product)?' — design preview':'')} loading={eager?'eager':'lazy'} width="1024" height="1024"/>;
+  if(src) return <img className={`merch-photo ${product.previewOnly?'merch-photo-preview':''}`} src={src} alt={product.name+(isDesignPreview(product)?' — design preview':'')} loading={eager?'eager':'lazy'} width="1024" height="1024"/>;
   return <div className={`merch-art merch-art-${product.sku}`} role="img" aria-label={`${product.name} — design preview`}>
     {product.sku==='CS-302' && <div className="merch-approval"><span>APPROVED — HR</span></div>}
     {product.sku==='CS-301' && <div className="merch-sheet"><span className="merch-sheet-label">THE OFFICE ESSENTIALS / CB®</span><div>{['↗','▮','®','↻','✳','→','+','↔','✓'].map((glyph,i)=><span key={i}>{glyph}</span>)}</div><small>APPLY WHERE APPROPRIATE.</small></div>}

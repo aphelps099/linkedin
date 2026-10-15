@@ -1,5 +1,5 @@
 // Company Store checks — run with: node scripts/check-store.mjs
-// 1. Catalog integrity: nine SKUs, four categories, sized shirts, honest prices.
+// 1. Catalog integrity: twelve SKUs, six categories, sized shirts, honest prices.
 // 2. Cart pricing is server-side: carts are priced from the catalog, never the client.
 // 3. The ticker's promise: free shipping at $50, flat rate below it.
 // 4. Webhook signatures verify, and tampered or stale payloads do not.
@@ -13,13 +13,13 @@ const fail = msg => { failures++; console.error('FAIL ' + msg); };
 const expectThrow = (fn, why) => { try{ fn(); fail(why); }catch{ /* correct */ } };
 
 // --- catalog ---
-if(PRODUCTS.length !== 9) fail(`expected 9 SKUs, found ${PRODUCTS.length}`);
+if(PRODUCTS.length !== 12) fail(`expected 12 SKUs, found ${PRODUCTS.length}`);
 if(new Set(PRODUCTS.map(p => p.sku)).size !== PRODUCTS.length) fail('duplicate SKUs');
 const cats = new Set(PRODUCTS.map(p => p.cat));
-if(cats.size !== 4 || [...cats].some(c => !CATEGORIES.includes(c))) fail('categories do not match the filter chips');
+if(cats.size !== 6 || [...cats].some(c => !CATEGORIES.includes(c))) fail('categories do not match the filter chips');
 for(const p of PRODUCTS){
   if(!/^CS-\d{3}$/.test(p.sku)) fail(`malformed SKU: ${p.sku}`);
-  if(!(p.price > 0) || Math.round(p.price * 100) !== p.price * 100) fail(`price is not whole cents: ${p.sku}`);
+  if(!p.previewOnly && (!(p.price > 0) || Math.round(p.price * 100) !== p.price * 100)) fail(`price is not whole cents: ${p.sku}`);
   if(p.cat === 'Shirts' && (!p.sizes || p.sizes.length !== 4)) fail(`shirt without S–XL sizes: ${p.sku}`);
   if(p.cat !== 'Shirts' && p.sizes) fail(`unexpected sizes on ${p.sku}`);
   if(!p.desc || !p.ph || !p.specs?.length) fail(`incomplete product copy: ${p.sku}`);
@@ -48,7 +48,7 @@ const big = buildCheckoutParams(normalizeCart([{ sku: 'CS-101', size: 'L', qty: 
 if(big.get('shipping_options[0][shipping_rate_data][fixed_amount][amount]') !== '0') fail(`$56 order was not shipped free (threshold ${FREE_SHIPPING_CENTS})`);
 if(!big.get('line_items[0][price_data][product_data][name]').includes('— L')) fail('size missing from the line item name');
 
-const everything = normalizeCart(PRODUCTS.map(p => ({ sku: p.sku, size: p.sizes ? 'XL' : null, qty: 9 })));
+const everything = normalizeCart(PRODUCTS.filter(p=>!p.previewOnly).map(p => ({ sku: p.sku, size: p.sizes ? 'XL' : null, qty: 9 })));
 const full = buildCheckoutParams(everything, origin, {});
 const meta = full.get('metadata[cart]');
 if(meta.length > 500) fail(`metadata cart overflows Stripe's 500-char limit (${meta.length})`);
@@ -87,6 +87,11 @@ if(order.send_shipping_notification !== true) fail('shipping notification not re
 
 const partial = buildPrintifyOrder({ session, skuMap: { 'CS-101': skuMap['CS-101'] } });
 if(partial.order !== null || !partial.unmapped.includes('CS-301')) fail('unmapped SKU not refused');
+
+for(const p of PRODUCTS.filter(p=>p.previewOnly)){
+  if(p.price!==null || !p.img) fail('Preview must have image and no price: '+p.sku);
+  expectThrow(()=>normalizeCart([{sku:p.sku,qty:1}]),'Preview accepted at checkout: '+p.sku);
+}
 
 if(failures){ console.error(`${failures} failure(s)`); process.exit(1); }
 console.log('Company Store checks pass — the form is in order.');
