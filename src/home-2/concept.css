@@ -14,11 +14,6 @@ body{margin:0;background:#f6f4ed}html{scroll-behavior:smooth;scroll-padding-top:
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.c2-home *, .c2-home *:before,.c2-home *:after{animation:none!important;transition:none!important}}.c2-still .c2-wave i{transition:none}
 
 /* Shared masthead; concept-only details leave the current homepage intact. */
-.c2-home .cb-header { background: var(--c2-paper); }
-.c2-home .cb-header-directory { background: var(--c2-paper); }
-.c2-home .cb-header-directory > a:hover,
-.c2-home .cb-header-directory > a:focus-visible { background: #d7e4f7; }
-.c2-home .cb-header-radio svg { width: 22px; height: 22px; }
 .c2-home .c2-motion-toggle {
   display: flex;
   align-items: center;
@@ -88,7 +83,6 @@ body{margin:0;background:#f6f4ed}html{scroll-behavior:smooth;scroll-padding-top:
   .c2-swatch { display: none; }
 }
 @media (max-width: 520px) {
-  .c2-home .cb-header-radio svg { width: 18px; height: 18px; }
   .c2-section-head { display: block; }
   .c2-section-head h2 { font-size: 46px; }
   .c2-store-intro { max-width: none; margin-top: 26px; }
