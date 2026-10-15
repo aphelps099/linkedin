@@ -483,3 +483,7 @@ Validation: `npm run check:studio` checks all six arrangements, independent MIDI
 ## Homepage promotion — October 15, 2026
 
 The approved Home 2 design is live at `/`: singing portraits, Circle Back Radio, the black company-store preview, LinkedInifier and graphite certification footer. `src/main.jsx` renders `src/home-2/ConceptHome.jsx`. The previous homepage remains available at `/v2/` and in source history. Production `/home-2/` and `/home-2/index.html` redirect to `/`; asset URLs under `/home-2/` remain valid. The root is indexable, with canonical metadata, the approved SVG favicon and hero/font preloads. Store home links point directly to the root. Earlier music/shop/footer anchors and shared beat links are preserved.
+
+### LinkedInifier choices and current navigation
+
+`/lessons/` uses the same approved wordmark and header menu as the homepage, with LinkedInifier marked current. The compact intro has a confident title and large post-type buttons. Choice fields are directly selectable capsule buttons with pressed states, keyboard focus, and wrapping mobile layouts. New visits start with empty answers; samples load only through **Try an example**. The Start fresh link and status strip are removed. The oversized Mad Libs statement, blue output panel, LinkedInification dial, category/type draft preservation, copy, and studio handoff remain. TT Hoves and GT America Mono align the secondary typography with the site.
