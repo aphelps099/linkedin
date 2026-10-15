@@ -5,7 +5,7 @@
 }
 .c2-footer-main {
   display: grid;
-  grid-template-columns: minmax(0, .85fr) minmax(0, 1.75fr) minmax(240px, 1fr);
+  grid-template-columns: minmax(0, .85fr) minmax(0, 1.75fr) 220px;
   align-items: start;
   gap: clamp(28px, 4vw, 60px);
   padding-bottom: 30px;
@@ -25,12 +25,12 @@
   display: flex;
   align-items: start;
   justify-content: center;
-  gap: clamp(10px, 1.1vw, 16px);
+  gap: 10px;
   list-style: none;
   padding: 0;
   margin: 0;
 }
-.c2-footer-marks li { flex: 1 1 0; min-width: 0; max-width: 100px; }
+.c2-footer-marks li { flex: 0 1 64px; min-width: 0; max-width: 64px; }
 .c2-footer-seal { position: relative; display: block; width: 100%; aspect-ratio: 300 / 444; }
 .c2-footer-seal img { display: block; width: 100%; height: auto; }
 /* The SVG's transparent negative space confines the metal to the ink. */
@@ -114,7 +114,7 @@
   .c2-footer-main { grid-template-columns: minmax(230px, 1fr) minmax(0, 1.7fr); gap: 25px 40px; }
   .c2-footer-identity { grid-column: 1; grid-row: 1; }
   .c2-footer-fineprint { grid-column: 2; grid-row: 1 / 3; }
-  .c2-footer-assurance { grid-column: 1; grid-row: 2; max-width: 290px; }
+  .c2-footer-assurance { grid-column: 1; grid-row: 2; max-width: 220px; }
   .c2-footer-assurance p { margin-top: 12px; }
 }
 @media (max-width: 650px) {
@@ -126,7 +126,7 @@
   .c2-footer-identity p { margin: 0; font-size: 12px; }
   .c2-footer-fineprint h2 { font-size: 11px; }
   .c2-footer-fineprint p { font-size: 12px; }
-  .c2-footer-assurance { width: 100%; max-width: 310px; }
+  .c2-footer-assurance { width: 100%; max-width: 220px; }
   .c2-footer-bottom { flex-wrap: wrap; gap: 4px 15px; }
   .c2-footer-bottom > p { font-size: 11px; }
   .c2-footer-bottom > p span { display: none; }
