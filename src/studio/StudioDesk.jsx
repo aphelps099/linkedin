@@ -1,3 +1,4 @@
+import {Header} from '../brand/Header.jsx';
 import React, {useEffect, useRef, useState} from 'react';
 import {Play,Pause,Square,ArrowUpRight,Shuffle,Download,Volume2} from 'lucide-react';
 import {CBAudio,CHARACTERS} from '../audio.js';
@@ -28,7 +29,7 @@ export function StudioDesk({playing,pos,tempo,grooveId,song,phrases,armed,onPhra
   useEffect(()=>{if(remixOpen)remixRef.current?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});},[remixOpen]);
   return <div className="desk-page">
     <a className="desk-skip" href="#mixing-desk">Skip to mixing desk</a>
-    <header className="desk-site-header"><a className="desk-brand" href="../">LINKEDIN BEATS<span>THE STUDIO</span></a><nav aria-label="Main navigation"><a href="../lessons/">LinkedIn Lessons</a><a href="../store/">The company store</a></nav></header>
+    <Header base="../" active="Studio"/>
     <main>
       <div className="desk-intro"><div><span className="desk-micro">CIRCLE BACK® / PROFESSIONAL AUDIO EQUIPMENT</span><h1>MAKE SOME PROFESSIONAL NOISE.</h1></div><p>Select a groove. Hit a phrase.<br/>Take it entirely too far.</p></div>
       <section className="desk-grooves" aria-labelledby="grooves-title"><div className="desk-section-line"><h2 id="grooves-title">01 / PICK YOUR MEETING CADENCE</h2><span>SIX ORIGINAL GROOVES. ZERO ACTION ITEMS.</span></div><div className="desk-groove-grid">{GROOVES.map((g,i)=><button key={g.id} className={grooveId===g.id?'is-selected':''} aria-pressed={grooveId===g.id} onClick={()=>onGroove(g.id)}><span className="desk-groove-no">0{i+1}</span><span><strong>{g.name}</strong><small>{g.genre}</small></span><span className="desk-groove-bpm">{g.bpm}<small>BPM</small></span></button>)}</div></section>

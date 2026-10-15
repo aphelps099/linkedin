@@ -1,3 +1,4 @@
+import {Header} from '../brand/Header.jsx';
 import React from 'react';
 import { Button } from '../components/controls/Button.jsx';
 import { byId } from './categories.js';
@@ -189,7 +190,7 @@ export default function Lessons(){
   const fresh=()=>{setDrafts(d=>({...d,[catId]:{...DEFAULT_ANSWERS[catId]}}));setSubmission(null);setView('form');setSettings({level:4,seed:newSeed(),flags:{}});};
   return <div className="ll-app">
     <a className="ll-skip" href="#lessons-main">Skip to the form</a>
-    <header className="ll-header"><a className="ll-brand" href="../">LINKEDIN BEATS<span>LINKEDIN LESSONS™</span></a><nav aria-label="Main navigation"><a href="../#listen">Listen</a><a href="../studio/">The studio ↗</a><a href="../roast/">Roast my post</a></nav></header>
+    <Header base="../" active="Lessons"/>
     <main id="lessons-main" ref={headingRef} tabIndex={-1}>
       {view==='form'?<Intake key={catId} catId={catId} answers={drafts[catId]} onPick={setCatId} onChange={answers=>setDrafts(d=>({...d,[catId]:answers}))} onSubmit={onDone}/>:<div className="ll-result"><span className="ll-kicker">FILED / DEPARTMENT OF PERSONAL BRANDING</span><Result catId={submission.catId} answers={submission.answers} narrow={narrow} settings={settings} setSettings={setSettings} onHome={fresh} onReinterview={()=>setView('form')}/></div>}
     </main>

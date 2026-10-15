@@ -1,5 +1,6 @@
+import {Header} from '../brand/Header.jsx';
 import React, {useEffect, useRef, useState} from 'react';
-import {ArrowUpRight, Play, Pause, SkipBack, SkipForward, Shuffle, Volume2, VolumeX, Menu, X, LoaderCircle} from 'lucide-react';
+import {ArrowUpRight, Play, Pause, SkipBack, SkipForward, Shuffle, Volume2, VolumeX, LoaderCircle} from 'lucide-react';
 import {createRadio} from './radio.js';
 import {TRACKS, LINES, formatTime, siteBase} from './tracks.js';
 import {PRODUCTS} from '../store/products.js';
@@ -13,7 +14,7 @@ const initial={index:0,playing:false,loading:false,elapsed:0,volume:.8,shuffle:f
 
 export default function Homepage(){
   const base=siteBase(), toolsBase=import.meta.env.VITE_TOOL_BASE_URL || base, studioUrl=import.meta.env.VITE_STUDIO_URL || `${toolsBase}studio/`, radio=useRef(null), lastVolume=useRef(.8);
-  const [state,setState]=useState(initial), [menu,setMenu]=useState(false), [post,setPost]=useState('');
+  const [state,setState]=useState(initial), [post,setPost]=useState('');
   const [scrub,setScrub]=useState(null);
   const track=TRACKS[state.index];
   const seconds=scrub===null?state.elapsed:scrub;
@@ -40,13 +41,7 @@ export default function Homepage(){
   const commitSeek=value=>{setScrub(null);radio.current?.seek(value);};
   return <div className="pop-home">
     <a className="pop-skip" href="#listen">Skip to music player</a>
-    <header className="pop-header">
-      <a className="pop-brand" href={base} aria-label="LinkedIn Beats home">LINKEDIN BEATS<span>BY CIRCLE BACK</span></a>
-      <button className="pop-menu" aria-label={menu?'Close navigation':'Open navigation'} aria-expanded={menu} aria-controls="pop-nav" onClick={()=>setMenu(!menu)}>{menu?<X/>:<Menu/>}</button>
-      <nav id="pop-nav" className={menu?'is-open':''} aria-label="Main navigation" onClick={()=>setMenu(false)}>
-        <a href="#listen">Listen</a><a href="#roast">Roast my post</a><a href="#store">The company store</a><a href="#about">About</a>
-      </nav>
-    </header>
+    <Header base={base} active="Listen" onRadio={()=>radio.current?.toggle()} playing={state.playing} loading={state.loading}/>
     <main>
       <section className="pop-hero" aria-labelledby="hero-title">
         <div className="pop-hero-copy">
