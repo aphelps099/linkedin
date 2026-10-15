@@ -93,6 +93,7 @@ export default defineConfig({
         // Static-host fallback for the former concept route; production redirects to /.
         home2: fileURLToPath(new URL('./home-2/index.html', import.meta.url)),
         studio: fileURLToPath(new URL('./studio/index.html', import.meta.url)),
+        studio2: fileURLToPath(new URL('./studio-2/index.html', import.meta.url)),
         // LinkedIn Lessons — the guided post generator, served at /lessons/
         lessons: fileURLToPath(new URL('./lessons/index.html', import.meta.url)),
         // Roast My LinkedIn — the inspection office, served at /roast/
