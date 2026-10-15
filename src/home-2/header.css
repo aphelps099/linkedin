@@ -1,6 +1,6 @@
 .c2-header { position: relative; z-index: 50; background: #f5f1e7; color: #11110e; }
-.c2-header-row { position: relative; display: flex; align-items: center; gap: clamp(25px, 2.7vw, 44px); min-height: 106px; padding-block: 24px; }
-.c2-header-brand { display: block; flex: 0 0 auto; width: clamp(280px, 28vw, 410px); }
+.c2-header-row { position: relative; display: flex; align-items: center; gap: clamp(20px, 2.3vw, 36px); min-height: 94px; padding-block: 19px; }
+.c2-header-brand { display: block; flex: 0 0 auto; width: clamp(260px, 25vw, 370px); }
 .c2-header-brand picture, .c2-header-brand img { display: block; width: 100%; height: auto; }
 .c2-header-links { display: flex; align-items: center; justify-content: flex-end; gap: clamp(24px, 2.7vw, 42px); margin-left: auto; }
 .c2-header-links a { display: inline-flex; align-items: center; min-height: 48px; white-space: nowrap; font-size: 18px; font-weight: 600; letter-spacing: -.025em; }
@@ -21,6 +21,13 @@
 .c2-header-directory a:hover { color: #164be0; background: #e7e8e2; }
 .c2-home .c2-header :is(a, button):focus-visible { outline: 3px solid #164be0; outline-offset: 5px; }
 @media (max-width: 1150px) {
+  .c2-header-links { gap: 20px; }
+  .c2-header-links a { font-size: 16px; }
+  .c2-header-actions { gap: 20px; }
+  .c2-home .c2-header-radio { min-width: 134px; font-size: 15px; padding-inline: 16px; }
+  .c2-home .c2-header-menu { min-width: 94px; font-size: 19px; gap: 12px; }
+}
+@media (max-width: 1000px) {
   .c2-header-links { display: none; }
   .c2-header-actions { margin-left: auto; }
   .c2-header-brand { width: 340px; }
