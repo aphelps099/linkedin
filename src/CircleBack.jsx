@@ -136,7 +136,7 @@ function useNarrow(bp = 760){
   return narrow;
 }
 
-export default function CircleBack(){
+export default function CircleBack({stagePreview=false}){
   const [initialGroove] = React.useState(()=>createGroove('reply-all'));
   const [grooveId,setGrooveId] = React.useState('reply-all');
   const [advanced,setAdvanced] = React.useState(false);
@@ -162,7 +162,7 @@ export default function CircleBack(){
   const [character, setCharacter] = React.useState('boardroom');
   const [selRow, setSelRow] = React.useState(0);
   const [loops, setLoops] = React.useState(4);
-  const [studio, setStudio] = React.useState(true);
+  const [studio, setStudio] = React.useState(!stagePreview);
   const [audioDrawer, setAudioDrawer] = React.useState(false);
   const [aboutOpen, setAboutOpen] = React.useState(false);
   const [band, setBand] = React.useState(true);
@@ -195,7 +195,7 @@ export default function CircleBack(){
     pattern: rack.pattern, samples: rack.samples, voxRow, patLen, armed, tempo, sinc, deliv, decay, rec, playing,
     pos, tickerText: ticker, voices: VOICES, voxCodes, exporting: !!exp, phrases: PHRASES,
     song, energy, section: SECTIONS[energy], studio, band, remix, voxLocked,
-    glass: !studio,
+    glass: !studio, stagePreview,
   });
 
   React.useEffect(()=>{
@@ -950,10 +950,19 @@ export default function CircleBack(){
     onRecord={()=>{CBAudio.unlock();if(!rec){setVoxLocked(false);setPlaying(true);}setRec(r=>!r);}}
     onDrum={i=>{const d=DRUMS[i];if(!d)return;CBAudio.unlock();CBAudio.trigger(d.id,1);const r=ref.current;if(r.rec&&r.playing&&r.lastStep!==undefined)setRack(rk=>{const p=rk.pattern.map(row=>[...row]);p[i][r.lastStep]=2;return {...rk,pattern:p};});}}/>;
 
-  if(!studio) return <div style={{position:'relative',minHeight:'100vh',background:'var(--blue)',color:'#fff',fontFamily:'var(--sans)',
+  if(!studio) return <div className={stagePreview?'stage2':undefined} style={{position:'relative',minHeight:'100vh',background:'var(--blue)',color:'#fff',fontFamily:'var(--sans)',
     padding: narrow ? '14px 14px 26px' : '20px 26px 30px',boxSizing:'border-box',display:'flex',flexDirection:'column',gap:narrow?12:16,
     isolation:'isolate'}}>
     <Backdrop stateRef={ref} focusRef={canvasRef}/>
+    {stagePreview ? <header className="stage2-header">
+      <a href="../" aria-label="LinkedIn Beats home"><img src="../home-2/brand/wordmark-horizontal.svg" alt="LinkedIn Beats"/></a>
+      <span className="stage2-label">Studio</span>
+      <nav aria-label="Studio navigation"><button onClick={()=>setAudioDrawer(true)}>Mix <Settings size={17}/></button><details onKeyDown={e=>{if(e.key==='Escape'){e.currentTarget.open=false;e.currentTarget.querySelector('summary').focus();}}}><summary>Menu <span aria-hidden="true">☰</span></summary><div>
+        <a href="../">Home</a><a href="../lessons/">LinkedInifier</a><a href="../store/">Shop</a>
+        <button onClick={()=>{setStudio(true);setAdvanced(false);}}>Mixing desk ↗</button>
+        <button onClick={()=>setRemixOpen(o=>!o)}>{remixOpen?'Close remix':'Build your remix'}</button>
+      </div></details></nav>
+    </header> : <>
     <div style={{position:'relative',zIndex:1,display:'flex',justifyContent:'space-between',alignItems:'center',gap:14,flexWrap:'wrap'}}>
       <span style={{display:'inline-flex',alignItems:'baseline',gap:12,flexWrap:'wrap'}}>
         <span style={{fontSize:narrow?18:22,fontWeight:700,letterSpacing:'-.02em'}}>Circle Back<sup style={{fontSize:9,verticalAlign:10}}>®</sup></span>
@@ -1001,6 +1010,7 @@ export default function CircleBack(){
         </Button>
       </div>
     </div>
+    </>}
     {aboutOpen && <div
       role="dialog"
       aria-label="About LinkedIn Training"
@@ -1041,14 +1051,24 @@ export default function CircleBack(){
     {remixOpen && <div style={{position:'relative',zIndex:1}}>
       <RemixPanel narrow={narrow} result={remix} initial={handoff} onRemix={buildRemix} onClose={()=>setRemixOpen(false)}/>
     </div>}
-    <div style={{position:'relative',zIndex:1,flex:1,display:'flex',alignItems:'center',justifyContent:'center',minHeight:0}}>
+    <main className={stagePreview?'stage2-screen':undefined} aria-label="Live performance" style={{position:'relative',zIndex:1,flex:1,display:'flex',alignItems:'center',justifyContent:'center',minHeight:0}}>
       <Monitor ref={canvasRef} stateRef={ref}
         style={{border:'1px solid rgba(255,255,255,.42)',width:'auto',height:'auto',maxWidth:'100%',
           maxHeight: narrow ? '58vh' : '68vh',
           backdropFilter:'blur(14px) saturate(1.15)', WebkitBackdropFilter:'blur(14px) saturate(1.15)',
           boxShadow:'inset 0 1px 0 rgba(255,255,255,.35), 0 24px 70px rgba(4,42,82,.34)'}}/>
-    </div>
-    <div style={{position:'relative',zIndex:1}}>{stageArrows}</div>
+    </main>
+    {stagePreview ? <section className="stage2-console" aria-label="Performance controls">
+      <div className="stage2-transport"><button className="stage2-play" onClick={()=>{CBAudio.unlock();setPlaying(p=>!p);}} aria-label={playing?'Pause performance':'Play performance'}>{playing?'Ⅱ':'▶'}</button>
+        <div className="stage2-track"><strong>{remix?'Your remix':song.name}</strong><span>{tempo} BPM · {SECTIONS[energy]}</span></div>
+        <button className="stage2-shuffle" onClick={newTrack} aria-label="New track"><Shuffle size={21}/></button>
+        <button className="stage2-export" disabled={!!exp} onClick={()=>startExport('video')}>{exp?'Recording…':'Export'} <Upload size={17}/></button>
+      </div>
+      <div className="stage2-keys"><button onClick={firePhrase}>Phrase <span>↗</span></button><button aria-pressed={energy===1} onClick={()=>setEnergyLevel(energy===1?0:1)}>Build <span>＋</span></button><button aria-pressed={energy===2} onClick={()=>setEnergyLevel(2)}>Drop <span>↓</span></button></div>
+      <div className="stage2-bottom"><button onClick={()=>stepPhrase(1)}>Next phrase →</button><button aria-pressed={!voxLocked} onClick={toggleVoxLock}>Auto phrases {voxLocked?'off':'on'}</button></div>
+      <span className="stage2-accessible" aria-live="polite">{ticker}</span>
+      {take&&<a className="stage2-download" href={take.url} download={take.name}>Download your take ↗</a>}
+    </section> : <><div style={{position:'relative',zIndex:1}}>{stageArrows}</div>
     <div style={{position:'relative',zIndex:1,display:'flex',justifyContent:'space-between',gap:12,flexWrap:'wrap',opacity:.72,fontSize:9.5,fontWeight:700,letterSpacing:'.16em',textTransform:'uppercase'}}>
       <span>© Digital Creative 2026 · {remix ? `Your remix · index ${remix.score} · ${remix.rank}` : song.name} · {tempo} BPM · {SECTIONS[energy]}</span>
       <span style={{display:'inline-flex',gap:18,alignItems:'center',flexWrap:'wrap'}}>
@@ -1056,6 +1076,7 @@ export default function CircleBack(){
         <span>Play runs the show · → next phrase · 2 build · 3 drop · Shift+R repeats · R new track</span>
       </span>
     </div>
+    </>}
     {audioDrawer && <>
       <button
         type="button"

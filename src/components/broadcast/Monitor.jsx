@@ -32,10 +32,10 @@ function wrapText(ctx, text, maxW){
 
 // maxH keeps the block inside its zone — without it, long phrases overflow
 // downward and collide with whatever is beneath them
-function fitText(ctx, text, maxW, maxLines, startSize, minSize, maxH){
+function fitText(ctx, text, maxW, maxLines, startSize, minSize, maxH, fontFamily = SANS){
   let size = startSize, lines;
   for(;;){
-    ctx.font = `700 ${size}px ${SANS}`; ctx.letterSpacing = `${(-0.035*size).toFixed(1)}px`;
+    ctx.font = `700 ${size}px ${fontFamily}`; ctx.letterSpacing = `${(-0.035*size).toFixed(1)}px`;
     lines = wrapText(ctx, text, maxW);
     const tooWide = lines.some(l => ctx.measureText(l).width > maxW); // unbreakable long words
     const tooTall = maxH ? lines.length * size * 1.04 > maxH : false;
@@ -164,9 +164,10 @@ function drawEngagement(ctx, st, x, y, size, align){
 function drawPhraseBlock(ctx, st, now, {top, bottom, maxW, startSize, maxLines}){
   const spoken = !!st.spoken;
   const full = spoken ? `“${st.tickerText}”` : 'It’s not an instrument. It’s a journey.';
-  const { size, lines } = fitText(ctx, full, maxW, maxLines || 4, startSize, 40, bottom - top);
+  const fontFamily = st.stagePreview && !st.exporting ? '"StageHoves", Helvetica, Arial, sans-serif' : SANS;
+  const { size, lines } = fitText(ctx, full, maxW, maxLines || 4, startSize, 40, bottom - top, fontFamily);
   const { partial, cursorOn } = spoken ? reveal(st, full, now) : { partial: full, cursorOn: false };
-  ctx.font = `700 ${size}px ${SANS}`; ctx.letterSpacing = `${(-0.035*size).toFixed(1)}px`;
+  ctx.font = `700 ${size}px ${fontFamily}`; ctx.letterSpacing = `${(-0.035*size).toFixed(1)}px`;
   ctx.fillStyle = spoken ? WHITE : TINT; ctx.textAlign = 'left';
   const lh = size * 1.02;
   let y = top + size * .8 + Math.max(0, ((bottom - top) - lines.length*lh) / 2);
@@ -586,6 +587,21 @@ function draw(ctx, st){
   ctx.setTransform(1,0,0,1,0,0);
   ctx.letterSpacing = '0px';
   ctx.clearRect(0, 0, W, H);
+
+  // The preview simplifies live chrome only. The original stage and export director stay intact.
+  if(st.stagePreview && !st.exporting){
+    ctx.fillStyle = 'rgba(10,102,194,.46)'; ctx.fillRect(0,0,W,H);
+    drawAsciiField(ctx, st, now, {width:W,height:H,cell:19,alpha:.15});
+    ctx.fillStyle = WHITE; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    ctx.font = '600 30px "StageHoves", Helvetica, sans-serif';
+    ctx.fillText('CIRCLE BACK', M, 112);
+    ctx.textAlign = 'right'; ctx.font = '400 24px "StageMono", monospace';
+    ctx.fillStyle = TINT; ctx.fillText(st.playing?'ON AIR':'PRESS PLAY', W-M,112);
+    drawPhraseBlock(ctx, st, now, {top:220,bottom:850,maxW:W-2*M,startSize:144});
+    drawRibbon(ctx,st,{y:966,h:13});
+    drawGrain(ctx,W,H,.07);
+    return;
+  }
 
   let scene = 'composite';
   if(st.exporting && st.exportStartedAt){
