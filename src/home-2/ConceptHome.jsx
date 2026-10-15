@@ -2,11 +2,13 @@ import React, {memo, useEffect, useRef, useState} from 'react';
 import {ArrowDownRight, ArrowUpRight, ChevronDown, LoaderCircle, Pause, Play, SkipBack, SkipForward, Volume2, VolumeX} from 'lucide-react';
 import {TRACKS, LINES, formatTime} from '../home/tracks.js';
 import {PRODUCTS} from '../store/products.js';
-import {Header} from '../brand/Header.jsx';
+import {ConceptHeader} from './ConceptHeader.jsx';
 import {Campaigns} from './Campaigns.jsx';
 import {ConceptFooter} from './ConceptFooter.jsx';
 import {createPortraitRadio} from './portraitRadio.js';
+import '../brand/fonts.css';
 import './concept.css';
+import './header.css';
 import './campaigns.css';
 import './footer.css';
 
@@ -70,7 +72,7 @@ export default function ConceptHome({playerFactory=createPortraitRadio}) {
   const mute=()=>{if(state.volume){previousVolume.current=state.volume;radio.current?.volume(0);}else radio.current?.volume(previousVolume.current||.8);};
   return <div className={`c2-home ${motion?'':'c2-still'}`}>
     <a className="c2-skip" href="#c2-player">Skip to music player</a>
-    <Header base={base} active="Listen" listenHref="#c2-player" hiddenLinks={['Roast']} onRadio={()=>radio.current?.toggle()} playing={state.playing} loading={state.loading}/>
+    <ConceptHeader base={base} onRadio={()=>radio.current?.toggle()} playing={state.playing} loading={state.loading}/>
     <main>
       <section className="c2-hero" aria-labelledby="c2-title">
         <div className="c2-container c2-hero-inner">

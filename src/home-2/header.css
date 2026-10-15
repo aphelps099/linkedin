@@ -1,0 +1,47 @@
+.c2-header { position: relative; z-index: 50; background: #f5f1e7; color: #11110e; }
+.c2-header-row { position: relative; display: flex; align-items: center; gap: clamp(25px, 2.7vw, 44px); min-height: 106px; padding-block: 24px; }
+.c2-header-brand { display: block; flex: 0 0 auto; width: clamp(280px, 28vw, 410px); }
+.c2-header-brand picture, .c2-header-brand img { display: block; width: 100%; height: auto; }
+.c2-header-links { display: flex; align-items: center; justify-content: flex-end; gap: clamp(24px, 2.7vw, 42px); margin-left: auto; }
+.c2-header-links a { display: inline-flex; align-items: center; min-height: 48px; white-space: nowrap; font-size: 18px; font-weight: 600; letter-spacing: -.025em; }
+.c2-header-links a:hover { color: #164be0; }
+.c2-header-actions { display: flex; align-items: center; gap: clamp(25px, 2.7vw, 42px); }
+.c2-home .c2-header-radio { display: inline-flex; align-items: center; justify-content: center; gap: 12px; flex-shrink: 0; min-width: 150px; min-height: 56px; padding: 16px 20px; background: #11110e; color: #f5f1e7; font-size: 17px; font-weight: 600; line-height: 1.2; white-space: nowrap; transition: background .15s; }
+.c2-home .c2-header-radio:hover { background: #164be0; }
+.c2-header-radio svg { width: 23px; height: 23px; stroke-width: 1.5; }
+.c2-home .c2-header-menu { display: flex; align-items: center; justify-content: flex-end; gap: 16px; min-width: 103px; min-height: 48px; padding: 10px 0 10px 6px; font-size: 21px; font-weight: 600; line-height: 1.1; }
+.c2-header-menu:hover { color: #164be0; }
+.c2-header-burger { position: relative; width: 32px; height: 26px; flex-shrink: 0; }
+.c2-header-burger i { position: absolute; left: 0; top: 5px; height: 3px; width: 100%; background: currentColor; transition: transform .18s, top .18s; }
+.c2-header-burger i + i { top: 17px; }
+.c2-header-burger.is-open i { top: 11px; transform: rotate(45deg); }
+.c2-header-burger.is-open i + i { transform: rotate(-45deg); }
+.c2-header-directory { position: absolute; right: 0; top: calc(100% - 6px); width: 250px; max-width: 100%; max-height: min(400px, calc(100dvh - 115px)); overflow-y: auto; display: flex; flex-direction: column; background: #f5f1e7; padding: 20px; box-shadow: 0 14px 26px #11110e18; }
+.c2-header-directory a { display: block; padding: 10px 12px; font-size: 25px; font-weight: 600; line-height: 1.2; letter-spacing: -.03em; }
+.c2-header-directory a:hover { color: #164be0; background: #e7e8e2; }
+.c2-home .c2-header :is(a, button):focus-visible { outline: 3px solid #164be0; outline-offset: 5px; }
+@media (max-width: 1150px) {
+  .c2-header-links { display: none; }
+  .c2-header-actions { margin-left: auto; }
+  .c2-header-brand { width: 340px; }
+}
+@media (max-width: 700px) {
+  .c2-header-row { min-height: 88px; padding-block: 16px; gap: 20px; }
+  .c2-header-brand { width: 128px; }
+  .c2-header-actions { gap: 18px; }
+  .c2-home .c2-header-radio { min-width: 48px; min-height: 48px; padding: 12px; }
+  .c2-header-radio span { display: none; }
+  .c2-home .c2-header-menu { min-width: 83px; gap: 12px; padding: 10px 0; font-size: 18px; }
+  .c2-header-burger { width: 27px; }
+  .c2-header-directory { width: 250px; top: 100%; padding: 16px; }
+  .c2-header-directory a { padding: 12px; font-size: 24px; }
+}
+@media (max-width: 360px) {
+  .c2-header-row { gap: 10px; }
+  .c2-header-brand { width: 109px; }
+  .c2-header-actions { gap: 12px; }
+  .c2-home .c2-header-menu { min-width: 79px; gap: 9px; font-size: 17px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .c2-header * { transition: none !important; animation: none !important; }
+}
