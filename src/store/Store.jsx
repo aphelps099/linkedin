@@ -135,11 +135,8 @@ export default function Store(){
     {notice&&<div className="shop-notice" role="status"><span>{notice==='filed'?'Order filed. Thank you for your contribution to corporate culture.':'Checkout paused. Your bag is right where you left it.'}</span><button onClick={()=>setNotice(null)} aria-label="Dismiss notice"><X size={18}/></button></div>}
     <main>
       <section className="shop-hero" aria-labelledby="shop-title">
-        <div className="shop-hero-copy"><p className="shop-kicker">The company store</p><h1 id="shop-title">OUT OF<br/>OFFICE.</h1><p className="shop-hero-intro">Wear your boundaries.<br/>Leave the jargon on.</p><a href="#collection" className="shop-primary">Explore the collection <ArrowRight size={20} aria-hidden="true"/></a></div>
-        <button className="shop-campaign" onClick={()=>openDetail(bySku('CS-104'))} aria-label="View Out of Office Crewneck design">
-          <img src="../store/cs-104.webp" width="1254" height="1254" fetchpriority="high" alt="Dusty pink Out of Office Crewneck — design preview"/>
-          <span className="shop-campaign-caption"><span>Out of Office Crewneck <small>Collection preview</small></span><span className="shop-campaign-arrow"><ArrowUpRight size={23} aria-hidden="true"/></span></span>
-        </button>
+        <div className="shop-hero-art"><img src="../store/linkedin-beats-campaign.webp" width="1424" height="832" fetchpriority="high" alt="LinkedIn Beats campaign: five people in casual clothing in a sunlit parking structure, with the LinkedIn Beats wordmark across the center."/></div>
+        <div className="shop-hero-caption"><div><h1 id="shop-title">The company store</h1><p>Wear your boundaries.</p></div><a href="#collection" className="shop-primary">Explore the collection <ArrowRight size={20} aria-hidden="true"/></a></div>
       </section>
       <section className="shop-collection" id="collection" aria-labelledby="collection-title">
         <div className="shop-section-head"><h2 id="collection-title" tabIndex="-1">The collection</h2><p>Good things. Questionable office culture.</p></div>

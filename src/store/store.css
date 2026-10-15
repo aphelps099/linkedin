@@ -1,7 +1,7 @@
 @font-face{font-family:C2Hoves;src:url('/home-2/fonts/tt-hoves-regular.ttf') format('truetype');font-weight:400;font-display:swap}
 @font-face{font-family:C2Hoves;src:url('/home-2/fonts/tt-hoves-demibold.ttf') format('truetype');font-weight:600;font-display:swap}
 @font-face{font-family:C2Mono;src:url('/home-2/fonts/gt-america-mono.otf') format('opentype');font-weight:400;font-display:swap}
-:root{font-family:C2Hoves,Arial,sans-serif;color:#20221e;background:#fbfaf7;font-synthesis:none;--shop-paper:#fbfaf7;--shop-blue:#164be0;--shop-display:Anton,Impact,sans-serif;--shop-mono:C2Mono,monospace;--shop-gutter:clamp(20px,3.2vw,56px)}
+:root{font-family:C2Hoves,Arial,sans-serif;color:#20221e;background:#fbf6e8;font-synthesis:none;--shop-paper:#fbf6e8;--shop-blue:#164be0;--shop-display:Anton,Impact,sans-serif;--shop-mono:C2Mono,monospace;--shop-gutter:clamp(20px,3.2vw,56px)}
 *{box-sizing:border-box}body{margin:0}html{scroll-behavior:smooth;scroll-padding-top:30px}
 .shop-app{--c2-blue:var(--shop-blue);font:400 16px/1.45 C2Hoves,Arial,sans-serif;-webkit-font-smoothing:antialiased}
 .shop-app :is(h1,h2,h3,p,figure){margin:0}
@@ -20,24 +20,16 @@
 .shop-label{font:400 13px/1.5 var(--shop-mono);text-transform:uppercase}
 .shop-notice{background:#e3edcf;padding:16px var(--shop-gutter);display:flex;align-items:center;justify-content:space-between;gap:20px}.shop-notice button{border:0;background:none;padding:10px}
 
-/* One wide campaign leads into a neutral, consistently sized product grid. */
-.shop-hero{display:grid;grid-template-columns:.9fr 1.1fr;width:calc(100% - var(--shop-gutter)*2);max-width:1500px;margin:24px auto 0;background:#142d4d;min-height:440px}
-.shop-hero-copy{padding:clamp(30px,3.5vw,56px);display:flex;flex-direction:column;align-items:flex-start;justify-content:center;color:#f7f4eb}
-.shop-hero .shop-kicker{margin-bottom:26px;color:#c6d5e5}
-.shop-hero h1{font:400 clamp(70px,7.1vw,110px)/.94 var(--shop-display);letter-spacing:-.025em}
-.shop-hero .shop-hero-intro{font-size:20px;line-height:1.35;margin-top:22px;color:#e1e7ed}
+/* Supplied campaign photography leads; the caption stays outside the image. */
+.shop-hero{width:calc(100% - var(--shop-gutter)*2);max-width:1500px;margin:24px auto 0;background:var(--shop-paper)}
+.shop-hero-art{overflow:hidden;background:#3a4034}
+.shop-hero-art>img{display:block;width:100%;height:auto;aspect-ratio:2.05;object-fit:cover;object-position:center 20%}
+.shop-hero-caption{display:flex;justify-content:space-between;align-items:center;gap:28px;padding-block:26px;border-bottom:1px solid #d8d5ca}
+.shop-hero-caption h1{font:400 clamp(30px,2.8vw,42px)/1.1 var(--shop-display);letter-spacing:-.015em;text-transform:uppercase}
+.shop-hero-caption p{font-size:17px;color:#616557;margin-top:7px}
 .shop-primary{display:inline-flex;align-items:center;justify-content:space-between;gap:24px;background:#20221e;color:var(--shop-paper)!important;border:1px solid #20221e;text-decoration:none;font:600 15px/1.3 C2Hoves,Arial,sans-serif;min-height:52px;padding:16px 20px;transition:background .18s,border-color .18s}
 .shop-primary:hover:not(:disabled){background:var(--shop-blue);border-color:var(--shop-blue)}
-.shop-hero .shop-primary{margin-top:28px;background:#f6f3eb;color:#142d4d!important;border-color:#f6f3eb}
-.shop-hero .shop-primary:hover{background:#c8dcf1;border-color:#c8dcf1}
-.shop-campaign{border:0;padding:0;position:relative;background:#f5f1e7;min-width:0;overflow:hidden;text-align:left;min-height:440px}
-.shop-campaign>img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transition:transform .4s}
-.shop-campaign:hover>img{transform:scale(1.025)}
-.shop-campaign-caption{position:absolute;inset:auto 24px 20px;display:flex;justify-content:space-between;align-items:center;gap:20px;font-size:16px;font-weight:600}
-.shop-campaign-caption>span:first-child{background:#f5f1e7e6;padding:8px 12px}
-.shop-campaign-caption small{display:block;font-weight:400;font-size:13px;color:#5b5f56;margin-top:3px}
-.shop-campaign-arrow{display:grid;place-items:center;width:44px;height:44px;background:#fbfaf7e6;border-radius:50%}
-.shop-collection,.shop-departments{width:calc(100% - var(--shop-gutter)*2);max-width:1500px;margin:68px auto 0}
+.shop-collection,.shop-departments{width:calc(100% - var(--shop-gutter)*2);max-width:1500px;margin:48px auto 0}
 .shop-section-head{display:flex;align-items:baseline;justify-content:space-between;gap:24px;margin-bottom:26px}
 .shop-section-head h2{font:400 clamp(32px,3.1vw,46px)/1.1 var(--shop-display);letter-spacing:-.015em;text-transform:uppercase}
 .shop-section-head p{color:#62665d;font-size:16px}
@@ -55,8 +47,8 @@
 .shop-product-image{display:block;border:0;padding:0;aspect-ratio:1;width:100%;position:relative;overflow:hidden;background:#f5f1e7}
 .shop-product-image .merch-photo{transition:transform .4s;object-fit:contain}
 .shop-product-image:hover .merch-photo,.shop-product-image:focus-visible .merch-photo{transform:scale(1.035)}
-.shop-product-tag{position:absolute;top:12px;left:12px;padding:5px 9px;background:#fbfaf7e8;font-size:12px;color:#565e51;line-height:1.4}
-.shop-product-open{position:absolute;inset:auto 12px 12px;display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#fbfaf7ee;font-size:14px;transform:translateY(6px);opacity:0;transition:opacity .18s,transform .18s}
+.shop-product-tag{position:absolute;top:12px;left:12px;padding:5px 9px;background:#fbf6e8e8;font-size:12px;color:#565e51;line-height:1.4}
+.shop-product-open{position:absolute;inset:auto 12px 12px;display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#fbf6e8ee;font-size:14px;transform:translateY(6px);opacity:0;transition:opacity .18s,transform .18s}
 .shop-product-image:hover .shop-product-open,.shop-product-image:focus-visible .shop-product-open{opacity:1;transform:none}
 .shop-card-caption{padding-top:14px}
 .shop-card-caption h3{font:600 16px/1.35 C2Hoves,Arial,sans-serif;letter-spacing:-.01em}
@@ -122,14 +114,11 @@
 @media(min-width:1001px){.shop-app .c2-header-links{left:55%}}
 @media(max-width:1100px){
   .shop-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:32px 18px}
-  .shop-hero{min-height:400px}.shop-campaign{min-height:400px}.shop-hero-copy{padding:32px}.shop-hero h1{font-size:80px}
   .shop-section-head p{max-width:260px;text-align:right}.shop-department{min-height:240px;padding:26px}
   .shop-detail-info{padding-inline:26px}.shop-add-row{flex-wrap:wrap}.shop-add-row .shop-primary{min-width:180px}
 }
 @media(max-width:760px){
-  .shop-hero{margin-top:16px;grid-template-columns:1fr 1fr;min-height:340px}.shop-hero-copy{padding:28px 24px}.shop-campaign{min-height:340px}
-  .shop-hero h1{font-size:clamp(54px,9.5vw,72px)}.shop-hero .shop-kicker{font-size:13px;margin-bottom:22px}.shop-hero .shop-hero-intro{font-size:17px;margin-top:18px}
-  .shop-hero .shop-primary{font-size:14px;padding:14px;gap:12px;margin-top:24px}.shop-campaign-caption{inset:auto 12px 12px;font-size:13px;gap:10px}.shop-campaign-caption small{font-size:12px}.shop-campaign-arrow{display:none}
+  .shop-hero{margin-top:16px}.shop-hero-art>img{aspect-ratio:1424/832;object-fit:contain}.shop-hero-caption{padding-block:22px;gap:20px}.shop-hero-caption h1{font-size:30px}.shop-hero-caption p{font-size:16px}.shop-hero-caption .shop-primary{font-size:14px;padding:14px 16px;gap:16px}
   .shop-collection{margin-top:42px}.shop-section-head{display:block;margin-bottom:20px}.shop-section-head h2{font-size:34px}.shop-section-head p{margin-top:10px;max-width:none;text-align:left;font-size:15px}
   .shop-filter-row{flex-wrap:wrap;gap:0;margin-bottom:24px}.shop-filters{width:100%;gap:24px;overflow-x:auto}.shop-filters button{font-size:15px}
   .shop-sort{width:100%;justify-content:space-between;border-top:1px solid #e3e4dc;gap:10px}.shop-sort select{max-width:180px;font-size:13px}.shop-count{font-size:12px}
@@ -141,9 +130,8 @@
   .shop-dialog-bag{padding:24px 20px}.shop-cart-image{width:80px}.shop-cart-row{gap:14px}.shop-cart-info h3{font-size:15px}.shop-cart-info>p{font-size:11px}.shop-cart-info>div{gap:8px}.shop-bag-head h2{font-size:34px}
 }
 @media(max-width:520px){
+  .shop-hero{width:100%;margin-top:0}.shop-hero-caption{margin-inline:var(--shop-gutter);flex-wrap:wrap;gap:18px}.shop-hero-caption h1{font-size:32px}.shop-hero-caption .shop-primary{min-height:48px}.shop-collection{margin-top:34px}
   .shop-app .c2-header-actions{gap:16px}.shop-app .shop-header-bag{gap:7px}.shop-header-bag>span:not(.shop-bag-count){display:none}.shop-app .c2-header-menu{font-size:17px;gap:10px;min-width:78px}
-  .shop-hero{grid-template-columns:1fr}.shop-hero-copy{padding:28px}.shop-hero h1{font-size:66px}.shop-hero .shop-kicker{margin-bottom:20px}.shop-hero .shop-hero-intro{font-size:17px;margin-top:18px}.shop-hero .shop-primary{margin-top:22px}
-  .shop-campaign{min-height:0;aspect-ratio:1.22}.shop-campaign>img{object-fit:cover;object-position:center 44%}.shop-campaign-caption{inset:auto 12px 12px}.shop-campaign-caption>span:first-child{padding:6px 9px}.shop-campaign-arrow{display:grid;width:38px;height:38px}
   .shop-filters{gap:22px}.shop-filters button{font-size:14px}.shop-section-head h2{font-size:32px}
   .shop-department-grid{grid-template-columns:1fr}.shop-department{min-height:230px}.shop-department strong{font-size:42px}.shop-department>img{width:65%;opacity:1}.shop-department small{max-width:none}
   .shop-editorial>svg{display:none}.shop-text-link{margin-left:0}.shop-editorial{gap:12px}.shop-editorial>div{width:100%}
@@ -153,4 +141,4 @@
   .shop-grid{gap:24px 12px}.shop-card-caption h3{font-size:14px}.shop-filters{gap:18px}.shop-detail-info .shop-add-row{flex-wrap:wrap}.shop-cart-info>div{flex-wrap:wrap}.shop-cart-image{width:65px}
 }
 @media(hover:none){.shop-product-open{display:none}}
-@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.shop-app *{transition:none!important;animation:none!important}.shop-product-image:hover .merch-photo,.shop-campaign:hover>img,.shop-department:hover>img{transform:none}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.shop-app *{transition:none!important;animation:none!important}.shop-product-image:hover .merch-photo,.shop-department:hover>img{transform:none}}
