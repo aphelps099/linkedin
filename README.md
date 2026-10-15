@@ -26,12 +26,14 @@ Then open the printed local URL. `npm run build` produces a static bundle in
 (enable Pages → Source: GitHub Actions in the repo settings, or trigger the
 workflow manually from the Actions tab).
 
-The build is multi-page: the mixer at `/`, **LinkedIn Lessons™** at
+The build is multi-page: the LinkedIn Beats homepage at `/`, the mixer at `/studio/`, **LinkedIn Lessons™** at
 `/lessons/`, **Roast My LinkedIn™** at `/roast/`, **The Museum of
 Professional Communication** at `/museum/`, **The Company Store** at
 `/store/`, and the **LinkedIn Beats** umbrella homepage at `/v2/`.
 
-## LinkedIn Beats homepage (`/v2/`)
+## Previous homepage design (archived source)
+
+The section below documents the earlier `src/v2/V2.jsx` concept. The current `/` and `/v2/` entry points use `src/home/Homepage.jsx`; see **Corporate pop homepage** below.
 
 The future home of LinkedIn Beats — the umbrella brand over the mixer,
 Lessons, Roast, the Museum and the Store — recreated from the handoff in
@@ -48,7 +50,7 @@ are the only outputs. Cross-links point at the live tools (`../roast/`,
 the base system (offset ink shadows, slight rotations, one marquee) — that
 is intended, not drift.
 
-### The Corporate Phrasebook (the homepage's audio)
+### The Corporate Phrasebook (previous design audio)
 
 The rig on `/v2/` is the real instrument, not a mockup: **CONVENE** starts the
 WebAudio kit playing the sequencer grid (`src/audio.js`, the same engine the
@@ -428,3 +430,27 @@ design_handoff_company_store/       the Company Store handoff (reference)
 Audio starts on first gesture (autoplay policy).
 
 Circle Back® is not affiliated with your network.
+
+
+## Corporate pop homepage
+
+The homepage at `/` (also available at `/v2/`) is the corporate pop-art design: a six-print portrait hero, Circle Back Radio, the corporate hits, Roast My Post, and featured Company Store products. The existing mixer lives at `/studio/`. Old `/#beat=…` links redirect there with their text intact; Lessons and Roast now link directly to the studio.
+
+The five named tracks are finite live arrangements of the existing `src/audio.js` engine, `src/song.js` house band, and 17 existing recorded phrase clips. They are not new rendered song files. Each has its own tempo, phrase sequence, key, progression, and duration. Playback starts only after interaction. The transport owns a separate audio graph, suspends it on pause, closes it on seek/track change/unmount, and uses the audio clock for progress and lyrics.
+
+Singalong words use 100% opacity for the current word and 25% for the surrounding phrase. Boundaries are **estimated**, using detected speech bounds and syllable weights; the recordings do not contain measured word timestamps. `src/home/tracks.js` keeps this timing layer separate so forced-aligned timestamps can replace it later. Reduced-motion preferences disable decorative animation.
+
+The Roast form uses the existing `#roast=` handoff. Featured product names/prices come from the shared catalog, and `?product=CS-…` opens the appropriate product detail. Checkout and voice-generation services are unchanged.
+
+Validation: `npm run check:home`, `npm run check:lesson`, `npm run check:store`, and `npm run build`. The homepage check reads actual WAV files and checks cue spacing, word highlighting, pause/resume, seeking, track changes, shuffle, volume, cancellation, and load failures. Browser visual/audio QA is still needed on real desktop and mobile devices.
+
+For a separate review deployment, `VITE_TOOL_BASE_URL=https://linkedinbeats.com/` and `VITE_STUDIO_URL=https://linkedinbeats.com/` point secondary tools to the current production site while the new player runs in the preview. Leave both unset for the production build.
+
+### Homepage artwork
+
+Generated with the built-in ImageGen tool, then converted to WebP without changing composition:
+
+- `public/home/corporate-portraits.webp`: faithfully recreate the approved sketch's six identical corporate headshots in a 3×2 screen-print grid; blue/black, pink/red, yellow/black, pink/black, cream/blue, red/black; paper grain; no words, sticker, UI, margins, or borders.
+- `public/home/thought-leader-cap.webp`: centered realistic cobalt blue six-panel cap with white THOUGHT LEADER embroidery on warm yellow; soft studio light, cotton texture, subtle shadow, no extra objects or text. Labeled as a design mockup on the homepage.
+
+The shirt uses the existing catalog photograph. The HR sticker and receipt are native HTML/CSS. Anton and DM Sans are served locally with their OFL licenses under `public/home/fonts/`.

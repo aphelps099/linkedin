@@ -90,6 +90,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
+        studio: fileURLToPath(new URL('./studio/index.html', import.meta.url)),
         // LinkedIn Lessons — the guided post generator, served at /lessons/
         lessons: fileURLToPath(new URL('./lessons/index.html', import.meta.url)),
         // Roast My LinkedIn — the inspection office, served at /roast/

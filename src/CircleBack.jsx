@@ -191,7 +191,7 @@ export default function CircleBack(){
   });
 
   React.useEffect(()=>{
-    CBVoice.loadBank(`${import.meta.env.BASE_URL}phrases/`, PHRASES.length).catch(()=>{});
+    CBVoice.loadBank(new URL('../phrases/', window.location.href).href, PHRASES.length).catch(()=>{});
     exposeVoice();
     if(typeof window !== 'undefined') window.CBState = ref.current; // on-device debugging
   },[]);
