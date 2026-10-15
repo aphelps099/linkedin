@@ -98,19 +98,23 @@ export default function ConceptHome({playerFactory=createPortraitRadio}) {
     <a className="c2-skip" href="#c2-player">Skip to music player</a>
     <ConceptHeader base={base} onRadio={()=>radio.current?.toggle()} playing={state.playing} loading={state.loading}/>
     <main>
+      <div className="c2-welcome">
+        <div className="c2-container c2-welcome-inner">
+          <p><svg viewBox="0 0 84 112" aria-hidden="true"><path d="M59 2 14 58H41L24 106 83 43H53Z"/></svg><span>Clock in. Tune out.</span></p>
+          <a href={`${base}studio/`}>Make a beat <ArrowUpRight aria-hidden="true"/></a>
+        </div>
+      </div>
       <section className="c2-hero" aria-labelledby="c2-title">
         <div className="c2-container c2-hero-inner">
           <div className="c2-hero-copy">
             <h1 id="c2-title"><span>Humbled.</span><span>Honored.</span><span className="c2-repeat">On repeat.</span></h1>
             <p>The soundtrack of<br className="c2-copy-break"/> professional nonsense.</p>
-            <button className="c2-hero-listen" onClick={()=>radio.current?.toggle()} aria-pressed={state.playing} aria-label={state.loading?'Cancel soundtrack loading':state.playing?'Pause the soundtrack':'Play the soundtrack'}>{state.loading?<LoaderCircle className="c2-spin"/>:state.playing?<Pause fill="currentColor"/>:<Play fill="currentColor"/>}<span>{state.loading?'Tuning in…':state.playing?'Pause the soundtrack':'Play the soundtrack'}</span></button>
           </div>
           <div className="c2-choir">
             <div className={`c2-lyrics ${state.playing?'is-singing':''}`} aria-label={`Lyrics: ${state.text}`}><div aria-hidden="true">{state.text.split(/\s+/).map((word,i)=><React.Fragment key={`${state.text}-${i}`}><span className={state.playing&&i===state.word?'is-current':''}>{word}</span>{' '}</React.Fragment>)}</div></div>
             <div className="c2-portraits" style={{gridTemplateColumns:visiblePortraits.map(({index})=>index===state.index?'1.07fr':'1fr').join(' ')}}>{visiblePortraits.map(({index,tone})=><Portrait key={tone} base={base} index={index} tone={tone} active={state.index===index} playing={state.index===index&&state.playing} loading={state.index===index&&state.loading} mouth={motion&&state.index===index?state.mouth:'rest'} motion={motion} choose={stableChoose}/>)}</div>
           </div>
         </div>
-      </section>
       <section className="c2-player" id="c2-player" aria-label="Circle Back Radio music player">
         <div className="c2-container c2-player-inner">
           <button type="button" className={`c2-key c2-play ${state.playing||state.loading?'is-active':''}`} aria-pressed={state.playing} onClick={()=>radio.current?.toggle()} aria-label={state.loading?'Cancel loading':state.playing?'Pause':'Play'}>{state.loading?<LoaderCircle className="c2-spin"/>:state.playing?<Pause fill="currentColor"/>:<Play fill="currentColor"/>}</button>
@@ -132,6 +136,7 @@ export default function ConceptHome({playerFactory=createPortraitRadio}) {
         </div>
         {state.error&&<p className="c2-audio-error c2-container" role="alert">{state.error}</p>}
         <div className="c2-container" id="c2-track-list" hidden={!allTracks}><ol className="c2-track-list">{TRACKS.map((item,index)=><li key={item.title}><button aria-label={`${index===state.index&&state.playing?'Pause':'Play'} ${item.title}`} aria-current={index===state.index?'true':undefined} onClick={()=>choose(index)}><span>{index===state.index&&state.playing?<Pause size={17}/>:<Play size={17}/>}</span><strong>{item.title}</strong><span className="c2-track-genre">{item.genre}</span><time>{formatTime(item.seconds)}</time></button></li>)}</ol><button className="c2-motion-toggle" aria-pressed={motion} onClick={()=>setMotion(!motion)}>Animate portraits <span>{motion?'On':'Off'}</span></button></div>
+      </section>
       </section>
       <section id="c2-store" className="c2-store" aria-labelledby="c2-store-title">
         <div className="c2-container">
