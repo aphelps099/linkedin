@@ -24,27 +24,74 @@
 .c2-footer-marks {
   display: flex;
   align-items: start;
-  justify-content: space-between;
-  gap: 16px;
+  justify-content: center;
+  gap: clamp(10px, 1.1vw, 16px);
   list-style: none;
   padding: 0;
   margin: 0;
 }
-.c2-footer-marks li { text-align: center; flex: 1; }
-.c2-footer-seal {
-  display: grid;
-  place-items: center;
-  width: 57px;
-  height: 57px;
-  margin: 0 auto 10px;
-  border: 1px solid #7c8479;
-  border-radius: 50%;
-  color: #5f6b5d;
+.c2-footer-marks li { flex: 1 1 0; min-width: 0; max-width: 100px; }
+.c2-footer-seal { position: relative; display: block; width: 100%; aspect-ratio: 300 / 444; }
+.c2-footer-seal img { display: block; width: 100%; height: auto; }
+/* The SVG's transparent negative space confines the metal to the ink. */
+.c2-footer-metal { display: none; }
+@supports ((mask-image: url("")) or (-webkit-mask-image: url(""))) {
+  .c2-footer-seal img { opacity: 0; }
+  .c2-footer-metal {
+    display: block;
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' opacity='.13' filter='url(%23n)'/%3E%3C/svg%3E"),
+      linear-gradient(145deg, #3a3d39 0%, #171a18 26%, #464a45 45%, #1c1f1d 64%, #30332f 100%);
+    -webkit-mask: var(--seal-art) center / 100% 100% no-repeat;
+    mask: var(--seal-art) center / 100% 100% no-repeat;
+  }
+  .c2-footer-metal::before {
+    content: '';
+    position: absolute;
+    inset: -25% -75%;
+    background: linear-gradient(112deg, transparent 35%, #aeb7aa50 42%, #f5f5d8c0 48%, #9ba39380 51%, transparent 58%);
+    opacity: 0;
+    transform: translateX(-65%);
+  }
+  .c2-footer-metal::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    background:
+      radial-gradient(circle at 24% 27%, #ffffe8 0 .65px, #f6f9e740 1px, transparent 2px),
+      radial-gradient(circle at 73% 40%, #ffffe8 0 .7px, #f6f9e740 1px, transparent 2px),
+      radial-gradient(circle at 91% 4%, #ffffe8 0 .65px, #f6f9e740 1px, transparent 2px),
+      radial-gradient(circle at 34% 82%, #ffffe8 0 .65px, #f6f9e740 1px, transparent 2px),
+      radial-gradient(circle at 4% 95%, #ffffe8 0 .7px, #f6f9e740 1px, transparent 2px);
+  }
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .c2-footer-seal:hover .c2-footer-metal::before { animation: c2-metal-sweep 1.05s cubic-bezier(.2,.65,.3,1) both; }
+    .c2-footer-seal:hover .c2-footer-metal::after { animation: c2-metal-sparkle 1.05s ease both; }
+  }
 }
-.c2-footer-seal svg { width: 32px; height: 32px; stroke-width: 1.25; }
-.c2-footer-marks li:nth-child(2) .c2-footer-seal { border-radius: 2px 2px 24px 24px; }
-.c2-footer-marks li:nth-child(3) .c2-footer-seal { border-style: dashed; }
-.c2-footer-marks li > span:last-child { display: block; font: 400 10px/1.4 C2Mono, monospace; text-transform: uppercase; letter-spacing: .03em; }
+@keyframes c2-metal-sweep {
+  0% { opacity: 0; transform: translateX(-65%); }
+  18% { opacity: 1; }
+  75% { opacity: .9; }
+  100% { opacity: 0; transform: translateX(65%); }
+}
+@keyframes c2-metal-sparkle {
+  0%, 22%, 48%, 75%, 100% { opacity: 0; }
+  34% { opacity: .8; }
+  62% { opacity: .55; }
+}
+@media (hover: hover) and (prefers-reduced-motion: reduce) {
+  .c2-footer-seal:hover .c2-footer-metal { background-color: #434a40; background-blend-mode: screen; }
+}
+@media (forced-colors: active) {
+  .c2-footer-seal img { opacity: 1; }
+  .c2-footer-metal { display: none; }
+}
 .c2-footer-assurance p { margin-top: 17px; text-align: center; font-size: 11px; line-height: 1.4; }
 .c2-footer-bottom {
   display: flex;
@@ -68,8 +115,6 @@
   .c2-footer-identity { grid-column: 1; grid-row: 1; }
   .c2-footer-fineprint { grid-column: 2; grid-row: 1 / 3; }
   .c2-footer-assurance { grid-column: 1; grid-row: 2; max-width: 290px; }
-  .c2-footer-seal { width: 50px; height: 50px; }
-  .c2-footer-seal svg { width: 28px; height: 28px; }
   .c2-footer-assurance p { margin-top: 12px; }
 }
 @media (max-width: 650px) {
