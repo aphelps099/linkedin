@@ -451,6 +451,17 @@ For a separate review deployment, `VITE_TOOL_BASE_URL=https://linkedinbeats.com/
 Generated with the built-in ImageGen tool, then converted to WebP without changing composition:
 
 - `public/home/corporate-portraits.webp`: faithfully recreate the approved sketch's six identical corporate headshots in a 3×2 screen-print grid; blue/black, pink/red, yellow/black, pink/black, cream/blue, red/black; paper grain; no words, sticker, UI, margins, or borders.
-- `public/home/thought-leader-cap.webp`: centered realistic cobalt blue six-panel cap with white THOUGHT LEADER embroidery on warm yellow; soft studio light, cotton texture, subtle shadow, no extra objects or text. Labeled as a design mockup on the homepage.
+- `public/home/thought-leader-cap.webp`: centered realistic cobalt blue six-panel cap with white THOUGHT LEADER embroidery on warm yellow; soft studio light, cotton texture, subtle shadow, no extra objects or text. Labeled as a design preview on the homepage and store.
 
-The shirt uses the existing catalog photograph. The HR sticker and receipt are native HTML/CSS. Anton and DM Sans are served locally with their OFL licenses under `public/home/fonts/`.
+The Per My Last Email shirt uses the existing catalog photograph. The HR sticker, sticker sheet, posters, and receipt are native HTML/CSS. Anton, DM Sans, and Roboto Mono are served locally with their OFL licenses under `public/home/fonts/`.
+
+
+### Storefront and texture refinement
+
+The homepage uses a subtle screen-print dot texture on Circle Back Radio, pink graph paper in Roast My Post, and larger editorial merchandise images. Shared `src/brand/Footer.jsx` links to Look Serious, aaroncphelps.com, and Aaron’s LinkedIn. Roboto Mono handles numbers, prices, product metadata, and utility labels.
+
+`/store/` carries the same paper/yellow/blue/pink palette into an “Out of Office” campaign, nine-item catalog, category filters, product dialogs, and shopping bag. `src/store/ProductVisual.jsx` supplies consistent imagery across homepage, catalog, detail, and bag; generated and CSS-based mockups are labeled design previews. Product dialogs require an explicit apparel size. Native `<dialog>` handles focus containment and Escape, with scroll locking and focus restoration. The existing `cs-order` bag is retained, sanitized, and priced from the catalog; quantity changes, free-shipping progress, and checkout errors are reflected in the bag. Checkout API and fulfillment configuration are unchanged.
+
+Additional generated artwork: `public/store/cs-103.webp`, created with ImageGen and converted to WebP. Prompt: minimalist fashion retail product photograph, off-white heavyweight cotton unisex T-shirt laid flat on a pale dusty-pink paper surface; black Helvetica-style “SERIOUS.” centered on the chest; clean overhead composition, subtle natural fabric folds, soft studio light and realistic shadows; no props, logos, watermarks, or extra typography. This is a design preview, not a photograph of manufactured stock.
+
+Store interaction verification covered deep-linked products, required sizes, category filtering, quantities, catalog-derived prices, bag persistence/removal, checkout failure recovery, cancel handling, focus restoration, footer destinations, and all product-image paths using jsdom (native dialog methods stubbed). Real browser layout, native dialog, and touch verification remain outstanding.

@@ -3,6 +3,9 @@ import {ArrowUpRight, Play, Pause, SkipBack, SkipForward, Shuffle, Volume2, Volu
 import {createRadio} from './radio.js';
 import {TRACKS, LINES, formatTime, siteBase} from './tracks.js';
 import {PRODUCTS} from '../store/products.js';
+import {ProductVisual, isDesignPreview} from '../store/ProductVisual.jsx';
+import {Footer} from '../brand/Footer.jsx';
+import '../brand/fonts.css';
 import './home.css';
 
 const FEATURED = ['CS-102','CS-201','CS-302'].map(sku=>PRODUCTS.find(p=>p.sku===sku));
@@ -93,15 +96,16 @@ export default function Homepage(){
       </section>
 
       <section id="store" className="pop-store" aria-labelledby="store-title">
-        <div className="pop-section-head"><h2 id="store-title">WEAR YOUR BOUNDARIES.</h2><a className="pop-link" href={`${toolsBase}store/`}>The company store <ArrowUpRight size={18}/></a></div>
+        <div className="pop-store-label"><span>THE COMPANY STORE</span><span>OFFICE ESSENTIALS / VOL. 01</span></div>
+        <div className="pop-section-head"><div><h2 id="store-title">WEAR YOUR BOUNDARIES.</h2><p>Off-duty essentials. On-brand attitude.</p></div><a className="pop-link" href={`${toolsBase}store/`}>Shop the collection <ArrowUpRight size={18}/></a></div>
         <div className="pop-products">{FEATURED.map((p,i)=><a className="pop-product" href={`${toolsBase}store/?product=${p.sku}`} key={p.sku}>
           <div className={`pop-product-image product-${i}`}>
-            {i===0?<img src={`${base}store/${p.img}`} width="1024" height="1024" loading="lazy" alt={p.name}/>:i===1?<img src={`${base}home/thought-leader-cap.webp`} width="1254" height="1254" loading="lazy" alt="Thought Leader Cap design mockup in corporate blue"/>:<span className="pop-hr-sticker">APPROVED — HR</span>}
-          </div><div className="pop-product-info"><span>{p.name}</span><span>${p.price} <ArrowUpRight size={17}/></span></div>{i===1&&<small className="pop-product-note">Design mockup</small>}
+            <ProductVisual product={p} base={base}/><span className="pop-product-index">0{i+1} / {p.cat.toUpperCase()}</span>
+          </div><div className="pop-product-info"><span>{p.name}</span><span>${p.price}</span></div>{isDesignPreview(p)&&<small className="pop-product-note">Design preview</small>}
         </a>)}</div>
       </section>
 
-      <footer id="about" className="pop-footer"><div><a href={base} className="pop-footer-brand">LINKEDIN BEATS</a><p>Professional noise. Independently produced.<br/>A corporate culture parody by <a href="https://www.linkedin.com/in/aaroncphelps">Aaron Phelps</a>.</p></div><div className="pop-footer-links"><a href={studioUrl}>Make a beat <ArrowUpRight size={15}/></a><a href={`${toolsBase}museum/`}>Visit the museum <ArrowUpRight size={15}/></a><a href={`${toolsBase}lessons/`}>LinkedIn Lessons <ArrowUpRight size={15}/></a><span>Not affiliated with LinkedIn.</span></div></footer>
     </main>
+    <Footer/>
   </div>;
 }
