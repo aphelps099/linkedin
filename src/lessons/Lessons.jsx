@@ -129,7 +129,7 @@ function Home({ narrow, onPick }){
     </div>
     <div style={{ marginTop: 26, display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', ...META }}>
       <span>Everything is generated in your browser. Nothing is sent anywhere.</span>
-      <a href="../" style={{ color: 'var(--blue)' }}>Circle Back® — the LinkedIn remixer →</a>
+      <a href="../studio/" style={{ color: 'var(--blue)' }}>Circle Back® — the LinkedIn remixer →</a>
     </div>
   </>;
 }
@@ -224,7 +224,7 @@ function Result({ catId, answers, narrow, onHome, onReinterview }){
     () => roastOpen ? roast(text, { score: s.index }) : null, [roastOpen, text, s]);
 
   const copy = async () => { await copyText(text); setCopied(true); setTimeout(() => setCopied(false), 1600); };
-  const toBeat = () => { location.href = '../#beat=' + encodeURIComponent(text); };
+  const toBeat = () => { location.href = '../studio/#beat=' + encodeURIComponent(text); };
 
   return <>
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, marginTop: 18, flexWrap: 'wrap' }}>
@@ -290,7 +290,7 @@ export default function Lessons(){
       <span>© Digital Creative 2026 · LinkedIn Lessons™ is not affiliated with your network.</span>
       <span style={{ display: 'inline-flex', gap: 16, flexWrap: 'wrap' }}>
         <a href="../museum/" style={{ color: 'var(--blue)' }}>Visit the Museum</a>
-        <a href="../" style={{ color: 'var(--blue)' }}>Turn any post into a beat at Circle Back® →</a>
+        <a href="../studio/" style={{ color: 'var(--blue)' }}>Turn any post into a beat at Circle Back® →</a>
       </span>
     </div>
   </Unit>;

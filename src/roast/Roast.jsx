@@ -700,7 +700,7 @@ export default function Roast() {
               {kind === 'post' && (
                 <Button
                   data-testid="button-turn-into-beat"
-                  onClick={() => { location.href = `../#beat=${encodeURIComponent(draft)}`; }}
+                  onClick={() => { location.href = `../studio/#beat=${encodeURIComponent(draft)}`; }}
                 >
                   Remix the evidence
                 </Button>
@@ -741,7 +741,7 @@ export default function Roast() {
           <nav aria-label="More Circle Back tools">
             <a href="../lessons/">Write one</a>
             <a href="../museum/">Visit the Museum</a>
-            <a href="../">Make a beat</a>
+            <a href="../studio/">Make a beat</a>
           </nav>
         </footer>
       </main>

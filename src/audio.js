@@ -22,7 +22,8 @@ export const CHARACTERS = [
   {id:'bandwidth',  name:'Bandwidth',       filter:'lowpass',  freq:2200, q:1.1, gain:0,   ring:88,  drive:1.5},
 ];
 
-export const CBAudio = (() => {
+// A homepage transport can own its graph without interrupting the studio.
+export function createAudioEngine() {
   let ctx, master, comp, noiseBuf, streamDest, analyser, specArr, lp, voxIn, voxDelay,
       voxChar, voxDrive, voxCrush, voxDry, voxRing, voxRingOsc, voxWob, voxFb, voxVerb;
   let fx = {weird:0, dist:.12, character:'boardroom'};
@@ -310,7 +311,7 @@ export const CBAudio = (() => {
     } else {
       src.connect(g);
     }
-    g.connect(o.bus === 'vox' ? voxIn : master); src.start(t);
+    g.connect(o.bus === 'vox' ? voxIn : master); src.start(t, o.offset || 0);
     return { source: src, gain: g };
   }
   return {
@@ -321,8 +322,19 @@ export const CBAudio = (() => {
     sampleRate: ()=>{ init(); return ctx.sampleRate; },
     spectrum: ()=>{ if(!analyser) return null; analyser.getByteFrequencyData(specArr); return specArr; },
     state: ()=> ctx ? ctx.state : 'uninitialized',
+    suspend: ()=> ctx?.suspend(),
+    setVolume(value){ init(); master.gain.setTargetAtTime(Math.max(0, Math.min(1, value)) * .85, ctx.currentTime, .015); },
+    dispose(){
+      if(silentEl){
+        silentEl.pause();
+        URL.revokeObjectURL(silentEl.src);
+        silentEl.remove();
+      }
+      if(ctx && ctx.state !== 'closed') ctx.close().catch(()=>{});
+    },
   };
-})();
+}
+export const CBAudio = createAudioEngine();
 
 // handy for debugging on a phone
 if(typeof window !== 'undefined'){ window.CBAudio = CBAudio; }

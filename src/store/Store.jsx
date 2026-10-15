@@ -67,6 +67,11 @@ export default function Store(){
     setView('detail'); setSel(p.sku);
     setSize(p.sizes ? p.sizes[1] : null); setQty(1);
   };
+  useEffect(() => {
+    const sku = new URLSearchParams(location.search).get('product');
+    const product = bySku(sku);
+    if(product) openDetail(product);
+  }, []);
   const closeDetail = () => { setView('grid'); setSel(null); };
 
   const addToOrder = () => {
