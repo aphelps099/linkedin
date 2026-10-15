@@ -1,10 +1,10 @@
 import React, {memo, useEffect, useId, useRef, useState} from 'react';
 import {LoaderCircle, Pause, Play} from 'lucide-react';
 
-export const ConceptHeader = memo(function ConceptHeader({base='/', onRadio, playing=false, loading=false}) {
+export const ConceptHeader = memo(function ConceptHeader({base='/', onRadio, playing=false, loading=false, homeSectionBase='', active, children}) {
   const [open,setOpen]=useState(false);
   const root=useRef(null), trigger=useRef(null), directory=useRef(null), focusFirst=useRef(false), id=useId();
-  const links=[['Listen','#c2-player'],['LinkedInifier','#c2-tools'],['Studio',`${base}studio/`],['Shop',`${base}store/`]];
+  const links=[['Listen',`${homeSectionBase}#c2-player`],['LinkedInifier',`${homeSectionBase}#c2-tools`],['Studio',`${base}studio/`],['Shop',`${base}store/`]];
   useEffect(()=>{
     if(!open)return;
     if(focusFirst.current){focusFirst.current=false;directory.current?.querySelector('a')?.focus();}
@@ -26,13 +26,14 @@ export const ConceptHeader = memo(function ConceptHeader({base='/', onRadio, pla
         </picture>
       </a>
       <nav className="c2-header-links" aria-label="Featured navigation">
-        {links.filter(([name])=>name!=='Studio').map(([name,href])=><a key={name} href={href}>{name}</a>)}
+        {links.filter(([name])=>name!=='Studio').map(([name,href])=><a key={name} href={href} aria-current={active===name?'page':undefined}>{name}</a>)}
       </nav>
       <div className="c2-header-actions">
-        <button type="button" className="c2-header-radio" onClick={onRadio} aria-label={label} aria-pressed={playing}>
+        {children}
+        {onRadio?<button type="button" className="c2-header-radio" onClick={onRadio} aria-label={label} aria-pressed={playing}>
           {loading?<LoaderCircle className="c2-spin" aria-hidden="true"/>:playing?<Pause fill="currentColor" aria-hidden="true"/>:<Play fill="currentColor" aria-hidden="true"/>}
           <span>{loading?'Loading':playing?'Pause radio':'Play radio'}</span>
-        </button>
+        </button>:!children&&<a className="c2-header-radio" href={`${homeSectionBase}#c2-player`}><Play fill="currentColor" aria-hidden="true"/><span>Play radio</span></a>}
         <button type="button" className="c2-header-menu" ref={trigger} aria-expanded={open} aria-controls={id}
           onClick={()=>setOpen(value=>!value)}
           onKeyDown={e=>{if(e.key==='ArrowDown'){e.preventDefault();if(open)directory.current?.querySelector('a')?.focus();else{focusFirst.current=true;setOpen(true);}}}}>
@@ -40,7 +41,7 @@ export const ConceptHeader = memo(function ConceptHeader({base='/', onRadio, pla
         </button>
       </div>
       <nav className="c2-header-directory" id={id} ref={directory} aria-label="Main navigation" hidden={!open}>
-        {links.map(([name,href])=><a key={name} href={href} onClick={()=>setOpen(false)}>{name}</a>)}
+        {links.map(([name,href])=><a key={name} href={href} aria-current={active===name?'page':undefined} onClick={()=>setOpen(false)}>{name}</a>)}
       </nav>
     </div>
   </header>;

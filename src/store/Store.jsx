@@ -1,11 +1,18 @@
-import {Header} from '../brand/Header.jsx';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {ArrowUpRight, ArrowRight, X, Minus, Plus} from 'lucide-react';
-import {CATEGORIES, PRODUCTS, bySku, fmt} from './products.js';
+import {ArrowUpRight, ArrowRight, X, Minus, Plus, ShoppingBag, Headphones} from 'lucide-react';
+import {PRODUCTS, bySku, fmt} from './products.js';
 import {ProductVisual, isDesignPreview} from './ProductVisual.jsx';
-import {Footer} from '../brand/Footer.jsx';
+import {ConceptHeader} from '../home-2/ConceptHeader.jsx';
+import {ConceptFooter} from '../home-2/ConceptFooter.jsx';
+import '../home-2/header.css';
+import '../home-2/footer.css';
 
-const CARD_NAMES={'CS-104':'Out of Office.','CS-203':'Circle Back.','CS-501':'Could’ve been an email.'};
+const DEPARTMENTS = {
+  'All': null,
+  'Apparel': ['Sweatshirts', 'Shirts'],
+  'Hats': ['Hats'],
+  'Desk supplies': ['Mugs', 'Stickers', 'Posters'],
+};
 const CART_KEY = 'cs-order';
 const endpoint = () => import.meta.env.VITE_VOICE_API_URL
   ? new URL('/api/checkout', import.meta.env.VITE_VOICE_API_URL).href : '/api/checkout';
@@ -55,11 +62,20 @@ function Quantity({value, max=99, onChange, label='Quantity'}){
 }
 
 export default function Store(){
-  const [filter,setFilter] = useState('All'), [sel,setSel] = useState(null);
+  const [filter,setFilter] = useState('All'), [sort,setSort] = useState('featured'), [sel,setSel] = useState(null);
   const [size,setSize] = useState(null), [qty,setQty] = useState(1);
   const [cart,setCart] = useState(loadCart), [drawer,setDrawer] = useState(false);
   const [submitting,setSubmitting] = useState(false), [note,setNote] = useState(''), [notice,setNotice] = useState(null);
-  const items = useMemo(()=>PRODUCTS.filter(p=>filter==='All'||p.cat===filter),[filter]);
+  const items = useMemo(()=>{
+    const result=PRODUCTS.filter(p=>!DEPARTMENTS[filter]||DEPARTMENTS[filter].includes(p.cat));
+    if(sort==='name') result.sort((a,b)=>a.name.localeCompare(b.name));
+    if(sort==='price-low'||sort==='price-high') result.sort((a,b)=>{
+      if(a.price===null)return b.price===null?0:1;
+      if(b.price===null)return -1;
+      return sort==='price-low'?a.price-b.price:b.price-a.price;
+    });
+    return result;
+  },[filter,sort]);
   const d = bySku(sel);
   const cartCount = cart.reduce((t,c)=>t+c.qty,0);
   const subtotal = cart.reduce((t,c)=>t+bySku(c.sku).price*c.qty,0);
@@ -82,6 +98,12 @@ export default function Store(){
     if(params.has('product')){params.delete('product');history.replaceState(null,'',location.pathname+(params.size?'?'+params.toString():'')+location.hash);}
   };
   const openBag=()=>{setNote('');setDrawer(true);};
+  const browseDepartment=department=>{
+    setFilter(department);setSort('featured');
+    const heading=document.getElementById('collection-title');
+    heading.focus({preventScroll:true});
+    heading.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
+  };
   const addToBag=()=>{
     if(!d || d.previewOnly || (d.sizes && !size) || qty>remaining) return;
     const chosen=d.sizes?size:null;
@@ -107,30 +129,37 @@ export default function Store(){
     }
   };
 
-  return <div className="shop-app">
+  return <div className="shop-app c2-home">
     <a className="shop-skip" href="#collection">Skip to products</a>
-    <Header base="../" active="Store"><button className="cb-header-bag" onClick={openBag} aria-label={`Open bag, ${cartCount} items`}>Bag ({String(cartCount).padStart(2,'0')})</button></Header>
+    <ConceptHeader base="../" homeSectionBase="../home-2/" active="Shop"><button className="shop-header-bag" onClick={openBag} aria-label={`Open bag, ${cartCount} items`}><ShoppingBag size={21} aria-hidden="true"/><span>Bag</span><span className="shop-bag-count">{cartCount}</span></button></ConceptHeader>
     {notice&&<div className="shop-notice" role="status"><span>{notice==='filed'?'Order filed. Thank you for your contribution to corporate culture.':'Checkout paused. Your bag is right where you left it.'}</span><button onClick={()=>setNotice(null)} aria-label="Dismiss notice"><X size={18}/></button></div>}
     <main>
       <section className="shop-hero" aria-labelledby="shop-title">
-        <div className="shop-hero-copy"><h1 id="shop-title">WEAR YOUR<br/>BOUNDARIES.</h1><a href="#collection" className="shop-primary">Explore the collection <ArrowRight size={24}/></a></div>
+        <div className="shop-hero-copy"><p className="shop-kicker">The company store</p><h1 id="shop-title">OUT OF<br/>OFFICE.</h1><p className="shop-hero-intro">Wear your boundaries.<br/>Leave the jargon on.</p><a href="#collection" className="shop-primary">Explore the collection <ArrowRight size={20} aria-hidden="true"/></a></div>
         <button className="shop-campaign" onClick={()=>openDetail(bySku('CS-104'))} aria-label="View Out of Office Crewneck design">
-          <img src="../store/cs-104.webp" style={{objectFit:'contain',background:'#f5f1e7'}} width="1024" height="1024" fetchpriority="high" alt="Dusty pink Out of Office Crewneck — design preview"/>
-
-          <span className="shop-campaign-caption"><span>OUT OF OFFICE.</span><ArrowUpRight size={32}/></span>
+          <img src="../store/cs-104.webp" width="1254" height="1254" fetchpriority="high" alt="Dusty pink Out of Office Crewneck — design preview"/>
+          <span className="shop-campaign-caption"><span>Out of Office Crewneck <small>Collection preview</small></span><span className="shop-campaign-arrow"><ArrowUpRight size={23} aria-hidden="true"/></span></span>
         </button>
       </section>
       <section className="shop-collection" id="collection" aria-labelledby="collection-title">
-        <div className="shop-section-head"><h2 id="collection-title">THE COMPANY STORE.</h2></div>
-        <div className="shop-filter-row"><div className="shop-filters" role="group" aria-label="Filter products">{CATEGORIES.map(c=><button key={c} className={c===filter?'is-selected':''} aria-pressed={c===filter} onClick={()=>setFilter(c)}>{c}</button>)}</div><span className="shop-count shop-visually-hidden" aria-live="polite">{String(items.length).padStart(2,'0')} ITEMS</span></div>
-        <div className="shop-grid">{items.map(p=><button className={`shop-product shop-card-tone-${PRODUCTS.indexOf(p)%3}`} key={p.sku} onClick={()=>openDetail(p)} aria-label={`View ${p.name}, ${p.previewOnly?'design preview':fmt(p.price)}`}>
-          <div className={`shop-product-image shop-image-${p.sku}`}><ProductVisual product={p}/></div>
-          <div className="shop-card-caption"><div className="shop-card-title"><h3>{CARD_NAMES[p.sku]||p.name}</h3><ArrowUpRight size={30} aria-hidden="true"/></div><span className="shop-card-price">{p.previewOnly?'Design preview':fmt(p.price)}</span></div>
-        </button>)}</div>
+        <div className="shop-section-head"><h2 id="collection-title" tabIndex="-1">The collection</h2><p>Good things. Questionable office culture.</p></div>
+        <div className="shop-filter-row"><div className="shop-filters" role="group" aria-label="Filter products">{Object.keys(DEPARTMENTS).map(c=><button key={c} className={c===filter?'is-selected':''} aria-pressed={c===filter} onClick={()=>setFilter(c)}>{c==='All'?'Shop all':c}</button>)}</div><div className="shop-sort"><span className="shop-count" role="status">{items.length} products</span><label htmlFor="shop-sort">Sort by</label><select id="shop-sort" value={sort} onChange={e=>setSort(e.target.value)}><option value="featured">Featured</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="name">Name: A–Z</option></select></div></div>
+        <div className="shop-grid">{items.map(p=><article className="shop-product" key={p.sku}>
+          <button className={`shop-product-image shop-image-${p.sku}`} onClick={()=>openDetail(p)} aria-label={`View ${p.name}, ${p.previewOnly?'design preview':fmt(p.price)}`}><ProductVisual product={p}/>{p.previewOnly&&<span className="shop-product-tag">Preview</span>}<span className="shop-product-open">View details <Plus size={17} aria-hidden="true"/></span></button>
+          <div className="shop-card-caption"><h3><button onClick={()=>openDetail(p)}>{p.name}</button></h3><p className={`shop-card-price ${p.previewOnly?'is-preview':''}`}>{p.previewOnly?'Coming soon':fmt(p.price)}</p></div>
+        </article>)}</div>
+        <p className="shop-collection-note">The crewneck, Circle Back cap and email mug are design previews. Pricing and availability to come.</p>
       </section>
-      <section className="shop-editorial" aria-labelledby="dress-code"><h2 id="dress-code">OFF DUTY.<br/>ON REPEAT.</h2><a className="shop-text-link" href="../#listen">Play Circle Back Radio <ArrowUpRight size={26}/></a></section>
+      <section className="shop-departments" aria-labelledby="departments-title">
+        <div className="shop-section-head"><h2 id="departments-title">Shop by department</h2></div>
+        <div className="shop-department-grid">
+          <button className="shop-department shop-department-apparel" onClick={()=>browseDepartment('Apparel')}><img src="../store/cs-101.webp" width="1024" height="1024" loading="lazy" alt=""/><span><small>The unofficial dress code</small><strong>Apparel</strong><span>Explore apparel <ArrowUpRight size={20} aria-hidden="true"/></span></span></button>
+          <button className="shop-department shop-department-desk" onClick={()=>browseDepartment('Desk supplies')}><img src="../store/cs-501.webp" width="1254" height="1254" loading="lazy" alt=""/><span><small>For your other office</small><strong>Desk supplies</strong><span>Explore desk supplies <ArrowUpRight size={20} aria-hidden="true"/></span></span></button>
+        </div>
+      </section>
+      <section className="shop-editorial" aria-labelledby="dress-code"><Headphones aria-hidden="true"/><div><h2 id="dress-code">Off duty. On repeat.</h2><p>Every unofficial uniform needs a soundtrack.</p></div><a className="shop-text-link" href="../home-2/#c2-player">Listen to the beats <ArrowUpRight size={21} aria-hidden="true"/></a></section>
     </main>
-    <Footer/>
+    <ConceptFooter base="../"/>
     {d&&<Modal kind="product" label="product-title" onClose={closeDetail}>
       <button className="shop-close" onClick={closeDetail} aria-label="Close product detail"><X size={23}/></button>
       <div className="shop-detail-image"><ProductVisual product={d} eager/>{isDesignPreview(d)&&<span className="shop-preview-label">DESIGN PREVIEW</span>}</div>
