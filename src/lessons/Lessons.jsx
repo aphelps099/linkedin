@@ -45,7 +45,7 @@ export default function Lessons(){
     <ConceptHeader base="../" homeSectionBase="../" active="LinkedInifier"/>
     <main id="lessons-main">
       <div className="el-toolbar">
-        <h1>Get LinkedInified</h1>
+        <h1 className="el-emblem"><span className="el-sr">Get LinkedInified</span><img src="../lessons/get-linkedinified.svg" width="500" height="112" alt="" aria-hidden="true"/></h1>
         <div className="el-categories" role="group" aria-label="Post type">{TABS.map(([id,label])=><button type="button" key={id} aria-pressed={id===catId} onClick={()=>pick(id)}>{label}</button>)}</div>
       </div>
       <div className="el-workspace">
