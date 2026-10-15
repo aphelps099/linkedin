@@ -11,6 +11,7 @@
     "preview": "vite preview",
     "check:voice": "node scripts/check-voice.mjs",
     "check:store": "node scripts/check-store.mjs",
+    "check:newsletter": "node scripts/check-newsletter.mjs",
     "check:home": "node scripts/check-home.mjs",
     "check:studio": "node scripts/check-studio.mjs",
     "check:roast": "node scripts/check-roast.mjs",

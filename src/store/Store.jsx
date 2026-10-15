@@ -1,9 +1,10 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {ArrowUpRight, ArrowRight, X, Minus, Plus, ShoppingBag, Headphones} from 'lucide-react';
+import {ArrowRight, X, Minus, Plus, ShoppingBag} from 'lucide-react';
 import {PRODUCTS, bySku, fmt} from './products.js';
 import {ProductVisual, isDesignPreview} from './ProductVisual.jsx';
 import {ConceptHeader} from '../home-2/ConceptHeader.jsx';
 import {ConceptFooter} from '../home-2/ConceptFooter.jsx';
+import {FirstInLine} from './FirstInLine.jsx';
 import '../home-2/header.css';
 import '../home-2/footer.css';
 
@@ -98,12 +99,6 @@ export default function Store(){
     if(params.has('product')){params.delete('product');history.replaceState(null,'',location.pathname+(params.size?'?'+params.toString():'')+location.hash);}
   };
   const openBag=()=>{setNote('');setDrawer(true);};
-  const browseDepartment=department=>{
-    setFilter(department);setSort('featured');
-    const heading=document.getElementById('collection-title');
-    heading.focus({preventScroll:true});
-    heading.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
-  };
   const addToBag=()=>{
     if(!d || d.previewOnly || (d.sizes && !size) || qty>remaining) return;
     const chosen=d.sizes?size:null;
@@ -147,16 +142,9 @@ export default function Store(){
         </article>)}</div>
         <p className="shop-collection-note">The crewneck, Circle Back cap and email mug are design previews. Pricing and availability to come.</p>
       </section>
-      <section className="shop-departments" aria-labelledby="departments-title">
-        <div className="shop-section-head"><h2 id="departments-title">Shop by department</h2></div>
-        <div className="shop-department-grid">
-          <button className="shop-department shop-department-apparel" onClick={()=>browseDepartment('Apparel')}><img src="../store/cs-101.webp" width="1024" height="1024" loading="lazy" alt=""/><span><small>The unofficial dress code</small><strong>Apparel</strong><span>Explore apparel <ArrowUpRight size={20} aria-hidden="true"/></span></span></button>
-          <button className="shop-department shop-department-desk" onClick={()=>browseDepartment('Desk supplies')}><img src="../store/cs-501.webp" width="1254" height="1254" loading="lazy" alt=""/><span><small>For your other office</small><strong>Desk supplies</strong><span>Explore desk supplies <ArrowUpRight size={20} aria-hidden="true"/></span></span></button>
-        </div>
-      </section>
-      <section className="shop-editorial" aria-labelledby="dress-code"><Headphones aria-hidden="true"/><div><h2 id="dress-code">Off duty. On repeat.</h2><p>Every unofficial uniform needs a soundtrack.</p></div><a className="shop-text-link" href="../home-2/#c2-player">Listen to the beats <ArrowUpRight size={21} aria-hidden="true"/></a></section>
     </main>
     <ConceptFooter base="../"/>
+    <FirstInLine hidden={Boolean(d)||drawer}/>
     {d&&<Modal kind="product" label="product-title" onClose={closeDetail}>
       <button className="shop-close" onClick={closeDetail} aria-label="Close product detail"><X size={23}/></button>
       <div className="shop-detail-image"><ProductVisual product={d} eager/>{isDesignPreview(d)&&<span className="shop-preview-label">DESIGN PREVIEW</span>}</div>

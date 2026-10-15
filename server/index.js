@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { generateVoiceClips } from './voice-service.js';
 import { createCheckoutSession, verifyStripeSignature, fulfilOrder, parseSkuMap } from './store-service.js';
+import { createNewsletter } from './newsletter.js';
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
@@ -10,6 +11,9 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const dist = path.resolve(here, '../dist');
 
 app.disable('x-powered-by');
+// Railway terminates public requests at its reverse proxy.
+app.set('trust proxy', 1);
+const newsletter = createNewsletter({directory:process.env.NEWSLETTER_DATA_DIR});
 
 // The Stripe webhook must see the raw payload (its signature covers the exact
 // bytes), so this route is registered ahead of the JSON body parser.
@@ -45,6 +49,7 @@ app.post('/api/store/webhook', express.raw({type:'application/json'}), async (re
 });
 
 app.use(express.json({limit:'32kb'}));
+app.use('/api/newsletter', newsletter.router);
 
 app.post('/api/checkout', async (req, res)=>{
   try{
@@ -88,6 +93,7 @@ app.post('/api/voice', async (req, res)=>{
 app.get('/api/health', (_req, res)=>{
   res.json({
     ok:true,
+    newsletterConfigured:newsletter.isConfigured(),
     voiceConfigured:Boolean(
       (process.env.OPENAI_API_KEY || process.env.CUSTOM_CRED_API_OPENAI_COM_TOKEN) &&
       (process.env.ELEVENLABS_API_KEY || process.env.CUSTOM_CRED_API_ELEVENLABS_IO_TOKEN)
