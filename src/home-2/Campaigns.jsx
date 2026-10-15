@@ -17,6 +17,7 @@ export const Campaigns = memo(function Campaigns({base='/'}) {
   const [output, setOutput] = useState(() => linkedinify(MOMENTS[0], 927));
   const [copyStatus, setCopyStatus] = useState('');
   const [expanded, setExpanded] = useState(false);
+  const [approval, setApproval] = useState(0);
   const paragraphs = output.split(/\n\n/);
   const visibleParagraphs = expanded ? paragraphs : paragraphs.slice(0, 3).map(p => p.length > 160 ? `${p.slice(0, 160).trimEnd()}…` : p);
 
@@ -29,6 +30,7 @@ export const Campaigns = memo(function Campaigns({base='/'}) {
       return;
     }
     setOutput(linkedinify(ordinary.trim(), Math.floor(Math.random() * 4294967296)));
+    setApproval(count=>count+1);
     setExpanded(false);
     setCopyStatus('');
   };
@@ -38,6 +40,7 @@ export const Campaigns = memo(function Campaigns({base='/'}) {
     setOrdinary(next);
     document.getElementById('c2-ordinary')?.setCustomValidity('');
     setOutput(linkedinify(next, Math.floor(Math.random() * 4294967296)));
+    setApproval(count=>count+1);
     setExpanded(false);
     setCopyStatus('');
   };
@@ -69,8 +72,10 @@ export const Campaigns = memo(function Campaigns({base='/'}) {
             <button className="c2-another-example" type="button" onClick={tryMoment}>Try another ordinary moment</button>
           </form>
         </div>
-        <div className="c2-announcement">
-          <div className="c2-announcement-heading"><span>For immediate release</span><ArrowUpRight aria-hidden="true"/></div>
+        <div className="c2-announcement-stage">
+          <div key={approval} className={`c2-office-robot ${approval&&output?'is-approving':''}`} aria-hidden="true"><img src={`${base}home-2/office-robot.webp`} width="1448" height="1086" alt="" loading="lazy" decoding="async"/></div>
+          <div className="c2-announcement">
+          <div className="c2-announcement-heading"><span>For immediate release</span>{output&&<span key={approval} className={`c2-approval-stamp ${approval?'is-stamping':''}`} aria-hidden="true">Approved</span>}</div>
           <div aria-live="polite" aria-atomic="true">
             {output ? <div className="c2-generated">
               <div className="c2-output-text" id="c2-output-text" ref={result}>{visibleParagraphs.map((paragraph,i)=><p className={paragraph.startsWith('#')?'c2-hashtags':undefined} key={i}>{paragraph}</p>)}</div>
@@ -82,6 +87,7 @@ export const Campaigns = memo(function Campaigns({base='/'}) {
             </div> : <div className="c2-announcement-empty"><p>Make a<br/>big deal.</p><span>Your next announcement is one click away.</span></div>}
           </div>
           <p className="c2-copy-status" role="status">{copyStatus&&copyStatus!=='Copied'?copyStatus:''}</p>
+          </div>
         </div>
       </div>
     </section>
