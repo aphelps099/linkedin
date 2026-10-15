@@ -56,14 +56,17 @@ export default function Homepage(){
         </div>
       </section>
 
-      <section className="pop-listening" aria-labelledby="hits-title">
-      <h2 id="hits-title" className="pop-listening-title">THE CORPORATE HITS.</h2>
+      <section className="pop-listening pop-concert" aria-labelledby="hits-title">
+      <div className="pop-listening-inner">
+      <h2 id="hits-title" className="pop-listening-title"><span className="pop-heading-print">THE<br/>CORPORATE</span><img src={`${base}home/hits-marker.webp`} width="1536" height="1024" loading="lazy" alt="hits."/></h2>
       <section id="listen" className={`pop-radio ${state.playing?'is-playing':''}`} aria-label="Circle Back Radio">
-        <div className="pop-radio-meta"><h3><span className="pop-live-dot"/>CIRCLE BACK RADIO</h3></div>
+        <div className="pop-concert-stage">
+        <div className="pop-radio-meta"><h3><span className="pop-live-dot"/>CIRCLE BACK RADIO<span className="pop-radio-signal" aria-hidden="true"><i/><i/><i/><i/></span></h3></div>
         <div className={`pop-lyrics ${state.text.length>35?'is-long':''}`} aria-label={`Lyrics: ${state.text}`}>
           <div aria-hidden="true">{state.text.split(/\s+/).map((word,i)=><React.Fragment key={`${state.text}-${i}`}><span className={i===state.word?'is-current':''}>{word}</span>{' '}</React.Fragment>)}</div>
         </div>
-        <div className="pop-radio-caption" aria-live="polite">{state.error ? state.error : state.loading?'PLEASE HOLD. YOUR SYNERGY IS IMPORTANT TO US.':state.playing?'YOU KNOW THE WORDS.':state.elapsed>0?'TAKING THIS OFFLINE. PRESS PLAY TO CONTINUE.':'PRESS PLAY. YOU ALREADY KNOW THE WORDS.'}</div>
+        <div className={`pop-radio-caption ${state.error||state.loading?'has-notice':''}`} aria-live="polite">{state.error|| (state.loading?'Tuning in…':'')}</div>
+        </div>
         <div className="pop-controls">
           <div className="pop-transport">
             <button className={`pop-icon ${state.shuffle?'is-active':''}`} aria-label="Shuffle tracks" aria-pressed={state.shuffle} title="Shuffle tracks" onClick={()=>radio.current?.shuffle()}><Shuffle/></button>
@@ -87,6 +90,7 @@ export default function Homepage(){
         <div className="pop-track-footnote"><span>5 ORIGINAL MIXES / ZERO ACTION ITEMS</span><a className="pop-link" href={studioUrl}>Open the studio <ArrowUpRight size={18}/></a></div>
       </section>
 
+      </div>
       </section>
 
       <section id="roast" className="pop-roast" aria-labelledby="roast-title">

@@ -5,6 +5,7 @@ import {CATEGORIES, PRODUCTS, bySku, fmt} from './products.js';
 import {ProductVisual, isDesignPreview} from './ProductVisual.jsx';
 import {Footer} from '../brand/Footer.jsx';
 
+const CARD_NAMES={'CS-104':'Out of Office.','CS-203':'Circle Back.','CS-501':'Could’ve been an email.'};
 const CART_KEY = 'cs-order';
 const endpoint = () => import.meta.env.VITE_VOICE_API_URL
   ? new URL('/api/checkout', import.meta.env.VITE_VOICE_API_URL).href : '/api/checkout';
@@ -109,33 +110,31 @@ export default function Store(){
   return <div className="shop-app">
     <a className="shop-skip" href="#collection">Skip to products</a>
     <Header base="../" active="Store"><button className="cb-header-bag" onClick={openBag} aria-label={`Open bag, ${cartCount} items`}>Bag ({String(cartCount).padStart(2,'0')})</button></Header>
-    <div className="shop-announcement">FREE SHIPPING AT $50 <span>·</span> PRINTED ON DEMAND <span>·</span> WORN OFF THE CLOCK</div>
     {notice&&<div className="shop-notice" role="status"><span>{notice==='filed'?'Order filed. Thank you for your contribution to corporate culture.':'Checkout paused. Your bag is right where you left it.'}</span><button onClick={()=>setNotice(null)} aria-label="Dismiss notice"><X size={18}/></button></div>}
     <main>
       <section className="shop-hero" aria-labelledby="shop-title">
-        <div className="shop-hero-copy"><span className="shop-label">THE COMPANY STORE / COLLECTION 01</span><h1 id="shop-title">OUT OF<br/>OFFICE.</h1><p>For the person behind<br/>the professional persona.</p><a href="#collection" className="shop-primary">SHOP THE COLLECTION <ArrowRight size={22}/></a><span className="shop-hero-fine">SWEATSHIRTS. CAPS. COFFEE BREAKS.</span></div>
+        <div className="shop-hero-copy"><h1 id="shop-title">WEAR YOUR<br/>BOUNDARIES.</h1><a href="#collection" className="shop-primary">Explore the collection <ArrowRight size={24}/></a></div>
         <button className="shop-campaign" onClick={()=>openDetail(bySku('CS-104'))} aria-label="View Out of Office Crewneck design">
           <img src="../store/cs-104.webp" style={{objectFit:'contain',background:'#f5f1e7'}} width="1024" height="1024" fetchpriority="high" alt="Dusty pink Out of Office Crewneck — design preview"/>
 
-          <span className="shop-campaign-caption"><span>THE AFTER-HOURS UNIFORM</span><span>DESIGN PREVIEW <ArrowUpRight size={18}/></span></span>
+          <span className="shop-campaign-caption"><span>OUT OF OFFICE.</span><ArrowUpRight size={32}/></span>
         </button>
       </section>
       <section className="shop-collection" id="collection" aria-labelledby="collection-title">
-        <div className="shop-section-head"><div><span className="shop-label">GOOD TASTE. QUESTIONABLE ATTITUDE.</span><h2 id="collection-title">OFFICE ESSENTIALS.</h2></div><p>Wear your boundaries.<br/>Decorate accordingly.</p></div>
-        <div className="shop-filter-row"><div className="shop-filters" role="group" aria-label="Filter products">{CATEGORIES.map(c=><button key={c} className={c===filter?'is-selected':''} aria-pressed={c===filter} onClick={()=>setFilter(c)}>{c}</button>)}</div><span className="shop-count" aria-live="polite">{String(items.length).padStart(2,'0')} ITEMS</span></div>
-        <div className="shop-grid">{items.map(p=><button className="shop-product" key={p.sku} onClick={()=>openDetail(p)} aria-label={`View ${p.name}, ${p.previewOnly?'design preview':fmt(p.price)}`}>
-          <div className={`shop-product-image shop-image-${p.sku}`}><ProductVisual product={p}/><span className="shop-product-tag">{p.cat}</span><span className="shop-product-open" aria-hidden="true"><ArrowUpRight size={22}/></span></div>
-          <div className="shop-product-info"><span>{p.name}</span><span>{p.previewOnly?'View design ↗':fmt(p.price)}</span></div><small>{isDesignPreview(p)?'Design preview':'Circle Back®'}</small>
+        <div className="shop-section-head"><h2 id="collection-title">THE COMPANY STORE.</h2></div>
+        <div className="shop-filter-row"><div className="shop-filters" role="group" aria-label="Filter products">{CATEGORIES.map(c=><button key={c} className={c===filter?'is-selected':''} aria-pressed={c===filter} onClick={()=>setFilter(c)}>{c}</button>)}</div><span className="shop-count shop-visually-hidden" aria-live="polite">{String(items.length).padStart(2,'0')} ITEMS</span></div>
+        <div className="shop-grid">{items.map(p=><button className={`shop-product shop-card-tone-${PRODUCTS.indexOf(p)%3}`} key={p.sku} onClick={()=>openDetail(p)} aria-label={`View ${p.name}, ${p.previewOnly?'design preview':fmt(p.price)}`}>
+          <div className={`shop-product-image shop-image-${p.sku}`}><ProductVisual product={p}/></div>
+          <div className="shop-card-caption"><div className="shop-card-title"><h3>{CARD_NAMES[p.sku]||p.name}</h3><ArrowUpRight size={30} aria-hidden="true"/></div><span className="shop-card-price">{p.previewOnly?'Design preview':fmt(p.price)}</span></div>
         </button>)}</div>
       </section>
-      <section className="shop-editorial" aria-labelledby="dress-code"><div><span className="shop-label">AN UPDATED EMPLOYEE HANDBOOK</span><h2 id="dress-code">DRESS CODE:<br/>DON’T REPLY ALL.</h2></div><div><span className="shop-editorial-mark" aria-hidden="true">↗</span><p>Big feelings. Small talk.<br/>A soundtrack for all of it.</p><a className="shop-text-link" href="../#listen">Clock in to Circle Back Radio <ArrowUpRight size={18}/></a></div></section>
-      <div className="shop-service"><span>01 / INDEPENDENT DESIGN</span><span>02 / PRINTED ON DEMAND</span><span>03 / CORPORATE CULTURE, RECONSIDERED</span></div>
+      <section className="shop-editorial" aria-labelledby="dress-code"><h2 id="dress-code">OFF DUTY.<br/>ON REPEAT.</h2><a className="shop-text-link" href="../#listen">Play Circle Back Radio <ArrowUpRight size={26}/></a></section>
     </main>
     <Footer/>
     {d&&<Modal kind="product" label="product-title" onClose={closeDetail}>
       <button className="shop-close" onClick={closeDetail} aria-label="Close product detail"><X size={23}/></button>
       <div className="shop-detail-image"><ProductVisual product={d} eager/>{isDesignPreview(d)&&<span className="shop-preview-label">DESIGN PREVIEW</span>}</div>
-      <div className="shop-detail-info"><span className="shop-label">{d.cat} / {d.sku}</span><h2 id="product-title">{d.name}</h2><div className="shop-detail-price">{d.previewOnly?'DESIGN PREVIEW':<>{fmt(d.price)} <span>USD</span></>}</div><p className="shop-description">{d.desc}</p>
+      <div className="shop-detail-info"><span className="shop-label">{d.cat}</span><h2 id="product-title">{d.name}</h2><div className="shop-detail-price">{d.previewOnly?'DESIGN PREVIEW':<>{fmt(d.price)} <span>USD</span></>}</div><p className="shop-description">{d.desc}</p>
         {!d.previewOnly&&(d.sizes?<fieldset className="shop-size-field"><legend>SIZE <span>{size||'SELECT YOUR SIZE'}</span></legend><div className="shop-sizes">{d.sizes.map(s=><button key={s} className={s===size?'is-selected':''} aria-pressed={s===size} onClick={()=>{setSize(s);setQty(1);}}>{s}</button>)}</div></fieldset>:<p className="shop-one-size">{d.cat==='Hats'?'ONE SIZE / ADJUSTABLE':'ONE SIZE'}</p>)}
         {!d.previewOnly&&<div className="shop-add-row"><Quantity value={qty} max={remaining} onChange={setQty}/><button className="shop-primary" onClick={addToBag} disabled={(d.sizes&&!size)||remaining<qty}>{remaining<qty?'BAG LIMIT REACHED':d.sizes&&!size?'SELECT A SIZE':'ADD TO BAG'}<ArrowRight size={20}/></button></div>}
         <p className="shop-detail-shipping">{d.previewOnly?'Pricing and availability to come. This design is not yet available to order.':'Printed on demand. Free shipping at $50.'}</p>
@@ -143,7 +142,7 @@ export default function Store(){
       </div>
     </Modal>}
     {drawer&&<Modal kind="bag" label="bag-title" onClose={()=>setDrawer(false)}>
-      <div className="shop-bag-head"><div><span className="shop-label">PERSONAL EFFECTS / CS-01</span><h2 id="bag-title">YOUR BAG <span>({String(cartCount).padStart(2,'0')})</span></h2></div><button className="shop-close" onClick={()=>setDrawer(false)} aria-label="Close bag"><X size={23}/></button></div>
+      <div className="shop-bag-head"><div><h2 id="bag-title">YOUR BAG <span>({String(cartCount).padStart(2,'0')})</span></h2></div><button className="shop-close" onClick={()=>setDrawer(false)} aria-label="Close bag"><X size={23}/></button></div>
       {cart.length===0?<div className="shop-empty"><span aria-hidden="true">(00)</span><h3>NOTHING TO DECLARE.</h3><p>Your next office essential is out there.</p><button className="shop-primary" onClick={()=>{setDrawer(false);document.getElementById('collection').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}}>BACK TO THE COLLECTION <ArrowRight size={19}/></button></div>:<>
         <div className="shop-bag-shipping">{subtotal>=50?'FREE SHIPPING. A WELL-EARNED PERK.':`${fmt(50-subtotal)} AWAY FROM FREE SHIPPING.`}</div>
         <div className="shop-cart-list">{cart.map((c,i)=>{const p=bySku(c.sku);return <div className="shop-cart-row" key={c.sku+(c.size||'')}><div className="shop-cart-image"><ProductVisual product={p}/></div><div className="shop-cart-info"><h3>{p.name}</h3><p>{c.size?`SIZE ${c.size}`:'ONE SIZE'} <span>{fmt(p.price*c.qty)}</span></p><div><Quantity value={c.qty} onChange={v=>updateQty(i,v)} label={`Quantity of ${p.name}${c.size?` size ${c.size}`:''}`}/><button className="shop-remove" onClick={()=>remove(i)} aria-label={`Remove ${p.name}${c.size?` size ${c.size}`:''}`}>Remove</button></div></div></div>;})}</div>
