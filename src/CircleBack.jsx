@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronRight, Settings, Shuffle, Upload, X } from 'lucide-react';
+import { ChevronRight, Settings, Shuffle, X } from 'lucide-react';
 import { Unit } from './components/chassis/Unit.jsx';
 import { Masthead } from './components/chassis/Masthead.jsx';
 import { Ticker } from './components/chassis/Ticker.jsx';
@@ -27,6 +27,7 @@ import { randomComment } from './feed.js';
 import { makeSong, bandAt } from './song.js';
 import { requestRemixVoiceClip } from './voice.js';
 import { StudioDesk } from './studio/StudioDesk.jsx';
+import { StudioControls } from './studio/StudioControls.jsx';
 import { GROOVES, createGroove, grooveMidi } from './studio/grooves.js';
 
 const PHRASES = [
@@ -720,7 +721,7 @@ export default function CircleBack({stagePreview=false}){
   React.useEffect(()=>{
     const down = e=>{
       if(e.metaKey||e.ctrlKey||e.altKey) return;
-      if(e.target?.closest('input,textarea,select,[contenteditable="true"],[role="slider"]')) return;
+      if(e.target?.closest('dialog,input,textarea,select,[contenteditable="true"],[role="slider"]')) return;
       if(e.target?.closest('button,a,[role="button"]') && (e.code==='Space'||e.key==='Enter')) return;
       // the performance advances; it does not browse backward
       if(!e.shiftKey && e.key==='ArrowRight'){
@@ -932,7 +933,11 @@ export default function CircleBack({stagePreview=false}){
     </button>
   </div>;
 
-  if(studio && !advanced) return <StudioDesk
+  const controls = audioDrawer ? <StudioControls character={character} onCharacter={setCharacter} tempo={tempo} onTempo={setTempo}
+    effects={{sinc,deliv,decay,weird,dist,pitch}} onPreset={p=>{setSinc(p.sinc);setDeliv(p.deliv);setDecay(p.decay);setWeird(p.weird);setDist(p.dist);setPitch(p.pitch);}}
+    onPreview={()=>{CBAudio.unlock();speak(ref.current.armed);}} onClose={()=>setAudioDrawer(false)}/> : null;
+
+  if(studio && !advanced) return <><StudioDesk
     playing={playing} pos={pos} tempo={tempo} grooveId={grooveId} song={song} phrases={PHRASES} armed={armed}
     onPhrase={pressKey} onPlay={()=>{CBAudio.unlock();setPlaying(p=>!p);}}
     onStop={()=>{setPlaying(false);try{CBVoice.current?.source.stop();if(typeof speechSynthesis!=='undefined')speechSynthesis.cancel();}catch{}}}
@@ -941,14 +946,13 @@ export default function CircleBack({stagePreview=false}){
     muted={muted} onMute={id=>setMuted(m=>({...m,[id]:!m[id]}))} master={masterVolume} onMaster={setMasterVolume}
     effects={{sinc,deliv,pitch,weird}} onEffect={(id,value)=>({tempo:setTempo,sinc:setSinc,deliv:setDeliv,pitch:setPitch,weird:setWeird}[id]?.(value))}
     character={character} onCharacter={setCharacter} band={band} onBand={()=>setBand(b=>!b)}
-    monitor={<Monitor ref={canvasRef} stateRef={ref}/>}
     remixPanel={<RemixPanel narrow={narrow} result={remix} initial={handoff} onRemix={buildRemix} onClose={()=>setRemixOpen(false)}/>}
     onRemix={()=>setRemixOpen(o=>!o)} remixOpen={remixOpen} onStage={()=>setStudio(false)} onAdvanced={()=>setAdvanced(true)}
-    onExport={startExport} onMidi={exportMidi} exporting={exp} take={take} ticker={ticker} loops={loops} onLoops={setLoops}
+    onAudioTools={()=>setAudioDrawer(true)} ticker={ticker}
     voxLocked={voxLocked} onVoxLock={toggleVoxLock}
     pattern={rack.pattern} drums={DRUMS} rec={rec}
     onRecord={()=>{CBAudio.unlock();if(!rec){setVoxLocked(false);setPlaying(true);}setRec(r=>!r);}}
-    onDrum={i=>{const d=DRUMS[i];if(!d)return;CBAudio.unlock();CBAudio.trigger(d.id,1);const r=ref.current;if(r.rec&&r.playing&&r.lastStep!==undefined)setRack(rk=>{const p=rk.pattern.map(row=>[...row]);p[i][r.lastStep]=2;return {...rk,pattern:p};});}}/>;
+    onDrum={i=>{const d=DRUMS[i];if(!d)return;CBAudio.unlock();CBAudio.trigger(d.id,1);const r=ref.current;if(r.rec&&r.playing&&r.lastStep!==undefined)setRack(rk=>{const p=rk.pattern.map(row=>[...row]);p[i][r.lastStep]=2;return {...rk,pattern:p};});}}/>{controls}</>;
 
   if(!studio) return <div className={stagePreview?'stage2':undefined} style={{position:'relative',minHeight:'100vh',background:'var(--blue)',color:'#fff',fontFamily:'var(--sans)',
     padding: narrow ? '14px 14px 26px' : '20px 26px 30px',boxSizing:'border-box',display:'flex',flexDirection:'column',gap:narrow?12:16,
@@ -988,18 +992,6 @@ export default function CircleBack({stagePreview=false}){
           onClick={newTrack}
           style={{background:'transparent',color:'#fff',borderColor:'#fff',padding:9,width:38,height:38,display:'inline-grid',placeItems:'center'}}>
           <Shuffle size={17} strokeWidth={1.8} aria-hidden="true"/>
-        </Button>
-        <Button
-          aria-label={exp ? `Exporting MP4 with audio, ${Math.min(exp.done,exp.total)} of ${exp.total}` : 'Export MP4 with audio'}
-          title="Export MP4 with audio"
-          variant="rec"
-          on={!!exp}
-          onClick={()=>startExport('video')}
-          style={exp
-            ? {height:38,display:'inline-flex',alignItems:'center',gap:7}
-            : {background:'transparent',color:'#fff',borderColor:'#fff',padding:9,width:38,height:38,display:'inline-grid',placeItems:'center'}}>
-          <Upload size={17} strokeWidth={1.8} aria-hidden="true"/>
-          {exp && <span>{Math.min(exp.done,exp.total)}/{exp.total}</span>}
         </Button>
         <Button
           aria-label="Open audio tools"
@@ -1062,12 +1054,10 @@ export default function CircleBack({stagePreview=false}){
       <div className="stage2-transport"><button className="stage2-play" onClick={()=>{CBAudio.unlock();setPlaying(p=>!p);}} aria-label={playing?'Pause performance':'Play performance'}>{playing?'Ⅱ':'▶'}</button>
         <div className="stage2-track"><strong>{remix?'Your remix':song.name}</strong><span>{tempo} BPM · {SECTIONS[energy]}</span></div>
         <button className="stage2-shuffle" onClick={newTrack} aria-label="New track"><Shuffle size={21}/></button>
-        <button className="stage2-export" disabled={!!exp} onClick={()=>startExport('video')}>{exp?'Recording…':'Export'} <Upload size={17}/></button>
       </div>
       <div className="stage2-keys"><button onClick={firePhrase}>Phrase <span>↗</span></button><button aria-pressed={energy===1} onClick={()=>setEnergyLevel(energy===1?0:1)}>Build <span>＋</span></button><button aria-pressed={energy===2} onClick={()=>setEnergyLevel(2)}>Drop <span>↓</span></button></div>
       <div className="stage2-bottom"><button onClick={()=>stepPhrase(1)}>Next phrase →</button><button aria-pressed={!voxLocked} onClick={toggleVoxLock}>Auto phrases {voxLocked?'off':'on'}</button></div>
       <span className="stage2-accessible" aria-live="polite">{ticker}</span>
-      {take&&<a className="stage2-download" href={take.url} download={take.name}>Download your take ↗</a>}
     </section> : <><div style={{position:'relative',zIndex:1}}>{stageArrows}</div>
     <div style={{position:'relative',zIndex:1,display:'flex',justifyContent:'space-between',gap:12,flexWrap:'wrap',opacity:.72,fontSize:9.5,fontWeight:700,letterSpacing:'.16em',textTransform:'uppercase'}}>
       <span>© Digital Creative 2026 · {remix ? `Your remix · index ${remix.score} · ${remix.rank}` : song.name} · {tempo} BPM · {SECTIONS[energy]}</span>
@@ -1077,70 +1067,7 @@ export default function CircleBack({stagePreview=false}){
       </span>
     </div>
     </>}
-    {audioDrawer && <>
-      <button
-        type="button"
-        aria-label="Close audio tools"
-        onClick={()=>setAudioDrawer(false)}
-        style={{position:'fixed',zIndex:39,inset:0,border:0,background:'rgba(3,31,60,.46)',backdropFilter:'blur(2px)',cursor:'default'}}/>
-      <aside
-        role="dialog"
-        aria-modal="true"
-        aria-label="Audio tools"
-        style={{position:'fixed',zIndex:40,top:0,right:0,bottom:0,width:narrow?'calc(100vw - 28px)':'70vw',maxWidth:980,minWidth:narrow?0:620,boxSizing:'border-box',overflowY:'auto',background:'var(--paper)',color:'var(--ink)',borderLeft:'var(--rule-heavy) solid var(--ink)',boxShadow:'-24px 0 70px rgba(2,31,59,.32)',padding:narrow?'22px 18px 32px':'30px 34px 42px'}}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'start',gap:20,borderBottom:'var(--rule-heavy) solid var(--ink)',paddingBottom:18}}>
-          <div>
-            <div style={{fontFamily:'var(--mono)',fontSize:9.5,fontWeight:700,letterSpacing:'.18em',textTransform:'uppercase',color:'var(--blue)'}}>Audio tools · Form AT-70</div>
-            <h2 style={{fontSize:narrow?27:36,lineHeight:1,letterSpacing:'-.045em',margin:'8px 0 0'}}>Adjust the corporate signal.</h2>
-          </div>
-          <Button onClick={()=>setAudioDrawer(false)} style={{display:'inline-flex',alignItems:'center',gap:8,whiteSpace:'nowrap'}}>
-            <X size={16} aria-hidden="true"/> Close
-          </Button>
-        </div>
-
-        <div style={{display:'grid',gridTemplateColumns:narrow?'1fr':'1fr 1fr',gap:narrow?24:34,marginTop:26}}>
-          <Bay title="Performance" aside="Human factors">
-            <div style={{display:'flex',gap:20,flexWrap:'wrap'}}>
-              <Knob label="Sincerity" value={sinc} onChange={setSinc}/>
-              <Knob label="Delivery" value={deliv} onChange={setDeliv}/>
-              <Knob label="Decay" value={decay} onChange={setDecay}/>
-              <Knob label="Tempo" value={(tempo-60)/140} onChange={v=>setTempo(Math.round(60+v*140))} format={()=>tempo+' BPM'}/>
-            </div>
-            <p style={{margin:'16px 0 0',fontSize:12,lineHeight:1.5,color:'var(--text-meta)'}}>
-              Sincerity adjusts tonal polish and subtle warble, not vocal height. Delivery moves from deliberate to brisk while staying close to natural speech.
-            </p>
-          </Bay>
-          <Bay title="Signal treatment" aside="Use responsibly">
-            <div style={{display:'flex',flexDirection:'column',gap:16}}>
-              <Scrubber label="Pitch" value={pitch} onChange={setPitch}
-                format={v=>{ const s = Math.round(-8+v*10); return `${s>0?'+':''}${s} st`; }}/>
-              <Scrubber label="Weirdness" value={weird} onChange={setWeird}/>
-              <Scrubber label="Distortion" value={dist} onChange={setDist}/>
-            </div>
-          </Bay>
-        </div>
-
-        <Bay title="Voice environment" aside={(CHARACTERS.find(c=>c.id===character)||CHARACTERS[0]).name} style={{marginTop:26}}>
-          <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
-            {CHARACTERS.map(c=>
-              <Button key={c.id} on={character===c.id} onClick={()=>setCharacter(c.id)}>{c.name}</Button>)}
-          </div>
-        </Bay>
-
-        <Bay title="Export filing" aside={`≈ ${Math.round(loops*patLen*(60/tempo/4))} seconds`} style={{marginTop:26}}>
-          <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}>
-            {[2,4,8].map(n=><Button key={n} on={loops===n} onClick={()=>setLoops(n)}>{n} loops</Button>)}
-            <Button variant="rec" on={exp?.mode==='video'} onClick={()=>startExport('video')}>Export MP4 + audio</Button>
-            <Button variant="rec" on={exp?.mode==='audio'} onClick={()=>startExport('audio')}>Export audio</Button>
-          </div>
-        </Bay>
-      </aside>
-    </>}
-    {take && <div style={{position:'relative',zIndex:1,display:'flex',gap:12,alignItems:'center',flexWrap:'wrap'}}>
-      <a href={take.url} download={take.name} style={{fontFamily:'var(--mono)',fontSize:11,color:'#fff'}}>
-        ↓ {take.name}{take.mode==='video' ? ' · audio embedded' : ''}
-      </a>
-    </div>}
+    {controls}
   </div>;
 
   return <Unit style={narrow ? {padding:'20px 14px'} : undefined}>
@@ -1166,22 +1093,6 @@ export default function CircleBack({stagePreview=false}){
           <Button on={playing} onClick={()=>{ CBAudio.unlock(); setPlaying(x=>!x); }}>{playing?'Pause':'Play'}</Button>
           <Button onClick={newTrack}>New track (R)</Button>
         </div>
-        <div>
-          <div style={{marginBottom:6}}><Silk>Run of show</Silk>{' '}<Readout style={{marginLeft:8}}>≈ {Math.round(loops*patLen*(60/tempo/4))}s</Readout></div>
-          <div style={{display:'flex',gap:6}}>
-            {[2,4,8].map(n=>
-              <Button key={n} on={loops===n} onClick={()=>setLoops(n)} style={{padding:'7px 11px'}}>{n} loops</Button>)}
-          </div>
-        </div>
-        <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
-          <Button variant="rec" on={exp?.mode==='video'} onClick={()=>startExport('video')}>Export video (mp4)</Button>
-          <Button variant="rec" on={exp?.mode==='audio'} onClick={()=>startExport('audio')}>Export audio</Button>
-        </div>
-        <div><Silk>Status</Silk>{' '}<Readout style={{marginLeft:8}}>{exp ? `ON THE RECORD ${String(Math.min(exp.done,exp.total)).padStart(2,'0')}/${exp.total}` : take ? 'CLEARED FOR THE FEED' : '—'}</Readout></div>
-        {take && (take.mode==='video'
-          ? <video controls src={take.url} style={{width:'100%',border:'var(--rule-frame) solid var(--ink)',display:'block'}}/>
-          : <audio controls src={take.url} style={{width:'100%',display:'block'}}/>)}
-        {take && <a href={take.url} download={take.name} style={{fontFamily:'var(--mono)',fontSize:10.5,color:'var(--blue)'}}>Download again — {take.name}</a>}
       </div>
     </div>
 
