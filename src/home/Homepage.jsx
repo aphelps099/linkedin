@@ -4,7 +4,7 @@ import {ArrowUpRight, Play, Pause, SkipBack, SkipForward, Shuffle, Volume2, Volu
 import {createRadio} from './radio.js';
 import {TRACKS, LINES, formatTime, siteBase} from './tracks.js';
 import {PRODUCTS} from '../store/products.js';
-import {ProductVisual, isDesignPreview} from '../store/ProductVisual.jsx';
+import {ProductVisual} from '../store/ProductVisual.jsx';
 import {Footer} from '../brand/Footer.jsx';
 import '../brand/fonts.css';
 import './home.css';
@@ -96,12 +96,10 @@ export default function Homepage(){
       </section>
 
       <section id="store" className="pop-store" aria-labelledby="store-title">
-        <div className="pop-store-label"><span>THE COMPANY STORE</span><span>OFFICE ESSENTIALS / VOL. 01</span></div>
-        <div className="pop-section-head"><div><h2 id="store-title">WEAR YOUR BOUNDARIES.</h2><p>Off-duty essentials. On-brand attitude.</p></div><a className="pop-link" href={`${toolsBase}store/`}>Shop the collection <ArrowUpRight size={18}/></a></div>
-        <div className="pop-products">{FEATURED.map((p,i)=><a className="pop-product" href={`${toolsBase}store/?product=${p.sku}`} key={p.sku}>
-          <div className={`pop-product-image product-${i}`}>
-            <ProductVisual product={p} base={base}/><span className="pop-product-index">0{i+1} / {p.cat.toUpperCase()}</span>
-          </div><div className="pop-product-info"><span>{p.name}</span><span>{p.previewOnly?'View design ↗':`$${p.price}`}</span></div>{isDesignPreview(p)&&<small className="pop-product-note">Design preview</small>}
+        <div className="pop-merch-head"><h2 id="store-title">WEAR YOUR<br/>BOUNDARIES.</h2><a className="pop-merch-cta" href={`${toolsBase}store/`}>Explore the store <ArrowUpRight aria-hidden="true"/></a></div>
+        <div className="pop-products">{FEATURED.map((p,i)=><a className={`pop-product pop-product-${i}`} href={`${toolsBase}store/?product=${p.sku}`} key={p.sku} aria-label={`Explore ${p.name} — design preview`}>
+          <div className={`pop-product-image product-${i}`}><ProductVisual product={p} base={base}/></div>
+          <div className="pop-merch-title"><h3>{['OUT OF OFFICE.','CIRCLE BACK.','COULD’VE BEEN AN EMAIL.'][i]}</h3><ArrowUpRight aria-hidden="true"/></div>
         </a>)}</div>
       </section>
 
