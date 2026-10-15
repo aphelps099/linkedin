@@ -6,14 +6,14 @@ export const DEFAULT_ANSWERS = {
   announce:{kind:'A new hire'}, lesson:{source:'A tiny everyday moment',topic:'Leadership'},
   sell:{}, urgency:{kind:"We're hiring"}, ai:{}
 };
-const EXAMPLES = {
+export const EXAMPLES = {
   announce:{kind:'A new hire',name:'Jordan',role:'Director of Vibes',before:'a very long meeting',quality:'an inbox at zero',goal:'make Fridays feel like Fridays',company:'Circle Back Inc.'},
   lesson:{source:'A tiny everyday moment',moment:'The office plant survived a three-day weekend without a strategy deck',lesson:'Sometimes growth just needs a little space',topic:'Leadership'},
   sell:{offer:'meeting reduction consulting',customer:'Alex',problem:'a calendar with no visible white space',result:'42% fewer meetings and one actual lunch break',cta:'Send me the word OFFLINE'},
   urgency:{kind:'Limited spots',thing:'a workshop about having fewer workshops',scarcity:'3 seats and absolutely no breakout rooms',audience:'people who have been on mute since Monday'},
   ai:{tool:'ChatGPT',task:'rewrite a three-word email',multiplier:'10x',doomed:'the phrase per my last email'}
 };
-const ANNOUNCEMENT_EXAMPLES={
+export const ANNOUNCEMENT_EXAMPLES={
   'A new hire':EXAMPLES.announce,
   'A promotion':{...EXAMPLES.announce,kind:'A promotion',role:'Senior Director of Vibes'},
   'A product launch':{kind:'A product launch',name:'ReplyAll',goal:'turn every meeting into a three-line email',before:'we wanted our afternoons back',quality:'a very useful mute button',company:'Circle Back Inc.'},

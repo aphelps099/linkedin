@@ -1,199 +1,77 @@
+import React, {useMemo,useRef,useState,useEffect} from 'react';
 import {Header} from '../brand/Header.jsx';
-import React from 'react';
-import { Button } from '../components/controls/Button.jsx';
-import { byId } from './categories.js';
-import { Intake, DEFAULT_ANSWERS } from './Intake.jsx';
-import { Footer } from '../brand/Footer.jsx';
-import { LEVELS, generate, roast, newSeed } from './generator.js';
-import { scorePost } from './score.js';
+import {Footer} from '../brand/Footer.jsx';
+import {byId} from './categories.js';
+import {DEFAULT_ANSWERS,EXAMPLES,ANNOUNCEMENT_EXAMPLES} from './Intake.jsx';
+import {Sentence,sentenceParts} from './Sentence.jsx';
+import {LEVELS,generate,roast,newSeed} from './generator.js';
+import {scorePost} from './score.js';
 
-// LINKEDIN LESSONS — a guided post generator disguised as satire.
-// A complete corporate intake form → the LinkedInification dial.
-// Level 1 writes the post you should publish; level 5 writes the one you will.
-
-const LABEL = { fontSize: 'var(--label-size)', fontWeight: 700, letterSpacing: 'var(--label-tracking)', textTransform: 'uppercase' };
-const META = { ...LABEL, color: 'var(--text-meta)' };
-
-async function copyText(t){
-  try { await navigator.clipboard.writeText(t); }
-  catch {
-    const ta = document.createElement('textarea');
-    ta.value = t; document.body.appendChild(ta); ta.select();
-    try { if(!document.execCommand('copy')) throw new Error('Copy unavailable'); } finally { document.body.removeChild(ta); }
-  }
+const TABS=[['announce','Announce'],['lesson','Find a lesson'],['sell','Sell'],['urgency','Create urgency'],['ai','Talk AI']];
+async function copyText(text){
+  try{await navigator.clipboard.writeText(text);}
+  catch{const field=document.createElement('textarea');field.value=text;document.body.appendChild(field);field.select();try{if(!document.execCommand('copy'))throw new Error('Copy unavailable');}finally{field.remove();}}
 }
-
-function useNarrow(){
-  const [narrow, setNarrow] = React.useState(() => window.innerWidth < 880);
-  React.useEffect(() => {
-    const on = () => setNarrow(window.innerWidth < 880);
-    window.addEventListener('resize', on);
-    return () => window.removeEventListener('resize', on);
-  }, []);
-  return narrow;
-}
-
-// ---- the LinkedIn-style preview card ------------------------------------
-
-function Post({ text, score, narrow }){
-  const paras = text.split(/\n{2,}/);
-  const reactions = 3 + Math.round(score.index * 8.4) + score.oneLiners * 11;
-  const comments = 1 + Math.round(score.wellDeserved / 6);
-  const reposts = Math.round(score.index / 9);
-  return <div style={{ background: '#fff', border: 'var(--rule-frame) solid var(--ink)' }}>
-    <div style={{ display: 'flex', gap: 10, alignItems: 'center', padding: '14px 16px 0' }}>
-      <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--blue)', color: '#fff',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 15, flex: 'none' }}>YU</div>
-      <div style={{ minWidth: 0 }}>
-        <div style={{ fontSize: 13.5, fontWeight: 700 }}>You <span style={{ color: 'var(--text-meta)', fontWeight: 400 }}>· 1st</span></div>
-        <div style={{ fontSize: 11, color: 'var(--text-meta)' }}>Chief Vision Officer · Thought leader</div>
-        <div style={{ fontSize: 11, color: 'var(--text-meta)' }}>2h · 🌐</div>
-      </div>
-    </div>
-    <div style={{ padding: narrow ? '12px 16px' : '14px 16px', fontSize: 14, lineHeight: 1.5 }}>
-      {paras.map((p, i) => <p key={i} style={{ margin: i ? '12px 0 0' : 0, whiteSpace: 'pre-wrap',
-        color: /^(#\w+\s*)+$/.test(p) ? 'var(--blue)' : 'inherit' }}>{p}</p>)}
-    </div>
-    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 16px', borderTop: '1px solid var(--hair)',
-      fontSize: 11.5, color: 'var(--text-meta)' }}>
-      <span>👍❤️💡 {reactions.toLocaleString()}</span>
-      <span>{comments} comments · {reposts} reposts</span>
-    </div>
-  </div>;
-}
-
-// ---- the metrics panel --------------------------------------------------
-
-function Metric({ label, value, note }){
-  return <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline',
-    borderBottom: '1px dotted var(--hair)', padding: '6px 0' }}>
-    <span style={{ ...META, fontSize: 9 }}>{label}</span>
-    <span style={{ fontFamily: 'var(--mono)', fontSize: 12, textAlign: 'right' }}>
-      <b style={{ color: 'var(--blue)' }}>{value}</b>{note ? <span style={{ color: 'var(--text-meta)' }}> {note}</span> : null}
-    </span>
-  </div>;
-}
-
-function Metrics({ s }){
-  return <div style={{ background: '#fff', border: 'var(--rule-frame) solid var(--ink)', padding: '12px 14px' }}>
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
-      <span style={LABEL}>Post diagnostics</span>
-      <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-meta)' }}>{s.words} words</span>
-    </div>
-    <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, borderBottom: '1px solid var(--hair)', paddingBottom: 8 }}>
-      <span style={{ fontFamily: 'var(--mono)', fontSize: 44, fontWeight: 700, letterSpacing: '-.05em', lineHeight: 1, color: 'var(--blue)' }}>{s.index}</span>
-      <span style={{ fontSize: 12, fontWeight: 700 }}>{s.rank}<br/><span style={{ ...META, fontSize: 8.5 }}>Thought Leadership Index</span></span>
-    </div>
-    <Metric label="Humble-brag score" value={`${s.humbleBrag}%`}/>
-    <Metric label="Buzzword density" value={s.buzzDensity} note="per 100 words"/>
-    <Metric label="Gratitude inflation" value={s.gratitude} note={`· ${s.gratitudeLabel}`}/>
-    <Metric label="Dramatic one-liners" value={s.oneLiners}/>
-    <Metric label="Journey references" value={s.journeys}/>
-    <Metric label='Chance of "Well deserved!"' value={`${s.wellDeserved}%`}/>
-  </div>;
-}
-
-// ---- the dial -----------------------------------------------------------
-
-function Dial({ level, onChange }){
-  const cur = LEVELS[level - 1];
-  return <div style={{ background: '#fff', border: 'var(--rule-frame) solid var(--ink)', padding: '12px 14px' }}>
-    <div style={{ ...LABEL, marginBottom: 8 }}>LinkedInification level</div>
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6 }}>
-      {LEVELS.map(l =>
-        <button key={l.n} aria-pressed={l.n===level} aria-label={`Level ${l.n}: ${l.name}`} onClick={() => onChange(l.n)}
-          style={{ height: 40, border: 'var(--rule-frame) solid var(--ink)', borderRadius: 0, cursor: 'pointer',
-            background: l.n === level ? 'var(--blue)' : l.n < level ? 'var(--blue-light)' : '#fff',
-            color: l.n === level ? '#fff' : 'var(--ink)', fontFamily: 'var(--mono)', fontWeight: 700, fontSize: 15 }}>{l.n}</button>)}
-    </div>
-    <div style={{ marginTop: 8, fontSize: 13, fontWeight: 700 }}>{cur.n} — {cur.name}</div>
-    <div style={{ fontSize: 11.5, color: 'var(--text-meta)', lineHeight: 1.45 }}>{cur.blurb}</div>
-  </div>;
-}
-
-// ---- screens ------------------------------------------------------------
-
-function Result({ catId, answers, narrow, onHome, onReinterview, settings, setSettings }){
-  const {level,seed,flags}=settings;
-  const setLevel=value=>setSettings(s=>({...s,level:typeof value==='function'?value(s.level):value}));
-  const setSeed=value=>setSettings(s=>({...s,seed:value}));
-  const setFlags=value=>setSettings(s=>({...s,flags:typeof value==='function'?value(s.flags):value}));
-  const [roastOpen, setRoastOpen] = React.useState(false);
-  const [copied, setCopied] = React.useState(false);
-  const [copyError,setCopyError] = React.useState(false);
-
-  const text = React.useMemo(
-    () => generate({ category: catId, answers, level, seed, flags }),
-    [catId, answers, level, seed, flags]);
-  const s = React.useMemo(() => scorePost(text), [text]);
-  const roastLines = React.useMemo(
-    () => roastOpen ? roast(text, { score: s.index }) : null, [roastOpen, text, s]);
-
-  const copy = async () => { try{await copyText(text);setCopied(true);setCopyError(false);setTimeout(()=>setCopied(false),1600);}catch{setCopyError(true);} };
-  const toBeat = () => { location.href = '../studio/#beat=' + encodeURIComponent(text); };
-
-  return <>
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, marginTop: 18, flexWrap: 'wrap' }}>
-      <span style={{ fontSize: narrow ? 22 : 27, fontWeight: 700, letterSpacing: '-.03em', color: 'var(--blue)' }}>Your supercharged post</span>
-      <span style={META}>{byId(catId).name} · Form {byId(catId).form}</span>
-    </div>
-    <div style={{ display: 'grid', gridTemplateColumns: narrow ? '1fr' : 'minmax(0,1fr) 340px', gap: narrow ? 14 : 'var(--space-col)', marginTop: 14, alignItems: 'start' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <Post text={text} score={s} narrow={narrow}/>
-        {roastOpen && <div style={{ background: '#fff', border: 'var(--rule-frame) solid var(--blue)', padding: '12px 14px' }}>
-          <div style={{ ...LABEL, color: 'var(--blue)', marginBottom: 6 }}>The roast</div>
-          {roastLines.map((l, i) => <div key={i} style={{ fontSize: 13, lineHeight: 1.6, borderBottom: '1px dotted var(--hair)', padding: '4px 0' }}>
-            <span style={{ color: 'var(--blue)', fontWeight: 700 }}>→ </span>{l}</div>)}
-        </div>}
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <Dial level={level} onChange={setLevel}/>
-        <Metrics s={s}/>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-          <Button onClick={copy} style={{ gridColumn: '1 / -1', padding: '13px 16px', background: copied ? 'var(--blue)' : undefined, color: copied ? '#fff' : undefined, borderColor: copied ? 'var(--blue)' : undefined }}>
-            {copied ? 'Copied ✓' : 'Copy post'}</Button>
-          {copyError&&<p role="status" style={{gridColumn:'1/-1',fontSize:12,margin:0}}>Copy was unavailable. Select the post text to copy it.</p>}
-          <Button onClick={() => setLevel(l => Math.min(5, l + 1))}>Make it worse</Button>
-          <Button onClick={() => setLevel(1)}>Make it human</Button>
-          <Button onClick={() => setFlags(f => ({ ...f, synergy: (f.synergy || 0) + 1 }))}>Add more synergy{flags.synergy ? ` ×${flags.synergy}` : ''}</Button>
-          <Button on={!!flags.struggle} onClick={() => setFlags(f => ({ ...f, struggle: !f.struggle }))}>Add a struggle</Button>
-          <Button on={!!flags.founder} onClick={() => setFlags(f => ({ ...f, founder: !f.founder }))}>Founder voice</Button>
-          <Button on={roastOpen} onClick={() => setRoastOpen(o => !o)}>Roast this post</Button>
-          <Button onClick={() => { setSeed(newSeed()); setFlags({}); }}>Regenerate</Button>
-          <Button onClick={toBeat}>Turn it into a beat ♫</Button>
-        </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <Button onClick={onReinterview}>Edit answers</Button>
-          <Button onClick={onHome}>New post</Button>
-        </div>
-      </div>
-    </div>
-  </>;
-}
-
-// ---- app ----------------------------------------------------------------
-
 export default function Lessons(){
-  const narrow=useNarrow();
-  const [catId,setCatId]=React.useState('announce');
-  const [drafts,setDrafts]=React.useState(()=>Object.fromEntries(Object.entries(DEFAULT_ANSWERS).map(([key,value])=>[key,{...value}])));
-  const [submission,setSubmission]=React.useState(null);
-  const [view,setView]=React.useState('form');
-  const [settings,setSettings]=React.useState(()=>({level:4,seed:newSeed(),flags:{}}));
-  const headingRef=React.useRef(null);
-  const previousView=React.useRef(view);
-  React.useEffect(()=>{if(previousView.current!==view){headingRef.current?.focus();headingRef.current?.scrollIntoView({block:'start'});previousView.current=view;}},[view]);
-  const onDone=answers=>{
-    if(submission?.catId!==catId)setSettings({level:4,seed:newSeed(),flags:{}});
-    setSubmission({catId,answers});setView('result');
+  const [catId,setCatId]=useState('announce');
+  const [drafts,setDrafts]=useState(()=>Object.fromEntries(Object.entries(EXAMPLES).map(([k,v])=>[k,{...v}])));
+  const [level,setLevel]=useState(3),[seed,setSeed]=useState(newSeed),[flags,setFlags]=useState({});
+  const [contextOpen,setContextOpen]=useState(false),[toolsOpen,setToolsOpen]=useState(false),[roastOpen,setRoastOpen]=useState(false);
+  const [copyStatus,setCopyStatus]=useState(''),[status,setStatus]=useState('Example loaded. Edit the blue words to make it yours.');
+  const variants=useRef({}),copyTimer=useRef(null),outputRef=useRef(null);
+  useEffect(()=>()=>clearTimeout(copyTimer.current),[]);
+  const answers=drafts[catId],cat=byId(catId),steps=cat.steps(answers);
+  const primaryKeys=sentenceParts(catId,answers).filter(p=>typeof p!=='string').map(p=>Array.isArray(p)?p[0]:p.key);
+  const extra=steps.filter(s=>s.type!=='choice'&&!primaryKeys.includes(s.key));
+  const choices=steps.filter(s=>s.type==='choice');
+  const text=useMemo(()=>generate({category:catId,answers,level,seed,flags}),[catId,answers,level,seed,flags]);
+  const paras=text.split(/\n{2,}/),score=useMemo(()=>scorePost(text),[text]);
+  const roastLines=useMemo(()=>roastOpen?roast(text,{score:score.index}):[],[roastOpen,text,score.index]);
+  useEffect(()=>{setCopyStatus('');clearTimeout(copyTimer.current);},[text]);
+  const update=(key,value)=>{
+    if(catId==='announce'&&key==='kind'&&value!==answers.kind){
+      variants.current[answers.kind]={...answers};
+      setDrafts(d=>({...d,announce:variants.current[value]||{kind:value,company:answers.company||''}}));
+    }else setDrafts(d=>({...d,[catId]:{...d[catId],[key]:value}}));
+    setStatus('');
   };
-  const fresh=()=>{setDrafts(d=>({...d,[catId]:{...DEFAULT_ANSWERS[catId]}}));setSubmission(null);setView('form');setSettings({level:4,seed:newSeed(),flags:{}});};
+  const pick=id=>{setCatId(id);setContextOpen(false);setToolsOpen(false);setRoastOpen(false);setFlags({});setStatus('');};
+  const example=()=>{setDrafts(d=>({...d,[catId]:{...(catId==='announce'?ANNOUNCEMENT_EXAMPLES[answers.kind]:EXAMPLES[catId])}}));setStatus('Example loaded. Edit the blue words to make it yours.');};
+  const clear=()=>{setDrafts(d=>({...d,[catId]:{...DEFAULT_ANSWERS[catId]}}));if(catId==='announce')variants.current={};setFlags({});setStatus('Fresh start. Empty answers use playful stand-ins.');};
+  const regenerate=(focus=false)=>{setSeed(newSeed());setStatus('A fresh version, at the same LinkedInification level.');if(focus&&window.innerWidth<800){outputRef.current?.focus({preventScroll:true});outputRef.current?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});}};
+  const copy=async()=>{try{await copyText(text);setCopyStatus('Copied ✓');clearTimeout(copyTimer.current);copyTimer.current=setTimeout(()=>setCopyStatus(''),1800);}catch{setCopyStatus('Copy unavailable. Select the post text to copy it.');}};
   return <div className="ll-app">
-    <a className="ll-skip" href="#lessons-main">Skip to the form</a>
+    <a className="ll-skip" href="#lessons-main">Skip to the editor</a>
     <Header base="../" active="Lessons"/>
-    <main id="lessons-main" ref={headingRef} tabIndex={-1}>
-      {view==='form'?<Intake key={catId} catId={catId} answers={drafts[catId]} onPick={setCatId} onChange={answers=>setDrafts(d=>({...d,[catId]:answers}))} onSubmit={onDone}/>:<div className="ll-result"><span className="ll-kicker">FILED / DEPARTMENT OF PERSONAL BRANDING</span><Result catId={submission.catId} answers={submission.answers} narrow={narrow} settings={settings} setSettings={setSettings} onHome={fresh} onReinterview={()=>setView('form')}/></div>}
-    </main>
-    <Footer/>
+    <main id="lessons-main">
+      <div className="el-toolbar"><h1>LINKEDIN LESSONS</h1><nav aria-label="Post type">{TABS.map(([id,label])=><button key={id} aria-pressed={id===catId} onClick={()=>pick(id)}>{label}</button>)}</nav></div>
+      <div className="el-workspace">
+        <section className="el-facts" aria-labelledby="facts-title">
+          <h2 className="el-eyebrow" id="facts-title"><i/>THE ACTUAL EVENT</h2>
+          {choices.length>0&&<div className="el-choices">{choices.map(s=><label key={s.key}><span>{s.key==='kind'?'About':s.key==='source'?'Inspired by':'Related to'}</span><select aria-label={s.ask} value={answers[s.key]||s.options[0]} onChange={e=>update(s.key,e.target.value)}>{s.options.map(o=><option key={o}>{o}</option>)}</select></label>)}</div>}
+          <Sentence catId={catId} answers={answers} steps={steps} onChange={update}/>
+          <div className="el-fact-actions">{extra.length>0?<button aria-expanded={contextOpen} aria-controls="extra-context" onClick={()=>setContextOpen(!contextOpen)}>{contextOpen?'− Less context':'+ Add context'}</button>:<span/>}<button onClick={example}>Try an example ↗</button></div>
+          {extra.length>0&&contextOpen&&<div className="el-context" id="extra-context">{extra.map(s=><label key={s.key} htmlFor={`context-${s.key}`}>{s.ask}<input id={`context-${s.key}`} name={s.key} value={answers[s.key]||''} placeholder={s.placeholder} maxLength={300} onChange={e=>update(s.key,e.target.value)}/></label>)}</div>}
+          <p className="el-hint">Click the blue words. Tell the boring truth.</p>
+          <div className="el-facts-bottom"><span>{status||'Your answers stay in your browser.'}</span><button onClick={clear}>Start fresh</button></div>
+        </section>
+        <section className="el-output" aria-labelledby="output-title" ref={outputRef} tabIndex={-1}>
+          <h2 className="el-eyebrow" id="output-title"><i/>THE LINKEDIN VERSION</h2>
+          <div className="el-post" aria-label="Your supercharged post"><p className={`el-post-lead ${paras[0].length>100?'is-long':''}`}>{paras[0]}</p>{paras.slice(1).map((p,i)=><p key={i}>{p}</p>)}</div>
+          <div className="el-output-actions"><button className="el-copy" onClick={copy}>{copyStatus==='Copied ✓'?copyStatus:'Copy post ↗'}</button><button onClick={()=>regenerate()}>Try another</button><button aria-expanded={toolsOpen} aria-controls="post-tools" onClick={()=>setToolsOpen(!toolsOpen)}>{toolsOpen?'Fewer tools':'More tools +'}</button></div>
+          <p className="el-copy-status" role="status">{copyStatus}</p>
+          {toolsOpen&&<div className="el-tools" id="post-tools">
+            <div className="el-modifiers"><button onClick={()=>setLevel(l=>Math.min(5,l+1))} disabled={level===5}>Make it worse</button><button onClick={()=>setLevel(1)}>Make it human</button><button onClick={()=>setFlags(f=>({...f,synergy:(f.synergy||0)+1}))}>Add more synergy{flags.synergy?` ×${flags.synergy}`:''}</button><button aria-pressed={!!flags.struggle} onClick={()=>setFlags(f=>({...f,struggle:!f.struggle}))}>Add a struggle</button><button aria-pressed={!!flags.founder} onClick={()=>setFlags(f=>({...f,founder:!f.founder}))}>Founder voice</button><button aria-expanded={roastOpen} onClick={()=>setRoastOpen(!roastOpen)}>Roast this post</button><a href={`../studio/#beat=${encodeURIComponent(text)}`}>Turn it into a beat ♫</a><button onClick={()=>setFlags({})}>Reset extras</button></div>
+            {roastOpen&&<div className="el-roast"><h3>The roast</h3>{roastLines.map((line,i)=><p key={i}>{line}</p>)}</div>}
+            <details className="el-diagnostics"><summary>Post diagnostics · {score.words} words</summary><dl>{[['Thought Leadership Index',`${score.index} / ${score.rank}`],['Humble-brag score',`${score.humbleBrag}%`],['Buzzword density',`${score.buzzDensity} per 100 words`],['Gratitude inflation',`${score.gratitude} · ${score.gratitudeLabel}`],['Dramatic one-liners',score.oneLiners],['Journey references',score.journeys],['Chance of “Well deserved!”',`${score.wellDeserved}%`]].map(([k,v])=><div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl></details>
+          </div>}
+        </section>
+      </div>
+      <section className="el-controls" aria-label="LinkedInification controls">
+        <div className="el-level-label"><label htmlFor="linkedinification">LinkedInification</label><output htmlFor="linkedinification">{String(level).padStart(2,'0')}</output><span>{LEVELS[level-1].name}</span></div>
+        <div className="el-slider"><input id="linkedinification" type="range" min="1" max="5" step="1" value={level} aria-valuetext={`${level}: ${LEVELS[level-1].name}`} style={{'--level':`${(level-1)*25}%`}} onChange={e=>setLevel(Number(e.target.value))}/><div><span>Actually human</span><span>Absolutely insufferable</span></div></div>
+        <button className="el-supercharge" onClick={()=>regenerate(true)}><span aria-hidden="true">↗</span>Supercharge</button>
+      </section>
+    </main><Footer/>
   </div>;
 }
