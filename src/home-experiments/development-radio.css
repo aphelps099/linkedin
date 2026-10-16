@@ -128,3 +128,15 @@
 
 /* A restrained fade at the upper edge of the background post. */
 .development-post{mask-image:linear-gradient(to bottom,rgba(0,0,0,.62),#000 42px);-webkit-mask-image:linear-gradient(to bottom,rgba(0,0,0,.62),#000 42px)}
+
+/* Give the editorial copy a clearer hierarchy above the compact player. */
+.c2-home .development-copy h2{font-size:clamp(30px,2.65vw,40px);line-height:1.08;letter-spacing:-.035em;margin:0 0 18px}
+.development-copy h2 span,.development-copy h2 strong{display:block}
+.development-copy h2 span{font-weight:400;color:#c1d5e6}
+.development-copy h2 strong{font-weight:600;color:#fff;margin-top:3px}
+.development-intro{max-width:48ch;font-size:18px;line-height:1.5;letter-spacing:-.012em;color:#d1deea;margin:0}
+.development-transport{margin-top:22px;border-top-color:#ffffff36}
+.c2-home .development-studio{font-size:14px;margin-top:12px;border-bottom-color:#ffffff55;padding-bottom:4px}
+@media(min-width:1101px){.development-intro{font-size:clamp(16px,1.25vw,18px)}}
+@media(min-width:761px) and (max-width:1100px){.c2-home .development-copy h2{font-size:29px}.development-intro{font-size:16px}}
+@media(max-width:760px){.c2-home .development-copy h2{font-size:clamp(25px,6vw,38px);margin:8px 0 16px}.development-intro{font-size:17px}.c2-home .development-studio{font-size:14px!important}}

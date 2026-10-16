@@ -53,8 +53,8 @@ export function DevelopmentRadio({base,state,track,seconds,motion,onToggle,onSki
   return <section className={`development-radio${motion?'':' is-still'}`} id="c2-player" aria-labelledby="development-title">
     <div className="development-inner">
       <div className="development-copy">
-        <h2 id="development-title">Professional development.<br/>Questionable lyrics.</h2>
-        <p className="development-intro">Build your executive presence through repetitive exposure to synergy, strategic alignment, and a surprisingly good beat.</p>
+        <h2 id="development-title"><span>Professional development.</span><strong>Questionable lyrics.</strong></h2>
+        <p className="development-intro">Build your executive presence with a steady rotation of synergy, strategic alignment, and surprisingly good beats.</p>
         <div className="development-transport" role="group" aria-label="LinkedIn Beats music player">
           <div className="development-transport-row">
             <div className="development-buttons">
@@ -68,7 +68,7 @@ export function DevelopmentRadio({base,state,track,seconds,motion,onToggle,onSki
           <input className="development-seek" type="range" aria-label="Track position" aria-valuetext={`${formatTime(position)} of ${formatTime(track.seconds)}`} min="0" max={track.seconds} step="1" value={position} style={{'--progress':`${Math.min(100,position/track.seconds*100)}%`}} onChange={e=>setScrub(Number(e.target.value))} onPointerUp={e=>commitSeek(e.currentTarget.value)} onKeyUp={e=>{if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown'].includes(e.key))commitSeek(e.currentTarget.value);}} onBlur={e=>{if(scrub!==null)commitSeek(e.currentTarget.value);}} onPointerCancel={()=>setScrub(null)}/>
           {state.error&&<p className="development-error" role="alert">{state.error}</p>}
         </div>
-        <a className="development-studio" href={`${base}studio/`}>Make your own corporate anthem <ArrowUpRight aria-hidden="true"/></a>
+        <a className="development-studio" href={`${base}studio/`}>Create in the studio <ArrowUpRight aria-hidden="true"/></a>
       </div>
       <PocketPlayer motion={motion} base={base}/>
     </div>
