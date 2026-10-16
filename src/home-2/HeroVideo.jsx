@@ -36,23 +36,27 @@ export const HeroVideo = memo(function HeroVideo({radioActive, onSoundEnable}) {
     if (!loadRequested) return;
     const media = video.current;
     let disposed = false, hls;
-    const fail = () => { if (!disposed) { setFailed(true); setRequested(false); } };
-    if (media.canPlayType('application/vnd.apple.mpegurl')) {
-      // Safari/iOS can play Mux HLS directly.
-      media.src = STREAM;
-      setReady(true);
-    } else {
-      // Keep the streaming engine out of the initial page bundle.
-      import('hls.js').then(({default: Hls}) => {
-        if (disposed) return;
-        if (!Hls.isSupported()) { fail(); return; }
+    const fail = error => {
+      if (!disposed) {
+        console.warn('Hero video could not load:', error?.details || error?.message || 'Unsupported playback');
+        setFailed(true); setRequested(false);
+      }
+    };
+    // Prefer MSE when available: some Chromium browsers advertise native HLS
+    // support but cannot actually play it. iOS falls back to native HLS.
+    import('hls.js').then(({default: Hls}) => {
+      if (disposed) return;
+      if (Hls.isSupported()) {
         hls = new Hls({capLevelToPlayerSize: true, maxBufferLength: 20, backBufferLength: 10});
         hls.on(Hls.Events.MANIFEST_PARSED, () => { if (!disposed) setReady(true); });
-        hls.on(Hls.Events.ERROR, (_, data) => { if (data.fatal) { fail(); hls.destroy(); } });
+        hls.on(Hls.Events.ERROR, (_, data) => { if (data.fatal) { fail(data); hls.destroy(); } });
         hls.loadSource(STREAM);
         hls.attachMedia(media);
-      }).catch(fail);
-    }
+      } else if (media.canPlayType('application/vnd.apple.mpegurl')) {
+        media.src = STREAM;
+        setReady(true);
+      } else fail();
+    }).catch(fail);
     return () => {
       disposed = true;
       hls?.destroy();
@@ -92,7 +96,7 @@ export const HeroVideo = memo(function HeroVideo({radioActive, onSoundEnable}) {
   return <section className="c2-film" ref={section} aria-label="The office band">
     <img className="c2-film-poster" src={POSTER} alt="" fetchpriority="high" width="1920" height="1080"/>
     <video ref={video} className="c2-film-video" hidden={failed} poster={POSTER}
-      muted={silent} loop playsInline preload="metadata" disablePictureInPicture
+      muted={silent} loop playsInline preload="metadata" disablePictureInPicture disableRemotePlayback
       aria-label="Office workers play drums and keyboards while a small droid delivers paperwork."
       onPlaying={() => setPlaying(true)} onPause={() => setPlaying(false)} onError={() => { setFailed(true); setRequested(false); }}/>
     <div className="c2-container c2-film-bottom">
