@@ -17,7 +17,7 @@ function useFeedClock(root, motion, paused) {
     document.addEventListener('visibilitychange',onVisibility);
     const tick=now=>{
       if(previous!==null&&visible&&!document.hidden){
-        elapsed.current+=Math.min(now-previous,100);
+        elapsed.current+=now-previous;
         if(now-publish>=40){setFrame(feedFrame(elapsed.current));publish=now;}
       }
       previous=now;request=requestAnimationFrame(tick);
@@ -33,10 +33,18 @@ function useFeedClock(root, motion, paused) {
 }
 
 export const FeedScene = memo(function FeedScene({variant, motion, base}) {
-  const root=useRef(null), [paused,setPaused]=useState(false), [extra,setExtra]=useState([0,0,0]);
+  const root=useRef(null), scrollRegion=useRef(null), [paused,setPaused]=useState(false), [extra,setExtra]=useState([0,0,0]);
   const [frame,select]=useFeedClock(root,motion,paused), scene=FEED_SCENES[frame.sceneIndex];
   const laptop=variant==='laptop', running=motion&&!paused;
   useEffect(()=>setExtra([0,0,0]),[frame.sceneIndex]);
+  useEffect(()=>{
+    const viewport=scrollRegion.current;
+    if(!laptop||!viewport)return;
+    if(!motion||frame.comments===0){viewport.scrollTo({top:0,behavior:'instant'});return;}
+    const latest=viewport.querySelectorAll('.feed-comment')[frame.comments-1];
+    const overflow=latest.getBoundingClientRect().bottom-viewport.getBoundingClientRect().bottom+12;
+    if(overflow>0)viewport.scrollTo({top:viewport.scrollTop+overflow,behavior:'smooth'});
+  },[laptop,motion,frame.sceneIndex,frame.comments]);
   const counts=frame.counts.map((n,i)=>n+extra[i]);
   const post=<>
     <article className="feed-post">
@@ -59,14 +67,14 @@ export const FeedScene = memo(function FeedScene({variant, motion, base}) {
       <p>Required listening for<br/> aspiring thought leaders.</p>
       <div className="feed-controls">
         <span className="feed-lesson" aria-live="polite">{scene.lesson}</span>
-        <div className="feed-controls-actions"><div className="feed-scene-dots" aria-label="Choose a post">{FEED_SCENES.map((item,i)=><button type="button" key={item.id} aria-label={`Show ${item.id} post`} aria-pressed={frame.sceneIndex===i} onClick={()=>select(i)}><span/></button>)}</div><button type="button" className="feed-pause" aria-label={paused?'Resume feed animation':'Pause feed animation'} aria-pressed={paused||!motion} disabled={!motion} onClick={()=>setPaused(value=>!value)}>{paused||!motion?<Play aria-hidden="true"/>:<Pause aria-hidden="true"/>}</button></div>
+        <div className="feed-controls-actions"><div className="feed-scene-dots" aria-label="Choose a post">{FEED_SCENES.map((item,i)=><button type="button" key={item.id} aria-label={`Show ${item.id} post`} aria-pressed={frame.sceneIndex===i} onClick={()=>select(i)}><span/></button>)}</div><button type="button" className="feed-pause" aria-label={!motion?'Feed animation is off':paused?'Resume feed animation':'Pause feed animation'} aria-pressed={paused||!motion} disabled={!motion} onClick={()=>setPaused(value=>!value)}>{paused||!motion?<Play aria-hidden="true"/>:<Pause aria-hidden="true"/>}</button></div>
       </div>
     </div>
     <div className={`feed-visual feed-visual--${variant}`} ref={root} style={{'--feed-sheet':`url("${base}home-experiments/profile-sheet.jpg")`}}>
       {laptop?<div className="feed-laptop">
         <div className="feed-laptop-lid"><span className="feed-webcam" aria-hidden="true"/><div className="feed-display">
           <div className="feed-social-nav" aria-hidden="true"><span className="feed-in">in</span><span className="feed-search"><Search/>Search</span><span className="feed-nav-item is-current"><Home/>Home</span><span className="feed-nav-item"><Users/>Network</span><span className="feed-nav-item"><BriefcaseBusiness/>Jobs</span><span className="feed-nav-item"><MessageSquare/>Messages</span><span className="feed-nav-item"><Bell/>Alerts</span></div>
-          <div className="feed-social-body"><aside className="feed-profile" aria-hidden="true"><div className="feed-profile-cover"/><Face/><strong>Jordan Wells</strong><p>Turning ordinary moments into extraordinary announcements.</p><div><span>Profile viewers</span><b>147</b></div><div><span>Post impressions</span><b>8,042</b></div><small>My network<br/>Saved posts<br/>Groups</small></aside><div className={`feed-thread${frame.leaving&&running?' is-leaving':''}`} data-scene={scene.id}>{post}</div></div>
+          <div className="feed-social-body"><aside className="feed-profile" aria-hidden="true"><div className="feed-profile-cover"/><Face/><strong>Jordan Wells</strong><p>Turning ordinary moments into extraordinary announcements.</p><div><span>Profile viewers</span><b>147</b></div><div><span>Post impressions</span><b>8,042</b></div><small>My network<br/>Saved posts<br/>Groups</small></aside><div className="feed-scroll-viewport" ref={scrollRegion}><div className={`feed-thread${frame.leaving&&running?' is-leaving':''}`} data-scene={scene.id}>{post}</div></div></div>
         </div></div><div className="feed-laptop-base" aria-hidden="true"><span/></div><div className="feed-laptop-shadow" aria-hidden="true"/>
       </div>:<div className={`feed-thread${frame.leaving&&running?' is-leaving':''}`} data-scene={scene.id}>{post}</div>}
     </div>
