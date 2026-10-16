@@ -1,7 +1,7 @@
-.development-radio{position:relative;overflow:hidden;background:#0b4bef;color:#fff;border-bottom:1px solid #ffffff75;font:400 17px/1.45 C2Hoves,Arial,sans-serif}
+.development-radio{position:relative;overflow:hidden;background:radial-gradient(ellipse 62% 80% at -9% 41%,#3579b866 0%,#2d70b130 34%,#24649e0c 62%,transparent 83%),#082744;color:#fff;border-bottom:1px solid #ffffff75;font:400 17px/1.45 C2Hoves,Arial,sans-serif}
 .development-inner{position:relative;max-width:1500px;margin:auto;min-height:640px;padding:90px 64px 76px;display:grid;grid-template-columns:56% 44%}
 .development-copy{position:relative;z-index:2;max-width:660px;padding-right:30px}
-.development-eyebrow{font-size:12px;letter-spacing:.19em;text-transform:uppercase}
+
 .c2-home .development-copy h2{font:400 clamp(29px,3.05vw,47px)/1.15 C2Hoves,Arial,sans-serif;letter-spacing:-.035em;text-transform:none;margin:28px 0 25px}
 .development-intro{font-size:clamp(20px,1.9vw,28px);line-height:1.5;letter-spacing:-.02em;max-width:590px}
 .development-transport{margin-top:32px;border-top:1px solid #ffffff85;padding-top:15px}
@@ -27,16 +27,16 @@
 .c2-home .development-studio{display:inline-flex;align-items:center;gap:8px;margin-top:23px;border-bottom:1px solid currentColor;padding-bottom:3px;font-size:17px;line-height:1.35}
 .development-studio:hover{opacity:.75}
 .development-art{position:absolute;left:58%;top:0;bottom:0;right:-3%;isolation:isolate}
-.c2-home .development-agenda{position:absolute;top:10px;left:39%;width:78%;height:auto;transform:rotate(10deg);opacity:.52}
+
 .development-device{position:absolute;top:55px;left:0;width:86%;transform:rotate(-7deg);transform-origin:50% 40%;transition:transform .45s cubic-bezier(.2,.7,.2,1)}
 .c2-home .development-device svg{display:block;width:100%;height:auto}
 @media(hover:hover) and (pointer:fine){.development-device:hover{transform:translateY(-8px) rotate(-4deg)}}
-.development-compare{background:#0b4bef;color:#fff}
+.development-compare{background:#082744;color:#fff}
 .development-compare .feed-compare{margin:0 auto;max-width:1500px}
 @keyframes development-track-in{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
 @media(min-width:1600px){.development-device{top:50px}}
 @media(max-width:1100px){.development-inner{padding:65px 40px 60px;min-height:600px;grid-template-columns:57% 43%}.development-copy{padding-right:20px}.development-art{left:61%;right:-8%}.development-device{top:90px;width:100%}.development-buttons{gap:4px}.development-transport-row{gap:12px}.c2-home .development-buttons .development-play{width:52px;height:52px}.c2-home .development-buttons button{width:30px}.development-duration{font-size:13px}}
-@media(max-width:760px){.development-inner{display:block;padding:50px 24px 0;min-height:0}.development-copy{max-width:600px;margin:auto;padding:0}.c2-home .development-copy h2{font-size:clamp(29px,5.2vw,40px);margin:22px 0}.development-intro{font-size:21px}.development-transport{margin-top:28px}.development-track strong{font-size:17px}.development-duration{font-size:14px}.development-art{position:relative;left:auto;right:auto;height:400px;max-width:540px;margin:28px auto 0}.development-device{width:340px;top:35px;left:calc(50% - 160px)}.c2-home .development-agenda{top:0;left:48%;width:260px}.development-studio{font-size:16px!important}.development-eyebrow{font-size:11px}.development-transport-row{gap:12px}.development-buttons{gap:6px}}
+@media(max-width:760px){.development-inner{display:block;padding:50px 24px 0;min-height:0}.development-copy{max-width:600px;margin:auto;padding:0}.c2-home .development-copy h2{font-size:clamp(29px,5.2vw,40px);margin:22px 0}.development-intro{font-size:21px}.development-transport{margin-top:28px}.development-track strong{font-size:17px}.development-duration{font-size:14px}.development-art{position:relative;left:auto;right:auto;height:400px;max-width:540px;margin:28px auto 0}.development-device{width:340px;top:35px;left:calc(50% - 160px)}.development-studio{font-size:16px!important}.development-transport-row{gap:12px}.development-buttons{gap:6px}}
 @media(max-width:390px){.development-inner{padding-inline:20px}.development-track strong{font-size:15px}.development-buttons{gap:2px}.c2-home .development-buttons .development-play{width:46px;height:46px}.c2-home .development-buttons button{width:27px}.development-transport-row{gap:9px}.development-art{height:380px}.development-device{width:320px}.development-intro{font-size:19px}}
 .development-radio.is-still .development-device{transition:none;transform:rotate(-7deg)}
 .development-radio.is-still .development-track strong{animation:none}
@@ -47,7 +47,7 @@
 @media(min-width:1101px){
  .development-inner{max-width:1500px;min-height:400px;height:calc(100vw / 3);padding:24px 64px;align-items:center;grid-template-columns:58% 42%}
  .development-copy{max-width:700px;padding-right:24px}
- .development-eyebrow{font-size:10px}
+
  .c2-home .development-copy h2{font-size:clamp(26px,2.25vw,34px);margin:12px 0 14px}
  .development-intro{font-size:clamp(17px,1.35vw,20px);line-height:1.4;max-width:620px}
  .development-transport{margin-top:18px;padding-top:10px;max-width:590px}
@@ -58,7 +58,7 @@
  .c2-home .development-studio{margin-top:12px;font-size:15px}
  .development-art{left:64%;right:0}
  .development-device{width:clamp(280px,25vw,390px);top:calc(100% - clamp(300px,27vw,420px));left:0}
- .c2-home .development-agenda{width:clamp(260px,26vw,400px);top:calc(100% - clamp(340px,30vw,470px));left:34%;opacity:.4}
+
 }
 @media(min-width:761px) and (max-width:1100px){
  .development-inner{min-height:440px;padding:32px;grid-template-columns:62% 38%}
@@ -69,7 +69,7 @@
  .c2-home .development-studio{margin-top:12px;font-size:15px}
  .development-art{left:67%;right:-5%}
  .development-device{width:300px;top:calc(100% - 325px)}
- .c2-home .development-agenda{width:300px;top:50px;opacity:.4}
+
 }
 @media(max-width:760px){
  .development-inner{padding-top:32px}
@@ -78,5 +78,45 @@
  .development-transport{margin-top:22px}
  .development-art{height:295px;margin-top:18px}
  .development-device{width:260px;top:18px;left:calc(50% - 120px)}
- .c2-home .development-agenda{width:220px;opacity:.4}
+
 }
+
+/* A soft social approval loop behind the sharp illustrated listening kit. */
+.development-device{z-index:2}
+.development-post{position:absolute;top:20px;left:-28px;width:390px;height:235px;padding:18px 20px;background:#d6e4ef;color:#193a55;border:1px solid #ffffff55;border-radius:12px;transform:rotate(6deg);filter:blur(1.3px);opacity:.68;pointer-events:none;z-index:0}
+.development-post-lines{display:grid;gap:7px;margin-bottom:14px}
+.development-post-lines i,.development-post-block i{display:block;height:6px;border-radius:6px;background:#7b96aa55;width:83%}
+.development-post-lines i:last-child{width:58%}
+.development-reactions{display:flex;justify-content:space-between;gap:12px;border-block:1px solid #8ba5b44d;padding:10px 0}
+.development-reaction{display:flex;align-items:center;gap:6px;flex:1}
+.reaction-medallion{display:grid;place-items:center;width:31px;height:31px;border-radius:50%;color:#fff;background:#637f94;flex-shrink:0}
+.c2-home .reaction-medallion svg{width:17px;height:17px;stroke-width:2}
+.reaction-caption{font-size:11px;font-weight:600;line-height:1.3}
+.reaction-count{display:block;font-size:12px;font-weight:400;font-variant-numeric:tabular-nums;opacity:.75}
+.reaction-0.is-pressed .reaction-medallion{background:#1675c8}
+.reaction-1.is-pressed .reaction-medallion{background:#c74e62}
+.reaction-2.is-pressed .reaction-medallion{background:#b38b30}
+.is-pressed .reaction-medallion{animation:development-reaction-press .65s ease both}
+.development-post-block{display:grid;gap:10px;margin-top:22px}
+.development-post-block i:nth-child(2){width:91%}.development-post-block i:last-child{width:62%}
+.c2-home .development-earbuds{position:absolute;right:-12px;top:108px;width:175px;height:auto;z-index:3;pointer-events:none}
+@keyframes development-reaction-press{0%{transform:scale(1)}22%{transform:scale(.84)}55%{transform:scale(1.09)}100%{transform:scale(1)}}
+@media(min-width:1101px){
+ .development-art{left:62%;right:0}
+ .development-device{left:38px;width:clamp(260px,22vw,350px);top:calc(100% - clamp(280px,24vw,380px))}
+ .development-post{top:16px;left:-20px;width:390px}
+ .c2-home .development-earbuds{right:2px;top:100px;width:clamp(155px,13vw,190px)}
+}
+@media(min-width:761px) and (max-width:1100px){
+ .development-post{left:-20px;top:30px;width:330px;padding:14px}
+ .development-reactions{gap:7px}.reaction-caption{font-size:10px}
+ .development-device{left:10px;width:270px;top:calc(100% - 295px)}
+ .c2-home .development-earbuds{width:135px;right:0;top:140px}
+}
+@media(max-width:760px){
+ .development-art{height:350px;margin-top:30px}
+ .development-post{left:calc(50% - 175px);top:5px;width:350px;padding:14px 18px}
+ .development-device{top:80px;left:calc(50% - 130px);width:250px}
+ .c2-home .development-earbuds{width:135px;right:calc(50% - 190px);top:115px}
+}
+@media(prefers-reduced-motion:reduce){.is-pressed .reaction-medallion{animation:none}}

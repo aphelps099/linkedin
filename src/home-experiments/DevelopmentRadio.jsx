@@ -1,15 +1,65 @@
-import React, {memo, useEffect, useState} from 'react';
-import {ArrowUpRight, LoaderCircle, Pause, Play, SkipBack, SkipForward} from 'lucide-react';
+import React, {memo, useEffect, useRef, useState} from 'react';
+import {ArrowUpRight, LoaderCircle, Pause, Play, SkipBack, SkipForward, ThumbsUp, Heart, Lightbulb} from 'lucide-react';
 import {formatTime} from '../home/tracks.js';
 
-const PocketPlayer=memo(function PocketPlayer(){
+const REACTIONS=[{label:'Like',Icon:ThumbsUp},{label:'Love',Icon:Heart},{label:'Insightful',Icon:Lightbulb}];
+
+function ReactionPost({motion}){
+  const root=useRef(null);
+  const [visible,setVisible]=useState(false);
+  const [reaction,setReaction]=useState({step:0,active:-1,counts:[128,84,36]});
+  useEffect(()=>{
+    let inView=false;
+    const sync=()=>setVisible(inView&&!document.hidden);
+    const observer=new IntersectionObserver(([entry])=>{inView=entry.isIntersecting;sync();},{threshold:0});
+    observer.observe(root.current);
+    document.addEventListener('visibilitychange',sync);
+    return()=>{observer.disconnect();document.removeEventListener('visibilitychange',sync);};
+  },[]);
+  useEffect(()=>{
+    if(!motion||!visible)return;
+    const timer=setInterval(()=>setReaction(previous=>{
+      const active=previous.step%3;
+      const counts=previous.step>=36?[128,84,36]:[...previous.counts];
+      counts[active]+=1;
+      return {step:previous.step>=36?1:previous.step+1,active,counts};
+    }),1550);
+    return()=>clearInterval(timer);
+  },[motion,visible]);
+  return <div className="development-post" ref={root}>
+    <div className="development-post-lines"><i/><i/></div>
+    <div className="development-reactions">{REACTIONS.map(({label,Icon},index)=><span className={`development-reaction reaction-${index}${motion&&visible&&reaction.active===index?' is-pressed':''}`} key={label}>
+      <span className="reaction-medallion"><Icon fill={index===1?'currentColor':'none'}/></span>
+      <span className="reaction-caption">{label}<span className="reaction-count">{reaction.counts[index]}</span></span>
+    </span>)}</div>
+    <div className="development-post-block"><i/><i/><i/></div>
+  </div>;
+}
+
+const PocketPlayer=memo(function PocketPlayer({motion}){
   return <div className="development-art" aria-hidden="true">
-    <svg className="development-agenda" viewBox="0 0 460 650" focusable="false">
-      <path fill="#5486f4" d="M65 12 137 44 399 58 435 183 414 287 450 377 409 471 437 620 307 601 203 640 105 598 16 610 38 467 12 351 45 238 22 115Z"/>
-      <path fill="#779ef7" d="m65 12 72 32-42 57-73 14Zm72 32 262 14 36 125-75-54-265-28ZM45 238 12 351l75 42 29-105Zm159 232 103 131-104 39-98-42ZM414 287l36 90-56 41-34-83Z"/>
-      <path fill="#3971e5" d="m65 12 30 89 21 187-71-50-23-123Zm51 276-29 105 117 77-72-130Zm278 130 15 53 28 149-130-19-103-131 91 9Z"/>
-      <g fill="#123fa5" fontFamily="C2Hoves, Arial, sans-serif" fontSize="17" letterSpacing="2"><text x="145" y="173">ALIGNMENT MEETING</text></g>
-      <g stroke="#2459c6" strokeWidth="3" opacity=".65"><path d="M148 210h212M148 245h182M148 280h196M148 315h160M148 350h180"/></g>
+    <ReactionPost motion={motion}/>
+    <svg className="development-earbuds" viewBox="0 0 200 440" focusable="false">
+      <g fill="none" strokeLinecap="round">
+        <path d="M80 67v85c0 32 22 48 37 69m44-93v42c0 27-28 36-44 51v35c0 76 74 98 35 143-24 28-94 22-103-11" stroke="#c5d4e6" strokeWidth="6"/>
+        <path d="M80 67v85c0 32 22 48 37 69m44-93v42c0 27-28 36-44 51v35c0 76 74 98 35 143-24 28-94 22-103-11" stroke="#fff" strokeWidth="3"/>
+      </g>
+      <g transform="translate(46 18) rotate(-20 34 30)">
+        <rect x="27" y="24" width="15" height="60" rx="7" fill="#dde5ed"/>
+        <rect x="27" y="24" width="11" height="60" rx="5" fill="#fff"/>
+        <ellipse cx="31" cy="24" rx="26" ry="22" fill="#fff"/>
+        <ellipse cx="20" cy="23" rx="10" ry="14" fill="#d9e1e9"/>
+        <path d="M17 14v18m5-18v18" stroke="#567084" strokeWidth="2"/>
+        <text x="32" y="64" fontSize="8" fill="#60788b">L</text>
+      </g>
+      <g transform="translate(128 76) rotate(18 28 26)">
+        <rect x="25" y="24" width="15" height="60" rx="7" fill="#dde5ed"/>
+        <rect x="25" y="24" width="11" height="60" rx="5" fill="#fff"/>
+        <ellipse cx="28" cy="24" rx="25" ry="22" fill="#fff"/>
+        <ellipse cx="38" cy="23" rx="10" ry="14" fill="#d9e1e9"/>
+        <path d="M35 14v18m5-18v18" stroke="#567084" strokeWidth="2"/>
+        <text x="29" y="64" fontSize="8" fill="#60788b">R</text>
+      </g>
     </svg>
     <div className="development-device">
       <svg viewBox="0 0 440 720" focusable="false">
@@ -40,7 +90,6 @@ export function DevelopmentRadio({base,state,track,seconds,motion,onToggle,onSki
   return <section className={`development-radio${motion?'':' is-still'}`} id="c2-player" aria-labelledby="development-title">
     <div className="development-inner">
       <div className="development-copy">
-        <p className="development-eyebrow">Professional development</p>
         <h2 id="development-title">Professional development.<br/>Questionable lyrics.</h2>
         <p className="development-intro">Build your executive presence through repetitive exposure to synergy, strategic alignment, and a surprisingly good beat.</p>
         <div className="development-transport" role="group" aria-label="LinkedIn Beats music player">
@@ -58,7 +107,7 @@ export function DevelopmentRadio({base,state,track,seconds,motion,onToggle,onSki
         </div>
         <a className="development-studio" href={`${base}studio/`}>Make your own corporate anthem <ArrowUpRight aria-hidden="true"/></a>
       </div>
-      <PocketPlayer/>
+      <PocketPlayer motion={motion}/>
     </div>
   </section>;
 }

@@ -14,6 +14,8 @@ Production delivery: source film trimmed to exactly ten seconds, resized to 1280
 
 ## Professional development radio section
 
-The profile preview now places `DevelopmentRadio` in its own blue section directly after the conversation. TT Hoves sets all section text. A flat white inline SVG iPod, with the LinkedIn mark on its screen, is cropped near its upper wheel; a subdued folded-agenda illustration sits behind it. Fine-pointer hover lifts the device 8px and eases its tilt from -7 to -4 degrees; reduced motion disables this. Mobile stacks the copy/player above the cropped illustration.
+The profile preview now places `DevelopmentRadio` in its own navy section (matching Small news) directly after the conversation. TT Hoves sets all section text. A flat white inline SVG iPod, with the LinkedIn mark on its screen, is cropped near its upper wheel; white wired earbuds sit alongside it, with a softly blurred post/reaction card behind both. Fine-pointer hover lifts the device 8px and eases its tilt from -7 to -4 degrees; reduced motion disables this. Mobile stacks the copy/player above the cropped illustration.
 
 The compact transport shares the existing radio instance and header controls. It exposes only the current track, total duration, previous/restart, play/pause, next, and an accessible seek slider. Titles fade in when the selected track changes. No playlist expands. The studio link opens `/studio/`. Other homepage variants retain their existing player.
+
+The decorative reaction card cycles Like, Love and Insightful every 1.55 seconds, increments one count per press, and resets its counts after 36 presses. It contains no comments or profile portraits. Its interval pauses offscreen, in hidden tabs, and under reduced motion. The iPod and earbuds remain sharp above the blurred card.
