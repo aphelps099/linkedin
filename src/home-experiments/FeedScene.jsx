@@ -49,8 +49,7 @@ export const FeedScene = memo(function FeedScene({variant, motion, base}) {
   const post=<>
     <article className="feed-post">
       <header className="feed-author"><Face/><div><strong>{scene.author} <span>· 1st</span></strong><small>{scene.title}</small><small className="feed-post-time">Just now · ◉</small></div><span className="feed-more" aria-hidden="true">···</span></header>
-      <p className="feed-post-copy">{scene.post}</p>
-      <p className="feed-post-after">{scene.after}</p>
+      <div className="feed-post-message"><p className="feed-post-copy">{scene.post}</p><p className="feed-post-after">{scene.after}</p></div>
       <div className="feed-stats"><span><span className="feed-mini-reactions" aria-hidden="true"><ThumbsUp/><Heart/><Lightbulb/></span>{counts.reduce((a,b)=>a+b,0)} reactions</span><span>{frame.comments} {frame.comments===1?'comment':'comments'}</span></div>
       <div className="feed-reactions">
         {REACTIONS.map(({name,Icon},i)=><button key={name} type="button" aria-label={`${name} this fictional post`} className={`feed-reaction feed-reaction--${i}${counts[i]?' has-reacted':''}${running&&frame.clicking&&frame.activeReaction===i&&frame.pressed?' is-hit':''}`} onClick={()=>setExtra(previous=>previous.map((value,j)=>value+(j===i?1:0)))}><span key={counts[i]} className={`feed-reaction-orb${running&&counts[i]?' is-pulsing':''}`} aria-hidden="true"><Icon/></span><span>{name}</span><b>{counts[i]}</b></button>)}
@@ -59,14 +58,14 @@ export const FeedScene = memo(function FeedScene({variant, motion, base}) {
     <div className={`feed-comments${!laptop?' feed-comments--stack':''}`} aria-label="Fictional comments">
       {scene.comments.map(([name,text],i)=>{
         const depth=Math.max(0,frame.comments-1-i), retired=!laptop&&motion&&depth>2;
-        return <div key={`${scene.id}-${i}`} className={`feed-comment${frame.comments>i?' is-visible':''}${retired?' is-retired':''}`} style={!laptop?{'--stack-y':`${154-depth*72}px`,'--stack-x':`${depth===0?0:depth%2?12:-9}px`,'--stack-scale':1-depth*.035,'--stack-opacity':Math.max(0,1-depth*.14),'--stack-tilt':`${depth===0?0:depth%2?-.7:.7}deg`,zIndex:5+i}:undefined} aria-hidden={frame.comments<=i||retired}><Face kind={['a','b','c','d','e'][i]}/><div className="feed-comment-body"><strong>{name}<span> · 1st</span></strong><p>{text}</p></div></div>;
+        return <div key={`${scene.id}-${i}`} className={`feed-comment${frame.comments>i?' is-visible':''}${retired?' is-retired':''}`} style={!laptop?{'--stack-y':`${12+depth*78}px`,'--stack-scale':1-depth*.018,'--stack-opacity':Math.max(0,1-depth*.13),zIndex:5+i,order:-i}:undefined} aria-hidden={frame.comments<=i||retired}><Face kind={['a','b','c','d','e'][i]}/><div className="feed-comment-body"><strong>{name}<span> · 1st</span></strong><p>{text}</p></div></div>;
       })}
     </div>
   </>;
   return <div className={`c2-feed-layout c2-feed-layout--${variant} c2-container`}>
     <div className="c2-feed-copy">
       <h1 id="c2-title"><span>Learn to</span><span>sound like</span><span className="c2-repeat">LinkedIn.</span></h1>
-      <p>Required listening for<br/> aspiring thought leaders.</p>
+      <p>Professional development for<br/> aspiring thought leaders.</p>
       <div className="feed-controls">
         <span className="feed-lesson" aria-live="polite">{scene.lesson}</span>
         <div className="feed-controls-actions"><div className="feed-scene-dots" aria-label="Choose a post">{FEED_SCENES.map((item,i)=><button type="button" key={item.id} aria-label={`Show ${item.id} post`} aria-pressed={frame.sceneIndex===i} onClick={()=>select(i)}><span/></button>)}</div><button type="button" className="feed-pause" aria-label={!motion?'Feed animation is off':paused?'Resume feed animation':'Pause feed animation'} aria-pressed={paused||!motion} disabled={!motion} onClick={()=>setPaused(value=>!value)}>{paused||!motion?<Play aria-hidden="true"/>:<Pause aria-hidden="true"/>}</button></div>
