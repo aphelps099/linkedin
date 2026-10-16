@@ -7,5 +7,6 @@ import '../home-2/header.css';
 import '../home-2/player.css';
 import '../home-2/footer.css';
 import './stage.css';
+import './glass.css';
 import CircleBack from '../CircleBack.jsx';
 createRoot(document.getElementById('root')).render(<CircleBack stagePreview racingPreview/>);

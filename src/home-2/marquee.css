@@ -1,0 +1,27 @@
+/* A quiet moving divider below the complete hero and radio player. */
+.c2-marquee { position: relative; isolation: isolate; overflow: hidden; background: #0b1520; color: #fbf6e8; border-block: 1px solid #bfd8f535; }
+.c2-marquee::before { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: .35; background: repeating-conic-gradient(#263b50 0% 25%, #101b2a 0% 50%) 0 0 / 7px 7px; mask-image: linear-gradient(90deg, #000, transparent 65%); }
+.c2-marquee-inner { display: flex; align-items: stretch; min-height: 64px; }
+.c2-marquee-slash { position: relative; overflow: hidden; flex: 0 0 22px; margin-right: 14px; }
+.c2-marquee-slash::before { content: ''; position: absolute; inset: -12px 7px; background: #0757ec; transform: skewX(-28deg); box-shadow: 10px 0 0 #fbf6e8; }
+.c2-marquee-window { display: flex; align-items: center; flex: 1; min-width: 0; overflow: hidden; }
+.c2-marquee-track { display: flex; width: max-content; animation: c2-jargon-loop 31s linear infinite; }
+.c2-marquee-group { display: flex; align-items: center; flex: none; gap: 30px; padding-right: 30px; white-space: nowrap; font: 400 18px/1.2 C2Hoves, Arial, sans-serif; letter-spacing: .045em; text-transform: uppercase; }
+.c2-marquee-group b { font-size: 16px; font-weight: 400; color: #fff349; }
+.c2-home .c2-marquee-pause { display: grid; place-items: center; flex: none; width: 44px; color: #bfd8f5; background: #0b1520; }
+.c2-marquee-pause svg { width: 16px; height: 16px; }
+.c2-marquee-link { display: flex; align-items: center; gap: 9px; padding: 0 24px 0 20px; border-left: 1px solid #bfd8f535; background: #0b1520; white-space: nowrap; font-size: 15px; }
+.c2-marquee-link svg { width: 17px; height: 17px; }
+.c2-marquee-link:hover, .c2-home .c2-marquee-pause:hover { color: #fff; }
+.c2-marquee.is-paused .c2-marquee-track { animation-play-state: paused; }
+@keyframes c2-jargon-loop { to { transform: translateX(-50%); } }
+@media (max-width: 640px) {
+  .c2-marquee-inner { width: 100%; min-height: 54px; }
+  .c2-marquee-slash { flex-basis: 13px; margin-right: 5px; }
+  .c2-marquee-group { font-size: 16px; gap: 24px; padding-right: 24px; }
+  .c2-marquee-link { font-size: 12px; padding-inline: 13px; gap: 5px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .c2-marquee-track { animation: none; }
+  .c2-home .c2-marquee-pause { display: none; }
+}

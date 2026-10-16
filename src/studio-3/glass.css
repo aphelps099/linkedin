@@ -1,0 +1,54 @@
+/* A continuous smoked-glass deck, with distinct backlit white controls. */
+.stage2.stage3 { padding-bottom: 0 !important; }
+.stage3 .s3-console {
+  width: 100%; margin-top: auto; padding: 0; border: 0; border-top: 1px solid #f7fcff42; border-radius: 0;
+  color: #f9fcff; background: linear-gradient(110deg,#ffffff0b,transparent 37%,#ffffff04 72%),#0a1c3e;
+  box-shadow: 0 -12px 44px #00123524,inset 0 1px 0 #ffffff09;
+  backdrop-filter: blur(30px) saturate(1.3); -webkit-backdrop-filter: blur(30px) saturate(1.3);
+}
+@supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) { .stage3 .s3-console { background-color: #06142cb8; } }
+.s3-console-inner { width: min(100%, 800px); margin-inline: auto; padding: 24px 30px max(20px,env(safe-area-inset-bottom)); }
+.stage3 .s3-console :focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
+.s3-console .s3-transport { gap: 17px; margin-bottom: 22px; }
+.stage3 .s3-console .c2-key {
+  color: #f9fcff; border: 1px solid #ffffff24; border-top-color: #ffffff38; border-radius: 13px;
+  background: linear-gradient(150deg,#ffffff10,#ffffff04);
+  box-shadow: inset 0 1px 0 #ffffff05,0 4px 12px #0000000a;
+  transition: background .2s,border-color .2s,box-shadow .2s,transform .2s;
+}
+.stage3 .s3-console .c2-key:hover { color: #fff; background: #ffffff16; border-color: #ffffff43; }
+.stage3 .s3-console .c2-key:is(.is-active,:active) { color: #fff; background: #ffffff20; border-color: #ffffff78; box-shadow: inset 0 0 18px #ffffff05,0 0 17px #c4dfff17; }
+.stage3 .s3-console .s3-play { width: 58px; height: 58px; min-height: 58px; border-radius: 50%; border-color: #ffffff40; background: linear-gradient(145deg,#ffffff1e,#ffffff07); box-shadow: inset 0 1px 1px #ffffff3d,0 4px 16px #0000001a; }
+.stage3 .s3-console .s3-play:active { transform: scale(.96); }
+.s3-console .s3-play svg { width: 24px; height: 24px; stroke-width: 1; filter: drop-shadow(0 0 5px #ffffff78); }
+.s3-console .s3-track strong { font-size: 23px; line-height: 1.2; letter-spacing: -.025em; }
+.s3-console .s3-track>span { font-size: 14px; color: #c3d2ed; }
+.s3-console .s3-shuffle { border-radius: 50%; }
+.s3-console .s3-shuffle:hover { background: #ffffff0a; color: #fff; }
+.s3-console .s3-shuffle svg { filter: drop-shadow(0 0 4px #ffffff4d); }
+.s3-console .s3-keys { gap: 12px; }
+.stage3 .s3-console .s3-keys .c2-key { min-height: 63px; padding: 16px 20px; font-size: 18px; letter-spacing: -.01em; }
+.s3-console .s3-keys svg { stroke-width: 1.8; filter: drop-shadow(0 0 5px #ffffff73); }
+.s3-console .s3-settings { gap: 20px; margin-top: 23px; padding-top: 12px; border-top-color: #ffffff17; }
+.s3-console .s3-settings button { color: #dce7f9; }
+.s3-console .s3-settings button:hover { color: #fff; }
+.s3-console .s3-toggle i { width: 36px; flex-basis: 36px; height: 22px; background: #ffffff1f; border-color: #ffffff15; box-shadow: none; }
+.s3-console .s3-toggle i::after { top: 3px; left: 3px; width: 14px; height: 14px; background: #dbe6f7; box-shadow: 0 1px 4px #00000028; }
+.s3-console .s3-toggle:is([aria-expanded=true],[aria-checked=true]) i { background: #ffffff44; border-color: #ffffff15; }
+.s3-console .s3-toggle:is([aria-expanded=true],[aria-checked=true]) i::after { transform: translateX(14px); background: #fff; box-shadow: 0 0 8px #ffffff50; }
+.s3-console .s3-voice svg { filter: drop-shadow(0 0 4px #ffffff40); }
+.s3-console .s3-pad-drawer { border-top-color: #ffffff17; }
+.s3-console .s3-bank { border-color: #ffffff22; background: #ffffff08; }
+.s3-console .s3-bank button[aria-pressed=true] { background: #ffffff22; color: #fff; box-shadow: inset 0 1px #ffffff22; }
+@media(max-width:700px) {
+  .s3-console-inner { padding: 22px 20px max(19px,env(safe-area-inset-bottom)); }
+  .s3-console .s3-transport { gap: 13px; margin-bottom: 21px; }
+  .s3-console .s3-track strong { font-size: 20px; }
+  .stage3 .s3-console .s3-play { width: 53px; height: 53px; min-height: 53px; }
+  .s3-console .s3-keys { gap: 8px; }
+  .stage3 .s3-console .s3-keys .c2-key { font-size: 16px; min-height: 64px; padding: 15px 12px; border-radius: 11px; }
+  .s3-console .s3-keys svg { width: 18px; height: 18px; }
+  .s3-console .s3-settings { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; margin-top: 21px; padding-top: 12px; }
+  .s3-console .s3-settings .s3-toggle { justify-content: space-between; font-size: 13px; gap: 8px; }
+  .s3-console .s3-settings .s3-voice { grid-column: 1/-1; justify-content: space-between; border-top: 0; margin-top: 0; font-size: 14px; }
+}

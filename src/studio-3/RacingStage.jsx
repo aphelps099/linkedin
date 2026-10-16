@@ -33,6 +33,7 @@ export function RacingConsole({playing,songName,tempo,energy,onPlay,onShuffle,on
     window.addEventListener('keydown',down,true);return()=>window.removeEventListener('keydown',down,true);
   });
   return <section id="s3-controls" className="s3-console" aria-label="Performance controls">
+    <div className="s3-console-inner">
     <div className="s3-transport">
       <button type="button" className={`c2-key s3-play ${playing?'is-active':''}`} aria-pressed={playing} aria-label={playing?'Pause performance':'Play performance'} onClick={onPlay}>{playing?<Pause fill="currentColor"/>:<Play fill="currentColor"/>}</button>
       <div className="s3-track"><strong>{songName}</strong><span>{tempo} BPM</span></div>
@@ -56,5 +57,6 @@ export function RacingConsole({playing,songName,tempo,energy,onPlay,onShuffle,on
       <div className="s3-pads">{pads.map((p,i)=><button type="button" className={`c2-key s3-pad ${flash===`pad-${i}`?'is-active':''}`} key={`${bank}-${p.id}`} aria-label={`Trigger ${p.say||p.name}`} aria-keyshortcuts={padsOpen?String(i+1):undefined} onPointerDown={e=>{if(e.button!==0)return;e.preventDefault();e.currentTarget.focus();hit(i);}} onClick={e=>{if(e.detail===0)hit(i);}}>{p.name}</button>)}</div>
     </div>
     <span className="stage2-accessible" role="status">{ticker}</span>
+    </div>
   </section>;
 }
