@@ -19,7 +19,6 @@ import './footer.css';
 const INITIAL = {index:0, playing:false, loading:false, elapsed:0, volume:.8, text:LINES[1], word:-1, mouth:'rest', levels:null, error:''};
 const PORTRAITS = [{index:2,tone:'ice'}, {index:0,tone:'paper'}, {index:1,tone:'pink'}, {index:3,tone:'navy'}];
 const FEATURED = ['CS-104','CS-203','CS-501'].map(sku => PRODUCTS.find(p => p.sku === sku));
-const CAPTIONS = ['Dusty pink', 'Cobalt blue', 'Cream + cobalt'];
 // Singing frames replace only the feathered lip area. A separate, brief
 // illustrated head turn introduces the selected singer when playback starts.
 const CROPS = {rest:[142,80], ah:[618,81], ee:[1094,80], oh:[144,540], oo:[621,540], closed:[1096,538]};
@@ -145,16 +144,14 @@ export default function ConceptHome({playerFactory=createPortraitRadio}) {
           <div className="c2-section-head">
             <p className="c2-eyebrow">The company store</p>
             <h2 id="c2-store-title">Wear your boundaries.</h2>
-            <p className="c2-store-intro">For the life you lead outside the meeting.</p>
+            <p className="c2-store-intro">Threads and wares for when you take it offline.</p>
           </div>
-          <div className="c2-products">{FEATURED.map((product,i)=><a className="c2-product" key={product.sku} href={`${base}store/?product=${product.sku}`} aria-label={`Explore ${product.name} — design preview`}>
+          <div className="c2-products">{FEATURED.map(product=><a className="c2-product" key={product.sku} href={`${base}store/?product=${product.sku}`} aria-label={`Explore ${product.name} — design preview`}>
             <div className="c2-product-image"><img src={`${base}store/${product.img}`} width="1254" height="1254" loading="lazy" alt={product.name}/></div>
             <div className="c2-product-info"><h3>{product.name}</h3><ArrowUpRight aria-hidden="true"/></div>
-            <p>{CAPTIONS[i]}</p>
           </a>)}</div>
           <div className="c2-store-action">
             <a className="c2-collection-link" href={`${base}store/`}>Explore the collection <ArrowUpRight aria-hidden="true"/></a>
-            <p className="c2-collection-note">Collection preview</p>
           </div>
         </div>
       </section>
