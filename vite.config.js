@@ -92,6 +92,8 @@ export default defineConfig({
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
         // Static-host fallback for the former concept route; production redirects to /.
         home2: fileURLToPath(new URL('./home-2/index.html', import.meta.url)),
+        home3: fileURLToPath(new URL('./home-3/index.html', import.meta.url)),
+        home4: fileURLToPath(new URL('./home-4/index.html', import.meta.url)),
         studio: fileURLToPath(new URL('./studio/index.html', import.meta.url)),
         studio2: fileURLToPath(new URL('./studio-2/index.html', import.meta.url)),
         studio3: fileURLToPath(new URL('./studio-3/index.html', import.meta.url)),

@@ -16,7 +16,8 @@
     "check:studio": "node scripts/check-studio.mjs",
     "check:roast": "node scripts/check-roast.mjs",
     "check:lesson": "node scripts/check-lesson.mjs",
-    "check:home2": "node scripts/check-home2.mjs"
+    "check:home2": "node scripts/check-home2.mjs",
+    "check:feed": "node scripts/check-feed.mjs"
   },
   "dependencies": {
     "express": "^4.21.2",
