@@ -42,3 +42,41 @@
 .development-radio.is-still .development-track strong{animation:none}
 @media(prefers-reduced-motion:reduce){.development-device{transition:none!important;transform:rotate(-7deg)!important}.development-track strong{animation:none}.development-buttons button{transition:none}}
 @media(forced-colors:active){.c2-home .development-play{border:2px solid ButtonText}.development-seek{appearance:auto!important}.development-art{display:none}}
+
+/* A shallow editorial band: approximately 3:1 on desktop. */
+@media(min-width:1101px){
+ .development-inner{max-width:1500px;min-height:400px;height:calc(100vw / 3);padding:24px 64px;align-items:center;grid-template-columns:58% 42%}
+ .development-copy{max-width:700px;padding-right:24px}
+ .development-eyebrow{font-size:10px}
+ .c2-home .development-copy h2{font-size:clamp(26px,2.25vw,34px);margin:12px 0 14px}
+ .development-intro{font-size:clamp(17px,1.35vw,20px);line-height:1.4;max-width:620px}
+ .development-transport{margin-top:18px;padding-top:10px;max-width:590px}
+ .development-transport-row{min-height:54px;gap:16px}
+ .c2-home .development-buttons .development-play{width:50px;height:50px}
+ .development-track strong{font-size:16px;min-height:1.3em}
+ .c2-home .development-seek{height:20px;margin-top:0}
+ .c2-home .development-studio{margin-top:12px;font-size:15px}
+ .development-art{left:64%;right:0}
+ .development-device{width:clamp(280px,25vw,390px);top:calc(100% - clamp(300px,27vw,420px));left:0}
+ .c2-home .development-agenda{width:clamp(260px,26vw,400px);top:calc(100% - clamp(340px,30vw,470px));left:34%;opacity:.4}
+}
+@media(min-width:761px) and (max-width:1100px){
+ .development-inner{min-height:440px;padding:32px;grid-template-columns:62% 38%}
+ .c2-home .development-copy h2{font-size:28px;margin:14px 0}
+ .development-intro{font-size:18px;line-height:1.4}
+ .development-transport{margin-top:20px;padding-top:10px}
+ .development-transport-row{min-height:56px}
+ .c2-home .development-studio{margin-top:12px;font-size:15px}
+ .development-art{left:67%;right:-5%}
+ .development-device{width:300px;top:calc(100% - 325px)}
+ .c2-home .development-agenda{width:300px;top:50px;opacity:.4}
+}
+@media(max-width:760px){
+ .development-inner{padding-top:32px}
+ .c2-home .development-copy h2{margin:16px 0}
+ .development-intro{font-size:19px;line-height:1.4}
+ .development-transport{margin-top:22px}
+ .development-art{height:295px;margin-top:18px}
+ .development-device{width:260px;top:18px;left:calc(50% - 120px)}
+ .c2-home .development-agenda{width:220px;opacity:.4}
+}
