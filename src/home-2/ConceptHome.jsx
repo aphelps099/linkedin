@@ -147,7 +147,6 @@ export default function ConceptHome({playerFactory=createPortraitRadio, variant=
       </section>
       {variant==='conversation'&&<>
         <DevelopmentRadio base={base} state={state} track={track} seconds={seconds} motion={motion} onToggle={()=>radio.current?.toggle()} onSkip={skip} onSeek={seek}/>
-        <div className="development-compare"><ExperimentLinks variant={variant} base={base}/></div>
       </>}
       <section id="c2-store" className="c2-store" aria-labelledby="c2-store-title">
         <div className="c2-container">

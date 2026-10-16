@@ -8,5 +8,5 @@ if (location.hash.startsWith('#beat=')) {
 } else if (location.hash === '#roast') {
   location.replace(`./roast/${location.search}`);
 } else {
-  ReactDOM.createRoot(document.getElementById('root')).render(<Homepage />);
+  ReactDOM.createRoot(document.getElementById('root')).render(<Homepage variant="conversation" />);
 }
