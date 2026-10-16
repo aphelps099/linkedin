@@ -41,8 +41,8 @@ const PocketPlayer=memo(function PocketPlayer({motion}){
     <ReactionPost motion={motion}/>
     <svg className="development-earbuds" viewBox="0 0 200 440" focusable="false">
       <g fill="none" strokeLinecap="round">
-        <path d="M80 67v85c0 32 22 48 37 69m44-93v42c0 27-28 36-44 51v35c0 76 74 98 35 143-24 28-94 22-103-11" stroke="#c5d4e6" strokeWidth="6"/>
-        <path d="M80 67v85c0 32 22 48 37 69m44-93v42c0 27-28 36-44 51v35c0 76 74 98 35 143-24 28-94 22-103-11" stroke="#fff" strokeWidth="3"/>
+        <path d="M99 96v56c0 32 3 48 18 69m25-63v12c0 27-9 36-25 51v35c0 76 74 98 35 143-24 28-94 22-103-11" stroke="#c5d4e6" strokeWidth="6"/>
+        <path d="M99 96v56c0 32 3 48 18 69m25-63v12c0 27-9 36-25 51v35c0 76 74 98 35 143-24 28-94 22-103-11" stroke="#fff" strokeWidth="3"/>
       </g>
       <g transform="translate(46 18) rotate(-20 34 30)">
         <rect x="27" y="24" width="15" height="60" rx="7" fill="#dde5ed"/>
