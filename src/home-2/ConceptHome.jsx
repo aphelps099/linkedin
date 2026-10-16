@@ -9,6 +9,7 @@ import {ConceptFooter} from './ConceptFooter.jsx';
 import {createPortraitRadio} from './portraitRadio.js';
 import {PixelSpectrum} from './PixelSpectrum.jsx';
 import {FeedScene, ExperimentLinks} from '../home-experiments/FeedScene.jsx';
+import {ProfileConversation} from '../home-experiments/ProfileConversation.jsx';
 import '../brand/fonts.css';
 import './concept.css';
 import './player.css';
@@ -16,6 +17,7 @@ import './header.css';
 import './campaigns.css';
 import './footer.css';
 import '../home-experiments/feed-scene.css';
+import '../home-experiments/profile-conversation.css';
 
 const INITIAL = {index:0, playing:false, loading:false, elapsed:0, volume:.8, text:LINES[1], word:-1, mouth:'rest', levels:null, error:''};
 const PORTRAITS = [{index:2,tone:'ice'}, {index:0,tone:'paper'}, {index:1,tone:'pink'}, {index:3,tone:'navy'}];
@@ -41,8 +43,8 @@ const Portrait = memo(function Portrait({base, index, tone, active, playing, loa
 });
 
 export default function ConceptHome({playerFactory=createPortraitRadio, variant='portraits'}) {
-  const experiment=variant==='laptop'||variant==='screenless';
-  const base = window.location.pathname.replace(/home-[234](?:\/(?:index\.html)?)?$/, '').replace(/index\.html$/, '').replace(/\/?$/, '/');
+  const experiment=['laptop','screenless','conversation'].includes(variant);
+  const base = window.location.pathname.replace(/home-[2345](?:\/(?:index\.html)?)?$/, '').replace(/index\.html$/, '').replace(/\/?$/, '/');
   const radio = useRef(null), previousVolume = useRef(.8), chooseRef = useRef(null);
   const [state, setState] = useState(INITIAL), [allTracks, setAllTracks] = useState(false);
   const [motion, setMotion] = useState(() => !window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -107,7 +109,7 @@ export default function ConceptHome({playerFactory=createPortraitRadio, variant=
     <main>
       <HeroVideo radioActive={state.playing||state.loading} onSoundEnable={pauseRadio}/>
       <section className="c2-hero" aria-labelledby="c2-title">
-        {experiment?<FeedScene variant={variant} motion={motion} base={base}/>:<div className="c2-container c2-hero-inner">
+        {variant==='conversation'?<ProfileConversation motion={motion} base={base}/>:experiment?<FeedScene variant={variant} motion={motion} base={base}/>:<div className="c2-container c2-hero-inner">
           <div className="c2-hero-copy">
             <h1 id="c2-title"><span>Humbled.</span><span>Honored.</span><span className="c2-repeat">On repeat.</span></h1>
             <p>The soundtrack of<br className="c2-copy-break"/> professional nonsense.</p>
@@ -137,7 +139,7 @@ export default function ConceptHome({playerFactory=createPortraitRadio, variant=
           <button type="button" className="c2-key c2-all-tracks" aria-expanded={allTracks} aria-controls="c2-track-list" onClick={()=>setAllTracks(!allTracks)}>Playlist <ChevronDown className={allTracks?'is-open':''}/></button>
         </div>
         {state.error&&<p className="c2-audio-error c2-container" role="alert">{state.error}</p>}
-        <div className="c2-container" id="c2-track-list" hidden={!allTracks}><ol className="c2-track-list">{TRACKS.map((item,index)=><li key={item.title}><button aria-label={`${index===state.index&&state.playing?'Pause':'Play'} ${item.title}`} aria-current={index===state.index?'true':undefined} onClick={()=>choose(index)}><span>{index===state.index&&state.playing?<Pause size={17}/>:<Play size={17}/>}</span><strong>{item.title}</strong><span className="c2-track-genre">{item.genre}</span><time>{formatTime(item.seconds)}</time></button></li>)}</ol><button className="c2-motion-toggle" aria-pressed={motion} onClick={()=>setMotion(!motion)}>Animate {experiment?'feed':'portraits'} <span>{motion?'On':'Off'}</span></button></div>
+        <div className="c2-container" id="c2-track-list" hidden={!allTracks}><ol className="c2-track-list">{TRACKS.map((item,index)=><li key={item.title}><button aria-label={`${index===state.index&&state.playing?'Pause':'Play'} ${item.title}`} aria-current={index===state.index?'true':undefined} onClick={()=>choose(index)}><span>{index===state.index&&state.playing?<Pause size={17}/>:<Play size={17}/>}</span><strong>{item.title}</strong><span className="c2-track-genre">{item.genre}</span><time>{formatTime(item.seconds)}</time></button></li>)}</ol><button className="c2-motion-toggle" aria-pressed={motion} onClick={()=>setMotion(!motion)}>Animate {variant==='conversation'?'conversation':experiment?'feed':'portraits'} <span>{motion?'On':'Off'}</span></button></div>
       </section>
       {experiment&&<ExperimentLinks variant={variant} base={base}/>}
       </section>

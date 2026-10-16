@@ -83,5 +83,5 @@ export const FeedScene = memo(function FeedScene({variant, motion, base}) {
 });
 
 export function ExperimentLinks({variant,base}) {
-  return <nav className="feed-compare c2-container" aria-label="Compare homepage layouts"><span>Compare</span><a href={`${base}home-3/#c2-title`} aria-current={variant==='laptop'?'page':undefined}>Laptop</a><a href={`${base}home-4/#c2-title`} aria-current={variant==='screenless'?'page':undefined}>Screenless</a><a href={`${base}#c2-title`}>Original</a></nav>;
+  return <nav className="feed-compare c2-container" aria-label="Compare homepage layouts"><span>Compare</span><a href={`${base}home-3/#c2-title`} aria-current={variant==='laptop'?'page':undefined}>Laptop</a><a href={`${base}home-4/#c2-title`} aria-current={variant==='screenless'?'page':undefined}>Screenless</a><a href={`${base}home-5/#c2-title`} aria-current={variant==='conversation'?'page':undefined}>Profiles</a><a href={`${base}#c2-title`}>Original</a></nav>;
 }
