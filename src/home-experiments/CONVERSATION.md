@@ -11,3 +11,9 @@ On narrow screens the heading sits above the face scene. Both profiles remain vi
 Asset provenance: the clean plate was edited from the approved imagegen mockup `exec-3acffabf-e03b-4411-a112-80b20a425d65.png`, keeping the two identities and removing all baked-in interface/text. Clean plate: `exec-654be3a0-641c-4e81-9e5b-4cb4e01f06f9.png`. Runway motion task: `5fa307f2-9969-44d3-b7c3-2158782359c9`. The prompt requests a locked camera, unchanging head scale and positions, only restrained lip/jaw movement and occasional blinking, alternating left then right, no audio, no graphics, and identical first/last frames.
 
 Production delivery: source film trimmed to exactly ten seconds, resized to 1280×720, encoded H.264 CRF 26 with a fast-start MP4 header and no audio track. The poster is exported from the resting frame at four seconds, so the live film and fallback retain the same appearance.
+
+## Professional development radio section
+
+The profile preview now places `DevelopmentRadio` in its own blue section directly after the conversation. TT Hoves sets all section text. A flat white inline SVG iPod, with the LinkedIn mark on its screen, is cropped near its upper wheel; a subdued folded-agenda illustration sits behind it. Fine-pointer hover lifts the device 8px and eases its tilt from -7 to -4 degrees; reduced motion disables this. Mobile stacks the copy/player above the cropped illustration.
+
+The compact transport shares the existing radio instance and header controls. It exposes only the current track, total duration, previous/restart, play/pause, next, and an accessible seek slider. Titles fade in when the selected track changes. No playlist expands. The studio link opens `/studio/`. Other homepage variants retain their existing player.

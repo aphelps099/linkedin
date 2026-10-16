@@ -10,6 +10,7 @@ import {createPortraitRadio} from './portraitRadio.js';
 import {PixelSpectrum} from './PixelSpectrum.jsx';
 import {FeedScene, ExperimentLinks} from '../home-experiments/FeedScene.jsx';
 import {ProfileConversation} from '../home-experiments/ProfileConversation.jsx';
+import {DevelopmentRadio} from '../home-experiments/DevelopmentRadio.jsx';
 import '../brand/fonts.css';
 import './concept.css';
 import './player.css';
@@ -18,6 +19,7 @@ import './campaigns.css';
 import './footer.css';
 import '../home-experiments/feed-scene.css';
 import '../home-experiments/profile-conversation.css';
+import '../home-experiments/development-radio.css';
 
 const INITIAL = {index:0, playing:false, loading:false, elapsed:0, volume:.8, text:LINES[1], word:-1, mouth:'rest', levels:null, error:''};
 const PORTRAITS = [{index:2,tone:'ice'}, {index:0,tone:'paper'}, {index:1,tone:'pink'}, {index:3,tone:'navy'}];
@@ -119,7 +121,7 @@ export default function ConceptHome({playerFactory=createPortraitRadio, variant=
             <div className="c2-portraits" style={{gridTemplateColumns:visiblePortraits.map(({index})=>index===state.index?'1.07fr':'1fr').join(' ')}}>{visiblePortraits.map(({index,tone})=><Portrait key={tone} base={base} index={index} tone={tone} active={state.index===index} playing={state.index===index&&state.playing} loading={state.index===index&&state.loading} mouth={motion&&state.index===index?state.mouth:'rest'} motion={motion} choose={stableChoose}/>)}</div>
           </div>
         </div>}
-      <section className="c2-player" id="c2-player" aria-label="Circle Back Radio music player">
+      {variant!=='conversation'&&<section className="c2-player" id="c2-player" aria-label="Circle Back Radio music player">
         <div className="c2-container c2-player-inner">
           <button type="button" className={`c2-key c2-play ${state.playing||state.loading?'is-active':''}`} aria-pressed={state.playing} onClick={()=>radio.current?.toggle()} aria-label={state.loading?'Cancel loading':state.playing?'Pause':'Play'}>{state.loading?<LoaderCircle className="c2-spin"/>:state.playing?<Pause fill="currentColor"/>:<Play fill="currentColor"/>}</button>
           <div className="c2-now-group">
@@ -140,9 +142,13 @@ export default function ConceptHome({playerFactory=createPortraitRadio, variant=
         </div>
         {state.error&&<p className="c2-audio-error c2-container" role="alert">{state.error}</p>}
         <div className="c2-container" id="c2-track-list" hidden={!allTracks}><ol className="c2-track-list">{TRACKS.map((item,index)=><li key={item.title}><button aria-label={`${index===state.index&&state.playing?'Pause':'Play'} ${item.title}`} aria-current={index===state.index?'true':undefined} onClick={()=>choose(index)}><span>{index===state.index&&state.playing?<Pause size={17}/>:<Play size={17}/>}</span><strong>{item.title}</strong><span className="c2-track-genre">{item.genre}</span><time>{formatTime(item.seconds)}</time></button></li>)}</ol><button className="c2-motion-toggle" aria-pressed={motion} onClick={()=>setMotion(!motion)}>Animate {variant==='conversation'?'conversation':experiment?'feed':'portraits'} <span>{motion?'On':'Off'}</span></button></div>
+      </section>}
+      {experiment&&variant!=='conversation'&&<ExperimentLinks variant={variant} base={base}/>}
       </section>
-      {experiment&&<ExperimentLinks variant={variant} base={base}/>}
-      </section>
+      {variant==='conversation'&&<>
+        <DevelopmentRadio base={base} state={state} track={track} seconds={seconds} motion={motion} onToggle={()=>radio.current?.toggle()} onSkip={skip} onSeek={seek}/>
+        <div className="development-compare"><ExperimentLinks variant={variant} base={base}/></div>
+      </>}
       <section id="c2-store" className="c2-store" aria-labelledby="c2-store-title">
         <div className="c2-container">
           <div className="c2-section-head">
