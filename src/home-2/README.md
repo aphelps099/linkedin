@@ -4,7 +4,7 @@ The approved Home 2 design is now the public homepage at `/`, mounted by `src/ma
 
 ## Interaction
 
-The opening office film uses Mux playback ID `jjICCaXD1dLmDApUXumm9CgiESKPGJYoEAeYb2x6wf00`. `HeroVideo.jsx` streams adaptive HLS with native Safari playback and a dynamically loaded HLS.js fallback. The film fills 78% of the stable viewport height, with white transparent navigation over it. The original blue hero is section two, visible below the film; the marquee still follows it. Other routes retain their solid navigation.
+The opening office film uses Mux playback ID `jjICCaXD1dLmDApUXumm9CgiESKPGJYoEAeYb2x6wf00`. `HeroVideo.jsx` streams adaptive HLS with native Safari playback and a dynamically loaded HLS.js fallback. The film fills 78% of the stable viewport height, with white transparent navigation over it. The original blue hero is section two, visible below the film; the shop section follows the music player directly. The jargon marquee is currently removed from the page. Other routes retain their solid navigation.
 
 The current film is silent and loops muted, with a pause/play control. Sound controls remain implemented but hidden behind `HAS_AUDIO = false`; enable them when the final audio version replaces this playback ID (also update the poster preload in `index.html`). Reduced-motion visitors see a poster until they press play. Playback pauses outside the viewport and in hidden tabs. When sound is enabled in a future version, starting the radio mutes the film and enabling film sound pauses the radio. A failed stream retains its poster and all page navigation.
 

@@ -8,7 +8,6 @@ import {Campaigns} from './Campaigns.jsx';
 import {ConceptFooter} from './ConceptFooter.jsx';
 import {createPortraitRadio} from './portraitRadio.js';
 import {PixelSpectrum} from './PixelSpectrum.jsx';
-import {JargonMarquee} from './JargonMarquee.jsx';
 import '../brand/fonts.css';
 import './concept.css';
 import './player.css';
@@ -138,7 +137,6 @@ export default function ConceptHome({playerFactory=createPortraitRadio}) {
         <div className="c2-container" id="c2-track-list" hidden={!allTracks}><ol className="c2-track-list">{TRACKS.map((item,index)=><li key={item.title}><button aria-label={`${index===state.index&&state.playing?'Pause':'Play'} ${item.title}`} aria-current={index===state.index?'true':undefined} onClick={()=>choose(index)}><span>{index===state.index&&state.playing?<Pause size={17}/>:<Play size={17}/>}</span><strong>{item.title}</strong><span className="c2-track-genre">{item.genre}</span><time>{formatTime(item.seconds)}</time></button></li>)}</ol><button className="c2-motion-toggle" aria-pressed={motion} onClick={()=>setMotion(!motion)}>Animate portraits <span>{motion?'On':'Off'}</span></button></div>
       </section>
       </section>
-      <JargonMarquee base={base}/>
       <section id="c2-store" className="c2-store" aria-labelledby="c2-store-title">
         <div className="c2-container">
           <div className="c2-section-head">
