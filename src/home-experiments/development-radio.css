@@ -83,7 +83,7 @@
 
 /* A soft social approval loop behind the sharp 3D listening kit. */
 .development-device{z-index:2}
-.development-post{position:absolute;top:20px;left:-28px;width:390px;height:235px;padding:18px 20px;background:#d6e4ef;color:#193a55;border:1px solid #ffffff55;border-radius:12px;transform:rotate(6deg);filter:blur(1.3px);opacity:.68;pointer-events:none;z-index:0}
+.development-post{position:absolute;top:20px;left:-28px;width:390px;height:235px;padding:18px 20px;background:#d6e4ef;color:#193a55;border:1px solid #ffffff55;border-radius:12px;transform:rotate(6deg);filter:none;opacity:.9;pointer-events:none;z-index:0}
 .development-post-lines{display:grid;gap:7px;margin-bottom:14px}
 .development-post-lines i,.development-post-block i{display:block;height:6px;border-radius:6px;background:#7b96aa55;width:83%}
 .development-post-lines i:last-child{width:58%}
@@ -91,8 +91,8 @@
 .development-reaction{display:flex;align-items:center;gap:6px;flex:1}
 .reaction-medallion{display:grid;place-items:center;width:31px;height:31px;border-radius:50%;color:#fff;background:#637f94;flex-shrink:0}
 .c2-home .reaction-medallion svg{width:17px;height:17px;stroke-width:2}
-.reaction-caption{font-size:11px;font-weight:600;line-height:1.3}
-.reaction-count{display:block;font-size:12px;font-weight:400;font-variant-numeric:tabular-nums;opacity:.75}
+.reaction-caption{font-size:12px;font-weight:600;line-height:1.3}
+.reaction-count{display:block;font-size:13px;font-weight:400;font-variant-numeric:tabular-nums;opacity:.9}
 .reaction-0.is-pressed .reaction-medallion{background:#1675c8}
 .reaction-1.is-pressed .reaction-medallion{background:#c74e62}
 .reaction-2.is-pressed .reaction-medallion{background:#b38b30}
