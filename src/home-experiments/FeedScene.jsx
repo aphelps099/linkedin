@@ -1,5 +1,5 @@
 import React, {memo, useEffect, useRef, useState} from 'react';
-import {Bell, BriefcaseBusiness, Heart, Home, Lightbulb, MessageSquare, MousePointer2, Pause, Play, Search, ThumbsUp, Users} from 'lucide-react';
+import {Bell, BriefcaseBusiness, Heart, Home, Lightbulb, MessageSquare, Pause, Play, Search, ThumbsUp, Users} from 'lucide-react';
 import {FEED_SCENES, SCENE_DURATION, feedFrame} from './feed-timeline.js';
 
 const REACTIONS = [{name:'Like',Icon:ThumbsUp},{name:'Love',Icon:Heart},{name:'Insightful',Icon:Lightbulb}];
@@ -53,12 +53,14 @@ export const FeedScene = memo(function FeedScene({variant, motion, base}) {
       <p className="feed-post-after">{scene.after}</p>
       <div className="feed-stats"><span><span className="feed-mini-reactions" aria-hidden="true"><ThumbsUp/><Heart/><Lightbulb/></span>{counts.reduce((a,b)=>a+b,0)} reactions</span><span>{frame.comments} {frame.comments===1?'comment':'comments'}</span></div>
       <div className="feed-reactions">
-        {REACTIONS.map(({name,Icon},i)=><button key={name} type="button" aria-label={`${name} this fictional post`} className={`feed-reaction feed-reaction--${i}${counts[i]?' has-reacted':''}${running&&frame.clicking&&frame.activeReaction===i&&frame.pressed?' is-hit':''}`} onClick={()=>setExtra(previous=>previous.map((value,j)=>value+(j===i?1:0)))}><Icon aria-hidden="true"/><span>{name}</span><b>{counts[i]}</b></button>)}
-        <span className={`feed-clicker${running&&frame.clicking?' is-visible':''}`} style={{'--reaction':Math.max(0,frame.activeReaction)}} aria-hidden="true"><MousePointer2/></span>
+        {REACTIONS.map(({name,Icon},i)=><button key={name} type="button" aria-label={`${name} this fictional post`} className={`feed-reaction feed-reaction--${i}${counts[i]?' has-reacted':''}${running&&frame.clicking&&frame.activeReaction===i&&frame.pressed?' is-hit':''}`} onClick={()=>setExtra(previous=>previous.map((value,j)=>value+(j===i?1:0)))}><span key={counts[i]} className={`feed-reaction-orb${running&&counts[i]?' is-pulsing':''}`} aria-hidden="true"><Icon/></span><span>{name}</span><b>{counts[i]}</b></button>)}
       </div>
     </article>
-    <div className="feed-comments" aria-label="Fictional comments">
-      {scene.comments.map(([name,text],i)=><div key={`${scene.id}-${i}`} className={`feed-comment${frame.comments>i?' is-visible':''}`} aria-hidden={frame.comments<=i}><Face kind={['a','b','c','d','e'][i]}/><div className="feed-comment-body"><strong>{name}<span> · 1st</span></strong><p>{text}</p></div></div>)}
+    <div className={`feed-comments${!laptop?' feed-comments--stack':''}`} aria-label="Fictional comments">
+      {scene.comments.map(([name,text],i)=>{
+        const depth=Math.max(0,frame.comments-1-i), retired=!laptop&&motion&&depth>2;
+        return <div key={`${scene.id}-${i}`} className={`feed-comment${frame.comments>i?' is-visible':''}${retired?' is-retired':''}`} style={!laptop?{'--stack-y':`${154-depth*72}px`,'--stack-x':`${depth===0?0:depth%2?12:-9}px`,'--stack-scale':1-depth*.035,'--stack-opacity':Math.max(0,1-depth*.14),'--stack-tilt':`${depth===0?0:depth%2?-.7:.7}deg`,zIndex:5+i}:undefined} aria-hidden={frame.comments<=i||retired}><Face kind={['a','b','c','d','e'][i]}/><div className="feed-comment-body"><strong>{name}<span> · 1st</span></strong><p>{text}</p></div></div>;
+      })}
     </div>
   </>;
   return <div className={`c2-feed-layout c2-feed-layout--${variant} c2-container`}>
@@ -70,7 +72,7 @@ export const FeedScene = memo(function FeedScene({variant, motion, base}) {
         <div className="feed-controls-actions"><div className="feed-scene-dots" aria-label="Choose a post">{FEED_SCENES.map((item,i)=><button type="button" key={item.id} aria-label={`Show ${item.id} post`} aria-pressed={frame.sceneIndex===i} onClick={()=>select(i)}><span/></button>)}</div><button type="button" className="feed-pause" aria-label={!motion?'Feed animation is off':paused?'Resume feed animation':'Pause feed animation'} aria-pressed={paused||!motion} disabled={!motion} onClick={()=>setPaused(value=>!value)}>{paused||!motion?<Play aria-hidden="true"/>:<Pause aria-hidden="true"/>}</button></div>
       </div>
     </div>
-    <div className={`feed-visual feed-visual--${variant}`} ref={root} style={{'--feed-sheet':`url("${base}home-experiments/profile-sheet.jpg")`}}>
+    <div className={`feed-visual feed-visual--${variant}`} ref={root} data-motion={motion?'on':'off'} style={{'--feed-sheet':`url("${base}home-experiments/profile-sheet.jpg")`}}>
       {laptop?<div className="feed-laptop">
         <div className="feed-laptop-lid"><span className="feed-webcam" aria-hidden="true"/><div className="feed-display">
           <div className="feed-social-nav" aria-hidden="true"><span className="feed-in">in</span><span className="feed-search"><Search/>Search</span><span className="feed-nav-item is-current"><Home/>Home</span><span className="feed-nav-item"><Users/>Network</span><span className="feed-nav-item"><BriefcaseBusiness/>Jobs</span><span className="feed-nav-item"><MessageSquare/>Messages</span><span className="feed-nav-item"><Bell/>Alerts</span></div>
