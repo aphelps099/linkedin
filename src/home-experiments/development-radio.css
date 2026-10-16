@@ -140,3 +140,13 @@
 @media(min-width:1101px){.development-intro{font-size:clamp(16px,1.25vw,18px)}}
 @media(min-width:761px) and (max-width:1100px){.c2-home .development-copy h2{font-size:29px}.development-intro{font-size:16px}}
 @media(max-width:760px){.c2-home .development-copy h2{font-size:clamp(25px,6vw,38px);margin:8px 0 16px}.development-intro{font-size:17px}.c2-home .development-studio{font-size:14px!important}}
+
+/* A compact ad composition with one clear headline and a short supporting line. */
+.development-copy{width:100%;max-width:520px;padding-right:0}
+.c2-home .development-copy h2{max-width:10ch;font-size:clamp(44px,4vw,58px);line-height:.98;letter-spacing:-.045em;margin:0 0 18px}
+.development-copy h2 span{color:#fff;font-weight:600}
+.development-copy h2 strong{margin-top:0}
+.development-intro{max-width:29ch;font-size:18px;line-height:1.4;text-wrap:balance}
+.development-transport{max-width:520px;margin-top:22px}
+@media(min-width:761px) and (max-width:1100px){.c2-home .development-copy h2{font-size:44px}.development-intro{font-size:17px}}
+@media(max-width:760px){.development-copy{max-width:520px}.c2-home .development-copy h2{font-size:clamp(42px,10vw,58px);margin:8px 0 18px}.development-intro{font-size:18px}}

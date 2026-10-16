@@ -53,8 +53,8 @@ export function DevelopmentRadio({base,state,track,seconds,motion,onToggle,onSki
   return <section className={`development-radio${motion?'':' is-still'}`} id="c2-player" aria-labelledby="development-title">
     <div className="development-inner">
       <div className="development-copy">
-        <h2 id="development-title"><span>Professional development.</span><strong>Questionable lyrics.</strong></h2>
-        <p className="development-intro">Build your executive presence with a steady rotation of synergy, strategic alignment, and surprisingly good beats.</p>
+        <h2 id="development-title"><span>All business.</span><strong>All beats.</strong></h2>
+        <p className="development-intro">Corporate jargon. Unreasonably good music.</p>
         <div className="development-transport" role="group" aria-label="LinkedIn Beats music player">
           <div className="development-transport-row">
             <div className="development-buttons">
