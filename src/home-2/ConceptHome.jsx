@@ -1,8 +1,9 @@
-import React, {memo, useEffect, useRef, useState} from 'react';
+import React, {memo, useCallback, useEffect, useRef, useState} from 'react';
 import {ArrowUpRight, ChevronDown, LoaderCircle, Pause, Play, SkipBack, SkipForward, Volume2, VolumeX} from 'lucide-react';
 import {TRACKS, LINES, formatTime} from '../home/tracks.js';
 import {PRODUCTS} from '../store/products.js';
 import {ConceptHeader} from './ConceptHeader.jsx';
+import {HeroVideo} from './HeroVideo.jsx';
 import {Campaigns} from './Campaigns.jsx';
 import {ConceptFooter} from './ConceptFooter.jsx';
 import {createPortraitRadio} from './portraitRadio.js';
@@ -95,10 +96,15 @@ export default function ConceptHome({playerFactory=createPortraitRadio}) {
     radio.current?.[direction]();
   };
   const mute=()=>{if(state.volume){previousVolume.current=state.volume;radio.current?.volume(0);}else radio.current?.volume(previousVolume.current||.8);};
+  const pauseRadio=useCallback(()=>{
+    const status=radio.current?.getState();
+    if(status?.playing||status?.loading)radio.current.toggle();
+  },[]);
   return <div className={`c2-home ${motion?'':'c2-still'}`}>
     <a className="c2-skip" href="#c2-player">Skip to music player</a>
-    <ConceptHeader base={base} onRadio={()=>radio.current?.toggle()} playing={state.playing} loading={state.loading}/>
+    <ConceptHeader base={base} overlay onRadio={()=>radio.current?.toggle()} playing={state.playing} loading={state.loading}/>
     <main>
+      <HeroVideo radioActive={state.playing||state.loading} onSoundEnable={pauseRadio}/>
       <section className="c2-hero" aria-labelledby="c2-title">
         <div className="c2-container c2-hero-inner">
           <div className="c2-hero-copy">

@@ -1,0 +1,20 @@
+.c2-film { position: relative; isolation: isolate; height: 78vh; height: 78svh; overflow: hidden; background: #20241f; color: #fff; }
+.c2-film-poster, .c2-film-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+.c2-film::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, #07100ec9 0, #07100e5c 100px, transparent 32%, transparent 65%, #07100e6b 100%); }
+.c2-film-bottom { position: absolute; z-index: 1; inset-inline: 0; bottom: 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.c2-film-next { display: inline-flex; align-items: center; gap: 12px; min-height: 44px; font-size: 15px; font-weight: 600; text-shadow: 0 1px 8px #0008; }
+.c2-film-next:hover { text-decoration: underline; text-underline-offset: 5px; }
+.c2-film-controls { display: flex; align-items: center; gap: 8px; }
+.c2-home .c2-film-controls button { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-width: 44px; min-height: 44px; padding: 11px; border: 1px solid #ffffff45; border-radius: 50%; color: #fff; background: #111a1d59; backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); box-shadow: inset 0 1px 0 #ffffff14; transition: background .15s; }
+.c2-home .c2-film-controls .c2-film-sound { border-radius: 24px; padding-inline: 16px; font-size: 14px; font-weight: 600; }
+.c2-film-controls svg { filter: drop-shadow(0 0 5px #ffffff50); width: 18px; height: 18px; }
+.c2-home .c2-film-controls button:hover { background: #111a1db3; }
+.c2-home .c2-film :is(a, button):focus-visible { outline-color: #fff; }
+.c2-film-status { font-size: 14px; }
+@media (max-width: 700px) {
+  .c2-film-bottom { bottom: 20px; }
+  .c2-film-next { font-size: 14px; gap: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .c2-film-controls button { transition: none !important; }
+}

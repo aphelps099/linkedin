@@ -4,7 +4,11 @@ The approved Home 2 design is now the public homepage at `/`, mounted by `src/ma
 
 ## Interaction
 
-Four portraits select existing radio arrangements. The fifth remains available in All tracks. The player uses `src/home/radio.js` unchanged: recorded phrase clips, pause/resume, seek, volume and track changes. Nothing autoplays.
+The opening office film uses Mux playback ID `jjICCaXD1dLmDApUXumm9CgiESKPGJYoEAeYb2x6wf00`. `HeroVideo.jsx` streams adaptive HLS with native Safari playback and a dynamically loaded HLS.js fallback. The film fills 78% of the stable viewport height, with white transparent navigation over it. The original blue hero is section two, visible below the film; the marquee still follows it. Other routes retain their solid navigation.
+
+The current film is silent and loops muted, with a pause/play control. Sound controls remain implemented but hidden behind `HAS_AUDIO = false`; enable them when the final audio version replaces this playback ID (also update the poster preload in `index.html`). Reduced-motion visitors see a poster until they press play. Playback pauses outside the viewport and in hidden tabs. When sound is enabled in a future version, starting the radio mutes the film and enabling film sound pauses the radio. A failed stream retains its poster and all page navigation.
+
+Four portraits select existing radio arrangements. The fifth remains available in All tracks. The player uses `src/home/radio.js` unchanged: recorded phrase clips, pause/resume, seek, volume and track changes. Radio audio never autoplays.
 
 `portraitRadio.js` reads each decoded vocal's RMS envelope and uses the existing estimated word timings to choose among six mouth shapes. This is stylized lip sync, not phoneme alignment. Silence closes the mouth; pause and reduced motion show the rest image. All timing is derived from the audio transport. A separate animation timer cannot drift after a seek.
 

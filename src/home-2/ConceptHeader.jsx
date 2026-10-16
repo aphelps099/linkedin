@@ -1,7 +1,7 @@
 import React, {memo, useEffect, useId, useRef, useState} from 'react';
 import {LoaderCircle, Pause, Play} from 'lucide-react';
 
-export const ConceptHeader = memo(function ConceptHeader({base='/', onRadio, playing=false, loading=false, homeSectionBase='', active, children}) {
+export const ConceptHeader = memo(function ConceptHeader({base='/', onRadio, playing=false, loading=false, homeSectionBase='', active, children, overlay=false}) {
   const [open,setOpen]=useState(false);
   const root=useRef(null), trigger=useRef(null), directory=useRef(null), focusFirst=useRef(false), id=useId();
   const links=[['Listen',`${homeSectionBase}#c2-player`],['LinkedInifier',`${base}lessons/`],['Studio',`${base}studio/`],['Shop',`${base}store/`]];
@@ -17,7 +17,7 @@ export const ConceptHeader = memo(function ConceptHeader({base='/', onRadio, pla
     return()=>{document.removeEventListener('keydown',escape);document.removeEventListener('pointerdown',outside);};
   },[open]);
   const label=loading?'Cancel radio loading':playing?'Pause radio':'Play radio';
-  return <header className="c2-header" ref={root} onBlurCapture={e=>{if(!e.currentTarget.contains(e.relatedTarget))setOpen(false);}}>
+  return <header className={`c2-header${overlay?' c2-header--overlay':''}`} ref={root} onBlurCapture={e=>{if(!e.currentTarget.contains(e.relatedTarget))setOpen(false);}}>
     <div className="c2-container c2-header-row">
       <a className="c2-header-brand" href={base} aria-label="LinkedIn Beats home">
         <picture>

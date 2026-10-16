@@ -20,6 +20,15 @@
 .c2-header-directory a { display: block; padding: 10px 12px; font-size: 25px; font-weight: 600; line-height: 1.2; letter-spacing: -.03em; }
 .c2-header-directory a:hover { color: #164be0; background: #e7e8e2; }
 .c2-home .c2-header :is(a, button):focus-visible { outline: 3px solid #164be0; outline-offset: 5px; }
+/* Only the homepage navigation overlays the film. */
+.c2-header--overlay { position: absolute; inset: 0 0 auto; background: transparent; color: #fff; }
+.c2-header--overlay .c2-header-brand img { filter: brightness(0) invert(1); }
+.c2-header--overlay .c2-header-links a:hover, .c2-header--overlay .c2-header-menu:hover { color: #fff; opacity: .75; }
+.c2-home .c2-header--overlay .c2-header-radio { background: #111a1d42; color: #fff; border: 1px solid #ffffff52; border-radius: 30px; backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); box-shadow: inset 0 1px 0 #ffffff14; }
+.c2-home .c2-header--overlay .c2-header-radio:hover { background: #ffffff26; }
+.c2-header--overlay .c2-header-directory { color: #11110e; }
+.c2-home .c2-header--overlay :is(a, button):focus-visible { outline-color: #fff; }
+.c2-home .c2-header--overlay .c2-header-directory a:focus-visible { outline-color: #164be0; }
 @media (max-width: 1150px) {
   .c2-header-links { gap: 20px; }
   .c2-header-links a { font-size: 16px; }
