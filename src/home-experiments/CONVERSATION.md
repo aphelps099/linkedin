@@ -19,3 +19,5 @@ The profile preview now places `DevelopmentRadio` in its own navy section (match
 The compact transport shares the existing radio instance and header controls. It exposes only the current track, total duration, previous/restart, play/pause, next, and an accessible seek slider. Titles fade in when the selected track changes. No playlist expands. The studio link opens `/studio/`. Other homepage variants retain their existing player.
 
 The decorative reaction card cycles Like, Love and Insightful every 1.55 seconds, increments one count per press, and resets its counts after 36 presses. It contains no comments or profile portraits. Its interval pauses offscreen, in hidden tabs, and under reduced motion. The iPod and earbuds remain sharp above the blurred card.
+
+The listening kit uses a transparent 3D product render (`ipod-earbuds-3d.webp`), replacing the flat SVG device and earbuds. A single asset preserves connected cords and proportions during the subtle hover movement.

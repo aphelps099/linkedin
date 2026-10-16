@@ -28,9 +28,9 @@
 .development-studio:hover{opacity:.75}
 .development-art{position:absolute;left:58%;top:0;bottom:0;right:-3%;isolation:isolate}
 
-.development-device{position:absolute;top:55px;left:0;width:86%;transform:rotate(-7deg);transform-origin:50% 40%;transition:transform .45s cubic-bezier(.2,.7,.2,1)}
-.c2-home .development-device svg{display:block;width:100%;height:auto}
-@media(hover:hover) and (pointer:fine){.development-device:hover{transform:translateY(-8px) rotate(-4deg)}}
+.development-device{position:absolute;top:55px;left:0;width:86%;transform:rotate(0deg);transform-origin:50% 40%;transition:transform .45s cubic-bezier(.2,.7,.2,1)}
+.c2-home .development-device img{display:block;width:100%;height:auto}
+@media(hover:hover) and (pointer:fine){.development-device:hover{transform:translateY(-8px) rotate(3deg)}}
 .development-compare{background:#082744;color:#fff}
 .development-compare .feed-compare{margin:0 auto;max-width:1500px}
 @keyframes development-track-in{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
@@ -38,9 +38,9 @@
 @media(max-width:1100px){.development-inner{padding:65px 40px 60px;min-height:600px;grid-template-columns:57% 43%}.development-copy{padding-right:20px}.development-art{left:61%;right:-8%}.development-device{top:90px;width:100%}.development-buttons{gap:4px}.development-transport-row{gap:12px}.c2-home .development-buttons .development-play{width:52px;height:52px}.c2-home .development-buttons button{width:30px}.development-duration{font-size:13px}}
 @media(max-width:760px){.development-inner{display:block;padding:50px 24px 0;min-height:0}.development-copy{max-width:600px;margin:auto;padding:0}.c2-home .development-copy h2{font-size:clamp(29px,5.2vw,40px);margin:22px 0}.development-intro{font-size:21px}.development-transport{margin-top:28px}.development-track strong{font-size:17px}.development-duration{font-size:14px}.development-art{position:relative;left:auto;right:auto;height:400px;max-width:540px;margin:28px auto 0}.development-device{width:340px;top:35px;left:calc(50% - 160px)}.development-studio{font-size:16px!important}.development-transport-row{gap:12px}.development-buttons{gap:6px}}
 @media(max-width:390px){.development-inner{padding-inline:20px}.development-track strong{font-size:15px}.development-buttons{gap:2px}.c2-home .development-buttons .development-play{width:46px;height:46px}.c2-home .development-buttons button{width:27px}.development-transport-row{gap:9px}.development-art{height:380px}.development-device{width:320px}.development-intro{font-size:19px}}
-.development-radio.is-still .development-device{transition:none;transform:rotate(-7deg)}
+.development-radio.is-still .development-device{transition:none;transform:rotate(0deg)}
 .development-radio.is-still .development-track strong{animation:none}
-@media(prefers-reduced-motion:reduce){.development-device{transition:none!important;transform:rotate(-7deg)!important}.development-track strong{animation:none}.development-buttons button{transition:none}}
+@media(prefers-reduced-motion:reduce){.development-device{transition:none!important;transform:rotate(0deg)!important}.development-track strong{animation:none}.development-buttons button{transition:none}}
 @media(forced-colors:active){.c2-home .development-play{border:2px solid ButtonText}.development-seek{appearance:auto!important}.development-art{display:none}}
 
 /* A shallow editorial band: approximately 3:1 on desktop. */
@@ -81,7 +81,7 @@
 
 }
 
-/* A soft social approval loop behind the sharp illustrated listening kit. */
+/* A soft social approval loop behind the sharp 3D listening kit. */
 .development-device{z-index:2}
 .development-post{position:absolute;top:20px;left:-28px;width:390px;height:235px;padding:18px 20px;background:#d6e4ef;color:#193a55;border:1px solid #ffffff55;border-radius:12px;transform:rotate(6deg);filter:blur(1.3px);opacity:.68;pointer-events:none;z-index:0}
 .development-post-lines{display:grid;gap:7px;margin-bottom:14px}
@@ -99,24 +99,29 @@
 .is-pressed .reaction-medallion{animation:development-reaction-press .65s ease both}
 .development-post-block{display:grid;gap:10px;margin-top:22px}
 .development-post-block i:nth-child(2){width:91%}.development-post-block i:last-child{width:62%}
-.c2-home .development-earbuds{position:absolute;right:-12px;top:108px;width:175px;height:auto;z-index:3;pointer-events:none}
+
 @keyframes development-reaction-press{0%{transform:scale(1)}22%{transform:scale(.84)}55%{transform:scale(1.09)}100%{transform:scale(1)}}
 @media(min-width:1101px){
  .development-art{left:62%;right:0}
  .development-device{left:38px;width:clamp(260px,22vw,350px);top:calc(100% - clamp(280px,24vw,380px))}
  .development-post{top:16px;left:-20px;width:390px}
- .c2-home .development-earbuds{right:2px;top:100px;width:clamp(155px,13vw,190px)}
+
 }
 @media(min-width:761px) and (max-width:1100px){
  .development-post{left:-20px;top:30px;width:330px;padding:14px}
  .development-reactions{gap:7px}.reaction-caption{font-size:10px}
  .development-device{left:10px;width:270px;top:calc(100% - 295px)}
- .c2-home .development-earbuds{width:135px;right:0;top:140px}
+
 }
 @media(max-width:760px){
  .development-art{height:350px;margin-top:30px}
  .development-post{left:calc(50% - 175px);top:5px;width:350px;padding:14px 18px}
  .development-device{top:80px;left:calc(50% - 130px);width:250px}
- .c2-home .development-earbuds{width:135px;right:calc(50% - 190px);top:115px}
+
 }
 @media(prefers-reduced-motion:reduce){.is-pressed .reaction-medallion{animation:none}}
+
+/* One transparent render keeps the earbuds and device physically connected. */
+@media(min-width:1101px){.development-device{left:12px;width:clamp(360px,32vw,480px);top:calc(100% - clamp(300px,25vw,390px))}}
+@media(min-width:761px) and (max-width:1100px){.development-device{left:-4px;width:360px;top:calc(100% - 300px)}}
+@media(max-width:760px){.development-device{left:calc(50% - 175px);width:350px;top:75px}}
