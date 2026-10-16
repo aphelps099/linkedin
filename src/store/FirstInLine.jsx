@@ -4,7 +4,6 @@ import './first-in-line.css';
 
 export function FirstInLine({hidden=false}) {
   const [open, setOpen] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState('');
@@ -48,12 +47,11 @@ export function FirstInLine({hidden=false}) {
   }
 
   return <>
-    {!dismissed && <div className="shop-first-in-line" hidden={hidden || open}>
+    <div className="shop-first-in-line" hidden={hidden || open}>
       <button ref={trigger} type="button" className="shop-first-trigger" aria-haspopup="dialog" aria-controls="shop-signup" onClick={() => setOpen(true)}>
         <span>Be first<br/>in line</span>
       </button>
-      <button type="button" className="shop-first-dismiss" aria-label="Dismiss email signup button" onClick={() => setDismissed(true)}><X size={16} aria-hidden="true"/></button>
-    </div>}
+    </div>
     {open && <dialog ref={dialog} id="shop-signup" className="shop-signup" aria-labelledby="shop-signup-title" aria-describedby="shop-signup-description"
       onCancel={event => {event.preventDefault(); setOpen(false);}}
       onClick={event => {

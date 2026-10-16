@@ -2,8 +2,6 @@
 .shop-app .shop-first-trigger{width:100%;height:100%;border:0;border-radius:50%;background:var(--shop-blue);color:#fbf6e8;box-shadow:0 5px 18px #172b541c;display:grid;place-items:center;padding:14px;transition:transform .2s ease;transform-origin:center}
 .shop-first-trigger span{font:600 16px/.98 C2Hoves,Arial,sans-serif;letter-spacing:-.02em;text-align:center;text-transform:uppercase}
 .shop-first-trigger:focus-visible{outline-color:#20221e;outline-offset:5px}
-.shop-app .shop-first-dismiss{position:absolute;right:-16px;top:-22px;display:grid;place-items:center;width:32px;height:32px;padding:0;border:0;border-radius:50%;background:#fbf6e8dd;color:#434b42}
-.shop-first-dismiss:hover{background:#e5e3d9}
 .shop-signup{position:fixed;inset:0;width:720px;max-width:calc(100vw - 40px);max-height:calc(100dvh - 40px);margin:auto;overflow:auto;overscroll-behavior:contain;border:0;padding:72px 56px 56px;background:#1e211d;color:#fbf6e8;text-align:center}
 .shop-signup::backdrop{background:#171a1770;backdrop-filter:blur(2px)}
 .shop-app .shop-signup-close{position:absolute;right:16px;top:16px;display:grid;place-items:center;width:44px;height:44px;padding:0;border:1px solid #6c7066;background:transparent;color:#fbf6e8}
@@ -23,7 +21,7 @@
 @media(hover:hover) and (prefers-reduced-motion:no-preference){.shop-first-trigger:hover{transform:scale(1.05)}}
 @media(max-width:650px){
   .shop-first-in-line{width:88px;height:88px;left:max(16px,env(safe-area-inset-left));bottom:max(16px,env(safe-area-inset-bottom))}
-  .shop-first-trigger span{font-size:13px}.shop-app .shop-first-dismiss{width:34px;height:34px;right:-15px;top:-25px}
+  .shop-first-trigger span{font-size:13px}
   .shop-signup{max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);padding:70px 24px 36px}
   .shop-signup #shop-signup-description{font-size:17px;margin-top:18px;margin-bottom:26px}
 }

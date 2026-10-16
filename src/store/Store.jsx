@@ -133,7 +133,7 @@ export default function Store(){
     <main>
       <StoreHero/>
       <section className="shop-collection" id="collection" aria-labelledby="collection-title">
-        <header className="shop-collection-heading"><p className="shop-mobile-only">Shop</p><h2 id="collection-title" tabIndex="-1">The collection</h2></header>
+        <header className="shop-collection-heading"><h2 id="collection-title" tabIndex="-1">Shop wears</h2></header>
         <button className="shop-mobile-filter-toggle" aria-expanded={filtersOpen} aria-controls="shop-filter-options" onClick={()=>setFiltersOpen(open=>!open)}><span>Filter & sort</span><span aria-hidden="true">{filtersOpen?'−':'+'}</span></button>
         <div id="shop-filter-options" className={`shop-filter-row${filtersOpen?' is-open':''}`}><div className="shop-filters" role="group" aria-label="Filter products">{Object.keys(DEPARTMENTS).map(c=><button key={c} className={c===filter?'is-selected':''} aria-pressed={c===filter} onClick={()=>setFilter(c)}>{c==='All'?'Shop all':c}</button>)}</div><div className="shop-sort"><span className="shop-count" role="status">{items.length} products</span><label htmlFor="shop-sort">Sort by</label><select id="shop-sort" value={sort} onChange={e=>setSort(e.target.value)}><option value="featured">Featured</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="name">Name: A–Z</option></select></div></div>
         <div className="shop-grid">{items.map(p=><article className="shop-product" key={p.sku}>
