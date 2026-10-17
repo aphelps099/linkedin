@@ -1,6 +1,6 @@
 import React, {memo, useRef, useState} from 'react';
 import {flushSync} from 'react-dom';
-import {ArrowRight, ArrowUpRight, Check, Copy} from 'lucide-react';
+import {ArrowRight, Check, Copy} from 'lucide-react';
 import {linkedinify} from '../lessons/generator.js';
 
 const MOMENTS = [
@@ -11,7 +11,7 @@ const MOMENTS = [
 ];
 
 // Match the approved opening example. All submitted inputs still use the real
-// composition engine; copy and the studio handoff always receive the full post.
+// composition engine; copying always receives the full post.
 const OPENING_POST = [
   'Humbled and honored to share a small\nbut meaningful milestone.',
   'Today, I made a cup of coffee.',
@@ -69,21 +69,24 @@ export const Campaigns = memo(function Campaigns({base='/'}) {
           </div>
         </div>
         <div className="c2-announcement-stage">
-          <div className="c2-office-robot" aria-hidden="true"><img src={`${base}home-2/robot-paper-top.webp`} width="2172" height="724" alt="" loading="lazy" decoding="async"/></div>
+          <div className="c2-office-robot" aria-hidden="true"><img src={`${base}home-2/certificate-robot.webp`} width="1774" height="887" alt="" loading="lazy" decoding="async"/></div>
+          <article className="c2-certificate" aria-label="LinkedInified post">
+          {['top','right','bottom','left'].map(edge=><span key={edge} className={`c2-certificate-edge c2-certificate-edge--${edge}`} aria-hidden="true"/>)}
           <div className="c2-announcement">
           <div className="c2-announcement-heading"><span>For immediate release</span>{output&&<span key={approval} className={`c2-approval-stamp ${approval?'is-stamping':''}`} aria-hidden="true"><img src={`${base}home-2/approved-stamp.svg`} alt="" width="228" height="80"/></span>}</div>
           <div aria-live="polite" aria-atomic="true">
             {output ? <div className="c2-generated">
               <div className="c2-output-text" id="c2-output-text" ref={result}>{visibleParagraphs.map((paragraph,i)=><p className={paragraph.startsWith('#')?'c2-hashtags':undefined} key={i}>{paragraph}</p>)}</div>
-              <button className="c2-read-post" aria-expanded={expanded} aria-controls="c2-output-text" onClick={()=>setExpanded(!expanded)}>{expanded?'Show less':'Read full post'} <span aria-hidden="true">{expanded?'−':'+'}</span></button>
               <div className="c2-output-actions">
-                <button className="c2-copy" onClick={copy}>{copyStatus==='Copied'?<Check/>:<Copy/>}{copyStatus==='Copied'?'Copied':'Copy post'}</button>
-                <a className="c2-text-link" href={`${base}studio/#beat=${encodeURIComponent(output)}`}>Make it a beat <ArrowUpRight/></a>
+                <button type="button" className="c2-read-post" aria-expanded={expanded} aria-controls="c2-output-text" onClick={()=>setExpanded(value=>!value)}>{expanded?'Show less':'Read full post'} <span aria-hidden="true">{expanded?'−':'+'}</span></button>
+                <button type="button" className="c2-copy" onClick={copy}>{copyStatus==='Copied'?'Copied':'Copy post'}{copyStatus==='Copied'?<Check aria-hidden="true"/>:<Copy aria-hidden="true"/>}</button>
               </div>
             </div> : <div className="c2-announcement-empty"><p>Make a<br/>big deal.</p><span>Your next announcement is one click away.</span></div>}
           </div>
-          <p className="c2-copy-status" role="status">{copyStatus&&copyStatus!=='Copied'?copyStatus:''}</p>
+          <p className={`c2-copy-status${copyStatus==='Copied'?' c2-sr':''}`} role="status">{copyStatus==='Copied'?'Full post copied to clipboard.':copyStatus}</p>
           </div>
+          <span className="c2-certificate-plaque">Outstanding thought leadership.</span>
+          </article>
         </div>
       </div>
     </section>

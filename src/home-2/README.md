@@ -51,4 +51,11 @@ The store preview now uses the complete product names, compact TT Hoves captions
 The footer certification marks are outlined vector badges based on the supplied `image(20261015-202030).png` concept. `scripts/make-footer-seals.py` builds the three SVGs with the existing Anton font. Each mark uses a masked graphite gradient and fine grain; a single metallic highlight and small glints run when hovered. The shimmer affects only the dark artwork. Reduced-motion preferences use a static finish, and unsupported masking/forced colors retain the SVG image. The footer remains shared with `/store/`.
 
 
-The LinkedInifier navigation item (desktop and menu, including the store header) and the blue homepage campaign CTA now open `/lessons/`, the full editor. The homepage campaign is an example preview: its sample field is read-only so visitors do not lose a typed draft when following the CTA. Try another ordinary moment, Read full post, Copy post and Make it a beat still work. The lessons editor itself is unchanged.
+The LinkedInifier navigation item (desktop and menu, including the store header) and the blue homepage campaign CTA now open `/lessons/`, the full editor. The homepage campaign is an example preview: its sample field is read-only so visitors do not lose a typed draft when following the CTA. Try another ordinary moment, Read full post and Copy post still work. The lessons editor itself is unchanged.
+
+
+## Expandable certificate
+
+The homepage announcement now uses a responsive CSS gold frame: four mitered gradient rails, a dark inner edge, subtle grain and a small brass plaque. The ivory canvas contains live post text and both actions. Read full post is the dark primary button; it expands inline and becomes Show less. Copy post is the adjacent underlined secondary button and always copies the complete post. The previous Make it a beat action is removed from this component. The existing manual-copy fallback expands and selects the complete text when clipboard access fails.
+
+The transparent `certificate-robot.webp` replaces the combined paper-top image. It preserves the approved deadpan robot, stamp and gripping hand. Width-based placement anchors its torso at the frame's upper edge; neither its scale nor its position depends on the post's height. On narrow screens controls wrap, the frame retains its bevel thickness and the text remains readable. Forced colors use a simple visible border. See `artwork/certificate-robot.md` for asset provenance.
