@@ -18,7 +18,7 @@ const PerformanceVideo=memo(function PerformanceVideo({media,playing,motion,posi
     observer.observe(node);document.addEventListener('visibilitychange',sync);node.addEventListener('loadeddata',sync);sync();
     return()=>{disposed=true;observer.disconnect();document.removeEventListener('visibilitychange',sync);node.removeEventListener('loadeddata',sync);node.pause();};
   },[playing,motion,requested,failed]);
-  return <><img className="meeting-poster" src={`/studio/meeting/${media}.webp`} alt="" style={{objectPosition:position}}/><video ref={video} className={`meeting-video${failed?' has-failed':''}`} src={requested?`/studio/meeting/${media}.mp4`:undefined} poster={`/studio/meeting/${media}.webp`} style={{objectPosition:position}} muted loop playsInline preload="none" disablePictureInPicture aria-hidden="true" tabIndex={-1} onError={()=>setFailed(true)}/></>;
+  return <><img className="meeting-poster" src={`/studio/meeting/${media}.webp?v=webcam-20261017`} alt="" style={{objectPosition:position}}/><video ref={video} className={`meeting-video${failed?' has-failed':''}`} src={requested?`/studio/meeting/${media}.mp4?v=webcam-20261017`:undefined} poster={`/studio/meeting/${media}.webp?v=webcam-20261017`} style={{objectPosition:position}} muted loop playsInline preload="none" disablePictureInPicture aria-hidden="true" tabIndex={-1} onError={()=>setFailed(true)}/></>;
 });
 
 export const Participant=memo(function Participant({person,playing,loading,started,muted,active,spotlight,compact,caption,motion,videosEnabled=true,onSelect,onMute}) {

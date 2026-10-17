@@ -1,7 +1,7 @@
 export const PARTICIPANTS = [
-  {id:'drums', name:'Strategic Partnerships', role:'Drums', media:'drums', position:'50% 36%'},
-  {id:'keys', name:'People & Culture', role:'Keys', media:'keys', position:'44% 50%'},
-  {id:'vocals', name:'Workflow Automation', role:'Robot vocals', media:'vocals', position:'42% 55%'},
+  {id:'drums', name:'Strategic Partnerships', role:'Drums', media:'drums', position:'50% 50%'},
+  {id:'keys', name:'People & Culture', role:'Keys', media:'keys', position:'50% 50%'},
+  {id:'vocals', name:'Workflow Automation', role:'Robot vocals', media:'vocals', position:'50% 50%'},
   {id:'bass', name:'Thought Leader', role:'Bass'},
 ];
 export const SHORT_TITLES = ['Take It Offline','Circle Back','Mutual Alignment','Humbled & Honored','Synergistically','No Action Required'];
