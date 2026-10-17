@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="540" viewBox="0 0 800 540" fill="none" role="img" aria-labelledby="droid-title droid-description">
+  <title id="droid-title">LinkedIn Beats office droid</title>
+  <desc id="droid-description">A small, squat cream office robot with a silver dome, offset black visor, cobalt blue collar and two small wheels. Transparent background. Editable vector groups for the wheels, chassis, blue collar, dome, visor and surface details.</desc>
+  <defs>
+    <linearGradient id="cream-body" x1="141" y1="314" x2="686" y2="443" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#d9d7c8"/>
+      <stop offset=".26" stop-color="#f0eee1"/>
+      <stop offset=".67" stop-color="#e5e1d1"/>
+      <stop offset="1" stop-color="#bcbcac"/>
+    </linearGradient>
+    <linearGradient id="cream-dome" x1="264" y1="114" x2="498" y2="309" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fbf8e9"/>
+      <stop offset=".48" stop-color="#e7e4d3"/>
+      <stop offset="1" stop-color="#c7c8b9"/>
+    </linearGradient>
+    <radialGradient id="silver-dome" cx=".39" cy=".16" r=".9" gradientTransform="translate(.07 -.03) scale(.95 1.12)">
+      <stop stop-color="#ffffff"/>
+      <stop offset=".24" stop-color="#e8ebeb"/>
+      <stop offset=".5" stop-color="#bfc5c8"/>
+      <stop offset=".77" stop-color="#8e999f"/>
+      <stop offset="1" stop-color="#d5d8d5"/>
+    </radialGradient>
+    <linearGradient id="collar-blue" x1="385" y1="278" x2="385" y2="334" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4c9bea"/>
+      <stop offset=".32" stop-color="#0c6ad3"/>
+      <stop offset="1" stop-color="#03499f"/>
+    </linearGradient>
+    <linearGradient id="dark-rubber" x1="390" y1="432" x2="390" y2="484" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#41474b"/>
+      <stop offset="1" stop-color="#111c24"/>
+    </linearGradient>
+    <linearGradient id="visor-glass" x1="573" y1="185" x2="613" y2="263" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#374047"/>
+      <stop offset=".37" stop-color="#151f27"/>
+      <stop offset="1" stop-color="#080f16"/>
+    </linearGradient>
+    <linearGradient id="blue-panel" x1="604" y1="364" x2="636" y2="420" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1477dc"/>
+      <stop offset="1" stop-color="#084eac"/>
+    </linearGradient>
+    <linearGradient id="metal-rim" x1="558" y1="188" x2="605" y2="265" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f8faf7"/>
+      <stop offset=".45" stop-color="#7b8589"/>
+      <stop offset="1" stop-color="#e8eae2"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Small floor wheels: keep the droid low, wide and close to the ground. -->
+  <g id="wheels">
+    <path d="M158 435C156 457 166 477 191 481L225 479C242 476 252 460 252 441Z" fill="url(#dark-rubber)"/>
+    <path d="M168 446C171 465 181 474 197 475C213 476 225 466 230 453" stroke="#566066" stroke-width="3"/>
+    <path d="M182 447C182 459 187 467 196 468C205 469 211 462 213 453" stroke="#7c8687" stroke-width="5"/>
+    <path d="M537 443C535 464 546 480 567 482L599 480C617 478 627 461 626 441Z" fill="url(#dark-rubber)"/>
+    <path d="M550 452C552 467 562 475 575 475C588 475 597 467 602 452" stroke="#566066" stroke-width="3"/>
+    <path d="M562 452C563 461 568 467 575 467C582 467 587 461 589 453" stroke="#7c8687" stroke-width="5"/>
+    <path d="M221 444C309 465 486 465 567 447" stroke="#18252b" stroke-width="20"/>
+  </g>
+
+  <g id="chassis">
+    <path d="M123 299C111 329 102 386 104 427C104 451 229 466 398 466C566 466 696 449 696 425C697 382 688 328 676 299Z" fill="url(#cream-body)" stroke="#a3a99d" stroke-width="1.5"/>
+    <path d="M107 421C111 444 241 458 398 458C553 458 687 442 693 421" stroke="#eae9db" stroke-width="2" opacity=".65"/>
+    <path d="M108 432C151 453 260 466 398 466C542 466 653 452 691 432" stroke="#8b9388" stroke-width="2" opacity=".45"/>
+    <path d="M131 313C190 333 288 341 399 341C513 341 610 331 669 314" stroke="#f8f6ea" stroke-width="3" opacity=".85"/>
+    <g id="chassis-panels">
+      <path d="M153 350L176 353V370L152 367Z" fill="#b1b4a5" stroke="#d8d8c9" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M155 353L174 355V367L155 365Z" fill="#555f5b"/>
+      <path d="M605 345L633 341Q636 341 636 344V351Q636 354 633 354L606 357Q603 357 603 354V348Q603 345 605 345Z" fill="#3389cf" stroke="#8caaa9" stroke-width="1.5"/>
+      <path d="M608 370L636 366Q640 365 640 369L642 417Q642 420 638 421L609 426Q606 427 606 423L604 375Q604 371 608 370Z" fill="url(#blue-panel)" stroke="#567f9b" stroke-width="1.5"/>
+      <path d="M608 373L636 369" stroke="#62b3f3" stroke-width="1.5" opacity=".65"/>
+      <path d="M607 362L634 359" stroke="#9b9f91" stroke-width="1.5" stroke-linecap="round"/>
+    </g>
+  </g>
+
+  <g id="collar">
+    <path d="M125 292C128 276 246 264 399 264C550 264 674 276 678 292L684 314C632 334 521 341 400 341C283 341 171 335 116 315Z" fill="url(#collar-blue)" stroke="#406e9d" stroke-width="1.5"/>
+    <path d="M126 290C178 312 282 319 400 319C520 319 626 307 675 289" stroke="#6fb5f1" stroke-width="2" opacity=".85"/>
+    <path d="M119 315C171 335 283 341 400 340C521 340 632 329 681 313" stroke="#004395" stroke-width="2" opacity=".5"/>
+    <path d="M142 279C194 294 285 305 401 305C519 305 612 291 661 278L660 288C606 308 514 316 400 316C286 316 193 306 143 290Z" fill="#182a32"/>
+  </g>
+
+  <g id="dome">
+    <path d="M138 276C145 225 174 167 223 124C271 82 332 60 398 59C468 58 532 78 585 116C640 155 673 216 682 275C683 289 560 305 407 306C252 308 135 292 138 276Z" fill="url(#cream-dome)" stroke="#a9afa6" stroke-width="1.5"/>
+    <path d="M221 126C270 83 332 60 398 59C468 58 532 78 585 116C627 145 658 190 672 232C673 250 660 263 636 268C591 277 553 275 525 267C499 259 482 245 457 222C393 162 309 126 221 126Z" fill="url(#silver-dome)" stroke="#8c9697" stroke-width="1.5"/>
+    <path d="M225 127C311 128 396 164 460 224C485 247 501 261 525 269C558 280 601 279 641 270" stroke="#f9f9f0" stroke-width="2.5" opacity=".8"/>
+    <path d="M256 110C296 83 348 69 396 69" stroke="white" stroke-opacity=".55" stroke-width="4" stroke-linecap="round"/>
+    <path d="M472 78C528 91 571 115 604 148" stroke="white" stroke-opacity=".62" stroke-width="4" stroke-linecap="round"/>
+    <path d="M610 156L617 164" stroke="white" stroke-opacity=".5" stroke-width="3" stroke-linecap="round"/>
+    <path d="M183 198C194 176 208 159 222 148" stroke="#fffdf4" stroke-width="4" stroke-linecap="round" opacity=".56"/>
+    <path d="M146 278C195 295 293 303 407 302C524 302 626 290 674 276" stroke="#f5f3e4" stroke-width="2" opacity=".7"/>
+    <g id="visor">
+      <path d="M538 191C564 184 605 181 623 182C635 183 640 189 646 205L655 230C659 243 654 251 643 255C615 263 568 267 549 262C537 259 532 251 529 239L524 215C522 203 527 194 538 191Z" fill="url(#metal-rim)" stroke="#9aabae" stroke-width="1.5"/>
+      <path d="M540 197C565 190 605 188 622 188C631 189 634 195 639 208L648 232C651 241 648 246 640 249C615 256 571 260 552 256C543 254 539 249 536 237L531 214C529 205 532 200 540 197Z" fill="url(#visor-glass)" stroke="#07121a" stroke-width="2"/>
+      <path d="M541 201C562 195 603 192 621 193" stroke="#99adb6" stroke-width="1.7" stroke-linecap="round" opacity=".5"/>
+      <path d="M605 193L629 252" stroke="#fff" stroke-width="8" opacity=".035"/>
+      <path d="M552 252C573 256 618 251 639 246" stroke="#72838c" stroke-width="1.3" opacity=".35"/>
+    </g>
+    <g id="front-sensor">
+      <path d="M606 276L633 272Q637 272 638 276L639 289Q639 292 636 293L608 297Q604 297 604 293L603 280Q603 277 606 276Z" fill="#8e9690" stroke="#ebeadd" stroke-width="2"/>
+      <path d="M609 279L632 276Q634 276 634 278L635 288Q635 290 633 290L610 293Q608 294 608 291L607 282Q607 280 609 279Z" fill="#2b3538"/>
+    </g>
+  </g>
+
+  <!-- These restrained marks can be hidden for a pristine small-scale icon. -->
+  <g id="surface-details" stroke="#8e958a" stroke-linecap="round" opacity=".46">
+    <path d="M294 213L291 218L290 226" stroke-width="2"/>
+    <path d="M301 209L299 211M287 229L286 233" stroke-width="1.5"/>
+    <path d="M271 362L273 374M275 379L277 384M275 397L276 412" stroke-width="2"/>
+    <path d="M386 371L388 378L394 382M399 388L401 391" stroke-width="1.7"/>
+    <path d="M156 418L162 421M166 422L175 423M181 425L188 426" stroke-width="2"/>
+    <path d="M407 446L418 445M424 445L435 443M441 441L448 440" stroke-width="2.2"/>
+    <path d="M529 442L543 440M548 440L555 438" stroke-width="2"/>
+    <path d="M660 415L672 411" stroke-width="1.8"/>
+  </g>
+</svg>

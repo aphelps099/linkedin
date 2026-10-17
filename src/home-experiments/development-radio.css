@@ -1,11 +1,12 @@
-/* Homepage campaign stage: fixed copy and transport, moving type and social applause. */
-.development-radio{position:relative;overflow:hidden;isolation:isolate;background:radial-gradient(ellipse 52% 105% at 92% 76%,#095bd17a,transparent 74%),radial-gradient(ellipse 42% 90% at 0 32%,#174f7038,transparent 80%),#05233e;color:#fff;border-bottom:1px solid #b5d9ff33;font:400 17px/1.45 C2Hoves,Arial,sans-serif}
-.development-inner{position:relative;max-width:1600px;margin:auto;min-height:clamp(620px,50vw,800px);padding:80px clamp(40px,4.8vw,76px) 72px;display:grid;grid-template-columns:43% 57%;align-items:center}
+/* Racing campaign: a droid-towed header above a bright, focused music stage. */
+.development-radio{position:relative;overflow:hidden;isolation:isolate;background:radial-gradient(ellipse 62% 120% at 92% 84%,#126af1b3,transparent 76%),radial-gradient(ellipse 60% 90% at 56% 100%,#1374d95c,transparent 74%),#05233e;color:#fff;border-bottom:1px solid #b5d9ff33;font:400 17px/1.45 C2Hoves,Arial,sans-serif}
+.development-inner{position:relative;max-width:1600px;margin:auto;min-height:clamp(560px,44vw,704px);padding:64px clamp(40px,4.8vw,76px);display:grid;grid-template-columns:43% 57%;align-items:center}
 .development-copy{position:relative;z-index:3;width:100%;min-width:0}
 .c2-home .development-copy h2{font:600 clamp(44px,4.3vw,68px)/1.02 C2Hoves,Arial,sans-serif;letter-spacing:-.045em;text-transform:none;margin:0 0 24px;max-width:none}
 .development-copy h2 span,.development-copy h2 strong{display:block;white-space:nowrap;font-weight:600;color:#fff}
 .development-art{position:absolute;inset:0 0 0 45%;isolation:isolate}
-.development-art::before{content:'';position:absolute;inset:32% -16% -20% 10%;background:radial-gradient(ellipse at 65% 65%,#1979ff70,transparent 65%);pointer-events:none;z-index:0}
+.development-art::before{content:'';position:absolute;inset:10% -24% -28% -8%;background:radial-gradient(ellipse at 65% 65%,#258cff9c,transparent 66%);pointer-events:none;z-index:0}
+.development-art::after{content:'';position:absolute;inset:0 -30% 0 -10%;background:linear-gradient(118deg,transparent 30%,#2b8cff05 38%,#5aaeff29 40%,#0e74f214 42%,transparent 47%,transparent 62%,#47a8ff29 67%,transparent 72%);pointer-events:none;z-index:0}
 .development-track{flex:1;min-width:0}
 .development-track strong{display:block;animation:development-track-in .22s ease both}
 .development-track>span{display:block}
@@ -93,20 +94,36 @@
 .development-device img{filter:drop-shadow(-3px 0 2px #a8d7ff26) drop-shadow(0 0 26px #1684ff35)}
 .development-device:is(:hover,:focus-visible,.is-playing,.is-loading) img{filter:drop-shadow(-2px 0 3px #c5e5ff99) drop-shadow(0 0 25px #3f9eff80)}
 
-/* Two genuinely continuous rows, duplicated at an exact half-track seam. */
-.development-theater{position:absolute;inset:0;pointer-events:none}
-.development-marquee{position:absolute;top:44px;left:0;right:calc(-1 * max(0px,(100vw - 1600px)/2));overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 3%,#000 97%,transparent);user-select:none}
-.development-marquee-row{font:400 clamp(96px,8.6vw,140px)/1.08 Anton,Impact,'Arial Narrow',sans-serif;letter-spacing:-.018em;text-transform:uppercase;color:#2c84f6}
-.development-marquee-track{display:flex;width:max-content;animation:development-marquee 42s linear infinite;animation-play-state:paused}
-.development-marquee-track>span{display:block;flex-shrink:0;white-space:nowrap;padding-right:.28em}
-.development-marquee-row.is-outline{color:transparent;-webkit-text-stroke:1px #2785f9;opacity:.86}
-.development-marquee-row.is-outline .development-marquee-track{animation-duration:56s;animation-direction:reverse}
-.development-theater[data-running=true] .development-marquee-track{animation-play-state:running}
-@keyframes development-marquee{to{transform:translateX(-50%)}}
+/* The droid drives right. Each banner attaches to the droid in the next lap. */
+.development-racing{--droid-width:144px;position:relative;z-index:5;height:108px;overflow:hidden;background:#e9ecdf;color:#0b2b4e;border-top:1px solid #fcfff5;border-bottom:3px solid #1265ce}
+.development-racing::after{content:'';position:absolute;inset:0 0 0 auto;width:78px;background:linear-gradient(90deg,#e9ecdf00,#e9ecdf 55%);pointer-events:none}
+.development-racing-viewport{height:100%;overflow:hidden;user-select:none}
+.development-racing-track{position:absolute;top:0;left:calc(100% - var(--droid-width) - 66px);display:flex;width:max-content;height:100%;transform:translateX(calc(-200% / 3));animation:development-racing-lap 54s linear infinite paused}
+.development-racing-lap{display:flex;flex:0 0 auto;align-items:center;min-width:100vw;height:100%}
+.c2-home .development-racing-droid{display:block;flex:0 0 var(--droid-width);width:var(--droid-width);height:auto;max-width:none;animation:development-droid-drive 1.3s ease-in-out infinite paused;filter:drop-shadow(0 3px 2px #15355717)}
+.development-racing-gap{flex:1 0 110px;min-width:110px}
+.development-racing-pennant{display:flex;flex:none;align-items:center;gap:26px;height:56px;padding:0 24px;border:1px solid #1858ac55;border-left:4px solid #1265ce;background:#ffffff35;transform:skewX(-7deg)}
+.development-racing-message{display:flex;align-items:baseline;gap:.25em;white-space:nowrap;transform:skewX(7deg);font:600 clamp(26px,2.4vw,38px)/1 C2Hoves,Arial,sans-serif;letter-spacing:-.035em;text-transform:uppercase}
+.development-racing-message strong{font-weight:600;color:#1265ce}
+.development-racing-reactions{display:flex;align-items:center;gap:7px;transform:skewX(7deg)}
+.development-racing-reactions>span{display:flex;align-items:center;gap:5px;padding:7px 8px;border:1px solid #1b5fa52e;border-radius:5px;color:#285578;background:#f8faf43d;font-size:11px;line-height:1;white-space:nowrap;animation:development-racing-press 6s var(--reaction-delay) ease infinite paused}
+.c2-home .development-racing-reactions svg{width:15px;height:15px;stroke-width:1.7}
+.development-racing-tow{position:relative;flex:0 0 44px;height:1px;transform:translateY(7px)}
+.development-racing-tow::before{content:'';position:absolute;left:0;right:calc(var(--droid-width) * -.15);height:1px;background:#2565a6;opacity:.7}
+.development-racing[data-running=true] :is(.development-racing-track,.development-racing-droid,.development-racing-reactions>span){animation-play-state:running}
+@keyframes development-racing-lap{from{transform:translateX(calc(-200% / 3))}to{transform:translateX(calc(-100% / 3))}}
+@keyframes development-droid-drive{0%,100%{translate:0 0}50%{translate:0 -1px}}
+@keyframes development-racing-press{0%,22%,100%{background:#f8faf43d;color:#285578;box-shadow:none;transform:scale(1)}5%{background:#1265ce;color:#fff;box-shadow:0 0 0 3px #1265ce14;transform:scale(.94)}10%,15%{background:#1265ce;color:#fff;box-shadow:0 0 0 3px #1265ce14;transform:scale(1)}}
 
-/* A compact, fictional social performance. No full post panel or cursor. */
-.development-social{position:absolute;left:12px;top:clamp(230px,19vw,304px);width:clamp(320px,28vw,440px);transform:rotate(5deg);transform-origin:left top;z-index:1}
-.development-reaction-strip{display:grid;grid-template-columns:1fr 1fr 1.13fr;padding:12px 13px;border:1px solid #c3e2ff66;border-radius:22px;background:linear-gradient(120deg,#ffffff12,transparent 45%),linear-gradient(110deg,#113d60ed,#07356be8);box-shadow:inset 0 1px 0 #fff2,0 14px 34px #00142c40}
+/* Readable fictional posts sit behind the white kit; there is no cursor. */
+.development-theater{position:absolute;inset:0;pointer-events:none}
+.development-social{position:absolute;left:6%;top:clamp(56px,5vw,80px);width:clamp(330px,28vw,440px);transform:rotate(5deg);transform-origin:left top;z-index:1}
+.development-post{padding:18px 18px 0;border:1px solid #c3e2ff80;border-radius:16px;background:linear-gradient(120deg,#ffffff14,transparent 45%),linear-gradient(150deg,#164b77ed,#063b7ce8);box-shadow:inset 0 1px 0 #fff3,0 14px 34px #00142c40}
+.development-post-author{display:flex;align-items:center;gap:9px;font-size:12px;line-height:1.3;color:#e8f3ff}
+.development-post-author small{display:block;color:#a8cbe9;font-size:10px;margin-top:2px}
+.development-post-more{margin-left:auto;align-self:flex-start;font-size:20px;line-height:1;letter-spacing:2px;color:#a8cbe9}
+.development-radio .development-post-copy{margin:14px 0 16px;font-size:clamp(16px,1.35vw,20px);line-height:1.32;letter-spacing:-.02em;color:#f0f7ff}
+.development-reaction-strip{display:grid;grid-template-columns:1fr 1fr 1.13fr;padding:12px 0;border-top:1px solid #badbff38}
 .development-applause{display:flex;align-items:center;justify-content:center;gap:8px;color:#a7c5e1;min-width:0}
 .development-applause+.development-applause{border-left:1px solid #badbff1f}
 .development-reaction-icon{position:relative;display:grid;place-items:center;flex-shrink:0;width:36px;height:36px;border-radius:50%;background:#9acbff16;box-shadow:inset 0 1px 0 #d6edff26;color:#d9edff}
@@ -126,19 +143,20 @@
 .development-comment-face.face-d{background-position:-491.69px -504.77px}
 .development-comment-name{display:block;font-size:10px;line-height:1.2;color:#a8cbe9;margin-bottom:3px}
 .development-comment p{font-size:13px;line-height:1.35;letter-spacing:-.015em;color:#e8f3ff}
-.c2-home .development-scene-toggle{position:absolute;top:9px;right:20px;z-index:4;display:flex;align-items:center;gap:5px;min-height:34px;padding:6px 8px;border-radius:20px;color:#a1c1e0;font-size:10px;line-height:1;pointer-events:auto;transition:background .2s,color .2s}
-.c2-home .development-scene-toggle svg{width:12px;height:12px}
-.c2-home .development-scene-toggle:hover{color:#fff;background:#ffffff0a}
+.c2-home .development-scene-toggle{position:absolute;top:50%;right:18px;z-index:2;display:grid;place-items:center;width:38px;height:38px;padding:0;border:1px solid #275c8e38;border-radius:50%;background:#e9ecdf;color:#1e527b;transform:translateY(-50%);transition:background .2s,color .2s}
+.c2-home .development-scene-toggle svg{width:14px;height:14px}
+.c2-home .development-scene-toggle:hover{color:#fff;background:#1265ce}
+.c2-home .development-scene-toggle:focus-visible{outline:2px solid #1265ce;outline-offset:4px}
 .development-theater[data-running=false] :is(.development-reaction-icon,.development-reaction-icon::after){animation-play-state:paused}
 @keyframes development-applause{0%{transform:scale(1)}25%{transform:scale(.86)}65%{transform:scale(1.08)}100%{transform:scale(1)}}
 @keyframes development-ripple{0%{opacity:.65;transform:scale(.85)}100%{opacity:0;transform:scale(1.38)}}
 
-/* A plain navy cut masks the moving backdrop; the social cards and kit stay in front. */
+/* The diagonal cut gives the copy quiet space while light streaks frame the kit. */
 @media(min-width:1101px){
- .development-inner::before{content:'';position:absolute;inset:0 auto 0 calc(50% - 50vw);width:100vw;background:#041d34;clip-path:polygon(0 0,calc(50% + min(8vw,128px)) 0,calc(50% - min(4vw,64px)) 100%,0 100%);pointer-events:none;z-index:1}
+ .development-inner::before{content:'';position:absolute;inset:0 auto 0 calc(50% - 50vw);width:100vw;background:linear-gradient(115deg,#041b30,#042544);clip-path:polygon(0 0,calc(50% + min(8vw,128px)) 0,calc(50% - min(4vw,64px)) 100%,0 100%);pointer-events:none;z-index:1}
+ .development-inner::after{content:'';position:absolute;inset:0 auto 0 calc(50% - 50vw);width:132px;background:linear-gradient(120deg,transparent 34%,#1464cf45 34% 47%,transparent 47% 59%,#1464cf1c 59% 72%,transparent 72%);pointer-events:none;z-index:1}
  .development-copy{z-index:4}
  .development-art{isolation:auto}
- .development-marquee{z-index:0}
  .development-social{z-index:2}
  .development-device{z-index:3}
 }
@@ -150,15 +168,22 @@
  .development-radio .development-intro{font-size:21px}
  .development-radio .development-transport{max-width:none}
  .development-radio .development-track strong{font-size:24px}
- .development-art{position:relative;inset:auto;height:620px;max-width:760px;margin:30px auto 0}
- .development-marquee{top:30px;right:calc(-1 * max(40px,(100vw - 760px)/2));left:-8px}
- .development-marquee-row{font-size:clamp(90px,12vw,120px)}
- .development-social{top:285px;left:14px;width:390px}
+ .development-art{position:relative;inset:auto;height:490px;max-width:760px;margin:40px auto 0}
+ .development-social{top:32px;left:14px;width:390px}
  .development-comment{width:270px}
- .development-device{left:38%;top:305px;width:clamp(420px,55vw,550px)}
- .c2-home .development-scene-toggle{right:0;top:0}
+ .development-device{left:38%;top:160px;width:clamp(420px,55vw,550px)}
 }
 @media(max-width:600px){
+ .development-racing{--droid-width:120px;height:90px}
+ .development-racing-track{left:calc(100% - var(--droid-width) - 50px)}
+ .development-racing-pennant{height:48px;padding:0 16px;gap:20px}
+ .development-racing-message{font-size:26px}
+ .development-racing-gap{flex-basis:76px;min-width:76px}
+ .development-racing-reactions>span{padding:6px}
+ .development-racing-reactions>span>span{display:none}
+ .development-racing-tow{flex-basis:30px}
+ .c2-home .development-scene-toggle{right:10px;width:34px;height:34px}
+ .development-racing::after{width:54px}
  .development-inner{padding:56px 24px 0}
  .c2-home .development-copy h2{font-size:clamp(34px,8.8vw,50px);margin-bottom:20px}
  .development-radio .development-intro{font-size:17px}
@@ -168,19 +193,18 @@
  .development-time{font-size:19px;gap:5px}
  .development-radio .development-buttons{gap:25px}
  .c2-home .development-radio .development-studio{font-size:13px;margin-top:16px}
- .development-art{height:550px;max-width:460px;margin-top:38px}
- .development-marquee{top:29px;left:-24px;right:-40px}
- .development-marquee-row{font-size:clamp(69px,14.5vw,87px)}
- .development-social{top:205px;left:0;width:min(100%,365px);transform:rotate(3deg)}
- .development-reaction-strip{padding:11px 8px;border-radius:20px}
+ .development-art{height:480px;max-width:460px;margin-top:38px}
+ .development-social{top:24px;left:0;width:min(100%,365px);transform:rotate(3deg)}
+ .development-post{padding:15px 14px 0}
+ .development-radio .development-post-copy{font-size:17px}
+ .development-reaction-strip{padding:11px 0}
  .development-applause{gap:6px}
  .development-reaction-icon{width:31px;height:31px}
  .c2-home .development-reaction-icon svg{width:18px;height:18px}
  .development-reaction-label,.development-reaction-label>span{font-size:11px}
  .development-comment{width:240px;min-height:62px;margin:10px 0 0;padding:8px 10px}
  .development-comment p{font-size:12px}
- .development-device{left:calc(50% - 164px);top:315px;width:380px}
- .c2-home .development-scene-toggle{right:-4px;top:-7px}
+ .development-device{left:calc(50% - 164px);top:245px;width:380px}
 }
 @media(max-width:360px){
  .development-inner{padding-inline:18px}
@@ -194,16 +218,16 @@
 }
 /* Motion preferences and a visitor pause affect the decorative layer, never playback. */
 .development-radio.is-still .development-device{transition:none;translate:none;transform:none}
-.development-radio.is-still :is(.development-track strong,.development-equalizer rect,.development-marquee-track,.development-reaction-icon,.development-reaction-icon::after){animation:none}
+.development-radio.is-still :is(.development-track strong,.development-equalizer rect,.development-racing-track,.development-racing-droid,.development-racing-reactions>span,.development-reaction-icon,.development-reaction-icon::after){animation:none}
 .development-radio.is-still :is(.development-screen,.development-listen-cue,.development-device img,.development-comment){transition:none}
 @media(prefers-reduced-motion:reduce){
  .development-device{transition:none!important;translate:none!important;transform:none!important}
- .development-radio :is(.development-equalizer rect,.development-marquee-track,.development-track strong,.development-reaction-icon,.development-reaction-icon::after){animation:none!important}
+ .development-radio :is(.development-equalizer rect,.development-racing-track,.development-racing-droid,.development-racing-reactions>span,.development-track strong,.development-reaction-icon,.development-reaction-icon::after){animation:none!important}
  .development-radio :is(.development-screen,.development-listen-cue,.development-device img,.development-comment,.development-buttons button,.development-buttons svg,.development-studio svg){transition:none!important}
  .c2-home .development-transport .development-buttons button:is(:hover,:focus-visible,:active),.development-radio .development-studio:hover svg{transform:none}
 }
 @media(forced-colors:active){
- .development-art{display:none}
+ .development-art,.development-racing{display:none}
  .development-radio .development-transport{background:Canvas;border:1px solid CanvasText;box-shadow:none;backdrop-filter:none}
  .development-transport::before{display:none}
  .c2-home .development-transport .development-play{background:ButtonFace;color:ButtonText;box-shadow:none;border:1px solid ButtonText}

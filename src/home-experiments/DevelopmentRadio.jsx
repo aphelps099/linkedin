@@ -2,11 +2,12 @@ import React, {memo, useEffect, useId, useLayoutEffect, useRef, useState} from '
 import {ArrowUpRight, LoaderCircle, Pause, Play, SkipBack, SkipForward} from 'lucide-react';
 import {formatTime} from '../home/tracks.js';
 import {RadioTheater} from './RadioTheater.jsx';
+import {RadioRacingBanner} from './RadioRacingBanner.jsx';
 import './player-digits.css';
 
 const EQUALIZER_HEIGHTS=[.32,.56,.82,.48,.95,.67,.41,.76,.58,1,.72,.45,.88,.61,.38,.54];
 
-const PocketPlayer=memo(function PocketPlayer({motion,base,playing,loading,levels,onToggle}){
+const PocketPlayer=memo(function PocketPlayer({motion,sceneRunning,base,playing,loading,levels,onToggle}){
   const screenId=useId();
   const art=useRef(null),device=useRef(null);
   useLayoutEffect(()=>{
@@ -48,7 +49,7 @@ const PocketPlayer=memo(function PocketPlayer({motion,base,playing,loading,level
   },[motion]);
   const action=loading?'Cancel loading':playing?'Pause beats':'Listen — click to play beats';
   return <div className="development-art" ref={art}>
-    <RadioTheater motion={motion} base={base}/>
+    <RadioTheater motion={motion} running={sceneRunning} base={base}/>
     <button ref={device} type="button" className={`development-device${playing?' is-playing':''}${loading?' is-loading':''}`} onClick={onToggle} aria-label={action} aria-pressed={playing}>
       <img src={`${base}home-experiments/ipod-earbuds-3d.webp`} width="1122" height="1402" alt="" loading="lazy" decoding="async" draggable="false"/>
       <svg className="development-display" viewBox="0 0 1122 1402" aria-hidden="true" focusable="false">
@@ -83,11 +84,23 @@ const PocketPlayer=memo(function PocketPlayer({motion,base,playing,loading,level
 });
 
 export function DevelopmentRadio({base,state,track,seconds,motion,onToggle,onSkip,onSeek}){
+  const section=useRef(null);
+  const [sceneVisible,setSceneVisible]=useState(false),[scenePaused,setScenePaused]=useState(false);
   const [scrub,setScrub]=useState(null);
+  useEffect(()=>{
+    let inView=false;
+    const sync=()=>setSceneVisible(inView&&!document.hidden);
+    const observer=new IntersectionObserver(([entry])=>{inView=entry.isIntersecting;sync();},{threshold:0});
+    observer.observe(section.current);
+    document.addEventListener('visibilitychange',sync);
+    return()=>{observer.disconnect();document.removeEventListener('visibilitychange',sync);};
+  },[]);
   useEffect(()=>setScrub(null),[track.title]);
+  const sceneRunning=motion&&sceneVisible&&!scenePaused;
   const position=scrub??seconds;
   const commitSeek=value=>{setScrub(null);onSeek(Number(value));};
-  return <section className={`development-radio${motion?'':' is-still'}`} id="c2-player" aria-labelledby="development-title">
+  return <section ref={section} className={`development-radio${motion?'':' is-still'}`} id="c2-player" aria-labelledby="development-title">
+    <RadioRacingBanner base={base} motion={motion} running={sceneRunning} paused={scenePaused} onPause={()=>setScenePaused(value=>!value)}/>
     <div className="development-inner">
       <div className="development-copy">
         <h2 id="development-title"><span>Sound like you</span><strong>mean business.</strong></h2>
@@ -114,7 +127,7 @@ export function DevelopmentRadio({base,state,track,seconds,motion,onToggle,onSki
         </div>
         <a className="development-studio" href={`${base}studio/`}>Make your own in the studio <ArrowUpRight aria-hidden="true"/></a>
       </div>
-      <PocketPlayer motion={motion} base={base} playing={state.playing} loading={state.loading} levels={state.levels} onToggle={onToggle}/>
+      <PocketPlayer motion={motion} sceneRunning={sceneRunning} base={base} playing={state.playing} loading={state.loading} levels={state.levels} onToggle={onToggle}/>
     </div>
   </section>;
 }
