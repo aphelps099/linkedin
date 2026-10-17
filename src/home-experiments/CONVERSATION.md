@@ -25,3 +25,8 @@ The LCD displays the real current track, playback state, elapsed and total time,
 The screen, wheel and device share one coordinate system, so hover and parallax do not separate the controls from the product. Hover illuminates the active button and softly lights the device. All controls use the existing radio instance shared with the header; audio never autoplays. Loading, playback failure, pause and track changes remain visible. The studio link opens `/studio/`.
 
 The stage background is static. Device and equalizer movement respect reduced motion. Forced colors retain a readable screen and native transport controls without the product image or stage artwork.
+
+
+A restrained marquee runs across the top of the stage without moving the iPod layout. White TT Hoves DemiBold phrases at 76% opacity travel rightward: “Humbled and honored to share”, “Thrilled to announce”, and “Let’s take this offline”. A simplified 16×16px pixel version of the office droid leads each train with a thin tow line. It keeps the original squat body, dome, offset visor, blue collar and little wheels. Its cyan status lamp blinks slowly as the droid rolls.
+
+Three identical laps, each at least the viewport width, create a seamless loop. ResizeObserver measures each lap so the speed remains 34px/second through font loading and resizes. The strip stops offscreen and in hidden tabs. Hover or keyboard focus temporarily pauses it; clicking toggles a persistent pause without affecting music. Reduced motion presents one static phrase and droid. Repeated visual copies are hidden from assistive technology.

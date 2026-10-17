@@ -15,6 +15,29 @@
 .development-radio::before{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(90deg,#02132670,transparent 58%),linear-gradient(180deg,#02132626,transparent 28%)}
 .development-inner::before{content:'';position:absolute;inset:0 auto auto calc(50% - 50vw);width:clamp(80px,10vw,160px);height:58%;background:linear-gradient(120deg,transparent 26%,#0757ec 26% 48%,transparent 48% 54%,#fbf6e8 54% 57%,transparent 57%);pointer-events:none;z-index:0;opacity:.92;mask-image:linear-gradient(#000 60%,transparent)}
 
+/* A tiny office droid pulls the phrases to the right across the top of the stage. */
+.c2-home .development-tow{position:absolute;inset:0 0 auto;z-index:6;display:block;width:100%;height:56px;padding:0;overflow:hidden;border-bottom:1px solid #ffffff0a;background:linear-gradient(#03152b5c,#03152b00);color:#fff;text-align:left;cursor:pointer;mask-image:linear-gradient(90deg,transparent,#000 24px,#000 calc(100% - 24px),transparent)}
+.development-tow-track{display:flex;position:absolute;inset:0 auto 0 0;width:max-content;animation:development-tow-pass var(--tow-duration,48s) linear infinite paused;animation-delay:calc(var(--tow-duration,48s) * -.45);user-select:none}
+.development-tow-lap{display:flex;flex:none;align-items:center;min-width:100vw;height:100%;padding-left:24px}
+.development-tow-words{display:flex;flex:none;align-items:center;gap:clamp(28px,3vw,48px);white-space:nowrap;color:#ffffffc2;font:600 clamp(18px,1.65vw,26px)/1 C2Hoves,Arial,sans-serif;letter-spacing:-.02em}
+.development-tow-dot{opacity:.4}
+.development-tow-line{flex:0 0 28px;height:1px;margin-left:12px;background:#ffffff42;transform:translateY(4px)}
+.c2-home .development-tow-droid{flex:0 0 16px;width:16px;height:16px;overflow:visible;animation:development-tow-roll .85s steps(2,end) infinite paused}
+.development-tow-light{animation:development-tow-blink 2.6s steps(1,end) infinite paused;filter:drop-shadow(0 0 2px #5ed9ff);opacity:1}
+.development-tow-gap{flex:1 0 100px;min-width:100px}
+.development-tow[data-running=true] :is(.development-tow-track,.development-tow-droid,.development-tow-light){animation-play-state:running}
+.development-tow:is(:hover,:focus-visible) :is(.development-tow-track,.development-tow-droid,.development-tow-light){animation-play-state:paused}
+.c2-home .development-tow:focus-visible{outline:1px solid #b7dcff;outline-offset:-5px}
+@keyframes development-tow-pass{from{transform:translateX(calc(-100% / 3))}to{transform:translateX(0)}}
+@keyframes development-tow-roll{0%,100%{translate:0 0}50%{translate:0 -1px}}
+@keyframes development-tow-blink{0%,12%,100%{opacity:1}18%,92%{opacity:.22}}
+.c2-home .development-tow.is-still{cursor:default}
+.development-tow.is-still .development-tow-track{position:relative;width:100%;height:100%;animation:none;transform:none}
+.development-tow.is-still .development-tow-lap{min-width:0;width:100%;justify-content:center;padding:0 24px}
+.development-tow.is-still :is(.development-tow-lap:not(:first-child),.development-tow-dot,.development-tow-phrase:not(:first-child),.development-tow-gap){display:none}
+.development-tow.is-still :is(.development-tow-droid,.development-tow-light){animation:none}
+.development-tow.is-still .development-tow-words{font-size:clamp(13px,1.65vw,24px)}
+
 /* All controls share the product's coordinate system, including its hover/parallax. */
 .development-art{--device-width:clamp(480px,42vw,660px);position:absolute;inset:0 0 0 45%}
 .development-device{position:absolute;left:31%;width:var(--device-width);top:calc(100% - clamp(450px,40vw,640px));z-index:3;container-type:inline-size;translate:0 var(--device-enter-y,0px);transform:rotate(0deg);transform-origin:50% 40%;transition:transform .45s cubic-bezier(.2,.7,.2,1);line-height:1.2}
@@ -77,6 +100,9 @@
  .development-device{left:calc(50% - var(--device-width) * .38);top:12px}
 }
 @media(max-width:600px){
+ .c2-home .development-tow{height:44px}
+ .development-tow-words{font-size:18px;gap:28px}
+ .development-tow-gap{flex-basis:64px;min-width:64px}
  .c2-home .development-stage{height:560px;object-position:72% bottom}
  .development-inner::before{width:70px;opacity:.3}
  .c2-home .development-copy h2{margin-bottom:20px}
@@ -91,12 +117,14 @@
 .development-radio.is-still .development-equalizer i{animation:none}
 .development-radio.is-still :is(.development-device-image,.development-wheel-button){transition:none}
 @media(prefers-reduced-motion:reduce){
+ .development-tow :is(.development-tow-track,.development-tow-droid,.development-tow-light){animation:none!important}
  .development-device{transition:none!important;translate:none!important;transform:none!important}
  .development-radio .development-equalizer i{animation:none!important}
  .development-radio :is(.development-device-image,.development-wheel-button,.development-wheel-button svg,.development-studio svg){transition:none!important}
  .development-radio .development-studio:hover svg{transform:none}
 }
 @media(forced-colors:active){
+ .development-tow{display:none!important}
  .development-stage,.development-copy h2 img,.development-inner::before,.development-radio::before,.development-device-image,.development-display,.development-equalizer{display:none!important}
  .c2-home .development-copy h2 .c2-sr{position:static;width:auto;height:auto;clip-path:none;overflow:visible;white-space:normal;font:600 40px/1.05 C2Hoves,Arial,sans-serif;color:CanvasText}
  .development-inner{display:block}

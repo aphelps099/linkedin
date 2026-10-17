@@ -2,6 +2,7 @@ import React, {memo, useEffect, useId, useLayoutEffect, useRef, useState} from '
 import {ArrowUpRight, LoaderCircle, Pause, Play, SkipBack, SkipForward} from 'lucide-react';
 import {TRACKS, formatTime} from '../home/tracks.js';
 import './player-digits.css';
+import {RadioRacingBanner} from './RadioRacingBanner.jsx';
 
 const EQUALIZER_HEIGHTS=[.32,.56,.82,.48,.95,.67,.41,.76,.58,1,.72,.45,.88,.61,.38,.54];
 
@@ -108,6 +109,7 @@ const PocketPlayer=memo(function PocketPlayer({motion,base,state,track,seconds,o
 export function DevelopmentRadio({base,state,track,seconds,motion,onToggle,onSkip,onSeek,onSelect}){
   return <section className={`development-radio${motion?'':' is-still'}`} id="c2-player" aria-labelledby="development-title">
     <img className="development-stage" src={`${base}home-experiments/music-stage.webp`} alt="" width="1774" height="887" loading="lazy" decoding="async"/>
+    <RadioRacingBanner motion={motion}/>
     <div className="development-inner">
       <div className="development-copy">
         <h2 id="development-title"><span className="c2-sr">Sound like you mean business</span><img src={`${base}home-experiments/sound-like-business.svg`} width="700" height="170" alt="" loading="lazy" decoding="async"/></h2>
