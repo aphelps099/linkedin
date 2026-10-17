@@ -30,6 +30,25 @@
 
 .development-device{position:absolute;top:55px;left:0;width:86%;transform:rotate(0deg);transform-origin:50% 40%;transition:transform .45s cubic-bezier(.2,.7,.2,1)}
 .c2-home .development-device img{display:block;width:100%;height:auto}
+.c2-home .development-device{padding:0;line-height:0;text-align:left;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.development-device img{transition:filter .35s ease}
+.c2-home .development-display{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;color:#103b52}
+.development-screen{opacity:0;transition:opacity .24s ease}
+.development-screen-brand{font:600 21px C2Hoves,Arial,sans-serif;letter-spacing:3px}
+.development-screen-title{font:600 49px C2Hoves,Arial,sans-serif;letter-spacing:-1px}
+.development-screen-action{font:400 29px C2Hoves,Arial,sans-serif}
+.development-listen-cue{opacity:.8;transition:opacity .2s ease;font:600 28px C2Hoves,Arial,sans-serif}
+.development-equalizer.is-preview rect{transform-box:fill-box;transform-origin:center bottom;animation:development-equalizer var(--bar-speed) var(--bar-delay) ease-in-out infinite alternate paused}
+.development-device:is(:hover,:focus-visible,.is-playing,.is-loading) .development-screen{opacity:1}
+.development-device:is(:hover,:focus-visible,.is-playing,.is-loading) .development-listen-cue{opacity:0}
+.development-device:is(:hover,:focus-visible,.is-playing,.is-loading) img{filter:drop-shadow(0 0 9px #d4efff70) drop-shadow(0 0 30px #76c5ff38)}
+.development-device:is(:hover,:focus-visible) .development-equalizer.is-preview rect{animation-play-state:running}
+.development-device.is-loading .development-equalizer rect{animation-play-state:paused}
+.c2-home .development-device:focus-visible{outline:0}
+.development-device:focus-visible .development-screen{filter:brightness(1.1)}
+.development-device:focus-visible img{filter:drop-shadow(0 0 3px #fff) drop-shadow(0 0 15px #b5e2ffb3)}
+@keyframes development-equalizer{0%{transform:scaleY(.25)}45%{transform:scaleY(.7)}100%{transform:scaleY(1)}}
+@media(hover:none),(pointer:coarse){.development-screen{opacity:1}.development-listen-cue{opacity:0}}
 @media(hover:hover) and (pointer:fine){.development-device:hover{transform:translateY(-8px) rotate(3deg)}}
 .development-compare{background:#082744;color:#fff}
 .development-compare .feed-compare{margin:0 auto;max-width:1500px}
@@ -40,6 +59,9 @@
 @media(max-width:390px){.development-inner{padding-inline:20px}.development-track strong{font-size:15px}.development-buttons{gap:2px}.c2-home .development-buttons .development-play{width:46px;height:46px}.c2-home .development-buttons button{width:27px}.development-transport-row{gap:9px}.development-art{height:380px}.development-device{width:320px}.development-intro{font-size:19px}}
 .development-radio.is-still .development-device{transition:none;transform:rotate(0deg)}
 .development-radio.is-still .development-track strong{animation:none}
+.development-radio.is-still .development-equalizer rect{animation:none}
+.development-radio.is-still :is(.development-screen,.development-listen-cue,.development-device img){transition:none}
+@media(prefers-reduced-motion:reduce){.development-equalizer rect{animation:none!important}.development-screen,.development-listen-cue,.development-device img{transition:none!important}}
 @media(prefers-reduced-motion:reduce){.development-device{transition:none!important;transform:rotate(0deg)!important}.development-track strong{animation:none}.development-buttons button{transition:none}}
 @media(forced-colors:active){.c2-home .development-play{border:2px solid ButtonText}.development-seek{appearance:auto!important}.development-art{display:none}}
 

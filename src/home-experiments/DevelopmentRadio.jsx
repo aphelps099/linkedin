@@ -1,4 +1,4 @@
-import React, {memo, useEffect, useRef, useState} from 'react';
+import React, {memo, useEffect, useId, useRef, useState} from 'react';
 import {ArrowUpRight, LoaderCircle, Pause, Play, SkipBack, SkipForward, ThumbsUp, Heart, Lightbulb} from 'lucide-react';
 import {formatTime} from '../home/tracks.js';
 
@@ -36,12 +36,43 @@ function ReactionPost({motion}){
   </div>;
 }
 
-const PocketPlayer=memo(function PocketPlayer({motion,base}){
-  return <div className="development-art" aria-hidden="true">
-    <ReactionPost motion={motion}/>
-    <div className="development-device">
-      <img src={`${base}home-experiments/ipod-earbuds-3d.webp`} width="1122" height="1402" alt="" loading="lazy" decoding="async"/>
-    </div>
+const EQUALIZER_HEIGHTS=[.32,.56,.82,.48,.95,.67,.41,.76,.58,1,.72,.45,.88,.61,.38,.54];
+
+const PocketPlayer=memo(function PocketPlayer({motion,base,playing,loading,levels,onToggle}){
+  const screenId=useId();
+  const action=loading?'Cancel loading':playing?'Pause beats':'Listen — click to play beats';
+  return <div className="development-art">
+    <div aria-hidden="true"><ReactionPost motion={motion}/></div>
+    <button type="button" className={`development-device${playing?' is-playing':''}${loading?' is-loading':''}`} onClick={onToggle} aria-label={action} aria-pressed={playing}>
+      <img src={`${base}home-experiments/ipod-earbuds-3d.webp`} width="1122" height="1402" alt="" loading="lazy" decoding="async" draggable="false"/>
+      <svg className="development-display" viewBox="0 0 1122 1402" aria-hidden="true" focusable="false">
+        <defs>
+          {/* Coordinates follow the inside edge of the screen in the product render. */}
+          <clipPath id={screenId}><path d="M219 220 L618 248 Q630 249 632 262 L669 605 Q670 617 657 616 L248 600 Q237 599 236 587 L204 234 Q203 219 219 220Z"/></clipPath>
+        </defs>
+        <g className="development-screen" clipPath={`url(#${screenId})`}>
+          <path fill="#b9d9e5" d="M196 210H680V627H196Z"/>
+          <g transform="matrix(1 .059 .093 1 208 221)" fill="#103b52">
+            <text className="development-screen-brand" x="212" y="43" textAnchor="middle">LINKEDIN BEATS</text>
+            <path d="M30 56H393" stroke="currentColor" opacity=".22"/>
+            <g className={`development-equalizer${playing?'':' is-preview'}`}>
+              {EQUALIZER_HEIGHTS.map((height,index)=>{
+                const signal=playing&&motion?Math.max(0,...(levels?.slice(index*3,index*3+3)||[])):height;
+                const size=Math.max(5,Math.min(1,signal)*99);
+                return <rect key={index} x={35+index*22} y={180-size} width="13" height={size} rx="2" style={{'--bar-delay':`${index*-.17}s`,'--bar-speed':`${.7+(index%5)*.13}s`}}/>;
+              })}
+            </g>
+            <text className="development-screen-title" x="212" y="246" textAnchor="middle">{loading?'Tuning in…':playing?'Playing':'Listen'}</text>
+            <text className="development-screen-action" x="212" y="293" textAnchor="middle">{loading?'Click to cancel':playing?'Click to pause':'Click to play beats'}</text>
+            <g transform="translate(201 316)">{playing?<path d="M0 0H7V19H0ZM13 0H20V19H13Z"/>:<path d="M2 0 20 10 2 20Z"/>}</g>
+          </g>
+        </g>
+        <g className="development-listen-cue" transform="matrix(1 .059 .093 1 331 174)" fill="#103b52">
+          <path d="M0 0 18 10 0 20Z"/>
+          <text x="31" y="20">Listen</text>
+        </g>
+      </svg>
+    </button>
   </div>;
 });
 
@@ -70,7 +101,7 @@ export function DevelopmentRadio({base,state,track,seconds,motion,onToggle,onSki
         </div>
         <a className="development-studio" href={`${base}studio/`}>Create in the studio <ArrowUpRight aria-hidden="true"/></a>
       </div>
-      <PocketPlayer motion={motion} base={base}/>
+      <PocketPlayer motion={motion} base={base} playing={state.playing} loading={state.loading} levels={state.levels} onToggle={onToggle}/>
     </div>
   </section>;
 }
