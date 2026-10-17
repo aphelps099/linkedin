@@ -1,113 +1,80 @@
-/* The music campaign: a blue-lit stage with original racing lettering. */
+/* One instrument on a blue-lit stage: the iPod is the music player. */
 .development-radio{position:relative;overflow:hidden;isolation:isolate;background:#03152b;color:#fff;border-bottom:1px solid #b5d9ff33;font:400 17px/1.45 C2Hoves,Arial,sans-serif}
 .development-inner{position:relative;max-width:1600px;margin:auto;min-height:clamp(560px,44vw,704px);padding:64px clamp(40px,4.8vw,76px);display:grid;grid-template-columns:43% 57%;align-items:center}
-.development-copy{position:relative;z-index:3;width:100%;min-width:0}
-.development-art{position:absolute;inset:0 0 0 45%;isolation:isolate}
-.development-track{flex:1;min-width:0}
-.development-track strong{display:block;animation:development-track-in .22s ease both}
-.development-track>span{display:block}
-.development-buttons{display:flex;flex-shrink:0;align-items:center}
-.c2-home .development-seek{display:block;width:100%;padding:0;appearance:none;-webkit-appearance:none;cursor:pointer;background:transparent;accent-color:#fff}
-.development-seek::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;border-radius:50%}
-.development-seek::-moz-range-thumb{border:0;border-radius:50%}
-.development-error{font-size:14px;margin-top:12px!important}
-.c2-home .development-studio{display:inline-flex;align-items:center;text-decoration:none}
+.development-copy{position:relative;z-index:4;width:100%;max-width:580px;min-width:0}
+.c2-home .development-copy h2{width:100%;max-width:580px;margin:0 0 24px;line-height:0}
+.c2-home .development-copy h2 img{display:block;width:100%;height:auto;filter:drop-shadow(0 2px 1px #00102660)}
+.development-radio .development-intro{font-size:clamp(17px,1.55vw,23px);line-height:1.45;color:#d8e7f5;max-width:36ch;letter-spacing:-.02em}
+.c2-home .development-studio{display:inline-flex;align-items:center;gap:7px;min-height:44px;margin-top:22px;font-size:14px;font-weight:500;line-height:1.4;color:#c1d5e6;text-decoration:none;transition:color .2s ease}
+.development-studio svg{width:15px;height:15px;transition:transform .2s ease}
+.c2-home .development-studio:hover{opacity:1;color:#fff}
+.development-studio:hover svg{transform:translate(2px,-2px)}
 .development-compare{background:#082744;color:#fff}
 .development-compare .feed-compare{margin:0 auto;max-width:1500px}
-@keyframes development-track-in{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
-.development-device{position:absolute;top:55px;left:0;width:86%;translate:0 var(--device-enter-y,0px);transform:rotate(0deg);transform-origin:50% 40%;transition:transform .45s cubic-bezier(.2,.7,.2,1)}
-.c2-home .development-device img{display:block;width:100%;height:auto}
-.c2-home .development-device{padding:0;line-height:0;text-align:left;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-.development-device img{transition:filter .35s ease}
-.c2-home .development-display{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;color:#103b52}
-.development-screen{opacity:0;transition:opacity .24s ease}
-.development-screen-brand{font:600 21px C2Hoves,Arial,sans-serif;letter-spacing:3px}
-.development-screen-title{font:600 49px C2Hoves,Arial,sans-serif;letter-spacing:-1px}
-.development-screen-action{font:400 29px C2Hoves,Arial,sans-serif}
-.development-listen-cue{opacity:.8;transition:opacity .2s ease;font:600 28px C2Hoves,Arial,sans-serif}
-.development-equalizer.is-preview rect{transform-box:fill-box;transform-origin:center bottom;animation:development-equalizer var(--bar-speed) var(--bar-delay) ease-in-out infinite alternate paused}
-.development-device:is(:hover,:focus-visible,.is-playing,.is-loading) .development-screen{opacity:1}
-.development-device:is(:hover,:focus-visible,.is-playing,.is-loading) .development-listen-cue{opacity:0}
-.development-device:is(:hover,:focus-visible,.is-playing,.is-loading) img{filter:drop-shadow(0 0 9px #d4efff70) drop-shadow(0 0 30px #76c5ff38)}
-.development-device:is(:hover,:focus-visible) .development-equalizer.is-preview rect{animation-play-state:running}
-.development-device.is-loading .development-equalizer rect{animation-play-state:paused}
-.c2-home .development-device:focus-visible{outline:0}
-.development-device:focus-visible .development-screen{filter:brightness(1.1)}
-.development-device:focus-visible img{filter:drop-shadow(0 0 3px #fff) drop-shadow(0 0 15px #b5e2ffb3)}
-@keyframes development-equalizer{0%{transform:scaleY(.25)}45%{transform:scaleY(.7)}100%{transform:scaleY(1)}}
-@media(hover:none),(pointer:coarse){.development-screen{opacity:1}.development-listen-cue{opacity:0}}
-@media(hover:hover) and (pointer:fine){.development-device:hover{transform:translateY(-8px) rotate(3deg)}}
-/* The homepage's listening preview: a quiet glass surface and a tactile play key. */
-.development-radio .development-transport{position:relative;isolation:isolate;max-width:480px;margin-top:16px;padding:19px 24px 18px;border:1px solid #d9edff26;border-radius:22px;background:linear-gradient(135deg,#f0f8ff17,transparent 45%,#76baff05),linear-gradient(165deg,#113857e8,#061c34ed);box-shadow:inset 0 1px 0 #ffffff12,inset 0 -1px 0 #00000020,0 16px 42px #000d222e;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
-.development-transport::before{content:'';position:absolute;top:-1px;left:22px;right:22px;height:1px;background:linear-gradient(90deg,transparent,#d9efff73 25%,#d9efff26 70%,transparent);pointer-events:none}
-.development-player-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
-.development-radio .development-track{min-width:0}
-.development-radio .development-track strong{min-height:0;font-size:22px;font-weight:600;line-height:1.2;letter-spacing:-.025em;text-wrap:balance}
-.development-radio .development-track>span{font-size:12px;line-height:1.4;letter-spacing:.015em;text-transform:none;color:#a8c2d7;margin:6px 0 0}
-.development-time{display:flex;align-items:baseline;flex-shrink:0;gap:7px;padding-top:4px;font:400 20px/1.1 LBDigital,C2Mono,monospace;letter-spacing:.025em;font-variant-numeric:tabular-nums;color:#a7bfd3}
-.development-time time:first-child{color:#edf6ff;text-shadow:0 0 8px #b7ddff30}
-.development-time>span{opacity:.35;font:400 13px/1 C2Hoves,Arial,sans-serif}
-.c2-home .development-transport .development-seek{height:26px;margin:9px 0 4px;outline-offset:2px}
-.development-transport .development-seek::-webkit-slider-runnable-track{height:4px;border-radius:6px;background:linear-gradient(90deg,#a3d5ff var(--progress),#c6e3ff26 var(--progress));box-shadow:inset 0 1px 1px #00000025}
-.development-transport .development-seek::-moz-range-track{height:4px;border-radius:6px;background:#c6e3ff26;box-shadow:inset 0 1px 1px #00000025}
-.development-transport .development-seek::-moz-range-progress{height:4px;border-radius:6px;background:#a3d5ff}
-.development-transport .development-seek::-webkit-slider-thumb{width:8px;height:8px;margin-top:-2px;background:#edf7ff;opacity:1;box-shadow:0 0 8px #c5e6ff66;transition:transform .18s ease}
-.development-transport .development-seek::-moz-range-thumb{width:8px;height:8px;background:#edf7ff;box-shadow:0 0 8px #c5e6ff66;transition:transform .18s ease}
-.development-transport .development-seek:is(:hover,:focus-visible)::-webkit-slider-thumb{transform:scale(1.4)}
-.development-transport .development-seek:is(:hover,:focus-visible)::-moz-range-thumb{transform:scale(1.4)}
-.development-player-controls{display:flex;justify-content:center}
-.development-radio .development-buttons{gap:26px;align-items:center}
-.c2-home .development-transport .development-buttons button{width:48px;height:48px;border-radius:50%;color:#eaf4ff;transition:transform .2s ease,background .2s ease,box-shadow .2s ease}
-.c2-home .development-transport .development-buttons button:hover{background:#ffffff0b;transform:translateY(-1px)}
-.c2-home .development-transport .development-buttons button:active{transform:scale(.94)}
-.c2-home .development-transport .development-buttons svg{width:23px;height:23px;stroke-width:1.7;filter:drop-shadow(0 0 5px #e0f2ff26)}
-.c2-home .development-transport .development-buttons .development-play{width:68px;height:68px;border:0;background:transparent;color:#fff;box-shadow:none}
-.c2-home .development-transport .development-buttons .development-play:is(:hover,:focus-visible){background:transparent;color:#65b9ff;transform:translateY(-1px) scale(1.035);box-shadow:none}
-.c2-home .development-transport .development-buttons .development-play:active{transform:scale(.97)}
-.c2-home .development-transport .development-buttons .development-play svg{width:34px;height:34px;fill:none;stroke-width:1.6;filter:none;transition:color .2s ease,filter .2s ease}
-.c2-home .development-transport .development-play:is(:hover,:focus-visible) svg{filter:drop-shadow(0 0 5px #32a2ffb3) drop-shadow(0 0 13px #168cff66)}
-.c2-home .development-transport .development-buttons .development-play[aria-pressed=true]{color:#96cfff}
-.c2-home .development-transport .development-play[aria-label='Play'] svg{margin-left:3px}
-.c2-home .development-transport :is(button,input):focus-visible{outline:2px solid #c2e7ff;outline-offset:5px}
-.development-transport.is-playing{border-color:#d9edff3b}
-.c2-home .development-radio .development-studio{font-size:13px;font-weight:500;letter-spacing:.005em;line-height:1.4;margin-top:13px;padding:0;border:0;gap:7px;color:#c1d5e6;transition:color .2s ease}
-.development-radio .development-studio svg{width:15px;height:15px;transition:transform .2s ease}
-.c2-home .development-radio .development-studio:hover{opacity:1;color:#fff}
-.development-radio .development-studio:hover svg{transform:translate(2px,-2px)}
-
-/* The existing white kit stays the foreground focus, cropped through the click wheel. */
-.development-radio .development-copy{max-width:580px}
-.development-radio .development-intro{font-size:clamp(17px,1.55vw,23px);line-height:1.45;color:#d8e7f5;max-width:36ch;letter-spacing:-.02em}
-.development-radio .development-transport{max-width:560px;margin-top:27px;border-color:#468bff80;background:linear-gradient(135deg,#1451a11a,transparent 48%,#2583ff12),linear-gradient(165deg,#071e3bcc,#020f23e8);box-shadow:inset 0 1px 0 #cce8ff30,inset 0 0 28px #1265ff1a,0 20px 44px #000d2238,0 0 18px #086bff12}
-.development-radio .development-track strong{font-size:clamp(19px,1.7vw,25px)}
-.development-radio .development-buttons{gap:30px}
-.c2-home .development-radio .development-studio{font-size:14px;margin-top:16px}
-.development-device{left:31%;width:clamp(480px,42vw,660px);top:calc(100% - clamp(400px,33vw,528px));z-index:2}
-.development-device img{filter:drop-shadow(-3px 0 2px #a8d7ff26) drop-shadow(0 0 26px #1684ff35)}
-.development-device:is(:hover,:focus-visible,.is-playing,.is-loading) img{filter:drop-shadow(-2px 0 3px #c5e5ff99) drop-shadow(0 0 25px #3f9eff80)}
-
-/* A quiet copy area opens into the same full-width, blue-lit stage. */
 .c2-home .development-stage{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center bottom;pointer-events:none;z-index:-2}
 .development-radio::before{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(90deg,#02132670,transparent 58%),linear-gradient(180deg,#02132626,transparent 28%)}
 .development-inner::before{content:'';position:absolute;inset:0 auto auto calc(50% - 50vw);width:clamp(80px,10vw,160px);height:58%;background:linear-gradient(120deg,transparent 26%,#0757ec 26% 48%,transparent 48% 54%,#fbf6e8 54% 57%,transparent 57%);pointer-events:none;z-index:0;opacity:.92;mask-image:linear-gradient(#000 60%,transparent)}
-.c2-home .development-copy h2{width:100%;max-width:580px;margin:0 0 24px;line-height:0}
-.c2-home .development-copy h2 img{display:block;width:100%;height:auto;filter:drop-shadow(0 2px 1px #00102660)}
-@media(min-width:1101px){
- .development-copy{z-index:4}
- .development-art{isolation:auto}
- .development-device{z-index:3}
-}
+
+/* All controls share the product's coordinate system, including its hover/parallax. */
+.development-art{--device-width:clamp(480px,42vw,660px);position:absolute;inset:0 0 0 45%}
+.development-device{position:absolute;left:31%;width:var(--device-width);top:calc(100% - clamp(450px,40vw,640px));z-index:3;container-type:inline-size;translate:0 var(--device-enter-y,0px);transform:rotate(0deg);transform-origin:50% 40%;transition:transform .45s cubic-bezier(.2,.7,.2,1);line-height:1.2}
+.c2-home .development-device-image{display:block;width:100%;height:auto;pointer-events:none;user-select:none;filter:drop-shadow(-3px 0 2px #a8d7ff26) drop-shadow(0 0 26px #1684ff35);transition:filter .3s ease}
+.development-device:is(:hover,:focus-within,.is-playing,.is-loading) .development-device-image{filter:drop-shadow(-2px 0 3px #c5e5ff80) drop-shadow(0 0 25px #3f9eff70)}
+.c2-home .development-display{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+
+/* The HTML screen uses the same affine registration as the original SVG display. */
+.development-lcd{position:absolute;left:18.5383%;top:15.7632%;width:37.7897%;height:26.3909%;transform:matrix(1,.059,.093,1,0,0);transform-origin:0 0;display:flex;flex-direction:column;padding:1.4cqw 2.4cqw 0;color:#103b52;overflow:hidden}
+.development-lcd-brand{display:flex;justify-content:space-between;align-items:center;gap:8px;padding-bottom:1.2cqw;border-bottom:1px solid #103b522c;font-size:clamp(8px,1.7cqw,12px);font-weight:600;letter-spacing:.11em;line-height:1.2;white-space:nowrap}
+.development-lcd-now{display:flex;flex:1;min-height:0;flex-direction:column;padding-top:1.5cqw}
+.development-lcd-heading>span{display:block;font-size:clamp(8px,1.6cqw,11px);line-height:1.2;letter-spacing:.04em;margin-bottom:.6cqw;opacity:.7}
+.development-lcd-heading strong{display:block;font-size:clamp(13px,3.1cqw,21px);font-weight:600;line-height:1.08;letter-spacing:-.03em;min-height:2.16em;max-height:2.16em;overflow:hidden;text-wrap:balance}
+.development-equalizer{display:flex;align-items:flex-end;gap:1cqw;min-height:16px;flex:1;margin:1.4cqw 0 1.1cqw;overflow:hidden}
+.development-equalizer i{display:block;flex:1;height:100%;min-width:0;background:#103b52;border-radius:1px;transform:scaleY(var(--bar-level));transform-origin:center bottom}
+.development-equalizer.is-preview i{animation:development-equalizer var(--bar-speed) var(--bar-delay) ease-in-out infinite alternate paused}
+.development-device:is(:hover,:focus-within) .development-equalizer.is-preview i{animation-play-state:running}
+.development-device.is-loading .development-equalizer i{animation-play-state:paused}
+.development-lcd-time{display:flex;justify-content:space-between;gap:8px;font:400 clamp(14px,2.9cqw,20px)/1 LBDigital,C2Mono,monospace;font-variant-numeric:tabular-nums;letter-spacing:.035em}
+.development-lcd-time time:last-child{opacity:.58}
+.c2-home .development-lcd-seek{flex:0 0 32px;display:block;width:100%;height:32px;margin:0;padding:0;appearance:none;-webkit-appearance:none;background:transparent;cursor:pointer;touch-action:pan-y;accent-color:#103b52}
+.development-lcd-seek::-webkit-slider-runnable-track{height:3px;border-radius:3px;background:linear-gradient(90deg,#103b52 var(--progress),#103b522b var(--progress))}
+.development-lcd-seek::-moz-range-track{height:3px;border-radius:3px;background:#103b522b}
+.development-lcd-seek::-moz-range-progress{height:3px;border-radius:3px;background:#103b52}
+.development-lcd-seek::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:9px;height:9px;margin-top:-3px;border:0;border-radius:50%;background:#103b52}
+.development-lcd-seek::-moz-range-thumb{width:9px;height:9px;border:0;border-radius:50%;background:#103b52}
+.c2-home .development-lcd-seek:focus-visible{outline:2px solid #103b52;outline-offset:-3px;border-radius:5px}
+.development-lcd-error{flex:1;overflow:auto;font-size:clamp(10px,2cqw,13px);line-height:1.25;padding-top:1cqw}
+.development-lcd-playlist{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#103b5259 transparent;padding:4px 0}
+.c2-home .development-lcd-playlist button{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:32px;padding:6px 5px;text-align:left;font-size:clamp(10px,2.2cqw,15px);line-height:1.15;color:#103b52;border-radius:3px}
+.development-lcd-playlist button[aria-current=true]{font-weight:600;background:#103b5217}
+.c2-home .development-lcd-playlist button:is(:hover,:focus-visible){background:#103b52;color:#cbe7ef;outline:none}
+
+/* Transparent, native buttons sit on the printed wheel; the center is play/pause. */
+.c2-home .development-wheel-button{position:absolute;display:grid;place-items:center;min-width:44px;min-height:44px;margin:0;padding:0;border-radius:50%;color:#164a6b;background:transparent;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:background .18s ease,box-shadow .18s ease,color .18s ease}
+.c2-home .development-wheel-button svg{width:40%;height:40%;stroke-width:1.7;pointer-events:none}
+.development-wheel-menu{left:34.76%;top:47.79%;width:14.26%;height:7.85%}
+.development-wheel-menu-label{opacity:0;font:600 clamp(11px,2.9cqw,20px)/1 C2Hoves,Arial,sans-serif;letter-spacing:.01em}
+.development-wheel-previous{left:20.94%;top:60.84%;width:11.59%;height:10.34%}
+.development-wheel-play{left:35.65%;top:59.84%;width:14.62%;height:12.84%}
+.development-wheel-next{left:53.21%;top:61.20%;width:11.59%;height:10.34%}
+.development-wheel-previous svg,.development-wheel-next svg{opacity:0}
+.c2-home .development-wheel-play svg{width:46%;height:46%;fill:none;filter:drop-shadow(0 1px 1px #fff);transition:filter .18s ease}
+.development-wheel-play[aria-label='Play beats'] svg{margin-left:5%}
+.c2-home .development-wheel-button:is(:hover,:focus-visible){background:#d4ebffde;color:#0757ec;box-shadow:inset 0 0 0 1px #87c4ff,0 0 16px #4b9dff60;outline:none}
+.development-wheel-button:is(:hover,:focus-visible) :is(svg,.development-wheel-menu-label){opacity:1}
+.c2-home .development-wheel-button:active{background:#badcff;box-shadow:inset 0 2px 7px #1155aa33,0 0 12px #4b9dff66}
+.development-wheel-play:is(:hover,:focus-visible) svg{filter:drop-shadow(0 0 5px #3297ffa6)}
+.development-device.is-playing .development-wheel-play{color:#0757ec}
+@keyframes development-equalizer{0%{transform:scaleY(.25)}45%{transform:scaleY(.7)}100%{transform:scaleY(1)}}
+@media(hover:hover) and (pointer:fine){.development-device:hover{transform:translateY(-5px) rotate(1deg)}}
 
 @media(max-width:1100px){
- .c2-home .development-stage{top:auto;height:620px;object-position:70% bottom;mask-image:linear-gradient(transparent,#000 30%)}
+ .c2-home .development-stage{top:auto;height:650px;object-position:70% bottom;mask-image:linear-gradient(transparent,#000 30%)}
  .development-inner::before{width:110px;height:380px;opacity:.45}
  .development-inner{display:block;padding:68px 40px 0;min-height:0}
- .development-radio .development-copy{max-width:600px;margin:auto}
+ .development-copy{max-width:600px;margin:auto}
  .development-radio .development-intro{font-size:21px}
- .development-radio .development-transport{max-width:none}
- .development-radio .development-track strong{font-size:24px}
- .development-art{position:relative;inset:auto;height:490px;max-width:760px;margin:40px auto 0}
- .development-device{left:38%;top:160px;width:clamp(420px,55vw,550px)}
+ .development-art{--device-width:clamp(480px,55vw,550px);position:relative;inset:auto;height:calc(var(--device-width) * .98);max-width:760px;margin:20px auto 0}
+ .development-device{left:calc(50% - var(--device-width) * .38);top:12px}
 }
 @media(max-width:600px){
  .c2-home .development-stage{height:560px;object-position:72% bottom}
@@ -115,38 +82,32 @@
  .c2-home .development-copy h2{margin-bottom:20px}
  .development-inner{padding:56px 24px 0}
  .development-radio .development-intro{font-size:17px}
- .development-radio .development-transport{padding:18px 18px 16px;margin-top:25px}
- .development-radio .development-track strong{font-size:20px}
- .development-player-heading{gap:12px}
- .development-time{font-size:19px;gap:5px}
- .development-radio .development-buttons{gap:25px}
- .c2-home .development-radio .development-studio{font-size:13px;margin-top:16px}
- .development-art{height:480px;max-width:460px;margin-top:38px}
- .development-device{left:calc(50% - 164px);top:245px;width:380px}
+ .c2-home .development-studio{font-size:13px;margin-top:14px}
+ .development-art{--device-width:clamp(440px,136vw,520px);height:calc(var(--device-width) * .98);max-width:460px;margin-top:10px}
+ .development-device{left:calc(50% - var(--device-width) * .39)}
 }
-@media(max-width:360px){
- .development-inner{padding-inline:18px}
- .development-radio .development-track strong{font-size:18px}
- .development-time{font-size:17px}
- .development-radio .development-transport{padding-inline:14px}
- .development-device{left:calc(50% - 158px);width:360px}
-}
-/* Respect motion preferences without changing audio playback. */
+@media(max-width:360px){.development-inner{padding-inline:18px}}
 .development-radio.is-still .development-device{transition:none;translate:none;transform:none}
-.development-radio.is-still :is(.development-track strong,.development-equalizer rect){animation:none}
-.development-radio.is-still :is(.development-screen,.development-listen-cue,.development-device img){transition:none}
+.development-radio.is-still .development-equalizer i{animation:none}
+.development-radio.is-still :is(.development-device-image,.development-wheel-button){transition:none}
 @media(prefers-reduced-motion:reduce){
  .development-device{transition:none!important;translate:none!important;transform:none!important}
- .development-radio :is(.development-equalizer rect,.development-track strong){animation:none!important}
- .development-radio :is(.development-screen,.development-listen-cue,.development-device img,.development-buttons button,.development-buttons svg,.development-studio svg){transition:none!important}
- .c2-home .development-transport .development-buttons button:is(:hover,:focus-visible,:active),.development-radio .development-studio:hover svg{transform:none}
+ .development-radio .development-equalizer i{animation:none!important}
+ .development-radio :is(.development-device-image,.development-wheel-button,.development-wheel-button svg,.development-studio svg){transition:none!important}
+ .development-radio .development-studio:hover svg{transform:none}
 }
 @media(forced-colors:active){
- .development-art,.development-stage,.development-copy h2 img,.development-inner::before,.development-radio::before{display:none}
- .c2-home .development-copy h2 .c2-sr{position:static;width:auto;height:auto;clip:auto;clip-path:none;overflow:visible;white-space:normal;font:600 40px/1.05 C2Hoves,Arial,sans-serif;color:CanvasText}
- .development-radio .development-transport{background:Canvas;border:1px solid CanvasText;box-shadow:none;backdrop-filter:none}
- .development-transport::before{display:none}
- .c2-home .development-transport .development-play{background:ButtonFace;color:ButtonText;box-shadow:none;border:1px solid ButtonText}
- .development-radio :is(.development-time,.development-track>span,.development-studio){color:CanvasText}
- .development-seek{appearance:auto!important}
+ .development-stage,.development-copy h2 img,.development-inner::before,.development-radio::before,.development-device-image,.development-display,.development-equalizer{display:none!important}
+ .c2-home .development-copy h2 .c2-sr{position:static;width:auto;height:auto;clip-path:none;overflow:visible;white-space:normal;font:600 40px/1.05 C2Hoves,Arial,sans-serif;color:CanvasText}
+ .development-inner{display:block}
+ .development-art{position:relative;inset:auto;height:auto;max-width:480px;margin:32px 0}
+ .development-device{position:relative;inset:auto;width:100%;translate:none;transform:none;display:flex;flex-wrap:wrap;gap:12px;color:CanvasText}
+ .development-lcd{position:static;flex:0 0 100%;width:100%;height:auto;min-height:220px;transform:none;padding:18px;border:1px solid CanvasText;color:CanvasText}
+ .development-lcd-heading strong{font-size:22px;max-height:none}
+ .development-lcd-playlist{max-height:250px}
+ .development-lcd-seek{appearance:auto!important}
+ .c2-home .development-wheel-button{position:static;width:54px;height:54px;border:1px solid ButtonText;background:ButtonFace;color:ButtonText}
+ .development-wheel-button svg,.development-wheel-menu-label{opacity:1!important}
+ .c2-home .development-lcd-playlist button{color:CanvasText}
+ .c2-home .development-lcd-playlist button:focus-visible{outline:2px solid Highlight}
 }
