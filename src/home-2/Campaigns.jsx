@@ -1,7 +1,7 @@
 import React, {memo, useRef, useState} from 'react';
 import {flushSync} from 'react-dom';
 import {ArrowRight, Check, Copy} from 'lucide-react';
-import {linkedinify} from '../lessons/generator.js';
+import {humanize, linkedinify} from '../lessons/generator.js';
 
 const MOMENTS = [
   'I made a cup of coffee.\nIt was pretty good.',
@@ -29,6 +29,8 @@ export const Campaigns = memo(function Campaigns({base='/'}) {
   const [approval, setApproval] = useState(0);
   const paragraphs = output.split(/\n\n/);
   const visibleParagraphs = expanded ? paragraphs : paragraphs.slice(0, 3).map(p => p.length > 160 ? `${p.slice(0, 160).trimEnd()}…` : p);
+  // Carry the source event's typographic emphasis into each generated example.
+  const sourceSentences = humanize(ordinary).split(/(?<=[.!?])\s+|\n+/).map(sentence=>sentence.trim().toLowerCase()).filter(Boolean);
 
   const tryMoment = () => {
     exampleIndex.current = (exampleIndex.current + 1) % MOMENTS.length;
@@ -76,7 +78,7 @@ export const Campaigns = memo(function Campaigns({base='/'}) {
           <div className="c2-announcement-heading"><span>For immediate release</span>{output&&<span key={approval} className={`c2-approval-stamp ${approval?'is-stamping':''}`} aria-hidden="true"><img src={`${base}home-2/approved-stamp.svg`} alt="" width="228" height="80"/></span>}</div>
           <div aria-live="polite" aria-atomic="true">
             {output ? <div className="c2-generated">
-              <div className="c2-output-text" id="c2-output-text" ref={result}>{visibleParagraphs.map((paragraph,i)=><p className={paragraph.startsWith('#')?'c2-hashtags':undefined} key={i}>{paragraph}</p>)}</div>
+              <div className="c2-output-text" id="c2-output-text" ref={result}>{visibleParagraphs.map((paragraph,i)=><p className={paragraph.startsWith('#')?'c2-hashtags':undefined} key={i}>{sourceSentences.some(sentence=>paragraph.toLowerCase().includes(sentence))?<strong>{paragraph}</strong>:paragraph}</p>)}</div>
               <div className="c2-output-actions">
                 <button type="button" className="c2-read-post" aria-expanded={expanded} aria-controls="c2-output-text" onClick={()=>setExpanded(value=>!value)}>{expanded?'Show less':'Read full post'} <span aria-hidden="true">{expanded?'−':'+'}</span></button>
                 <button type="button" className="c2-copy" onClick={copy}>{copyStatus==='Copied'?'Copied':'Copy post'}{copyStatus==='Copied'?<Check aria-hidden="true"/>:<Copy aria-hidden="true"/>}</button>

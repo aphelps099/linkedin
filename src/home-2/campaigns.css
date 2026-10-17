@@ -32,6 +32,7 @@
 .c2-campaigns label { display: block; font-size: calc(28 * var(--c2-poster)); line-height: 1.2; font-weight: 600; margin-bottom: calc(10 * var(--c2-poster)); }
 .c2-campaigns textarea { display: block; width: 100%; max-width: 100%; min-height: calc(166 * var(--c2-poster)); border: 0; border-radius: 4px; resize: vertical; box-shadow: 0 0 0 1px #fff2; background: var(--c2-stationery); background-image: linear-gradient(#fbf6e8ee, #fbf6e8ee), var(--c2-grain); color: #111410; padding: calc(27 * var(--c2-poster)) calc(28 * var(--c2-poster)); font: 400 calc(32 * var(--c2-poster))/1.25 C2Hoves, Arial, sans-serif; letter-spacing: -.02em; }
 .c2-campaigns textarea::placeholder { color: #656d74; }
+.c2-campaigns textarea { font-weight: 600; }
 .c2-campaigns :is(button, a) { min-height: 44px; }
 .c2-home .c2-generate { display: flex; width: 100%; min-height: calc(90 * var(--c2-poster)); align-items: center; justify-content: center; gap: calc(30 * var(--c2-poster)); background: linear-gradient(110deg, #0755ff, #0047e8); color: #fff; border-radius: 4px; padding: calc(20 * var(--c2-poster)); margin-top: calc(24 * var(--c2-poster)); font-size: calc(36 * var(--c2-poster)); font-weight: 600; line-height: 1.2; }
 .c2-home .c2-generate:hover { background: #286aff; }
@@ -92,6 +93,7 @@
 @keyframes c2-stamp { 0%, 25% { opacity: 0; transform: translate(8px, -14px) rotate(-12deg) scale(1.25); } 50% { opacity: 1; transform: translate(8px, -9px) rotate(-10deg) scale(.96); } 100% { opacity: 1; transform: translate(8px, -9px) rotate(-10deg) scale(1); } }
 .c2-output-text { font-size: max(18px, calc(30 * var(--c2-poster))); line-height: 1.3; letter-spacing: -.025em; }
 .c2-output-text p { white-space: pre-line; }
+.c2-output-text strong { font-weight: 600; }
 .c2-output-text p + p { margin-top: calc(24 * var(--c2-poster)); }
 .c2-output-text .c2-hashtags { font-size: max(14px, calc(19 * var(--c2-poster))); color: #55708b; line-height: 1.5; }
 .c2-output-actions { display: flex; align-items: center; justify-content: flex-start; flex-wrap: wrap; gap: 10px clamp(18px, calc(30 * var(--c2-poster)), 30px); margin-top: clamp(24px, calc(30 * var(--c2-poster)), 30px); }
