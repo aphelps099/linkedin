@@ -1,4 +1,4 @@
-import React, {memo, useEffect, useId, useRef, useState} from 'react';
+import React, {memo, useEffect, useId, useLayoutEffect, useRef, useState} from 'react';
 import {ArrowUpRight, LoaderCircle, Pause, Play, SkipBack, SkipForward, ThumbsUp, Heart, Lightbulb} from 'lucide-react';
 import {formatTime} from '../home/tracks.js';
 
@@ -40,10 +40,47 @@ const EQUALIZER_HEIGHTS=[.32,.56,.82,.48,.95,.67,.41,.76,.58,1,.72,.45,.88,.61,.
 
 const PocketPlayer=memo(function PocketPlayer({motion,base,playing,loading,levels,onToggle}){
   const screenId=useId();
+  const art=useRef(null),device=useRef(null);
+  useLayoutEffect(()=>{
+    if(!motion)return;
+    const container=art.current,player=device.current;
+    let frame=0,inView=false;
+    const update=()=>{
+      frame=0;
+      const viewport=window.innerHeight;
+      // Measure the stationary artwork container, never the moving device.
+      // The entrance ends at 45% of the viewport and stays at the existing layout position.
+      const progress=Math.max(0,Math.min(1,(viewport-container.getBoundingClientRect().top)/(viewport*.55)));
+      const distance=window.matchMedia('(max-width:760px)').matches?72:120;
+      const offset=distance*Math.pow(1-progress,3);
+      player.style.setProperty('--device-enter-y',`${offset.toFixed(2)}px`);
+      player.style.willChange=progress>0&&progress<1?'translate':'';
+    };
+    const schedule=()=>{if(!frame&&!document.hidden)frame=requestAnimationFrame(update);};
+    const onScroll=()=>{if(inView)schedule();};
+    const observer=new IntersectionObserver(([entry])=>{
+      inView=entry.isIntersecting;
+      if(inView)schedule();
+    },{rootMargin:'160px 0px'});
+    update();
+    observer.observe(container);
+    window.addEventListener('scroll',onScroll,{passive:true});
+    window.addEventListener('resize',schedule);
+    document.addEventListener('visibilitychange',schedule);
+    return()=>{
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+      window.removeEventListener('scroll',onScroll);
+      window.removeEventListener('resize',schedule);
+      document.removeEventListener('visibilitychange',schedule);
+      player.style.removeProperty('--device-enter-y');
+      player.style.removeProperty('will-change');
+    };
+  },[motion]);
   const action=loading?'Cancel loading':playing?'Pause beats':'Listen — click to play beats';
-  return <div className="development-art">
+  return <div className="development-art" ref={art}>
     <div aria-hidden="true"><ReactionPost motion={motion}/></div>
-    <button type="button" className={`development-device${playing?' is-playing':''}${loading?' is-loading':''}`} onClick={onToggle} aria-label={action} aria-pressed={playing}>
+    <button ref={device} type="button" className={`development-device${playing?' is-playing':''}${loading?' is-loading':''}`} onClick={onToggle} aria-label={action} aria-pressed={playing}>
       <img src={`${base}home-experiments/ipod-earbuds-3d.webp`} width="1122" height="1402" alt="" loading="lazy" decoding="async" draggable="false"/>
       <svg className="development-display" viewBox="0 0 1122 1402" aria-hidden="true" focusable="false">
         <defs>

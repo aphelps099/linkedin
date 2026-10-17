@@ -28,7 +28,7 @@
 .development-studio:hover{opacity:.75}
 .development-art{position:absolute;left:58%;top:0;bottom:0;right:-3%;isolation:isolate}
 
-.development-device{position:absolute;top:55px;left:0;width:86%;transform:rotate(0deg);transform-origin:50% 40%;transition:transform .45s cubic-bezier(.2,.7,.2,1)}
+.development-device{position:absolute;top:55px;left:0;width:86%;translate:0 var(--device-enter-y,0px);transform:rotate(0deg);transform-origin:50% 40%;transition:transform .45s cubic-bezier(.2,.7,.2,1)}
 .c2-home .development-device img{display:block;width:100%;height:auto}
 .c2-home .development-device{padding:0;line-height:0;text-align:left;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .development-device img{transition:filter .35s ease}
@@ -57,12 +57,12 @@
 @media(max-width:1100px){.development-inner{padding:65px 40px 60px;min-height:600px;grid-template-columns:57% 43%}.development-copy{padding-right:20px}.development-art{left:61%;right:-8%}.development-device{top:90px;width:100%}.development-buttons{gap:4px}.development-transport-row{gap:12px}.c2-home .development-buttons .development-play{width:52px;height:52px}.c2-home .development-buttons button{width:30px}.development-duration{font-size:13px}}
 @media(max-width:760px){.development-inner{display:block;padding:50px 24px 0;min-height:0}.development-copy{max-width:600px;margin:auto;padding:0}.c2-home .development-copy h2{font-size:clamp(29px,5.2vw,40px);margin:22px 0}.development-intro{font-size:21px}.development-transport{margin-top:28px}.development-track strong{font-size:17px}.development-duration{font-size:14px}.development-art{position:relative;left:auto;right:auto;height:400px;max-width:540px;margin:28px auto 0}.development-device{width:340px;top:35px;left:calc(50% - 160px)}.development-studio{font-size:16px!important}.development-transport-row{gap:12px}.development-buttons{gap:6px}}
 @media(max-width:390px){.development-inner{padding-inline:20px}.development-track strong{font-size:15px}.development-buttons{gap:2px}.c2-home .development-buttons .development-play{width:46px;height:46px}.c2-home .development-buttons button{width:27px}.development-transport-row{gap:9px}.development-art{height:380px}.development-device{width:320px}.development-intro{font-size:19px}}
-.development-radio.is-still .development-device{transition:none;transform:rotate(0deg)}
+.development-radio.is-still .development-device{transition:none;translate:none;transform:rotate(0deg)}
 .development-radio.is-still .development-track strong{animation:none}
 .development-radio.is-still .development-equalizer rect{animation:none}
 .development-radio.is-still :is(.development-screen,.development-listen-cue,.development-device img){transition:none}
 @media(prefers-reduced-motion:reduce){.development-equalizer rect{animation:none!important}.development-screen,.development-listen-cue,.development-device img{transition:none!important}}
-@media(prefers-reduced-motion:reduce){.development-device{transition:none!important;transform:rotate(0deg)!important}.development-track strong{animation:none}.development-buttons button{transition:none}}
+@media(prefers-reduced-motion:reduce){.development-device{transition:none!important;translate:none!important;transform:rotate(0deg)!important}.development-track strong{animation:none}.development-buttons button{transition:none}}
 @media(forced-colors:active){.c2-home .development-play{border:2px solid ButtonText}.development-seek{appearance:auto!important}.development-art{display:none}}
 
 /* A shallow editorial band: approximately 3:1 on desktop. */
