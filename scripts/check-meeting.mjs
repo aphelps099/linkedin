@@ -36,12 +36,14 @@ await engine.select(3);assert(Object.values(engine.getState().muted).every(Boole
 await engine.toggle();engine.seek(20);await engine.toggle();assert(Object.values(engine.getState().muted).every(Boolean),'mutes persist through pause and seek');
 engine.reset();assert(Object.values(engine.getState().muted).every(m=>!m));assert([drums,bass,keys,lift,voiceBus].every(n=>n.gain.value>0),'reset restores all instruments and vocals');
 engine.participant('not-a-part');assert.equal(Object.keys(engine.getState().muted).length,4);
-let state={...engine.getState(),playing:true,volume:.8,speaking:true};
-assert.equal(activeParticipant(state,TRACKS[3]),'vocals');
+let state={...engine.getState(),playing:true,volume:.8,speaking:true,speaker:'M'};
+assert.equal(activeParticipant(state,TRACKS[3]),'drums');
+assert.equal(activeParticipant({...state,speaker:'F'},TRACKS[3]),'keys');
 state={...state,muted:{drums:true,keys:true,vocals:true,bass:true}};assert.equal(activeParticipant(state,TRACKS[3]),null);
-state={...state,muted:{...state.muted,bass:false}};assert.equal(activeParticipant(state,TRACKS[3]),'bass');
+state={...state,muted:{...state.muted,bass:false}};assert.equal(activeParticipant(state,TRACKS[3]),null);
 assert.equal(directedSpotlight({...state,elapsed:0},TRACKS[3]),null);
-assert.equal(directedSpotlight({...state,elapsed:8*240/TRACKS[3].bpm+.1},TRACKS[3]),'bass');
+assert.equal(directedSpotlight({...state,elapsed:8*240/TRACKS[3].bpm+.1},TRACKS[3]),null);
+assert.equal(directedSpotlight({...state,speaker:'F',muted:{keys:false}}),'keys');
 engine.dispose();assert.equal(context.state,'closed');
 
 // Exercise the first-render component tree, real assets and link/control contracts.
@@ -59,6 +61,8 @@ try{
   for(const person of PARTICIPANTS){assert(html.includes(escaped(person.name)));if(person.media)for(const ext of ['webp','mp4'])await access(`public/studio/meeting/${person.media}.${ext}`);}
   assert(!/<video[^>]* src=/.test(html),'video downloads wait for play');
   assert(!/<video[^>]*autoPlay/i.test(html));
+  assert.equal((html.match(/class="meeting-face"/g)||[]).length,2,'human video loops are replaced by face canvases');
+  for(const person of PARTICIPANTS.filter(p=>p.voice))for(const kind of ['faces','still'])await access(`public/studio/meeting/${person.media}-${kind}.webp`);
   for(const track of TRACKS)assert(html.includes(escaped(track.title)));
   assert(html.includes('Connecting to audio…'));assert(html.includes('role="status"'));assert(html.includes('aria-label="Master volume"'));
   const route=await readFile('src/studio-main.jsx','utf8');assert(route.includes('meeting-studio/main.jsx'));

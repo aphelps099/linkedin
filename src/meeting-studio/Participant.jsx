@@ -1,5 +1,6 @@
 import React,{memo,useEffect,useRef,useState} from 'react';
 import {Mic,MicOff,Maximize2,Minimize2,Play,UserRound,VideoOff} from 'lucide-react';
+import {FacePortrait} from './FacePortrait.jsx';
 
 const PerformanceVideo=memo(function PerformanceVideo({media,playing,motion,position}) {
   const video=useRef(null),[failed,setFailed]=useState(false);
@@ -21,11 +22,11 @@ const PerformanceVideo=memo(function PerformanceVideo({media,playing,motion,posi
   return <><img className="meeting-poster" src={`/studio/meeting/${media}.webp?v=webcam-20261017`} alt="" style={{objectPosition:position}}/><video ref={video} className={`meeting-video${failed?' has-failed':''}`} src={requested?`/studio/meeting/${media}.mp4?v=webcam-20261017`:undefined} poster={`/studio/meeting/${media}.webp?v=webcam-20261017`} style={{objectPosition:position}} muted loop playsInline preload="none" disablePictureInPicture aria-hidden="true" tabIndex={-1} onError={()=>setFailed(true)}/></>;
 });
 
-export const Participant=memo(function Participant({person,playing,loading,started,muted,active,spotlight,compact,caption,motion,videosEnabled=true,onSelect,onMute}) {
+export const Participant=memo(function Participant({person,engine,playing,loading,started,muted,active,spotlight,compact,caption,motion,videosEnabled=true,onSelect,onMute}) {
   const cameraOff=!person.media||!videosEnabled;
   const label=!started?'Play the meeting':spotlight?`Return ${person.name} to grid`:`Spotlight ${person.name}`;
   return <article className={`meeting-tile${active?' is-active':''}${muted?' is-muted':''}${spotlight?' is-spotlight':''}${compact?' is-small':''}${cameraOff?' camera-off':''}`} aria-label={`${person.name}, ${person.role}`}>
-    {person.media&&<div className="meeting-camera-feed" hidden={cameraOff}><PerformanceVideo media={person.media} playing={playing&&videosEnabled} motion={motion} position={person.position}/></div>}
+    {person.media&&<div className="meeting-camera-feed" hidden={cameraOff}>{person.voice?<FacePortrait media={person.media} engine={engine} playing={playing&&videosEnabled} motion={motion} position={person.position}/>:<PerformanceVideo media={person.media} playing={playing&&videosEnabled} motion={motion} position={person.position}/>}</div>}
     {cameraOff&&<div className="meeting-avatar-content"><div className="meeting-avatar" aria-hidden="true"><UserRound strokeWidth="0" fill="currentColor"/></div><strong>{person.name}</strong><span>{person.media?'Camera off':'Connecting to audio…'}</span></div>}
     <button type="button" className="meeting-tile-select" aria-label={label} aria-pressed={spotlight} disabled={loading} onClick={()=>onSelect(person.id)}>
       <span className="meeting-tile-action">{!started?<Play aria-hidden="true"/>:spotlight?<Minimize2 aria-hidden="true"/>:<Maximize2 aria-hidden="true"/>}<span>{!started?'Join & play':spotlight?'Back to grid':'Spotlight'}</span></span>
