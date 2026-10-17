@@ -1,0 +1,389 @@
+{
+  "sampleRate": 32000,
+  "tracks": {
+    "founder-mode": {
+      "music": {
+        "file": "/studio/rooms/audio/founder-mode-music.mp3",
+        "mode": "bed",
+        "duration": 16.0,
+        "stems": {
+          "bed": {
+            "start": 0,
+            "duration": 16.0
+          }
+        },
+        "sourceTaskId": "1a0d104f-c88e-4c3d-8064-0fc0bcb99f1c",
+        "measuredSourceBpm": 120.05,
+        "sourceStart": 0.013
+      },
+      "voice": {
+        "file": "/studio/rooms/audio/founder-mode-voices.mp3",
+        "clips": {
+          "We're just getting started.": {
+            "M": {
+              "start": 0.1,
+              "duration": 1.7458125
+            },
+            "F": {
+              "start": 1.9658125,
+              "duration": 1.65015625
+            }
+          },
+          "We haven't started yet.": {
+            "M": {
+              "start": 3.73596875,
+              "duration": 1.69125
+            },
+            "F": {
+              "start": 5.54721875,
+              "duration": 1.2073125
+            }
+          },
+          "A bold new vision.": {
+            "M": {
+              "start": 6.87453125,
+              "duration": 1.05309375
+            },
+            "F": {
+              "start": 8.047625,
+              "duration": 1.19265625
+            }
+          },
+          "The deck is nearly ready.": {
+            "M": {
+              "start": 9.36028125,
+              "duration": 1.41596875
+            },
+            "F": {
+              "start": 10.89625,
+              "duration": 1.3814375
+            }
+          },
+          "Pre-revenue. Post-vision.": {
+            "M": {
+              "start": 12.3976875,
+              "duration": 1.77715625
+            },
+            "F": {
+              "start": 14.29484375,
+              "duration": 1.69159375
+            }
+          },
+          "A billion-dollar market.": {
+            "M": {
+              "start": 16.1064375,
+              "duration": 1.3739375
+            },
+            "F": {
+              "start": 17.600375,
+              "duration": 1.48975
+            }
+          },
+          "A two-person team.": {
+            "M": {
+              "start": 19.210125,
+              "duration": 1.09703125
+            },
+            "F": {
+              "start": 20.42715625,
+              "duration": 1.35859375
+            }
+          }
+        }
+      }
+    },
+    "mission-driven": {
+      "music": {
+        "file": "/studio/rooms/audio/mission-driven-music.mp3",
+        "mode": "bed",
+        "duration": 18.46153125,
+        "stems": {
+          "bed": {
+            "start": 0,
+            "duration": 18.46153125
+          }
+        },
+        "sourceTaskId": "0ec49fef-e3e4-4800-9163-815ceda8de76",
+        "measuredSourceBpm": 104.01,
+        "sourceStart": 0.389
+      },
+      "voice": {
+        "file": "/studio/rooms/audio/mission-driven-voices.mp3",
+        "clips": {
+          "More impact.": {
+            "M": {
+              "start": 0.1,
+              "duration": 0.8579375
+            },
+            "F": {
+              "start": 1.0779375,
+              "duration": 1.0741875
+            }
+          },
+          "Another form.": {
+            "M": {
+              "start": 2.272125,
+              "duration": 0.67434375
+            },
+            "F": {
+              "start": 3.06646875,
+              "duration": 0.9713125
+            }
+          },
+          "Less time for the mission.": {
+            "M": {
+              "start": 4.15778125,
+              "duration": 1.44065625
+            },
+            "F": {
+              "start": 5.7184375,
+              "duration": 1.52859375
+            }
+          },
+          "More time to report.": {
+            "M": {
+              "start": 7.36703125,
+              "duration": 1.14590625
+            },
+            "F": {
+              "start": 8.6329375,
+              "duration": 1.398
+            }
+          },
+          "We measure what matters.": {
+            "M": {
+              "start": 10.1509375,
+              "duration": 1.578375
+            },
+            "F": {
+              "start": 11.8493125,
+              "duration": 1.516125
+            }
+          },
+          "The number of forms.": {
+            "M": {
+              "start": 13.4854375,
+              "duration": 0.98090625
+            },
+            "F": {
+              "start": 14.58634375,
+              "duration": 1.1809375
+            }
+          },
+          "The mission is urgent.": {
+            "M": {
+              "start": 15.88728125,
+              "duration": 1.11821875
+            },
+            "F": {
+              "start": 17.1255,
+              "duration": 1.125375
+            }
+          },
+          "The portal is down.": {
+            "M": {
+              "start": 18.370875,
+              "duration": 1.0405
+            },
+            "F": {
+              "start": 19.531375,
+              "duration": 1.396
+            }
+          }
+        }
+      }
+    },
+    "enterprise-alignment": {
+      "music": {
+        "file": "/studio/rooms/audio/enterprise-alignment-music.mp3",
+        "mode": "bed",
+        "duration": 20.0,
+        "stems": {
+          "bed": {
+            "start": 0,
+            "duration": 20.0
+          }
+        },
+        "sourceTaskId": "abcedca9-3dbd-433e-9fdc-824932cd10fe",
+        "measuredSourceBpm": 96.89,
+        "sourceStart": 0.325
+      },
+      "voice": {
+        "file": "/studio/rooms/audio/enterprise-alignment-voices.mp3",
+        "clips": {
+          "We're moving forward.": {
+            "M": {
+              "start": 0.1,
+              "duration": 1.25121875
+            },
+            "F": {
+              "start": 1.47121875,
+              "duration": 1.150375
+            }
+          },
+          "Pending approval.": {
+            "M": {
+              "start": 2.74159375,
+              "duration": 0.95553125
+            },
+            "F": {
+              "start": 3.817125,
+              "duration": 1.22771875
+            }
+          },
+          "The vision is clear.": {
+            "M": {
+              "start": 5.16484375,
+              "duration": 1.02996875
+            },
+            "F": {
+              "start": 6.3148125,
+              "duration": 0.9884375
+            }
+          },
+          "The owner is not.": {
+            "M": {
+              "start": 7.42325,
+              "duration": 0.9760625
+            },
+            "F": {
+              "start": 8.5193125,
+              "duration": 0.98840625
+            }
+          },
+          "Agility at scale.": {
+            "M": {
+              "start": 9.62771875,
+              "duration": 1.254125
+            },
+            "F": {
+              "start": 11.00184375,
+              "duration": 1.5221875
+            }
+          },
+          "Submit a request.": {
+            "M": {
+              "start": 12.64403125,
+              "duration": 1.01896875
+            },
+            "F": {
+              "start": 13.783,
+              "duration": 1.0843125
+            }
+          },
+          "Approved in principle.": {
+            "M": {
+              "start": 14.9873125,
+              "duration": 1.3205625
+            },
+            "F": {
+              "start": 16.427875,
+              "duration": 1.64109375
+            }
+          }
+        }
+      }
+    },
+    "pre-meeting": {
+      "music": {
+        "file": "/studio/rooms/audio/pre-meeting-music.mp3",
+        "mode": "bed",
+        "duration": 17.14284375,
+        "stems": {
+          "bed": {
+            "start": 0,
+            "duration": 17.14284375
+          }
+        },
+        "sourceTaskId": "580fd187-3f55-4df9-a4e0-90e3374128e9",
+        "measuredSourceBpm": 111.98,
+        "sourceStart": 0.085
+      },
+      "voice": {
+        "file": "/studio/rooms/audio/pre-meeting-voices.mp3",
+        "clips": {
+          "Let's book a meeting.": {
+            "M": {
+              "start": 0.1,
+              "duration": 1.13853125
+            },
+            "F": {
+              "start": 1.35853125,
+              "duration": 1.16675
+            }
+          },
+          "To book a meeting.": {
+            "M": {
+              "start": 2.64528125,
+              "duration": 0.92515625
+            },
+            "F": {
+              "start": 3.6904375,
+              "duration": 1.03078125
+            }
+          },
+          "We need an agenda.": {
+            "M": {
+              "start": 4.84121875,
+              "duration": 1.3030625
+            },
+            "F": {
+              "start": 6.26428125,
+              "duration": 1.21475
+            }
+          },
+          "For the agenda.": {
+            "M": {
+              "start": 7.59903125,
+              "duration": 0.91034375
+            },
+            "F": {
+              "start": 8.629375,
+              "duration": 0.947625
+            }
+          },
+          "A pre-alignment meeting.": {
+            "M": {
+              "start": 9.697,
+              "duration": 1.534625
+            },
+            "F": {
+              "start": 11.351625,
+              "duration": 1.496
+            }
+          },
+          "Before alignment.": {
+            "M": {
+              "start": 12.967625,
+              "duration": 1.03178125
+            },
+            "F": {
+              "start": 14.11940625,
+              "duration": 0.94196875
+            }
+          },
+          "We value your time.": {
+            "M": {
+              "start": 15.181375,
+              "duration": 1.30890625
+            },
+            "F": {
+              "start": 16.61028125,
+              "duration": 1.41078125
+            }
+          },
+          "This one is mandatory.": {
+            "M": {
+              "start": 18.1410625,
+              "duration": 1.3876875
+            },
+            "F": {
+              "start": 19.64875,
+              "duration": 1.6111875
+            }
+          }
+        }
+      }
+    }
+  }
+}

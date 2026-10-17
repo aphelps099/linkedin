@@ -1,0 +1,276 @@
+{
+  "rooms": [
+    {
+      "id": "founders",
+      "title": "Founder Mode",
+      "genre": "Optimistic electro-pop",
+      "line": "Relentless optimism. Revenue to follow.",
+      "names": [
+        "Chief Visionary Officer",
+        "Head of Possibility",
+        "Workflow Automation",
+        "Stealth Founder"
+      ],
+      "tracks": [
+        "founder-mode",
+        "synergy"
+      ]
+    },
+    {
+      "id": "nonprofits",
+      "title": "Mission Driven",
+      "genre": "Warm funk / tired forms",
+      "line": "More time for the mission. Less time proving it.",
+      "names": [
+        "Director of Impact",
+        "Grants & Reporting",
+        "Reporting Automation",
+        "Board Member"
+      ],
+      "tracks": [
+        "mission-driven",
+        "no-action"
+      ]
+    },
+    {
+      "id": "enterprise",
+      "title": "Enterprise Alignment",
+      "genre": "Heavy executive hip-hop",
+      "line": "Confidently moving forward. Pending approval.",
+      "names": [
+        "Strategic Partnerships",
+        "People & Culture",
+        "Workflow Automation",
+        "Thought Leader"
+      ],
+      "tracks": [
+        "enterprise-alignment",
+        "alignment",
+        "humbled"
+      ]
+    },
+    {
+      "id": "meetings",
+      "title": "The Pre-Meeting",
+      "genre": "Circular synth-pop",
+      "line": "This meeting could have been another meeting.",
+      "names": [
+        "Meeting Owner",
+        "Agenda Lead",
+        "Scheduling Automation",
+        "Optional Attendee"
+      ],
+      "tracks": [
+        "pre-meeting",
+        "offline",
+        "circle-back"
+      ]
+    }
+  ],
+  "tracks": [
+    {
+      "id": "founder-mode",
+      "room": "founders",
+      "title": "Just Getting Started",
+      "genre": "Optimistic electro-pop",
+      "bpm": 120,
+      "key": "A major",
+      "root": 45,
+      "pairs": [
+        [
+          "We're just getting started.",
+          "We haven't started yet."
+        ],
+        [
+          "We're just getting started.",
+          "We haven't started yet."
+        ],
+        [
+          "A bold new vision.",
+          "The deck is nearly ready."
+        ],
+        [
+          "We're just getting started.",
+          "We haven't started yet."
+        ]
+      ],
+      "visionary": [
+        [
+          "We're just getting started.",
+          "Pre-revenue. Post-vision."
+        ],
+        [
+          "We're just getting started.",
+          "We haven't started yet."
+        ],
+        [
+          "A billion-dollar market.",
+          "A two-person team."
+        ],
+        [
+          "We're just getting started.",
+          "We haven't started yet."
+        ]
+      ],
+      "prompt": "Instrumental only, no vocals, no singing, no chanting, no speech, no choir, no vocal samples. A catchy optimistic electro-pop groove at exactly 120 BPM in A major. A startup founder's unstoppable optimism as a dance-floor pop instrumental. Punchy short kick, crisp dry snare, lightly swung closed hi-hats, springy syncopated synth bass with a memorable two-bar riff, bright three-note analog keyboard hook, short muted power-chord guitar accents. A beautifully locked bass-and-drum pocket, simple harmony, very few layers, generous space for separate short spoken robot phrases to be added later. Start immediately on the first downbeat with the full groove. Steady tempo throughout; repeat an irresistible eight-bar pattern with tiny drum-stair fills at the ends. No intro fade, no long build, no outro, no ending cadence. Compact 1990s digital charm but polished, weighty pop production. Exuberant instruments, uncluttered arrangement.",
+      "shortTitle": "Just Getting Started",
+      "meetingTitle": "Founder all-hands",
+      "style": "synth",
+      "description": "Relentless optimism. The product is nearly a slide.",
+      "sourceTaskId": "1a0d104f-c88e-4c3d-8064-0fc0bcb99f1c"
+    },
+    {
+      "id": "mission-driven",
+      "room": "nonprofits",
+      "title": "More Impact. Another Form.",
+      "genre": "Warm mission-driven funk",
+      "bpm": 104,
+      "key": "D minor",
+      "root": 38,
+      "pairs": [
+        [
+          "More impact.",
+          "Another form."
+        ],
+        [
+          "More impact.",
+          "Another form."
+        ],
+        [
+          "Less time for the mission.",
+          "More time to report."
+        ],
+        [
+          "More impact.",
+          "Another form."
+        ]
+      ],
+      "visionary": [
+        [
+          "More impact.",
+          "Another form."
+        ],
+        [
+          "We measure what matters.",
+          "The number of forms."
+        ],
+        [
+          "More impact.",
+          "Another form."
+        ],
+        [
+          "The mission is urgent.",
+          "The portal is down."
+        ]
+      ],
+      "prompt": "Instrumental only. Absolutely no human or synthetic vocals, singing, speech, chanting or choir. Warm irresistible funk-pop at exactly 104 BPM in D minor. An uplifting, generous groove with muscular live-sounding drums, crisp rim-snare on two and four, wonderfully elastic electric bass, short muted guitar scratches, mellow Rhodes electric piano, a little three-note clavinet reply. A great pocket with slightly laid-back snare and tightly interlocked bass and kick. Spacious simple arrangement for short external office-announcement vocal hooks. Musically hopeful and energetic with a soulful instrumental lift, not sentimental, no sweeping cinematic crescendo. Begin directly with the full groove on a downbeat; maintain one rock-steady repeating eight-bar instrumental passage with small descending tom fills at its turnarounds. No intro silence, no fade out, no final cadence. Clear warm punchy production.",
+      "shortTitle": "More Impact",
+      "meetingTitle": "Impact reporting check-in",
+      "style": "funk",
+      "description": "An urgent mission. An even more urgent reporting portal.",
+      "sourceTaskId": "0ec49fef-e3e4-4800-9163-815ceda8de76"
+    },
+    {
+      "id": "enterprise-alignment",
+      "room": "enterprise",
+      "title": "Pending Approval",
+      "genre": "Heavy executive hip-hop",
+      "bpm": 96,
+      "key": "C minor",
+      "root": 36,
+      "pairs": [
+        [
+          "We're moving forward.",
+          "Pending approval."
+        ],
+        [
+          "We're moving forward.",
+          "Pending approval."
+        ],
+        [
+          "The vision is clear.",
+          "The owner is not."
+        ],
+        [
+          "We're moving forward.",
+          "Pending approval."
+        ]
+      ],
+      "visionary": [
+        [
+          "We're moving forward.",
+          "Pending approval."
+        ],
+        [
+          "Agility at scale.",
+          "Submit a request."
+        ],
+        [
+          "We're moving forward.",
+          "Pending approval."
+        ],
+        [
+          "Approved in principle.",
+          "Pending approval."
+        ]
+      ],
+      "prompt": "Instrumental only, no vocals, no rapping, no chants, no voice samples. A huge, confident but sparse industrial hip-hop groove at exactly 96 BPM in C minor. Short thunderous kick, explosive dry snare, ominous two-note synth-brass hook, deep disciplined sub bass, metallic ticks and clipped orchestral keyboard stabs. Enormous head-nodding pocket, slight swing, lots of negative space between hits. Clean modern low end, early-digital drum-machine personality. This is for a ridiculous corporate anthem with separate deadpan robot vocals to be added later: leave the midrange open. Full groove immediately on beat one, consistent repeating eight-bar pattern, tiny two-beat descending tom-stair fill before each return. No cinematic intro, no spoken samples, no dramatic accelerations, no fade out or ending cadence. Heavy and fun.",
+      "shortTitle": "Pending Approval",
+      "meetingTitle": "Executive alignment",
+      "style": "hiphop",
+      "description": "Big decisions. Somewhere in the approval chain.",
+      "sourceTaskId": "abcedca9-3dbd-433e-9fdc-824932cd10fe"
+    },
+    {
+      "id": "pre-meeting",
+      "room": "meetings",
+      "title": "A Meeting to Book a Meeting",
+      "genre": "Circular synth-pop",
+      "bpm": 112,
+      "key": "E minor",
+      "root": 40,
+      "pairs": [
+        [
+          "Let's book a meeting.",
+          "To book a meeting."
+        ],
+        [
+          "Let's book a meeting.",
+          "To book a meeting."
+        ],
+        [
+          "We need an agenda.",
+          "For the agenda."
+        ],
+        [
+          "Let's book a meeting.",
+          "To book a meeting."
+        ]
+      ],
+      "visionary": [
+        [
+          "Let's book a meeting.",
+          "To book a meeting."
+        ],
+        [
+          "A pre-alignment meeting.",
+          "Before alignment."
+        ],
+        [
+          "Let's book a meeting.",
+          "To book a meeting."
+        ],
+        [
+          "We value your time.",
+          "This one is mandatory."
+        ]
+      ],
+      "prompt": "Instrumental only, no vocals, no speech, no singing or vocal-like samples. Extremely catchy circular new-wave synth-pop at exactly 112 BPM in E minor. A springy octave synth-bass riff that returns obsessively to its first note, crisp 1980s drum-machine snare and clap, syncopated closed hats, warm short keyboard chords and a clean two-note synth whistle hook. Tight beautiful bass-and-drum pocket, restrained funky guitar chucks, little computer-like bleeps at transitions. Simple accessible pop songwriting, playful hypnotic repetition, generous empty space for robot call-and-response vocals to be added separately. Begin with the full groove on beat one, unwavering tempo, repeat the eight-bar pattern with one small descending drum staircase at the turnaround. No intro, no fade, no outro, no final resolution. Bright, polished, weighty but uncluttered.",
+      "shortTitle": "Book a Meeting",
+      "meetingTitle": "Pre-meeting planning",
+      "style": "electro",
+      "description": "A meeting worth scheduling another meeting about.",
+      "sourceTaskId": "580fd187-3f55-4df9-a4e0-90e3374128e9"
+    }
+  ]
+}

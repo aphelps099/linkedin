@@ -56,15 +56,18 @@ try{
   const html=renderToString(React.createElement(MeetingStudio));
   assert.equal((html.match(/class="meeting-tile(?: |")/g)||[]).length,4);
   assert.equal((html.match(/aria-label="Play the meeting"/g)||[]).length,5);
-  assert.equal((html.match(/aria-label="Mute [^"]+: /g)||[]).length,4);
+  assert.equal((html.match(/aria-label="Mute [^"]+: /g)||[]).length,3);
+  assert(html.includes('Stealth Founder: connecting to audio'));
+  assert.equal((html.match(/class="meeting-room-option-copy"/g)||[]).length,4);
   const escaped=text=>text.replaceAll('&','&amp;').replaceAll("'",'&#x27;');
-  for(const person of PARTICIPANTS){assert(html.includes(escaped(person.name)));if(person.media)for(const ext of ['webp','mp4'])await access(`public/studio/meeting/${person.media}.${ext}`);}
+  for(const person of PARTICIPANTS){if(person.media)for(const ext of ['webp','mp4'])await access(`public/studio/meeting/${person.media}.${ext}`);}
   assert(!/<video[^>]* src=/.test(html),'video downloads wait for play');
   assert(!/<video[^>]*autoPlay/i.test(html));
   assert.equal((html.match(/class="meeting-face"/g)||[]).length,2,'human video loops are replaced by face canvases');
   for(const person of PARTICIPANTS.filter(p=>p.voice))for(const kind of ['faces','still'])await access(`public/studio/meeting/${person.media}-${kind}.webp`);
-  for(const track of TRACKS)assert(html.includes(escaped(track.title)));
+  for(const title of ['Just Getting Started','Synergistically Speaking','Chief Visionary Officer','Head of Possibility'])assert(html.includes(escaped(title)),title);
+  assert(!html.includes('Play Let&#x27;s Take It Offline'),'default playlist only shows its room');
   assert(html.includes('Connecting to audio…'));assert(html.includes('role="status"'));assert(html.includes('aria-label="Master volume"'));
   const route=await readFile('src/studio-main.jsx','utf8');assert(route.includes('meeting-studio/main.jsx'));
 }finally{await unlink(temp);delete globalThis.window;}
-console.log('Meeting studio passed: real per-part mute routing, phase-safe unmute, persistent mix, reset, speaker direction, four participants, six songs, media assets, no autoplay, and canonical route.');
+console.log('Meeting studio passed: real per-part mute routing, phase-safe unmute, persistent mix, reset, speaker direction, four participants, four room choices, media assets, no autoplay, and canonical route.');

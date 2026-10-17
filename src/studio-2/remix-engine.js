@@ -21,19 +21,21 @@ const LEVELS = [
 export function createRemixEngine({onChange = () => {}, audioBase = '../studio-2/audio/',
   contextFactory = () => new (window.AudioContext || window.webkitAudioContext)(),
   fetchImpl = (...args) => fetch(...args), setTimer = setInterval, clearTimer = clearInterval,
-  initialIndex = 0, meetingVoices = false} = {}) {
+  initialIndex = 0, meetingVoices = false, tracks = TRACKS, audioManifest = manifest, initialQueue} = {}) {
+  let queue = initialQueue?.length ? [...initialQueue] : tracks.map((_,i)=>i);
+  const adjacent = delta => queue[(Math.max(0,queue.indexOf(state.index))+delta+queue.length)%queue.length];
   let state = {index:initialIndex, playing:false, loading:false, elapsed:0, energy:1,
-    confidence:0, voice:'duet', volume:.8, text:TRACKS[initialIndex].pairs[0][0],
-    response:TRACKS[initialIndex].pairs[0][1], speaker:'M', speaking:false, vocalLevel:0,
+    confidence:0, voice:'duet', volume:.8, text:tracks[initialIndex].pairs[0][0],
+    response:tracks[initialIndex].pairs[0][1], speaker:'M', speaking:false, vocalLevel:0,
     queued:'', muted:freshMutes(), status:'Choose a track. Make a small scene.', error:''};
-  let ctx, master, compressor, analyser, spectrum, voiceBus;
+  let ctx, master, compressor, analyser, spectrum, voiceBus, bedFilter;
   const speakerBuses = {};
   let buses = {}, sources = new Set(), voiceSources = new Set(), cueList = [];
   let timer, generation = 0, disposed = false, origin = 0, nextPair = 0;
   let loaded, queuedPair = null, canResume = false;
   const cache = new Map();
   const emit = patch => {state = {...state, ...patch}; if(!disposed) onChange({...state});};
-  const track = () => TRACKS[state.index];
+  const track = () => tracks[state.index];
   const elapsed = () => ctx ? Math.max(0, Math.min(durationOf(track()), ctx.currentTime-origin)) : state.elapsed;
   const clearTick = () => {if(timer !== undefined) clearTimer(timer); timer = undefined;};
 
@@ -52,6 +54,10 @@ export function createRemixEngine({onChange = () => {}, audioBase = '../studio-2
     for(const name of ['drums','bass','keys','lift']) {
       buses[name] = ctx.createGain(); buses[name].gain.value = state.muted[name === 'lift' ? (meetingVoices?'vocals':'keys') : name] ? 0 : LEVELS[state.energy][name]; buses[name].connect(master);
     }
+    buses.bed=ctx.createGain();
+    bedFilter=ctx.createBiquadFilter?.();
+    if(bedFilter){bedFilter.type='lowpass';bedFilter.frequency.value=7800;bedFilter.Q.value=.65;buses.bed.connect(bedFilter);bedFilter.connect(master);}
+    else buses.bed.connect(master);
     voiceBus = ctx.createGain(); voiceBus.gain.value = state.voice === 'instrumental' || (!meetingVoices && state.muted.vocals) ? 0 : .82; voiceBus.connect(master);
     if(meetingVoices) for(const [speaker,part] of [['M','drums'],['F','keys']]) {
       speakerBuses[speaker]=ctx.createGain();speakerBuses[speaker].gain.value=state.muted[part]?0:1;speakerBuses[speaker].connect(voiceBus);
@@ -64,13 +70,13 @@ export function createRemixEngine({onChange = () => {}, audioBase = '../studio-2
   }
 
   async function fetchBuffer(file) {
-    const result = await fetchImpl(audioBase + file);
+    const result = await fetchImpl(file.startsWith('/')?file:audioBase + file);
     if(!result.ok) throw new Error('This track could not load. Please try again.');
     return ctx.decodeAudioData(await result.arrayBuffer());
   }
   function load(id) {
     if(cache.has(id)) return cache.get(id);
-    const data = id === 'vocabulary' ? manifest.vocabulary : manifest.tracks[id];
+    const data = id === 'vocabulary' ? audioManifest.vocabulary : audioManifest.tracks[id];
     const promise = (id === 'vocabulary'
       ? fetchBuffer(data.file).then(voice => ({voice, metadata:data}))
       : Promise.all([fetchBuffer(data.music.file), fetchBuffer(data.voice.file)])
@@ -127,7 +133,7 @@ export function createRemixEngine({onChange = () => {}, audioBase = '../studio-2
   function tick() {
     if(!state.playing || !loaded) return;
     let now = elapsed();
-    if(now >= durationOf(track())-.01) {select((state.index+1)%TRACKS.length); return;}
+    if(now >= durationOf(track())-.01) {select(adjacent(1)); return;}
     const slot = 960 / track().bpm;
     // Skip missed slots after browser throttling; never fire a backlog of phrases.
     nextPair = Math.max(nextPair, Math.floor(now / slot));
@@ -167,12 +173,12 @@ export function createRemixEngine({onChange = () => {}, audioBase = '../studio-2
     const mine = ++generation;
     clearTick(); stopSources(); queuedPair = null; cueList = [];
     emit({index, loading:true, playing:false, elapsed:offset, error:'', queued:'',
-      text:TRACKS[index].pairs[0][0], response:TRACKS[index].pairs[0][1], speaker:'M',speaking:false,status:'Loading your next career move…'});
+      text:tracks[index].pairs[0][0], response:tracks[index].pairs[0][1], speaker:'M',speaking:false,status:'Loading your next career move…'});
     try {
       init();
       // This happens before any fetch: the user's original gesture unlocks audio.
       const resumed = ctx.resume();
-      const [data] = await Promise.all([load(TRACKS[index].id), resumed]);
+      const [data] = await Promise.all([load(tracks[index].id), resumed]);
       if(mine !== generation || disposed) return;
       loaded = data; origin = ctx.currentTime + .06 - offset;
       nextPair = Math.floor(offset / (960 / track().bpm));
@@ -185,13 +191,15 @@ export function createRemixEngine({onChange = () => {}, audioBase = '../studio-2
       stopSources(); emit({loading:false,playing:false,error:error.message || 'Audio is unavailable. Please try again.'});
     }
   }
-  function select(index) {return start((index+TRACKS.length)%TRACKS.length);}
+  function select(index) {return start((index+tracks.length)%tracks.length);}
   function applyLevels(when) {
     if(!ctx) return;
     for(const name of Object.keys(buses)) {
       const p=buses[name].gain; p.cancelScheduledValues(ctx.currentTime);
+      if(name==='bed'){p.setTargetAtTime(state.muted.vocals?0:[.72,.84,.95][state.energy],when,.035);continue;}
       p.setTargetAtTime(state.muted[name === 'lift' ? (meetingVoices?'vocals':'keys') : name] ? 0 : LEVELS[state.energy][name],when,.035);
     }
+    if(bedFilter){bedFilter.frequency.cancelScheduledValues(ctx.currentTime);bedFilter.frequency.setTargetAtTime([2600,7800,18000][state.energy],when,.08);}
     voiceBus.gain.cancelScheduledValues(ctx.currentTime);
     voiceBus.gain.setTargetAtTime(state.voice === 'instrumental' || (!meetingVoices&&state.muted.vocals) ? 0 : .82,ctx.currentTime,.04);
     for(const [speaker,part] of [['M','drums'],['F','keys']]) {
@@ -224,8 +232,12 @@ export function createRemixEngine({onChange = () => {}, audioBase = '../studio-2
         catch {emit({error:'Playback could not resume. Choose a track to try again.'});}
       } else await start(state.index,state.elapsed);
     },
-    next:() => select(state.index+1),
-    previous:() => select(state.elapsed>3 ? state.index : state.index-1),
+    setQueue(indices) {
+      const valid=[...new Set(indices)].filter(i=>Number.isInteger(i)&&i>=0&&i<tracks.length);
+      if(valid.length)queue=valid;
+    },
+    next:() => select(adjacent(1)),
+    previous:() => select(state.elapsed>3 ? state.index : adjacent(-1)),
     seek(value) {
       const position=Math.max(0,Math.min(durationOf(track())-.05,Number(value)||0));
       if(state.playing || state.loading) return start(state.index,position);
@@ -234,9 +246,10 @@ export function createRemixEngine({onChange = () => {}, audioBase = '../studio-2
     },
     setting,
     participant(name) {
-      if(!MIX_PARTS.includes(name)) return;
+      if(!MIX_PARTS.includes(name) || (audioManifest.tracks[track().id]?.music.mode==='bed'&&name==='bass')) return;
       const muted = {...state.muted, [name]:!state.muted[name]};
-      const label=meetingVoices?({drums:'Voice 01 and drums',keys:'Voice 02 and keys',vocals:'Automation synths',bass:'Bass'})[name]:name==='vocals'?'Robot vocals':name[0].toUpperCase()+name.slice(1);
+      const bed=audioManifest.tracks[track().id]?.music.mode==='bed';
+      const label=bed?({drums:'Voice 01',keys:'Voice 02',vocals:'Backing track'})[name]:meetingVoices?({drums:'Voice 01 and drums',keys:'Voice 02 and keys',vocals:'Automation synths',bass:'Bass'})[name]:name==='vocals'?'Robot vocals':name[0].toUpperCase()+name.slice(1);
       emit({muted,status:`${label} ${muted[name] ? 'muted' : 'back in the meeting'}.`});
       // A short gain ramp makes individual mic changes immediate and click-free.
       // Sources keep running, so unmuting always rejoins at the correct phase.
