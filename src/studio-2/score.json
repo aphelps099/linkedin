@@ -1,0 +1,120 @@
+{
+  "tracks": [
+    {
+      "id": "offline", "title": "Let's Take It Offline", "genre": "Dusty office hip-hop", "bpm": 92, "key": "D minor", "root": 38, "style": "hiphop", "swing": 0.12,
+      "description": "Heavy pockets. Soft keys. Absolutely no follow-through.",
+      "progression": [[0,0,3,7,10,14],[-4,0,4,7,11,14],[-7,0,3,7,10,14],[-5,0,3,7,10,14]],
+      "kicks": [0,7,10], "bass": [[0,0,2.6],[6,0,1.1],[10,7,2],[15,12,0.65]], "motif": [14,10,7,3],
+      "pairs": [
+        ["Let's take it offline.", "Let's take it offline."],
+        ["We moved the meeting.", "The work stayed here."],
+        ["We moved the needle.", "The needle moved back."],
+        ["No action required.", "Please act accordingly."]
+      ],
+      "visionary": [
+        ["Let's take it offline.", "The offline is now online."],
+        ["We operationalized the conversation.", "The conversation remains operational."],
+        ["Our bandwidth has bandwidth.", "Capacity is a state of mind."],
+        ["We moved the needle.", "Please submit a needle movement report."]
+      ]
+    },
+    {
+      "id": "circle-back", "title": "Circle Back Forever", "genre": "Rubber-bass funk", "bpm": 100, "key": "C minor", "root": 36, "style": "funk", "swing": 0.14,
+      "description": "A very productive journey to exactly where we started.",
+      "progression": [[0,0,3,7,10,14],[-4,0,4,7,11,14],[-7,0,3,7,10,14],[-5,0,3,7,10,14]],
+      "kicks": [0,3,8,11,14], "bass": [[0,0,1.2],[3,12,0.8],[6,7,1.2],[8,0,1.5],[11,10,0.8],[14,7,1]], "motif": [12,10,7,10],
+      "pairs": [
+        ["Circle back.", "Circle back forever."],
+        ["We're getting closer.", "To where we were."],
+        ["The next steps are clear.", "We'll clarify them next week."],
+        ["A shared direction.", "A perfect loop."]
+      ],
+      "visionary": [
+        ["Circle back.", "Circularity is our competitive advantage."],
+        ["We have achieved recursive alignment.", "Please align with the previous alignment."],
+        ["The feedback loop is closed.", "We have opened another feedback loop."],
+        ["Progress is non-linear.", "Specifically, circular."]
+      ]
+    },
+    {
+      "id": "alignment", "title": "Mutual Alignment", "genre": "Office electro", "bpm": 108, "key": "E minor", "root": 40, "style": "electro", "swing": 0,
+      "description": "Two machines. One shared document. Zero decisions.",
+      "progression": [[0,0,3,7,10,14],[-2,0,4,7,11,14],[-4,0,4,7,11,14],[-5,0,3,7,10,14]],
+      "kicks": [0,4,8,12], "bass": [[0,0,1.4],[3,0,0.7],[6,12,1.1],[8,0,1.4],[11,7,0.7],[14,12,1.1]], "motif": [7,10,14,12],
+      "pairs": [
+        ["Is everyone aligned?", "I can confirm alignment."],
+        ["What are we aligned on?", "The need for further alignment."],
+        ["Do we have a decision?", "We have a shared document."],
+        ["Who owns the next step?", "Ownership is a shared responsibility."]
+      ],
+      "visionary": [
+        ["Is everyone aligned?", "We are synergistically adjacent."],
+        ["Can we action the alignment?", "First, align the action items."],
+        ["Who is the decision maker?", "The decision-making ecosystem."],
+        ["Let's take it offline.", "I have scheduled an alignment pre-alignment."]
+      ]
+    },
+    {
+      "id": "humbled", "title": "Humbled & Honored", "genre": "Warm keyboard hip-hop", "bpm": 88, "key": "F-sharp minor", "root": 42, "style": "rhodes", "swing": 0.18,
+      "description": "A little electric piano. A considerable amount of gratitude.",
+      "progression": [[0,0,3,7,10,14],[3,0,4,7,11,14],[-2,0,4,7,11,14],[-4,0,4,7,11,14]],
+      "kicks": [0,6,10,15], "bass": [[0,0,3],[7,7,1.5],[10,0,2.5],[14,10,1]], "motif": [14,12,10,7],
+      "pairs": [
+        ["I am humbled and honored to share.", "Your humility has been noted."],
+        ["I made a cup of coffee.", "Seven lessons in leadership."],
+        ["I couldn't have done it alone.", "The kettle was instrumental."],
+        ["Grateful for this incredible journey.", "From the desk to the kitchen."]
+      ],
+      "visionary": [
+        ["I am humbled and honored to share.", "Humility metrics are at an all-time high."],
+        ["I have disrupted my morning routine.", "The coffee is now a platform."],
+        ["An inflection point in my journey.", "You pressed the elevator button."],
+        ["Personal growth is exponential.", "Please update your headline accordingly."]
+      ]
+    },
+    {
+      "id": "synergy", "title": "Synergistically Speaking", "genre": "Executive synth-pop", "bpm": 112, "key": "B minor", "root": 35, "style": "synth", "swing": 0.04,
+      "description": "Bright little synths. Big, unnecessarily complicated ideas.",
+      "progression": [[0,0,3,7,10,14],[-4,0,4,7,11,14],[-7,0,3,7,10,14],[-5,0,3,7,10,14]],
+      "kicks": [0,4,8,12,14], "bass": [[0,0,1.4],[2,12,1.2],[6,7,1.1],[8,0,1.4],[10,12,1.2],[14,10,1.1]], "motif": [7,14,10,12],
+      "pairs": [
+        ["Let's explore synergies.", "Two things. Near each other."],
+        ["We need actionable insights.", "Something we can actually do."],
+        ["Let's leverage our ecosystem.", "Ask the people we already know."],
+        ["A paradigm shift.", "We moved the spreadsheet."]
+      ],
+      "visionary": [
+        ["Synergistically speaking.", "Our synergies have synergies."],
+        ["Optimize the onboarding metrics.", "Then onboard the optimization metrics."],
+        ["A frictionless omnichannel ecosystem.", "The printer is still offline."],
+        ["We are future-proofing the paradigm.", "The paradigm expires on Friday."]
+      ]
+    },
+    {
+      "id": "no-action", "title": "No Action Required", "genre": "After-hours downtempo", "bpm": 84, "key": "A minor", "root": 33, "style": "downtempo", "swing": 0.10,
+      "description": "Low lights. Deep bass. A mandatory moment of calm.",
+      "progression": [[0,0,3,7,10,14],[-4,0,4,7,11,14],[-7,0,3,7,10,14],[-5,0,3,7,10,14]],
+      "kicks": [0,9,14], "bass": [[0,0,4],[9,7,2.5],[14,0,1.5]], "motif": [14,10,7,3],
+      "pairs": [
+        ["No action required.", "Please act accordingly."],
+        ["We value your time.", "This meeting is mandatory."],
+        ["Your feedback matters.", "The decision has been made."],
+        ["Keep us in the loop.", "The loop has been extended."]
+      ],
+      "visionary": [
+        ["No action required.", "Inaction is a strategic deliverable."],
+        ["We are proactively waiting.", "Waiting has been escalated."],
+        ["Please prioritize your wellbeing.", "After the mandatory wellbeing meeting."],
+        ["We respect your boundaries.", "I have sent a calendar invitation."]
+      ]
+    }
+  ],
+  "vocabulary": [
+    {"id":"synergy","label":"Synergy","pair":["Let's unlock our synergies.","The key is in another meeting."]},
+    {"id":"bandwidth","label":"Bandwidth","pair":["Do you have the bandwidth?","My bandwidth is on annual leave."]},
+    {"id":"paradigm","label":"Paradigm shift","pair":["We need a paradigm shift.","Please drag the paradigm to the shared folder."]},
+    {"id":"leverage","label":"Leverage","pair":["Let's leverage our core competencies.","Nobody has located them yet."]},
+    {"id":"pivot","label":"Pivot","pair":["It's time for a strategic pivot.","We are now facing the other wall."]},
+    {"id":"ecosystem","label":"Ecosystem","pair":["A holistic, frictionless ecosystem.","Have you tried turning it off and on?"]}
+  ]
+}

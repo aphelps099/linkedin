@@ -1,0 +1,1200 @@
+{
+  "sampleRate": 32000,
+  "tracks": {
+    "offline": {
+      "music": {
+        "file": "offline-music.mp3",
+        "stems": {
+          "drums": {
+            "start": 0.0,
+            "duration": 20.8695625
+          },
+          "bass": {
+            "start": 20.8695625,
+            "duration": 20.8695625
+          },
+          "keys": {
+            "start": 41.739125,
+            "duration": 20.8695625
+          },
+          "lift": {
+            "start": 62.6086875,
+            "duration": 20.8695625
+          }
+        },
+        "duration": 20.8695625,
+        "peak": 0.7
+      },
+      "voice": {
+        "file": "offline-voices.mp3",
+        "clips": {
+          "Let's take it offline.": {
+            "M": {
+              "start": 0.1,
+              "duration": 1.3839375
+            },
+            "F": {
+              "start": 1.6039375,
+              "duration": 1.43346875
+            }
+          },
+          "We moved the meeting.": {
+            "M": {
+              "start": 3.15740625,
+              "duration": 1.29584375
+            },
+            "F": {
+              "start": 4.57325,
+              "duration": 1.16109375
+            }
+          },
+          "The work stayed here.": {
+            "M": {
+              "start": 5.85434375,
+              "duration": 1.0908125
+            },
+            "F": {
+              "start": 7.06515625,
+              "duration": 1.37453125
+            }
+          },
+          "We moved the needle.": {
+            "M": {
+              "start": 8.5596875,
+              "duration": 1.2486875
+            },
+            "F": {
+              "start": 9.928375,
+              "duration": 1.23603125
+            }
+          },
+          "The needle moved back.": {
+            "M": {
+              "start": 11.28440625,
+              "duration": 1.0729375
+            },
+            "F": {
+              "start": 12.47734375,
+              "duration": 1.35175
+            }
+          },
+          "No action required.": {
+            "M": {
+              "start": 13.94909375,
+              "duration": 1.327625
+            },
+            "F": {
+              "start": 15.39671875,
+              "duration": 1.37965625
+            }
+          },
+          "Please act accordingly.": {
+            "M": {
+              "start": 16.896375,
+              "duration": 1.3381875
+            },
+            "F": {
+              "start": 18.3545625,
+              "duration": 1.599
+            }
+          },
+          "The offline is now online.": {
+            "M": {
+              "start": 20.0735625,
+              "duration": 1.58528125
+            },
+            "F": {
+              "start": 21.77884375,
+              "duration": 2.0024375
+            }
+          },
+          "We operationalized the conversation.": {
+            "M": {
+              "start": 23.90128125,
+              "duration": 2.59128125
+            },
+            "F": {
+              "start": 26.6125625,
+              "duration": 2.56734375
+            }
+          },
+          "The conversation remains operational.": {
+            "M": {
+              "start": 29.29990625,
+              "duration": 2.383625
+            },
+            "F": {
+              "start": 31.80353125,
+              "duration": 2.50053125
+            }
+          },
+          "Our bandwidth has bandwidth.": {
+            "M": {
+              "start": 34.4240625,
+              "duration": 1.72190625
+            },
+            "F": {
+              "start": 36.26596875,
+              "duration": 1.6483125
+            }
+          },
+          "Capacity is a state of mind.": {
+            "M": {
+              "start": 38.03428125,
+              "duration": 1.951125
+            },
+            "F": {
+              "start": 40.10540625,
+              "duration": 2.02428125
+            }
+          },
+          "Please submit a needle movement report.": {
+            "M": {
+              "start": 42.2496875,
+              "duration": 2.091
+            },
+            "F": {
+              "start": 44.4606875,
+              "duration": 2.34575
+            }
+          }
+        }
+      }
+    },
+    "circle-back": {
+      "music": {
+        "file": "circle-back-music.mp3",
+        "stems": {
+          "drums": {
+            "start": 0.0,
+            "duration": 19.2
+          },
+          "bass": {
+            "start": 19.2,
+            "duration": 19.2
+          },
+          "keys": {
+            "start": 38.4,
+            "duration": 19.2
+          },
+          "lift": {
+            "start": 57.6,
+            "duration": 19.2
+          }
+        },
+        "duration": 19.2,
+        "peak": 0.7
+      },
+      "voice": {
+        "file": "circle-back-voices.mp3",
+        "clips": {
+          "Circle back.": {
+            "M": {
+              "start": 0.1,
+              "duration": 0.9201875
+            },
+            "F": {
+              "start": 1.1401875,
+              "duration": 0.8556875
+            }
+          },
+          "Circle back forever.": {
+            "M": {
+              "start": 2.115875,
+              "duration": 1.32965625
+            },
+            "F": {
+              "start": 3.56553125,
+              "duration": 1.49265625
+            }
+          },
+          "We're getting closer.": {
+            "M": {
+              "start": 5.1781875,
+              "duration": 1.42253125
+            },
+            "F": {
+              "start": 6.72071875,
+              "duration": 1.26209375
+            }
+          },
+          "To where we were.": {
+            "M": {
+              "start": 8.1028125,
+              "duration": 0.77209375
+            },
+            "F": {
+              "start": 8.99490625,
+              "duration": 0.80675
+            }
+          },
+          "The next steps are clear.": {
+            "M": {
+              "start": 9.92165625,
+              "duration": 1.50015625
+            },
+            "F": {
+              "start": 11.5418125,
+              "duration": 1.57171875
+            }
+          },
+          "We'll clarify them next week.": {
+            "M": {
+              "start": 13.23353125,
+              "duration": 1.94784375
+            },
+            "F": {
+              "start": 15.301375,
+              "duration": 1.7989375
+            }
+          },
+          "A shared direction.": {
+            "M": {
+              "start": 17.2203125,
+              "duration": 1.083
+            },
+            "F": {
+              "start": 18.4233125,
+              "duration": 1.2746875
+            }
+          },
+          "A perfect loop.": {
+            "M": {
+              "start": 19.818,
+              "duration": 0.9340625
+            },
+            "F": {
+              "start": 20.8720625,
+              "duration": 0.8575625
+            }
+          },
+          "Circularity is our competitive advantage.": {
+            "M": {
+              "start": 21.849625,
+              "duration": 2.9495625
+            },
+            "F": {
+              "start": 24.9191875,
+              "duration": 2.83025
+            }
+          },
+          "We have achieved recursive alignment.": {
+            "M": {
+              "start": 27.8694375,
+              "duration": 2.33896875
+            },
+            "F": {
+              "start": 30.32840625,
+              "duration": 1.87046875
+            }
+          },
+          "Please align with the previous alignment.": {
+            "M": {
+              "start": 32.318875,
+              "duration": 2.36503125
+            },
+            "F": {
+              "start": 34.80390625,
+              "duration": 2.1440625
+            }
+          },
+          "The feedback loop is closed.": {
+            "M": {
+              "start": 37.06796875,
+              "duration": 1.59190625
+            },
+            "F": {
+              "start": 38.779875,
+              "duration": 1.55021875
+            }
+          },
+          "We have opened another feedback loop.": {
+            "M": {
+              "start": 40.45009375,
+              "duration": 2.187875
+            },
+            "F": {
+              "start": 42.75796875,
+              "duration": 1.7370625
+            }
+          },
+          "Progress is non-linear.": {
+            "M": {
+              "start": 44.61503125,
+              "duration": 1.4221875
+            },
+            "F": {
+              "start": 46.15721875,
+              "duration": 1.7776875
+            }
+          },
+          "Specifically, circular.": {
+            "M": {
+              "start": 48.05490625,
+              "duration": 1.79715625
+            },
+            "F": {
+              "start": 49.9720625,
+              "duration": 1.8199375
+            }
+          }
+        }
+      }
+    },
+    "alignment": {
+      "music": {
+        "file": "alignment-music.mp3",
+        "stems": {
+          "drums": {
+            "start": 0.0,
+            "duration": 17.77778125
+          },
+          "bass": {
+            "start": 17.77778125,
+            "duration": 17.77778125
+          },
+          "keys": {
+            "start": 35.5555625,
+            "duration": 17.77778125
+          },
+          "lift": {
+            "start": 53.33334375,
+            "duration": 17.77778125
+          }
+        },
+        "duration": 17.77778125,
+        "peak": 0.7
+      },
+      "voice": {
+        "file": "alignment-voices.mp3",
+        "clips": {
+          "Is everyone aligned?": {
+            "M": {
+              "start": 0.1,
+              "duration": 1.083375
+            },
+            "F": {
+              "start": 1.303375,
+              "duration": 1.25765625
+            }
+          },
+          "I can confirm alignment.": {
+            "M": {
+              "start": 2.68103125,
+              "duration": 1.57575
+            },
+            "F": {
+              "start": 4.37678125,
+              "duration": 1.65225
+            }
+          },
+          "What are we aligned on?": {
+            "M": {
+              "start": 6.14903125,
+              "duration": 1.29465625
+            },
+            "F": {
+              "start": 7.5636875,
+              "duration": 1.3709375
+            }
+          },
+          "The need for further alignment.": {
+            "M": {
+              "start": 9.054625,
+              "duration": 1.60109375
+            },
+            "F": {
+              "start": 10.77571875,
+              "duration": 1.631875
+            }
+          },
+          "Do we have a decision?": {
+            "M": {
+              "start": 12.52759375,
+              "duration": 1.319125
+            },
+            "F": {
+              "start": 13.96671875,
+              "duration": 1.23884375
+            }
+          },
+          "We have a shared document.": {
+            "M": {
+              "start": 15.3255625,
+              "duration": 1.78296875
+            },
+            "F": {
+              "start": 17.22853125,
+              "duration": 1.444625
+            }
+          },
+          "Who owns the next step?": {
+            "M": {
+              "start": 18.79315625,
+              "duration": 1.3825625
+            },
+            "F": {
+              "start": 20.29571875,
+              "duration": 1.61503125
+            }
+          },
+          "Ownership is a shared responsibility.": {
+            "M": {
+              "start": 22.03075,
+              "duration": 2.5388125
+            },
+            "F": {
+              "start": 24.6895625,
+              "duration": 2.33215625
+            }
+          },
+          "We are synergistically adjacent.": {
+            "M": {
+              "start": 27.14171875,
+              "duration": 2.24065625
+            },
+            "F": {
+              "start": 29.502375,
+              "duration": 2.0550625
+            }
+          },
+          "Can we action the alignment?": {
+            "M": {
+              "start": 31.6774375,
+              "duration": 1.849875
+            },
+            "F": {
+              "start": 33.6473125,
+              "duration": 1.6753125
+            }
+          },
+          "First, align the action items.": {
+            "M": {
+              "start": 35.442625,
+              "duration": 2.4318125
+            },
+            "F": {
+              "start": 37.9944375,
+              "duration": 1.960625
+            }
+          },
+          "Who is the decision maker?": {
+            "M": {
+              "start": 40.0750625,
+              "duration": 1.5209375
+            },
+            "F": {
+              "start": 41.716,
+              "duration": 1.37559375
+            }
+          },
+          "The decision-making ecosystem.": {
+            "M": {
+              "start": 43.21159375,
+              "duration": 2.00665625
+            },
+            "F": {
+              "start": 45.33825,
+              "duration": 1.96771875
+            }
+          },
+          "Let's take it offline.": {
+            "M": {
+              "start": 47.42596875,
+              "duration": 1.3839375
+            },
+            "F": {
+              "start": 48.92990625,
+              "duration": 1.43346875
+            }
+          },
+          "I have scheduled an alignment pre-alignment.": {
+            "M": {
+              "start": 50.483375,
+              "duration": 2.68028125
+            },
+            "F": {
+              "start": 53.28365625,
+              "duration": 2.34075
+            }
+          }
+        }
+      }
+    },
+    "humbled": {
+      "music": {
+        "file": "humbled-music.mp3",
+        "stems": {
+          "drums": {
+            "start": 0.0,
+            "duration": 21.8181875
+          },
+          "bass": {
+            "start": 21.8181875,
+            "duration": 21.8181875
+          },
+          "keys": {
+            "start": 43.636375,
+            "duration": 21.8181875
+          },
+          "lift": {
+            "start": 65.4545625,
+            "duration": 21.8181875
+          }
+        },
+        "duration": 21.8181875,
+        "peak": 0.7
+      },
+      "voice": {
+        "file": "humbled-voices.mp3",
+        "clips": {
+          "I am humbled and honored to share.": {
+            "M": {
+              "start": 0.1,
+              "duration": 1.69546875
+            },
+            "F": {
+              "start": 1.91546875,
+              "duration": 1.897375
+            }
+          },
+          "Your humility has been noted.": {
+            "M": {
+              "start": 3.93284375,
+              "duration": 1.83290625
+            },
+            "F": {
+              "start": 5.88575,
+              "duration": 1.80690625
+            }
+          },
+          "I made a cup of coffee.": {
+            "M": {
+              "start": 7.81265625,
+              "duration": 1.4869375
+            },
+            "F": {
+              "start": 9.41959375,
+              "duration": 1.5006875
+            }
+          },
+          "Seven lessons in leadership.": {
+            "M": {
+              "start": 11.04028125,
+              "duration": 1.5616875
+            },
+            "F": {
+              "start": 12.72196875,
+              "duration": 1.6775
+            }
+          },
+          "I couldn't have done it alone.": {
+            "M": {
+              "start": 14.51946875,
+              "duration": 1.37134375
+            },
+            "F": {
+              "start": 16.0108125,
+              "duration": 1.5950625
+            }
+          },
+          "The kettle was instrumental.": {
+            "M": {
+              "start": 17.725875,
+              "duration": 1.6815625
+            },
+            "F": {
+              "start": 19.5274375,
+              "duration": 1.7208125
+            }
+          },
+          "Grateful for this incredible journey.": {
+            "M": {
+              "start": 21.36825,
+              "duration": 1.99765625
+            },
+            "F": {
+              "start": 23.48590625,
+              "duration": 2.17878125
+            }
+          },
+          "From the desk to the kitchen.": {
+            "M": {
+              "start": 25.7846875,
+              "duration": 1.4344375
+            },
+            "F": {
+              "start": 27.339125,
+              "duration": 1.5155
+            }
+          },
+          "Humility metrics are at an all-time high.": {
+            "M": {
+              "start": 28.974625,
+              "duration": 2.3833125
+            },
+            "F": {
+              "start": 31.4779375,
+              "duration": 2.20765625
+            }
+          },
+          "I have disrupted my morning routine.": {
+            "M": {
+              "start": 33.80559375,
+              "duration": 2.02746875
+            },
+            "F": {
+              "start": 35.9530625,
+              "duration": 2.10090625
+            }
+          },
+          "The coffee is now a platform.": {
+            "M": {
+              "start": 38.17396875,
+              "duration": 1.87503125
+            },
+            "F": {
+              "start": 40.169,
+              "duration": 1.994625
+            }
+          },
+          "An inflection point in my journey.": {
+            "M": {
+              "start": 42.283625,
+              "duration": 2.01209375
+            },
+            "F": {
+              "start": 44.41571875,
+              "duration": 2.09934375
+            }
+          },
+          "You pressed the elevator button.": {
+            "M": {
+              "start": 46.6350625,
+              "duration": 1.9026875
+            },
+            "F": {
+              "start": 48.65775,
+              "duration": 1.927
+            }
+          },
+          "Personal growth is exponential.": {
+            "M": {
+              "start": 50.70475,
+              "duration": 2.194125
+            },
+            "F": {
+              "start": 53.018875,
+              "duration": 2.20334375
+            }
+          },
+          "Please update your headline accordingly.": {
+            "M": {
+              "start": 55.34221875,
+              "duration": 2.20940625
+            },
+            "F": {
+              "start": 57.671625,
+              "duration": 2.429
+            }
+          }
+        }
+      }
+    },
+    "synergy": {
+      "music": {
+        "file": "synergy-music.mp3",
+        "stems": {
+          "drums": {
+            "start": 0.0,
+            "duration": 17.14284375
+          },
+          "bass": {
+            "start": 17.14284375,
+            "duration": 17.14284375
+          },
+          "keys": {
+            "start": 34.2856875,
+            "duration": 17.14284375
+          },
+          "lift": {
+            "start": 51.42853125,
+            "duration": 17.14284375
+          }
+        },
+        "duration": 17.14284375,
+        "peak": 0.7
+      },
+      "voice": {
+        "file": "synergy-voices.mp3",
+        "clips": {
+          "Let's explore synergies.": {
+            "M": {
+              "start": 0.1,
+              "duration": 1.63759375
+            },
+            "F": {
+              "start": 1.85759375,
+              "duration": 1.7945
+            }
+          },
+          "Two things. Near each other.": {
+            "M": {
+              "start": 3.77209375,
+              "duration": 1.7046875
+            },
+            "F": {
+              "start": 5.59678125,
+              "duration": 1.62384375
+            }
+          },
+          "We need actionable insights.": {
+            "M": {
+              "start": 7.340625,
+              "duration": 1.99396875
+            },
+            "F": {
+              "start": 9.45459375,
+              "duration": 1.97375
+            }
+          },
+          "Something we can actually do.": {
+            "M": {
+              "start": 11.54834375,
+              "duration": 1.8095625
+            },
+            "F": {
+              "start": 13.47790625,
+              "duration": 1.7908125
+            }
+          },
+          "Let's leverage our ecosystem.": {
+            "M": {
+              "start": 15.38871875,
+              "duration": 2.05740625
+            },
+            "F": {
+              "start": 17.566125,
+              "duration": 1.94865625
+            }
+          },
+          "Ask the people we already know.": {
+            "M": {
+              "start": 19.63478125,
+              "duration": 1.9206875
+            },
+            "F": {
+              "start": 21.67546875,
+              "duration": 2.01871875
+            }
+          },
+          "A paradigm shift.": {
+            "M": {
+              "start": 23.8141875,
+              "duration": 1.19259375
+            },
+            "F": {
+              "start": 25.12678125,
+              "duration": 1.21434375
+            }
+          },
+          "We moved the spreadsheet.": {
+            "M": {
+              "start": 26.461125,
+              "duration": 1.6719375
+            },
+            "F": {
+              "start": 28.2530625,
+              "duration": 1.44578125
+            }
+          },
+          "Synergistically speaking.": {
+            "M": {
+              "start": 29.81884375,
+              "duration": 1.74078125
+            },
+            "F": {
+              "start": 31.679625,
+              "duration": 1.7150625
+            }
+          },
+          "Our synergies have synergies.": {
+            "M": {
+              "start": 33.5146875,
+              "duration": 1.88990625
+            },
+            "F": {
+              "start": 35.52459375,
+              "duration": 2.21959375
+            }
+          },
+          "Optimize the onboarding metrics.": {
+            "M": {
+              "start": 37.8641875,
+              "duration": 1.984375
+            },
+            "F": {
+              "start": 39.9685625,
+              "duration": 1.8760625
+            }
+          },
+          "Then onboard the optimization metrics.": {
+            "M": {
+              "start": 41.964625,
+              "duration": 2.41959375
+            },
+            "F": {
+              "start": 44.50421875,
+              "duration": 2.2235
+            }
+          },
+          "A frictionless omnichannel ecosystem.": {
+            "M": {
+              "start": 46.84771875,
+              "duration": 2.46234375
+            },
+            "F": {
+              "start": 49.4300625,
+              "duration": 2.6340625
+            }
+          },
+          "The printer is still offline.": {
+            "M": {
+              "start": 52.184125,
+              "duration": 1.5401875
+            },
+            "F": {
+              "start": 53.8443125,
+              "duration": 1.884875
+            }
+          },
+          "We are future-proofing the paradigm.": {
+            "M": {
+              "start": 55.8491875,
+              "duration": 2.29296875
+            },
+            "F": {
+              "start": 58.26215625,
+              "duration": 2.3114375
+            }
+          },
+          "The paradigm expires on Friday.": {
+            "M": {
+              "start": 60.69359375,
+              "duration": 2.2429375
+            },
+            "F": {
+              "start": 63.05653125,
+              "duration": 2.18240625
+            }
+          }
+        }
+      }
+    },
+    "no-action": {
+      "music": {
+        "file": "no-action-music.mp3",
+        "stems": {
+          "drums": {
+            "start": 0.0,
+            "duration": 22.85715625
+          },
+          "bass": {
+            "start": 22.85715625,
+            "duration": 22.85715625
+          },
+          "keys": {
+            "start": 45.7143125,
+            "duration": 22.85715625
+          },
+          "lift": {
+            "start": 68.57146875,
+            "duration": 22.85715625
+          }
+        },
+        "duration": 22.85715625,
+        "peak": 0.7
+      },
+      "voice": {
+        "file": "no-action-voices.mp3",
+        "clips": {
+          "No action required.": {
+            "M": {
+              "start": 0.1,
+              "duration": 1.327625
+            },
+            "F": {
+              "start": 1.547625,
+              "duration": 1.37965625
+            }
+          },
+          "Please act accordingly.": {
+            "M": {
+              "start": 3.04728125,
+              "duration": 1.3381875
+            },
+            "F": {
+              "start": 4.50546875,
+              "duration": 1.599
+            }
+          },
+          "We value your time.": {
+            "M": {
+              "start": 6.22446875,
+              "duration": 1.30890625
+            },
+            "F": {
+              "start": 7.653375,
+              "duration": 1.41078125
+            }
+          },
+          "This meeting is mandatory.": {
+            "M": {
+              "start": 9.18415625,
+              "duration": 1.68584375
+            },
+            "F": {
+              "start": 10.99,
+              "duration": 1.65578125
+            }
+          },
+          "Your feedback matters.": {
+            "M": {
+              "start": 12.76578125,
+              "duration": 1.25490625
+            },
+            "F": {
+              "start": 14.1406875,
+              "duration": 1.55628125
+            }
+          },
+          "The decision has been made.": {
+            "M": {
+              "start": 15.81696875,
+              "duration": 1.43040625
+            },
+            "F": {
+              "start": 17.367375,
+              "duration": 1.56584375
+            }
+          },
+          "Keep us in the loop.": {
+            "M": {
+              "start": 19.05321875,
+              "duration": 0.95946875
+            },
+            "F": {
+              "start": 20.1326875,
+              "duration": 1.115875
+            }
+          },
+          "The loop has been extended.": {
+            "M": {
+              "start": 21.3685625,
+              "duration": 1.6049375
+            },
+            "F": {
+              "start": 23.0935,
+              "duration": 1.7120625
+            }
+          },
+          "Inaction is a strategic deliverable.": {
+            "M": {
+              "start": 24.9255625,
+              "duration": 2.2653125
+            },
+            "F": {
+              "start": 27.310875,
+              "duration": 2.29725
+            }
+          },
+          "We are proactively waiting.": {
+            "M": {
+              "start": 29.728125,
+              "duration": 1.97475
+            },
+            "F": {
+              "start": 31.822875,
+              "duration": 1.62259375
+            }
+          },
+          "Waiting has been escalated.": {
+            "M": {
+              "start": 33.56546875,
+              "duration": 1.97709375
+            },
+            "F": {
+              "start": 35.6625625,
+              "duration": 1.73309375
+            }
+          },
+          "Please prioritize your wellbeing.": {
+            "M": {
+              "start": 37.51565625,
+              "duration": 1.87846875
+            },
+            "F": {
+              "start": 39.514125,
+              "duration": 2.02884375
+            }
+          },
+          "After the mandatory wellbeing meeting.": {
+            "M": {
+              "start": 41.66296875,
+              "duration": 2.07559375
+            },
+            "F": {
+              "start": 43.8585625,
+              "duration": 2.34440625
+            }
+          },
+          "We respect your boundaries.": {
+            "M": {
+              "start": 46.32296875,
+              "duration": 1.9318125
+            },
+            "F": {
+              "start": 48.37478125,
+              "duration": 1.728125
+            }
+          },
+          "I have sent a calendar invitation.": {
+            "M": {
+              "start": 50.22290625,
+              "duration": 2.16771875
+            },
+            "F": {
+              "start": 52.510625,
+              "duration": 2.27325
+            }
+          }
+        }
+      }
+    }
+  },
+  "vocabulary": {
+    "file": "vocabulary-voices.mp3",
+    "clips": {
+      "Let's unlock our synergies.": {
+        "M": {
+          "start": 0.1,
+          "duration": 1.67028125
+        },
+        "F": {
+          "start": 1.89028125,
+          "duration": 2.02965625
+        }
+      },
+      "The key is in another meeting.": {
+        "M": {
+          "start": 4.0399375,
+          "duration": 1.514
+        },
+        "F": {
+          "start": 5.6739375,
+          "duration": 1.58525
+        }
+      },
+      "Do you have the bandwidth?": {
+        "M": {
+          "start": 7.3791875,
+          "duration": 1.2778125
+        },
+        "F": {
+          "start": 8.777,
+          "duration": 1.19184375
+        }
+      },
+      "My bandwidth is on annual leave.": {
+        "M": {
+          "start": 10.08884375,
+          "duration": 1.89671875
+        },
+        "F": {
+          "start": 12.1055625,
+          "duration": 1.85046875
+        }
+      },
+      "We need a paradigm shift.": {
+        "M": {
+          "start": 14.07603125,
+          "duration": 1.79746875
+        },
+        "F": {
+          "start": 15.9935,
+          "duration": 1.62896875
+        }
+      },
+      "Please drag the paradigm to the shared folder.": {
+        "M": {
+          "start": 17.74246875,
+          "duration": 2.54859375
+        },
+        "F": {
+          "start": 20.4110625,
+          "duration": 2.57459375
+        }
+      },
+      "Let's leverage our core competencies.": {
+        "M": {
+          "start": 23.10565625,
+          "duration": 2.40796875
+        },
+        "F": {
+          "start": 25.633625,
+          "duration": 2.41259375
+        }
+      },
+      "Nobody has located them yet.": {
+        "M": {
+          "start": 28.16621875,
+          "duration": 2.05953125
+        },
+        "F": {
+          "start": 30.34575,
+          "duration": 1.6914375
+        }
+      },
+      "It's time for a strategic pivot.": {
+        "M": {
+          "start": 32.1571875,
+          "duration": 1.99903125
+        },
+        "F": {
+          "start": 34.27621875,
+          "duration": 1.83346875
+        }
+      },
+      "We are now facing the other wall.": {
+        "M": {
+          "start": 36.2296875,
+          "duration": 1.9880625
+        },
+        "F": {
+          "start": 38.33775,
+          "duration": 2.1261875
+        }
+      },
+      "A holistic, frictionless ecosystem.": {
+        "M": {
+          "start": 40.5839375,
+          "duration": 2.66509375
+        },
+        "F": {
+          "start": 43.36903125,
+          "duration": 2.58503125
+        }
+      },
+      "Have you tried turning it off and on?": {
+        "M": {
+          "start": 46.0740625,
+          "duration": 1.66878125
+        },
+        "F": {
+          "start": 47.86284375,
+          "duration": 2.040375
+        }
+      }
+    }
+  }
+}

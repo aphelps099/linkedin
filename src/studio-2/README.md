@@ -1,14 +1,53 @@
-# Studio 2 — stage preview
+# Studio 02 — the remix room
 
-`/studio-2/` is an independent, noindex preview of the existing live stage.
-It mounts the same CircleBack engine with `stagePreview`, initially in stage mode.
-The original `/studio/` keeps its mixing-desk default and original stage appearance.
+Independent preview at `/studio-2/`. The existing `/studio/` and its shared
+`stage.css` are unchanged. Studio 02 is noindex while the direction is reviewed.
 
-The ASCII renderer, backdrop scale, grain and audio response are unchanged.
-Preview-only changes: approved wordmark, TT Hoves / GT Mono, quiet broadcast chrome,
-responsive square monitor, direct performance controls, compact menu and Mix access.
-The phrase reveal, synthesized audio, voice locking, remix and desk continue to use existing functionality. Export actions have been removed from the stage, desk and advanced view. The shared audio-tools dialog now offers Voice environment tiles, three Sound character presets, a large Tempo slider with step buttons, and a voice audition button.
+## Sound
 
-Validation: production build, existing studio engine/MIDI checks, DOM interaction
-checks for stage default, build/drop, drawer and desk navigation, legacy default.
-Browser visual and audible playback QA were unavailable in the editing environment.
+Six original, newly arranged multitracks derived from the approved Office Anthems
+and Mutual Alignment production recipes: Offline, Circle Back Forever, Mutual
+Alignment, Humbled & Honored, Synergistically Speaking, and No Action Required.
+These are fresh arrangements, not the previously delivered stereo masters.
+
+Each has four separately mixed eight-bar layers (drums, bass, keys, lift), original
+chord progressions, bass parts, motif answers, swung percussion and small drum
+stairs. A 32-bar performance advances automatically to the next track. The two
+voices are vintage Flite kal16 and slt with the approved band-limited PA processing.
+No external generation calls occur during playback.
+
+`score.json` is the editable composition and dialogue source. Every song has four
+coherent call/response pairs and a second, more jargon-heavy Visionary script.
+Six vocabulary pads insert whole connected pairs into the next four-bar slot.
+Changing confidence or voice affects the next pair. Energy changes the four stems
+on the next bar. Beat only mutes speech; Circle back returns to the opening phrase
+on the next four-bar boundary. Controls do not claim to edit baked-in stereo vocals.
+
+The intentionally deferred custom-text feature is not shown as a nonfunctional
+control. This first phase concentrates on the curated tracks and remix performance.
+
+## Assets and rebuilding
+
+Run `python scripts/render-studio2.py` with numpy, scipy and FFmpeg (Flite and
+libmp3lame support). It writes the MP3 audio sprites under `public/studio-2/audio/`
+and measured sample offsets/durations to `audio-manifest.json`. The build is seeded
+and deterministic within the same audio toolchain. The original recipes were
+created for this project; no third-party music recordings or external samples.
+
+Each music sprite contains four contiguous, exact eight-bar segments. Voices are
+packed with short silent separators; actual clip lengths determine response timing.
+All rendered pairs are checked against the fastest four-bar slot they can occupy.
+The Web Audio scheduler uses audio-clock timestamps and reads only the current
+track's pack, with a bounded two-track cache plus the vocabulary sprite. It unlocks
+audio from a user gesture and makes no network request before play.
+
+## Interface and verification
+
+TT Hoves, a cobalt lyric stage, a dark glass transport, a six-track rotation and
+three compact remix controls. Keyboard controls, seek, mute, volume, cancellation,
+error recovery and reduced-motion support are included. Original studio is linked.
+
+`node scripts/check-studio2.mjs` checks the recorded phrase timing, source lifecycle,
+stereo stem boundaries, seeks, pause/resume, cancellation races, vocabulary queues,
+voice/energy controls and automatic advance. `npm run build` verifies all routes.
+Browser visual/audible QA was unavailable in this editing session.
