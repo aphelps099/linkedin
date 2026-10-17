@@ -1,46 +1,12 @@
 import React, {memo, useEffect, useId, useLayoutEffect, useRef, useState} from 'react';
-import {ArrowUpRight, LoaderCircle, Pause, Play, SkipBack, SkipForward, ThumbsUp, Heart, Lightbulb} from 'lucide-react';
+import {ArrowUpRight, LoaderCircle, Pause, Play, SkipBack, SkipForward} from 'lucide-react';
 import {formatTime} from '../home/tracks.js';
+import {RadioTheater} from './RadioTheater.jsx';
 import './player-digits.css';
 
-const REACTIONS=[{label:'Like',Icon:ThumbsUp},{label:'Love',Icon:Heart},{label:'Insightful',Icon:Lightbulb}];
-
-function ReactionPost({motion}){
-  const root=useRef(null);
-  const [visible,setVisible]=useState(false);
-  const [reaction,setReaction]=useState({step:0,active:-1,counts:[128,84,36]});
-  useEffect(()=>{
-    let inView=false;
-    const sync=()=>setVisible(inView&&!document.hidden);
-    const observer=new IntersectionObserver(([entry])=>{inView=entry.isIntersecting;sync();},{threshold:0});
-    observer.observe(root.current);
-    document.addEventListener('visibilitychange',sync);
-    return()=>{observer.disconnect();document.removeEventListener('visibilitychange',sync);};
-  },[]);
-  useEffect(()=>{
-    if(!motion||!visible)return;
-    const timer=setInterval(()=>setReaction(previous=>{
-      const active=previous.step%3;
-      const counts=previous.step>=36?[128,84,36]:[...previous.counts];
-      counts[active]+=1;
-      return {step:previous.step>=36?1:previous.step+1,active,counts};
-    }),1550);
-    return()=>clearInterval(timer);
-  },[motion,visible]);
-  return <div className="development-post" ref={root}>
-    <div className="development-post-lines"><i/><i/></div>
-    <div className="development-reactions">{REACTIONS.map(({label,Icon},index)=><span className={`development-reaction reaction-${index}${motion&&visible&&reaction.active===index?' is-pressed':''}`} key={label}>
-      <span className="reaction-medallion"><Icon fill={index===1?'currentColor':'none'}/></span>
-      <span className="reaction-caption">{label}<span className="reaction-count">{reaction.counts[index]}</span></span>
-    </span>)}</div>
-    <div className="development-post-block"><i/><i/><i/></div>
-  </div>;
-}
-
 const EQUALIZER_HEIGHTS=[.32,.56,.82,.48,.95,.67,.41,.76,.58,1,.72,.45,.88,.61,.38,.54];
-const ECHO_WORDS=['Humbled.','Honored.','Circle back.'];
 
-const PocketPlayer=memo(function PocketPlayer({motion,base,playing,loading,levels,elapsed,onToggle}){
+const PocketPlayer=memo(function PocketPlayer({motion,base,playing,loading,levels,onToggle}){
   const screenId=useId();
   const art=useRef(null),device=useRef(null);
   useLayoutEffect(()=>{
@@ -81,13 +47,8 @@ const PocketPlayer=memo(function PocketPlayer({motion,base,playing,loading,level
     };
   },[motion]);
   const action=loading?'Cancel loading':playing?'Pause beats':'Listen — click to play beats';
-  const echoIndex=playing?(motion?Math.floor(elapsed/8)%ECHO_WORDS.length:0):-1;
-  const echoEnergy=motion&&playing?Math.max(0,...(levels?.slice(0,16)||[])):0;
   return <div className="development-art" ref={art}>
-    <div className="development-echo" aria-hidden="true" style={{'--echo-opacity':(.14+echoEnergy*.14).toFixed(3)}}>
-      {ECHO_WORDS.map((word,index)=><span key={word} className={`development-echo-word${index===echoIndex?' is-active':''}`}>{word}</span>)}
-    </div>
-    <div aria-hidden="true"><ReactionPost motion={motion}/></div>
+    <RadioTheater motion={motion} base={base}/>
     <button ref={device} type="button" className={`development-device${playing?' is-playing':''}${loading?' is-loading':''}`} onClick={onToggle} aria-label={action} aria-pressed={playing}>
       <img src={`${base}home-experiments/ipod-earbuds-3d.webp`} width="1122" height="1402" alt="" loading="lazy" decoding="async" draggable="false"/>
       <svg className="development-display" viewBox="0 0 1122 1402" aria-hidden="true" focusable="false">
@@ -130,7 +91,7 @@ export function DevelopmentRadio({base,state,track,seconds,motion,onToggle,onSki
     <div className="development-inner">
       <div className="development-copy">
         <h2 id="development-title"><span>Sound like you</span><strong>mean business.</strong></h2>
-        <p className="development-intro">Corporate jargon. Robot vocals. Unreasonably good beats.</p>
+        <p className="development-intro">Corporate jargon. Robot vocals.<br/>Unreasonably good beats.</p>
         <div className={`development-transport${state.playing?' is-playing':''}`} role="group" aria-label="LinkedIn Beats music player">
           <div className="development-player-heading">
             <div className="development-track" aria-live="polite" aria-atomic="true">
@@ -153,7 +114,7 @@ export function DevelopmentRadio({base,state,track,seconds,motion,onToggle,onSki
         </div>
         <a className="development-studio" href={`${base}studio/`}>Make your own in the studio <ArrowUpRight aria-hidden="true"/></a>
       </div>
-      <PocketPlayer motion={motion} base={base} playing={state.playing} loading={state.loading} levels={state.levels} elapsed={seconds} onToggle={onToggle}/>
+      <PocketPlayer motion={motion} base={base} playing={state.playing} loading={state.loading} levels={state.levels} onToggle={onToggle}/>
     </div>
   </section>;
 }

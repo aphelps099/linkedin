@@ -1,33 +1,23 @@
-.development-radio{position:relative;overflow:hidden;background:radial-gradient(ellipse 62% 80% at -9% 41%,#3579b866 0%,#2d70b130 34%,#24649e0c 62%,transparent 83%),#082744;color:#fff;border-bottom:1px solid #ffffff75;font:400 17px/1.45 C2Hoves,Arial,sans-serif}
-.development-inner{position:relative;max-width:1500px;margin:auto;min-height:640px;padding:90px 64px 76px;display:grid;grid-template-columns:56% 44%}
-.development-copy{position:relative;z-index:2;max-width:660px;padding-right:30px}
-
-.c2-home .development-copy h2{font:400 clamp(29px,3.05vw,47px)/1.15 C2Hoves,Arial,sans-serif;letter-spacing:-.035em;text-transform:none;margin:28px 0 25px}
-.development-intro{font-size:clamp(20px,1.9vw,28px);line-height:1.5;letter-spacing:-.02em;max-width:590px}
-.development-transport{margin-top:32px;border-top:1px solid #ffffff85;padding-top:15px}
-.development-transport-row{display:flex;align-items:center;gap:18px;min-height:72px}
-.development-buttons{display:flex;align-items:center;gap:9px;flex-shrink:0}
-.c2-home .development-buttons button{display:grid;place-items:center;width:36px;height:48px;padding:0;color:#fff;transition:transform .2s,opacity .2s}
-.c2-home .development-buttons button:hover{transform:translateY(-2px)}
-.c2-home .development-buttons svg{width:22px;height:22px}
-.c2-home .development-buttons .development-play{width:60px;height:60px;border-radius:50%;background:#fff;color:#0b4bef}
-.c2-home .development-play svg{width:25px;height:25px}
+/* Homepage campaign stage: fixed copy and transport, moving type and social applause. */
+.development-radio{position:relative;overflow:hidden;isolation:isolate;background:radial-gradient(ellipse 52% 105% at 92% 76%,#095bd17a,transparent 74%),radial-gradient(ellipse 42% 90% at 0 32%,#174f7038,transparent 80%),#05233e;color:#fff;border-bottom:1px solid #b5d9ff33;font:400 17px/1.45 C2Hoves,Arial,sans-serif}
+.development-inner{position:relative;max-width:1600px;margin:auto;min-height:clamp(620px,50vw,800px);padding:80px clamp(40px,4.8vw,76px) 72px;display:grid;grid-template-columns:43% 57%;align-items:center}
+.development-copy{position:relative;z-index:3;width:100%;min-width:0}
+.c2-home .development-copy h2{font:600 clamp(44px,4.3vw,68px)/1.02 C2Hoves,Arial,sans-serif;letter-spacing:-.045em;text-transform:none;margin:0 0 24px;max-width:none}
+.development-copy h2 span,.development-copy h2 strong{display:block;white-space:nowrap;font-weight:600;color:#fff}
+.development-art{position:absolute;inset:0 0 0 45%;isolation:isolate}
+.development-art::before{content:'';position:absolute;inset:32% -16% -20% 10%;background:radial-gradient(ellipse at 65% 65%,#1979ff70,transparent 65%);pointer-events:none;z-index:0}
 .development-track{flex:1;min-width:0}
-.development-track>span{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#ffffffb3;margin-bottom:4px}
-.development-track strong{display:block;font-weight:600;font-size:clamp(15px,1.35vw,20px);line-height:1.25;animation:development-track-in .22s ease both;min-height:2.5em;align-content:center}
-.development-duration{font-size:15px;font-variant-numeric:tabular-nums;color:#ffffffbd;flex-shrink:0}
-.c2-home .development-seek{display:block;width:100%;height:26px;margin:7px 0 0;padding:0;appearance:none;-webkit-appearance:none;cursor:pointer;background:transparent;accent-color:#fff}
-.development-seek::-webkit-slider-runnable-track{height:3px;background:linear-gradient(to right,#fff var(--progress),#ffffff45 var(--progress));border-radius:2px}
-.development-seek::-moz-range-track{height:3px;background:#ffffff45;border-radius:2px}
-.development-seek::-moz-range-progress{height:3px;background:#fff}
-.development-seek::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:11px;height:11px;border-radius:50%;background:#fff;margin-top:-4px;opacity:0;transition:opacity .15s}
-.development-seek::-moz-range-thumb{width:11px;height:11px;border:0;border-radius:50%;background:#fff}
-.development-seek:hover::-webkit-slider-thumb,.development-seek:focus-visible::-webkit-slider-thumb{opacity:1}
+.development-track strong{display:block;animation:development-track-in .22s ease both}
+.development-track>span{display:block}
+.development-buttons{display:flex;flex-shrink:0;align-items:center}
+.c2-home .development-seek{display:block;width:100%;padding:0;appearance:none;-webkit-appearance:none;cursor:pointer;background:transparent;accent-color:#fff}
+.development-seek::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;border-radius:50%}
+.development-seek::-moz-range-thumb{border:0;border-radius:50%}
 .development-error{font-size:14px;margin-top:12px!important}
-.c2-home .development-studio{display:inline-flex;align-items:center;gap:8px;margin-top:23px;border-bottom:1px solid currentColor;padding-bottom:3px;font-size:17px;line-height:1.35}
-.development-studio:hover{opacity:.75}
-.development-art{position:absolute;left:58%;top:0;bottom:0;right:-3%;isolation:isolate}
-
+.c2-home .development-studio{display:inline-flex;align-items:center;text-decoration:none}
+.development-compare{background:#082744;color:#fff}
+.development-compare .feed-compare{margin:0 auto;max-width:1500px}
+@keyframes development-track-in{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
 .development-device{position:absolute;top:55px;left:0;width:86%;translate:0 var(--device-enter-y,0px);transform:rotate(0deg);transform-origin:50% 40%;transition:transform .45s cubic-bezier(.2,.7,.2,1)}
 .c2-home .development-device img{display:block;width:100%;height:auto}
 .c2-home .development-device{padding:0;line-height:0;text-align:left;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
@@ -50,129 +40,6 @@
 @keyframes development-equalizer{0%{transform:scaleY(.25)}45%{transform:scaleY(.7)}100%{transform:scaleY(1)}}
 @media(hover:none),(pointer:coarse){.development-screen{opacity:1}.development-listen-cue{opacity:0}}
 @media(hover:hover) and (pointer:fine){.development-device:hover{transform:translateY(-8px) rotate(3deg)}}
-.development-compare{background:#082744;color:#fff}
-.development-compare .feed-compare{margin:0 auto;max-width:1500px}
-@keyframes development-track-in{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
-@media(min-width:1600px){.development-device{top:50px}}
-@media(max-width:1100px){.development-inner{padding:65px 40px 60px;min-height:600px;grid-template-columns:57% 43%}.development-copy{padding-right:20px}.development-art{left:61%;right:-8%}.development-device{top:90px;width:100%}.development-buttons{gap:4px}.development-transport-row{gap:12px}.c2-home .development-buttons .development-play{width:52px;height:52px}.c2-home .development-buttons button{width:30px}.development-duration{font-size:13px}}
-@media(max-width:760px){.development-inner{display:block;padding:50px 24px 0;min-height:0}.development-copy{max-width:600px;margin:auto;padding:0}.c2-home .development-copy h2{font-size:clamp(29px,5.2vw,40px);margin:22px 0}.development-intro{font-size:21px}.development-transport{margin-top:28px}.development-track strong{font-size:17px}.development-duration{font-size:14px}.development-art{position:relative;left:auto;right:auto;height:400px;max-width:540px;margin:28px auto 0}.development-device{width:340px;top:35px;left:calc(50% - 160px)}.development-studio{font-size:16px!important}.development-transport-row{gap:12px}.development-buttons{gap:6px}}
-@media(max-width:390px){.development-inner{padding-inline:20px}.development-track strong{font-size:15px}.development-buttons{gap:2px}.c2-home .development-buttons .development-play{width:46px;height:46px}.c2-home .development-buttons button{width:27px}.development-transport-row{gap:9px}.development-art{height:380px}.development-device{width:320px}.development-intro{font-size:19px}}
-.development-radio.is-still .development-device{transition:none;translate:none;transform:rotate(0deg)}
-.development-radio.is-still .development-track strong{animation:none}
-.development-radio.is-still .development-equalizer rect{animation:none}
-.development-radio.is-still :is(.development-screen,.development-listen-cue,.development-device img){transition:none}
-@media(prefers-reduced-motion:reduce){.development-equalizer rect{animation:none!important}.development-screen,.development-listen-cue,.development-device img{transition:none!important}}
-@media(prefers-reduced-motion:reduce){.development-device{transition:none!important;translate:none!important;transform:rotate(0deg)!important}.development-track strong{animation:none}.development-buttons button{transition:none}}
-@media(forced-colors:active){.c2-home .development-play{border:2px solid ButtonText}.development-seek{appearance:auto!important}.development-art{display:none}}
-
-/* A shallow editorial band: approximately 3:1 on desktop. */
-@media(min-width:1101px){
- .development-inner{max-width:1500px;min-height:400px;height:calc(100vw / 3);padding:24px 64px;align-items:center;grid-template-columns:58% 42%}
- .development-copy{max-width:700px;padding-right:24px}
-
- .c2-home .development-copy h2{font-size:clamp(26px,2.25vw,34px);margin:12px 0 14px}
- .development-intro{font-size:clamp(17px,1.35vw,20px);line-height:1.4;max-width:620px}
- .development-transport{margin-top:18px;padding-top:10px;max-width:590px}
- .development-transport-row{min-height:54px;gap:16px}
- .c2-home .development-buttons .development-play{width:50px;height:50px}
- .development-track strong{font-size:16px;min-height:1.3em}
- .c2-home .development-seek{height:20px;margin-top:0}
- .c2-home .development-studio{margin-top:12px;font-size:15px}
- .development-art{left:64%;right:0}
- .development-device{width:clamp(280px,25vw,390px);top:calc(100% - clamp(300px,27vw,420px));left:0}
-
-}
-@media(min-width:761px) and (max-width:1100px){
- .development-inner{min-height:440px;padding:32px;grid-template-columns:62% 38%}
- .c2-home .development-copy h2{font-size:28px;margin:14px 0}
- .development-intro{font-size:18px;line-height:1.4}
- .development-transport{margin-top:20px;padding-top:10px}
- .development-transport-row{min-height:56px}
- .c2-home .development-studio{margin-top:12px;font-size:15px}
- .development-art{left:67%;right:-5%}
- .development-device{width:300px;top:calc(100% - 325px)}
-
-}
-@media(max-width:760px){
- .development-inner{padding-top:32px}
- .c2-home .development-copy h2{margin:16px 0}
- .development-intro{font-size:19px;line-height:1.4}
- .development-transport{margin-top:22px}
- .development-art{height:295px;margin-top:18px}
- .development-device{width:260px;top:18px;left:calc(50% - 120px)}
-
-}
-
-/* A soft social approval loop behind the sharp 3D listening kit. */
-.development-device{z-index:2}
-.development-post{position:absolute;top:20px;left:-28px;width:390px;height:235px;padding:18px 20px;background:#d6e4ef;color:#193a55;border:1px solid #ffffff55;border-radius:12px;transform:rotate(6deg);filter:none;opacity:.9;pointer-events:none;z-index:0}
-.development-post-lines{display:grid;gap:7px;margin-bottom:14px}
-.development-post-lines i,.development-post-block i{display:block;height:6px;border-radius:6px;background:#7b96aa55;width:83%}
-.development-post-lines i:last-child{width:58%}
-.development-reactions{display:flex;justify-content:space-between;gap:12px;border-block:1px solid #8ba5b44d;padding:10px 0}
-.development-reaction{display:flex;align-items:center;gap:6px;flex:1}
-.reaction-medallion{display:grid;place-items:center;width:31px;height:31px;border-radius:50%;color:#fff;background:#637f94;flex-shrink:0}
-.c2-home .reaction-medallion svg{width:17px;height:17px;stroke-width:2}
-.reaction-caption{font-size:12px;font-weight:600;line-height:1.3}
-.reaction-count{display:block;font-size:13px;font-weight:400;font-variant-numeric:tabular-nums;opacity:.9}
-.reaction-0.is-pressed .reaction-medallion{background:#1675c8}
-.reaction-1.is-pressed .reaction-medallion{background:#c74e62}
-.reaction-2.is-pressed .reaction-medallion{background:#b38b30}
-.is-pressed .reaction-medallion{animation:development-reaction-press .65s ease both}
-.development-post-block{display:grid;gap:10px;margin-top:22px}
-.development-post-block i:nth-child(2){width:91%}.development-post-block i:last-child{width:62%}
-
-@keyframes development-reaction-press{0%{transform:scale(1)}22%{transform:scale(.84)}55%{transform:scale(1.09)}100%{transform:scale(1)}}
-@media(min-width:1101px){
- .development-art{left:62%;right:0}
- .development-device{left:38px;width:clamp(260px,22vw,350px);top:calc(100% - clamp(280px,24vw,380px))}
- .development-post{top:16px;left:-20px;width:390px}
-
-}
-@media(min-width:761px) and (max-width:1100px){
- .development-post{left:-20px;top:30px;width:330px;padding:14px}
- .development-reactions{gap:7px}.reaction-caption{font-size:10px}
- .development-device{left:10px;width:270px;top:calc(100% - 295px)}
-
-}
-@media(max-width:760px){
- .development-art{height:350px;margin-top:30px}
- .development-post{left:calc(50% - 175px);top:5px;width:350px;padding:14px 18px}
- .development-device{top:80px;left:calc(50% - 130px);width:250px}
-
-}
-@media(prefers-reduced-motion:reduce){.is-pressed .reaction-medallion{animation:none}}
-
-/* One transparent render keeps the earbuds and device physically connected. */
-@media(min-width:1101px){.development-device{left:12px;width:clamp(360px,32vw,480px);top:calc(100% - clamp(300px,25vw,390px))}}
-@media(min-width:761px) and (max-width:1100px){.development-device{left:-4px;width:360px;top:calc(100% - 300px)}}
-@media(max-width:760px){.development-device{left:calc(50% - 175px);width:350px;top:75px}}
-
-/* A restrained fade at the upper edge of the background post. */
-.development-post{mask-image:linear-gradient(to bottom,rgba(0,0,0,.62),#000 42px);-webkit-mask-image:linear-gradient(to bottom,rgba(0,0,0,.62),#000 42px)}
-
-/* Give the editorial copy a clearer hierarchy above the compact player. */
-.c2-home .development-copy h2{font-size:clamp(30px,2.65vw,40px);line-height:1.08;letter-spacing:-.035em;margin:0 0 18px}
-.development-copy h2 span,.development-copy h2 strong{display:block}
-.development-copy h2 span{font-weight:400;color:#c1d5e6}
-.development-copy h2 strong{font-weight:600;color:#fff;margin-top:3px}
-.development-intro{max-width:48ch;font-size:18px;line-height:1.5;letter-spacing:-.012em;color:#d1deea;margin:0}
-.development-transport{margin-top:22px;border-top-color:#ffffff36}
-.c2-home .development-studio{font-size:14px;margin-top:12px;border-bottom-color:#ffffff55;padding-bottom:4px}
-@media(min-width:1101px){.development-intro{font-size:clamp(16px,1.25vw,18px)}}
-@media(min-width:761px) and (max-width:1100px){.c2-home .development-copy h2{font-size:29px}.development-intro{font-size:16px}}
-@media(max-width:760px){.c2-home .development-copy h2{font-size:clamp(25px,6vw,38px);margin:8px 0 16px}.development-intro{font-size:17px}.c2-home .development-studio{font-size:14px!important}}
-
-/* A compact ad composition with one clear headline and a short supporting line. */
-.development-copy{width:100%;max-width:520px;padding-right:0}
-.c2-home .development-copy h2{max-width:10ch;font-size:clamp(44px,4vw,58px);line-height:.98;letter-spacing:-.045em;margin:0 0 18px}
-.development-copy h2 span{color:#fff;font-weight:600}
-.development-copy h2 strong{margin-top:0}
-.development-intro{max-width:29ch;font-size:18px;line-height:1.4;text-wrap:balance}
-.development-transport{max-width:520px;margin-top:22px}
-@media(min-width:761px) and (max-width:1100px){.c2-home .development-copy h2{font-size:44px}.development-intro{font-size:17px}}
-@media(max-width:760px){.development-copy{max-width:520px}.c2-home .development-copy h2{font-size:clamp(42px,10vw,58px);margin:8px 0 18px}.development-intro{font-size:18px}}
-
 /* The homepage's listening preview: a quiet glass surface and a tactile play key. */
 .development-radio .development-copy{max-width:480px}
 .c2-home .development-copy h2{font-size:clamp(36px,3.3vw,48px);line-height:.98;letter-spacing:-.04em;margin:0 0 10px}
@@ -213,38 +80,123 @@
 .development-radio .development-studio svg{width:15px;height:15px;transition:transform .2s ease}
 .c2-home .development-radio .development-studio:hover{opacity:1;color:#fff}
 .development-radio .development-studio:hover svg{transform:translate(2px,-2px)}
-@media(min-width:761px) and (max-width:1100px){.development-radio .development-transport{padding-inline:20px}.development-radio .development-track strong{font-size:20px}}
-@media(max-width:760px){.development-radio .development-copy{max-width:480px}.c2-home .development-copy h2{font-size:clamp(38px,9vw,48px)}.development-radio .development-transport{padding:18px 20px 17px;margin-top:20px}.development-radio .development-intro{font-size:16px}.c2-home .development-radio .development-studio{font-size:13px!important;margin-top:15px}}
-@media(max-width:390px){.development-radio .development-track strong{font-size:19px}.development-player-heading{gap:10px}.development-time{font-size:18px;gap:5px}.development-radio .development-transport{padding-inline:17px}.development-radio .development-buttons{gap:22px}}
-@media(prefers-reduced-motion:reduce){.c2-home .development-transport .development-buttons button,.development-radio .development-studio svg,.development-transport .development-seek::-webkit-slider-thumb{transition:none}.c2-home .development-transport .development-buttons button:is(:hover,:active),.development-radio .development-studio:hover svg{transform:none}}
-@media(forced-colors:active){.development-radio .development-transport{background:Canvas;border:1px solid CanvasText;box-shadow:none;backdrop-filter:none}.development-transport::before{display:none}.c2-home .development-transport .development-play{background:ButtonFace;color:ButtonText;box-shadow:none;border:1px solid ButtonText}.development-radio :is(.development-time,.development-track>span,.development-studio){color:CanvasText}}
 
-@media(prefers-reduced-motion:reduce){.c2-home .development-transport .development-buttons .development-play:is(:hover,:focus-visible,:active){transform:none}.c2-home .development-transport .development-buttons .development-play svg{transition:none}}
+/* The existing white kit stays the foreground focus, cropped through the click wheel. */
+.development-radio .development-copy{max-width:580px}
+.c2-home .development-copy h2{font-size:clamp(44px,4.3vw,68px);line-height:1.02;margin-bottom:24px;letter-spacing:-.045em}
+.development-radio .development-intro{font-size:clamp(17px,1.55vw,23px);line-height:1.45;color:#d8e7f5;max-width:36ch;letter-spacing:-.02em}
+.development-radio .development-transport{max-width:560px;margin-top:27px;border-color:#d9edff4d;background:linear-gradient(135deg,#f0f8ff1a,transparent 48%,#2583ff12),linear-gradient(165deg,#103755e8,#051c34ed);box-shadow:inset 0 1px 0 #ffffff20,inset 0 -1px 0 #00000020,0 20px 44px #000d2238}
+.development-radio .development-track strong{font-size:clamp(19px,1.7vw,25px)}
+.development-radio .development-buttons{gap:30px}
+.c2-home .development-radio .development-studio{font-size:14px;margin-top:16px}
+.development-device{left:31%;width:clamp(480px,42vw,660px);top:calc(100% - clamp(400px,33vw,528px));z-index:2}
+.development-device img{filter:drop-shadow(-3px 0 2px #a8d7ff26) drop-shadow(0 0 26px #1684ff35)}
+.development-device:is(:hover,:focus-visible,.is-playing,.is-loading) img{filter:drop-shadow(-2px 0 3px #c5e5ff99) drop-shadow(0 0 25px #3f9eff80)}
 
-/* The thesis gets a spacious product reveal, with corporate-language echoes behind the kit. */
-.c2-home .development-copy h2{max-width:none;font-size:clamp(40px,3.9vw,56px);line-height:1.02;letter-spacing:-.04em;margin-bottom:16px}
-.development-copy h2 span,.development-copy h2 strong{white-space:nowrap}
-.development-radio .development-intro{max-width:38ch;line-height:1.5;text-wrap:balance}
-.development-radio .development-transport{margin-top:22px}
-.development-post{background:#bed1df;opacity:.72}
-.development-echo{position:absolute;inset:0 -110px 0 -34px;padding-top:clamp(52px,6vw,90px);display:flex;flex-direction:column;align-items:flex-start;gap:14px;pointer-events:none;user-select:none;z-index:-1;mask-image:linear-gradient(90deg,transparent,#000 8%,#000 84%,transparent)}
-.development-echo-word{display:block;white-space:nowrap;font:600 clamp(88px,10.5vw,158px)/.9 C2Hoves,Arial,sans-serif;letter-spacing:-.055em;text-transform:uppercase;color:transparent;-webkit-text-stroke:1px #a4cfff;opacity:.09;transition:opacity .45s ease;}
-.development-echo-word:nth-child(2){margin-left:60px}
-.development-echo-word:nth-child(3){margin-left:-18px}
-.development-echo-word.is-active{opacity:var(--echo-opacity,.14)}
-@media(min-width:761px){
- .development-inner{height:auto;min-height:clamp(560px,50vw,700px);padding-top:80px;padding-bottom:64px;align-items:center}
- .development-post{top:auto;bottom:clamp(150px,14vw,210px)}
+/* Two genuinely continuous rows, duplicated at an exact half-track seam. */
+.development-theater{position:absolute;inset:0;pointer-events:none}
+.development-marquee{position:absolute;top:44px;left:0;right:calc(-1 * max(0px,(100vw - 1600px)/2));overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 3%,#000 97%,transparent);user-select:none}
+.development-marquee-row{font:400 clamp(96px,8.6vw,140px)/1.08 Anton,Impact,'Arial Narrow',sans-serif;letter-spacing:-.018em;text-transform:uppercase;color:#2c84f6}
+.development-marquee-track{display:flex;width:max-content;animation:development-marquee 42s linear infinite;animation-play-state:paused}
+.development-marquee-track>span{display:block;flex-shrink:0;white-space:nowrap;padding-right:.28em}
+.development-marquee-row.is-outline{color:transparent;-webkit-text-stroke:1px #2785f9;opacity:.86}
+.development-marquee-row.is-outline .development-marquee-track{animation-duration:56s;animation-direction:reverse}
+.development-theater[data-running=true] .development-marquee-track{animation-play-state:running}
+@keyframes development-marquee{to{transform:translateX(-50%)}}
+
+/* A compact, fictional social performance. No full post panel or cursor. */
+.development-social{position:absolute;left:12px;top:clamp(230px,19vw,304px);width:clamp(320px,28vw,440px);transform:rotate(5deg);transform-origin:left top;z-index:1}
+.development-reaction-strip{display:grid;grid-template-columns:1fr 1fr 1.13fr;padding:12px 13px;border:1px solid #c3e2ff66;border-radius:22px;background:linear-gradient(120deg,#ffffff12,transparent 45%),linear-gradient(110deg,#113d60ed,#07356be8);box-shadow:inset 0 1px 0 #fff2,0 14px 34px #00142c40}
+.development-applause{display:flex;align-items:center;justify-content:center;gap:8px;color:#a7c5e1;min-width:0}
+.development-applause+.development-applause{border-left:1px solid #badbff1f}
+.development-reaction-icon{position:relative;display:grid;place-items:center;flex-shrink:0;width:36px;height:36px;border-radius:50%;background:#9acbff16;box-shadow:inset 0 1px 0 #d6edff26;color:#d9edff}
+.c2-home .development-reaction-icon svg{width:21px;height:21px;stroke-width:1.7}
+.development-reaction-icon::after{content:'';position:absolute;inset:-4px;border:1px solid #85c6ff;border-radius:50%;opacity:0}
+.development-applause.is-lit{color:#fff}
+.development-applause.is-lit .development-reaction-icon{background:#237af5;box-shadow:inset 0 0 0 1px #ccecff,0 0 15px #3295ff80;color:#fff}
+.development-reaction-icon.is-hit{animation:development-applause .42s ease both}
+.development-reaction-icon.is-hit::after{animation:development-ripple .42s ease-out both}
+.development-reaction-label{font-size:12px;line-height:1.35}
+.development-reaction-label>span{display:block;font-size:12px;font-variant-numeric:tabular-nums;color:#e0efff}
+.development-comment{display:flex;align-items:center;gap:9px;width:clamp(190px,18vw,282px);min-height:67px;margin:13px 0 0 -10px;padding:10px 12px;border:1px solid #b8dcff45;border-radius:16px;background:linear-gradient(115deg,#174669ed,#082d51ed);box-shadow:inset 0 1px 0 #fff1,0 12px 24px #00152c2b;opacity:0;transform:translateY(12px);transition:opacity .36s ease,transform .45s cubic-bezier(.2,.8,.2,1)}
+.development-comment.is-visible{opacity:1;transform:translateY(0)}
+.development-comment-face{flex-shrink:0;width:34px;height:34px;border-radius:50%;background-image:var(--theater-sheet);background-repeat:no-repeat;background-size:1004.31px 669.54px;background-color:#b5c2d3;box-shadow:0 0 0 1px #c3deff70}
+.development-comment-face.face-a{background-position:-491.69px -292.92px}
+.development-comment-face.face-b{background-position:-491.69px -363.54px}
+.development-comment-face.face-d{background-position:-491.69px -504.77px}
+.development-comment-name{display:block;font-size:10px;line-height:1.2;color:#a8cbe9;margin-bottom:3px}
+.development-comment p{font-size:13px;line-height:1.35;letter-spacing:-.015em;color:#e8f3ff}
+.c2-home .development-scene-toggle{position:absolute;top:9px;right:20px;z-index:4;display:flex;align-items:center;gap:5px;min-height:34px;padding:6px 8px;border-radius:20px;color:#a1c1e0;font-size:10px;line-height:1;pointer-events:auto;transition:background .2s,color .2s}
+.c2-home .development-scene-toggle svg{width:12px;height:12px}
+.c2-home .development-scene-toggle:hover{color:#fff;background:#ffffff0a}
+.development-theater[data-running=false] :is(.development-reaction-icon,.development-reaction-icon::after){animation-play-state:paused}
+@keyframes development-applause{0%{transform:scale(1)}25%{transform:scale(.86)}65%{transform:scale(1.08)}100%{transform:scale(1)}}
+@keyframes development-ripple{0%{opacity:.65;transform:scale(.85)}100%{opacity:0;transform:scale(1.38)}}
+
+@media(max-width:1100px){
+ .development-inner{display:block;padding:68px 40px 0;min-height:0}
+ .development-radio .development-copy{max-width:600px;margin:auto}
+ .c2-home .development-copy h2{font-size:clamp(44px,6.2vw,64px)}
+ .development-radio .development-intro{font-size:21px}
+ .development-radio .development-transport{max-width:none}
+ .development-radio .development-track strong{font-size:24px}
+ .development-art{position:relative;inset:auto;height:620px;max-width:760px;margin:30px auto 0}
+ .development-marquee{top:30px;right:calc(-1 * max(40px,(100vw - 760px)/2));left:-8px}
+ .development-marquee-row{font-size:clamp(90px,12vw,120px)}
+ .development-social{top:285px;left:14px;width:390px}
+ .development-comment{width:270px}
+ .development-device{left:38%;top:305px;width:clamp(420px,55vw,550px)}
+ .c2-home .development-scene-toggle{right:0;top:0}
 }
-@media(max-width:760px){
- .development-inner{padding-top:56px}
- .c2-home .development-copy h2{font-size:clamp(36px,9vw,48px)}
- .development-radio .development-intro{max-width:36ch}
- .development-art{margin-top:42px}
- .development-echo{inset:-26px -80px 0 -28px;padding-top:0;gap:9px}
- .development-echo-word{font-size:clamp(68px,15vw,92px)}
- .development-echo-word:nth-child(2){margin-left:36px}
+@media(max-width:600px){
+ .development-inner{padding:56px 24px 0}
+ .c2-home .development-copy h2{font-size:clamp(34px,8.8vw,50px);margin-bottom:20px}
+ .development-radio .development-intro{font-size:17px}
+ .development-radio .development-transport{padding:18px 18px 16px;margin-top:25px}
+ .development-radio .development-track strong{font-size:20px}
+ .development-player-heading{gap:12px}
+ .development-time{font-size:19px;gap:5px}
+ .development-radio .development-buttons{gap:25px}
+ .c2-home .development-radio .development-studio{font-size:13px;margin-top:16px}
+ .development-art{height:550px;max-width:460px;margin-top:38px}
+ .development-marquee{top:29px;left:-24px;right:-40px}
+ .development-marquee-row{font-size:clamp(69px,14.5vw,87px)}
+ .development-social{top:205px;left:0;width:min(100%,365px);transform:rotate(3deg)}
+ .development-reaction-strip{padding:11px 8px;border-radius:20px}
+ .development-applause{gap:6px}
+ .development-reaction-icon{width:31px;height:31px}
+ .c2-home .development-reaction-icon svg{width:18px;height:18px}
+ .development-reaction-label,.development-reaction-label>span{font-size:11px}
+ .development-comment{width:240px;min-height:62px;margin:10px 0 0;padding:8px 10px}
+ .development-comment p{font-size:12px}
+ .development-device{left:calc(50% - 164px);top:315px;width:380px}
+ .c2-home .development-scene-toggle{right:-4px;top:-7px}
 }
-.development-radio.is-still .development-echo-word{transition:none}
-@media(prefers-reduced-motion:reduce){.development-echo-word{transition:none}}
-@media(forced-colors:active){.development-echo{display:none}}
+@media(max-width:360px){
+ .development-inner{padding-inline:18px}
+ .c2-home .development-copy h2{font-size:32px}
+ .development-radio .development-track strong{font-size:18px}
+ .development-time{font-size:17px}
+ .development-radio .development-transport{padding-inline:14px}
+ .development-reaction-icon{width:28px;height:28px}
+ .development-applause{gap:4px}
+ .development-device{left:calc(50% - 158px);width:360px}
+}
+/* Motion preferences and a visitor pause affect the decorative layer, never playback. */
+.development-radio.is-still .development-device{transition:none;translate:none;transform:none}
+.development-radio.is-still :is(.development-track strong,.development-equalizer rect,.development-marquee-track,.development-reaction-icon,.development-reaction-icon::after){animation:none}
+.development-radio.is-still :is(.development-screen,.development-listen-cue,.development-device img,.development-comment){transition:none}
+@media(prefers-reduced-motion:reduce){
+ .development-device{transition:none!important;translate:none!important;transform:none!important}
+ .development-radio :is(.development-equalizer rect,.development-marquee-track,.development-track strong,.development-reaction-icon,.development-reaction-icon::after){animation:none!important}
+ .development-radio :is(.development-screen,.development-listen-cue,.development-device img,.development-comment,.development-buttons button,.development-buttons svg,.development-studio svg){transition:none!important}
+ .c2-home .development-transport .development-buttons button:is(:hover,:focus-visible,:active),.development-radio .development-studio:hover svg{transform:none}
+}
+@media(forced-colors:active){
+ .development-art{display:none}
+ .development-radio .development-transport{background:Canvas;border:1px solid CanvasText;box-shadow:none;backdrop-filter:none}
+ .development-transport::before{display:none}
+ .c2-home .development-transport .development-play{background:ButtonFace;color:ButtonText;box-shadow:none;border:1px solid ButtonText}
+ .development-radio :is(.development-time,.development-track>span,.development-studio){color:CanvasText}
+ .development-seek{appearance:auto!important}
+}
