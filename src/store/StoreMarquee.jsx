@@ -1,5 +1,4 @@
 import React, {useEffect, useId, useRef, useState} from 'react';
-import {Pause, Play} from 'lucide-react';
 import './store-marquee.css';
 
 const PHRASES=['Dress for the job you post about.','Shop the Circle Back collection.','Take it offline.'];
@@ -29,7 +28,7 @@ function StoreDroid(){
 
 export function StoreMarquee(){
   const root=useRef(null),lap=useRef(null);
-  const [motion,setMotion]=useState(false),[visible,setVisible]=useState(false),[paused,setPaused]=useState(false);
+  const [motion,setMotion]=useState(false),[visible,setVisible]=useState(false);
   useEffect(()=>{
     const preference=window.matchMedia('(prefers-reduced-motion: reduce)');
     const change=()=>setMotion(!preference.matches);
@@ -50,7 +49,7 @@ export function StoreMarquee(){
     return()=>{preference.removeEventListener('change',change);observer.disconnect();resize.disconnect();document.removeEventListener('visibilitychange',sync);};
   },[]);
 
-  return <aside id="store-marquee" ref={root} className={`store-tow${motion?'':' is-still'}`} data-running={motion&&visible&&!paused} aria-label="The Circle Back collection">
+  return <aside id="store-marquee" ref={root} className={`store-tow${motion?'':' is-still'}`} data-running={motion&&visible} aria-label="The Circle Back collection">
     <a className="store-tow-link" href="#collection" aria-label="Shop the Circle Back collection" onClick={()=>document.getElementById('collection-title')?.focus({preventScroll:true})}>
       <span className="store-tow-track" aria-hidden="true">
         {[0,1,2].map(copy=><span className="store-tow-lap" ref={copy===0?lap:undefined} key={copy}>
@@ -59,6 +58,5 @@ export function StoreMarquee(){
         </span>)}
       </span>
     </a>
-    {motion&&<button type="button" className="store-tow-pause" aria-label={paused?'Resume store marquee':'Pause store marquee'} aria-pressed={paused} onClick={()=>setPaused(value=>!value)}>{paused?<Play size={14} aria-hidden="true"/>:<Pause size={14} aria-hidden="true"/>}</button>}
   </aside>;
 }

@@ -1,20 +1,18 @@
 /* The office droid leads each lap to the right, towing the sales copy. */
-.store-tow{position:relative;display:flex;align-items:stretch;width:100%;height:72px;background:#082744;color:#fff;border-block:1px solid #698ebc40;overflow:hidden}
-.shop-app .store-tow-link{position:relative;display:block;flex:1;min-width:0;color:#ffffffd6;overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 24px,#000 calc(100% - 24px),transparent)}
+.store-tow{position:relative;display:flex;align-items:stretch;width:100%;height:72px;background:#edece4;color:#181a17;border-block:1px solid #262a221f;overflow:hidden}
+.shop-app .store-tow-link{position:relative;display:block;flex:1;min-width:0;color:#181a17;overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 24px,#000 calc(100% - 24px),transparent)}
 .store-tow-track{position:absolute;inset:0 auto 0 0;display:flex;width:max-content;animation:store-tow-pass var(--store-tow-duration,42s) linear infinite paused;animation-delay:calc(var(--store-tow-duration,42s) * -.45)}
-.store-tow-lap{display:flex;flex:none;align-items:center;min-width:calc(100vw - 56px);height:100%;padding-left:24px}
+.store-tow-lap{display:flex;flex:none;align-items:center;min-width:100vw;height:100%;padding-left:24px}
 .store-tow-words{display:flex;flex:none;align-items:center;gap:clamp(26px,3vw,48px);white-space:nowrap;font:600 clamp(18px,1.6vw,25px)/1 C2Hoves,Arial,sans-serif;letter-spacing:-.025em}
-.store-tow-dot{color:#73a9dd;opacity:.65}
-.store-tow-line{flex:0 0 30px;height:1px;margin-left:16px;background:#d6e9ff73;transform:translateY(6px)}
-.shop-app .store-tow-droid{flex:0 0 34px;width:34px;height:24px;overflow:visible;animation:store-tow-roll 1s steps(2,end) infinite paused}
+.store-tow-dot{color:#56686d;opacity:.65}
+.store-tow-line{flex:0 0 30px;height:1px;margin-left:16px;background:#253a4c66;transform:translateY(6px)}
+.shop-app .store-tow-droid{flex:0 0 34px;width:34px;height:24px;overflow:visible;filter:drop-shadow(0 0 .35px #0b2c4599);animation:store-tow-roll 1s steps(2,end) infinite paused}
 .store-tow-light{animation:store-tow-blink 2.8s steps(1,end) infinite paused;filter:drop-shadow(0 0 10px #6bdcff);opacity:1}
 .store-tow-gap{flex:1 0 96px;min-width:96px}
-.shop-app .store-tow-pause{display:grid;place-items:center;flex:0 0 56px;width:56px;min-height:44px;padding:0;border:0;border-left:1px solid #ffffff14;background:transparent;color:#ffffff8c}
-.shop-app .store-tow-pause:hover{color:#fff;background:#ffffff0a}
 .store-tow[data-running=true] :is(.store-tow-track,.store-tow-droid,.store-tow-light){animation-play-state:running}
 .store-tow:hover :is(.store-tow-track,.store-tow-droid,.store-tow-light),.store-tow-link:focus-visible :is(.store-tow-track,.store-tow-droid,.store-tow-light){animation-play-state:paused}
-.shop-app .store-tow :focus-visible{outline:2px solid #cce8ff;outline-offset:-6px}
-.shop-app .store-tow-link:hover{color:#fff}
+.shop-app .store-tow :focus-visible{outline:2px solid #164be0;outline-offset:-6px}
+.shop-app .store-tow-link:hover{color:#000}
 @keyframes store-tow-pass{from{transform:translateX(calc(-100% / 3))}to{transform:translateX(0)}}
 @keyframes store-tow-roll{0%,100%{translate:0 0}50%{translate:0 -1px}}
 @keyframes store-tow-blink{0%,12%,100%{opacity:1}18%,92%{opacity:.25}}
@@ -26,4 +24,4 @@
 .store-tow.is-still .store-tow-line{flex-basis:20px;margin-left:10px}
 @media(max-width:600px){.store-tow{height:64px}.store-tow-words{font-size:18px;gap:28px}.store-tow-gap{flex-basis:64px;min-width:64px}}
 @media(prefers-reduced-motion:reduce){.store-tow :is(.store-tow-track,.store-tow-droid,.store-tow-light){animation:none!important}}
-@media(forced-colors:active){.store-tow{background:Canvas;color:CanvasText;border-block:1px solid CanvasText}.shop-app .store-tow-link{color:LinkText;mask-image:none}.shop-app .store-tow-pause{color:ButtonText;border-left:1px solid ButtonText}}
+@media(forced-colors:active){.store-tow{background:Canvas;color:CanvasText;border-block:1px solid CanvasText}.shop-app .store-tow-link{color:LinkText;mask-image:none}}
