@@ -1,0 +1,24 @@
+{
+  "status": "prepared_not_submitted",
+  "note": "The male participant submission was rejected by Runway for insufficient workspace credits on 2026-10-17. No video task was created. Do not treat these briefs as completed or queued generations.",
+  "delivery": {"ratio":"16:9","resolution":"720p","generateAudio":false,"durationSeconds":10},
+  "sharedDirection": "One full-frame webcam feed per file. Locked laptop camera, eye-level head-and-shoulders framing for humans. No UI, name badge, text, subtitles, logos, split screens, camera moves, dramatic cinematic lighting, music or sound. Authentic ordinary office fluorescent lighting, slight webcam softness. Quiet corporate expressions. Natural blinks and tiny nods. Start and finish neutral with a closed mouth in approximately the same position. Website supplies the music and all controls. These are reusable subtle talking/listening loops, not precisely lip-synced to all six tracks.",
+  "participants": [
+    {
+      "id":"drums",
+      "label":"Strategic Partnerships",
+      "prompt":"A single continuous realistic laptop webcam shot for a fictional corporate video meeting. One ordinary bald man in his late 40s, light olive skin, pale blue button-down business shirt, small black office headset with a microphone. Seated at a desk in a beige cubicle, shoulders and full head centered in a 16:9 frame, camera at eye level. Authentic low-budget office webcam, flat fluorescent light, believable skin texture, mundane background, slightly soft webcam image but well exposed. He looks toward his laptop camera with a completely serious, understated corporate expression. He slowly and quietly mouths a short business statement, then listens, blinks naturally and gives one tiny approving nod. Subtle believable mouth movement and breathing, hands below frame. His mouth is closed and expression neutral at both the beginning and end, similar head position to make a reusable loop. Locked-off camera: no movement, zoom, cuts or reframing. No visible musical instruments, no performing or dancing, no exaggerated expressions. No subtitles, labels, meeting interface, logos or graphical overlays. Only ONE person and ONE full-frame webcam feed. Silent footage: the website will supply its own robotic soundtrack."
+    },
+    {
+      "id":"keys",
+      "label":"People & Culture",
+      "prompt":"A single continuous extremely realistic laptop webcam feed. One Black woman in her mid-30s with natural medium-length curly hair, an understated ivory office blouse, and a simple black office headset with microphone. Head and shoulders centered, full head visible, facing the laptop camera at eye level. Ordinary office background with windows, a single plant and light neutral walls. Soft natural window light mixed with fluorescent office light, authentic webcam clarity and slight compression, believable skin texture. Her expression is calm, attentive and perfectly professional. She listens, blinks naturally, quietly mouths a short restrained corporate reply, then gives one tiny approving nod. No big gestures, no smiling performance, no dancing, no visible instrument. Hands below frame. Begin and end neutral, mouth closed, almost the same head position. Locked camera, no cuts, zoom, pans or reframing. Only one person in one 16:9 feed. No text, UI, subtitles, watermarks, logos or overlays. Silent reusable meeting participant footage; a separate robotic soundtrack will play on the website."
+    },
+    {
+      "id":"vocals",
+      "label":"Workflow Automation",
+      "referenceImage":"https://linkedinbeats.com/studio/meeting/vocals.webp",
+      "prompt":"Use the reference image ONLY to preserve the exact office droid identity: a small very squat wheeled cream/beige cylindrical body, broad rounded silver dome, black horizontal eye/window and cobalt-blue body band. Keep that exact size, body proportions, materials and single eye. Create one realistic low desk-webcam video feed of this same small droid in an ordinary office copy room. The droid is centered and occupies about 45 percent of the frame width; all of its dome and body stay visible. Camera is placed at the robot's eye height. Neutral fluorescent light, beige walls, file cabinet and copier quietly in the background. The droid sits stationary and unimpressed. Its tiny blue status light pulses slowly twice and the dome makes one very slight curious swivel before returning to exactly its initial angle. Body never moves or changes size; no transformation, arms, mouth, human face or extra robot. Camera does not move, zoom, pan or cut. Start and end with matching stationary pose for a reusable loop. No text, UI, captions or overlays. Silent 16:9 footage; the website supplies beeps and robotic vocals."
+    }
+  ]
+}

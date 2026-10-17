@@ -21,16 +21,17 @@ const PerformanceVideo=memo(function PerformanceVideo({media,playing,motion,posi
   return <><img className="meeting-poster" src={`/studio/meeting/${media}.webp`} alt="" style={{objectPosition:position}}/><video ref={video} className={`meeting-video${failed?' has-failed':''}`} src={requested?`/studio/meeting/${media}.mp4`:undefined} poster={`/studio/meeting/${media}.webp`} style={{objectPosition:position}} muted loop playsInline preload="none" disablePictureInPicture aria-hidden="true" tabIndex={-1} onError={()=>setFailed(true)}/></>;
 });
 
-export const Participant=memo(function Participant({person,playing,loading,started,muted,active,spotlight,compact,caption,motion,onSelect,onMute}) {
-  const cameraOff=!person.media;
+export const Participant=memo(function Participant({person,playing,loading,started,muted,active,spotlight,compact,caption,motion,videosEnabled=true,onSelect,onMute}) {
+  const cameraOff=!person.media||!videosEnabled;
   const label=!started?'Play the meeting':spotlight?`Return ${person.name} to grid`:`Spotlight ${person.name}`;
   return <article className={`meeting-tile${active?' is-active':''}${muted?' is-muted':''}${spotlight?' is-spotlight':''}${compact?' is-small':''}${cameraOff?' camera-off':''}`} aria-label={`${person.name}, ${person.role}`}>
-    {person.media?<PerformanceVideo media={person.media} playing={playing&&!muted} motion={motion} position={person.position}/>:<div className="meeting-avatar-content"><div className={`meeting-avatar${playing&&!muted?' is-grooving':''}`} aria-hidden="true"><UserRound strokeWidth="0" fill="currentColor"/></div><strong>Thought Leader</strong><span>Connecting to audio…</span></div>}
+    {person.media&&<div className="meeting-camera-feed" hidden={cameraOff}><PerformanceVideo media={person.media} playing={playing&&videosEnabled} motion={motion} position={person.position}/></div>}
+    {cameraOff&&<div className="meeting-avatar-content"><div className="meeting-avatar" aria-hidden="true"><UserRound strokeWidth="0" fill="currentColor"/></div><strong>{person.name}</strong><span>{person.media?'Camera off':'Connecting to audio…'}</span></div>}
     <button type="button" className="meeting-tile-select" aria-label={label} aria-pressed={spotlight} disabled={loading} onClick={()=>onSelect(person.id)}>
       <span className="meeting-tile-action">{!started?<Play aria-hidden="true"/>:spotlight?<Minimize2 aria-hidden="true"/>:<Maximize2 aria-hidden="true"/>}<span>{!started?'Join & play':spotlight?'Back to grid':'Spotlight'}</span></span>
     </button>
     {cameraOff&&<VideoOff className="meeting-camera-off" aria-label="Camera off"/>}
     {caption&&!compact&&<div className="meeting-caption" aria-live="off"><span>{caption}</span></div>}
-    <div className="meeting-nameplate"><button type="button" className="meeting-mic" aria-label={`${muted?'Unmute':'Mute'} ${person.name}: ${person.role}`} aria-pressed={muted} title={`${muted?'Unmute':'Mute'} ${person.role.toLowerCase()}`} onClick={()=>onMute(person.id)}>{muted?<MicOff aria-hidden="true"/>:<Mic aria-hidden="true"/>}</button><div><strong>{person.name}</strong><span>{person.role}{muted?' · muted':''}</span></div><div className={`meeting-meter${active?' is-on':''}`} aria-hidden="true"><i/><i/><i/><i/></div></div>
+    <div className="meeting-nameplate"><button type="button" className="meeting-mic" aria-label={`${muted?'Unmute':'Mute'} ${person.name}: ${person.role}`} aria-pressed={muted} title={`${muted?'Unmute':'Mute'} ${person.role.toLowerCase()}`} onClick={()=>onMute(person.id)}>{muted?<MicOff aria-hidden="true"/>:<Mic aria-hidden="true"/>}</button><div><strong>{person.name}</strong></div><div className={`meeting-meter${active?' is-on':''}`} aria-hidden="true"><i/><i/><i/><i/></div></div><span className="meeting-tile-role">{person.role}{muted?' · muted':''}</span>
   </article>;
 });
