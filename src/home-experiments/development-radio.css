@@ -220,3 +220,31 @@
 @media(forced-colors:active){.development-radio .development-transport{background:Canvas;border:1px solid CanvasText;box-shadow:none;backdrop-filter:none}.development-transport::before{display:none}.c2-home .development-transport .development-play{background:ButtonFace;color:ButtonText;box-shadow:none;border:1px solid ButtonText}.development-radio :is(.development-time,.development-track>span,.development-studio){color:CanvasText}}
 
 @media(prefers-reduced-motion:reduce){.c2-home .development-transport .development-buttons .development-play:is(:hover,:focus-visible,:active){transform:none}.c2-home .development-transport .development-buttons .development-play svg{transition:none}}
+
+/* The thesis gets a spacious product reveal, with corporate-language echoes behind the kit. */
+.c2-home .development-copy h2{max-width:none;font-size:clamp(40px,3.9vw,56px);line-height:1.02;letter-spacing:-.04em;margin-bottom:16px}
+.development-copy h2 span,.development-copy h2 strong{white-space:nowrap}
+.development-radio .development-intro{max-width:38ch;line-height:1.5;text-wrap:balance}
+.development-radio .development-transport{margin-top:22px}
+.development-post{background:#bed1df;opacity:.72}
+.development-echo{position:absolute;inset:0 -110px 0 -34px;padding-top:clamp(52px,6vw,90px);display:flex;flex-direction:column;align-items:flex-start;gap:14px;pointer-events:none;user-select:none;z-index:-1;mask-image:linear-gradient(90deg,transparent,#000 8%,#000 84%,transparent)}
+.development-echo-word{display:block;white-space:nowrap;font:600 clamp(88px,10.5vw,158px)/.9 C2Hoves,Arial,sans-serif;letter-spacing:-.055em;text-transform:uppercase;color:transparent;-webkit-text-stroke:1px #a4cfff;opacity:.09;transition:opacity .45s ease;}
+.development-echo-word:nth-child(2){margin-left:60px}
+.development-echo-word:nth-child(3){margin-left:-18px}
+.development-echo-word.is-active{opacity:var(--echo-opacity,.14)}
+@media(min-width:761px){
+ .development-inner{height:auto;min-height:clamp(560px,50vw,700px);padding-top:80px;padding-bottom:64px;align-items:center}
+ .development-post{top:auto;bottom:clamp(150px,14vw,210px)}
+}
+@media(max-width:760px){
+ .development-inner{padding-top:56px}
+ .c2-home .development-copy h2{font-size:clamp(36px,9vw,48px)}
+ .development-radio .development-intro{max-width:36ch}
+ .development-art{margin-top:42px}
+ .development-echo{inset:-26px -80px 0 -28px;padding-top:0;gap:9px}
+ .development-echo-word{font-size:clamp(68px,15vw,92px)}
+ .development-echo-word:nth-child(2){margin-left:36px}
+}
+.development-radio.is-still .development-echo-word{transition:none}
+@media(prefers-reduced-motion:reduce){.development-echo-word{transition:none}}
+@media(forced-colors:active){.development-echo{display:none}}

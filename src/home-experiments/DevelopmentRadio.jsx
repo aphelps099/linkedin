@@ -38,8 +38,9 @@ function ReactionPost({motion}){
 }
 
 const EQUALIZER_HEIGHTS=[.32,.56,.82,.48,.95,.67,.41,.76,.58,1,.72,.45,.88,.61,.38,.54];
+const ECHO_WORDS=['Humbled.','Honored.','Circle back.'];
 
-const PocketPlayer=memo(function PocketPlayer({motion,base,playing,loading,levels,onToggle}){
+const PocketPlayer=memo(function PocketPlayer({motion,base,playing,loading,levels,elapsed,onToggle}){
   const screenId=useId();
   const art=useRef(null),device=useRef(null);
   useLayoutEffect(()=>{
@@ -49,9 +50,10 @@ const PocketPlayer=memo(function PocketPlayer({motion,base,playing,loading,level
     const update=()=>{
       frame=0;
       const viewport=window.innerHeight;
-      // Measure the stationary artwork container, never the moving device.
-      // The entrance ends at 45% of the viewport and stays at the existing layout position.
-      const progress=Math.max(0,Math.min(1,(viewport-container.getBoundingClientRect().top)/(viewport*.55)));
+      // Use the device's layout anchor so the taller section doesn't finish the entrance offscreen.
+      // offsetTop excludes the scroll translation and hover transform.
+      const anchorTop=container.getBoundingClientRect().top+player.offsetTop;
+      const progress=Math.max(0,Math.min(1,(viewport-anchorTop)/(viewport*.55)));
       const distance=window.matchMedia('(max-width:760px)').matches?72:120;
       const offset=distance*Math.pow(1-progress,3);
       player.style.setProperty('--device-enter-y',`${offset.toFixed(2)}px`);
@@ -79,7 +81,12 @@ const PocketPlayer=memo(function PocketPlayer({motion,base,playing,loading,level
     };
   },[motion]);
   const action=loading?'Cancel loading':playing?'Pause beats':'Listen — click to play beats';
+  const echoIndex=playing?(motion?Math.floor(elapsed/8)%ECHO_WORDS.length:0):-1;
+  const echoEnergy=motion&&playing?Math.max(0,...(levels?.slice(0,16)||[])):0;
   return <div className="development-art" ref={art}>
+    <div className="development-echo" aria-hidden="true" style={{'--echo-opacity':(.14+echoEnergy*.14).toFixed(3)}}>
+      {ECHO_WORDS.map((word,index)=><span key={word} className={`development-echo-word${index===echoIndex?' is-active':''}`}>{word}</span>)}
+    </div>
     <div aria-hidden="true"><ReactionPost motion={motion}/></div>
     <button ref={device} type="button" className={`development-device${playing?' is-playing':''}${loading?' is-loading':''}`} onClick={onToggle} aria-label={action} aria-pressed={playing}>
       <img src={`${base}home-experiments/ipod-earbuds-3d.webp`} width="1122" height="1402" alt="" loading="lazy" decoding="async" draggable="false"/>
@@ -122,8 +129,8 @@ export function DevelopmentRadio({base,state,track,seconds,motion,onToggle,onSki
   return <section className={`development-radio${motion?'':' is-still'}`} id="c2-player" aria-labelledby="development-title">
     <div className="development-inner">
       <div className="development-copy">
-        <h2 id="development-title"><span>All business.</span><strong>All beats.</strong></h2>
-        <p className="development-intro">Corporate jargon. Unreasonably good music.</p>
+        <h2 id="development-title"><span>Sound like you</span><strong>mean business.</strong></h2>
+        <p className="development-intro">Corporate jargon. Robot vocals. Unreasonably good beats.</p>
         <div className={`development-transport${state.playing?' is-playing':''}`} role="group" aria-label="LinkedIn Beats music player">
           <div className="development-player-heading">
             <div className="development-track" aria-live="polite" aria-atomic="true">
@@ -146,7 +153,7 @@ export function DevelopmentRadio({base,state,track,seconds,motion,onToggle,onSki
         </div>
         <a className="development-studio" href={`${base}studio/`}>Make your own in the studio <ArrowUpRight aria-hidden="true"/></a>
       </div>
-      <PocketPlayer motion={motion} base={base} playing={state.playing} loading={state.loading} levels={state.levels} onToggle={onToggle}/>
+      <PocketPlayer motion={motion} base={base} playing={state.playing} loading={state.loading} levels={state.levels} elapsed={seconds} onToggle={onToggle}/>
     </div>
   </section>;
 }
