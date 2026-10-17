@@ -1,6 +1,7 @@
 import React, {memo, useEffect, useId, useLayoutEffect, useRef, useState} from 'react';
 import {ArrowUpRight, LoaderCircle, Pause, Play, SkipBack, SkipForward, ThumbsUp, Heart, Lightbulb} from 'lucide-react';
 import {formatTime} from '../home/tracks.js';
+import './player-digits.css';
 
 const REACTIONS=[{label:'Like',Icon:ThumbsUp},{label:'Love',Icon:Heart},{label:'Insightful',Icon:Lightbulb}];
 
@@ -137,7 +138,7 @@ export function DevelopmentRadio({base,state,track,seconds,motion,onToggle,onSki
           <div className="development-player-controls">
             <div className="development-buttons">
               <button type="button" aria-label="Previous track or restart" onClick={()=>onSkip('previous')}><SkipBack fill="currentColor"/></button>
-              <button type="button" className="development-play" aria-label={state.loading?'Cancel loading':state.playing?'Pause':'Play'} aria-pressed={state.playing} onClick={onToggle}>{state.loading?<LoaderCircle className="c2-spin"/>:state.playing?<Pause fill="currentColor"/>:<Play fill="currentColor"/>}</button>
+              <button type="button" className="development-play" aria-label={state.loading?'Cancel loading':state.playing?'Pause':'Play'} aria-pressed={state.playing} onClick={onToggle}>{state.loading?<LoaderCircle className="c2-spin"/>:state.playing?<Pause/>:<Play/>}</button>
               <button type="button" aria-label="Next track" onClick={()=>onSkip('next')}><SkipForward fill="currentColor"/></button>
             </div>
           </div>
