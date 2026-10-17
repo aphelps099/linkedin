@@ -172,3 +172,47 @@
 .development-transport{max-width:520px;margin-top:22px}
 @media(min-width:761px) and (max-width:1100px){.c2-home .development-copy h2{font-size:44px}.development-intro{font-size:17px}}
 @media(max-width:760px){.development-copy{max-width:520px}.c2-home .development-copy h2{font-size:clamp(42px,10vw,58px);margin:8px 0 18px}.development-intro{font-size:18px}}
+
+/* The homepage's listening preview: a quiet glass surface and a tactile play key. */
+.development-radio .development-copy{max-width:480px}
+.c2-home .development-copy h2{font-size:clamp(36px,3.3vw,48px);line-height:.98;letter-spacing:-.04em;margin:0 0 10px}
+.development-radio .development-intro{max-width:none;font-size:16px;line-height:1.4;letter-spacing:-.015em;color:#c1d3e3;text-wrap:pretty}
+.development-radio .development-transport{position:relative;isolation:isolate;max-width:480px;margin-top:16px;padding:19px 24px 18px;border:1px solid #d9edff26;border-radius:22px;background:linear-gradient(135deg,#f0f8ff17,transparent 45%,#76baff05),linear-gradient(165deg,#113857e8,#061c34ed);box-shadow:inset 0 1px 0 #ffffff12,inset 0 -1px 0 #00000020,0 16px 42px #000d222e;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.development-transport::before{content:'';position:absolute;top:-1px;left:22px;right:22px;height:1px;background:linear-gradient(90deg,transparent,#d9efff73 25%,#d9efff26 70%,transparent);pointer-events:none}
+.development-player-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.development-radio .development-track{min-width:0}
+.development-radio .development-track strong{min-height:0;font-size:22px;font-weight:600;line-height:1.2;letter-spacing:-.025em;text-wrap:balance}
+.development-radio .development-track>span{font-size:12px;line-height:1.4;letter-spacing:.015em;text-transform:none;color:#a8c2d7;margin:6px 0 0}
+.development-time{display:flex;align-items:baseline;flex-shrink:0;gap:5px;padding-top:5px;font-size:12px;line-height:1.3;letter-spacing:-.015em;font-variant-numeric:tabular-nums;color:#a7bfd3}
+.development-time time:first-child{color:#edf6ff}
+.development-time>span{opacity:.4}
+.c2-home .development-transport .development-seek{height:26px;margin:9px 0 4px;outline-offset:2px}
+.development-transport .development-seek::-webkit-slider-runnable-track{height:4px;border-radius:6px;background:linear-gradient(90deg,#a3d5ff var(--progress),#c6e3ff26 var(--progress));box-shadow:inset 0 1px 1px #00000025}
+.development-transport .development-seek::-moz-range-track{height:4px;border-radius:6px;background:#c6e3ff26;box-shadow:inset 0 1px 1px #00000025}
+.development-transport .development-seek::-moz-range-progress{height:4px;border-radius:6px;background:#a3d5ff}
+.development-transport .development-seek::-webkit-slider-thumb{width:8px;height:8px;margin-top:-2px;background:#edf7ff;opacity:1;box-shadow:0 0 8px #c5e6ff66;transition:transform .18s ease}
+.development-transport .development-seek::-moz-range-thumb{width:8px;height:8px;background:#edf7ff;box-shadow:0 0 8px #c5e6ff66;transition:transform .18s ease}
+.development-transport .development-seek:is(:hover,:focus-visible)::-webkit-slider-thumb{transform:scale(1.4)}
+.development-transport .development-seek:is(:hover,:focus-visible)::-moz-range-thumb{transform:scale(1.4)}
+.development-player-controls{display:flex;justify-content:center}
+.development-radio .development-buttons{gap:26px;align-items:center}
+.c2-home .development-transport .development-buttons button{width:48px;height:48px;border-radius:50%;color:#eaf4ff;transition:transform .2s ease,background .2s ease,box-shadow .2s ease}
+.c2-home .development-transport .development-buttons button:hover{background:#ffffff0b;transform:translateY(-1px)}
+.c2-home .development-transport .development-buttons button:active{transform:scale(.94)}
+.c2-home .development-transport .development-buttons svg{width:23px;height:23px;stroke-width:1.7;filter:drop-shadow(0 0 5px #e0f2ff26)}
+.c2-home .development-transport .development-play{width:68px;height:68px;border:1px solid #ffffffbd;background:linear-gradient(155deg,#fff 10%,#e2edf7 90%);color:#103551;box-shadow:inset 0 2px 2px #fff,inset 0 -2px 3px #a2bad540,0 5px 15px #000d3059,0 0 22px #c4e5ff17}
+.c2-home .development-transport .development-play:hover{background:linear-gradient(155deg,#fff,#eff7ff);transform:translateY(-1px) scale(1.035);box-shadow:inset 0 2px 2px #fff,inset 0 -2px 3px #a2bad540,0 6px 18px #000d3059,0 0 28px #c4e5ff33}
+.c2-home .development-transport .development-play:active{transform:scale(.97)}
+.c2-home .development-transport .development-play svg{width:27px;height:27px;filter:none}
+.c2-home .development-transport .development-play[aria-label='Play'] svg{margin-left:3px}
+.c2-home .development-transport :is(button,input):focus-visible{outline:2px solid #c2e7ff;outline-offset:5px}
+.development-transport.is-playing{border-color:#d9edff3b}
+.c2-home .development-radio .development-studio{font-size:13px;font-weight:500;letter-spacing:.005em;line-height:1.4;margin-top:13px;padding:0;border:0;gap:7px;color:#c1d5e6;transition:color .2s ease}
+.development-radio .development-studio svg{width:15px;height:15px;transition:transform .2s ease}
+.c2-home .development-radio .development-studio:hover{opacity:1;color:#fff}
+.development-radio .development-studio:hover svg{transform:translate(2px,-2px)}
+@media(min-width:761px) and (max-width:1100px){.development-radio .development-transport{padding-inline:20px}.development-radio .development-track strong{font-size:20px}}
+@media(max-width:760px){.development-radio .development-copy{max-width:480px}.c2-home .development-copy h2{font-size:clamp(38px,9vw,48px)}.development-radio .development-transport{padding:18px 20px 17px;margin-top:20px}.development-radio .development-intro{font-size:16px}.c2-home .development-radio .development-studio{font-size:13px!important;margin-top:15px}}
+@media(max-width:390px){.development-radio .development-track strong{font-size:19px}.development-player-heading{gap:10px}.development-time{font-size:11px;gap:4px}.development-radio .development-transport{padding-inline:17px}.development-radio .development-buttons{gap:22px}}
+@media(prefers-reduced-motion:reduce){.c2-home .development-transport .development-buttons button,.development-radio .development-studio svg,.development-transport .development-seek::-webkit-slider-thumb{transition:none}.c2-home .development-transport .development-buttons button:is(:hover,:active),.development-radio .development-studio:hover svg{transform:none}}
+@media(forced-colors:active){.development-radio .development-transport{background:Canvas;border:1px solid CanvasText;box-shadow:none;backdrop-filter:none}.development-transport::before{display:none}.c2-home .development-transport .development-play{background:ButtonFace;color:ButtonText;box-shadow:none;border:1px solid ButtonText}.development-radio :is(.development-time,.development-track>span,.development-studio){color:CanvasText}}

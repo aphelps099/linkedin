@@ -123,20 +123,27 @@ export function DevelopmentRadio({base,state,track,seconds,motion,onToggle,onSki
       <div className="development-copy">
         <h2 id="development-title"><span>All business.</span><strong>All beats.</strong></h2>
         <p className="development-intro">Corporate jargon. Unreasonably good music.</p>
-        <div className="development-transport" role="group" aria-label="LinkedIn Beats music player">
-          <div className="development-transport-row">
+        <div className={`development-transport${state.playing?' is-playing':''}`} role="group" aria-label="LinkedIn Beats music player">
+          <div className="development-player-heading">
+            <div className="development-track" aria-live="polite" aria-atomic="true">
+              <strong key={track.title}>{track.title}</strong>
+              <span>{state.loading?'Tuning in…':state.playing?'Now playing · LinkedIn Beats':state.elapsed>0?'Paused · LinkedIn Beats':'LinkedIn Beats'}</span>
+            </div>
+            <div className="development-time" aria-label={`${formatTime(position)} elapsed of ${formatTime(track.seconds)}`}>
+              <time>{formatTime(position)}</time><span aria-hidden="true">/</span><time>{formatTime(track.seconds)}</time>
+            </div>
+          </div>
+          <input className="development-seek" type="range" aria-label="Track position" aria-valuetext={`${formatTime(position)} of ${formatTime(track.seconds)}`} min="0" max={track.seconds} step="1" value={position} style={{'--progress':`${Math.min(100,position/track.seconds*100)}%`}} onChange={e=>setScrub(Number(e.target.value))} onPointerUp={e=>commitSeek(e.currentTarget.value)} onKeyUp={e=>{if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown'].includes(e.key))commitSeek(e.currentTarget.value);}} onBlur={e=>{if(scrub!==null)commitSeek(e.currentTarget.value);}} onPointerCancel={()=>setScrub(null)}/>
+          <div className="development-player-controls">
             <div className="development-buttons">
               <button type="button" aria-label="Previous track or restart" onClick={()=>onSkip('previous')}><SkipBack fill="currentColor"/></button>
               <button type="button" className="development-play" aria-label={state.loading?'Cancel loading':state.playing?'Pause':'Play'} aria-pressed={state.playing} onClick={onToggle}>{state.loading?<LoaderCircle className="c2-spin"/>:state.playing?<Pause fill="currentColor"/>:<Play fill="currentColor"/>}</button>
               <button type="button" aria-label="Next track" onClick={()=>onSkip('next')}><SkipForward fill="currentColor"/></button>
             </div>
-            <div className="development-track" aria-live="polite" aria-atomic="true"><span>{state.loading?'Tuning in…':state.playing?'Now playing':state.elapsed>0?'Paused':'Ready to play'}</span><strong key={track.title}>{track.title}</strong></div>
-            <time className="development-duration" aria-label={`Duration ${formatTime(track.seconds)}`}>{formatTime(track.seconds)}</time>
           </div>
-          <input className="development-seek" type="range" aria-label="Track position" aria-valuetext={`${formatTime(position)} of ${formatTime(track.seconds)}`} min="0" max={track.seconds} step="1" value={position} style={{'--progress':`${Math.min(100,position/track.seconds*100)}%`}} onChange={e=>setScrub(Number(e.target.value))} onPointerUp={e=>commitSeek(e.currentTarget.value)} onKeyUp={e=>{if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown'].includes(e.key))commitSeek(e.currentTarget.value);}} onBlur={e=>{if(scrub!==null)commitSeek(e.currentTarget.value);}} onPointerCancel={()=>setScrub(null)}/>
           {state.error&&<p className="development-error" role="alert">{state.error}</p>}
         </div>
-        <a className="development-studio" href={`${base}studio/`}>Create in the studio <ArrowUpRight aria-hidden="true"/></a>
+        <a className="development-studio" href={`${base}studio/`}>Make your own in the studio <ArrowUpRight aria-hidden="true"/></a>
       </div>
       <PocketPlayer motion={motion} base={base} playing={state.playing} loading={state.loading} levels={state.levels} onToggle={onToggle}/>
     </div>
