@@ -60,6 +60,6 @@ export function RemixStudio() {
         </div>
       </section>
     </main>
-    <footer className="s2-footer"><span>LinkedIn Beats / Corporate racing division</span><a href="../studio/">Original studio <ArrowUpRight aria-hidden="true"/></a><a href="../store/">Shop wears <ArrowUpRight aria-hidden="true"/></a></footer>
+    <footer className="s2-footer"><span>LinkedIn Beats / Corporate racing division</span><a href="../studio/">Meeting studio <ArrowUpRight aria-hidden="true"/></a><a href="../store/">Shop wears <ArrowUpRight aria-hidden="true"/></a></footer>
   </div>;
 }

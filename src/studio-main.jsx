@@ -1,2 +1,2 @@
-// The approved racing stage is the canonical studio.
-import './studio-3/main.jsx';
+// The corporate meeting is now the canonical six-track studio.
+import './meeting-studio/main.jsx';

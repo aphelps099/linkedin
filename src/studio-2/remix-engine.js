@@ -3,6 +3,8 @@ import manifest from './audio-manifest.json';
 
 export const TRACKS = score.tracks;
 export const VOCABULARY = score.vocabulary;
+export const MIX_PARTS = ['drums', 'keys', 'vocals', 'bass'];
+const freshMutes = () => Object.fromEntries(MIX_PARTS.map(name => [name, false]));
 export const durationOf = track => 128 * 60 / track.bpm;
 export const formatTime = time => `${Math.floor(time / 60)}:${String(Math.floor(time % 60)).padStart(2, '0')}`;
 export const responseOffset = (duration, bpm) => {
@@ -22,7 +24,7 @@ export function createRemixEngine({onChange = () => {}, audioBase = '../studio-2
   let state = {index:initialIndex, playing:false, loading:false, elapsed:0, energy:1,
     confidence:0, voice:'duet', volume:.8, text:TRACKS[initialIndex].pairs[0][0],
     response:TRACKS[initialIndex].pairs[0][1], speaker:'M', speaking:false,
-    queued:'', status:'Choose a track. Make a small scene.', error:''};
+    queued:'', muted:freshMutes(), status:'Choose a track. Make a small scene.', error:''};
   let ctx, master, compressor, analyser, spectrum, voiceBus;
   let buses = {}, sources = new Set(), voiceSources = new Set(), cueList = [];
   let timer, generation = 0, disposed = false, origin = 0, nextPair = 0;
@@ -46,9 +48,9 @@ export function createRemixEngine({onChange = () => {}, audioBase = '../studio-2
     analyser = ctx.createAnalyser(); analyser.fftSize = 128; analyser.smoothingTimeConstant = .82;
     compressor.connect(analyser); spectrum = new Uint8Array(analyser.frequencyBinCount);
     for(const name of ['drums','bass','keys','lift']) {
-      buses[name] = ctx.createGain(); buses[name].gain.value = LEVELS[state.energy][name]; buses[name].connect(master);
+      buses[name] = ctx.createGain(); buses[name].gain.value = state.muted[name === 'lift' ? 'keys' : name] ? 0 : LEVELS[state.energy][name]; buses[name].connect(master);
     }
-    voiceBus = ctx.createGain(); voiceBus.gain.value = state.voice === 'instrumental' ? 0 : .82; voiceBus.connect(master);
+    voiceBus = ctx.createGain(); voiceBus.gain.value = state.voice === 'instrumental' || state.muted.vocals ? 0 : .82; voiceBus.connect(master);
     ctx.onstatechange = () => {
       if(ctx.state === 'interrupted' && state.playing) {
         clearTick(); emit({playing:false, elapsed:elapsed(), status:'Playback interrupted. Press play to continue.'});
@@ -165,10 +167,10 @@ export function createRemixEngine({onChange = () => {}, audioBase = '../studio-2
     if(!ctx) return;
     for(const name of Object.keys(buses)) {
       const p=buses[name].gain; p.cancelScheduledValues(ctx.currentTime);
-      p.setTargetAtTime(LEVELS[state.energy][name],when,.035);
+      p.setTargetAtTime(state.muted[name === 'lift' ? 'keys' : name] ? 0 : LEVELS[state.energy][name],when,.035);
     }
     voiceBus.gain.cancelScheduledValues(ctx.currentTime);
-    voiceBus.gain.setTargetAtTime(state.voice === 'instrumental' ? 0 : .82,ctx.currentTime,.04);
+    voiceBus.gain.setTargetAtTime(state.voice === 'instrumental' || state.muted.vocals ? 0 : .82,ctx.currentTime,.04);
   }
   function setting(key,value) {
     const valid = key === 'energy' ? [0,1,2].includes(value) : key === 'confidence' ? [0,1].includes(value) : key === 'voice' && ['robot','duet','instrumental'].includes(value);
@@ -204,6 +206,14 @@ export function createRemixEngine({onChange = () => {}, audioBase = '../studio-2
       emit({elapsed:position,queued:'',speaking:false});
     },
     setting,
+    participant(name) {
+      if(!MIX_PARTS.includes(name)) return;
+      const muted = {...state.muted, [name]:!state.muted[name]};
+      emit({muted,status:`${name === 'vocals' ? 'Robot vocals' : name[0].toUpperCase()+name.slice(1)} ${muted[name] ? 'muted' : 'back in the meeting'}.`});
+      // A short gain ramp makes individual mic changes immediate and click-free.
+      // Sources keep running, so unmuting always rejoins at the correct phase.
+      applyLevels(ctx?.currentTime || 0);
+    },
     circleBack() {
       if(!state.playing) {this.seek(0);emit({status:'Chorus ready. Press play.'});return;}
       queuedPair={kind:'chorus'};emit({queued:'chorus',status:'Chorus queued for the next phrase.'});
@@ -218,7 +228,7 @@ export function createRemixEngine({onChange = () => {}, audioBase = '../studio-2
         queuedPair={kind:'vocabulary',item,data};emit({status:`${item.label} queued for the next phrase.`});
       } catch {if(mine === generation) emit({queued:'',error:'That phrase could not load. The music will keep playing.'});}
     },
-    reset() {queuedPair=null;emit({energy:1,confidence:0,voice:'duet',queued:'',status:'Original mix restored.'});applyLevels(ctx?.currentTime || 0);},
+    reset() {queuedPair=null;emit({energy:1,confidence:0,voice:'duet',muted:freshMutes(),queued:'',status:'Original mix restored.'});applyLevels(ctx?.currentTime || 0);},
     volume(value) {const v=Math.max(0,Math.min(1,Number(value)||0));emit({volume:v});master?.gain.setTargetAtTime(v,ctx.currentTime,.03);},
     spectrum() {if(!analyser || !state.playing)return null;analyser.getByteFrequencyData(spectrum);return spectrum;},
     dispose() {disposed=true;generation++;clearTick();stopSources();cache.clear();if(ctx){ctx.onstatechange=null;ctx.close().catch(()=>{});}},
