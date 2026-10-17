@@ -15,7 +15,9 @@ export function drawAsciiField(ctx, st, now, opts){
   const cols = Math.max(8, Math.ceil(W/cell));
   const rows = Math.max(6, Math.ceil(H/(cell*1.85)));
   const ch = H/rows;
-  const spec = CBAudio.spectrum();
+  // Independent studios can supply their own analyser without opening the
+  // original instrument's audio graph. Existing callers retain the same output.
+  const spec = o.spectrum === undefined ? CBAudio.spectrum() : o.spectrum;
   const pattern = st.pattern || [];
   const steps = (pattern[0] && pattern[0].length) || 16;
   const drums = Math.max(0, pattern.length - 1);

@@ -43,8 +43,14 @@ audio from a user gesture and makes no network request before play.
 
 ## Interface and verification
 
-TT Hoves, a cobalt lyric stage, a dark glass transport, a six-track rotation and
-three compact remix controls. Keyboard controls, seek, mute, volume, cancellation,
+The racing-team stage returns: full-viewport ASCII character weather, the angular
+Get LinkedInified team banner with subtle carbon texture, a large transparent
+square monitor, and giant TT Hoves phrases with a typewriter reveal. Room and
+monitor use the original ASCII renderer, supplied with this engine's real spectrum.
+Animation pauses when the stage is offscreen or the tab is hidden; reduced motion
+uses a still field and complete text. The default view prioritizes the performance.
+Tracks, vocabulary pads and mix controls open in accessible drawers below the
+continuous glass deck. Keyboard controls, seek, mute, volume, cancellation,
 error recovery and reduced-motion support are included. Original studio is linked.
 
 `node scripts/check-studio2.mjs` checks the recorded phrase timing, source lifecycle,
