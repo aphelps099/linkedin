@@ -20,3 +20,9 @@ A fixed cobalt circle in the lower left opens a native email dialog. It scales 5
 Production requires a persistent Railway volume mounted at `/data`, with `NEWSLETTER_DATA_DIR=/data/newsletter`. Files use mode 0600 and the directory uses 0700. The collection endpoint only saves opt-ins; it does not send mail. Before sending campaigns, export these consent records into the chosen email platform with unsubscribe handling. Authorized operators can read/export the records from the mounted volume using Railway SSH. No subscriber records belong in Git.
 
 Run `npm run check:newsletter` for local HTTP/storage checks. The check uses a temporary directory and makes no external email calls. `GET /api/health` reports `newsletterConfigured` once the directory is writable.
+
+## Robot-towed store marquee
+
+`StoreMarquee.jsx` places a narrow navy sales strip immediately before the shared footer. TT Hoves phrases travel rightward behind a 24px-tall (34px-wide) office droid. Its simplified inline SVG preserves the dome, offset visor, silver panel and blue collar of `public/home-experiments/office-droid.svg`; a tiny cyan status light blinks slowly. Copy reads: “Dress for the job you post about. Shop the Circle Back collection. Take it offline.” No discount or product availability is implied.
+
+The strip links back to the collection and moves keyboard focus to its heading. Three equal laps loop seamlessly at 36px/second; ResizeObserver maintains that pace after font/viewport changes. Animation stops offscreen, in hidden tabs, on hover or link focus, and through its separate pause control. Reduced motion displays a static “Shop the Circle Back collection” with the droid. The homepage marquee remains on hold.

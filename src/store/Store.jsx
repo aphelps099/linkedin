@@ -6,6 +6,7 @@ import {ConceptHeader} from '../home-2/ConceptHeader.jsx';
 import {ConceptFooter} from '../home-2/ConceptFooter.jsx';
 import {FirstInLine} from './FirstInLine.jsx';
 import {StoreHero} from './StoreHero.jsx';
+import {StoreMarquee} from './StoreMarquee.jsx';
 import '../home-2/header.css';
 import '../home-2/footer.css';
 
@@ -143,6 +144,7 @@ export default function Store(){
         <p className="shop-collection-note">The crewneck, Circle Back cap and email mug are design previews. Pricing and availability to come.</p>
       </section>
     </main>
+    <StoreMarquee/>
     <ConceptFooter base="../"/>
     <FirstInLine hidden={Boolean(d)||drawer}/>
     {d&&<Modal kind="product" label="product-title" onClose={closeDetail}>
