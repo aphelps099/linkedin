@@ -1,5 +1,5 @@
 import React, {memo, useEffect, useRef, useState} from 'react';
-import {ArrowDown, Pause, Play, Volume2, VolumeX} from 'lucide-react';
+import {ArrowDown, Play, Volume2, VolumeX} from 'lucide-react';
 import './hero-video.css';
 
 const PLAYBACK_ID = 'jjICCaXD1dLmDApUXumm9CgiESKPGJYoEAeYb2x6wf00';
@@ -12,7 +12,7 @@ export const HeroVideo = memo(function HeroVideo({radioActive, onSoundEnable}) {
   const video = useRef(null), section = useRef(null);
   const [requested, setRequested] = useState(() => !window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const [loadRequested, setLoadRequested] = useState(requested);
-  const [ready, setReady] = useState(false), [playing, setPlaying] = useState(false);
+  const [ready, setReady] = useState(false);
   const [muted, setMuted] = useState(true), [failed, setFailed] = useState(false);
   const [inView, setInView] = useState(true), [pageVisible, setPageVisible] = useState(!document.hidden);
   const silent = !HAS_AUDIO || muted || radioActive;
@@ -78,9 +78,9 @@ export const HeroVideo = memo(function HeroVideo({radioActive, onSoundEnable}) {
   // Starting any radio track silences the film, including during track loading.
   useEffect(() => { if (radioActive) setMuted(true); }, [radioActive]);
 
-  const togglePlayback = () => {
+  const requestPlayback = () => {
     setLoadRequested(true);
-    setRequested(!requested);
+    setRequested(true);
   };
   const toggleSound = () => {
     if (silent) {
@@ -98,17 +98,17 @@ export const HeroVideo = memo(function HeroVideo({radioActive, onSoundEnable}) {
     <video ref={video} className="c2-film-video" hidden={failed} poster={POSTER}
       muted={silent} loop playsInline preload="metadata" disablePictureInPicture disableRemotePlayback
       aria-label="Office workers play drums and keyboards while a small droid delivers paperwork."
-      onPlaying={() => setPlaying(true)} onPause={() => setPlaying(false)} onError={() => { setFailed(true); setRequested(false); }}/>
+      onError={() => { setFailed(true); setRequested(false); }}/>
     <div className="c2-container c2-film-bottom">
       <a className="c2-film-next" href="#c2-title">Meet the band <ArrowDown aria-hidden="true"/></a>
-      {failed ? <span className="c2-film-status" role="status">Film unavailable</span> :
+      {failed ? <span className="c2-film-status" role="status">Film unavailable</span> : (HAS_AUDIO || !requested) &&
         <div className="c2-film-controls" role="group" aria-label="Hero video controls">
           {HAS_AUDIO && <button type="button" className="c2-film-sound" onClick={toggleSound} aria-pressed={!silent} aria-label={silent?'Turn hero sound on':'Turn hero sound off'}>
             {silent?<VolumeX aria-hidden="true"/>:<Volume2 aria-hidden="true"/>}<span>Sound {silent?'on':'off'}</span>
           </button>}
-          <button type="button" onClick={togglePlayback} aria-label={requested?'Pause hero video':'Play hero video'} aria-pressed={playing}>
-            {requested?<Pause fill="currentColor" aria-hidden="true"/>:<Play fill="currentColor" aria-hidden="true"/>}
-          </button>
+          {!requested && <button type="button" onClick={requestPlayback} aria-label="Play hero video">
+            <Play fill="currentColor" aria-hidden="true"/>
+          </button>}
         </div>}
     </div>
   </section>;

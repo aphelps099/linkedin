@@ -1,14 +1,13 @@
 import React, {memo, useEffect, useRef, useState} from 'react';
-import {Pause, Play} from 'lucide-react';
 import {CONVERSATION, TURN_DURATION, conversationFrame} from './conversation-timeline.js';
 
 export const ProfileConversation=memo(function ProfileConversation({base,motion}) {
   const root=useRef(null), video=useRef(null);
   const [frame,setFrame]=useState(()=>conversationFrame(0));
-  const [paused,setPaused]=useState(false), [visible,setVisible]=useState(false);
+  const [blocked,setBlocked]=useState(false), [visible,setVisible]=useState(false);
   const [started,setStarted]=useState(false), [failed,setFailed]=useState(false);
-  const running=motion&&!paused&&visible&&!failed;
-  const staticText=!motion||paused||failed||!started;
+  const running=motion&&!blocked&&visible&&!failed;
+  const staticText=!motion||blocked||failed||!started;
   const scene=CONVERSATION[frame.index];
   const poster=`${base}home-experiments/profile-conversation.webp`;
 
@@ -35,13 +34,14 @@ export const ProfileConversation=memo(function ProfileConversation({base,motion}
       if(cancelled){film.pause();return;}
       setStarted(true);
       request=requestAnimationFrame(tick);
-    }).catch(()=>{if(!cancelled)setPaused(true);});
+    }).catch(()=>{if(!cancelled)setBlocked(true);});
     return()=>{cancelled=true;cancelAnimationFrame(request);film.pause();};
   },[running]);
 
   const choose=index=>{
     if(video.current&&!failed)video.current.currentTime=index*TURN_DURATION/1000;
     setFrame(conversationFrame(index*TURN_DURATION));
+    setBlocked(false);
   };
   let wordIndex=0;
   return <div className={`profile-conversation${!motion?' is-still':''}`} ref={root}>
@@ -60,7 +60,6 @@ export const ProfileConversation=memo(function ProfileConversation({base,motion}
       })}</span>)}</p>
       <div className="conversation-controls" aria-label="Conversation controls">
         <div className="conversation-turns" aria-label="Choose a speaker">{CONVERSATION.map((turn,index)=><button type="button" key={turn.speaker} aria-label={`Replay ${turn.speaker} speaker`} aria-pressed={frame.index===index} onClick={()=>choose(index)}><span/></button>)}</div>
-        <button type="button" className="conversation-pause" aria-label={!motion?'Conversation motion is off':paused?'Resume conversation':'Pause conversation'} aria-pressed={paused||!motion} disabled={!motion||failed} onClick={()=>setPaused(value=>!value)}>{paused||!motion?<Play aria-hidden="true"/>:<Pause aria-hidden="true"/>}</button>
       </div>
     </div>
     <div className="c2-sr"><h2>A fictional corporate conversation</h2><p>Left speaker: {CONVERSATION[0].lines.join(' ')}</p><p>Right speaker: {CONVERSATION[1].lines.join(' ')}</p></div>

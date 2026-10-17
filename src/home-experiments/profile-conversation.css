@@ -20,10 +20,6 @@
 .c2-home .conversation-turns button{width:26px;height:36px;display:grid;place-items:center;color:#fff}
 .conversation-turns button span{width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.35;transition:opacity .2s,transform .2s}
 .conversation-turns button[aria-pressed=true] span{opacity:1;transform:scale(1.2)}
-.c2-home .conversation-pause{width:32px;height:32px;border:1px solid #e5efff40;border-radius:50%;display:grid;place-items:center;color:#e5efff90;transition:color .2s,border-color .2s}
-.c2-home .conversation-pause:hover{color:#fff;border-color:#e5efff99}
-.conversation-pause svg{width:11px;height:11px}
-.conversation-pause:disabled{opacity:.3;cursor:default}
 .c2-home--conversation .c2-player{position:relative;margin-top:-8px;background:linear-gradient(120deg,#102b66e8,#081d46ed);backdrop-filter:blur(18px);border-color:#a9caff80}
 .c2-home--conversation .feed-compare{padding-top:18px;padding-bottom:25px}
 .feed-compare{flex-wrap:wrap}
@@ -40,9 +36,8 @@
   .conversation-phrase{font-size:clamp(18px,4.05vw,28px);line-height:1.15;letter-spacing:-.035em}
   .conversation-controls{gap:9px;margin-top:12px;height:28px}
   .c2-home .conversation-turns button{width:24px;height:28px}.conversation-turns button span{width:5px;height:5px}
-  .c2-home .conversation-pause{width:28px;height:28px}.conversation-pause svg{width:10px;height:10px}
   .c2-home--conversation .c2-player{margin-top:10px}.c2-home--conversation .feed-compare{gap:15px;font-size:11px}
 }
 @media(max-width:370px){.c2-home--conversation .conversation-heading h1{font-size:39px}.conversation-phrase{font-size:16px}.conversation-heading p{font-size:15px;max-width:280px}.conversation-dialogue{margin-top:13%}}
 @media(prefers-reduced-motion:reduce){.conversation-film{display:none}.conversation-phrase,.conversation-line>span{transition:none;filter:none}}
-@media(forced-colors:active){.conversation-heading,.conversation-dialogue{background:Canvas;color:CanvasText}.conversation-pause,.conversation-turns button{border:1px solid CanvasText}}
+@media(forced-colors:active){.conversation-heading,.conversation-dialogue{background:Canvas;color:CanvasText}.conversation-turns button{border:1px solid CanvasText}}
