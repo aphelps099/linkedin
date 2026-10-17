@@ -2,6 +2,7 @@
 .development-radio{position:relative;overflow:hidden;isolation:isolate;background:#03152b;color:#fff;border-bottom:1px solid #b5d9ff33;font:400 17px/1.45 C2Hoves,Arial,sans-serif}
 .development-inner{position:relative;max-width:1600px;margin:auto;min-height:clamp(560px,44vw,704px);padding:64px clamp(40px,4.8vw,76px);display:grid;grid-template-columns:43% 57%;align-items:center}
 .development-copy{position:relative;z-index:4;width:100%;max-width:580px;min-width:0}
+@media(min-width:1101px){.development-copy{left:24px}}
 .c2-home .development-copy h2{width:100%;max-width:580px;margin:0 0 24px;line-height:0}
 .c2-home .development-copy h2 img{display:block;width:100%;height:auto;filter:drop-shadow(0 2px 1px #00102660)}
 .development-radio .development-intro{font-size:clamp(17px,1.55vw,23px);line-height:1.45;color:#d8e7f5;max-width:36ch;letter-spacing:-.02em}
