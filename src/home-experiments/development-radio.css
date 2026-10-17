@@ -133,6 +133,16 @@
 @keyframes development-applause{0%{transform:scale(1)}25%{transform:scale(.86)}65%{transform:scale(1.08)}100%{transform:scale(1)}}
 @keyframes development-ripple{0%{opacity:.65;transform:scale(.85)}100%{opacity:0;transform:scale(1.38)}}
 
+/* A plain navy cut masks the moving backdrop; the social cards and kit stay in front. */
+@media(min-width:1101px){
+ .development-inner::before{content:'';position:absolute;inset:0 auto 0 calc(50% - 50vw);width:100vw;background:#041d34;clip-path:polygon(0 0,calc(50% + min(8vw,128px)) 0,calc(50% - min(4vw,64px)) 100%,0 100%);pointer-events:none;z-index:1}
+ .development-copy{z-index:4}
+ .development-art{isolation:auto}
+ .development-marquee{z-index:0}
+ .development-social{z-index:2}
+ .development-device{z-index:3}
+}
+
 @media(max-width:1100px){
  .development-inner{display:block;padding:68px 40px 0;min-height:0}
  .development-radio .development-copy{max-width:600px;margin:auto}
