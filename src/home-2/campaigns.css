@@ -45,27 +45,39 @@
 .c2-office-robot { position: relative; z-index: 2; width: 54%; margin: 0 0 -3.3% auto; pointer-events: none; }
 .c2-office-robot img { display: block; width: 100%; height: auto; }
 .c2-certificate {
-  --c2-frame-rail: clamp(12px, calc(23 * var(--c2-poster)), 23px);
-  position: relative; padding: var(--c2-frame-rail); background: #88612a;
-  box-shadow: 0 18px 35px -15px #020f23a6, 0 1px 0 #e7c574;
+  --c2-frame-rail: clamp(14px, calc(28 * var(--c2-poster)), 28px);
+  --c2-metal-scuffs: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='257' height='67' viewBox='0 0 257 67'%3E%3Cg fill='none' stroke='%23fff3c6' stroke-opacity='.45' stroke-width='.6'%3E%3Cpath d='M13 9l31 1m5 0h9m68 12l19-1m48 29l38 2M77 46l13-4m-29 20h23M204 8l8 5'/%3E%3C/g%3E%3Cg fill='none' stroke='%233a2511' stroke-opacity='.5' stroke-width='.7'%3E%3Cpath d='M17 11l19 1m112 10h12M94 36l4-5m98 21l29 2M37 58l7-3M241 17l-3 6'/%3E%3C/g%3E%3C/svg%3E");
+  position: relative; padding: var(--c2-frame-rail); background: #765225;
+  box-shadow: 0 18px 35px -15px #020f23a6, 0 1px 0 #e7c574, 0 0 0 1px #2c1c13;
 }
 /* Four mitered rails: their gradients run across the rail, so extra post
    height never stretches the bevel or changes the width of the gold edge. */
-.c2-certificate-edge { position: absolute; z-index: 1; pointer-events: none; }
-.c2-certificate-edge--top, .c2-certificate-edge--bottom { left: 0; width: 100%; height: var(--c2-frame-rail); background: linear-gradient(180deg, #fff2b1 0%, #ac7d31 7%, #e2ba63 14%, #c39a49 35%, #a8792d 67%, #f0d18a 79%, #5d421e 87%, #edcb7b 95%, #6b4b1c 100%); }
+.c2-certificate-edge {
+  --c2-metal-axis: 180deg; --c2-reflection-axis: 108deg;
+  position: absolute; z-index: 1; pointer-events: none;
+  background:
+    linear-gradient(var(--c2-reflection-axis), #1e1a123b 0%, transparent 13%, #fff9dc24 23%, #fff9dca1 27%, #fff9dc14 31%, transparent 41%, #231a1154 55%, transparent 65%, #fff4ce70 77%, transparent 84%, #2b211947 100%),
+    linear-gradient(var(--c2-metal-axis), #fff4c6 0%, #e2c57c 3%, #584322 7%, #d7b35b 11%, #fff1b0 15%, #d1ac58 19%, #b18a3f 38%, #967032 61%, #dab666 72%, #fff0ba 77%, #705221 82%, #302817 88%, #e7c87e 92%, #fff0b9 96%, #604822 100%);
+}
+.c2-certificate-edge--top, .c2-certificate-edge--bottom { left: 0; width: 100%; height: var(--c2-frame-rail); }
 .c2-certificate-edge--top { top: 0; clip-path: polygon(0 0, 100% 0, calc(100% - var(--c2-frame-rail)) 100%, var(--c2-frame-rail) 100%); }
 .c2-certificate-edge--bottom { bottom: 0; transform: rotate(180deg); clip-path: polygon(0 0, 100% 0, calc(100% - var(--c2-frame-rail)) 100%, var(--c2-frame-rail) 100%); }
-.c2-certificate-edge--left, .c2-certificate-edge--right { top: 0; width: var(--c2-frame-rail); height: 100%; background: linear-gradient(90deg, #f8dda1 0%, #ad7c2c 7%, #dfb45f 14%, #c39a49 35%, #a8792d 67%, #f0d18a 79%, #5d421e 87%, #edcb7b 95%, #6b4b1c 100%); }
+.c2-certificate-edge--left, .c2-certificate-edge--right { --c2-metal-axis: 90deg; --c2-reflection-axis: 18deg; top: 0; width: var(--c2-frame-rail); height: 100%; }
 .c2-certificate-edge--left { left: 0; clip-path: polygon(0 0, 100% var(--c2-frame-rail), 100% calc(100% - var(--c2-frame-rail)), 0 100%); }
 .c2-certificate-edge--right { right: 0; transform: rotate(180deg); clip-path: polygon(0 0, 100% var(--c2-frame-rail), 100% calc(100% - var(--c2-frame-rail)), 0 100%); }
-.c2-certificate-edge::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, #fff3 0 1px, #2a170914 1px 2px, transparent 2px 4px); opacity: .25; }
-.c2-certificate-edge--left::after, .c2-certificate-edge--right::after { background: repeating-linear-gradient(90deg, #fff3 0 1px, #2a170914 1px 2px, transparent 2px 4px); }
+/* Patina gathers at the joins; sparse scratches sit over a fine brushed grain.
+   Everything stays static so the frame reads as metal, not an animated effect. */
+.c2-certificate-edge::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 13% 160% at 0 50%, #35250dc2, transparent 75%), radial-gradient(ellipse 8% 160% at 100% 50%, #372b149c, transparent 85%), radial-gradient(ellipse 19% 70% at 62% 60%, #45321654, transparent); }
+.c2-certificate-edge--left::before, .c2-certificate-edge--right::before { background: radial-gradient(ellipse 160% 11% at 50% 0, #35250db3, transparent 75%), radial-gradient(ellipse 160% 8% at 50% 100%, #372b149c, transparent 85%), radial-gradient(ellipse 70% 16% at 60% 62%, #45321654, transparent); }
+.c2-certificate-edge::after { content: ''; position: absolute; inset: 0; background-image: var(--c2-metal-scuffs), repeating-linear-gradient(0deg, #fff4 0 .5px, #2a170926 .5px 1px, transparent 1px 3px); background-size: 257px 67px, auto; opacity: .7; }
+.c2-certificate-edge--left::after, .c2-certificate-edge--right::after { background-image: var(--c2-metal-scuffs), repeating-linear-gradient(90deg, #fff4 0 .5px, #2a170926 .5px 1px, transparent 1px 3px); background-size: 67px 257px, auto; background-position: 17px 31px, 0 0; }
 .c2-certificate-plaque {
   position: absolute; z-index: 1; left: 50%; bottom: calc(var(--c2-frame-rail) / 2); transform: translate(-50%, 50%);
   max-width: calc(100% - 2 * var(--c2-frame-rail)); padding: 3px clamp(10px, calc(24 * var(--c2-poster)), 24px);
   border: 1px solid #73511e; border-radius: 2px; color: #30200d;
-  background: linear-gradient(175deg, #fff0b4, #deb461 34%, #bc8c3e 78%, #f1cf80);
-  box-shadow: inset 0 1px 0 #fff4c9, inset 0 -1px 0 #8f6224, 0 1px 2px #2618079c;
+  background: var(--c2-metal-scuffs) 38px 9px / 257px 67px, linear-gradient(110deg, #55401e24, transparent 17%, #fff4ca80 32%, transparent 41%, #54371630 80%), linear-gradient(175deg, #fff0b4, #e4be71 26%, #bf954d 55%, #ab803b 78%, #f1cf80);
+  box-shadow: inset 0 1px 0 #fff4c9, inset 0 -1px 0 #6a481c, 0 1px 2px #2618079c;
+  text-shadow: 0 1px 0 #fff1b580;
   font: 500 clamp(8px, calc(11 * var(--c2-poster)), 11px)/1.1 C2Mono, monospace;
   letter-spacing: .065em; text-transform: uppercase; white-space: nowrap;
 }
