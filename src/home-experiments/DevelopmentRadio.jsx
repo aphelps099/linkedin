@@ -13,7 +13,8 @@ const PocketPlayer=memo(function PocketPlayer({motion,base,state,track,seconds,o
   const position=scrub??seconds;
   useEffect(()=>setScrub(null),[track.title]);
   useEffect(()=>{
-    if(menuOpen)(playlist.current?.querySelector('[aria-current="true"]')||playlist.current?.querySelector('button'))?.focus({preventScroll:true});
+    // Native focus also scrolls the selected row into the LCD's visible playlist.
+    if(menuOpen)(playlist.current?.querySelector('[aria-current="true"]')||playlist.current?.querySelector('button'))?.focus();
   },[menuOpen]);
   const commitSeek=value=>{setScrub(null);onSeek(Number(value));};
   const skip=direction=>{setScrub(null);setMenuOpen(false);onSkip(direction);};
