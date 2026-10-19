@@ -22,6 +22,19 @@ closures. Check silence, jaw/teeth stability, attached lips, headset position,
 face identity, and the first and last frames. A completed generation is not
 automatically an accepted performance.
 
+The first Kevin pilot is now rendered and bound to its exact take in
+`performances.js`. Output audio aligns with zero measured lag and 0.99998 waveform
+correlation to the approved input; Studio still plays its original voice master.
+The video supplies only the face performance and is always muted in the meeting.
+The editor reframed this shot closer to Kevin's face. His ordinary guitar footage
+continues outside the sentence. Do not use this one performance for other words.
+
+`SpeechPerformance.jsx` preloads the next validated line after Play, seeks its
+video from the meeting's audio clock, preserves the corresponding paused frame,
+and never loops the sentence. Missing performances retain the existing generic
+motion plates. The remainder of the human library still needs line-specific
+performances; it is not yet fully lip-synced.
+
 ## First complete meeting
 
 Finish `standup-0` before expanding to the season. It contains four solo human

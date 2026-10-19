@@ -3,6 +3,8 @@ import {Mic,MicOff,VideoOff,Pin,Music2} from 'lucide-react';
 import {cast,isSpeaker,cueLevel} from './catalog.js';
 import tracking from './robot-tracking.json';
 import {PrinterFeed} from './PrinterFeed.jsx';
+import {SpeechPerformance} from './SpeechPerformance.jsx';
+import {exactPerformance} from './performances.js';
 
 const base='/studio/season/';
 export function robotFrame(id,time){
@@ -38,7 +40,7 @@ export const Participant=memo(function Participant({id,meeting,frame,playing,aud
   const [ready,setReady]=useState(false),[failed,setFailed]=useState(false);
   const active=playing&&audible&&isSpeaker(id,frame.cue);
   const performing=playing&&musicOn&&!!c.instrument;
-  let clip=c.robot?`${c.media}-listening`:c.silent?null:`${c.media}-${active?'speaking':performing?(Math.floor(frame.time/(240/meeting.bpm*4))%2?'listening':'playing'):'listening'}`;
+  let clip=c.robot?`${c.media}-listening`:c.silent?null:`${c.media}-${active&&!exactPerformance(id,frame.cue)?'speaking':performing?(Math.floor(frame.time/(240/meeting.bpm*4))%2?'listening':'playing'):'listening'}`;
   const moving=playing&&videoOn&&!reduced;
   const poster=id==='droid'?`${base}posters/droid.jpeg`:`${base}posters/${clip}.jpg`;
   frameRef.current={...frame,active};
@@ -65,6 +67,7 @@ export const Participant=memo(function Participant({id,meeting,frame,playing,aud
     {c.offline||!videoOn?<div className="mr-camera-off"><VideoOff aria-hidden="true"/><div className="mr-avatar">{c.offline?'PT':c.name.split(' ').map(s=>s[0]).slice(0,2).join('')}</div><strong>{c.name}</strong><span>{c.offline?'Connecting to audio…':'Camera off'}</span></div>:<div className="mr-media">
       {id==='printer'?<PrinterFeed time={frame.time} playing={moving} reduced={reduced}/>:<img className="mr-poster" src={poster} alt="" loading="eager"/>}
       {clip&&<video key={`${meeting.id}-${clip}`} ref={video} className={ready?'is-ready':''} src={moving||ready?`${base}clips/${clip}.mp4`:undefined} muted playsInline disablePictureInPicture loop preload="none" onPlaying={()=>setReady(true)} onError={()=>setFailed(true)} aria-hidden="true"/>}
+      {!c.robot&&!c.silent&&<SpeechPerformance id={id} meeting={meeting} time={frame.time} playing={playing} reduced={reduced}/>}
       {c.robot&&<canvas className="mr-robot-display" ref={canvas} width="1280" height="720" aria-hidden="true"/>}
     </div>}
     <span className="mr-tile-top">

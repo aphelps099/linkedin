@@ -1,5 +1,5 @@
 {
-  "status": "prepared-awaiting-performance-render",
+  "status": "rendered-integrated-pilot",
   "character": "guitar",
   "displayName": "Kevin",
   "text": "I\u2019m humbled and honored to be onboarding a new folder.",
@@ -20,5 +20,18 @@
     "No sliding, floating, warped or doubled mouth",
     "Headset, eyes, jaw and face identity remain stable",
     "Seek and pause match the same speech time"
-  ]
+  ],
+  "taskId": "c3bc8a40-5002-4ea7-a81b-443a26d82df5",
+  "assetId": "ff51ad50-e151-42a9-a209-f66f47ae1000",
+  "runwaySession": "5bb35d14-ea57-4d00-979c-8d4c846ccbad",
+  "output": "kevin-new-folder-performance.mp4",
+  "runtimeVideo": "public/studio/performances/kevin-new-folder-v1.mp4",
+  "audioLagSeconds": 0,
+  "audioWaveformCorrelation": 0.9999766166011571,
+  "creditsSpent": 2,
+  "observedCreditBalanceBefore": 20149,
+  "observedCreditBalanceAfter": 20447,
+  "creditAdjustmentNote": "Runway also automatically awarded 300 credits for first App use. Net balance +298.",
+  "reviewNotes": "Exact voice and duration retained. Face/headset stable in frame review. Editor crops closer to face; guitar remains in background plates outside this line. Human season remains incomplete.",
+  "outputSha256": "7723e45993f28fdad746818cc495ef3834820d3735353b33589ebf24d4cedd3c"
 }

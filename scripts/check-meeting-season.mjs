@@ -6,6 +6,7 @@ import React from 'react';
 import {renderToString} from 'react-dom/server';
 import {createMeetingEngine} from '../src/meeting-room/engine.js';
 import {PRINT_CYCLE,printerPhase,paperRow} from '../src/meeting-room/printer-paper.js';
+import {exactPerformance,performanceForTime,performanceTime} from '../src/meeting-room/performances.js';
 
 const bundle=await build({entryPoints:['src/meeting-room/catalog.js'],bundle:true,platform:'node',format:'esm',write:false});
 const {meetings,cast,meetingSequence,nextMeeting,cueAt,isSpeaker}=await import(`data:text/javascript;base64,${Buffer.from(bundle.outputFiles[0].text).toString('base64')}`);
@@ -35,6 +36,18 @@ for(const [agenda,variants] of Object.entries(meetings)){
   }
 }
 assert.equal(total,14);
+const pilotCue=meetings.standup[0].cues[2],pilot=exactPerformance('guitar',pilotCue);
+assert(pilot,'Kevin has a performance for the approved new-folder take');
+await access(`public${pilot.video}`);
+assert.equal(exactPerformance('keys',pilotCue),null,'Never assign another person’s facial performance');
+assert.equal(exactPerformance('guitar',{...pilotCue,sources:[{...pilotCue.sources[0],masterSha256:'changed'}]}),null,'A revised voice master invalidates the performance');
+assert.equal(exactPerformance('guitar',{...pilotCue,sources:[{...pilotCue.sources[0],take:'different'}]}),null,'Matching text alone cannot select a clip');
+assert.equal(performanceForTime('guitar',meetings.standup[0],0).current,false,'Preload the upcoming line without playing it');
+assert.equal(performanceForTime('guitar',meetings.standup[0],pilotCue.start+.5).current,true);
+assert.equal(performanceForTime('guitar',meetings.standup[0],pilotCue.start+pilotCue.duration+.01),null,'Do not loop a completed sentence');
+assert.equal(performanceTime(pilot,pilotCue,0),0);
+assert(Math.abs(performanceTime(pilot,pilotCue,pilotCue.start+.5)-.5)<1e-9,'Seek follows the same voice clock');
+assert.equal(performanceTime(pilot,pilotCue,999),pilot.duration);
 let current=meetingSequence[0];const visited=new Set();
 for(let i=0;i<14;i++){
   assert(!visited.has(current.id),'Every meeting gets a turn before repeating');visited.add(current.id);
