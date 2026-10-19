@@ -1,14 +1,14 @@
 """Render the authored meeting season locally. No paid voice or generation APIs.
 
-Uses the same Flite voice family and original stem recordings as Studio 2.
+Uses the approved human line bank, established robot voices, and Studio 2 stems.
 Run after `node --input-type=module -e "import {library} from './src/meeting-room/scripts.js';
 import {writeFileSync} from 'node:fs';writeFileSync('/tmp/meeting-scripts.json',JSON.stringify(library))"`.
 """
-import json, math, subprocess, tempfile, argparse, unicodedata
+import json, math, subprocess, tempfile, argparse, unicodedata, hashlib
 from pathlib import Path
 import numpy as np
 from scipy.io import wavfile
-from scipy.signal import butter, sosfilt, resample
+from scipy.signal import butter, sosfilt
 
 ROOT=Path(__file__).resolve().parents[1]
 OUT=ROOT/'public/studio/season/audio'
@@ -17,14 +17,13 @@ LIB=json.loads(Path('/tmp/meeting-scripts.json').read_text())
 STEMS=json.loads((ROOT/'src/studio-2/audio-manifest.json').read_text())['tracks']
 BEDS={'standup':'offline','onboarding':'circle-back','unlock':'alignment','paperless':'no-action','founder':'humbled','offline':'offline','quarterly':'synergy'}
 # Stable voices belong to characters, never to their position in the grid.
-VOICES={'synergy':('kal16',.91),'synthia':('slt',1.04),'people':('slt',.94),
-        'strategy':('rms',1.02),'guitar':('kal16',1.05),'keys':('slt',1),
-        'operations':('awb',.98),'accountant':('rms',.94),'linda':('slt',.89)}
+VOICES={'synergy':('kal16',.91),'synthia':('slt',1.04)}
 CACHE={}
 parser=argparse.ArgumentParser()
-parser.add_argument('--voice-bank',help='Reviewed human bank from export-meeting-voice-bank.mjs')
+parser.add_argument('--voice-bank',required=True,help='Approved cast bank from export-meeting-voice-bank.mjs')
 ARGS=parser.parse_args()
 VOICE_BANK=json.loads(Path(ARGS.voice_bank).read_text()) if ARGS.voice_bank else None
+SPEAKERS=set(VOICES)|set(VOICE_BANK['characters'])
 
 def bank_key(character,text):
     text=' '.join(unicodedata.normalize('NFC',text).split())
@@ -36,14 +35,16 @@ if VOICE_BANK:
     for variants in LIB.values():
         for meeting in variants:
             for who,text in meeting['lines']:
-                people=[p for p in meeting['roster'] if p in VOICES] if who=='all' else [who]
+                people=[p for p in meeting['roster'] if p in SPEAKERS] if who=='all' else [who]
                 phrases=[t.strip()+'.' for t in text.split('.') if t.strip()] if who=='all' else [text]
                 for person in people:
                     if person in ('synergy','synthia'):continue
                     for phrase in phrases:
                         take=VOICE_BANK['lines'].get(bank_key(person,phrase))
-                        if not take or take['status']!='approved' or not (ROOT/take['file']).is_file():
+                        if not take or take['status'] not in ('approved','validated') or not (ROOT/take['file']).is_file():
                             raise ValueError(f'Missing approved human recording: {person}: {phrase}')
+                        if hashlib.sha256((ROOT/take['file']).read_bytes()).hexdigest()!=take['masterSha256']:
+                            raise ValueError(f'Changed human master: {person}: {phrase}')
 
 def ff(*args):
     subprocess.run(['ffmpeg','-hide_banner','-loglevel','error','-y',*map(str,args)],check=True)
@@ -61,6 +62,9 @@ def speech(text,character,tmp):
         ff('-i',ROOT/take['file'],'-ar',SR,'-ac',1,tmp/'human.wav')
         _,x=wavfile.read(tmp/'human.wav');x=x.astype(np.float64)/32768
         # Natural timbre and pauses remain intact; no robot bandpass or pitch FX.
+        # Remove only outer silence so the cue begins with the actual speaking turn.
+        active=np.flatnonzero(np.abs(x)>.004)
+        if len(active):x=x[max(0,active[0]-1200):min(len(x),active[-1]+3600)]
         CACHE[key]=x.copy()
         return x
     voice,pitch=VOICES[character]
@@ -88,22 +92,35 @@ def envelope(x):
 
 def chorus(text,roster,beat,tmp):
     # The cast says the hook together, phrase by phrase on the beat.
-    ids=[p for p in roster if p in VOICES]
+    ids=[p for p in roster if p in SPEAKERS]
     phrases=[t.strip()+'.' for t in text.split('.') if t.strip()]
     parts=[]
     for phrase in phrases:
         takes=[speech(phrase,p,tmp) for p in ids]
-        duration=math.ceil(max(map(len,takes))/SR/beat)*beat
+        duration=math.ceil((max(map(len,takes))/SR+.12)/beat)*beat
         n=round(duration*SR);mix=np.zeros(n)
         for take in takes:
-            target=max(1,n-round(.12*SR))
-            mix[:target]+=resample(take,target)/math.sqrt(len(takes))
+            # Start together, then leave space. Never resample a voice to fit a bar:
+            # that shifts pitch and destroys the character's approved identity.
+            mix[:len(take)]+=take/math.sqrt(len(takes))
         mix*=min(1,.82/max(.001,np.max(abs(mix))))
         parts.append(mix)
     return np.concatenate(parts)
 
 OUT.mkdir(parents=True,exist_ok=True)
-result={'version':1,'sampleRate':SR,'envelopeHz':25,'meetings':{}}
+manifest_path=ROOT/'src/meeting-room/audio-manifest.json'
+previous=json.loads(manifest_path.read_text()) if manifest_path.exists() else {'meetings':{}}
+result={'version':1,'sampleRate':SR,'envelopeHz':25,'voiceCast':VOICE_BANK['characters'],
+        'robotCast':{who:{'provider':'flite','voice':voice,'pitch':pitch} for who,(voice,pitch) in VOICES.items()},'meetings':{}}
+
+def sources(who,text,roster):
+    ids=[p for p in roster if p in SPEAKERS] if who=='all' else [who]
+    phrases=[t.strip()+'.' for t in text.split('.') if t.strip()] if who=='all' else [text]
+    return [{'character':person,'text':phrase,**(
+        {'provider':'flite','voice':VOICES[person][0],'pitch':VOICES[person][1]} if person in VOICES else
+        {k:VOICE_BANK['lines'][bank_key(person,phrase)][k] for k in ('line','take','masterSha256')}
+    )} for phrase in phrases for person in ids]
+
 with tempfile.TemporaryDirectory(prefix='meeting-season-') as directory:
     tmp=Path(directory)
     for agenda,variants in LIB.items():
@@ -121,7 +138,8 @@ with tempfile.TemporaryDirectory(prefix='meeting-season-') as directory:
             for index,(who,text) in enumerate(meeting['lines']):
                 x=chorus(text,meeting['roster'],beat,tmp) if who=='all' else speech(text,who,tmp)
                 duration=len(x)/SR
-                cues.append({'speaker':who,'text':text,'start':round(cursor,4),'duration':round(duration,4),'level':envelope(x)})
+                cues.append({'speaker':who,'text':text,'start':round(cursor,4),'duration':round(duration,4),'level':envelope(x),
+                             'sources':sources(who,text,meeting['roster'])})
                 events.append((round(cursor*SR),x))
                 # Short pauses keep the joke moving. Chorus starts on a full bar.
                 cursor=math.ceil((cursor+duration+.22)/beat)*beat
@@ -130,8 +148,15 @@ with tempfile.TemporaryDirectory(prefix='meeting-season-') as directory:
             track=np.zeros(round(duration*SR))
             for start,x in events:track[start:start+len(x)]+=x
             key=f'{agenda}-{vi}'
-            encode(track,OUT/f'{key}-voice.mp3',tmp)
-            result['meetings'][key]={'duration':round(duration,4),'voice':f'{key}-voice.mp3','bed':f'{agenda}-bed.mp3','loopDuration':bed['duration'],'cues':cues}
+            encode(track,tmp/'voice.mp3',tmp)
+            audio=(tmp/'voice.mp3').read_bytes()
+            voice=f'{key}-voice-{hashlib.sha256(audio).hexdigest()[:12]}.mp3'
+            (OUT/voice).write_bytes(audio)
+            result['meetings'][key]={'duration':round(duration,4),'voice':voice,'bed':f'{agenda}-bed.mp3','loopDuration':bed['duration'],'cues':cues}
             print(key,round(duration,1),'seconds /',len(cues),'cues',flush=True)
-(ROOT/'src/meeting-room/audio-manifest.json').write_text(json.dumps(result,separators=(',',':'))+'\n')
+manifest_path.with_suffix('.json.tmp').write_text(json.dumps(result,separators=(',',':'))+'\n')
+manifest_path.with_suffix('.json.tmp').replace(manifest_path)
+current={m['voice'] for m in result['meetings'].values()}
+for old in previous['meetings'].values():
+    if old['voice'] not in current:(OUT/old['voice']).unlink(missing_ok=True)
 print('Season rendered. No external generation credits used.',flush=True)

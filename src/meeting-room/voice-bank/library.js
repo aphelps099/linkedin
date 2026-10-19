@@ -54,7 +54,8 @@ export function buildLibrary() {
 export function productionTake(line,profile,recordings,renderer) {
   const key=takeKey(line,profile,renderer),take=recordings[key];
   if(!['approved','existing'].includes(profile.status)) throw new Error(`Voice casting not approved: ${line.character}`);
-  if(!take||take.status!=='approved') throw new Error(`Recording not approved: ${line.id}`);
+  const validated=take?.status==='validated'&&take.validation?.decode&&take.validation?.hashes&&take.validation?.levels&&take.validation?.identity;
+  if(!take||(take.status!=='approved'&&!validated)) throw new Error(`Recording not approved or validated: ${line.id}`);
   if(take.line!==line.id||take.character!==line.character) throw new Error(`Recording identity mismatch: ${line.id}`);
   return take;
 }

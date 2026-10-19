@@ -4,7 +4,8 @@
     "people": {
       "name": "People & Culture",
       "kind": "human",
-      "status": "candidate",
+      "status": "approved",
+      "approvedAt": "2026-10-19",
       "version": "human-casting-1",
       "provider": "local-kokoro",
       "voice": "af_heart",
@@ -16,7 +17,8 @@
     "strategy": {
       "name": "Strategy",
       "kind": "human",
-      "status": "candidate",
+      "status": "approved",
+      "approvedAt": "2026-10-19",
       "version": "human-casting-2",
       "provider": "local-kokoro",
       "voice": "am_onyx",
@@ -28,7 +30,8 @@
     "guitar": {
       "name": "Kevin · Partnerships",
       "kind": "human",
-      "status": "candidate",
+      "status": "approved",
+      "approvedAt": "2026-10-19",
       "version": "human-casting-2",
       "provider": "local-kokoro",
       "voice": "am_puck",
@@ -40,7 +43,8 @@
     "keys": {
       "name": "Keys · Enablement",
       "kind": "human",
-      "status": "candidate",
+      "status": "approved",
+      "approvedAt": "2026-10-19",
       "version": "human-casting-1",
       "provider": "local-kokoro",
       "voice": "af_bella",
@@ -52,7 +56,8 @@
     "operations": {
       "name": "Operations",
       "kind": "human",
-      "status": "candidate",
+      "status": "approved",
+      "approvedAt": "2026-10-19",
       "version": "human-casting-1",
       "provider": "local-kokoro",
       "voice": "am_michael",
@@ -64,7 +69,8 @@
     "accountant": {
       "name": "Arjun · Finance",
       "kind": "human",
-      "status": "candidate",
+      "status": "approved",
+      "approvedAt": "2026-10-19",
       "version": "human-casting-1",
       "provider": "local-kokoro",
       "voice": "bm_george",
@@ -76,7 +82,8 @@
     "linda": {
       "name": "Linda · Governance",
       "kind": "human",
-      "status": "candidate",
+      "status": "approved",
+      "approvedAt": "2026-10-19",
       "version": "human-casting-2",
       "provider": "local-kokoro",
       "voice": "af_nicole",

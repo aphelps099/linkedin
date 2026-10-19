@@ -1,7 +1,7 @@
 // Voice identity belongs to a character, never to a tile or a meeting.
-// Candidate human casts must be heard and approved before season-wide rendering.
+// Approved by the user on 2026-10-19 after the Linda / Strategy / Kevin recast.
 const human = (name, voice, speed, direction, poster, version='human-casting-1') => ({
-  name, kind:'human', status:'candidate', version,
+  name, kind:'human', status:'approved', approvedAt:'2026-10-19', version,
   provider:'local-kokoro', voice, speed, direction, poster,
   performance:'Natural speech. Underplay the joke. No vocoder, pitch shifting, or singing.',
 });

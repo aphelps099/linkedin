@@ -17,17 +17,20 @@ joke must remain in order. Synergy hosts every meeting.
 Audio clock. Captions, speaker outlines and the robot mouth read that timeline.
 The speaking cast performs the shared chorus; printer, droid and Pat never sing.
 
-The local recordings use the existing Studio 2 Flite family and its original
-drums/bass/keyboard stems. Synergy and Synthia have stable, distinct voice
-settings. They are deliberately dry computer speech, not expressive singing.
-These recordings are not the newer LinkedInifier Kokoro announcer or exact
-macOS Fred recordings. No voice service is called during playback. Swapping a
-recording requires regenerating its cue durations/envelopes, not just an MP3.
+The human voices are the user-approved Kokoro cast from October 19. Linda uses
+Nicole, Strategy uses Onyx, and Kevin uses Puck; identities are fixed per
+character in `voice-bank/characters.js`. Synergy and Synthia keep their distinct
+Flite computer voices. The instrumental beds remain the original Studio 2 stems.
+No voice service is called during playback.
 
-The human replacement cast is being auditioned at `/studio/voices/`. See
-`voice-bank/README.md` for the reusable line catalog, cached lossless recordings,
-voice approval states, and production export. These candidates do not change
-the live meeting audio until casting and individual takes have been reviewed.
+All 14 timelines are rebuilt from the actual recordings. Each cue records its
+source take IDs and master hashes; the seven human cast profiles are embedded
+in the manifest. Full voice timelines use content-hashed filenames so a returning
+listener cannot get old audio with new caption timing. Choruses start together
+and pad to beats, without pitch-changing resampling.
+
+See `voice-bank/README.md` for the reusable line bank and validation workflow.
+The cast samples remain available at `/studio/voices/`.
 
 ## Character continuity and movement
 
@@ -76,7 +79,8 @@ output peaks. It does not call any paid generation API.
 Run `npm run check:meeting` and `npm run build`.
 
 To regenerate the local audio, export `library` from `scripts.js` as JSON to
-`/tmp/meeting-scripts.json`, then run `python scripts/render-meeting-season.py`.
+`/tmp/meeting-scripts.json`, then export the approved voice bank and run
+`python scripts/render-meeting-season.py --voice-bank /tmp/approved-meeting-voices.json`.
 Requirements: ffmpeg with Flite, NumPy and SciPy. For new robot plates run
 `python scripts/track-meeting-robots.py` (also needs OpenCV), then inspect every
 face overlay against the actual footage before shipping. Never reuse tracking

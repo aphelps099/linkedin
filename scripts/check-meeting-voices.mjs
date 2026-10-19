@@ -47,8 +47,9 @@ for(const [who,ids] of Object.entries(bank.auditions)) {
     assert.notEqual(takeKey(line,{...profile,speed:profile.speed+.1},renderer),key);
     assert.notEqual(takeKey({...line,spokenText:line.spokenText+' Again.'},profile,renderer),key);
     assert.notEqual(takeKey(line,profile,{...renderer,modelSha256:'different-weights'}),key);
-    assert.throws(()=>productionTake(line,profile,recordings.takes,renderer),/casting not approved/);
-    assert.throws(()=>productionTake(line,{...profile,status:'approved'},recordings.takes,renderer),/Recording not approved/);
+    assert.throws(()=>productionTake(line,{...profile,status:'candidate'},recordings.takes,renderer),/casting not approved/);
+    assert.throws(()=>productionTake(line,{...profile,status:'approved'},{[key]:{...take,status:'needs-listening'}},renderer),/Recording not approved/);
+    assert.throws(()=>productionTake(line,profile,{[key]:{...take,status:'validated',validation:{}}},renderer),/Recording not approved/);
     const approved={...take,status:'approved'};
     assert.equal(productionTake(line,{...profile,status:'approved'},{[key]:approved},renderer),approved);
     count++;
@@ -63,4 +64,25 @@ assert.equal(count,21);
 assert.equal(lineId('keys',' A  small update. '),lineId('keys','A small update.'));
 assert.notEqual(lineId('keys','A small update.'),lineId('people','A small update.'));
 assert.equal(new Set(Object.values(bank.characters).filter(p=>p.kind==='human').map(p=>p.voice)).size,7);
-console.log(`Voice bank checked: ${bank.lines.length} indexed lines, 14 intact scripts, 21 decoded and hashed takes, 7 auditions. Unapproved voices cannot be exported to production.`);
+const season=JSON.parse(await readFile(resolve(root,'src/meeting-room/audio-manifest.json'),'utf8'));
+let mapped=0;
+for(const [id,meeting] of Object.entries(bank.meetings)){
+  const rendered=season.meetings[id];
+  for(const [index,cue] of meeting.cues.entries()){
+    const expected=cue.speaker==='all'?cue.phrases.flatMap(phrase=>Object.values(phrase)):[cue.line];
+    assert.equal(rendered.cues[index].sources.length,expected.length);
+    for(const [i,lineId] of expected.entries()){
+      const line=bank.lines.find(l=>l.id===lineId),profile=bank.characters[line.character],source=rendered.cues[index].sources[i];
+      assert.equal(source.character,line.character);assert.equal(source.text,line.text);
+      if(profile.kind==='robot'){assert.equal(source.voice,profile.voice);assert.equal(source.pitch,profile.pitch);continue;}
+      assert.equal(season.voiceCast[line.character].voice,profile.voice);assert.equal(season.voiceCast[line.character].speed,profile.speed);
+      const renderer=recordings.rendererByCharacter[line.character],take=productionTake(line,profile,recordings.takes,renderer);
+      assert.equal(source.take,takeKey(line,profile,renderer));assert.equal(source.line,line.id);assert.equal(source.masterSha256,take.masterSha256);
+      assert.equal(expectedHash(await readFile(resolve(root,take.master))),source.masterSha256);
+      mapped++;
+    }
+  }
+  const data=await readFile(resolve(root,`public/studio/season/audio/${rendered.voice}`));
+  assert(rendered.voice.endsWith(`${expectedHash(data).slice(0,12)}.mp3`),'Voice URLs must change with their contents');
+}
+console.log(`Voice bank checked: ${bank.lines.length} indexed lines, ${mapped} human cue/chorus mappings across 14 scripts, 21 decoded auditions. Exact approved identities and timeline hashes verified.`);

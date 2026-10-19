@@ -6,28 +6,35 @@ members (printer, paper droid, Pat) must never enter a vocal chorus.
 
 ## Current state
 
-The catalog indexes the 14 authored meetings, including chorus phrases for each
-participating character. It also includes three audition reads per human. Only
-the 21 audition reads have been rendered with the new human voices. This is a
-casting pilot, not an approved replacement for the live Studio's audio.
+The catalog indexes 196 character lines from 14 authored meetings, including
+chorus phrases for each participant and three audition reads per human. The
+user approved all seven human identities on October 19, after the Linda,
+Strategy, and Kevin revision. Those identities now map to the full season.
 
-The seven Kokoro presets are **casting candidates**, not replicas extracted from
-earlier videos. Casting choices follow performance and intelligibility; do not
-infer an accent from a character's appearance. Direction text is an editorial
-brief for listening review; Kokoro does not accept it as an acting instruction.
-Speed and preset are the actual controls. If a candidate does not fit the face,
-change the casting before generating hundreds of lines.
+| Character | Preset | Speed | Delivery |
+| --- | --- | --- | --- |
+| People & Culture | af_heart | 0.97 | Warm, reassuring |
+| Strategy | am_onyx | 0.95 | Low, deliberate |
+| Kevin / Partnerships | am_puck | 1.06 | Lighter, conversational |
+| Keys / Enablement | af_bella | 0.98 | Calm, friendly |
+| Operations | am_michael | 0.97 | Unhurried, matter-of-fact |
+| Arjun / Finance | bm_george | 1.00 | Precise, restrained |
+| Linda / Governance | af_nicole | 0.91 | Low, husky, seasoned |
 
-Casting revision 2 (October 19): Linda moves from Sarah to the lower, huskier
-Nicole preset at a restrained pace. Strategy moves from Fenrir to Onyx; Fenrir
-and Kevin's Puck were perceived as too similar. Kevin retains his lighter Puck
-identity with a quicker conversational pace. These are new candidate takes,
-not approval of the cast. Revised audition URLs include the audio hash so a
-returning listener cannot accidentally hear a cached previous casting.
+These are synthetic casting identities, not clones extracted from the footage.
+Casting follows delivery, not an inferred accent based on appearance. Kokoro
+uses the preset and speed; direction text is an editorial brief, not a model
+acting instruction. Keep the approved acoustic version unless recasting is
+explicitly requested. Previous candidates remain in the recording history.
+
+The bank contains 119 current human takes (112 meeting lines plus seven common
+audition reads), with lossless masters. The 21 audition takes have user listening
+approval. Additional production takes have technical validation, **not a claim
+of individual listening approval**. Their review metadata states that distinction.
 
 ## Files and commands
 
-- `characters.js`: fixed candidate voice, pace, identity version, direction.
+- `characters.js`: fixed approved voice, pace, identity version, direction.
 - `library.js`: stable character/text IDs; exact acoustic cache keys; intact
   authored sequences and line usage metadata.
 - `public/studio/voices/catalog.json`: portable line and meeting index.
@@ -52,29 +59,33 @@ committed atomically. Re-rendering does not grant listening approval.
 
 ## From casting to production
 
-1. Listen with the portrait. Review the common read, a longer update, and a short
-   reaction. Approve the character identity only after the user chooses it.
-2. Set the selected profile's `status` to `approved`. Preserve its version and
-   preset. A changed voice is a new identity version, never a silent replacement.
-3. Run `node scripts/render-meeting-voices.mjs --approved` to fill the missing
-   human takes. Existing takes are reused, not billed or regenerated.
-4. Listen to each new take: pronunciation, human delivery, clipped endings,
-   unnatural pauses, character consistency. Set an accepted take's `status` to
-   `approved`; rejected takes stay out of production. Do not infer subjective
-   quality from a successful decode or a nonzero waveform.
-5. Export with `node scripts/export-meeting-voice-bank.mjs /tmp/approved-meeting-voices.json`.
-   This refuses unapproved casts and missing/unreviewed takes for any meeting.
-6. Export `library` from `scripts.js` to `/tmp/meeting-scripts.json` as before, then
-   run `python scripts/render-meeting-season.py --voice-bank /tmp/approved-meeting-voices.json`.
-   The timeline is rebuilt from real durations; captions, speaker borders,
-   robot mouth cues, and ducking follow the new audio. Robot lines still use the
-   established renderer. Omitting `--voice-bank` retains the original season.
+1. The user approves the audition identity. Set the profile to `approved` and
+   record the approval date without changing its acoustic version.
+2. Run `node scripts/render-meeting-voices.mjs --approved`. It fills missing
+   human takes and preserves the exact preset, speed, and model artifacts.
+3. Run `node scripts/validate-meeting-voice-bank.mjs`. Every current take must
+   decode completely, match both hashes and the exact identity, have valid
+   duration/envelopes, and pass silence/clipping checks. Auditions are marked
+   user-approved; new lines are explicitly `validated`, not individually heard.
+   The user's request to map the approved cast authorizes this production batch.
+   A technical pass does not establish pronunciation or subjective quality.
+4. Export with `node scripts/export-meeting-voice-bank.mjs /tmp/approved-meeting-voices.json`.
+   Missing, stale, unvalidated takes or unapproved casts fail before export.
+5. Export `library` from `scripts.js` to `/tmp/meeting-scripts.json`, then run
+   `python scripts/render-meeting-season.py --voice-bank /tmp/approved-meeting-voices.json`.
+   The bank is required: there is no silent fallback to human Flite placeholders.
+6. Run both `npm run check:meeting-voices` and `npm run check:meeting`, decode the
+   full timelines with `python scripts/check-meeting-audio.py`, and build. The voice check compares every human dialogue and
+   chorus source against the current approved character and source master hash.
 
-Natural speech is not singing. Short choruses can be rhythmically arranged; a
-long line should never be squeezed into an arbitrary beat length. The existing
-chorus renderer resamples phrases and needs listening review with the new cast.
-Human video plates remain approximate turn-cued performances, not phonetic lip
-sync. Featured close-ups need dedicated audio-driven lip sync to final audio.
+The timeline is rebuilt from measured durations; captions, turn borders,
+robot mouth envelopes, and ducking follow it. Each cue records source takes.
+Content-hashed timeline filenames prevent stale playback after deployment.
+
+Natural speech is not singing. Short chorus phrases start together, then pad
+with silence to the next beat. They are never pitch-shifted or resampled to fill
+an arbitrary bar. Human video plates remain approximate turn-cued performances,
+not phonetic lip sync. Featured close-ups need dedicated audio-driven lip sync.
 
 ## Expansion target: about 400 useful takes
 
@@ -92,4 +103,5 @@ never assemble dialogue by randomly selecting isolated buzzwords.
 For future exchanges add explicit entry/exit topic tags and compatible follow-up
 IDs before enabling block-level randomization. Until then the runtime continues
 choosing complete authored meetings. Content approval and voice approval are
-separate: neither a new script nor a new render silently becomes a live meeting.
+separate: new scripts still require editorial review; the approved voice bank serves the
+existing authored meetings.
