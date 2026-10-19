@@ -16,14 +16,16 @@ for character,(task,asset) in TASKS.items():
     y=np.frombuffer(data,dtype='<i2').astype(float)
     lag=int(correlation_lags(len(y),len(x))[np.argmax(correlate(y,x))]);n=min(len(x),len(y))
     correlation=float(np.corrcoef(x[:n],y[:n])[0,1]);assert lag==0 and correlation>.999,(character,lag,correlation)
-    dest=OUT/f'{character}-unlock-exact-v1.mp4'
+    dest=OUT/f'{character}-unlock-exact-v2.mp4'
     subprocess.run(['ffmpeg','-v','error','-y','-i',str(source),'-vf',
         'scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2:color=0x111315,setsar=1',
-        '-c:v','libx264','-preset','medium','-crf','20','-pix_fmt','yuv420p','-c:a','copy','-movflags','+faststart',str(dest)],check=True)
+        '-c:v','libx264','-preset','medium','-crf','20','-g','24','-keyint_min','24',
+        '-sc_threshold','0','-bf','0','-pix_fmt','yuv420p','-c:a','copy','-movflags','+faststart',str(dest)],check=True)
     job.update(status='reviewed-integrated',taskId=task,assetId=asset,creditsSpent=2,
         runwaySession='5bb35d14-ea57-4d00-979c-8d4c846ccbad',output=source.name,
         outputSha256=hashlib.sha256(source.read_bytes()).hexdigest(),runtimeVideo=str(dest.relative_to(ROOT)),
         runtimeSha256=hashlib.sha256(dest.read_bytes()).hexdigest(),audioLagSeconds=0,audioWaveformCorrelation=correlation,
+        deliveryEncoding={'keyframeIntervalFrames':24,'bFrames':0,'purpose':'Fast random access when seven singers seek together'},
         reviewNotes='Reviewed solo and chorus frames: stable face/headset, attached lips, subtle blinks. Original approved voice master stays in the live meeting. Keys has a separate approved keyboard camera during speech because the speech renderer reframes to a close shot.')
     path.write_text(json.dumps(job,indent=2,ensure_ascii=False)+'\n')
     video='/'+str(dest.relative_to(ROOT/'public'))

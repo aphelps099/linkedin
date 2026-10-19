@@ -60,9 +60,14 @@
   "runwaySession": "5bb35d14-ea57-4d00-979c-8d4c846ccbad",
   "output": "operations-performance.mp4",
   "outputSha256": "1a3b01262d8675d957062e4b8d7dc2f08bd88a607651efa48d81b5c4588cfe23",
-  "runtimeVideo": "public/studio/performances/operations-unlock-exact-v1.mp4",
-  "runtimeSha256": "53106fa4ea4a76539c50a569229a1c55e2064cfef6d362f32d2c9635782bd380",
+  "runtimeVideo": "public/studio/performances/operations-unlock-exact-v2.mp4",
+  "runtimeSha256": "38fb06dcea01a7f7339389a49cfb263ef155817beadffe98fded9916fd172e5b",
   "audioLagSeconds": 0,
   "audioWaveformCorrelation": 0.9999847803566353,
-  "reviewNotes": "Reviewed solo and chorus frames: stable face/headset, attached lips, subtle blinks. Original approved voice master stays in the live meeting. Keys has a separate approved keyboard camera during speech because the speech renderer reframes to a close shot."
+  "reviewNotes": "Reviewed solo and chorus frames: stable face/headset, attached lips, subtle blinks. Original approved voice master stays in the live meeting. Keys has a separate approved keyboard camera during speech because the speech renderer reframes to a close shot.",
+  "deliveryEncoding": {
+    "keyframeIntervalFrames": 24,
+    "bFrames": 0,
+    "purpose": "Fast random access when seven singers seek together"
+  }
 }

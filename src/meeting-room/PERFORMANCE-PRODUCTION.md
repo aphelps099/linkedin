@@ -132,6 +132,13 @@ the closing Linda line, and the deterministic next-meeting link.
 
 Direct review link: `/studio/?meeting=unlock-0`.
 
+The twelve-person chorus exposed excessive simultaneous decoding in live review.
+Pause each human's hidden background camera once its exact performance becomes
+visible, and resume it when that performance ends or fails. The independent
+keyboard detail continues. Unlock delivery clips use one-second keyframes and
+no B-frames so group seeks do not repeatedly decode long preceding GOPs. Source
+masters retain their original encoding.
+
 ## Robot treatment (unchanged)
 
 Synergy is a separate production problem. Generate a stable physical performance

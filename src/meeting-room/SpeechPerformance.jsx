@@ -1,11 +1,14 @@
 import React,{useEffect,useRef,useState} from 'react';
 import {performanceForTime,performanceTime,syncPerformanceVideo} from './performances.js';
 
-export function SpeechPerformance({id,meeting,time,playing,reduced}){
+export function SpeechPerformance({id,meeting,time,playing,reduced,onVisibleChange}){
   const selection=performanceForTime(id,meeting,time);
   const video=useRef(null),[ready,setReady]=useState(false),[failed,setFailed]=useState(false);
   const source=selection?.performance.video;
   const enabled=!reduced&&(playing||time>0);
+  const visible=!!(enabled&&selection?.current&&ready&&!failed);
+  useEffect(()=>{onVisibleChange?.(visible);},[visible,onVisibleChange]);
+  useEffect(()=>()=>{onVisibleChange?.(false);},[onVisibleChange]);
   useEffect(()=>{setReady((video.current?.readyState||0)>=2);setFailed(false);},[source,meeting.id]);
   const synchronize=()=>{
     const v=video.current;
@@ -17,7 +20,7 @@ export function SpeechPerformance({id,meeting,time,playing,reduced}){
   };
   useEffect(synchronize,[time,playing,enabled,ready,failed,source,selection?.current]);
   if(!selection)return null;
-  return <video ref={video} key={source} className={`mr-exact-performance${enabled&&selection.current&&ready&&!failed?' is-visible':''}`}
+  return <video ref={video} key={source} className={`mr-exact-performance${visible?' is-visible':''}`}
     src={enabled?source:undefined} muted playsInline disablePictureInPicture preload={enabled?'auto':'none'}
     onLoadedData={()=>{setReady(true);synchronize();}} onCanPlay={synchronize} onSeeked={synchronize}
     onError={()=>setFailed(true)} aria-hidden="true"/>;

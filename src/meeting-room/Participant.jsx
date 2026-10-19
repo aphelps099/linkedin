@@ -39,20 +39,24 @@ export function drawRobotMouth(ctx,id,videoTime,audioTime,level){
 export const Participant=memo(function Participant({id,meeting,frame,playing,audible,musicOn,videoOn,reduced,pinned,onPin,reactions}){
   const c=cast[id],video=useRef(null),canvas=useRef(null),frameRef=useRef(frame);
   const [ready,setReady]=useState(false),[failed,setFailed]=useState(false);
+  const [exactVisible,setExactVisible]=useState(false);
   const active=playing&&audible&&isSpeaker(id,frame.cue);
   const performing=playing&&musicOn&&!!c.instrument;
   const keyboardDetail=id==='keys'&&!!exactPerformance(id,frame.cue)&&!reduced&&videoOn&&(playing||frame.time>0);
   let clip=c.robot?`${c.media}-listening`:c.silent?null:`${c.media}-${active&&!exactPerformance(id,frame.cue)?'speaking':performing?(Math.floor(frame.time/(240/meeting.bpm*4))%2?'listening':'playing'):'listening'}`;
   const moving=playing&&videoOn&&!reduced;
+  // A twelve-tile chorus must not decode two cameras for every human.
+  // Keep the fallback moving until the exact performance is actually visible.
+  const baseMoving=moving&&!exactVisible;
   const poster=id==='droid'?`${base}posters/droid.jpeg`:`${base}posters/${clip}.jpg`;
   frameRef.current={...frame,active};
   useEffect(()=>{setReady(false);setFailed(false);},[clip,meeting.id]);
   useEffect(()=>{
     const v=video.current;if(!v)return;
-    if(moving&&!failed){
+    if(baseMoving&&!failed){
       v.play().catch(()=>setFailed(true));
     }else v.pause();
-  },[moving,clip,failed,id]);
+  },[baseMoving,clip,failed,id]);
   useEffect(()=>{
     if(!c.robot||!videoOn)return;
     const ctx=canvas.current?.getContext('2d');if(!ctx)return;
@@ -68,8 +72,8 @@ export const Participant=memo(function Participant({id,meeting,frame,playing,aud
   return <button type="button" className={`mr-tile${active?' is-speaking':''}${pinned?' is-pinned':''}${keyboardDetail?' has-keyboard-detail':''}`} onClick={()=>onPin(id)} aria-label={`${pinned?'Unpin':'Spotlight'} ${c.name}`} aria-pressed={pinned} data-character={id}>
     {c.offline||!videoOn?<div className="mr-camera-off"><VideoOff aria-hidden="true"/><div className="mr-avatar">{c.offline?'PT':c.name.split(' ').map(s=>s[0]).slice(0,2).join('')}</div><strong>{c.name}</strong><span>{c.offline?'Connecting to audio…':'Camera off'}</span></div>:<div className="mr-media">
       {id==='printer'?<PrinterFeed time={frame.time} playing={moving} reduced={reduced}/>:<img className="mr-poster" src={poster} alt="" loading="eager"/>}
-      {clip&&<video key={`${meeting.id}-${clip}`} ref={video} className={ready?'is-ready':''} src={moving||ready?`${base}clips/${clip}.mp4`:undefined} muted playsInline disablePictureInPicture loop preload="none" onPlaying={()=>setReady(true)} onError={()=>setFailed(true)} aria-hidden="true"/>}
-      {!c.robot&&!c.silent&&<SpeechPerformance id={id} meeting={meeting} time={frame.time} playing={playing} reduced={reduced}/>}
+      {clip&&<video key={`${meeting.id}-${clip}`} ref={video} className={ready?'is-ready':''} src={baseMoving||ready?`${base}clips/${clip}.mp4`:undefined} muted playsInline disablePictureInPicture loop preload="none" onPlaying={()=>setReady(true)} onError={()=>setFailed(true)} aria-hidden="true"/>}
+      {!c.robot&&!c.silent&&<SpeechPerformance id={id} meeting={meeting} time={frame.time} playing={playing} reduced={reduced} onVisibleChange={setExactVisible}/>}
       {id==='keys'&&<KeyboardDetail visible={keyboardDetail} time={frame.time} playing={playing&&musicOn} reduced={reduced}/>}
       {c.robot&&<canvas className="mr-robot-display" ref={canvas} width="1280" height="720" aria-hidden="true"/>}
     </div>}
