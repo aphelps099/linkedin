@@ -7,6 +7,7 @@ import { createNewsletter } from './newsletter.js';
 import { createPostBeatService } from './post-beat-service.js';
 import { localAnnouncer } from './local-announcer.js';
 import { beatRobot } from './beat-robot.js';
+import { createBeatShareRouter } from './beat-share.js';
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
@@ -127,6 +128,8 @@ app.get(['/studio-3', '/studio-3/index.html'], (req, res) => {
   const query = req.originalUrl.includes('?') ? req.originalUrl.slice(req.originalUrl.indexOf('?')) : '';
   res.redirect(301, `/studio/${query}`);
 });
+
+app.use(createBeatShareRouter({template:path.join(dist,'lessons/index.html')}));
 
 app.use(express.static(dist, {
   extensions:['html'],

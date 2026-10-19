@@ -12,7 +12,7 @@ import {generateStage} from './stages.js';
 import {ScoreReadout} from './ScoreReadout.jsx';
 import './ignition.css';
 import {PostBeat} from '../post-beat/PostBeat.jsx';
-import {decodeRecipe} from '../post-beat/composition.js';
+import {readSharedBeat} from '../post-beat/share.js';
 import './ticket.css';
 
 const TABS=[['announce','Announce'],['lesson','Find a lesson'],['sell','Sell'],['urgency','Create urgency'],['ai','Talk AI']];
@@ -23,9 +23,10 @@ async function copyText(text){
 }
 export default function Lessons(){
   const [catId,setCatId]=useState('announce');
-  const [sharedRecipe,setSharedRecipe]=useState(()=>decodeRecipe(window.location.hash));
+  const [sharedRecipe,setSharedRecipe]=useState(()=>readSharedBeat(window.location.href)?.recipe||null);
+  const sharedCover=sharedRecipe?readSharedBeat(window.location.href)?.cover:null;
   const [beatMode,setBeatMode]=useState(!!sharedRecipe);
-  useEffect(()=>{const load=()=>setSharedRecipe(decodeRecipe(window.location.hash));window.addEventListener('hashchange',load);return ()=>window.removeEventListener('hashchange',load);},[]);
+  useEffect(()=>{const load=()=>setSharedRecipe(readSharedBeat(window.location.href)?.recipe||null);window.addEventListener('hashchange',load);return ()=>window.removeEventListener('hashchange',load);},[]);
   const [drafts,setDrafts]=useState(()=>Object.fromEntries(Object.entries(DEFAULT_ANSWERS).map(([k,v])=>[k,{...v}])));
   const [seed,setSeed]=useState(newSeed);
   const [isSupercharged,setIsSupercharged]=useState(false),[turboSeed,setTurboSeed]=useState(null);
@@ -85,7 +86,7 @@ export default function Lessons(){
   </div>;
   if(sharedRecipe)return <div className="ll-app c2-home">
     <ConceptHeader base="../" homeSectionBase="../" active="LinkedInifier"/>
-    <main className="pb-shared"><div className="pb-shared-inner"><p className="pb-shared-eyebrow">A LITTLE PROFESSIONAL DEVELOPMENT.</p><h1>Your words.<br/>On repeat.</h1><PostBeat key={JSON.stringify(sharedRecipe)} post="" initialRecipe={sharedRecipe}/><a className="pb-make-own" href="./">Make your own beat ↗</a></div></main>
+    <main className="pb-shared"><div className="pb-shared-inner"><p className="pb-shared-eyebrow">A LITTLE PROFESSIONAL DEVELOPMENT.</p>{sharedCover&&<img className="pb-shared-cover" src={sharedCover.image} width={sharedCover.width} height={sharedCover.height} alt={sharedCover.alt}/>}<h1 className="pb-shared-title">{sharedCover?.name||'Your words. On repeat.'}</h1><p className="pb-shared-chorus">“{sharedRecipe.chorus}”</p><PostBeat key={JSON.stringify(sharedRecipe)} post="" initialRecipe={sharedRecipe} initialCover={sharedCover?.id}/><a className="pb-make-own" href="/lessons/">Make your own beat ↗</a></div></main>
     <ConceptFooter base="../"/>
   </div>;
   return <div className="ll-app c2-home">

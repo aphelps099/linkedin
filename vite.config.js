@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { postBeatApi } from './server/post-beat-dev.js';
+import { beatSharePreview } from './server/beat-share.js';
 import { fileURLToPath } from 'node:url';
 import { generateVoiceClips } from './server/voice-service.js';
 import { createCheckoutSession } from './server/store-service.js';
@@ -83,7 +84,7 @@ function localCheckoutApi(){
 }
 
 export default defineConfig({
-  plugins: [react(), localVoiceApi(), localCheckoutApi(), postBeatApi()],
+  plugins: [react(), localVoiceApi(), localCheckoutApi(), postBeatApi(), beatSharePreview()],
   // Relative base so the built index.html works when served from a
   // GitHub Pages project path (https://<user>.github.io/linkedin/).
   base: './',
