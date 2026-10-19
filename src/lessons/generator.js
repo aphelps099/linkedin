@@ -115,7 +115,7 @@ function buildAnnounce(a, L, rng){
   const subjectL1 = {
     'A new hire':          `${name} is joining ${company} as our new ${role}.`,
     'A promotion':         `${name} has been promoted to ${role} at ${company}.`,
-    'A product launch':    `${name} is live. It ${goal.startsWith('help') ? goal : 'exists to ' + goal}.`,
+    'A product launch':    `${company} just launched ${name}. It ${goal.startsWith('help') ? goal : 'exists to ' + goal}.`,
     'A partnership':       `${company} is partnering with ${name}.`,
     'A company milestone': `${company} just reached a milestone: ${uncap(name)}.`,
   }[kind];
@@ -148,7 +148,7 @@ function buildAnnounce(a, L, rng){
 
   if(L === 3){
     const out = [
-      `I'm thrilled to announce that ${uncap(subjectL1).replace(/\.$/, '')} ${v(["— and I couldn't be prouder.", '— and the timing could not be better.', '— and honestly, it made my week.'])}`,
+      `I'm thrilled to announce that ${subjectL1.replace(/\.$/, '')} ${v(["— and I couldn't be prouder.", '— and the timing could not be better.', '— and honestly, it made my week.'])}`,
       isPerson
         ? v([
             `${name} joins us from ${before}, bringing ${quality} and a genuine passion for the work. As we continue to grow, they'll play a key role in helping us ${goal}.`,
@@ -196,7 +196,7 @@ function buildAnnounce(a, L, rng){
   return [
     v(L5_OPENERS),
     isPerson
-      ? `It is with overwhelming humility and barely-contained excitement that I announce ${name} has officially joined ${company} as our new ${role}.`
+      ? `It is with overwhelming humility and barely-contained excitement that I announce ${kind === 'A promotion' ? `${name} has officially been promoted to ${role} at ${company}` : `${name} has officially joined ${company} as our new ${role}`}.`
       : `It is with overwhelming humility and barely-contained excitement that I announce: ${uncap(subjectL1)}`,
     ...v([
       ['Let me be clear about what this means.', 'Not just for us.', 'For the industry.'],
@@ -209,13 +209,13 @@ function buildAnnounce(a, L, rng){
     isPerson
       ? v([
           `Some people fill roles. ${name} redefines what it means to have one.`,
-          `Most hires join a company. ${name} joins a destiny.`,
+          kind === 'A promotion' ? `Most promotions change a title. ${name} is changing the trajectory.` : `Most hires join a company. ${name} joins a destiny.`,
         ])
       : 'Some companies ship. We author history in real time.',
     `Together, we will ${goal}. And the global business community will feel it.`,
     v([
-      isPerson ? 'This is not a hire. It is an inflection point.' : 'This is not an announcement. It is an inflection point.',
-      isPerson ? 'This is not a hire. It is a before-and-after moment for our entire category.' : 'This is not an announcement. It is a before-and-after moment for our entire category.',
+      isPerson ? `This is not ${kind === 'A promotion' ? 'a promotion' : 'a hire'}. It is an inflection point.` : 'This is not an announcement. It is an inflection point.',
+      isPerson ? `This is not ${kind === 'A promotion' ? 'a promotion' : 'a hire'}. It is a before-and-after moment for our entire category.` : 'This is not an announcement. It is a before-and-after moment for our entire category.',
     ]),
     pick(rng, SINK),
     isPerson ? v([`Welcome to the movement, ${name}. 🚀🔥🙏`, `${name}, the movement has been waiting for you. 🚀🔥🙏`]) : 'Welcome to the movement. 🚀🔥🙏',
@@ -571,7 +571,7 @@ const DRESSING = [
   /^we (don'?t|do not) (have customers\. we have destiny partners|close deals\. we open destinies)\.?$/i,
   /^the singularity (will not send a calendar invite|does not do onboarding)\.?$/i,
   /^(one\.|i stopped\.|i went quiet\.|i thought about it all day\.|it followed me into every meeting\.|ready\?|good\.|one call\. that was all it took\.)$/i,
-  /^this is not (a hire|an announcement)\. it is (an inflection point|a before-and-after moment)/i,
+  /^this is not (a hire|a promotion|an announcement)\. it is (an inflection point|a before-and-after moment)/i,
   /joins a destiny\.?$/i, /^(stop scrolling|do not scroll past this)\.?$/i,
   /^everyone else scrolled past/i, /^the universe does not send memos/i,
   /^most people saw nothing\.?$/i,

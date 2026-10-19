@@ -5,6 +5,7 @@
 // 3. The humanizer: level-5 dressing must not survive Make It Human.
 import { generate, humanize } from '../src/lessons/generator.js';
 import { scorePost } from '../src/lessons/score.js';
+import { generateStage } from '../src/lessons/stages.js';
 
 const CATS = {
   announce: { kind: 'A new hire', name: 'Sarah', role: 'Marketing Coordinator',
@@ -49,5 +50,36 @@ for(const [cat, answers] of Object.entries(CATS)){
   }
 }
 
+// 4 — the two-stage UI earns its scores from the generated text, keeps the
+// supplied facts, and produces repeatable but varied drafts in both stages.
+const stageFixtures = Object.entries(CATS).map(([category, answers]) => ({category, answers}));
+for(const kind of ['A promotion', 'A product launch', 'A partnership', 'A company milestone']){
+  stageFixtures.push({category:'announce', answers:{...CATS.announce, kind}});
+}
+for(const {category, answers} of stageFixtures){
+  const drafts = {standard:new Set(), supercharged:new Set()};
+  for(const seed of SEEDS){
+    const first = generateStage({category, answers, seed});
+    const turbo = generateStage({category, answers, seed, stage:'supercharged', minimumScore:first.score.index});
+    if(first.score.index < 60 || first.score.index > 69) fail(`first stage outside 60s: ${category}, ${answers.kind}, ${seed}: ${first.score.index}`);
+    if(turbo.score.index < 90 || turbo.score.index > 99) fail(`turbo outside 90s: ${category}, ${answers.kind}, ${seed}: ${turbo.score.index}`);
+    for(const [stage, result] of [['standard',first], ['supercharged',turbo]]){
+      if(result.score.index !== scorePost(result.text).index) fail(`score does not match text: ${category} ${stage}`);
+      if(result.text !== generateStage({category, answers, seed, stage}).text) fail(`unstable draft: ${category} ${stage}`);
+      const facts = category==='announce' ? ['name','company'] : category==='lesson' ? ['moment','lesson'] : category==='sell' ? ['customer','offer','result'] : category==='urgency' ? ['thing','scarcity'] : ['tool','task','multiplier'];
+      for(const key of facts) if(!result.text.toLowerCase().includes(answers[key].trim().replace(/[.!?]+$/, '').toLowerCase())) fail(`lost ${key}: ${category} ${answers.kind||''} ${stage}`);
+      drafts[stage].add(result.text);
+    }
+    if(answers.kind==='A promotion' && (!turbo.text.includes('promoted to') || /new hire|not a hire|most hires|officially joined/i.test(turbo.text))) fail('supercharge turned a promotion into a hire');
+  }
+  for(const [stage,texts] of Object.entries(drafts)) if(texts.size<SEEDS.length-2) fail(`low staged variety: ${category} ${stage}`);
+}
+// The targets are not hard-coded display values, even for atypically long facts.
+const longAnswers = {...CATS.announce, quality:'careful work and good attention to people '.repeat(30)};
+for(const stage of ['standard','supercharged']){
+  const result = generateStage({category:'announce',answers:longAnswers,seed:42,stage});
+  if(result.score.index !== scorePost(result.text).index || !result.text.includes(longAnswers.quality.trim())) fail('long facts were truncated or their score was fabricated');
+}
+
 if(failures){ console.error(`\n${failures} check(s) failed`); process.exit(1); }
-console.log('all checks passed: dial monotone, variety present, humanizer clean');
+console.log('all checks passed: levels, variety, humanizer, two-stage scores, fact preservation');

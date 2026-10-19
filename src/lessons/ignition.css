@@ -1,0 +1,116 @@
+/* Charge fills the slanted button itself, underneath its readable label. */
+.el-workspace>.el-controls{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);min-height:100px;gap:14px 24px;padding-top:20px;padding-bottom:20px}
+/* A compact instrument readout keeps the score secondary to the ignition button. */
+.el-score-readout{display:flex;align-items:center;justify-content:flex-end;gap:12px;min-width:0;color:#fbf6e8;text-align:right}
+.el-score-window{display:flex;align-items:baseline;justify-content:center;gap:4px;flex:none;min-width:90px;padding:9px 10px 8px;border:1px solid #06264f;border-radius:3px;background:#0b2038;box-shadow:inset 0 2px 4px #0003,0 1px 0 #ffffff30;overflow:hidden}
+.el-score-number{display:block;min-width:2ch;font:600 36px/1 C2Hoves,Arial,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.035em;text-align:center}
+.el-score-scale{color:#b5c1ce;font:400 10px/1 C2Hoves,Arial,sans-serif}
+.el-score-caption{display:flex;flex-direction:column;gap:5px;min-width:0;max-width:155px}
+.el-score-label{color:#d1dff8;font:600 9px/1.2 C2Hoves,Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase}
+.el-score-rank{font:400 14px/1.2 C2Hoves,Arial,sans-serif;text-wrap:balance}
+.el-score-stage{color:#d1dff8;font:400 10px/1.3 C2Hoves,Arial,sans-serif}
+.el-score-stage strong{display:inline-block;margin-left:4px;font-weight:600;color:#fff349}
+.el-score-readout.is-supercharged .el-score-number{color:#fff349}
+.el-score-readout.is-updating .el-score-number{animation:el-score-settle .4s cubic-bezier(.2,.7,.3,1) both}
+.el-score-readout.is-updating .el-score-window{animation:el-score-flash .65s ease-out}
+.el-boost-control{min-width:0;flex-shrink:0}
+.el-charge-complete{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:4px 8px;margin:0;color:#d1dff8;font:400 12px/1.45 C2Hoves,Arial,sans-serif}
+.el-charge-complete strong{color:#fff349;font-weight:600}
+.el-controls .el-supercharge{
+  position:relative;isolation:isolate;display:block;grid-column:2;grid-row:1;
+  width:100%;min-height:56px;padding:0;border:0;border-radius:0;background:transparent;
+  color:#0b1520;filter:drop-shadow(3px 4px 0 #0b1520);transition:transform .16s,filter .16s;
+}
+.el-controls .el-supercharge::before{
+  content:'';position:absolute;inset:0;z-index:-1;background:#fff349;
+  clip-path:polygon(12px 0,100% 0,calc(100% - 12px) 100%,0 100%);
+}
+.el-controls .el-supercharge:hover{background:transparent;transform:translateY(-2px);filter:drop-shadow(4px 6px 0 #0b1520)}
+.el-controls .el-supercharge:active{transform:translate(2px,3px);filter:drop-shadow(1px 1px 0 #0b1520)}
+.el-controls .el-supercharge:disabled{cursor:progress}
+.el-controls .el-supercharge:focus-visible{outline:3px solid #fbf6e8;outline-offset:7px}
+.el-controls .el-supercharge>.el-boost-face{
+  position:relative;display:flex;align-items:center;justify-content:center;gap:10px;
+  width:auto;min-height:56px;height:auto;padding:10px 21px;background:none;color:inherit;
+  overflow:hidden;clip-path:polygon(12px 0,100% 0,calc(100% - 12px) 100%,0 100%);
+}
+.el-boost-face>*{position:relative;z-index:1}
+.el-boost-face::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(100deg,#fffbc5 0%,#fffef0 94%,#fff 100%);
+  box-shadow:inset -3px 0 0 #fff;transform:scaleX(0);transform-origin:left center;
+}
+.el-boost-face.is-fired::before{animation:el-button-charge .95s cubic-bezier(.3,0,.2,1) both}
+.el-boost-face::after{
+  content:'';position:absolute;inset:-20% auto -20% -45%;width:30%;pointer-events:none;
+  background:linear-gradient(90deg,transparent,#fffdf6cc,transparent);transform:skewX(-18deg);opacity:0;
+}
+.el-supercharge:is(:hover,:focus-visible) .el-boost-face::after,.el-boost-face.is-fired::after{animation:el-charge-sweep .55s ease-out}
+.el-controls .el-supercharge .el-boost-label{font:400 clamp(18px,1.6vw,25px)/1 'Anton',Impact,sans-serif;text-transform:uppercase;letter-spacing:.015em;white-space:nowrap;transform:skewX(-10deg)}
+.el-boost-bolt{width:19px;height:28px;flex-shrink:0;transform:rotate(6deg)}
+.el-boost-action-icon{width:19px;height:28px;flex-shrink:0;stroke-width:2}
+.el-boost-stripes{display:flex;gap:3px;transform:skewX(-15deg)}
+.el-boost-stripes i{display:block;width:4px;height:22px;background:currentColor}
+.el-boost-stripes i:first-child{opacity:.25}.el-boost-stripes i:nth-child(2){opacity:.55}
+.el-supercharge:is(:hover,:focus-visible) .el-boost-bolt,.el-boost-face.is-fired .el-boost-bolt{animation:el-bolt-kick .45s ease-out}
+.el-boost-face.is-fired .el-boost-stripes i{animation:el-stripe-charge .5s ease-out both}
+.el-boost-face.is-fired .el-boost-stripes i:nth-child(2){animation-delay:.08s}
+.el-boost-face.is-fired .el-boost-stripes i:last-child{animation-delay:.16s}
+
+/* Keep the category pills above the printer; the editable statement is the receipt. */
+.el-facts>.el-eyebrow{margin:8px 0 22px;font-size:15px;line-height:1.35}
+.el-printer-slot{position:relative;z-index:1;height:9px;border:1px solid #586674;border-radius:4px;background:#101c2a;box-shadow:0 2px 0 #d7d3c8}
+.el-printer-slot::before{content:'';position:absolute;inset:3px 7px 2px;background:#050b11;border-top:1px solid #334454}
+.el-printer-slot::after{content:'';position:absolute;left:8px;top:3px;width:4px;height:2px;background:#94a4b4}
+.el-receipt{position:relative;margin:0 10px 12px;padding:22px 22px 26px;background:#fffef8;box-shadow:0 3px 12px #11110e08}
+.el-receipt::after{content:'';position:absolute;left:0;right:0;top:100%;height:10px;background:linear-gradient(135deg,#fffef8 25%,transparent 25%) -10px 0 / 20px 20px repeat-x,linear-gradient(225deg,#fffef8 25%,transparent 25%) -10px 0 / 20px 20px repeat-x}
+.el-receipt .el-hint{margin-top:16px}
+.el-facts.is-feeding .el-receipt{animation:el-receipt-feed .75s steps(5,end)}
+.el-facts.is-feeding .el-printer-slot::after{background:#fff349}
+@keyframes el-charge-sweep{0%{left:-45%;opacity:0}15%{opacity:1}100%{left:130%;opacity:0}}
+@keyframes el-button-charge{0%{transform:scaleX(0);opacity:1}72%,84%{transform:scaleX(1);opacity:1}100%{transform:scaleX(1);opacity:0}}
+@keyframes el-bolt-kick{0%,100%{transform:rotate(6deg)}40%{transform:translate(2px,-3px) rotate(6deg)}70%{transform:translate(-1px,1px) rotate(6deg)}}
+@keyframes el-stripe-charge{0%,100%{opacity:1}45%{opacity:.15}}
+@keyframes el-receipt-feed{0%,100%{transform:none}25%{transform:translateY(-5px)}65%{transform:translateY(3px)}}
+@keyframes el-score-settle{from{transform:translateY(65%);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes el-score-flash{0%{color:#fff349;box-shadow:inset 0 2px 4px #0003,0 0 0 1px #fff34988}100%{color:#fbf6e8;box-shadow:inset 0 2px 4px #0003,0 1px 0 #ffffff30}}
+@media(min-width:800px) and (max-width:1150px){
+  .el-workspace>.el-controls{gap:18px;padding-block:18px}
+  .el-score-readout{gap:10px}
+  .el-score-window{min-width:80px;padding-inline:7px}
+  .el-score-rank{font-size:12px}
+  .el-controls .el-supercharge>.el-boost-face{gap:7px;padding-inline:17px}
+  .el-boost-stripes{display:none}
+  .el-receipt{margin-inline:8px;padding:20px 16px 24px}
+}
+@media(max-width:799px){
+  .el-workspace>.el-controls{min-height:100px;padding-block:18px}
+}
+@media(max-width:520px){
+  .el-workspace>.el-controls{gap:14px}
+  .el-score-readout{flex-direction:column;align-items:flex-end;gap:6px}
+  .el-score-window{order:-1}
+  .el-score-window{min-width:84px;padding:6px 8px}
+  .el-score-number{font-size:32px}
+  .el-score-caption{gap:3px;max-width:132px}
+  .el-score-label{font-size:8px}
+  .el-score-rank{font-size:11px;text-wrap:initial}
+  .el-score-stage{font-size:9px}
+}
+@media(max-width:420px){
+  .el-controls .el-supercharge>.el-boost-face{gap:7px;padding-inline:16px;min-height:52px}
+  .el-controls .el-supercharge{min-height:52px}
+  .el-boost-stripes{display:none}
+  .el-boost-bolt{width:16px;height:24px}
+  .el-boost-action-icon{width:16px;height:24px}
+  .el-receipt{margin-inline:7px;padding:18px 14px 24px}
+  .el-receipt .el-fact-actions{gap:10px}
+  .el-receipt .el-fact-actions button{font-size:14px}
+  .el-receipt .el-fact-actions svg{width:17px;height:17px}
+  .el-facts>.el-eyebrow{font-size:14px}
+}
+@media(prefers-reduced-motion:reduce){
+  .el-controls .el-supercharge{transition:none}
+  .el-controls .el-supercharge:is(:hover,:active){transform:none}
+  .el-score-readout *,.el-receipt,.el-supercharge *,.el-supercharge *::before,.el-supercharge *::after{animation:none!important}
+}
