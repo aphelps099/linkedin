@@ -79,7 +79,7 @@ function SignupDialog({onClose}) {
 export const NewsletterSignup = memo(function NewsletterSignup() {
   const [open, setOpen] = useState(false);
   return <section id="newsletter" className="c2-newsletter" aria-labelledby="c2-newsletter-title">
-    <div className="c2-container">
+    <div className="c2-newsletter-layout">
       <div className="c2-newsletter-banner">
         <div className="c2-newsletter-paper" aria-hidden="true"/>
         <div className="c2-newsletter-copy">

@@ -1,6 +1,6 @@
-.c2-newsletter{--nl-ink:#0c2032;--nl-cobalt:#0757ec;--nl-yellow:#fff349;--nl-paper:#fffefa;background:var(--nl-cobalt);color:var(--nl-ink);padding:clamp(32px,4vw,64px) 0}
-.c2-newsletter .c2-container{container-type:inline-size}
-.c2-newsletter-banner{position:relative;isolation:isolate;display:grid;grid-template-columns:70% 30%;aspect-ratio:4/1;min-height:190px}
+.c2-newsletter{--nl-ink:#0c2032;--nl-cobalt:#0757ec;--nl-yellow:#fff349;--nl-paper:#fffefa;background:var(--nl-cobalt);color:var(--nl-ink);padding:0}
+.c2-newsletter-layout{width:100%;container-type:inline-size}
+.c2-newsletter-banner{position:relative;isolation:isolate;display:grid;grid-template-columns:70% 30%;aspect-ratio:4/1;min-height:190px;overflow:hidden}
 .c2-newsletter-paper{position:absolute;inset:0 auto 0 0;width:calc(70% + 25px);z-index:-1;filter:drop-shadow(4px 3px 2px #03226945);--nl-tear:polygon(0 0,98.9% 0,98.2% 2%,98.6% 3%,97.9% 5%,98.1% 7%,97.5% 8%,97.8% 10%,97.2% 12%,97.5% 13%,96.7% 15%,96.9% 18%,96.2% 19%,96.4% 21%,95.6% 23%,95.9% 25%,95.2% 27%,95.5% 28%,95% 30%,94.9% 33%,94.2% 35%,94.5% 36%,94.1% 39%,93.4% 40%,93.7% 42%,93% 44%,93.3% 45%,92.7% 48%,92.9% 50%,92.2% 52%,92.4% 54%,91.7% 55%,91.9% 58%,91.3% 60%,91.7% 61%,91.3% 63%,91.1% 66%,90.5% 68%,90.8% 70%,90.2% 72%,90.4% 74%,89.8% 77%,90.2% 79%,89.8% 81%,89.2% 82%,89.5% 85%,89.1% 88%,88.7% 89%,89% 91%,88.2% 93%,88.6% 95%,88.1% 97%,88.3% 100%,0 100%)}
 .c2-newsletter-paper::before,.c2-newsletter-paper::after{content:'';position:absolute;inset:0;clip-path:var(--nl-tear)}
 .c2-newsletter-paper::before{background:#e5e8e2;transform:translateX(2px)}
