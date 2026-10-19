@@ -68,6 +68,6 @@ try{
   for(const title of ['Just Getting Started','Synergistically Speaking','Chief Visionary Officer','Head of Possibility'])assert(html.includes(escaped(title)),title);
   assert(!html.includes('Play Let&#x27;s Take It Offline'),'default playlist only shows its room');
   assert(html.includes('Connecting to audio…'));assert(html.includes('role="status"'));assert(html.includes('aria-label="Master volume"'));
-  const route=await readFile('src/studio-main.jsx','utf8');assert(route.includes('meeting-studio/main.jsx'));
+  const route=await readFile('src/studio-main.jsx','utf8');assert(route.includes('meeting-room/main.jsx'));
 }finally{await unlink(temp);delete globalThis.window;}
 console.log('Meeting studio passed: real per-part mute routing, phase-safe unmute, persistent mix, reset, speaker direction, four participants, four room choices, media assets, no autoplay, and canonical route.');
