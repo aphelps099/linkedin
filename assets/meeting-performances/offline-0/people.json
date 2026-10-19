@@ -1,0 +1,90 @@
+{
+  "character": "people",
+  "meeting": "offline-0",
+  "status": "reviewed-integrated",
+  "audio": "people-exact-offline-0.wav",
+  "audioSha256": "aadede37cee055e27a4b5d091dbe3d58e1919cf70c15311d9cebee9b12bb321d",
+  "duration": 9.692083333333333,
+  "characterImage": "public/studio/season/posters/people-listening.jpg",
+  "solos": [
+    {
+      "cueIndex": 5,
+      "offset": 0.25,
+      "duration": 2.1703333333333332,
+      "sources": [
+        {
+          "character": "people",
+          "text": "Should we invite everyone from this meeting?",
+          "line": "people-1ad6933357d438f2",
+          "take": "b6978f993b903e3f12864cb9a8cd71dde95b9b103b447c9410de57f011b4a66d",
+          "masterSha256": "b9b68c815e8666565e6525fa7866e7d868125562a1deea56d5d31be8bb690171"
+        }
+      ]
+    }
+  ],
+  "choruses": [
+    {
+      "cueIndex": 7,
+      "offset": 2.9203333333333332,
+      "duration": 6.52175,
+      "phrases": [
+        {
+          "start": 0.0,
+          "duration": 1.4722916666666668,
+          "slotDuration": 2.6087083333333334,
+          "source": {
+            "character": "people",
+            "text": "We’ll take this offline.",
+            "line": "people-0b5b8838622df915",
+            "take": "bc0a00bd742cb56099415997cbd71c0e8463099d35d95045562942201b09ab5c",
+            "masterSha256": "ef39e70e2f6e970e08cee31a197f049634919682f4ee7536b863452cd866f5d8"
+          }
+        },
+        {
+          "start": 2.6087083333333334,
+          "duration": 0.828,
+          "slotDuration": 1.3043333333333333,
+          "source": {
+            "character": "people",
+            "text": "Offline.",
+            "line": "people-4fbda14953066a0c",
+            "take": "e18f24468d6356aa8aa1a805273d893dec32f42644818fd73c4cf59bd89e02fe",
+            "masterSha256": "fc22905f57e35adffb2e47ea66db18461146aedfc060364a8a54982daa107a00"
+          }
+        },
+        {
+          "start": 3.9130416666666665,
+          "duration": 1.4722916666666668,
+          "slotDuration": 2.6087083333333334,
+          "source": {
+            "character": "people",
+            "text": "We’ll take this offline.",
+            "line": "people-0b5b8838622df915",
+            "take": "bc0a00bd742cb56099415997cbd71c0e8463099d35d95045562942201b09ab5c",
+            "masterSha256": "ef39e70e2f6e970e08cee31a197f049634919682f4ee7536b863452cd866f5d8"
+          }
+        }
+      ]
+    }
+  ],
+  "direction": "Exact approved voice. Restrained natural articulation, subtle blinks, stable attached lips and headset. Preserve face identity.",
+  "workflow": "Runway Character Script to Video, uploaded Audio",
+  "taskId": "362fdad1-eb8a-4247-965b-06284aa32009",
+  "assetId": "18f5a8e8-29d8-4501-99ad-903d2b2402c0",
+  "creditsSpent": 2,
+  "runwaySession": "5bb35d14-ea57-4d00-979c-8d4c846ccbad",
+  "output": "people-performance.mp4",
+  "outputSha256": "3a2acfe79dc7a9aee28387acdc7bd38386f29bffaa8a88d239336c363b27115f",
+  "runtimeVideo": "public/studio/performances/people-offline-exact-v1.mp4",
+  "runtimeSha256": "560ac3bbea80553b8fba3e0a2aa51e847f3c877eb71003f7da80f4f4bd2ca2d2",
+  "audioLagSeconds": 0,
+  "audioWaveformCorrelation": 0.9998406240089782,
+  "deliveryEncoding": {
+    "width": 720,
+    "height": 540,
+    "audio": false,
+    "keyframeIntervalFrames": 24,
+    "bFrames": 0
+  },
+  "reviewNotes": "Reviewed solo and chorus frames: attached lips, stable headset and identity, subtle eye movement. Live audio retains the approved master. Keys uses the approved separate keyboard detail view during her speaking performance."
+}

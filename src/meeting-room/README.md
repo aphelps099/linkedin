@@ -43,8 +43,10 @@ plates load only after playback starts. Reduced motion uses still frames.
 Hidden tabs pause the meeting. Failed video playback leaves the poster visible.
 
 - Humans have speaking, listening, and (where applicable) instrument plates.
-  These are turn-cued reusable performances, **not phonetic lip sync**. Keep
-  original mouths attached to faces. Do not add floating mouth sprites.
+  Stand-up 1, Onboarding 1, Unlocking potential 1 and Offline 1 have exact
+  audio-driven performances for every human solo and chorus. Other meetings
+  retain approximate turn-cued plates, **not phonetic lip sync**. Keep original
+  mouths attached to faces. Do not add floating mouth sprites.
 - Musicians remain visibly at their instruments. Their performance states vary
   across the meeting. No reversed instrument footage.
 - Synergy and Synthia use their approved idle footage. Eye positions were
@@ -86,6 +88,8 @@ The first Founder meeting has a one-bar guitar interruption with three phrase
 variations. Its choice remains stable through pause and seek; it shares the
 music bus and loads only when that meeting is played. Founder camera tiles
 use equal 3:2 frames with baked video margins cropped away.
+Offline uses nine equal 4:3 cameras and compact silent speech clips. The keyboard
+detail stays visible below Keys' face during her exact speaking and chorus turns.
 
 ## Rebuilding and checking
 

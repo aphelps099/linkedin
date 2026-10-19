@@ -11,9 +11,13 @@ const base='/studio/season/';
 // Crop baked interface margins as one camera layer, including the tracked display.
 // A 3:2 gallery preserves robot badges and instruments without portrait sidebars.
 const founderCrops={people:[132,0,1014,676],synthia:[132,0,1014,676],synergy:[96,0,1056,704],guitar:[128,22,1024,1024/1.5],printer:[100,0,1080,720]};
+// The nine-person offline room uses classic 4:3 cameras so Keys keeps both
+// hands and the keyboard while every participant fills an equal-sized tile.
+const offlineCrops={people:[182,0,686*4/3,686],strategy:[182,0,686*4/3,686],synthia:[182,0,686*4/3,686],synergy:[155,0,704*4/3,704],guitar:[197,22,664*4/3,664],printer:[160,0,960,720],accountant:[183,0,686*4/3,686],keys:[160,0,960,720]};
 function cameraStyle(id,meeting){
-  if(meeting.agenda!=='founder')return undefined;
-  const [x,y,w,h]=founderCrops[id]||[100,0,1080,720];
+  const crops=meeting.agenda==='founder'?founderCrops:meeting.agenda==='offline'?offlineCrops:null;
+  if(!crops)return undefined;
+  const [x,y,w,h]=crops[id]||[100,0,1080,720];
   return {width:`${1280/w*100}%`,height:`${720/h*100}%`,left:`${-x/w*100}%`,top:`${-y/h*100}%`,right:'auto',bottom:'auto'};
 }
 export function robotFrame(id,time){

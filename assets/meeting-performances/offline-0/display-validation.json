@@ -1,0 +1,10 @@
+{
+  "meeting": "offline-0",
+  "voice": "offline-0-voice-e718387eca9d.mp3",
+  "voiceSha256": "e718387eca9d69443e9dc896a5ea287a187df0da94ac585429eedba9d9c96036",
+  "zeroOffsetCorrelation": 0.9997780166679235,
+  "sampleRate": 24000,
+  "envelopeHz": 25,
+  "audioReplaced": false,
+  "generationCreditsUsed": 0
+}

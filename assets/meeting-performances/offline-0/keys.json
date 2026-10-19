@@ -1,0 +1,90 @@
+{
+  "character": "keys",
+  "meeting": "offline-0",
+  "status": "reviewed-integrated",
+  "audio": "keys-exact-offline-0.wav",
+  "audioSha256": "240a02f73c8faa02ed78ea8cb14643b10c5848c7d2e74f3b69770be507cb5be6",
+  "duration": 10.4465,
+  "characterImage": "assets/meeting-performances/onboarding-0/keys-wide-reference.png",
+  "solos": [
+    {
+      "cueIndex": 4,
+      "offset": 0.25,
+      "duration": 2.92475,
+      "sources": [
+        {
+          "character": "keys",
+          "text": "This will unlock a more intentional meeting cadence.",
+          "line": "keys-2659138b9876ae2b",
+          "take": "464a5c149066b189e033f632e83531e2d90c41ff2e4b588f3ec77c1bc5c0332d",
+          "masterSha256": "344894b1204a9cc0c528d05ea5673b6dd9d52d9a4a98e7d95acf360fcf83522b"
+        }
+      ]
+    }
+  ],
+  "choruses": [
+    {
+      "cueIndex": 7,
+      "offset": 3.67475,
+      "duration": 6.52175,
+      "phrases": [
+        {
+          "start": 0.0,
+          "duration": 1.4415833333333334,
+          "slotDuration": 2.6087083333333334,
+          "source": {
+            "character": "keys",
+            "text": "We’ll take this offline.",
+            "line": "keys-0b5b8838622df915",
+            "take": "866cf7e15ddc96c57fd3834994ca7c21cceabd936f22e2875f26815e43299b3c",
+            "masterSha256": "6852646c77fd2a66a2b30c343ea5db3216e9d14fa66984a4e2eca76f4961c750"
+          }
+        },
+        {
+          "start": 2.6087083333333334,
+          "duration": 0.7932083333333333,
+          "slotDuration": 1.3043333333333333,
+          "source": {
+            "character": "keys",
+            "text": "Offline.",
+            "line": "keys-4fbda14953066a0c",
+            "take": "7f6a86163b4198a7f0ebcb92d0a700aca50711b4f90c450962f919ae129533c0",
+            "masterSha256": "29fe8beb447e2c904117ec9d54191f08dfa2e896cff6da22924895565e713ef6"
+          }
+        },
+        {
+          "start": 3.9130416666666665,
+          "duration": 1.4415833333333334,
+          "slotDuration": 2.6087083333333334,
+          "source": {
+            "character": "keys",
+            "text": "We’ll take this offline.",
+            "line": "keys-0b5b8838622df915",
+            "take": "866cf7e15ddc96c57fd3834994ca7c21cceabd936f22e2875f26815e43299b3c",
+            "masterSha256": "6852646c77fd2a66a2b30c343ea5db3216e9d14fa66984a4e2eca76f4961c750"
+          }
+        }
+      ]
+    }
+  ],
+  "direction": "Exact approved voice. Restrained natural articulation, subtle blinks, stable attached lips and headset. Preserve face identity.",
+  "workflow": "Runway Character Script to Video, uploaded Audio",
+  "taskId": "0671ab12-68e3-4dfa-9938-a521207b58a9",
+  "assetId": "38889a62-ad7a-4cec-81ae-5d306987405b",
+  "creditsSpent": 2,
+  "runwaySession": "5bb35d14-ea57-4d00-979c-8d4c846ccbad",
+  "output": "keys-performance.mp4",
+  "outputSha256": "92be3490875ae2331e372cb625c911f2bac7e77df5632d326311e77a31ada6f0",
+  "runtimeVideo": "public/studio/performances/keys-offline-exact-v1.mp4",
+  "runtimeSha256": "fbdb4b1c433c2178de80512a9572efbfbb5e793c9f5aefacb58ccb1f9f250547",
+  "audioLagSeconds": 0,
+  "audioWaveformCorrelation": 0.9997982963005146,
+  "deliveryEncoding": {
+    "width": 720,
+    "height": 540,
+    "audio": false,
+    "keyframeIntervalFrames": 24,
+    "bFrames": 0
+  },
+  "reviewNotes": "Reviewed solo and chorus frames: attached lips, stable headset and identity, subtle eye movement. Live audio retains the approved master. Keys uses the approved separate keyboard detail view during her speaking performance."
+}

@@ -128,6 +128,33 @@ assert.equal(founder.guitarFills.variants.length,3);
 await access(`public/studio/season/audio/${founder.guitarFills.file}`);
 await access('public/studio/season/clips/keys-detail.mp4');
 await access('public/studio/season/posters/keys-detail.jpg');
+const offline=meetings.offline[0],offlineHook=offline.cues[7];
+assert.equal(nextMeeting(founder.id).id,offline.id);
+assert.equal(meetingFromSearch('?meeting=offline-0').id,offline.id);
+assert.equal(offline.roster.length,9);
+for(const id of ['strategy','guitar','keys','people','accountant']){
+  for(const cue of offline.cues.filter(c=>c.speaker===id||c.speaker==='all')){
+    const performance=exactPerformance(id,cue);
+    assert(performance,`${id}: exact offline solo and isolated chorus coverage`);
+    await access(`public${performance.video}`);
+    assert(Math.abs(performance.duration-cue.duration)<.0001);
+    assert(Math.abs(performanceTime(performance,cue,cue.start+.4)-performance.offset-.4)<1e-9);
+  }
+  const altered=structuredClone(offlineHook);altered.sources[0].masterSha256='changed';
+  assert.equal(exactPerformance(id,altered),null,'Changing any offline chorus source invalidates its performance');
+  assert.equal(exactPerformance(id,{...offlineHook,duration:offlineHook.duration+.1}),null);
+}
+const arjunClosing=offline.cues[8];
+assert.equal(performanceForTime('accountant',offline,arjunClosing.start+.4).cue,arjunClosing);
+assert(exactPerformance('accountant',arjunClosing).offset<exactPerformance('accountant',offlineHook).offset,'Arjun seeks back to his source solo after the chorus');
+assert.equal(arjunClosing.text,'Same link. Same time. Same people.');
+assert.equal(performanceForTime('accountant',offline,arjunClosing.start+arjunClosing.duration+.01),null);
+for(const id of ['synergy','synthia','printer','pat'])assert.equal(exactPerformance(id,offlineHook),null);
+assert.notDeepEqual(offlineHook.speakerLevels.synergy,offlineHook.speakerLevels.synthia);
+for(const id of ['synergy','synthia']){
+  assert.equal(offlineHook.speakerLevels[id].length,Math.ceil(offlineHook.duration*25));
+  offlineHook.speakerLevels[id].forEach((level,i)=>assert.equal(cueLevel(offlineHook,offlineHook.start+(i+.1)/25,id),level/100));
+}
 let seeks=0,mediaTime=0;
 const media={readyState:0,duration:NaN,paused:true,ended:false,
   get currentTime(){return mediaTime;},set currentTime(value){assert(Number.isFinite(value));seeks++;mediaTime=value;},

@@ -1,0 +1,90 @@
+{
+  "character": "accountant",
+  "meeting": "offline-0",
+  "status": "reviewed-integrated",
+  "audio": "accountant-exact-offline-0.wav",
+  "audioSha256": "3acbfa6ff21b31d38f539e09f28f7b61351b0d787d5cd269fb9a8e6e75fdc046",
+  "duration": 10.443708333333333,
+  "characterImage": "public/studio/season/posters/arjun-listening.jpg",
+  "solos": [
+    {
+      "cueIndex": 8,
+      "offset": 0.25,
+      "duration": 2.9219583333333334,
+      "sources": [
+        {
+          "character": "accountant",
+          "text": "Same link. Same time. Same people.",
+          "line": "accountant-d2fa2bd53e45204a",
+          "take": "2168c2081ffb463671553e83466eb619b2551c8729666cb558dc837409e8fa56",
+          "masterSha256": "78dd2846b34b821d04fd4b554af63d8c338a3cdd9e8eb6a76066f4d949473404"
+        }
+      ]
+    }
+  ],
+  "choruses": [
+    {
+      "cueIndex": 7,
+      "offset": 3.6719583333333334,
+      "duration": 6.52175,
+      "phrases": [
+        {
+          "start": 0.0,
+          "duration": 1.92075,
+          "slotDuration": 2.6087083333333334,
+          "source": {
+            "character": "accountant",
+            "text": "We’ll take this offline.",
+            "line": "accountant-0b5b8838622df915",
+            "take": "d8217375027e15d24c1d917e4207c4ea5abee5ec045686616847c6e38c0e1ae9",
+            "masterSha256": "c66d9fcccf8774df476f637a7d7d4e4de84b863bbed25199a6fb5c4bda525f18"
+          }
+        },
+        {
+          "start": 2.6087083333333334,
+          "duration": 1.0212916666666667,
+          "slotDuration": 1.3043333333333333,
+          "source": {
+            "character": "accountant",
+            "text": "Offline.",
+            "line": "accountant-4fbda14953066a0c",
+            "take": "2deafa320b006a0a83629ac2330593ac1938ee565c929000fb71fa1ccde64ded",
+            "masterSha256": "afe970c75ceb162dd04701ba50975e7b8d67cec92cd4fa3016a33b0810e78a49"
+          }
+        },
+        {
+          "start": 3.9130416666666665,
+          "duration": 1.92075,
+          "slotDuration": 2.6087083333333334,
+          "source": {
+            "character": "accountant",
+            "text": "We’ll take this offline.",
+            "line": "accountant-0b5b8838622df915",
+            "take": "d8217375027e15d24c1d917e4207c4ea5abee5ec045686616847c6e38c0e1ae9",
+            "masterSha256": "c66d9fcccf8774df476f637a7d7d4e4de84b863bbed25199a6fb5c4bda525f18"
+          }
+        }
+      ]
+    }
+  ],
+  "direction": "Exact approved voice. Restrained natural articulation, subtle blinks, stable attached lips and headset. Preserve face identity.",
+  "workflow": "Runway Character Script to Video, uploaded Audio",
+  "taskId": "e4e4e673-4860-4bac-aefa-56cf38282299",
+  "assetId": "89aaad8a-e88d-4a71-b385-96ade0450a95",
+  "creditsSpent": 2,
+  "runwaySession": "5bb35d14-ea57-4d00-979c-8d4c846ccbad",
+  "output": "accountant-performance.mp4",
+  "outputSha256": "02697cb0d3882a951f0c9a745f714dde57d6937a262d70b719146d6ad5da935d",
+  "runtimeVideo": "public/studio/performances/accountant-offline-exact-v1.mp4",
+  "runtimeSha256": "de032add18da0eb97a060237603fa8a669b24d8773c3172799eb1d10e486d177",
+  "audioLagSeconds": 0,
+  "audioWaveformCorrelation": 0.9999918583363477,
+  "deliveryEncoding": {
+    "width": 720,
+    "height": 540,
+    "audio": false,
+    "keyframeIntervalFrames": 24,
+    "bFrames": 0
+  },
+  "reviewNotes": "Reviewed solo and chorus frames: attached lips, stable headset and identity, subtle eye movement. Live audio retains the approved master. Keys uses the approved separate keyboard detail view during her speaking performance."
+}

@@ -38,9 +38,9 @@ continues outside the sentence. Do not use this one performance for other words.
 `SpeechPerformance.jsx` preloads the next validated line after Play, seeks its
 video from the meeting's audio clock, preserves the corresponding paused frame,
 and never loops the sentence. Missing performances retain the existing generic
-motion plates. The first variants of Stand-up, Onboarding and Unlocking potential
+motion plates. The first variants of Stand-up, Onboarding, Unlocking potential and Offline
 now have exact performances for every human solo turn and chorus. The two
-paperless meetings contain only robots and the printer. The remaining nine
+paperless meetings contain only robots and the printer. The remaining eight
 meetings with humans still need line-specific performances; the season is not
 yet fully lip-synced.
 
@@ -197,6 +197,30 @@ tracking and production hashes live in `assets/meeting-performances/synthia-v2/`
 
 No Runway credits or Mux assets were used. This asset allocation remains
 1,994 of 2,000 credits spent. Direct review: `/studio/?meeting=founder-0`.
+
+## Taking this offline performance set, 2026-10-19
+
+`offline-0` now has exact solo and chorus performances for all five humans:
+Strategy, Kevin, Keys, People & Culture and Arjun. Its nine cameras use matching
+4:3 tiles. Keys retains the separate approved instrument camera during speech;
+her face is contained above it so her head is never cropped to make room.
+Arjun's closing “Same link. Same time. Same people.” seeks back from the chorus
+to its exact source offset. Both robot cameras, tracking and voices are unchanged.
+The chorus now has independently measured robot envelopes.
+
+Five renders cost ten credits. The first six exhausted the previous 2,000-credit
+production allocation. The user then authorized a new 6,000-credit allowance;
+Keys and People used four of that allowance, leaving 5,996 for later work.
+These are production-budget figures, not the Runway account's total balance.
+
+`assets/meeting-performances/offline-0/` retains exact WAVs, original videos,
+task IDs, take/hash bindings, timing and alignment checks. The packaging script
+validates zero audio lag and correlation above 0.999 before writing compact,
+silent 720×540 delivery clips with one-second keyframes and no B-frames.
+The unchanged approved voice track supplies the sound. No Mux assets are needed.
+Reviewed solo and chorus frames retain attached lips and stable headsets.
+The shared performance clock and tests cover pause, seek, source invalidation
+and Arjun's return after the chorus. Direct review: `/studio/?meeting=offline-0`.
 
 ## Robot treatment (unchanged)
 

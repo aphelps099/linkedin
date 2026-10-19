@@ -1,0 +1,90 @@
+{
+  "character": "strategy",
+  "meeting": "offline-0",
+  "status": "reviewed-integrated",
+  "audio": "strategy-exact-offline-0.wav",
+  "audioSha256": "f9d43c6cfbfe4ba1f0083b515ac4c495f461d21e22ec9350b66f0e8a214cf1bf",
+  "duration": 10.926666666666666,
+  "characterImage": "public/studio/season/posters/strategy-listening.jpg",
+  "solos": [
+    {
+      "cueIndex": 1,
+      "offset": 0.25,
+      "duration": 3.404916666666667,
+      "sources": [
+        {
+          "character": "strategy",
+          "text": "I’m excited to share that I’ve booked the follow-up.",
+          "line": "strategy-f343074b08823ff9",
+          "take": "f218f990041ddf22641cacb6c3dc8688bbc7456c4e96c733fcd14ca078963c19",
+          "masterSha256": "c89b1d4cc031e598a87f05a5b79d796d7ddade08eb59af0adeebf1fa7b542ebf"
+        }
+      ]
+    }
+  ],
+  "choruses": [
+    {
+      "cueIndex": 7,
+      "offset": 4.154916666666667,
+      "duration": 6.52175,
+      "phrases": [
+        {
+          "start": 0.0,
+          "duration": 2.042333333333333,
+          "slotDuration": 2.6087083333333334,
+          "source": {
+            "character": "strategy",
+            "text": "We’ll take this offline.",
+            "line": "strategy-0b5b8838622df915",
+            "take": "2c7c2b5cded6aa322e656f2ab9bb71a8b89ea227d5c9863758621a8988778640",
+            "masterSha256": "e97f2dda732f464d1e2d4803f842699b5cebb6706d30633cca761564dcc8caa0"
+          }
+        },
+        {
+          "start": 2.6087083333333334,
+          "duration": 1.070375,
+          "slotDuration": 1.3043333333333333,
+          "source": {
+            "character": "strategy",
+            "text": "Offline.",
+            "line": "strategy-4fbda14953066a0c",
+            "take": "9833f57e5a675bbd11c99ea2270a94187b62ade5c1fb7aa40e18c70eeea36293",
+            "masterSha256": "2d93ad58561f876619e2c7038ffbbb972a771d992566f7e6a8eef724ddaab2f9"
+          }
+        },
+        {
+          "start": 3.9130416666666665,
+          "duration": 2.042333333333333,
+          "slotDuration": 2.6087083333333334,
+          "source": {
+            "character": "strategy",
+            "text": "We’ll take this offline.",
+            "line": "strategy-0b5b8838622df915",
+            "take": "2c7c2b5cded6aa322e656f2ab9bb71a8b89ea227d5c9863758621a8988778640",
+            "masterSha256": "e97f2dda732f464d1e2d4803f842699b5cebb6706d30633cca761564dcc8caa0"
+          }
+        }
+      ]
+    }
+  ],
+  "direction": "Exact approved voice. Restrained natural articulation, subtle blinks, stable attached lips and headset. Preserve face identity.",
+  "workflow": "Runway Character Script to Video, uploaded Audio",
+  "taskId": "d552a716-bcaa-4d27-8dd0-addbc55172d2",
+  "assetId": "b8a16338-b8e1-444d-8b47-a3703f784cde",
+  "creditsSpent": 2,
+  "runwaySession": "5bb35d14-ea57-4d00-979c-8d4c846ccbad",
+  "output": "strategy-performance.mp4",
+  "outputSha256": "b4d29ff8481f3354540358f0120325c108b03140bd86f1e03235d88e3cde5e48",
+  "runtimeVideo": "public/studio/performances/strategy-offline-exact-v1.mp4",
+  "runtimeSha256": "2e751d6ad58a2ce8bcddde8c18beb7bc90a0375392c1d26efeb9ebe0c4f48d3c",
+  "audioLagSeconds": 0,
+  "audioWaveformCorrelation": 0.999987515922599,
+  "deliveryEncoding": {
+    "width": 720,
+    "height": 540,
+    "audio": false,
+    "keyframeIntervalFrames": 24,
+    "bFrames": 0
+  },
+  "reviewNotes": "Reviewed solo and chorus frames: attached lips, stable headset and identity, subtle eye movement. Live audio retains the approved master. Keys uses the approved separate keyboard detail view during her speaking performance."
+}

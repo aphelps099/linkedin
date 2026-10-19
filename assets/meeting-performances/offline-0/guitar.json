@@ -1,0 +1,90 @@
+{
+  "character": "guitar",
+  "meeting": "offline-0",
+  "status": "reviewed-integrated",
+  "audio": "guitar-exact-offline-0.wav",
+  "audioSha256": "78890f246f81431cdca9290d9b54443bb1d16f54a4fbf6aba942627caf398243",
+  "duration": 8.879958333333333,
+  "characterImage": "public/studio/season/posters/guitar-listening.jpg",
+  "solos": [
+    {
+      "cueIndex": 2,
+      "offset": 0.25,
+      "duration": 1.3582083333333332,
+      "sources": [
+        {
+          "character": "guitar",
+          "text": "What is the follow-up for?",
+          "line": "guitar-54028453efcdf29d",
+          "take": "64ca4f94d14d7298970ed33c72b77bab043f8d01bcc94945c896bd596e4d2a60",
+          "masterSha256": "ba5d8af51c7b35f0cedcfda38a7b9adfa08f81b0eab695b248f3a5a78b7341f9"
+        }
+      ]
+    }
+  ],
+  "choruses": [
+    {
+      "cueIndex": 7,
+      "offset": 2.1082083333333332,
+      "duration": 6.52175,
+      "phrases": [
+        {
+          "start": 0.0,
+          "duration": 1.2281666666666666,
+          "slotDuration": 2.6087083333333334,
+          "source": {
+            "character": "guitar",
+            "text": "We’ll take this offline.",
+            "line": "guitar-0b5b8838622df915",
+            "take": "229812b81463d777083238d82b9c5db40cd79377332bf5a2f975cee0bf8a86d5",
+            "masterSha256": "1504684f00ec6ce2232391e738279125025842ba9d93ddeae4da69ae0731850c"
+          }
+        },
+        {
+          "start": 2.6087083333333334,
+          "duration": 0.7796666666666666,
+          "slotDuration": 1.3043333333333333,
+          "source": {
+            "character": "guitar",
+            "text": "Offline.",
+            "line": "guitar-4fbda14953066a0c",
+            "take": "cb055f7d6f021bd3fdccacfa341ab3066d9359999aa2f36ab6f78aab5aec6c58",
+            "masterSha256": "f6c2ea14ee0dc6cb174a07967079d130427b98739383fb6e6bf81ec3cc86b052"
+          }
+        },
+        {
+          "start": 3.9130416666666665,
+          "duration": 1.2281666666666666,
+          "slotDuration": 2.6087083333333334,
+          "source": {
+            "character": "guitar",
+            "text": "We’ll take this offline.",
+            "line": "guitar-0b5b8838622df915",
+            "take": "229812b81463d777083238d82b9c5db40cd79377332bf5a2f975cee0bf8a86d5",
+            "masterSha256": "1504684f00ec6ce2232391e738279125025842ba9d93ddeae4da69ae0731850c"
+          }
+        }
+      ]
+    }
+  ],
+  "direction": "Exact approved voice. Restrained natural articulation, subtle blinks, stable attached lips and headset. Preserve face identity.",
+  "workflow": "Runway Character Script to Video, uploaded Audio",
+  "taskId": "d59d920b-c84a-47f5-ab16-a373b83b6eaa",
+  "assetId": "646b90ea-2388-49ff-bed8-8447a0e624f7",
+  "creditsSpent": 2,
+  "runwaySession": "5bb35d14-ea57-4d00-979c-8d4c846ccbad",
+  "output": "guitar-performance.mp4",
+  "outputSha256": "14f2c6cc35c59ee449bbc7e99c882c0663febbb856dd940350e4d8fc0a0e7fc8",
+  "runtimeVideo": "public/studio/performances/guitar-offline-exact-v1.mp4",
+  "runtimeSha256": "2b94fc0f5b9aa714a68118d7975295af14c041115e41c93396e2876806126429",
+  "audioLagSeconds": 0,
+  "audioWaveformCorrelation": 0.9999789074133371,
+  "deliveryEncoding": {
+    "width": 720,
+    "height": 540,
+    "audio": false,
+    "keyframeIntervalFrames": 24,
+    "bFrames": 0
+  },
+  "reviewNotes": "Reviewed solo and chorus frames: attached lips, stable headset and identity, subtle eye movement. Live audio retains the approved master. Keys uses the approved separate keyboard detail view during her speaking performance."
+}

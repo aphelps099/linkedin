@@ -1,0 +1,25 @@
+{
+  "meeting": "offline-0",
+  "humanPerformances": [
+    "strategy",
+    "guitar",
+    "accountant",
+    "keys",
+    "people"
+  ],
+  "preparedRemaining": [],
+  "creditsAuthorizedThisPass": 10,
+  "previousAllocationSpent": 1994,
+  "allocationTotal": 2000,
+  "audio": "Existing approved audio retained; only independent robot chorus envelopes updated.",
+  "delivery": "Silent 720x540 H.264 files with one-second keyframes; original source masters retained.",
+  "newAllowance": 6000,
+  "newAllowanceAuthorizedAt": "2026-10-19T16:43:01-07:00",
+  "newAllowanceExpectedSpend": 4,
+  "creditsSpentThisMeeting": 10,
+  "previousAllocationFinalSpent": 2000,
+  "newAllowanceSpent": 4,
+  "newAllowanceRemaining": 5996,
+  "status": "validated-ready-for-live-review",
+  "runtimeTotalBytes": 3903793
+}
