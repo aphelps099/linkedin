@@ -37,3 +37,14 @@ export function performanceForTime(id,meeting,time){
 export function performanceTime(performance,cue,time){
   return performance.offset+Math.max(0,Math.min(performance.duration,time-cue.start));
 }
+export function syncPerformanceVideo(video,expected,shouldPlay,onError){
+  // A newly swapped source can briefly inherit React's previous ready flag.
+  // Check the actual media element before touching its clock (duration is NaN
+  // until metadata arrives). Never let a cold-cache seek unmount the room.
+  if(!video||video.readyState<2||!Number.isFinite(video.duration)||video.duration<=0||!Number.isFinite(expected))return false;
+  const target=Math.min(Math.max(0,expected),Math.max(0,video.duration-.001));
+  if(Math.abs(video.currentTime-target)>(shouldPlay?.1:.001))video.currentTime=target;
+  if(shouldPlay&&video.paused&&!video.ended)video.play().catch(onError);
+  else if(!shouldPlay&&!video.paused)video.pause();
+  return true;
+}

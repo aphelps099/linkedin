@@ -6,7 +6,7 @@ import React from 'react';
 import {renderToString} from 'react-dom/server';
 import {createMeetingEngine} from '../src/meeting-room/engine.js';
 import {PRINT_CYCLE,printerPhase,paperRow} from '../src/meeting-room/printer-paper.js';
-import {exactPerformance,performanceForTime,performanceTime} from '../src/meeting-room/performances.js';
+import {exactPerformance,performanceForTime,performanceTime,syncPerformanceVideo} from '../src/meeting-room/performances.js';
 
 const bundle=await build({entryPoints:['src/meeting-room/catalog.js'],bundle:true,platform:'node',format:'esm',write:false});
 const {meetings,cast,meetingSequence,nextMeeting,cueAt,isSpeaker}=await import(`data:text/javascript;base64,${Buffer.from(bundle.outputFiles[0].text).toString('base64')}`);
@@ -68,6 +68,18 @@ for(const id of ['guitar','keys','operations']){
 }
 assert.equal(exactPerformance('synergy',hook),null,'Synergy retains his approved screen animation');
 assert.equal(exactPerformance('printer',hook),null,'Printer never sings');
+let seeks=0,mediaTime=0;
+const media={readyState:0,duration:NaN,paused:true,ended:false,
+  get currentTime(){return mediaTime;},set currentTime(value){assert(Number.isFinite(value));seeks++;mediaTime=value;},
+  play(){this.paused=false;return Promise.resolve();},pause(){this.paused=true;}};
+assert.equal(syncPerformanceVideo(media,3.8,true,()=>{}),false,'A source swap with stale ready state waits for real metadata');
+assert.equal(seeks,0,'Never assign NaN to a media clock');
+media.readyState=4;media.duration=10;
+assert(syncPerformanceVideo(media,3.8,false,()=>{}));assert.equal(media.currentTime,3.8);
+const parkedSeeks=seeks;syncPerformanceVideo(media,3.8,false,()=>{});assert.equal(seeks,parkedSeeks,'Do not repeatedly seek a parked chorus clip');
+syncPerformanceVideo(media,4.2,true,()=>{});assert.equal(media.paused,false);assert.equal(media.currentTime,4.2);
+syncPerformanceVideo(media,4.25,false,()=>{});assert.equal(media.paused,true);assert.equal(media.currentTime,4.25);
+media.duration=NaN;assert.equal(syncPerformanceVideo(media,5,true,()=>{}),false);
 let current=meetingSequence[0];const visited=new Set();
 for(let i=0;i<14;i++){
   assert(!visited.has(current.id),'Every meeting gets a turn before repeating');visited.add(current.id);
