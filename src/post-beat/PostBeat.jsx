@@ -4,7 +4,8 @@ import {DURATION,makeRecipe,encodeRecipe,arrangement,voiceLines} from './composi
 import {createPostBeat} from './audio.js';
 import './post-beat.css';
 const clock=t=>`0:${String(Math.floor(t)).padStart(2,'0')}`;
-export function PostBeat({post,initialRecipe,children,onModeChange}){
+const WAVEFORM=[25,52,35,77,94,55,39,64,83,45,30,70,100,66,40,54,90,74,47,32,62,88,52,30,70,48,94,61,42,22,57,79,37,60,44,25];
+export function PostBeat({post,initialRecipe,children,onModeChange,ticketControls,ticketScore,ticketNotice,heading}){
   const recipe=useMemo(()=>initialRecipe||makeRecipe(post),[post,initialRecipe]);
   const lines=useMemo(()=>{const voices=voiceLines(recipe);return arrangement(recipe).map((event,id)=>({...event,...voices[event.clip],id}));},[recipe]);
   const [phase,setPhase]=useState('idle'),[elapsed,setElapsed]=useState(0),[active,setActive]=useState({line:-1,word:-1});
@@ -69,15 +70,18 @@ export function PostBeat({post,initialRecipe,children,onModeChange}){
       clearTimeout(copyTimer.current);copyTimer.current=setTimeout(()=>setMessage(''),4000);
     }catch(e){if(e.name!=='AbortError')setError('Could not share the link. Please try again.');}
   };
-  return <div className="pb-inline">
-    <div className={`pb-mini${playing?' is-playing':''}`} role="group" aria-label="Your beat player">
+  const player=<div className={`pb-mini${playing?' is-playing':''}`} role="group" aria-label="Your beat player">
       <button className="pb-toggle" onClick={play} aria-label={busy?'Cancel beat preparation':playing?'Pause beat':phase==='paused'?'Resume beat':phase==='done'?'Replay beat':'Make and play beat'}>{busy?<X size={21}/>:playing?<Pause size={21} fill="currentColor"/>:<Play size={21} fill="currentColor"/>}</button>
       <div className="pb-track"><span>{busy?'Making your beat…':playing?'Now playing':phase==='paused'?'Paused':phase==='done'?'One more time?':'Your words. On repeat.'}</span><strong>{busy?<><LoaderCircle size={13}/>Finding the groove</>:phase==='idle'&&!initialRecipe?'Make this a beat':'The LinkedIn remix'}</strong></div>
-      <div className="pb-meter" aria-hidden="true">{[10,18,27,14,23,32,18,26,12].map((height,i)=><i key={i} style={{height,'--delay':`${-i*.13}s`}}/>)}</div>
+      {ticketControls?<div className="pb-waveform" role="progressbar" aria-label="Beat progress" aria-valuenow={Math.floor(elapsed)} aria-valuemin={0} aria-valuemax={DURATION}>{WAVEFORM.map((height,i)=><i key={i} className={elapsed>0&&i/WAVEFORM.length<=elapsed/DURATION?'is-past':''} style={{height:`${height}%`}}/>)}</div>:<div className="pb-meter" aria-hidden="true">{[10,18,27,14,23,32,18,26,12].map((height,i)=><i key={i} style={{height,'--delay':`${-i*.13}s`}}/>)}</div>}
       <span className="pb-time">{clock(elapsed)}<small> / 0:30</small></span>
       <button className="pb-share" onClick={share} aria-label="Share this beat">{message?<Check size={15}/>:<Share2 size={15}/>}<span>{message?(message.startsWith('Beat shared')?'Shared':'Copied'):'Share this beat'}</span></button>
-      <div className="pb-progress" role="progressbar" aria-label="Beat progress" aria-valuenow={Math.floor(elapsed)} aria-valuemin={0} aria-valuemax={30}><span style={{width:`${elapsed/DURATION*100}%`}}/></div>
-    </div>
+      {!ticketControls&&<div className="pb-progress" role="progressbar" aria-label="Beat progress" aria-valuenow={Math.floor(elapsed)} aria-valuemin={0} aria-valuemax={DURATION}><span style={{width:`${elapsed/DURATION*100}%`}}/></div>}
+    </div>;
+  return <div className={`pb-inline${ticketControls?' pb-has-ticket':''}`}>
+    {ticketControls?<section className="pb-ticket el-controls" aria-label="Supercharge and play your post"><div className="pb-ticket-main">{ticketControls}{player}</div>{ticketScore}</section>:player}
+    {ticketNotice}
+    {heading}
     {showSong&&<div className="pb-view-tools"><span><Music2 size={13}/>Sing along</span><div><button onClick={restart} aria-label="Restart beat" disabled={busy}><RotateCcw size={13}/></button>{!initialRecipe&&<button onClick={toggleView}>Read post</button>}</div></div>}
     {!showSong&&phase!=='idle'&&<div className="pb-view-tools"><span/><button onClick={toggleView}>Sing along</button></div>}
     {error&&<p className="pb-error" role="alert">{error}</p>}

@@ -1,6 +1,6 @@
 # Inline post-to-beat player
 
-Open `/lessons/` and press the small player's yellow play button. Playback transforms the output area into a singalong. The listener gets play/pause, restart, a **Read post** toggle, and **Share this beat**. There is no mixing console or voice-selection UI. Editing the source post tears down the old player and its audio. Hidden tabs pause playback; returning does not autoplay.
+Open `/lessons/` and press play in the cream ticket. The ticket combines the slanted Supercharge button, a waveform that tracks playback, sharing, and a score stub with transparent top and bottom cutouts. Playback transforms the output area into a singalong. The listener gets play/pause, restart, a **Read post** toggle, and **Share this beat**. There is no mixing console or voice-selection UI. Editing the source post tears down the old player and its audio. Hidden tabs pause playback; returning does not autoplay. Shared beat links retain the focused player without post-generation controls.
 
 The 30-second, 96 BPM arrangement uses the homepage's actual `createAudioEngine`, chord progression, bass and keys from **Synergy in B2B Minor**, at a slower tempo. Familiar female phrases load the exact `/public/phrases/*.wav` recordings; new chorus lines use the local Kokoro `af_heart` voice at 0.97 speed. Fred supplies the computer replies. Kokoro is a new casting candidate, not a clone or a verified identification of the original voice. The recorded female voice's original provider/preset is not documented in the repo.
 

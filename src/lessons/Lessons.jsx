@@ -13,6 +13,7 @@ import {ScoreReadout} from './ScoreReadout.jsx';
 import './ignition.css';
 import {PostBeat} from '../post-beat/PostBeat.jsx';
 import {decodeRecipe} from '../post-beat/composition.js';
+import './ticket.css';
 
 const TABS=[['announce','Announce'],['lesson','Find a lesson'],['sell','Sell'],['urgency','Create urgency'],['ai','Talk AI']];
 const MAX_SUPERCHARGES=3;
@@ -34,6 +35,8 @@ export default function Lessons(){
   const copied=copyStatus==='Copied ✓';
   const fullyCharged=isSupercharged&&boostCount>=MAX_SUPERCHARGES&&!isCharging;
   const variants=useRef({}),copyTimer=useRef(null),outputRef=useRef(null),chargeTimer=useRef(null);
+  const boostButton=useRef(null),restoreBoostFocus=useRef(false);
+  useEffect(()=>{if(!isCharging&&restoreBoostFocus.current){if(document.activeElement===document.body||document.activeElement===outputRef.current)boostButton.current?.focus({preventScroll:true});restoreBoostFocus.current=false;}},[isCharging]);
   useEffect(()=>()=>{clearTimeout(copyTimer.current);clearTimeout(chargeTimer.current);},[]);
   const answers=drafts[catId],cat=byId(catId),steps=cat.steps(answers);
   const primaryKeys=sentenceParts(catId,answers).filter(p=>typeof p!=='string').map(p=>Array.isArray(p)?p[0]:p.key);
@@ -57,6 +60,7 @@ export default function Lessons(){
   const example=()=>{resetStage();setDrafts(d=>({...d,[catId]:{...(catId==='announce'?ANNOUNCEMENT_EXAMPLES[answers.kind]:EXAMPLES[catId])}}));setStatus('Example loaded. Edit the blue words to make it yours.');};
   const regenerate=()=>{setSharedRecipe(null);clearTimeout(chargeTimer.current);setIsCharging(false);setBoostCount(0);if(isSupercharged)setTurboSeed(newSeed());else setSeed(newSeed());setStatus(isSupercharged?'A fresh supercharged version is ready.':'A fresh LinkedIn version is ready.');};
   const supercharge=()=>{
+    restoreBoostFocus.current=document.activeElement===boostButton.current;
     setSharedRecipe(null);
     const completesCharge=boostCount+1>=MAX_SUPERCHARGES;
     clearTimeout(chargeTimer.current);setBoostCount(n=>n+1);setIsCharging(true);
@@ -70,6 +74,15 @@ export default function Lessons(){
     },reducedMotion?0:1100);
   };
   const copy=async()=>{try{await copyText(text);setCopyStatus('Copied ✓');clearTimeout(copyTimer.current);copyTimer.current=setTimeout(()=>setCopyStatus(''),1800);}catch{setCopyStatus('Copy unavailable. Select the post text to copy it.');}};
+  const boostControl=<div className="el-boost-control">
+    <button ref={boostButton} type="button" className="el-supercharge" onClick={fullyCharged?copy:supercharge} disabled={isCharging} aria-busy={isCharging} aria-describedby={fullyCharged?'charge-handoff':undefined} title={fullyCharged?'Copy your post to the clipboard':isSupercharged?'Generate another supercharged version':'Give this post the full LinkedIn treatment'}>
+      <span key={boostCount} className={`el-boost-face${isCharging?' is-fired':''}`}>
+        {fullyCharged?(copied?<Check className="el-boost-action-icon" aria-hidden="true"/>:<Copy className="el-boost-action-icon" aria-hidden="true"/>):<svg className="el-boost-bolt" viewBox="0 0 24 32" aria-hidden="true"><path d="M12 0H24L15 12H23L3 32L8 18H0Z" fill="currentColor"/></svg>}
+        <span className="el-boost-label">{fullyCharged?(copied?'Copied':'Copy post'):'Supercharge'}</span>
+        <span className="el-boost-stripes" aria-hidden="true"><i/><i/><i/></span>
+      </span>
+    </button>
+  </div>;
   if(sharedRecipe)return <div className="ll-app c2-home">
     <ConceptHeader base="../" homeSectionBase="../" active="LinkedInifier"/>
     <main className="pb-shared"><div className="pb-shared-inner"><p className="pb-shared-eyebrow">A LITTLE PROFESSIONAL DEVELOPMENT.</p><h1>Your words.<br/>On repeat.</h1><PostBeat key={JSON.stringify(sharedRecipe)} post="" initialRecipe={sharedRecipe}/><a className="pb-make-own" href="./">Make your own beat ↗</a></div></main>
@@ -84,19 +97,6 @@ export default function Lessons(){
         <div className="el-categories" role="group" aria-label="Post type">{TABS.map(([id,label])=><button type="button" key={id} aria-pressed={id===catId} onClick={()=>pick(id)}>{label}</button>)}</div>
       </div>
       <div className="el-workspace">
-      <section className="el-controls" aria-label="Supercharge your post">
-        <div className="el-boost-control">
-        <button type="button" className="el-supercharge" onClick={fullyCharged?copy:supercharge} disabled={isCharging} aria-busy={isCharging} aria-describedby={fullyCharged?'charge-handoff':undefined} title={fullyCharged?'Copy your post to the clipboard':isSupercharged?'Generate another supercharged version':'Give this post the full LinkedIn treatment'}>
-          <span key={boostCount} className={`el-boost-face${isCharging?' is-fired':''}`}>
-            {fullyCharged?(copied?<Check className="el-boost-action-icon" aria-hidden="true"/>:<Copy className="el-boost-action-icon" aria-hidden="true"/>):<svg className="el-boost-bolt" viewBox="0 0 24 32" aria-hidden="true"><path d="M12 0H24L15 12H23L3 32L8 18H0Z" fill="currentColor"/></svg>}
-            <span className="el-boost-label">{fullyCharged?(copied?'Copied':'Copy post'):'Supercharge'}</span>
-            <span className="el-boost-stripes" aria-hidden="true"><i/><i/><i/></span>
-          </span>
-        </button>
-        </div>
-        <ScoreReadout key={`score-${boostCount}`} score={score} charging={isCharging} supercharged={isSupercharged} baseline={firstVersion.score.index}/>
-        <p id="charge-handoff" className={fullyCharged?'el-charge-complete':'el-sr'} role="status">{fullyCharged&&<><strong>You’re all charged up.</strong><span>{copied?'Copied. Paste it into LinkedIn.':copyStatus.startsWith('Copy unavailable')?copyStatus:'Copy your post, then paste it into LinkedIn.'}</span></>}</p>
-      </section>
         <section className={`el-facts${isCharging?' is-feeding':''}`} aria-labelledby="facts-title">
           <h2 className="el-eyebrow" id="facts-title">WHAT ACTUALLY HAPPENED?</h2>
           {choices.length>0&&<div className="el-choices">{choices.map(s=><fieldset key={`${catId}-${s.key}`}>
@@ -113,8 +113,11 @@ export default function Lessons(){
           <p className="el-sr" role="status">{status}</p>
         </section>
         <section className="el-output" aria-labelledby="output-title" ref={outputRef} tabIndex={-1}>
-          <h2 className="el-eyebrow" id="output-title"><i/>{beatMode?'YOUR WORDS. ON REPEAT.':isSupercharged?'THE SUPERCHARGED VERSION':'THE LINKEDIN VERSION'}</h2>
-          <PostBeat key={sharedRecipe?JSON.stringify(sharedRecipe):text} post={text} initialRecipe={sharedRecipe} onModeChange={setBeatMode}>
+          <PostBeat key={text} post={text} onModeChange={setBeatMode}
+            ticketControls={boostControl}
+            ticketScore={<ScoreReadout key={`score-${boostCount}`} score={score} charging={isCharging} supercharged={isSupercharged} baseline={firstVersion.score.index}/>}
+            ticketNotice={<p id="charge-handoff" className={fullyCharged?'el-charge-complete':'el-sr'} role="status">{fullyCharged&&<><strong>You’re all charged up.</strong><span>{copied?'Copied. Paste it into LinkedIn.':copyStatus.startsWith('Copy unavailable')?copyStatus:'Copy your post, then paste it into LinkedIn.'}</span></>}</p>}
+            heading={<h2 className="el-eyebrow" id="output-title"><i/>{beatMode?'YOUR WORDS. ON REPEAT.':isSupercharged?'THE SUPERCHARGED VERSION':'THE LINKEDIN VERSION'}</h2>}>
           <div className="el-post" aria-label={isSupercharged?'Your supercharged post':'Your LinkedIn post'}><p className={`el-post-lead ${paras[0].length>100?'is-long':''}`}>{paras[0]}</p>{paras.slice(1).map((p,i)=><p key={i}>{p}</p>)}</div>
           </PostBeat>
           <div className="el-output-actions"><button className={`el-copy${copied?' is-copied':''}`} onClick={copy} aria-label={copied?'Copied to clipboard':'Copy to clipboard'} title={copied?'Copied!':'Copy to clipboard'}>{copied?<Check aria-hidden="true"/>:<Copy aria-hidden="true"/>}</button><button onClick={regenerate}>Try another</button>{isSupercharged&&<button onClick={()=>{resetStage();setStatus('Showing the first LinkedIn version.');}}>View first version</button>}</div>
