@@ -96,7 +96,7 @@
         ]}
       ],
       founder:[
-        {title:"Humbled and honored to announce",bpm:88,groove:"Warm keyboard hip-hop",roster:['guitar','synergy','synthia','people','printer'],lines:[
+        {title:"Humbled and honored to announce",bpm:88,groove:"Warm keyboard hip-hop",roster:['guitar','synergy','synthia','people','printer'],interludes:[{afterCue:5,bars:1,character:'guitar'}],lines:[
           ['synergy','Before we delve in, let’s optimize our founder narrative.'],
           ['guitar','I’m humbled and honored to announce our new LinkedIn headline.'],
           ['people','This will unlock a new chapter of category leadership.'],
@@ -105,7 +105,7 @@
           ['synergy','And what are we building?'],
           ['guitar','We’ll take that offline.'],
           ['all','Building. Unlocking. Humbled and honored. Excited to share.'],
-          ['people','I’ve already called it a movement.']
+          ['people','My mother asked what we sell. I sent her the headline.']
         ]},
         {title:"Building something extraordinary",bpm:88,groove:"Warm keyboard hip-hop",roster:['guitar','synergy','synthia','people','printer'],lines:[
           ['synergy','Before we delve in, let’s optimize our launch momentum.'],

@@ -4926,10 +4926,10 @@
       ]
     },
     {
-      "id": "people-eb54a611e2869e8e",
+      "id": "people-8ef891ceec64308c",
       "character": "people",
-      "text": "I’ve already called it a movement.",
-      "spokenText": "I’ve already called it a movement.",
+      "text": "My mother asked what we sell. I sent her the headline.",
+      "spokenText": "My mother asked what we sell. I sent her the headline.",
       "scriptStatus": "authored",
       "usages": [
         {
@@ -7138,7 +7138,7 @@
         },
         {
           "speaker": "people",
-          "line": "people-eb54a611e2869e8e"
+          "line": "people-8ef891ceec64308c"
         }
       ]
     },

@@ -1,0 +1,14 @@
+{
+  "source": "public/studio/season/clips/synthia-listening.mp4",
+  "sourceSha256": "1aef8fa4481f40ca6028b0eec3b1f64be347c3cbabc71990ee6de85effd7f991",
+  "target": "public/studio/season/clips/synthia-camera-v2-listening.mp4",
+  "targetSha256": "502b2afe18d7ff7964206f429bf7e437fa40f13a782771ebd8d9675cf9520fad",
+  "frames": 454,
+  "fps": 24,
+  "credits": 0,
+  "sourceFrames": 228,
+  "mouthOnlyMaskPixels": 131132,
+  "loop": "Forward, then reverse without duplicate end frames. Matching source/tracking order.",
+  "face": "Original green mouth pixels removed offline. Runtime has no opaque patch. Same fixed 6px horizontal row as Synergy.",
+  "continuity": "Same Synthia, scarf, cup, headset, badge, voice and original green eyes. Synergy media unchanged."
+}

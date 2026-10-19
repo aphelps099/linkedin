@@ -119,6 +119,13 @@ for(const id of ['synergy','synthia']){
 assert.equal(cueLevel(duet,duet.start+.8,'printer'),0,'Printer never gets a vocal display');
 assert.equal(cueLevel(paperless.cues[0],paperless.cues[0].start+.8,'synthia'),0,'Listening robot does not borrow the host voice');
 assert.equal(cueLevel(paperless.cues[0],paperless.cues[0].start+.8,'synergy'),cueLevel(paperless.cues[0],paperless.cues[0].start+.8),'Solo mouth retains its approved envelope');
+const founder=meetings.founder[0],fill=founder.interludes[0];
+assert.equal(founder.cues.at(-1).text,'My mother asked what we sell. I sent her the headline.');
+assert.equal(fill.character,'guitar');
+assert(Math.abs(fill.duration-240/founder.bpm)<.0001,'The interruption is one musical bar');
+assert(founder.cues.every(c=>c.start+c.duration<=fill.start||c.start>=fill.start+fill.duration),'Guitar fill never obscures dialogue');
+assert.equal(founder.guitarFills.variants.length,3);
+await access(`public/studio/season/audio/${founder.guitarFills.file}`);
 await access('public/studio/season/clips/keys-detail.mp4');
 await access('public/studio/season/posters/keys-detail.jpg');
 let seeks=0,mediaTime=0;
@@ -184,6 +191,28 @@ e.setMeeting(meetings.paperless[0]);assert.equal(e.snapshot().muted,true,'Mute p
 await e.play();ctx.sources.at(-2).onended();assert.equal(e.elapsed(),meetings.paperless[0].duration);assert(!e.snapshot().playing);
 e.dispose();assert.equal(ctx.state,'closed');
 
+// One randomized fill per meeting load; resume/seek must retain that choice.
+const riffContext=new Context();let riffRequests=0,randomCalls=0;
+const riffEngine=createMeetingEngine({contextFactory:()=>riffContext,random:()=>{randomCalls++;return .7;},fetcher:async()=>{riffRequests++;return{ok:true,arrayBuffer:async()=>new ArrayBuffer(8)};}});
+riffEngine.setMeeting(founder);assert.equal(riffRequests,0);
+await riffEngine.play();assert.equal(riffRequests,3);assert.equal(randomCalls,1);
+const firstRiff=riffContext.sources[2],selectedFill=founder.guitarFills.variants[2];
+assert.equal(firstRiff.started[0],.05+fill.start);
+assert.equal(firstRiff.started[1],selectedFill.offset);
+assert.equal(firstRiff.started[2],Math.min(fill.duration,selectedFill.duration));
+assert.equal(firstRiff.connections[0],riffContext.sources[1].connections[0],'Riff obeys the music mix');
+const beforeMix=riffContext.sources.length;riffEngine.setMix({music:.2});assert.equal(riffContext.sources.length,beforeMix);
+riffEngine.seek(fill.start+.8);await flush();
+const resumedRiff=riffContext.sources.at(-1);
+assert(Math.abs(resumedRiff.started[1]-selectedFill.offset-.8)<1e-8,'Seek resumes inside the selected phrase');
+assert(Math.abs(resumedRiff.started[2]-selectedFill.duration+.8)<1e-8);
+assert(firstRiff.stopped&&firstRiff.disconnected);
+riffEngine.pause();assert(resumedRiff.stopped);await riffEngine.play();
+assert.equal(randomCalls,1);assert.equal(riffRequests,3,'Resuming retains cached audio and the chosen riff');
+const beforeSeek=riffContext.sources.length;riffEngine.seek(fill.start+fill.duration+.1);await flush();
+assert.equal(riffContext.sources.length,beforeSeek+2,'A completed riff is not replayed');
+riffEngine.dispose();
+
 // A slow previous meeting must not start after the user changes the agenda.
 const resolvers=[];const delayed=createMeetingEngine({contextFactory:()=>new Context(),fetcher:()=>new Promise(resolve=>{resolvers.push(resolve);})});
 delayed.setMeeting(meetings.standup[0]);const pending=delayed.play();await flush();delayed.setMeeting(meetings.founder[0]);
@@ -208,8 +237,8 @@ try{
   assert(!html.includes('getUserMedia'));
   const rects=[];const drawing={clearRect(){},save(){},restore(){},translate(){},rotate(){},scale(){},fillRect:(...args)=>rects.push(args)};
   for(const id of ['synergy','synthia']){
-    for(const level of [0,.2,1]){rects.length=0;drawRobotMouth(drawing,id,4.1,12,level);assert.equal(rects.length,id==='synergy'?22:23);assert(rects.slice(id==='synergy'?0:1).every(r=>r[3]===(id==='synergy'?6:4)),'Robot mouth height never expands');}
-    for(let time=0;time<(id==='synergy'?17:9.5);time+=.1){const [x,y,angle,scale]=robotFrame(id,time);assert(x>580&&x<720&&y>230&&y<300);assert(Math.abs(angle)<.2);assert(scale>.85&&scale<1.15);}
+    for(const level of [0,.2,1]){rects.length=0;drawRobotMouth(drawing,id,4.1,12,level);assert.equal(rects.length,22);assert(rects.every(r=>r[3]===6),'Robot mouth height never expands and never has an opaque floating patch');}
+    for(let time=0;time<(id==='synergy'?17:454/24);time+=.1){const [x,y,angle,scale]=robotFrame(id,time);assert(x>580&&x<720&&y>230&&y<300);assert(Math.abs(angle)<.2);assert(scale>.85&&scale<1.15);}
   }
 }finally{await unlink(temp);}
 const route=await readFile('src/studio-main.jsx','utf8');assert(route.includes('meeting-room/main.jsx'));

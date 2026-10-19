@@ -16,7 +16,7 @@ export const agendaDescriptions={
 };
 export const cast={
   synergy:{name:'Synergy',role:'Host',media:'synergy-camera-v2',robot:true},
-  synthia:{name:'Synthia',role:'Corporate training',media:'synthia',robot:true},
+  synthia:{name:'Synthia',role:'Corporate training',media:'synthia-camera-v2',robot:true},
   people:{name:'People & Culture',role:'Human resources',media:'people'},
   strategy:{name:'Strategy',role:'Strategic alignment',media:'strategy'},
   guitar:{name:'Kevin',role:'Partnerships',media:'guitar',instrument:'Guitar'},

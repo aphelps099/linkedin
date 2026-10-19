@@ -7,6 +7,15 @@ from scipy.signal import savgol_filter
 ROOT=Path(__file__).resolve().parents[1]
 result={}
 for who in ['synergy','synthia']:
+    # The cleaned Synthia loop mirrors the archived original frame order.
+    # Its decorative mouth no longer exists and must not be tracked again.
+    original=ROOT/'assets/meeting-performances/synthia-v2/source-tracking.json'
+    if who=='synthia' and original.exists():
+        track=json.loads(original.read_text());frames=track['frames']
+        indices=list(range(len(frames)))+list(range(len(frames)-2,0,-1))
+        result[who]={'fps':track['fps'],'frames':[frames[i] for i in indices]}
+        print(who,len(indices),'archived, mirrored tracking frames')
+        continue
     media='synergy-camera-v2' if who=='synergy' else who
     cap=cv2.VideoCapture(str(ROOT/f'public/studio/season/clips/{media}-listening.mp4'))
     # V2 Synergy's first source frame calibrates the speech row below the eyes.

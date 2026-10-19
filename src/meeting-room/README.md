@@ -38,8 +38,8 @@ The cast samples remain available at `/studio/voices/`.
 ## Character continuity and movement
 
 Approved cast media is in `public/studio/season/`. Provenance and source takes are
-recorded in `media-manifest.json`. The 20 motion files are silent 1280 × 720
-plates. They load only after playback starts. Reduced motion uses still frames.
+recorded in `media-manifest.json` and `PERFORMANCE-PRODUCTION.md`. The motion
+plates load only after playback starts. Reduced motion uses still frames.
 Hidden tabs pause the meeting. Failed video playback leaves the poster visible.
 
 - Humans have speaking, listening, and (where applicable) instrument plates.
@@ -49,7 +49,7 @@ Hidden tabs pause the meeting. Failed video playback leaves the poster visible.
   across the meeting. No reversed instrument footage.
 - Synergy and Synthia use their approved idle footage. Eye positions were
   tracked to anchor the replacement mouth inside the black face screen.
-  `robot-tracking.json` stores all 228 frames for each robot. It includes the
+  `robot-tracking.json` stores 408 Synergy and 454 Synthia frames. It includes the
   small head and body movement; never anchor the overlay to the tile itself.
 - The robot mouth is ONE fixed-height green horizontal row near the bottom of
   the screen. Light travels left to right. Vocal level affects brightness only.
@@ -82,6 +82,10 @@ scale to the viewport height to bring playback controls into view sooner.
 The playback engine cancels stale loads, caches at most four decoded buffers,
 handles browser audio interruptions, ducks music under dialogue and limits
 output peaks. It does not call any paid generation API.
+The first Founder meeting has a one-bar guitar interruption with three phrase
+variations. Its choice remains stable through pause and seek; it shares the
+music bus and loads only when that meeting is played. Founder camera tiles
+use equal 3:2 frames with baked video margins cropped away.
 
 ## Rebuilding and checking
 

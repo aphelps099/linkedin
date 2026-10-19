@@ -165,6 +165,39 @@ chorus envelopes so new recordings cannot silently retain stale mouth timing.
 Direct review link: `/studio/?meeting=paperless-0`. Next meeting continues to the
 first Founder update, without shuffling.
 
+## Founder meeting polish, 2026-10-19
+
+`founder-0` now runs 40.9091 seconds. Every Founder tile has the same 3:2 frame;
+source camera margins are cropped independently while keeping each robot's
+tracked display in the same coordinate system as its video. The five-person
+gallery keeps three tiles above two centered tiles. Printer and people use the
+same dimensions. Other agendas keep their existing framing.
+
+The closing line is now People & Culture's “My mother asked what we sell.
+I sent her the headline.” It uses the same approved Heart voice and speed,
+with a new lossless master and content-hashed delivery audio. Only this meeting's
+timeline changed. Its humans still use the existing approximate speaking plates;
+do not call this meeting phonetic lip sync.
+
+A one-bar guitar reply fills 22.5–25.2273 seconds after “And what are we building?”
+before “We’ll take that offline.” Three original F-sharp-minor, 88 BPM phrases
+are synthesized by `render-founder-guitar.py` into one 133 KB audio sprite.
+The engine chooses one phrase when the meeting is loaded, preserves it across
+pause/seek, and routes it through the music mix. It never overlaps dialogue.
+Kevin's instrument plate plays during the fill; it is not note-for-note sync.
+
+Synthia now uses `synthia-camera-v2-listening.mp4`, cleaned from her existing
+approved plate. `refine-synthia-camera.py` removes only decorative mouth LEDs
+inside the tracked glass area, preserving source eyes, reflections, metal,
+scarf, headset, cup and badge. A forward/reverse loop has matching tracking
+for all 454 frames. Runtime draws the same 22-LED, six-pixel-high horizontal
+speech row as Synergy, with no opaque rectangle. Synergy media and tracking
+are unchanged; both distinct robot voices are retained. The archived original
+tracking and production hashes live in `assets/meeting-performances/synthia-v2/`.
+
+No Runway credits or Mux assets were used. This asset allocation remains
+1,994 of 2,000 credits spent. Direct review: `/studio/?meeting=founder-0`.
+
 ## Robot treatment (unchanged)
 
 Synergy is a separate production problem. Generate a stable physical performance

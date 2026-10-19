@@ -51,7 +51,7 @@ export default function MeetingRoom(){
         <div className="mr-windowbar"><span className="mr-window-brand"><Video aria-hidden="true"/>LinkedIn Beats Meeting</span><h1>{meeting.title}</h1><span className="mr-window-status"><span className={`mr-dot${state.playing?' is-live':''}`} aria-hidden="true"/>{left?'Meeting adjourned':state.loading?'Connecting…':state.playing?'In progress':finished?'Meeting complete':'Hosted by Synergy'}</span></div>
         <div className="mr-stage">
           <div className="mr-gallery-tools"><span><Users aria-hidden="true"/>{String(meeting.roster.length).padStart(2,'0')} in the room</span><button onClick={()=>{setPin(null);setFollow(!(follow||pin));}} aria-pressed={!!spotlight}><Grid2X2 aria-hidden="true"/>{spotlight?'Gallery view':'Speaker view'}</button></div>
-          <div className={`mr-gallery${spotlight?' has-spotlight':''}`} data-size={meeting.roster.length}>
+          <div className={`mr-gallery${spotlight?' has-spotlight':''}`} data-size={meeting.roster.length} data-agenda={meeting.agenda}>
             {meeting.roster.map(id=><Participant key={`${meeting.id}-${id}`} id={id} meeting={meeting} frame={frame} playing={state.playing} audible={!state.muted&&state.voices>0} musicOn={!state.muted&&state.music>0} videoOn={videoOn} reduced={reduced} pinned={spotlight===id} onPin={id=>{setFollow(false);setPin(spotlight===id?null:id);}} reactions={reactions}/>)}
           </div>
           {left&&<div className="mr-left"><span>MEETING ADJOURNED</span><h2>Great meeting.</h2><p>Nothing has changed.<br/>We should do this again.</p><button className="mr-new" onClick={()=>{setLeft(false);playButton.current?.focus();}}>Rejoin the meeting <ChevronRight aria-hidden="true"/></button></div>}

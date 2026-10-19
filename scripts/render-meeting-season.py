@@ -139,7 +139,7 @@ def sources(who,text,roster):
 
 with tempfile.TemporaryDirectory(prefix='meeting-season-') as directory:
     tmp=Path(directory)
-    if ARGS.metadata_only:
+    if ARGS.meeting:
         # eSpeak carries synthesis state across calls. Revisit the original earlier
         # takes (in memory only) so a targeted display update uses the same timing.
         reached=False
@@ -165,7 +165,7 @@ with tempfile.TemporaryDirectory(prefix='meeting-season-') as directory:
             key=f'{agenda}-{vi}'
             if ARGS.meeting and ARGS.meeting!=key:continue
             beat=60/meeting['bpm'];bar=beat*4;cursor=bar
-            cues=[];events=[]
+            cues=[];events=[];interludes=[]
             for index,(who,text) in enumerate(meeting['lines']):
                 if who=='all':x,speaker_levels=chorus(text,meeting['roster'],beat,tmp)
                 else:x,speaker_levels=speech(text,who,tmp),None
@@ -178,6 +178,10 @@ with tempfile.TemporaryDirectory(prefix='meeting-season-') as directory:
                 events.append((round(cursor*SR),x))
                 # Short pauses keep the joke moving. Chorus starts on a full bar.
                 cursor=math.ceil((cursor+duration+.22)/beat)*beat
+                for fill in meeting.get('interludes',[]):
+                    if fill['afterCue']==index:
+                        interludes.append({'character':fill['character'],'start':round(cursor,4),'duration':round(fill['bars']*bar,4)})
+                        cursor+=fill['bars']*bar
                 if index==6:cursor=math.ceil(cursor/bar)*bar
             duration=math.ceil((cursor+bar)/bar)*bar
             track=np.zeros(round(duration*SR))
@@ -209,6 +213,9 @@ with tempfile.TemporaryDirectory(prefix='meeting-season-') as directory:
             voice=f'{key}-voice-{hashlib.sha256(audio).hexdigest()[:12]}.mp3'
             (OUT/voice).write_bytes(audio)
             result['meetings'][key]={'duration':round(duration,4),'voice':voice,'bed':f'{agenda}-bed.mp3','loopDuration':bed['duration'],'cues':cues}
+            if interludes:
+                result['meetings'][key]['interludes']=interludes
+                result['meetings'][key]['guitarFills']=json.loads((ROOT/'src/meeting-room/guitar-fills.json').read_text())
             print(key,round(duration,1),'seconds /',len(cues),'cues',flush=True)
 manifest_path.with_suffix('.json.tmp').write_text(json.dumps(result,separators=(',',':'))+'\n')
 manifest_path.with_suffix('.json.tmp').replace(manifest_path)

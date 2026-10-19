@@ -8,6 +8,14 @@ import {KeyboardDetail} from './KeyboardDetail.jsx';
 import {exactPerformance} from './performances.js';
 
 const base='/studio/season/';
+// Crop baked interface margins as one camera layer, including the tracked display.
+// A 3:2 gallery preserves robot badges and instruments without portrait sidebars.
+const founderCrops={people:[132,0,1014,676],synthia:[132,0,1014,676],synergy:[96,0,1056,704],guitar:[128,22,1024,1024/1.5],printer:[100,0,1080,720]};
+function cameraStyle(id,meeting){
+  if(meeting.agenda!=='founder')return undefined;
+  const [x,y,w,h]=founderCrops[id]||[100,0,1080,720];
+  return {width:`${1280/w*100}%`,height:`${720/h*100}%`,left:`${-x/w*100}%`,top:`${-y/h*100}%`,right:'auto',bottom:'auto'};
+}
 export function robotFrame(id,time){
   const track=tracking[id],index=Math.max(0,Math.min(track.frames.length-1,time*track.fps));
   const a=track.frames[Math.floor(index)],b=track.frames[Math.min(track.frames.length-1,Math.ceil(index))];
@@ -17,14 +25,9 @@ export function drawRobotMouth(ctx,id,videoTime,audioTime,level){
   ctx.clearRect(0,0,1280,720);
   const [x,y,angle,scale]=robotFrame(id,videoTime);
   ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.scale(scale,scale);
-  // V2 Synergy has a clean glass plate, so no opaque patch can float on his face.
-  // Synthia retains the small mask for her original decorative LEDs.
-  if(id!=='synergy'){
-    ctx.fillStyle='#07120b';ctx.shadowColor='#07120b';ctx.shadowBlur=3;
-    ctx.fillRect(-32,-6,64,12);ctx.shadowBlur=0;
-  }
-  const height=id==='synergy'?6:4;
-  ctx.shadowColor='#4aff70';ctx.shadowBlur=id==='synergy'?2:0;
+  // Both approved camera plates are clean: no opaque patch can float on the glass.
+  const height=6;
+  ctx.shadowColor='#4aff70';ctx.shadowBlur=2;
   const phase=(audioTime*15)%22;
   for(let i=0;i<22;i++){
     const distance=(phase-i+22)%22;
@@ -42,8 +45,9 @@ export const Participant=memo(function Participant({id,meeting,frame,playing,aud
   const [exactVisible,setExactVisible]=useState(false);
   const active=playing&&audible&&isSpeaker(id,frame.cue);
   const performing=playing&&musicOn&&!!c.instrument;
+  const featuredInstrument=performing&&meeting.interludes?.some(fill=>fill.character===id&&frame.time>=fill.start&&frame.time<fill.start+fill.duration);
   const keyboardDetail=id==='keys'&&!!exactPerformance(id,frame.cue)&&!reduced&&videoOn&&(playing||frame.time>0);
-  let clip=c.robot?`${c.media}-listening`:c.silent?null:`${c.media}-${active&&!exactPerformance(id,frame.cue)?'speaking':performing?(Math.floor(frame.time/(240/meeting.bpm*4))%2?'listening':'playing'):'listening'}`;
+  let clip=c.robot?`${c.media}-listening`:c.silent?null:`${c.media}-${active&&!exactPerformance(id,frame.cue)?'speaking':featuredInstrument?'playing':performing?(Math.floor(frame.time/(240/meeting.bpm*4))%2?'listening':'playing'):'listening'}`;
   const moving=playing&&videoOn&&!reduced;
   // A twelve-tile chorus must not decode two cameras for every human.
   // Keep the fallback moving until the exact performance is actually visible.
@@ -71,11 +75,13 @@ export const Participant=memo(function Participant({id,meeting,frame,playing,aud
   const reaction=reactions&&playing&&!active&&!c.silent&&frame.cue&&['people','strategy','linda'].includes(id)&&frame.time%13<3;
   return <button type="button" className={`mr-tile${active?' is-speaking':''}${pinned?' is-pinned':''}${keyboardDetail?' has-keyboard-detail':''}`} onClick={()=>onPin(id)} aria-label={`${pinned?'Unpin':'Spotlight'} ${c.name}`} aria-pressed={pinned} data-character={id}>
     {c.offline||!videoOn?<div className="mr-camera-off"><VideoOff aria-hidden="true"/><div className="mr-avatar">{c.offline?'PT':c.name.split(' ').map(s=>s[0]).slice(0,2).join('')}</div><strong>{c.name}</strong><span>{c.offline?'Connecting to audio…':'Camera off'}</span></div>:<div className="mr-media">
+      <div className="mr-base-camera" style={cameraStyle(id,meeting)}>
       {id==='printer'?<PrinterFeed time={frame.time} playing={moving} reduced={reduced}/>:<img className="mr-poster" src={poster} alt="" loading="eager"/>}
       {clip&&<video key={`${meeting.id}-${clip}`} ref={video} className={ready?'is-ready':''} src={baseMoving||ready?`${base}clips/${clip}.mp4`:undefined} muted playsInline disablePictureInPicture loop preload="none" onPlaying={()=>setReady(true)} onError={()=>setFailed(true)} aria-hidden="true"/>}
+      {c.robot&&<canvas className="mr-robot-display" ref={canvas} width="1280" height="720" aria-hidden="true"/>}
+      </div>
       {!c.robot&&!c.silent&&<SpeechPerformance id={id} meeting={meeting} time={frame.time} playing={playing} reduced={reduced} onVisibleChange={setExactVisible}/>}
       {id==='keys'&&<KeyboardDetail visible={keyboardDetail} time={frame.time} playing={playing&&musicOn} reduced={reduced}/>}
-      {c.robot&&<canvas className="mr-robot-display" ref={canvas} width="1280" height="720" aria-hidden="true"/>}
     </div>}
     <span className="mr-tile-top">
       {c.robot&&<span className="mr-role">{c.role}</span>}

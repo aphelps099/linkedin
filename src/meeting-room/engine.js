@@ -1,8 +1,9 @@
 // A single Web Audio clock owns music, vocals, captions and performance cues.
 // No microphone, camera permission or live generation service is required.
-export function createMeetingEngine({onChange=()=>{},contextFactory=()=>new (window.AudioContext||window.webkitAudioContext)(),fetcher=fetch}={}){
+export function createMeetingEngine({onChange=()=>{},contextFactory=()=>new (window.AudioContext||window.webkitAudioContext)(),fetcher=fetch,random=Math.random}={}){
   let context,master,voiceGain,musicGain,meeting,buffers,origin=0,offset=0,generation=0,disposed=false;
   let playing=false,loading=false,error='',muted=false,music=.42,voices=1,sources=[],controller;
+  let fillChoice=0;
   const cache=new Map();
   const elapsed=()=>playing?Math.min(meeting.duration,Math.max(0,context.currentTime-origin)):offset;
   const snapshot=()=>({playing,loading,error,muted,music,voices,elapsed:elapsed(),duration:meeting?.duration||0});
@@ -28,6 +29,8 @@ export function createMeetingEngine({onChange=()=>{},contextFactory=()=>new (win
   }
   function setMeeting(next){
     generation++;controller?.abort();stop();meeting=next;buffers=null;offset=0;playing=false;loading=false;error='';emit();
+    const count=next.guitarFills?.variants.length||0;
+    fillChoice=count?Math.min(count-1,Math.max(0,Math.floor(random()*count))):0;
   }
   function begin(){
     stop();if(offset>=meeting.duration-.02)offset=0;
@@ -38,6 +41,13 @@ export function createMeetingEngine({onChange=()=>{},contextFactory=()=>new (win
     sources=[voice,bed];playing=true;loading=false;error='';
     voice.onended=()=>{if(playing){offset=meeting.duration;playing=false;stop();emit();}};
     voice.start(start,offset,meeting.duration-offset);bed.start(start,offset%meeting.loopDuration);bed.stop(start+meeting.duration-offset);
+    const variant=meeting.guitarFills?.variants[fillChoice];
+    if(buffers.fills&&variant)for(const fill of meeting.interludes||[]){
+      const inside=Math.max(0,offset-fill.start),remaining=Math.min(fill.duration,variant.duration)-inside;
+      if(remaining<=0)continue;
+      const riff=context.createBufferSource();riff.buffer=buffers.fills;riff.connect(musicGain);sources.push(riff);
+      riff.start(start+Math.max(0,fill.start-offset),variant.offset+inside,remaining);
+    }
     emit();
   }
   function scheduleMusic(start=context.currentTime){
@@ -57,7 +67,7 @@ export function createMeetingEngine({onChange=()=>{},contextFactory=()=>new (win
       setup();await context.resume();
       if(disposed||request!==generation)return;
       controller=new AbortController();
-      if(!buffers){const [voice,bed]=await Promise.all([decode(meeting.voice,controller.signal),decode(meeting.bed,controller.signal)]);if(disposed||request!==generation)return;buffers={voice,bed};}
+      if(!buffers){const [voice,bed,fills]=await Promise.all([decode(meeting.voice,controller.signal),decode(meeting.bed,controller.signal),meeting.guitarFills?decode(meeting.guitarFills.file,controller.signal):null]);if(disposed||request!==generation)return;buffers={voice,bed,fills};}
       if(request===generation&&!disposed)begin();
     }catch(e){if(request!==generation||disposed)return;loading=false;playing=false;error=e.name==='AbortError'?'':e.message||'Audio could not start. Please try again.';emit();}
   }
