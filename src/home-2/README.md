@@ -44,6 +44,10 @@ The Hoves and America files are Latin subsets. Font families and styles remain s
 
 ## Checks
 
+The compact monthly newsletter section sits between the LinkedInifier and footer. Its approved angled tear divides white graph paper (24px grid, roughly 70% of the desktop width) from a cobalt action area with a slanted yellow button. Desktop targets 4:1; mobile stacks the paper over the action area and turns the tear horizontally. `NewsletterSignup.jsx` opens a native dialog with first name, last name, and email, plus submission, error, and confirmed-success states. Escape/backdrop close it, focus returns to its trigger, and pending requests are cancelled when dismissed. It uses the existing `/api/newsletter` storage endpoint with the `home-monthly` source and monthly consent text. No subscription is claimed until storage succeeds.
+
+Homepage records include names and a versioned monthly opt-in. Existing store subscribers retain their original consent and gain the new profile/monthly preference. As with the store signup, this collects opt-ins only: monthly campaigns must be sent through an email platform with unsubscribe handling. No scheduled mail is sent by this section. `npm run check:newsletter` covers the shared backend and the new monthly flow.
+
 `npm run check:home` verifies the existing transport. `npm run check:home2` verifies vocal-only motion, silence/pause, frame mapping, all real clip arrangements and adapter lifecycle. `npm run build` includes the production root entry. Legacy `#listen`, `#store`, and `#about` links resolve to the corresponding new sections; shared `#beat=` URLs still open the studio, and `#roast` opens the retained roast page. No audio autoplays.
 
 The store preview now uses the complete product names, compact TT Hoves captions and larger image areas. The full `/store/` route shares the approved header/footer and links its Listen and LinkedInifier navigation back to this page. Its retail layout is documented in `src/store/README.md`.

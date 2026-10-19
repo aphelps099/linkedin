@@ -6,6 +6,7 @@ import {ConceptHeader} from './ConceptHeader.jsx';
 import {HeroVideo} from './HeroVideo.jsx';
 import {Campaigns} from './Campaigns.jsx';
 import {ConceptFooter} from './ConceptFooter.jsx';
+import {NewsletterSignup} from './NewsletterSignup.jsx';
 import {createPortraitRadio} from './portraitRadio.js';
 import {PixelSpectrum} from './PixelSpectrum.jsx';
 import {FeedScene, ExperimentLinks} from '../home-experiments/FeedScene.jsx';
@@ -61,7 +62,7 @@ export default function ConceptHome({playerFactory=createPortraitRadio, variant=
     const anchors = {'#listen':'c2-player', '#store':'c2-store', '#about':'c2-footer'};
     const followAnchor = (initial=false) => {
       const hash = window.location.hash;
-      const target = anchors[hash] || (initial && ['#c2-title','#c2-player','#c2-store','#c2-tools','#c2-footer'].includes(hash) ? hash.slice(1) : null);
+      const target = anchors[hash] || (initial && ['#c2-title','#c2-player','#c2-store','#c2-tools','#c2-footer','#newsletter'].includes(hash) ? hash.slice(1) : null);
       if (!target) return;
       if (anchors[hash]) window.history.replaceState(null,'',`${window.location.pathname}${window.location.search}#${target}`);
       document.getElementById(target)?.scrollIntoView({behavior:'instant', block:'start'});
@@ -165,6 +166,7 @@ export default function ConceptHome({playerFactory=createPortraitRadio, variant=
         </div>
       </section>
       <Campaigns base={base}/>
+      <NewsletterSignup/>
     </main>
     <ConceptFooter base={base}/>
   </div>;
