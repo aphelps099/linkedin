@@ -5,6 +5,15 @@ export const agendas=[
   ['standup','Weekly stand-up'],['onboarding','Onboarding'],['unlock','Unlocking potential'],
   ['paperless','Going paperless'],['founder','Founder update'],['offline','Take this offline'],['quarterly','Q3 alignment'],
 ];
+export const agendaDescriptions={
+  standup:'A quick round of updates becomes a celebration of folders, checklists and access nobody has yet.',
+  onboarding:'A warm welcome to the process of preparing to begin the onboarding process. The new hire is still waiting.',
+  unlock:'The whole team gathers to unlock untapped potential. Someone has added a tab to the spreadsheet.',
+  paperless:'Synergy and Synthia announce a fully digital future while the printer produces the supporting documentation.',
+  founder:'A transformational launch, an extraordinary headline, and a beautiful waitlist. Questions about the product can wait.',
+  offline:'A meeting to align on the follow-up meeting. Fewer meetings will require several listening sessions.',
+  quarterly:'Twelve stakeholders, one dashboard, and tremendous momentum. Finance would like to see a number.',
+};
 export const cast={
   synergy:{name:'Synergy',role:'Host',media:'synergy',robot:true},
   synthia:{name:'Synthia',role:'Corporate training',media:'synthia',robot:true},

@@ -8,7 +8,7 @@ the rest of the site still uses their existing shared audio components.
 
 Seven agendas, two authored variants per agenda. `Next meeting` advances through
 all seven agendas, then their seven alternate takes, then wraps. No shuffling or
-repeats until all 14 meetings have played. Agenda selection opens its first take.
+repeats until all 14 meetings have played. The collapsed agenda contains a description and direct access to both takes of every playlist.
 Cast sizes are 3, 5, 9 or 12. The setup, escalation, chorus and closing joke remain
 in their authored order. Synergy hosts every meeting.
 
@@ -74,6 +74,10 @@ follows the current speaker; clicking a tile manually spotlights that person.
 Stop video, captions, reactions, leave/rejoin, seek and replay are local controls.
 No webcam, microphone or third-party meeting service is accessed.
 The shared compact black navigation and complete dark site footer frame the room.
+The meeting title sits in the window bar. There is no racing strip or large title
+block. Next meeting sits beside Leave. The agenda starts collapsed, with seven
+playlist descriptions and both takes available when expanded. Desktop galleries
+scale to the viewport height to bring playback controls into view sooner.
 
 The playback engine cancels stale loads, caches at most four decoded buffers,
 handles browser audio interruptions, ducks music under dialogue and limits

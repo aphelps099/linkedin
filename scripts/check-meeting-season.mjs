@@ -93,8 +93,12 @@ try{
   const {Room,drawRobotMouth,robotFrame}=await import(pathToFileURL(`${process.cwd()}/${temp}`));
   const html=renderToString(React.createElement(Room));
   assert.equal((html.match(/data-character=/g)||[]).length,5);
-  assert.equal((html.match(/<option /g)||[]).length,7);
-  for(const text of ['Agenda','Next meeting','Play meeting','Captions','Seek meeting','Stop video','Leave','c2-header--dark','c2-footer--dark','The necessary small print','mr-printer-display'])assert(html.includes(text));
+  assert.equal((html.match(/class="mr-playlist(?: is-current)?"/g)||[]).length,7);
+  assert(html.includes('<details class="mr-agenda-disclosure">'),'Agenda starts collapsed');
+  assert(!html.includes('mr-racing')&&!html.includes('mr-room-head'),'No extra title or racing strip');
+  assert(/mr-windowbar[\s\S]*?<h1>/.test(html),'Title belongs in the meeting window');
+  assert(/mr-meeting-actions[\s\S]*?Next meeting[\s\S]*?Leave/.test(html),'Next meeting sits beside Leave');
+  for(const text of ['The agenda','Next meeting','Play meeting','Captions','Seek meeting','Stop video','Leave','c2-header--dark','c2-footer--dark','The necessary small print','mr-printer-display'])assert(html.includes(text));
   assert(!/<video[^>]*\ssrc=/.test(html),'Video downloads wait for play');assert(!/autoPlay/.test(html));
   assert(!html.includes('getUserMedia'));
   const rects=[];const drawing={clearRect(){},save(){},restore(){},translate(){},rotate(){},scale(){},fillRect:(...args)=>rects.push(args)};

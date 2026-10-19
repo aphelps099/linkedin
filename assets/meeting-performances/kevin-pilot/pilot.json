@@ -1,0 +1,24 @@
+{
+  "status": "prepared-awaiting-performance-render",
+  "character": "guitar",
+  "displayName": "Kevin",
+  "text": "I\u2019m humbled and honored to be onboarding a new folder.",
+  "meeting": "standup-0",
+  "cueIndex": 2,
+  "sourceTake": "74c0e5221bfb4c2f1d0ebe9aaa6a4d1dad0625acf48c9f48796d9a14e818b993",
+  "sourceMasterSha256": "690199403834b19ba18edd1d5975962060a6542af52ecb420a095b471cc1c53a",
+  "audio": "kevin-new-folder.wav",
+  "audioSha256": "66a7f6285a8b2942308d58973068f0e0edd55c83b0bd90157b5f323305ae1e20",
+  "duration": 2.8734583333333332,
+  "characterImage": "public/studio/season/posters/guitar-listening.jpg",
+  "workflow": "Runway Character Script to Video: Audio input",
+  "direction": "Subtle natural articulation, restrained deadpan expression. Same face, headset, clothing, blue guitar, camera and room. No extra spoken words or invented audio. Mouth movement must remain attached to the actual face. Keep musical hands calm during this first synchronization test.",
+  "review": [
+    "Exact approved voice retained",
+    "M/B/P lip closures align with audio",
+    "No talking in silent intervals",
+    "No sliding, floating, warped or doubled mouth",
+    "Headset, eyes, jaw and face identity remain stable",
+    "Seek and pause match the same speech time"
+  ]
+}
