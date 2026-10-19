@@ -39,9 +39,10 @@ continues outside the sentence. Do not use this one performance for other words.
 video from the meeting's audio clock, preserves the corresponding paused frame,
 and never loops the sentence. Missing performances retain the existing generic
 motion plates. The first variants of Stand-up, Onboarding and Unlocking potential
-now have exact performances for every human solo turn and chorus. The remaining
-eleven meetings still need line-specific performances; the season is not yet
-fully lip-synced.
+now have exact performances for every human solo turn and chorus. The two
+paperless meetings contain only robots and the printer. The remaining nine
+meetings with humans still need line-specific performances; the season is not
+yet fully lip-synced.
 
 ## First complete meeting
 
@@ -138,6 +139,31 @@ visible, and resume it when that performance ends or fails. The independent
 keyboard detail continues. Unlock delivery clips use one-second keyframes and
 no B-frames so group seeks do not repeatedly decode long preceding GOPs. Source
 masters retain their original encoding.
+
+## Paperless transformation review, 2026-10-19
+
+`paperless-0` is the fourth meeting: 37.1429 seconds, 84 BPM, DOS keys and printer
+percussion. Synergy and Synthia retain the approved distinct voices and existing
+character cameras. The printer remains silent and continues feeding LinkedIn
+sheets onto its persistent stack throughout the conversation and chorus.
+
+The duet now has independent 25 Hz vocal envelopes: each robot's fixed-height
+horizontal display follows its own recording, not the summed chorus. Solo cues
+retain their existing envelopes. The approved MP3, music, cue times, tracking,
+mouth geometry and all video assets are unchanged. No new Runway credits or Mux
+assets were used; the entire update adds less than 1 KB of envelope data.
+
+`render-meeting-season.py --voice-bank /tmp/approved-meeting-voices.json
+--meeting paperless-0 --metadata-only` recreates the original synthesis order in
+memory, verifies exact cue timing and source profiles, and checks the reconstructed
+voice track against the existing MP3 before writing animation metadata. The
+measured zero-offset correlation was 0.9999776; the validation record and unchanged
+audio SHA-256 are in `assets/meeting-performances/paperless-0/display-validation.json`.
+This mode does not replace any audio. Full future renders also emit individual
+chorus envelopes so new recordings cannot silently retain stale mouth timing.
+
+Direct review link: `/studio/?meeting=paperless-0`. Next meeting continues to the
+first Founder update, without shuffling.
 
 ## Robot treatment (unchanged)
 

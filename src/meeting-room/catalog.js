@@ -44,4 +44,9 @@ export function nextMeeting(currentId){
 export const timeLabel=seconds=>`${Math.floor(Math.max(0,seconds)/60)}:${String(Math.floor(Math.max(0,seconds)%60)).padStart(2,'0')}`;
 export function cueAt(meeting,time){return meeting?.cues.find(cue=>time>=cue.start&&time<cue.start+cue.duration)||null;}
 export function isSpeaker(id,cue){return !!cue&&!cast[id].silent&&(cue.speaker===id||cue.speaker==='all');}
-export function cueLevel(cue,time){return (cue?.level?.[Math.floor((time-cue.start)*25)]||0)/100;}
+export function cueLevel(cue,time,character){
+  if(!cue||time<cue.start||time>=cue.start+cue.duration)return 0;
+  if(character&&!isSpeaker(character,cue))return 0;
+  const levels=cue.speakerLevels?.[character]||cue.level;
+  return (levels?.[Math.floor((time-cue.start)*25)]||0)/100;
+}

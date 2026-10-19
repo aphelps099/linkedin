@@ -21,7 +21,11 @@ BEDS={'standup':'offline','onboarding':'circle-back','unlock':'alignment','paper
 CACHE={}
 parser=argparse.ArgumentParser()
 parser.add_argument('--voice-bank',required=True,help='Approved cast bank from export-meeting-voice-bank.mjs')
+parser.add_argument('--meeting',help='Render only this authored meeting, preserving the rest of the season')
+parser.add_argument('--metadata-only',action='store_true',help='Validate against existing audio and update envelopes only; never replace audio')
 ARGS=parser.parse_args()
+if ARGS.metadata_only and not ARGS.meeting:parser.error('--metadata-only requires --meeting')
+if ARGS.meeting and ARGS.meeting not in {f'{a}-{i}' for a,v in LIB.items() for i in range(len(v))}:parser.error('Unknown meeting')
 VOICE_BANK=json.loads(Path(ARGS.voice_bank).read_text()) if ARGS.voice_bank else None
 VOICES=VOICE_BANK['robots']
 RETRO=RetroSpeech()
@@ -104,24 +108,26 @@ def chorus(text,roster,beat,tmp):
     # The cast says the hook together, phrase by phrase on the beat.
     ids=[p for p in roster if p in SPEAKERS]
     phrases=[t.strip()+'.' for t in text.split('.') if t.strip()]
-    parts=[]
+    parts=[];individual={person:[] for person in ids}
     for phrase in phrases:
         takes=[speech(phrase,p,tmp) for p in ids]
         duration=math.ceil((max(map(len,takes))/SR+.12)/beat)*beat
         n=round(duration*SR);mix=np.zeros(n)
-        for take in takes:
+        for person,take in zip(ids,takes):
             # Start together, then leave space. Never resample a voice to fit a bar:
             # that shifts pitch and destroys the character's approved identity.
             mix[:len(take)]+=take/math.sqrt(len(takes))
+            stem=np.zeros(n);stem[:len(take)]=take;individual[person].append(stem)
         mix*=min(1,.82/max(.001,np.max(abs(mix))))
         parts.append(mix)
-    return np.concatenate(parts)
+    return np.concatenate(parts),{person:envelope(np.concatenate(parts)) for person,parts in individual.items()}
 
 OUT.mkdir(parents=True,exist_ok=True)
 manifest_path=ROOT/'src/meeting-room/audio-manifest.json'
 previous=json.loads(manifest_path.read_text()) if manifest_path.exists() else {'meetings':{}}
 result={'version':1,'sampleRate':SR,'envelopeHz':25,'voiceCast':VOICE_BANK['characters'],
-        'robotCast':VOICES,'meetings':{}}
+        'robotCast':VOICES,'meetings':dict(previous['meetings']) if ARGS.meeting else {}}
+if ARGS.metadata_only:result=dict(previous)
 
 def sources(who,text,roster):
     ids=[p for p in roster if p in SPEAKERS] if who=='all' else [who]
@@ -133,23 +139,42 @@ def sources(who,text,roster):
 
 with tempfile.TemporaryDirectory(prefix='meeting-season-') as directory:
     tmp=Path(directory)
+    if ARGS.metadata_only:
+        # eSpeak carries synthesis state across calls. Revisit the original earlier
+        # takes (in memory only) so a targeted display update uses the same timing.
+        reached=False
+        for agenda,variants in LIB.items():
+            for vi,meeting in enumerate(variants):
+                if f'{agenda}-{vi}'==ARGS.meeting:reached=True;break
+                for who,text in meeting['lines']:
+                    if who=='all':chorus(text,meeting['roster'],60/meeting['bpm'],tmp)
+                    else:speech(text,who,tmp)
+            if reached:break
     for agenda,variants in LIB.items():
+        if ARGS.meeting and not ARGS.meeting.startswith(agenda+'-'):continue
         bed=STEMS[BEDS[agenda]]['music']
-        ff('-i',ROOT/'public/studio-2/audio'/bed['file'],'-ar',SR,'-ac',2,tmp/'stems.wav')
-        _,packed=wavfile.read(tmp/'stems.wav');packed=packed.astype(float)/32768
-        n=round(bed['duration']*SR);mix=np.zeros((n,2))
-        for name,segment in bed['stems'].items():
-            start=round(segment['start']*SR);part=packed[start:start+n]
-            mix[:len(part)]+=part*({'drums':1,'bass':.92,'keys':.85,'lift':.35}[name])
-        encode(mix,OUT/f'{agenda}-bed.mp3',tmp,True)
+        if not ARGS.metadata_only:
+            ff('-i',ROOT/'public/studio-2/audio'/bed['file'],'-ar',SR,'-ac',2,tmp/'stems.wav')
+            _,packed=wavfile.read(tmp/'stems.wav');packed=packed.astype(float)/32768
+            n=round(bed['duration']*SR);mix=np.zeros((n,2))
+            for name,segment in bed['stems'].items():
+                start=round(segment['start']*SR);part=packed[start:start+n]
+                mix[:len(part)]+=part*({'drums':1,'bass':.92,'keys':.85,'lift':.35}[name])
+            encode(mix,OUT/f'{agenda}-bed.mp3',tmp,True)
         for vi,meeting in enumerate(variants):
+            key=f'{agenda}-{vi}'
+            if ARGS.meeting and ARGS.meeting!=key:continue
             beat=60/meeting['bpm'];bar=beat*4;cursor=bar
             cues=[];events=[]
             for index,(who,text) in enumerate(meeting['lines']):
-                x=chorus(text,meeting['roster'],beat,tmp) if who=='all' else speech(text,who,tmp)
+                if who=='all':x,speaker_levels=chorus(text,meeting['roster'],beat,tmp)
+                else:x,speaker_levels=speech(text,who,tmp),None
                 duration=len(x)/SR
+                if speaker_levels:
+                    speaker_levels={person:levels[:math.ceil(round(duration,4)*25)] for person,levels in speaker_levels.items()}
                 cues.append({'speaker':who,'text':text,'start':round(cursor,4),'duration':round(duration,4),'level':envelope(x),
-                             'sources':sources(who,text,meeting['roster'])})
+                             'sources':sources(who,text,meeting['roster']),
+                             **({'speakerLevels':speaker_levels} if speaker_levels else {})})
                 events.append((round(cursor*SR),x))
                 # Short pauses keep the joke moving. Chorus starts on a full bar.
                 cursor=math.ceil((cursor+duration+.22)/beat)*beat
@@ -157,7 +182,28 @@ with tempfile.TemporaryDirectory(prefix='meeting-season-') as directory:
             duration=math.ceil((cursor+bar)/bar)*bar
             track=np.zeros(round(duration*SR))
             for start,x in events:track[start:start+len(x)]+=x
-            key=f'{agenda}-{vi}'
+            if ARGS.metadata_only:
+                old=previous['meetings'][key]
+                assert round(duration,4)==old['duration'],'Existing duration changed'
+                for new,existing in zip(cues,old['cues']):
+                    for field in ('speaker','text','start','duration','sources'):
+                        assert new[field]==existing[field],f'Existing {field} changed ({new[field]!r} vs {existing[field]!r}) in {new["text"]}; audio must be reviewed'
+                ff('-i',OUT/old['voice'],'-ar',SR,'-ac',1,tmp/'existing.wav')
+                _,decoded=wavfile.read(tmp/'existing.wav');decoded=decoded.astype(float)/32768
+                assert len(decoded)==len(track),'Existing audio sample count changed'
+                correlation=float(np.corrcoef(track,decoded)[0,1])
+                assert correlation>.995,f'Reconstructed voices differ from approved audio: {correlation}'
+                # Keep all original audio and timing. Add only the independent chorus envelopes.
+                for new,existing in zip(cues,old['cues']):
+                    if 'speakerLevels' in new:existing['speakerLevels']=new['speakerLevels']
+                proof=ROOT/'assets/meeting-performances'/key/'display-validation.json'
+                proof.parent.mkdir(parents=True,exist_ok=True)
+                proof.write_text(json.dumps({'meeting':key,'voice':old['voice'],
+                    'voiceSha256':hashlib.sha256((OUT/old['voice']).read_bytes()).hexdigest(),
+                    'zeroOffsetCorrelation':correlation,'sampleRate':SR,'envelopeHz':25,
+                    'audioReplaced':False,'generationCreditsUsed':0},indent=2)+'\n')
+                print(key,'independent chorus envelopes; unchanged approved audio; correlation',correlation,flush=True)
+                continue
             encode(track,tmp/'voice.mp3',tmp)
             audio=(tmp/'voice.mp3').read_bytes()
             voice=f'{key}-voice-{hashlib.sha256(audio).hexdigest()[:12]}.mp3'

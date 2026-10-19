@@ -63,7 +63,7 @@ export const Participant=memo(function Participant({id,meeting,frame,playing,aud
     let raf;
     const paint=()=>{
       const f=frameRef.current;
-      drawRobotMouth(ctx,id,ready?video.current?.currentTime||0:.25,f.time,f.active?cueLevel(f.cue,f.time):0);
+      drawRobotMouth(ctx,id,ready?video.current?.currentTime||0:.25,f.time,f.active?cueLevel(f.cue,f.time,id):0);
       if(moving)raf=requestAnimationFrame(paint);
     };
     paint();return()=>cancelAnimationFrame(raf);

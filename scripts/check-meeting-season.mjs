@@ -9,7 +9,7 @@ import {PRINT_CYCLE,printerPhase,paperRow} from '../src/meeting-room/printer-pap
 import {exactPerformance,performanceForTime,performanceTime,syncPerformanceVideo} from '../src/meeting-room/performances.js';
 
 const bundle=await build({entryPoints:['src/meeting-room/catalog.js'],bundle:true,platform:'node',format:'esm',write:false});
-const {meetings,cast,meetingSequence,meetingFromSearch,nextMeeting,cueAt,isSpeaker}=await import(`data:text/javascript;base64,${Buffer.from(bundle.outputFiles[0].text).toString('base64')}`);
+const {meetings,cast,meetingSequence,meetingFromSearch,nextMeeting,cueAt,isSpeaker,cueLevel}=await import(`data:text/javascript;base64,${Buffer.from(bundle.outputFiles[0].text).toString('base64')}`);
 assert.equal(meetingFromSearch('?meeting=onboarding-0').id,'onboarding-0');
 assert.equal(meetingFromSearch('?meeting=not-a-meeting').id,'standup-0');
 assert.equal(Object.keys(meetings).length,7);
@@ -103,6 +103,22 @@ for(const id of ['people','strategy','keys','guitar','operations','accountant','
 assert.equal(performanceForTime('linda',unlock,34).cue,unlock.cues[8],'Linda returns from the chorus to her closing question');
 assert.equal(performanceForTime('people',unlock,0).current,false,'Chorus-only singers preload without silently talking');
 for(const id of ['synergy','synthia','printer','droid'])assert.equal(exactPerformance(id,unlock.cues[7]),null);
+const paperless=meetings.paperless[0],duet=paperless.cues[7];
+assert.equal(nextMeeting(unlock.id).id,paperless.id);
+assert.equal(meetingFromSearch('?meeting=paperless-0').id,paperless.id);
+assert.deepEqual(paperless.roster,['synergy','synthia','printer']);
+assert.deepEqual(Object.keys(duet.speakerLevels).sort(),['synergy','synthia']);
+assert.notDeepEqual(duet.speakerLevels.synergy,duet.speakerLevels.synthia,'Robot duet follows each distinct recording');
+for(const id of ['synergy','synthia']){
+  assert.equal(duet.speakerLevels[id].length,Math.ceil(duet.duration*25));
+  assert(duet.speakerLevels[id].every(level=>Number.isInteger(level)&&level>=0&&level<=100));
+  duet.speakerLevels[id].forEach((level,i)=>assert.equal(cueLevel(duet,duet.start+(i+.1)/25,id),level/100));
+  assert.equal(cueLevel(duet,duet.start-.01,id),0);
+  assert.equal(cueLevel(duet,duet.start+duet.duration,id),0);
+}
+assert.equal(cueLevel(duet,duet.start+.8,'printer'),0,'Printer never gets a vocal display');
+assert.equal(cueLevel(paperless.cues[0],paperless.cues[0].start+.8,'synthia'),0,'Listening robot does not borrow the host voice');
+assert.equal(cueLevel(paperless.cues[0],paperless.cues[0].start+.8,'synergy'),cueLevel(paperless.cues[0],paperless.cues[0].start+.8),'Solo mouth retains its approved envelope');
 await access('public/studio/season/clips/keys-detail.mp4');
 await access('public/studio/season/posters/keys-detail.jpg');
 let seeks=0,mediaTime=0;

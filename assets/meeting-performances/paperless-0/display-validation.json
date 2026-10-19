@@ -1,0 +1,10 @@
+{
+  "meeting": "paperless-0",
+  "voice": "paperless-0-voice-48b69f6aa3f0.mp3",
+  "voiceSha256": "48b69f6aa3f07bafb9a6b9ac883f09def7ad0b85576689755c82b70b5bcd70e8",
+  "zeroOffsetCorrelation": 0.9999776179934026,
+  "sampleRate": 24000,
+  "envelopeHz": 25,
+  "audioReplaced": false,
+  "generationCreditsUsed": 0
+}
