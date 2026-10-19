@@ -43,7 +43,7 @@ export default function MeetingRoom(){
         <div className="mr-windowbar"><Video aria-hidden="true"/><span>LinkedIn Beats Meeting</span><span className="mr-secure"><Check aria-hidden="true"/>Absolutely aligned</span></div>
         <div className="mr-room-head">
           <div className="mr-heading"><h1>{meeting.title}</h1><p><span className={`mr-dot${state.playing?' is-live':''}`} aria-hidden="true"/>{left?'You left the meeting':state.loading?'Connecting to the meeting…':state.playing?'Meeting in progress':finished?'Exceptional alignment. Zero action items.':'Hosted by Synergy'}<span className="mr-meta-separator">·</span><span>{meeting.roster.length} participants</span></p></div>
-          <div className="mr-room-options"><label className="mr-agenda">Agenda<select value={meeting.agenda} onChange={e=>chooseAgenda(e.target.value)}>{agendas.map(([id,label])=><option key={id} value={id}>{label}</option>)}</select></label><button className="mr-new" onClick={newMeeting}><Shuffle aria-hidden="true"/>New meeting</button></div>
+          <div className="mr-room-options"><label className="mr-agenda">Agenda<select aria-label="Agenda" value={meeting.agenda} onChange={e=>chooseAgenda(e.target.value)}>{agendas.map(([id,label])=><option key={id} value={id}>{label}</option>)}</select></label><button className="mr-new" onClick={newMeeting}><Shuffle aria-hidden="true"/>New meeting</button></div>
         </div>
         <div className="mr-stage">
           <div className="mr-gallery-tools"><span><Users aria-hidden="true"/>{String(meeting.roster.length).padStart(2,'0')} in the room</span><button onClick={()=>{setPin(null);setFollow(!(follow||pin));}} aria-pressed={!!spotlight}><Grid2X2 aria-hidden="true"/>{spotlight?'Gallery view':'Speaker view'}</button></div>

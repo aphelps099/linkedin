@@ -52,8 +52,9 @@ export const Participant=memo(function Participant({id,meeting,frame,playing,aud
       const target=Math.max(0,Math.min(v.duration-.04,frame.time));
       if(Math.abs(v.currentTime-target)>.3)v.currentTime=target;
       if(target>=v.duration-.05)v.pause();
+      else if(moving&&v.paused)v.play().catch(()=>setFailed(true));
     }
-  },[id,frame.time]);
+  },[id,frame.time,moving]);
   useEffect(()=>{
     if(!c.robot||!videoOn)return;
     const ctx=canvas.current?.getContext('2d');if(!ctx)return;
