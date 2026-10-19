@@ -1,0 +1,83 @@
+{
+  "character": "guitar",
+  "meeting": "unlock-0",
+  "status": "reviewed-integrated",
+  "audio": "guitar-exact-unlock-0.wav",
+  "audioSha256": "a1b8dbf4480687434456c25eafeba8959cd3f273fba4c0d873f674707558d6d2",
+  "duration": 9.160791666666666,
+  "characterImage": "public/studio/season/posters/guitar-listening.jpg",
+  "solos": [
+    {
+      "cueIndex": 3,
+      "offset": 0.25,
+      "duration": 2.0497083333333332,
+      "sources": [
+        {
+          "character": "guitar",
+          "text": "I’ve added a second tab to the spreadsheet.",
+          "line": "guitar-3764925dc5aacc66",
+          "take": "92775504ce88b940d78c5ff7718651e8f3f429686a91fa2c096bda8d05637ecd",
+          "masterSha256": "6115cda5f8c9d6aed67d3a5cc0f341dc958acdc7dd13c513d80414b23f70529e"
+        }
+      ]
+    }
+  ],
+  "choruses": [
+    {
+      "cueIndex": 7,
+      "offset": 2.7997083333333332,
+      "duration": 6.111083333333333,
+      "phrases": [
+        {
+          "start": 0.0,
+          "duration": 1.1716666666666666,
+          "slotDuration": 2.222208333333333,
+          "source": {
+            "character": "guitar",
+            "text": "Unlock the potential.",
+            "line": "guitar-a03565c793db145d",
+            "take": "5b0aa6429273956e4c680a601e84f147bb35719798a523a587ed1d970b39c8c8",
+            "masterSha256": "a0615894c2cab45a168b642e9856da204c114b6a69bc1536333b92169a670a49"
+          }
+        },
+        {
+          "start": 2.222208333333333,
+          "duration": 1.1716666666666666,
+          "slotDuration": 2.222208333333333,
+          "source": {
+            "character": "guitar",
+            "text": "Unlock the potential.",
+            "line": "guitar-a03565c793db145d",
+            "take": "5b0aa6429273956e4c680a601e84f147bb35719798a523a587ed1d970b39c8c8",
+            "masterSha256": "a0615894c2cab45a168b642e9856da204c114b6a69bc1536333b92169a670a49"
+          }
+        },
+        {
+          "start": 4.444416666666666,
+          "duration": 0.8752083333333334,
+          "slotDuration": 1.6666666666666667,
+          "source": {
+            "character": "guitar",
+            "text": "Optimize.",
+            "line": "guitar-5f8f4f49521f1312",
+            "take": "a60f4d48b05e850eb557afc0f9ff6810dbd05cac7fa10dd3d25eefcd53234ff7",
+            "masterSha256": "67dcc49bd4e3e781df46ce52f3ad8c4f63386f247da3fbacffa52b60305fc023"
+          }
+        }
+      ]
+    }
+  ],
+  "direction": "Exact approved voice. Restrained natural articulation, subtle blinks, stable attached lips and headset. Preserve face identity.",
+  "workflow": "Runway Character Script to Video, uploaded Audio",
+  "taskId": "7c36058d-fefd-444f-bf87-3e06e8b439cb",
+  "assetId": "094b9cf6-6fdd-46b0-9b94-5357d00ac2e4",
+  "creditsSpent": 2,
+  "runwaySession": "5bb35d14-ea57-4d00-979c-8d4c846ccbad",
+  "output": "guitar-performance.mp4",
+  "outputSha256": "87ebe1a4b66c9367db8781bb1d1c9a809902dfbb7f2376355764695e2ded9896",
+  "runtimeVideo": "public/studio/performances/guitar-unlock-exact-v1.mp4",
+  "runtimeSha256": "a7b3606e2a95d2f8069fbdf862c7b7a39bbe71d70923070db5455c06218cae30",
+  "audioLagSeconds": 0,
+  "audioWaveformCorrelation": 0.9999723997154625,
+  "reviewNotes": "Reviewed solo and chorus frames: stable face/headset, attached lips, subtle blinks. Original approved voice master stays in the live meeting. Keys has a separate approved keyboard camera during speech because the speech renderer reframes to a close shot."
+}

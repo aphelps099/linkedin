@@ -1,0 +1,83 @@
+{
+  "character": "linda",
+  "meeting": "unlock-0",
+  "status": "reviewed-integrated",
+  "audio": "linda-exact-unlock-0.wav",
+  "audioSha256": "71c4d96d723cbf2bc61adb440e01fe810a22f9ec9c84ee4df249c887eddd74ae",
+  "duration": 9.462583333333333,
+  "characterImage": "public/studio/season/posters/linda-listening.jpg",
+  "solos": [
+    {
+      "cueIndex": 8,
+      "offset": 0.25,
+      "duration": 2.3515,
+      "sources": [
+        {
+          "character": "linda",
+          "text": "Does the first tab still work?",
+          "line": "linda-f471bcf9ea5401de",
+          "take": "f367bdded6581f6b5f3f0090992e4316cbad49de73ec1a041120f5be4ef86d9e",
+          "masterSha256": "362a8a13af435e56a6431e020de40e8d4d3cc227c5c3a012a0b35f9f57493c23"
+        }
+      ]
+    }
+  ],
+  "choruses": [
+    {
+      "cueIndex": 7,
+      "offset": 3.1015,
+      "duration": 6.111083333333333,
+      "phrases": [
+        {
+          "start": 0.0,
+          "duration": 1.7184583333333334,
+          "slotDuration": 2.222208333333333,
+          "source": {
+            "character": "linda",
+            "text": "Unlock the potential.",
+            "line": "linda-a03565c793db145d",
+            "take": "c71e2b1f005cc83d6da314ef510e79a2bf7af3351aa8733aa8fa7e3ace331730",
+            "masterSha256": "6fa7fb296323f0f95a41b9be2351bb91464fe2caa4ebbc33b41b82873d3e6f9b"
+          }
+        },
+        {
+          "start": 2.222208333333333,
+          "duration": 1.7184583333333334,
+          "slotDuration": 2.222208333333333,
+          "source": {
+            "character": "linda",
+            "text": "Unlock the potential.",
+            "line": "linda-a03565c793db145d",
+            "take": "c71e2b1f005cc83d6da314ef510e79a2bf7af3351aa8733aa8fa7e3ace331730",
+            "masterSha256": "6fa7fb296323f0f95a41b9be2351bb91464fe2caa4ebbc33b41b82873d3e6f9b"
+          }
+        },
+        {
+          "start": 4.444416666666666,
+          "duration": 1.2351666666666667,
+          "slotDuration": 1.6666666666666667,
+          "source": {
+            "character": "linda",
+            "text": "Optimize.",
+            "line": "linda-5f8f4f49521f1312",
+            "take": "e7bbe4cb3dd1985f1637160f032a67ed5b6e70cd4d9e4fa4fc979159f19e6d3c",
+            "masterSha256": "b75a743899fc21cf2293eda87bdf837b216b74a2f61dfd91b55c0c95c4a1c65c"
+          }
+        }
+      ]
+    }
+  ],
+  "direction": "Exact approved voice. Restrained natural articulation, subtle blinks, stable attached lips and headset. Preserve face identity.",
+  "workflow": "Runway Character Script to Video, uploaded Audio",
+  "taskId": "cee21d81-fb33-472a-bd71-7327c13ad58b",
+  "assetId": "d88d04d6-d17d-4b3b-8460-0960ab603525",
+  "creditsSpent": 2,
+  "runwaySession": "5bb35d14-ea57-4d00-979c-8d4c846ccbad",
+  "output": "linda-performance.mp4",
+  "outputSha256": "a6aa3b4a35624c75173b5c95768f49e23eb45b7220b7b313b1e56bbb8259eda8",
+  "runtimeVideo": "public/studio/performances/linda-unlock-exact-v1.mp4",
+  "runtimeSha256": "080026f41e80e6e416826f795a11f2fcc6113103fd55612ad464c90bf75b843f",
+  "audioLagSeconds": 0,
+  "audioWaveformCorrelation": 0.9999798970045576,
+  "reviewNotes": "Reviewed solo and chorus frames: stable face/headset, attached lips, subtle blinks. Original approved voice master stays in the live meeting. Keys has a separate approved keyboard camera during speech because the speech renderer reframes to a close shot."
+}

@@ -1,0 +1,83 @@
+{
+  "character": "keys",
+  "meeting": "unlock-0",
+  "status": "reviewed-integrated",
+  "audio": "keys-exact-unlock-0.wav",
+  "audioSha256": "5aa021bd41a2dff41e2c4419b98e6176b65e7df7f859f5850832b24e4168b8cc",
+  "duration": 9.845166666666668,
+  "characterImage": "assets/meeting-performances/onboarding-0/keys-wide-reference.png",
+  "solos": [
+    {
+      "cueIndex": 4,
+      "offset": 0.25,
+      "duration": 2.7340833333333334,
+      "sources": [
+        {
+          "character": "keys",
+          "text": "I’m genuinely excited about what this unlocks.",
+          "line": "keys-202143466ff0abd4",
+          "take": "e6cbdbfd6bf6f2e150dd0113d8d25b55f779b816a62e89e4ef2ca8b832d8d2c4",
+          "masterSha256": "71c3c0c4c48ae3176e004060ce02da05c99fea55988c277ee5a9414fff53b3d1"
+        }
+      ]
+    }
+  ],
+  "choruses": [
+    {
+      "cueIndex": 7,
+      "offset": 3.4840833333333334,
+      "duration": 6.111083333333333,
+      "phrases": [
+        {
+          "start": 0.0,
+          "duration": 1.3102083333333334,
+          "slotDuration": 2.222208333333333,
+          "source": {
+            "character": "keys",
+            "text": "Unlock the potential.",
+            "line": "keys-a03565c793db145d",
+            "take": "fbc5ecc563ea97658a1ab0d77dbda32eba4bca1b9c2d1629c2153c5de845348a",
+            "masterSha256": "a0de52842ac25541e7a60507af7dc0b06baa61f45769c79af601c6adc9e5ab99"
+          }
+        },
+        {
+          "start": 2.222208333333333,
+          "duration": 1.3102083333333334,
+          "slotDuration": 2.222208333333333,
+          "source": {
+            "character": "keys",
+            "text": "Unlock the potential.",
+            "line": "keys-a03565c793db145d",
+            "take": "fbc5ecc563ea97658a1ab0d77dbda32eba4bca1b9c2d1629c2153c5de845348a",
+            "masterSha256": "a0de52842ac25541e7a60507af7dc0b06baa61f45769c79af601c6adc9e5ab99"
+          }
+        },
+        {
+          "start": 4.444416666666666,
+          "duration": 0.925625,
+          "slotDuration": 1.6666666666666667,
+          "source": {
+            "character": "keys",
+            "text": "Optimize.",
+            "line": "keys-5f8f4f49521f1312",
+            "take": "92262db9080dc5ff5c34b6bcd026ba8681103c6ab7bc332da9de8cb927923215",
+            "masterSha256": "e2c7d50eebe66451eb5885cb7d90a587cb1b405272caa64659728e23420847af"
+          }
+        }
+      ]
+    }
+  ],
+  "direction": "Exact approved voice. Restrained natural articulation, subtle blinks, stable attached lips and headset. Preserve face identity.",
+  "workflow": "Runway Character Script to Video, uploaded Audio",
+  "taskId": "63199af0-14c9-4df5-a515-bd4eaad6f027",
+  "assetId": "0403f51b-0f2a-45a3-8a9c-e2be627dd8fc",
+  "creditsSpent": 2,
+  "runwaySession": "5bb35d14-ea57-4d00-979c-8d4c846ccbad",
+  "output": "keys-performance.mp4",
+  "outputSha256": "861b573e68040413baec87cc7605655a18797693b5843d218ec65a158e9f35ea",
+  "runtimeVideo": "public/studio/performances/keys-unlock-exact-v1.mp4",
+  "runtimeSha256": "16c4ccd8fd225969e4015d177d16d353b3b353c1f70dd9fce849b83052149a1f",
+  "audioLagSeconds": 0,
+  "audioWaveformCorrelation": 0.9999205946590333,
+  "reviewNotes": "Reviewed solo and chorus frames: stable face/headset, attached lips, subtle blinks. Original approved voice master stays in the live meeting. Keys has a separate approved keyboard camera during speech because the speech renderer reframes to a close shot."
+}

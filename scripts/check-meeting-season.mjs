@@ -86,6 +86,23 @@ const lastHuman=onboarding.cues[8];
 assert.equal(performanceForTime('people',onboarding,34).cue,lastHuman,'Return from chorus to the closing People & Culture line');
 assert.equal(exactPerformance('synergy',onboarding.cues[7]),null);
 assert.equal(exactPerformance('synthia',onboarding.cues[7]),null);
+const unlock=meetings.unlock[0];
+assert.equal(meetingFromSearch('?meeting=unlock-0').id,unlock.id);
+assert.equal(nextMeeting(onboarding.id).id,unlock.id);
+for(const id of ['people','strategy','keys','guitar','operations','accountant','linda']){
+  for(const cue of unlock.cues.filter(c=>c.speaker===id||c.speaker==='all')){
+    const performance=exactPerformance(id,cue);
+    assert(performance,`${id}: exact unlock solo and isolated chorus coverage`);
+    await access(`public${performance.video}`);
+    assert(Math.abs(performance.duration-cue.duration)<.0001);
+    assert(Math.abs(performanceTime(performance,cue,cue.start+.4)-performance.offset-.4)<1e-9);
+  }
+  const altered=structuredClone(unlock.cues[7]);altered.sources[0].masterSha256='changed';
+  assert.equal(exactPerformance(id,altered),null,'A revised cast recording invalidates the unlock chorus');
+}
+assert.equal(performanceForTime('linda',unlock,34).cue,unlock.cues[8],'Linda returns from the chorus to her closing question');
+assert.equal(performanceForTime('people',unlock,0).current,false,'Chorus-only singers preload without silently talking');
+for(const id of ['synergy','synthia','printer','droid'])assert.equal(exactPerformance(id,unlock.cues[7]),null);
 await access('public/studio/season/clips/keys-detail.mp4');
 await access('public/studio/season/posters/keys-detail.jpg');
 let seeks=0,mediaTime=0;

@@ -83,7 +83,7 @@ for character in characters:
     parts.append(np.zeros(round(.25*SR)))
     audio=np.concatenate(parts); path=out/f'{character}-exact-{args.meeting}.wav'
     wavfile.write(path,SR,(audio*32767).astype(np.int16))
-    media='drums' if character=='operations' else character
+    media={'operations':'drums','accountant':'arjun'}.get(character,character)
     job={'character':character,'meeting':args.meeting,'status':'prepared','audio':path.name,
          'audioSha256':hashlib.sha256(path.read_bytes()).hexdigest(),'duration':len(audio)/SR,
          'characterImage':f'public/studio/season/posters/{media}-listening.jpg',

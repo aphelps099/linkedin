@@ -1,0 +1,68 @@
+{
+  "character": "people",
+  "meeting": "unlock-0",
+  "status": "reviewed-integrated",
+  "audio": "people-exact-unlock-0.wav",
+  "audioSha256": "ff671cfd1610bf1ac58c48c29f5abeb46ead27ec58fb2a53edf352dc5091cb60",
+  "duration": 6.611083333333333,
+  "characterImage": "public/studio/season/posters/people-listening.jpg",
+  "solos": [],
+  "choruses": [
+    {
+      "cueIndex": 7,
+      "offset": 0.25,
+      "duration": 6.111083333333333,
+      "phrases": [
+        {
+          "start": 0.0,
+          "duration": 1.3662083333333332,
+          "slotDuration": 2.222208333333333,
+          "source": {
+            "character": "people",
+            "text": "Unlock the potential.",
+            "line": "people-a03565c793db145d",
+            "take": "fa0e4c647c62ec2059ca65f5badb57b5e6536fb9ced14b60a82b617acbe83a93",
+            "masterSha256": "af58749ff2661f766983ec49fa581d14d1b7a283a9f891db012f027cda0fbf01"
+          }
+        },
+        {
+          "start": 2.222208333333333,
+          "duration": 1.3662083333333332,
+          "slotDuration": 2.222208333333333,
+          "source": {
+            "character": "people",
+            "text": "Unlock the potential.",
+            "line": "people-a03565c793db145d",
+            "take": "fa0e4c647c62ec2059ca65f5badb57b5e6536fb9ced14b60a82b617acbe83a93",
+            "masterSha256": "af58749ff2661f766983ec49fa581d14d1b7a283a9f891db012f027cda0fbf01"
+          }
+        },
+        {
+          "start": 4.444416666666666,
+          "duration": 0.9392916666666666,
+          "slotDuration": 1.6666666666666667,
+          "source": {
+            "character": "people",
+            "text": "Optimize.",
+            "line": "people-5f8f4f49521f1312",
+            "take": "2d897a87543e4478375a6b86b5a59f4ab5756ee0fbfce22a7373eff7629b1b95",
+            "masterSha256": "8ee58530aecc109c746b5c3266567f7fd875bcabf914bf0cf8739f3869009df6"
+          }
+        }
+      ]
+    }
+  ],
+  "direction": "Exact approved voice. Restrained natural articulation, subtle blinks, stable attached lips and headset. Preserve face identity.",
+  "workflow": "Runway Character Script to Video, uploaded Audio",
+  "taskId": "18e4db22-2cce-4593-8ffd-b1cf5340f295",
+  "assetId": "6d612e9e-109c-413a-8490-7c4fdd09729b",
+  "creditsSpent": 2,
+  "runwaySession": "5bb35d14-ea57-4d00-979c-8d4c846ccbad",
+  "output": "people-performance.mp4",
+  "outputSha256": "4031a807d0967e6902e646ae1d904949943f23f488058e295c9af33abd42f1e7",
+  "runtimeVideo": "public/studio/performances/people-unlock-exact-v1.mp4",
+  "runtimeSha256": "56cc5d2d77e32468742e8b713def72b8bc02bd6cafc56a10d8202ba137cf3724",
+  "audioLagSeconds": 0,
+  "audioWaveformCorrelation": 0.9999429668757376,
+  "reviewNotes": "Reviewed solo and chorus frames: stable face/headset, attached lips, subtle blinks. Original approved voice master stays in the live meeting. Keys has a separate approved keyboard camera during speech because the speech renderer reframes to a close shot."
+}

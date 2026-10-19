@@ -38,9 +38,10 @@ continues outside the sentence. Do not use this one performance for other words.
 `SpeechPerformance.jsx` preloads the next validated line after Play, seeks its
 video from the meeting's audio clock, preserves the corresponding paused frame,
 and never loops the sentence. Missing performances retain the existing generic
-motion plates. The first stand-up now has exact performances for all human solo turns and its
-chorus. The other meetings still need line-specific performances; the season is
-not yet fully lip-synced.
+motion plates. The first variants of Stand-up, Onboarding and Unlocking potential
+now have exact performances for every human solo turn and chorus. The remaining
+eleven meetings still need line-specific performances; the season is not yet
+fully lip-synced.
 
 ## First complete meeting
 
@@ -86,7 +87,7 @@ Synergy and Synthia retain their established media and voices.
 from the approved masters. Both robot voices participate in measuring the chorus
 slots; they are not regenerated for live playback. `package-onboarding-performances.py`
 validates the audio and exports exact take/hash bindings and offsets. The shared
-runtime supports both reviewed chorus sets, never matching caption text alone.
+runtime supports the reviewed chorus sets, never matching caption text alone.
 
 Keyboard framing is a production requirement. Do not crop out hands/keys or
 cover the entire keyboard with a name strip. The original instrumental masters
@@ -104,6 +105,32 @@ silently claim that this renderer retained the keyboard in its speaking shot.
 
 Direct review link: `/studio/?meeting=onboarding-0`. The default is still the
 first stand-up; Next meeting advances through the existing sequence.
+
+## Unlocking potential performance set, 2026-10-19
+
+`unlock-0` ("Unlocking our collective potential", 40 seconds, 108 BPM) is the
+next meeting after onboarding. Its twelve tiles include seven human singers.
+Exact performances cover Arjun's question, Kevin's second tab, Keys' excitement,
+Strategy's third tab and Linda's closing question. All seven humans have their
+own isolated, beat-aligned chorus drivers; People & Culture and Operations only
+sing in that chorus. Linda's closing solo is before her chorus in the source
+file, so playback must seek back to its correct offset after the group refrain.
+
+Seven renders cost fourteen credits, bringing this approved 2,000-credit asset
+allocation to 1,994 spent. Do not confuse this production allocation with the
+workspace's larger account balance. No new voices or robot plates were generated.
+The approved voice masters and instrumental mix remain unchanged.
+
+`assets/meeting-performances/unlock-0/` stores prepared WAVs, original generated
+video, task/asset IDs, hashes, cue offsets and measured audio alignment.
+`package-unlock-performances.py` checks audio correlation/zero lag and writes
+720p delivery media plus `unlock-performances.js`. The keyboard uses the same
+approved wide reference and retains its separate instrument detail during speech.
+Reviewed frames preserve attached lips, headset placement, character identity
+and natural blinks. Runtime checks cover solo/chorus timing, source invalidation,
+the closing Linda line, and the deterministic next-meeting link.
+
+Direct review link: `/studio/?meeting=unlock-0`.
 
 ## Robot treatment (unchanged)
 

@@ -1,0 +1,83 @@
+{
+  "character": "strategy",
+  "meeting": "unlock-0",
+  "status": "reviewed-integrated",
+  "audio": "strategy-exact-unlock-0.wav",
+  "audioSha256": "b6754665cca644fc56c25e271ba1c67eaae4072485a873a49f5a0de5c5e95d22",
+  "duration": 10.193041666666666,
+  "characterImage": "public/studio/season/posters/strategy-listening.jpg",
+  "solos": [
+    {
+      "cueIndex": 5,
+      "offset": 0.25,
+      "duration": 3.081958333333333,
+      "sources": [
+        {
+          "character": "strategy",
+          "text": "A third tab would give us room to scale.",
+          "line": "strategy-57da72df3a7bf416",
+          "take": "b624f68b7cb9255366166529d0a1c04d001543a403899cb82d9828a2c6f77406",
+          "masterSha256": "7696b7296dc83b2af3344fb8fafdab04256058d2507d64b5a64774209081ca32"
+        }
+      ]
+    }
+  ],
+  "choruses": [
+    {
+      "cueIndex": 7,
+      "offset": 3.831958333333333,
+      "duration": 6.111083333333333,
+      "phrases": [
+        {
+          "start": 0.0,
+          "duration": 1.9903333333333333,
+          "slotDuration": 2.222208333333333,
+          "source": {
+            "character": "strategy",
+            "text": "Unlock the potential.",
+            "line": "strategy-a03565c793db145d",
+            "take": "6658003d60b7e8e5e59c6b49a59f8ffd1a276fd3c91c2e43c34c689e36847a05",
+            "masterSha256": "786c0e6192db4f54fc73df1adcf5d2d47a6ace31edbd9f08b3ca93279020f94d"
+          }
+        },
+        {
+          "start": 2.222208333333333,
+          "duration": 1.9903333333333333,
+          "slotDuration": 2.222208333333333,
+          "source": {
+            "character": "strategy",
+            "text": "Unlock the potential.",
+            "line": "strategy-a03565c793db145d",
+            "take": "6658003d60b7e8e5e59c6b49a59f8ffd1a276fd3c91c2e43c34c689e36847a05",
+            "masterSha256": "786c0e6192db4f54fc73df1adcf5d2d47a6ace31edbd9f08b3ca93279020f94d"
+          }
+        },
+        {
+          "start": 4.444416666666666,
+          "duration": 1.14625,
+          "slotDuration": 1.6666666666666667,
+          "source": {
+            "character": "strategy",
+            "text": "Optimize.",
+            "line": "strategy-5f8f4f49521f1312",
+            "take": "c0ea6a70529864836b7d52f177cac7f821d5fd804c122deecc32673523d56938",
+            "masterSha256": "9d3b73246041fd83c61a3929e6eeceb8f6039d58085532d83595330627a69049"
+          }
+        }
+      ]
+    }
+  ],
+  "direction": "Exact approved voice. Restrained natural articulation, subtle blinks, stable attached lips and headset. Preserve face identity.",
+  "workflow": "Runway Character Script to Video, uploaded Audio",
+  "taskId": "014b8f64-bbb7-4f67-9ccd-ea811b40e63b",
+  "assetId": "8a4897dc-f21b-4086-a6ec-44aaa9eb4c11",
+  "creditsSpent": 2,
+  "runwaySession": "5bb35d14-ea57-4d00-979c-8d4c846ccbad",
+  "output": "strategy-performance.mp4",
+  "outputSha256": "91a400b06916abbda101253b51e3a13dc686b4c6a629a182934038245b73ad34",
+  "runtimeVideo": "public/studio/performances/strategy-unlock-exact-v1.mp4",
+  "runtimeSha256": "b14803750dd18cbb4a08bc87aa00c5573e4bbb7b841c410329f551b237adbdbe",
+  "audioLagSeconds": 0,
+  "audioWaveformCorrelation": 0.9999922869804977,
+  "reviewNotes": "Reviewed solo and chorus frames: stable face/headset, attached lips, subtle blinks. Original approved voice master stays in the live meeting. Keys has a separate approved keyboard camera during speech because the speech renderer reframes to a close shot."
+}

@@ -1,0 +1,83 @@
+{
+  "character": "accountant",
+  "meeting": "unlock-0",
+  "status": "reviewed-integrated",
+  "audio": "accountant-exact-unlock-0.wav",
+  "audioSha256": "ed696e6065468d0deb364926b6dadef0093b90abfc154681ea9addad636938f7",
+  "duration": 8.6105,
+  "characterImage": "public/studio/season/posters/arjun-listening.jpg",
+  "solos": [
+    {
+      "cueIndex": 1,
+      "offset": 0.25,
+      "duration": 1.4994166666666666,
+      "sources": [
+        {
+          "character": "accountant",
+          "text": "What are we unlocking?",
+          "line": "accountant-01e4e8dcd2bb6bbf",
+          "take": "3c08222bb832e870b0166442421545e335ac38d1fd2d5162a452f921918f24b5",
+          "masterSha256": "27f59f41326baa01145d9c08e5468a8ca4d40a67ff9d8af6768f41f359e556a0"
+        }
+      ]
+    }
+  ],
+  "choruses": [
+    {
+      "cueIndex": 7,
+      "offset": 2.249416666666667,
+      "duration": 6.111083333333333,
+      "phrases": [
+        {
+          "start": 0.0,
+          "duration": 1.6408333333333334,
+          "slotDuration": 2.222208333333333,
+          "source": {
+            "character": "accountant",
+            "text": "Unlock the potential.",
+            "line": "accountant-a03565c793db145d",
+            "take": "c41fa9df82afb87fceca088f5ffd56d7e790c2b40871806ce2de523ff58e7b57",
+            "masterSha256": "0a32e8b067b8128962cef81840a702375c228b67c07de5d0d075f5ea5832123b"
+          }
+        },
+        {
+          "start": 2.222208333333333,
+          "duration": 1.6408333333333334,
+          "slotDuration": 2.222208333333333,
+          "source": {
+            "character": "accountant",
+            "text": "Unlock the potential.",
+            "line": "accountant-a03565c793db145d",
+            "take": "c41fa9df82afb87fceca088f5ffd56d7e790c2b40871806ce2de523ff58e7b57",
+            "masterSha256": "0a32e8b067b8128962cef81840a702375c228b67c07de5d0d075f5ea5832123b"
+          }
+        },
+        {
+          "start": 4.444416666666666,
+          "duration": 1.1501666666666666,
+          "slotDuration": 1.6666666666666667,
+          "source": {
+            "character": "accountant",
+            "text": "Optimize.",
+            "line": "accountant-5f8f4f49521f1312",
+            "take": "f56dbc277335fbcae4ff6b8376c2f7003c5893d7588601509b1b2713d3fa308c",
+            "masterSha256": "4de3cd5df58b5ab1c94af4cc615007dfd0e60fb503939f66f0f8a76daff23da3"
+          }
+        }
+      ]
+    }
+  ],
+  "direction": "Exact approved voice. Restrained natural articulation, subtle blinks, stable attached lips and headset. Preserve face identity.",
+  "workflow": "Runway Character Script to Video, uploaded Audio",
+  "taskId": "cc51050b-9aad-4deb-af2d-338b100fdf71",
+  "assetId": "95febe64-0e41-4f12-98f9-ac953a2412e2",
+  "creditsSpent": 2,
+  "runwaySession": "5bb35d14-ea57-4d00-979c-8d4c846ccbad",
+  "output": "accountant-performance.mp4",
+  "outputSha256": "a7a4feca9f560942e640ecdb76ba1e541c105c67b1e1dd08c0cafe840a5a8b97",
+  "runtimeVideo": "public/studio/performances/accountant-unlock-exact-v1.mp4",
+  "runtimeSha256": "b8ebf1544c1717fbb1ea55b377ee39870cf7ddba621776ad15552db75f229388",
+  "audioLagSeconds": 0,
+  "audioWaveformCorrelation": 0.9999931989454164,
+  "reviewNotes": "Reviewed solo and chorus frames: stable face/headset, attached lips, subtle blinks. Original approved voice master stays in the live meeting. Keys has a separate approved keyboard camera during speech because the speech renderer reframes to a close shot."
+}
