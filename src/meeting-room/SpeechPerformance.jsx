@@ -13,7 +13,9 @@ export function SpeechPerformance({id,meeting,time,playing,reduced}){
     const expected=performanceTime(selection.performance,selection.cue,time);
     const shouldPlay=enabled&&playing&&selection.current;
     // The meeting audio is the master clock, including mid-sentence seeks.
-    if(!shouldPlay||Math.abs(v.currentTime-expected)>.1)v.currentTime=Math.min(expected,Math.max(0,v.duration-.001));
+    // Upcoming clips stay parked at their lead-in. Do not issue the same seek
+    // every audio tick while three chorus performers are preloading.
+    if(Math.abs(v.currentTime-expected)>(shouldPlay?.1:.001))v.currentTime=Math.min(expected,Math.max(0,v.duration-.001));
     if(shouldPlay&&v.paused&&!v.ended)v.play().catch(()=>setFailed(true));
     else if(!shouldPlay&&!v.paused)v.pause();
   },[time,playing,enabled,ready,failed,source,selection?.current]);

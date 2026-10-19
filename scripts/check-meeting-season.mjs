@@ -44,10 +44,30 @@ assert.equal(exactPerformance('guitar',{...pilotCue,sources:[{...pilotCue.source
 assert.equal(exactPerformance('guitar',{...pilotCue,sources:[{...pilotCue.sources[0],take:'different'}]}),null,'Matching text alone cannot select a clip');
 assert.equal(performanceForTime('guitar',meetings.standup[0],0).current,false,'Preload the upcoming line without playing it');
 assert.equal(performanceForTime('guitar',meetings.standup[0],pilotCue.start+.5).current,true);
-assert.equal(performanceForTime('guitar',meetings.standup[0],pilotCue.start+pilotCue.duration+.01),null,'Do not loop a completed sentence');
+assert.equal(performanceForTime('guitar',meetings.standup[0],pilotCue.start+pilotCue.duration+.01).current,false,'Preload the next sentence, never loop the completed one');
 assert.equal(performanceTime(pilot,pilotCue,0),0);
 assert(Math.abs(performanceTime(pilot,pilotCue,pilotCue.start+.5)-.5)<1e-9,'Seek follows the same voice clock');
 assert.equal(performanceTime(pilot,pilotCue,999),pilot.duration);
+const completeMeeting=meetings.standup[0],hook=completeMeeting.cues[7];
+for(const id of ['guitar','keys','operations']){
+  for(const cue of completeMeeting.cues.filter(cue=>cue.speaker===id||cue.speaker==='all')){
+    const performance=exactPerformance(id,cue);
+    assert(performance,`${id}: every solo and chorus in the first meeting has exact footage`);
+    await access(`public${performance.video}`);
+    assert(Math.abs(performance.duration-cue.duration)<.0001);
+    assert.equal(performanceTime(performance,cue,cue.start),performance.offset);
+    assert(Math.abs(performanceTime(performance,cue,cue.start+.4)-(performance.offset+.4))<1e-9);
+    assert.equal(performanceTime(performance,cue,999),performance.offset+performance.duration,'Clamp to the selected segment, including its source offset');
+  }
+  const groupPerformance=performanceForTime(id,completeMeeting,hook.start+.4);
+  assert(groupPerformance.current&&groupPerformance.cue===hook,'Each singer runs their own synchronized chorus');
+  assert.equal(performanceForTime(id,completeMeeting,hook.start+hook.duration+.01),null);
+  assert.equal(exactPerformance(id,{...hook,duration:hook.duration+.2}),null,'Different chorus spacing invalidates the footage');
+  const sources=structuredClone(hook.sources);sources[0].masterSha256='new-master';
+  assert.equal(exactPerformance(id,{...hook,sources}),null,'Any changed chorus voice invalidates the beat-aligned performance');
+}
+assert.equal(exactPerformance('synergy',hook),null,'Synergy retains his approved screen animation');
+assert.equal(exactPerformance('printer',hook),null,'Printer never sings');
 let current=meetingSequence[0];const visited=new Set();
 for(let i=0;i<14;i++){
   assert(!visited.has(current.id),'Every meeting gets a turn before repeating');visited.add(current.id);

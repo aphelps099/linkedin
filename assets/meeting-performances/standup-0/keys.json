@@ -1,0 +1,91 @@
+{
+  "character": "keys",
+  "meeting": "standup-0",
+  "status": "reviewed-integrated",
+  "audio": "keys-exact-standup.wav",
+  "audioSha256": "a79f76a155fb4dbd0524af38763bc3025355a33eb3a3cbd3ac93f528f1c715fc",
+  "duration": 9.935375,
+  "characterImage": "public/studio/season/posters/keys-listening.jpg",
+  "solo": {
+    "cueIndex": 3,
+    "offset": 0.25,
+    "duration": 3.0658333333333334,
+    "sources": [
+      {
+        "character": "keys",
+        "text": "This will unlock the full potential of our shared drive.",
+        "line": "keys-07b29e8f5126cf8e",
+        "take": "2950e47518626359d199bd70f563ee50a41f91b8350d0b7c157673cc3be2f548",
+        "masterSha256": "b1e8a27e011fbafe2ded70bdf98adf1b8cbc63eb535a2adb4b049ce5ebdabacf"
+      }
+    ]
+  },
+  "chorus": {
+    "cueIndex": 7,
+    "offset": 3.8158333333333334,
+    "duration": 5.869541666666667,
+    "phrases": [
+      {
+        "start": 0.0,
+        "duration": 0.825625,
+        "slotDuration": 1.3043333333333333,
+        "source": {
+          "character": "keys",
+          "text": "Onboarding.",
+          "line": "keys-1efeb38f28b4a855",
+          "take": "2ce2cee38ff4a1f18d9a6ab144e15a2489f772412c3c543fe63bd3bb00bcbeb4",
+          "masterSha256": "b44e65c7edcd8e9433a5e728456a85c98dd81adf6593f8b0b7eed4730f92b17b"
+        }
+      },
+      {
+        "start": 1.3043333333333333,
+        "duration": 0.825625,
+        "slotDuration": 1.3043333333333333,
+        "source": {
+          "character": "keys",
+          "text": "Onboarding.",
+          "line": "keys-1efeb38f28b4a855",
+          "take": "2ce2cee38ff4a1f18d9a6ab144e15a2489f772412c3c543fe63bd3bb00bcbeb4",
+          "masterSha256": "b44e65c7edcd8e9433a5e728456a85c98dd81adf6593f8b0b7eed4730f92b17b"
+        }
+      },
+      {
+        "start": 2.6086666666666667,
+        "duration": 1.4415833333333334,
+        "slotDuration": 1.9565416666666666,
+        "source": {
+          "character": "keys",
+          "text": "We’ll take this offline.",
+          "line": "keys-0b5b8838622df915",
+          "take": "866cf7e15ddc96c57fd3834994ca7c21cceabd936f22e2875f26815e43299b3c",
+          "masterSha256": "6852646c77fd2a66a2b30c343ea5db3216e9d14fa66984a4e2eca76f4961c750"
+        }
+      },
+      {
+        "start": 4.5652083333333335,
+        "duration": 0.7932083333333333,
+        "slotDuration": 1.3043333333333333,
+        "source": {
+          "character": "keys",
+          "text": "Offline.",
+          "line": "keys-4fbda14953066a0c",
+          "take": "7f6a86163b4198a7f0ebcb92d0a700aca50711b4f90c450962f919ae129533c0",
+          "masterSha256": "29fe8beb447e2c904117ec9d54191f08dfa2e896cff6da22924895565e713ef6"
+        }
+      }
+    ]
+  },
+  "direction": "Same approved face and voice. Restrained natural articulation. Stable lips, eyes and headset. No new words or voices.",
+  "workflow": "Runway Character Script to Video, uploaded Audio",
+  "taskId": "e1953b2e-0126-4e46-b827-bd54ba536a4e",
+  "assetId": "b4373f48-de83-463b-b323-e48f049d2de5",
+  "runwaySession": "5bb35d14-ea57-4d00-979c-8d4c846ccbad",
+  "creditsSpent": 2,
+  "output": "keys-performance.mp4",
+  "outputSha256": "71050951d860eead2b0d1734e292371efe9a7a7c6533bcde9ba7d42dd3141326",
+  "runtimeVideo": "public/studio/performances/keys-standup-exact-v1.mp4",
+  "runtimeSha256": "93cd8abb7690754e249f9b50b5b8874c6de2bbef42704b510e20e567614436ab",
+  "audioLagSeconds": 0,
+  "audioWaveformCorrelation": 0.99987535284119,
+  "reviewNotes": "Reviewed solo and chorus frames: attached lips, stable face/headset, natural blinks and subtle head motion. Close speaking framing matches the approved Kevin pilot. Instruments remain in the inter-line footage. Original approved voice masters remain the live audio."
+}

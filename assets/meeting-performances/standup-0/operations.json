@@ -1,0 +1,91 @@
+{
+  "character": "operations",
+  "meeting": "standup-0",
+  "status": "reviewed-integrated",
+  "audio": "operations-exact-standup.wav",
+  "audioSha256": "6e3500be7b8242262bf2add095f2ba25e5145f29d73f2ea0c07d809608bcdf6d",
+  "duration": 10.378875,
+  "characterImage": "public/studio/season/posters/drums-listening.jpg",
+  "solo": {
+    "cueIndex": 4,
+    "offset": 0.25,
+    "duration": 3.509333333333333,
+    "sources": [
+      {
+        "character": "operations",
+        "text": "I’m excited to share that I’ve renamed the folder Final.",
+        "line": "operations-4000617a904fc626",
+        "take": "de74efed64fb9f97948896e45917fab3f51d0711ad3a5251cd574f6b43a046cf",
+        "masterSha256": "9f5fc7fe0de53e1a188d438c8fde5c95a7df37501557233ab52b34b224aacdda"
+      }
+    ]
+  },
+  "chorus": {
+    "cueIndex": 7,
+    "offset": 4.259333333333333,
+    "duration": 5.869541666666667,
+    "phrases": [
+      {
+        "start": 0.0,
+        "duration": 1.06825,
+        "slotDuration": 1.3043333333333333,
+        "source": {
+          "character": "operations",
+          "text": "Onboarding.",
+          "line": "operations-1efeb38f28b4a855",
+          "take": "119035b22285a6e5bd80a59bfef6b34deea3bb97b763283f4fc4379350748521",
+          "masterSha256": "8a24fc2897d02d4dc21f356703ecec4484e212d93e52a9425c9523936be865b5"
+        }
+      },
+      {
+        "start": 1.3043333333333333,
+        "duration": 1.06825,
+        "slotDuration": 1.3043333333333333,
+        "source": {
+          "character": "operations",
+          "text": "Onboarding.",
+          "line": "operations-1efeb38f28b4a855",
+          "take": "119035b22285a6e5bd80a59bfef6b34deea3bb97b763283f4fc4379350748521",
+          "masterSha256": "8a24fc2897d02d4dc21f356703ecec4484e212d93e52a9425c9523936be865b5"
+        }
+      },
+      {
+        "start": 2.6086666666666667,
+        "duration": 1.6669166666666666,
+        "slotDuration": 1.9565416666666666,
+        "source": {
+          "character": "operations",
+          "text": "We’ll take this offline.",
+          "line": "operations-0b5b8838622df915",
+          "take": "0eceb0e89d47fca2e1651244586c159e3c174ed17895229e6514e85220b2740a",
+          "masterSha256": "704d9856c7e6d2a9ef5052d26505ffc3c7a9e98f3de22f3976374039473fdd58"
+        }
+      },
+      {
+        "start": 4.5652083333333335,
+        "duration": 0.9375,
+        "slotDuration": 1.3043333333333333,
+        "source": {
+          "character": "operations",
+          "text": "Offline.",
+          "line": "operations-4fbda14953066a0c",
+          "take": "7b3aadd782160880c0bcf6a30d5fbf26482c031a49420f07302ac750676b4b26",
+          "masterSha256": "711cfb281962f8d0469ba3616c6b20540a71245bcc72bac73cdfcd23d4003500"
+        }
+      }
+    ]
+  },
+  "direction": "Same approved face and voice. Restrained natural articulation. Stable lips, eyes and headset. No new words or voices.",
+  "workflow": "Runway Character Script to Video, uploaded Audio",
+  "taskId": "3a6940ef-2fa2-4192-98b5-005e8d8704e5",
+  "assetId": "f72dd0be-2553-402c-ac9f-e6850076855f",
+  "runwaySession": "5bb35d14-ea57-4d00-979c-8d4c846ccbad",
+  "creditsSpent": 2,
+  "output": "operations-performance.mp4",
+  "outputSha256": "cb30bfab6a48f8bae361d1f2ed5ae95ff7bbd19177792682951b17c9f2bd3121",
+  "runtimeVideo": "public/studio/performances/operations-standup-exact-v1.mp4",
+  "runtimeSha256": "dfaf8bb928773a64ccc11de9abb1d87925562a2fa7bc7a9c048751c86f4d5251",
+  "audioLagSeconds": 0,
+  "audioWaveformCorrelation": 0.9999807534826557,
+  "reviewNotes": "Reviewed solo and chorus frames: attached lips, stable face/headset, natural blinks and subtle head motion. Close speaking framing matches the approved Kevin pilot. Instruments remain in the inter-line footage. Original approved voice masters remain the live audio."
+}

@@ -1,0 +1,91 @@
+{
+  "character": "guitar",
+  "meeting": "standup-0",
+  "status": "reviewed-integrated",
+  "audio": "guitar-exact-standup.wav",
+  "audioSha256": "ea4334067fe19b0a4bb563734d0a43831da6c0223c910c9d01a93841663f735d",
+  "duration": 8.387541666666667,
+  "characterImage": "public/studio/season/posters/guitar-listening.jpg",
+  "solo": {
+    "cueIndex": 5,
+    "offset": 0.25,
+    "duration": 1.518,
+    "sources": [
+      {
+        "character": "guitar",
+        "text": "I’m still waiting for access.",
+        "line": "guitar-9820e58b40417f4e",
+        "take": "bdf62ed2725c22fdd5304b9870be16c7dac773c071dcae743f35c4dc088e7ed6",
+        "masterSha256": "6e97e27ff08d39c59c83b1f64a331871cb0e6866bfc8dde709a06b5982d2193b"
+      }
+    ]
+  },
+  "chorus": {
+    "cueIndex": 7,
+    "offset": 2.268,
+    "duration": 5.869541666666667,
+    "phrases": [
+      {
+        "start": 0.0,
+        "duration": 0.8212916666666666,
+        "slotDuration": 1.3043333333333333,
+        "source": {
+          "character": "guitar",
+          "text": "Onboarding.",
+          "line": "guitar-1efeb38f28b4a855",
+          "take": "a4ccbdf3226a3995faad960214756105b442529af6f0369caa027d5a31498b3c",
+          "masterSha256": "704a7cb7d53df099240571b1a6244e7098d831e83f701a21fbfbe273d4e4d0b5"
+        }
+      },
+      {
+        "start": 1.3043333333333333,
+        "duration": 0.8212916666666666,
+        "slotDuration": 1.3043333333333333,
+        "source": {
+          "character": "guitar",
+          "text": "Onboarding.",
+          "line": "guitar-1efeb38f28b4a855",
+          "take": "a4ccbdf3226a3995faad960214756105b442529af6f0369caa027d5a31498b3c",
+          "masterSha256": "704a7cb7d53df099240571b1a6244e7098d831e83f701a21fbfbe273d4e4d0b5"
+        }
+      },
+      {
+        "start": 2.6086666666666667,
+        "duration": 1.2281666666666666,
+        "slotDuration": 1.9565416666666666,
+        "source": {
+          "character": "guitar",
+          "text": "We’ll take this offline.",
+          "line": "guitar-0b5b8838622df915",
+          "take": "229812b81463d777083238d82b9c5db40cd79377332bf5a2f975cee0bf8a86d5",
+          "masterSha256": "1504684f00ec6ce2232391e738279125025842ba9d93ddeae4da69ae0731850c"
+        }
+      },
+      {
+        "start": 4.5652083333333335,
+        "duration": 0.7796666666666666,
+        "slotDuration": 1.3043333333333333,
+        "source": {
+          "character": "guitar",
+          "text": "Offline.",
+          "line": "guitar-4fbda14953066a0c",
+          "take": "cb055f7d6f021bd3fdccacfa341ab3066d9359999aa2f36ab6f78aab5aec6c58",
+          "masterSha256": "f6c2ea14ee0dc6cb174a07967079d130427b98739383fb6e6bf81ec3cc86b052"
+        }
+      }
+    ]
+  },
+  "direction": "Same approved face and voice. Restrained natural articulation. Stable lips, eyes and headset. No new words or voices.",
+  "workflow": "Runway Character Script to Video, uploaded Audio",
+  "taskId": "ca9e2bb4-e9dd-4586-90f6-0c07f17bd1e4",
+  "assetId": "915027c4-cfc2-4e50-9782-42c234ca9bc8",
+  "audioLagSeconds": 0,
+  "audioWaveformCorrelation": 0.9999665665185323,
+  "creditsSpent": 2,
+  "runwaySession": "5bb35d14-ea57-4d00-979c-8d4c846ccbad",
+  "output": "guitar-performance.mp4",
+  "outputSha256": "4863883cde3ed59384b9e24d4df699f5ff84bc3823a8b629eb05f63f51c02f66",
+  "runtimeVideo": "public/studio/performances/guitar-standup-exact-v1.mp4",
+  "runtimeSha256": "95bb3e475ea802a916ba5da9fd0464ddbeab1f133d8772954b9375fb364a379f",
+  "reviewNotes": "Reviewed solo and chorus frames: attached lips, stable face/headset, natural blinks and subtle head motion. Close speaking framing matches the approved Kevin pilot. Instruments remain in the inter-line footage. Original approved voice masters remain the live audio."
+}

@@ -4,6 +4,12 @@ The reusable speaking plates are approximate turn cues, not lip sync. Generating
 another generic talking loop will not fix that limitation. Keep the approved
 human voices and make facial performances from those exact recordings.
 
+## Approval lock, 2026-10-19
+
+The current Synergy camera is final and user-approved. Do not regenerate, redesign,
+or change his display. Kevin’s exact-voice pilot is also user-approved and is the
+reference for the remaining human performances. Preserve all approved voices.
+
 ## First test
 
 `assets/meeting-performances/kevin-pilot/pilot.json` records the exact voice take,
@@ -32,16 +38,30 @@ continues outside the sentence. Do not use this one performance for other words.
 `SpeechPerformance.jsx` preloads the next validated line after Play, seeks its
 video from the meeting's audio clock, preserves the corresponding paused frame,
 and never loops the sentence. Missing performances retain the existing generic
-motion plates. The remainder of the human library still needs line-specific
-performances; it is not yet fully lip-synced.
+motion plates. The first stand-up now has exact performances for all human solo turns and its
+chorus. The other meetings still need line-specific performances; the season is
+not yet fully lip-synced.
 
 ## First complete meeting
 
-Finish `standup-0` before expanding to the season. It contains four solo human
+`standup-0` is the first complete human performance set. It contains four solo human
 turns: Kevin's new folder, Keys' shared drive, Operations' renamed folder, and
 Kevin's access question. The chorus needs each human's own exact vocal stem,
-including its beat-aligned gaps. The mixed chorus is not a valid driver for an
-individual character. Preserve the real musician instrument clips between lines.
+including its beat-aligned gaps. Each person now has that isolated driver. The
+mixed chorus is not a valid driver for an individual character. The real musician
+instrument clips continue between lines.
+
+`assets/meeting-performances/standup-0/` stores the exact input WAVs, source video,
+per-line offsets, source hashes, chorus timing and review records. Three renders
+cost six credits total. All output audio has zero measured lag and correlation
+above 0.9998 against its input. Runtime uses muted videos and the unchanged
+approved meeting audio. No new Synergy assets or voices were made.
+
+`prepare-standup-performances.py` reconstructs the isolated inputs from approved
+masters without writing live audio. `package-standup-performances.py` validates
+returned audio and writes delivery media plus `standup-performances.js`. Chorus
+matching checks every participant’s source and the total duration: changing any
+voice can change beat spacing, so it invalidates the existing chorus footage.
 
 Runtime bindings must use the exact `source.take` and `source.masterSha256`,
 not just the speaker name or the caption text. A speaking clip's clock is the

@@ -1,5 +1,5 @@
 {
-  "status": "rendered-integrated-pilot",
+  "status": "user-approved",
   "character": "guitar",
   "displayName": "Kevin",
   "text": "I\u2019m humbled and honored to be onboarding a new folder.",
@@ -33,5 +33,7 @@
   "observedCreditBalanceAfter": 20447,
   "creditAdjustmentNote": "Runway also automatically awarded 300 credits for first App use. Net balance +298.",
   "reviewNotes": "Exact voice and duration retained. Face/headset stable in frame review. Editor crops closer to face; guitar remains in background plates outside this line. Human season remains incomplete.",
-  "outputSha256": "7723e45993f28fdad746818cc495ef3834820d3735353b33589ebf24d4cedd3c"
+  "outputSha256": "7723e45993f28fdad746818cc495ef3834820d3735353b33589ebf24d4cedd3c",
+  "userApprovedAt": "2026-10-19",
+  "userApproval": "Kevins updated test looks great"
 }
