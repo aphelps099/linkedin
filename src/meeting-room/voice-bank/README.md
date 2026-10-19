@@ -18,6 +18,13 @@ brief for listening review; Kokoro does not accept it as an acting instruction.
 Speed and preset are the actual controls. If a candidate does not fit the face,
 change the casting before generating hundreds of lines.
 
+Casting revision 2 (October 19): Linda moves from Sarah to the lower, huskier
+Nicole preset at a restrained pace. Strategy moves from Fenrir to Onyx; Fenrir
+and Kevin's Puck were perceived as too similar. Kevin retains his lighter Puck
+identity with a quicker conversational pace. These are new candidate takes,
+not approval of the cast. Revised audition URLs include the audio hash so a
+returning listener cannot accidentally hear a cached previous casting.
+
 ## Files and commands
 
 - `characters.js`: fixed candidate voice, pace, identity version, direction.

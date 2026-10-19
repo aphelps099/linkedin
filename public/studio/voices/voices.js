@@ -1,6 +1,6 @@
 const status=document.querySelector('#status');
 try {
-  const responses=await Promise.all([fetch('./catalog.json'),fetch('./recordings.json')]);
+  const responses=await Promise.all([fetch('./catalog.json',{cache:'no-cache'}),fetch('./recordings.json',{cache:'no-cache'})]);
   if(responses.some(response=>!response.ok)) throw new Error('The casting files could not be loaded. Please refresh.');
   const [catalog,recordings]=await Promise.all(responses.map(response=>response.json()));
   const container=document.querySelector('#cast');
@@ -17,7 +17,7 @@ try {
     card.querySelector('.number').textContent=`VOICE ${String(++number).padStart(2,'0')}`;
     card.querySelector('h3').textContent=profile.name;
     card.querySelector('.direction').textContent=profile.direction;
-    const audio=card.querySelector('audio');audio.src=`./${audition.file}`;audio.setAttribute('aria-label',`Listen to ${profile.name}`);
+    const audio=card.querySelector('audio');audio.src=`./${audition.file}?v=${audition.sha256}`;audio.setAttribute('aria-label',`Listen to ${profile.name}`);
     audio.addEventListener('play',()=>{
       for(const other of document.querySelectorAll('audio')) if(other!==audio) other.pause();
       card.classList.add('playing');status.textContent=`Playing ${profile.name}.`;

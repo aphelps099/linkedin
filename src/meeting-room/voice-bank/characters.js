@@ -1,7 +1,7 @@
 // Voice identity belongs to a character, never to a tile or a meeting.
 // Candidate human casts must be heard and approved before season-wide rendering.
-const human = (name, voice, speed, direction, poster) => ({
-  name, kind:'human', status:'candidate', version:'human-casting-1',
+const human = (name, voice, speed, direction, poster, version='human-casting-1') => ({
+  name, kind:'human', status:'candidate', version,
   provider:'local-kokoro', voice, speed, direction, poster,
   performance:'Natural speech. Underplay the joke. No vocoder, pitch shifting, or singing.',
 });
@@ -9,18 +9,18 @@ const human = (name, voice, speed, direction, poster) => ({
 export const characters = {
   people:human('People & Culture','af_heart',.97,
     'Warm and professionally reassuring. Entirely sincere about the unnecessary process.', 'people-listening.jpg'),
-  strategy:human('Strategy','am_fenrir',.98,
-    'Measured, articulate confidence. Treat each small suggestion as a strategic contribution.', 'strategy-listening.jpg'),
-  guitar:human('Kevin · Partnerships','am_puck',1,
-    'Conversational and quietly enthusiastic. Questions should sound genuinely practical.', 'guitar-listening.jpg'),
+  strategy:human('Strategy','am_onyx',.95,
+    'Low, steady, deliberate. Quiet authority with precise, unhurried phrasing.', 'strategy-listening.jpg','human-casting-2'),
+  guitar:human('Kevin · Partnerships','am_puck',1.06,
+    'Lighter, quicker, conversational. A quietly enthusiastic colleague asking practical questions.', 'guitar-listening.jpg','human-casting-2'),
   keys:human('Keys · Enablement','af_bella',.98,
     'Calm, friendly conviction. A colleague speaking over her keyboard, not a presenter.', 'keys-listening.jpg'),
   operations:human('Operations','am_michael',.97,
     'Unhurried, matter-of-fact pride. Announce renaming a folder as an ordinary achievement.', 'drums-listening.jpg'),
   accountant:human('Arjun · Finance','bm_george',1,
     'Precise and restrained. Ask the obvious question without announcing that it is a joke.', 'arjun-listening.jpg'),
-  linda:human('Linda · Governance','af_sarah',.94,
-    'Dry, experienced, patient. Land the final observation without a theatrical pause.', 'linda-listening.jpg'),
+  linda:human('Linda · Governance','af_nicole',.91,
+    'Low and husky, dry and unhurried. The seasoned colleague who has seen this rollout before.', 'linda-listening.jpg','human-casting-2'),
   synergy:{name:'Synergy',kind:'robot',status:'existing',version:'season-1',provider:'flite',voice:'kal16',pitch:.91,
     direction:'Flat digital host. Keep the established identity; do not recast with a human voice.'},
   synthia:{name:'Synthia',kind:'robot',status:'existing',version:'season-1',provider:'flite',voice:'slt',pitch:1.04,
