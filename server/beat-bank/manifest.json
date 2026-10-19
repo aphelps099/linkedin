@@ -1,0 +1,179 @@
+{
+  "voice": "Fred",
+  "rate": 154,
+  "sampleRate": 22050,
+  "lines": [
+    {
+      "text": "next chapter",
+      "file": "0c8a48804432325e77600bb8524c6090e98cf8015eb02911190a93475aad1f59.wav"
+    },
+    {
+      "text": "humbled",
+      "file": "7544e2b7c1d025c645633decc917bb03213f2b9235f1fe52ee7bd6e1663150de.wav"
+    },
+    {
+      "text": "honored",
+      "file": "56f441d52dc4578ffc2f6a41e2d83bae9395a1214f1ac618a2516057d54aca2c.wav"
+    },
+    {
+      "text": "thrilled",
+      "file": "584e2d9ef6aea5b6d33caa35683a8e1c8d33eb9d04e17a613faea08ac3ff64ad.wav"
+    },
+    {
+      "text": "journey",
+      "file": "cde56892bbebbf6c5fe56cf3317f558aec67aeb0ba19504ca3c9e6801cb45b28.wav"
+    },
+    {
+      "text": "leadership",
+      "file": "9e720e53885580b1e0c5866c98e04988f0b0d071037fb54621a5180ba29e72e7.wav"
+    },
+    {
+      "text": "synergy",
+      "file": "290abd3147a14f4d0c3ccfae9aaa921c223ac755e6bbee01d535ec2e808f6146.wav"
+    },
+    {
+      "text": "alignment",
+      "file": "47ccb97a79f5a2bff2713968c83bbbea9cd53d2edf6b0a47439910e111c95fe9.wav"
+    },
+    {
+      "text": "growth",
+      "file": "19c64195eb8f22c39b4bad63078823ddd82e6d61847b25f1f5b969be6c891661.wav"
+    },
+    {
+      "text": "momentum",
+      "file": "446be308664e1964b816217ba48334a777837850765f863efbba3c6608da6b90.wav"
+    },
+    {
+      "text": "impact",
+      "file": "6f61f46c23a66607af759dcd348ac132846385d8f39534e69b6cd934bdabad8b.wav"
+    },
+    {
+      "text": "purpose",
+      "file": "81b06df4303e6581efecfa2830bf76c30a9d32a3e4892eac2fe43b7487d3ae2f.wav"
+    },
+    {
+      "text": "innovation",
+      "file": "6611032577e5a7b3a146e7b2111117b71a2a7b0fa4ef2861353816730a4f4a02.wav"
+    },
+    {
+      "text": "community",
+      "file": "f354ee99e2bc863ce19d80b843353476394ebc3530a51c9290d629065bacc3b3.wav"
+    },
+    {
+      "text": "transformation",
+      "file": "4b7e172afd07683e8e12fd8bea360920535010006a497822d67568dbd26bc043.wav"
+    },
+    {
+      "text": "grateful",
+      "file": "8652b6b8e1b1f91280c94fc023bcf3b50e8c2b17e515599ce20237dfb11e325f.wav"
+    },
+    {
+      "text": "opportunity",
+      "file": "04b447783afe5bfd4b48e8db067137319526a98e029c37b2559154ceccc1067e.wav"
+    },
+    {
+      "text": "future",
+      "file": "ebb3de8a3d9a40366132eb5deb5af44e4c96c11696f8fc34ea2c1d8bd8399171.wav"
+    },
+    {
+      "text": "team",
+      "file": "ca8b22d0db83a22db163b560b3e4e51527e533d31d067b614a0c33c4d2df8432.wav"
+    },
+    {
+      "text": "proud",
+      "file": "d069c85283b98c2c0ca831cb4fd19356e98813b5d0ee31e7b7a4a894e8aca23c.wav"
+    },
+    {
+      "text": "excited",
+      "file": "8d1c8a7a12c3739bb3b9988676c4f1ba69cbd7515ca23625e0d929efbc1bc1ac.wav"
+    },
+    {
+      "text": "Sarah",
+      "file": "d233633d9524e84c71d6fe45eb3836f8919148e4a5fc2234cc9e6494ec0f11c2.wav"
+    },
+    {
+      "text": "Jordan",
+      "file": "136c67657614311f32238751044a0a3c0294f2a521e573afa8e496992d3786ba.wav"
+    },
+    {
+      "text": "Taylor",
+      "file": "8e924025a26c584ad4ac6365116e09b852ae6b7016da4c0851e269348d93c228.wav"
+    },
+    {
+      "text": "Dana",
+      "file": "2c9e0a2585dc7406589a3724f0027811506e0f133726303a15d6779d532a2573.wav"
+    },
+    {
+      "text": "Circle Back",
+      "file": "17d3a823224d656b57d6e6fc93da18dc26abe90876b967ea6092693ad33c5cfe.wav"
+    },
+    {
+      "text": "LinkedIn",
+      "file": "84308bea454057aa509a12fbd5212988973d7cd513bc555a24a06dd2cc72e39e.wav"
+    },
+    {
+      "text": "ChatGPT",
+      "file": "60965168ce762e949600281ba6d01fee136e5b6e8257b1f216f9025ed324474c.wav"
+    },
+    {
+      "text": "The next chapter starts now.",
+      "file": "6d7316a27c4db37b29f67bdafdf9463cb890aacc6b37a3f4a8d3c67d1233c9c9.wav"
+    },
+    {
+      "text": "A new chapter begins today.",
+      "file": "03ee12ea327c42ffe8fb36d661e02579ae8fd43b824db4f82a4f3d7d6d372883.wav"
+    },
+    {
+      "text": "The story continues — louder.",
+      "file": "a84dc3d4896d3a400db84983a37cf6e2dc05ab4d9130c9da481a963bbb29777e.wav"
+    },
+    {
+      "text": "The journey continues.",
+      "file": "57b52422bde61d9def82b291ba98e323c0ad0ba74cd6da3fdba1aabb65b8c2f8.wav"
+    },
+    {
+      "text": "The best is ahead of us.",
+      "file": "6de2d00a3983d5c0caf2ea264889b601c5ed4118a9e8bc664d780ae5a88831d1.wav"
+    },
+    {
+      "text": "Growth is a team sport.",
+      "file": "91da5687dfe2dade873166b434ac43032ba40dbf994fdca9afd3b98264103939.wav"
+    },
+    {
+      "text": "Momentum is a choice.",
+      "file": "d9d31e79452b40d6a839c1f0984247ffe55bb1c6a751326e7740f58641889cad.wav"
+    },
+    {
+      "text": "Excited for the next chapter.",
+      "file": "6b807bb2245426293239e53e53788b96c0b498fd3bff8a86bd7fec98ed615e4b.wav"
+    },
+    {
+      "text": "Grateful for the journey so far.",
+      "file": "ff7c754074fa4ecf0471e32752005a58a99386ce2a9928884cde4324281eec35.wav"
+    },
+    {
+      "text": "The future doesn't wait. Neither should you.",
+      "file": "1798c0a882e36c4369200370c9283d8f1c2d5f809570bc907cdd563d3cd61b70.wav"
+    },
+    {
+      "text": "Welcome to the movement.",
+      "file": "6d7b684f15f9de3cedb29161acafb490db45f96317548dcc4ad9a2849a5629b1.wav"
+    },
+    {
+      "text": "Welcome to the journey, Sarah.",
+      "file": "e9773ad015f83ec862aa7cb93ea39e613973ec9df5063781547136d07c99fa7e.wav"
+    },
+    {
+      "text": "Welcome to the journey, Jordan.",
+      "file": "ea7d37e3540de42a874206016f9ee610d308cf9b5b16702831821beef87e23a8.wav"
+    },
+    {
+      "text": "Together, we will make Fridays feel like Fridays.",
+      "file": "edc1453ffea004ff007431c61ff07c7ebff6ee08e3a73a378ef4f1f4266dca84.wav"
+    },
+    {
+      "text": "I'm thrilled to announce our next chapter.",
+      "file": "87e04f1e784877979e0e2293b924c8cef2e432748fcdb5749e2e829c07ec1648.wav"
+    }
+  ]
+}

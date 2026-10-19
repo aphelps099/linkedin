@@ -225,6 +225,15 @@ serve the application.
 `/api/health` reports whether voice is configured without exposing the key.
 The included `railway.json` supplies the build, start, and health-check settings.
 
+The inline LinkedInifier beat player at `/lessons/` uses a separate,
+self-hosted `POST /api/post-beat/voices` endpoint. It needs no ElevenLabs or
+OpenAI key. Its Docker image includes Kokoro Heart, the original Fred sample
+bank, and eSpeak NG for new robot lines on Linux. Audio is cached privately on
+the existing volume at `/data/linkedin-beat-cache` (32 MiB cap); newsletter
+records remain in their own directory. `/api/health` reports
+`postBeatConfigured`. See `src/post-beat/README.md` for limits, lyric timing,
+shared links, and validation.
+
 The Cloudflare Worker in `worker/` remains available as an alternative voice
 endpoint:
 

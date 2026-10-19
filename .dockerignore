@@ -4,4 +4,5 @@ dist
 .github
 *.local
 .DS_Store
+.env*
 npm-debug.log*

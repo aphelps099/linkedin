@@ -4,6 +4,9 @@ import { fileURLToPath } from 'node:url';
 import { generateVoiceClips } from './voice-service.js';
 import { createCheckoutSession, verifyStripeSignature, fulfilOrder, parseSkuMap } from './store-service.js';
 import { createNewsletter } from './newsletter.js';
+import { createPostBeatService } from './post-beat-service.js';
+import { localAnnouncer } from './local-announcer.js';
+import { beatRobot } from './beat-robot.js';
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
@@ -14,6 +17,8 @@ app.disable('x-powered-by');
 // Railway terminates public requests at its reverse proxy.
 app.set('trust proxy', 1);
 const newsletter = createNewsletter({directory:process.env.NEWSLETTER_DATA_DIR});
+const postBeat = createPostBeatService();
+let beatVoicesReady=false;
 
 // The Stripe webhook must see the raw payload (its signature covers the exact
 // bytes), so this route is registered ahead of the JSON body parser.
@@ -50,6 +55,7 @@ app.post('/api/store/webhook', express.raw({type:'application/json'}), async (re
 
 app.use(express.json({limit:'32kb'}));
 app.use('/api/newsletter', newsletter.router);
+app.use('/api/post-beat/voices', postBeat.router);
 
 app.post('/api/checkout', async (req, res)=>{
   try{
@@ -93,6 +99,7 @@ app.post('/api/voice', async (req, res)=>{
 app.get('/api/health', (_req, res)=>{
   res.json({
     ok:true,
+    postBeatConfigured:beatVoicesReady&&postBeat.isConfigured(),
     newsletterConfigured:newsletter.isConfigured(),
     voiceConfigured:Boolean(
       (process.env.OPENAI_API_KEY || process.env.CUSTOM_CRED_API_OPENAI_COM_TOKEN) &&
@@ -137,6 +144,12 @@ app.get('*', (req, res)=>{
   res.sendFile(path.join(dist, 'index.html'));
 });
 
+// Fail before accepting traffic if either production voice cannot run. Railway
+// keeps the previous deployment active until this version passes its healthcheck.
+await postBeat.ready;
+await localAnnouncer('Ready for the next chapter.');
+await beatRobot('The production voice service is ready.');
+beatVoicesReady=true;
 app.listen(port, '0.0.0.0', ()=>{
   console.log(`Circle Back listening on ${port}`);
 });

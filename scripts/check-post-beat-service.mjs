@@ -1,0 +1,47 @@
+import assert from 'node:assert/strict';
+import express from 'express';
+import {mkdtemp,rm,readFile,readdir,stat} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {createPostBeatService} from '../server/post-beat-service.js';
+const directory=await mkdtemp(join(tmpdir(),'beat-service-test-'));
+const audio=await readFile(new URL('../public/phrases/02.wav',import.meta.url));
+let calls=0,release;
+const gate=new Promise(resolve=>{release=resolve;});
+const synthesize=async clip=>{calls++;if(clip.text==='Wait for the chorus')await gate;if(clip.text==='Broken')throw new Error('Private diagnostic');return audio;};
+const app=express();app.use(express.json());
+const service=createPostBeatService({directory,synthesize,maxPending:1,maxBytes:audio.length*2,requestLimit:100});
+app.use('/voices',service.router);
+const limited=createPostBeatService({directory,synthesize,requestLimit:1});app.use('/limited',limited.router);
+const server=app.listen(0,'127.0.0.1');await new Promise(resolve=>server.once('listening',resolve));
+const origin=`http://127.0.0.1:${server.address().port}`;
+const post=(clips,path='/voices',headers={})=>fetch(origin+path,{method:'POST',headers:{'Content-Type':'application/json',...headers},body:JSON.stringify({clips})});
+const line=text=>[{text,role:'announcer'}];
+try{
+  await service.ready;
+  assert.equal((await post([{text:'Hello',role:'administrator'}])).status,400);
+  assert.equal((await post([null])).status,400);
+  assert.equal((await post(line('x'.repeat(181)))).status,400);
+  assert.equal((await post(line('Hello'),'/voices',{Origin:'https://unrelated.example'})).status,403);
+  assert.equal((await fetch(origin+'/voices')).status,405);
+  const first=await post(line('A new chapter'));
+  assert.equal(first.status,200);assert.equal(first.headers.get('cache-control'),'no-store');
+  const body=await first.json();assert.equal(Buffer.from(body.clips[0].audio,'base64').compare(audio),0);
+  await post(line('A new chapter'));assert.equal(calls,1,'replays must use the audio cache');
+  const other=createPostBeatService({directory,synthesize});
+  await other.generate(line('A new chapter'));assert.equal(calls,1,'cache survives service restart');
+  const waiting=service.generate(line('Wait for the chorus'));
+  while(calls<2)await new Promise(resolve=>setTimeout(resolve,5));
+  const duplicate=service.generate(line('Wait for the chorus'));
+  await assert.rejects(service.generate(line('Another song')),e=>e.status===429);
+  release();await Promise.all([waiting,duplicate]);assert.equal(calls,2,'duplicate concurrent requests must coalesce');
+  await service.generate(line('Third song'));
+  const files=await readdir(directory);let total=0;
+  for(const name of files){assert(/^[a-f0-9]{64}\.wav$/.test(name));total+=(await stat(join(directory,name))).size;}
+  assert(total<=audio.length*2,'disk cache must remain bounded');
+  const broken=await post(line('Broken'));assert.equal(broken.status,503);assert(!JSON.stringify(await broken.json()).includes('Private diagnostic'));
+  assert.equal((await post(line('Good after failure'))).status,200);
+  assert.equal((await post(line('Rate limit'),'/limited')).status,200);
+  const rate=await post(line('Rate limit'),'/limited');assert.equal(rate.status,429);assert(rate.headers.get('retry-after'));
+  console.log('Production beat API passed: validation, origin checks, private errors, cache replay/restart, request deduplication, bounded queue/storage, rate limits and recovery.');
+}finally{server.closeAllConnections();await new Promise(resolve=>server.close(resolve));await rm(directory,{recursive:true,force:true});}
