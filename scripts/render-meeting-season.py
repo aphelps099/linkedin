@@ -4,7 +4,7 @@ Uses the same Flite voice family and original stem recordings as Studio 2.
 Run after `node --input-type=module -e "import {library} from './src/meeting-room/scripts.js';
 import {writeFileSync} from 'node:fs';writeFileSync('/tmp/meeting-scripts.json',JSON.stringify(library))"`.
 """
-import json, math, subprocess, tempfile
+import json, math, subprocess, tempfile, argparse, unicodedata
 from pathlib import Path
 import numpy as np
 from scipy.io import wavfile
@@ -21,6 +21,29 @@ VOICES={'synergy':('kal16',.91),'synthia':('slt',1.04),'people':('slt',.94),
         'strategy':('rms',1.02),'guitar':('kal16',1.05),'keys':('slt',1),
         'operations':('awb',.98),'accountant':('rms',.94),'linda':('slt',.89)}
 CACHE={}
+parser=argparse.ArgumentParser()
+parser.add_argument('--voice-bank',help='Reviewed human bank from export-meeting-voice-bank.mjs')
+ARGS=parser.parse_args()
+VOICE_BANK=json.loads(Path(ARGS.voice_bank).read_text()) if ARGS.voice_bank else None
+
+def bank_key(character,text):
+    text=' '.join(unicodedata.normalize('NFC',text).split())
+    return json.dumps([character,text],ensure_ascii=False,separators=(',',':'))
+
+# Fail before overwriting anything when an approved take is missing.
+if VOICE_BANK:
+    if VOICE_BANK.get('version')!=1:raise ValueError('Unknown voice-bank format')
+    for variants in LIB.values():
+        for meeting in variants:
+            for who,text in meeting['lines']:
+                people=[p for p in meeting['roster'] if p in VOICES] if who=='all' else [who]
+                phrases=[t.strip()+'.' for t in text.split('.') if t.strip()] if who=='all' else [text]
+                for person in people:
+                    if person in ('synergy','synthia'):continue
+                    for phrase in phrases:
+                        take=VOICE_BANK['lines'].get(bank_key(person,phrase))
+                        if not take or take['status']!='approved' or not (ROOT/take['file']).is_file():
+                            raise ValueError(f'Missing approved human recording: {person}: {phrase}')
 
 def ff(*args):
     subprocess.run(['ffmpeg','-hide_banner','-loglevel','error','-y',*map(str,args)],check=True)
@@ -33,6 +56,13 @@ def encode(x,path,tmp,stereo=False):
 def speech(text,character,tmp):
     key=(text,character)
     if key in CACHE:return CACHE[key].copy()
+    if VOICE_BANK and character not in ('synergy','synthia'):
+        take=VOICE_BANK['lines'][bank_key(character,text)]
+        ff('-i',ROOT/take['file'],'-ar',SR,'-ac',1,tmp/'human.wav')
+        _,x=wavfile.read(tmp/'human.wav');x=x.astype(np.float64)/32768
+        # Natural timbre and pauses remain intact; no robot bandpass or pitch FX.
+        CACHE[key]=x.copy()
+        return x
     voice,pitch=VOICES[character]
     (tmp/'line.txt').write_text(text.replace('’',"'"))
     ff('-f','lavfi','-i',f'flite=textfile={tmp}/line.txt:voice={voice}',

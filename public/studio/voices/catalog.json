@@ -1,0 +1,7661 @@
+{
+  "version": 1,
+  "characters": {
+    "people": {
+      "name": "People & Culture",
+      "kind": "human",
+      "status": "candidate",
+      "version": "human-casting-1",
+      "provider": "local-kokoro",
+      "voice": "af_heart",
+      "speed": 0.97,
+      "direction": "Warm and professionally reassuring. Entirely sincere about the unnecessary process.",
+      "poster": "people-listening.jpg",
+      "performance": "Natural speech. Underplay the joke. No vocoder, pitch shifting, or singing."
+    },
+    "strategy": {
+      "name": "Strategy",
+      "kind": "human",
+      "status": "candidate",
+      "version": "human-casting-1",
+      "provider": "local-kokoro",
+      "voice": "am_fenrir",
+      "speed": 0.98,
+      "direction": "Measured, articulate confidence. Treat each small suggestion as a strategic contribution.",
+      "poster": "strategy-listening.jpg",
+      "performance": "Natural speech. Underplay the joke. No vocoder, pitch shifting, or singing."
+    },
+    "guitar": {
+      "name": "Kevin · Partnerships",
+      "kind": "human",
+      "status": "candidate",
+      "version": "human-casting-1",
+      "provider": "local-kokoro",
+      "voice": "am_puck",
+      "speed": 1,
+      "direction": "Conversational and quietly enthusiastic. Questions should sound genuinely practical.",
+      "poster": "guitar-listening.jpg",
+      "performance": "Natural speech. Underplay the joke. No vocoder, pitch shifting, or singing."
+    },
+    "keys": {
+      "name": "Keys · Enablement",
+      "kind": "human",
+      "status": "candidate",
+      "version": "human-casting-1",
+      "provider": "local-kokoro",
+      "voice": "af_bella",
+      "speed": 0.98,
+      "direction": "Calm, friendly conviction. A colleague speaking over her keyboard, not a presenter.",
+      "poster": "keys-listening.jpg",
+      "performance": "Natural speech. Underplay the joke. No vocoder, pitch shifting, or singing."
+    },
+    "operations": {
+      "name": "Operations",
+      "kind": "human",
+      "status": "candidate",
+      "version": "human-casting-1",
+      "provider": "local-kokoro",
+      "voice": "am_michael",
+      "speed": 0.97,
+      "direction": "Unhurried, matter-of-fact pride. Announce renaming a folder as an ordinary achievement.",
+      "poster": "drums-listening.jpg",
+      "performance": "Natural speech. Underplay the joke. No vocoder, pitch shifting, or singing."
+    },
+    "accountant": {
+      "name": "Arjun · Finance",
+      "kind": "human",
+      "status": "candidate",
+      "version": "human-casting-1",
+      "provider": "local-kokoro",
+      "voice": "bm_george",
+      "speed": 1,
+      "direction": "Precise and restrained. Ask the obvious question without announcing that it is a joke.",
+      "poster": "arjun-listening.jpg",
+      "performance": "Natural speech. Underplay the joke. No vocoder, pitch shifting, or singing."
+    },
+    "linda": {
+      "name": "Linda · Governance",
+      "kind": "human",
+      "status": "candidate",
+      "version": "human-casting-1",
+      "provider": "local-kokoro",
+      "voice": "af_sarah",
+      "speed": 0.94,
+      "direction": "Dry, experienced, patient. Land the final observation without a theatrical pause.",
+      "poster": "linda-listening.jpg",
+      "performance": "Natural speech. Underplay the joke. No vocoder, pitch shifting, or singing."
+    },
+    "synergy": {
+      "name": "Synergy",
+      "kind": "robot",
+      "status": "existing",
+      "version": "season-1",
+      "provider": "flite",
+      "voice": "kal16",
+      "pitch": 0.91,
+      "direction": "Flat digital host. Keep the established identity; do not recast with a human voice."
+    },
+    "synthia": {
+      "name": "Synthia",
+      "kind": "robot",
+      "status": "existing",
+      "version": "season-1",
+      "provider": "flite",
+      "voice": "slt",
+      "pitch": 1.04,
+      "direction": "Distinct digital trainer. Clear and dry, not fried or melodic."
+    }
+  },
+  "lines": [
+    {
+      "id": "synergy-851dfd27c176cd07",
+      "character": "synergy",
+      "text": "Before we delve in, let’s optimize our weekly alignment.",
+      "spokenText": "Before we delve in, let’s optimize our weekly alignment.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "standup-0",
+          "agenda": "standup",
+          "index": 0,
+          "role": "opening"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "opening",
+        "standup"
+      ]
+    },
+    {
+      "id": "synergy-38fb1c669b74c092",
+      "character": "synergy",
+      "text": "What’s everyone working on?",
+      "spokenText": "What’s everyone working on?",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "standup-0",
+          "agenda": "standup",
+          "index": 1,
+          "role": "opening"
+        },
+        {
+          "type": "meeting",
+          "meeting": "standup-1",
+          "agenda": "standup",
+          "index": 1,
+          "role": "opening"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "opening",
+        "standup"
+      ]
+    },
+    {
+      "id": "guitar-3173bd31003d5525",
+      "character": "guitar",
+      "text": "I’m humbled and honored to be onboarding a new folder.",
+      "spokenText": "I’m humbled and honored to be onboarding a new folder.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "standup-0",
+          "agenda": "standup",
+          "index": 2,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "standup"
+      ]
+    },
+    {
+      "id": "keys-07b29e8f5126cf8e",
+      "character": "keys",
+      "text": "This will unlock the full potential of our shared drive.",
+      "spokenText": "This will unlock the full potential of our shared drive.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "standup-0",
+          "agenda": "standup",
+          "index": 3,
+          "role": "exchange"
+        },
+        {
+          "type": "audition",
+          "index": 1,
+          "role": "character-read"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "standup",
+        "audition",
+        "character-read"
+      ]
+    },
+    {
+      "id": "operations-4000617a904fc626",
+      "character": "operations",
+      "text": "I’m excited to share that I’ve renamed the folder Final.",
+      "spokenText": "I’m excited to share that I’ve renamed the folder Final.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "standup-0",
+          "agenda": "standup",
+          "index": 4,
+          "role": "exchange"
+        },
+        {
+          "type": "audition",
+          "index": 1,
+          "role": "character-read"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "standup",
+        "audition",
+        "character-read"
+      ]
+    },
+    {
+      "id": "guitar-9820e58b40417f4e",
+      "character": "guitar",
+      "text": "I’m still waiting for access.",
+      "spokenText": "I’m still waiting for access.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "standup-0",
+          "agenda": "standup",
+          "index": 5,
+          "role": "exchange"
+        },
+        {
+          "type": "audition",
+          "index": 1,
+          "role": "character-read"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "standup",
+        "audition",
+        "character-read"
+      ]
+    },
+    {
+      "id": "synergy-58c7096d73e741af",
+      "character": "synergy",
+      "text": "Outstanding. We’ll take the access piece offline.",
+      "spokenText": "Outstanding. We’ll take the access piece offline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "standup-0",
+          "agenda": "standup",
+          "index": 6,
+          "role": "transition"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "transition",
+        "standup"
+      ]
+    },
+    {
+      "id": "guitar-1efeb38f28b4a855",
+      "character": "guitar",
+      "text": "Onboarding.",
+      "spokenText": "Onboarding.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "standup-0",
+          "agenda": "standup",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "standup-0",
+          "agenda": "standup",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "standup-1",
+          "agenda": "standup",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "standup-1",
+          "agenda": "standup",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        }
+      ],
+      "tags": [
+        "chorus",
+        "standup"
+      ]
+    },
+    {
+      "id": "synergy-1efeb38f28b4a855",
+      "character": "synergy",
+      "text": "Onboarding.",
+      "spokenText": "Onboarding.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "standup-0",
+          "agenda": "standup",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "standup-0",
+          "agenda": "standup",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "standup-1",
+          "agenda": "standup",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "standup-1",
+          "agenda": "standup",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        }
+      ],
+      "tags": [
+        "chorus",
+        "standup"
+      ]
+    },
+    {
+      "id": "keys-1efeb38f28b4a855",
+      "character": "keys",
+      "text": "Onboarding.",
+      "spokenText": "Onboarding.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "standup-0",
+          "agenda": "standup",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "standup-0",
+          "agenda": "standup",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "standup-1",
+          "agenda": "standup",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "standup-1",
+          "agenda": "standup",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        }
+      ],
+      "tags": [
+        "chorus",
+        "standup"
+      ]
+    },
+    {
+      "id": "operations-1efeb38f28b4a855",
+      "character": "operations",
+      "text": "Onboarding.",
+      "spokenText": "Onboarding.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "standup-0",
+          "agenda": "standup",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "standup-0",
+          "agenda": "standup",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        }
+      ],
+      "tags": [
+        "chorus",
+        "standup"
+      ]
+    },
+    {
+      "id": "guitar-0b5b8838622df915",
+      "character": "guitar",
+      "text": "We’ll take this offline.",
+      "spokenText": "We’ll take this offline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "standup-0",
+          "agenda": "standup",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "standup-1",
+          "agenda": "standup",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-0",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-0",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-1",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-1",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        }
+      ],
+      "tags": [
+        "chorus",
+        "standup",
+        "onboarding",
+        "offline"
+      ]
+    },
+    {
+      "id": "synergy-0b5b8838622df915",
+      "character": "synergy",
+      "text": "We’ll take this offline.",
+      "spokenText": "We’ll take this offline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "standup-0",
+          "agenda": "standup",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "standup-1",
+          "agenda": "standup",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-0",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-0",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-1",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-1",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        }
+      ],
+      "tags": [
+        "chorus",
+        "standup",
+        "onboarding",
+        "offline"
+      ]
+    },
+    {
+      "id": "keys-0b5b8838622df915",
+      "character": "keys",
+      "text": "We’ll take this offline.",
+      "spokenText": "We’ll take this offline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "standup-0",
+          "agenda": "standup",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "standup-1",
+          "agenda": "standup",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-0",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-0",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-1",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-1",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        }
+      ],
+      "tags": [
+        "chorus",
+        "standup",
+        "onboarding",
+        "offline"
+      ]
+    },
+    {
+      "id": "operations-0b5b8838622df915",
+      "character": "operations",
+      "text": "We’ll take this offline.",
+      "spokenText": "We’ll take this offline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "standup-0",
+          "agenda": "standup",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        }
+      ],
+      "tags": [
+        "chorus",
+        "standup",
+        "onboarding"
+      ]
+    },
+    {
+      "id": "guitar-4fbda14953066a0c",
+      "character": "guitar",
+      "text": "Offline.",
+      "spokenText": "Offline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "standup-0",
+          "agenda": "standup",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        },
+        {
+          "type": "chorus",
+          "meeting": "standup-1",
+          "agenda": "standup",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-0",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-1",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        }
+      ],
+      "tags": [
+        "chorus",
+        "standup",
+        "offline",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "synergy-4fbda14953066a0c",
+      "character": "synergy",
+      "text": "Offline.",
+      "spokenText": "Offline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "standup-0",
+          "agenda": "standup",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        },
+        {
+          "type": "chorus",
+          "meeting": "standup-1",
+          "agenda": "standup",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-0",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-1",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        }
+      ],
+      "tags": [
+        "chorus",
+        "standup",
+        "offline",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "keys-4fbda14953066a0c",
+      "character": "keys",
+      "text": "Offline.",
+      "spokenText": "Offline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "standup-0",
+          "agenda": "standup",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        },
+        {
+          "type": "chorus",
+          "meeting": "standup-1",
+          "agenda": "standup",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-0",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-1",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        }
+      ],
+      "tags": [
+        "chorus",
+        "standup",
+        "offline",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "operations-4fbda14953066a0c",
+      "character": "operations",
+      "text": "Offline.",
+      "spokenText": "Offline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "standup-0",
+          "agenda": "standup",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        }
+      ],
+      "tags": [
+        "chorus",
+        "standup",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "synergy-420b5b23a6f89b84",
+      "character": "synergy",
+      "text": "An exceptional week of progress.",
+      "spokenText": "An exceptional week of progress.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "standup-0",
+          "agenda": "standup",
+          "index": 8,
+          "role": "button"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "button",
+        "standup"
+      ]
+    },
+    {
+      "id": "synergy-c109d5e80c2dff23",
+      "character": "synergy",
+      "text": "Before we delve in, let’s optimize our cross-functional momentum.",
+      "spokenText": "Before we delve in, let’s optimize our cross-functional momentum.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "standup-1",
+          "agenda": "standup",
+          "index": 0,
+          "role": "opening"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "opening",
+        "standup"
+      ]
+    },
+    {
+      "id": "guitar-f6fb8a4b4b1655bf",
+      "character": "guitar",
+      "text": "I’m excited to share a new onboarding checklist.",
+      "spokenText": "I’m excited to share a new onboarding checklist.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "standup-1",
+          "agenda": "standup",
+          "index": 2,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "standup"
+      ]
+    },
+    {
+      "id": "keys-7f88372d0f60f5f8",
+      "character": "keys",
+      "text": "This will unlock a truly frictionless first-day experience.",
+      "spokenText": "This will unlock a truly frictionless first-day experience.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "standup-1",
+          "agenda": "standup",
+          "index": 3,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "standup"
+      ]
+    },
+    {
+      "id": "people-747444e0ff14f7a1",
+      "character": "people",
+      "text": "I’ve added a checklist for completing the checklist.",
+      "spokenText": "I’ve added a checklist for completing the checklist.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "standup-1",
+          "agenda": "standup",
+          "index": 4,
+          "role": "exchange"
+        },
+        {
+          "type": "audition",
+          "index": 1,
+          "role": "character-read"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "standup",
+        "audition",
+        "character-read"
+      ]
+    },
+    {
+      "id": "guitar-89843d3d15e1d4df",
+      "character": "guitar",
+      "text": "Which one do we start with?",
+      "spokenText": "Which one do we start with?",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "standup-1",
+          "agenda": "standup",
+          "index": 5,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "standup"
+      ]
+    },
+    {
+      "id": "synergy-4ac2cd351ae53f8d",
+      "character": "synergy",
+      "text": "A phenomenal question. We’ll take sequencing offline.",
+      "spokenText": "A phenomenal question. We’ll take sequencing offline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "standup-1",
+          "agenda": "standup",
+          "index": 6,
+          "role": "transition"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "transition",
+        "standup"
+      ]
+    },
+    {
+      "id": "people-1efeb38f28b4a855",
+      "character": "people",
+      "text": "Onboarding.",
+      "spokenText": "Onboarding.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "standup-1",
+          "agenda": "standup",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "standup-1",
+          "agenda": "standup",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        }
+      ],
+      "tags": [
+        "chorus",
+        "standup"
+      ]
+    },
+    {
+      "id": "people-0b5b8838622df915",
+      "character": "people",
+      "text": "We’ll take this offline.",
+      "spokenText": "We’ll take this offline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "standup-1",
+          "agenda": "standup",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-0",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-0",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-1",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-1",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        }
+      ],
+      "tags": [
+        "chorus",
+        "standup",
+        "onboarding",
+        "offline"
+      ]
+    },
+    {
+      "id": "people-4fbda14953066a0c",
+      "character": "people",
+      "text": "Offline.",
+      "spokenText": "Offline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "standup-1",
+          "agenda": "standup",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-0",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-1",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        }
+      ],
+      "tags": [
+        "chorus",
+        "standup",
+        "offline",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "people-ad5b6c354e4df5c7",
+      "character": "people",
+      "text": "I’ll add that to both checklists.",
+      "spokenText": "I’ll add that to both checklists.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "standup-1",
+          "agenda": "standup",
+          "index": 8,
+          "role": "button"
+        },
+        {
+          "type": "audition",
+          "index": 2,
+          "role": "character-read"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "button",
+        "standup",
+        "audition",
+        "character-read"
+      ]
+    },
+    {
+      "id": "synergy-2d5786808a43ef3e",
+      "character": "synergy",
+      "text": "Before we delve in, let’s optimize the onboarding experience.",
+      "spokenText": "Before we delve in, let’s optimize the onboarding experience.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 0,
+          "role": "opening"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "opening",
+        "onboarding"
+      ]
+    },
+    {
+      "id": "people-d8394dd2ee96ad2a",
+      "character": "people",
+      "text": "We’re absolutely thrilled to be welcoming our new colleague.",
+      "spokenText": "We’re absolutely thrilled to be welcoming our new colleague.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 1,
+          "role": "opening"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "opening",
+        "onboarding"
+      ]
+    },
+    {
+      "id": "strategy-2e2591a335ecc9c7",
+      "character": "strategy",
+      "text": "What will they be working on?",
+      "spokenText": "What will they be working on?",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 2,
+          "role": "exchange"
+        },
+        {
+          "type": "audition",
+          "index": 2,
+          "role": "character-read"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "onboarding",
+        "audition",
+        "character-read"
+      ]
+    },
+    {
+      "id": "synthia-18613a007e9f6ab5",
+      "character": "synthia",
+      "text": "They’ll be onboarding the onboarding process.",
+      "spokenText": "They’ll be onboarding the onboarding process.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 3,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "onboarding"
+      ]
+    },
+    {
+      "id": "keys-31504c70ed87f8b0",
+      "character": "keys",
+      "text": "This will unlock our next generation of onboarding capacity.",
+      "spokenText": "This will unlock our next generation of onboarding capacity.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 4,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "onboarding"
+      ]
+    },
+    {
+      "id": "guitar-6c6b2b2ebbc6118b",
+      "character": "guitar",
+      "text": "When do they start?",
+      "spokenText": "When do they start?",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 5,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "onboarding"
+      ]
+    },
+    {
+      "id": "synergy-7f73866860111b35",
+      "character": "synergy",
+      "text": "As soon as they’ve completed pre-onboarding.",
+      "spokenText": "As soon as they’ve completed pre-onboarding.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 6,
+          "role": "transition"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "transition",
+        "onboarding"
+      ]
+    },
+    {
+      "id": "people-b521e13bc481292a",
+      "character": "people",
+      "text": "Onboard.",
+      "spokenText": "Onboard.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 5
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 5
+        }
+      ],
+      "tags": [
+        "chorus",
+        "onboarding",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "strategy-b521e13bc481292a",
+      "character": "strategy",
+      "text": "Onboard.",
+      "spokenText": "Onboard.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 5
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 5
+        }
+      ],
+      "tags": [
+        "chorus",
+        "onboarding",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "synthia-b521e13bc481292a",
+      "character": "synthia",
+      "text": "Onboard.",
+      "spokenText": "Onboard.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 5
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 5
+        }
+      ],
+      "tags": [
+        "chorus",
+        "onboarding",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "guitar-b521e13bc481292a",
+      "character": "guitar",
+      "text": "Onboard.",
+      "spokenText": "Onboard.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 5
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 5
+        }
+      ],
+      "tags": [
+        "chorus",
+        "onboarding",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "synergy-b521e13bc481292a",
+      "character": "synergy",
+      "text": "Onboard.",
+      "spokenText": "Onboard.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 5
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 5
+        }
+      ],
+      "tags": [
+        "chorus",
+        "onboarding",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "keys-b521e13bc481292a",
+      "character": "keys",
+      "text": "Onboard.",
+      "spokenText": "Onboard.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 5
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 5
+        }
+      ],
+      "tags": [
+        "chorus",
+        "onboarding",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "operations-b521e13bc481292a",
+      "character": "operations",
+      "text": "Onboard.",
+      "spokenText": "Onboard.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 5
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 5
+        }
+      ],
+      "tags": [
+        "chorus",
+        "onboarding",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "people-5f8f4f49521f1312",
+      "character": "people",
+      "text": "Optimize.",
+      "spokenText": "Optimize.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 4
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 4
+        }
+      ],
+      "tags": [
+        "chorus",
+        "onboarding",
+        "unlock",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "strategy-5f8f4f49521f1312",
+      "character": "strategy",
+      "text": "Optimize.",
+      "spokenText": "Optimize.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 4
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 4
+        }
+      ],
+      "tags": [
+        "chorus",
+        "onboarding",
+        "unlock",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "synthia-5f8f4f49521f1312",
+      "character": "synthia",
+      "text": "Optimize.",
+      "spokenText": "Optimize.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 4
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 4
+        }
+      ],
+      "tags": [
+        "chorus",
+        "onboarding",
+        "unlock",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "guitar-5f8f4f49521f1312",
+      "character": "guitar",
+      "text": "Optimize.",
+      "spokenText": "Optimize.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 4
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 4
+        }
+      ],
+      "tags": [
+        "chorus",
+        "onboarding",
+        "unlock",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "synergy-5f8f4f49521f1312",
+      "character": "synergy",
+      "text": "Optimize.",
+      "spokenText": "Optimize.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 4
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 4
+        }
+      ],
+      "tags": [
+        "chorus",
+        "onboarding",
+        "unlock",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "keys-5f8f4f49521f1312",
+      "character": "keys",
+      "text": "Optimize.",
+      "spokenText": "Optimize.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 4
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 4
+        }
+      ],
+      "tags": [
+        "chorus",
+        "onboarding",
+        "unlock",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "operations-5f8f4f49521f1312",
+      "character": "operations",
+      "text": "Optimize.",
+      "spokenText": "Optimize.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 4
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 4
+        }
+      ],
+      "tags": [
+        "chorus",
+        "onboarding",
+        "unlock",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "strategy-0b5b8838622df915",
+      "character": "strategy",
+      "text": "We’ll take this offline.",
+      "spokenText": "We’ll take this offline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-0",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-0",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-1",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-1",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        }
+      ],
+      "tags": [
+        "chorus",
+        "onboarding",
+        "offline"
+      ]
+    },
+    {
+      "id": "synthia-0b5b8838622df915",
+      "character": "synthia",
+      "text": "We’ll take this offline.",
+      "spokenText": "We’ll take this offline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-0",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-0",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-1",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-1",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        }
+      ],
+      "tags": [
+        "chorus",
+        "onboarding",
+        "offline"
+      ]
+    },
+    {
+      "id": "people-0c53aa081e07dced",
+      "character": "people",
+      "text": "We’re so excited to have them here. Eventually.",
+      "spokenText": "We’re so excited to have them here. Eventually.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "onboarding-0",
+          "agenda": "onboarding",
+          "index": 8,
+          "role": "button"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "button",
+        "onboarding"
+      ]
+    },
+    {
+      "id": "synergy-d4d66efb8267ea31",
+      "character": "synergy",
+      "text": "Before we delve in, let’s optimize the welcome journey.",
+      "spokenText": "Before we delve in, let’s optimize the welcome journey.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 0,
+          "role": "opening"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "opening",
+        "onboarding"
+      ]
+    },
+    {
+      "id": "people-35d5ffb7338fd137",
+      "character": "people",
+      "text": "I’m humbled and honored to share the new welcome email.",
+      "spokenText": "I’m humbled and honored to share the new welcome email.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 1,
+          "role": "opening"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "opening",
+        "onboarding"
+      ]
+    },
+    {
+      "id": "guitar-c693ed738cb6eb8b",
+      "character": "guitar",
+      "text": "I sent it to the new hire this morning.",
+      "spokenText": "I sent it to the new hire this morning.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 2,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "onboarding"
+      ]
+    },
+    {
+      "id": "synthia-fb1de6a779441b23",
+      "character": "synthia",
+      "text": "This will unlock a deeper sense of organisational belonging.",
+      "spokenText": "This will unlock a deeper sense of organisational belonging.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 3,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "onboarding"
+      ]
+    },
+    {
+      "id": "keys-8de89d3af9189944",
+      "character": "keys",
+      "text": "A seamless first-touch experience.",
+      "spokenText": "A seamless first-touch experience.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 4,
+          "role": "exchange"
+        },
+        {
+          "type": "audition",
+          "index": 2,
+          "role": "character-read"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "onboarding",
+        "audition",
+        "character-read"
+      ]
+    },
+    {
+      "id": "linda-e6f3d78b2f0bc101",
+      "character": "linda",
+      "text": "It went to spam.",
+      "spokenText": "It went to spam.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 5,
+          "role": "exchange"
+        },
+        {
+          "type": "audition",
+          "index": 1,
+          "role": "character-read"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "onboarding",
+        "audition",
+        "character-read"
+      ]
+    },
+    {
+      "id": "synergy-52f7c426a20ed831",
+      "character": "synergy",
+      "text": "Wonderful feedback. We’ll take deliverability offline.",
+      "spokenText": "Wonderful feedback. We’ll take deliverability offline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 6,
+          "role": "transition"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "transition",
+        "onboarding"
+      ]
+    },
+    {
+      "id": "linda-b521e13bc481292a",
+      "character": "linda",
+      "text": "Onboard.",
+      "spokenText": "Onboard.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 5
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 5
+        }
+      ],
+      "tags": [
+        "chorus",
+        "onboarding",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "linda-5f8f4f49521f1312",
+      "character": "linda",
+      "text": "Optimize.",
+      "spokenText": "Optimize.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 4
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 4
+        }
+      ],
+      "tags": [
+        "chorus",
+        "onboarding",
+        "unlock",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "linda-0b5b8838622df915",
+      "character": "linda",
+      "text": "We’ll take this offline.",
+      "spokenText": "We’ll take this offline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-1",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-1",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        }
+      ],
+      "tags": [
+        "chorus",
+        "onboarding",
+        "offline"
+      ]
+    },
+    {
+      "id": "people-0956538ee4640e04",
+      "character": "people",
+      "text": "I’ll resend it with a warmer subject line.",
+      "spokenText": "I’ll resend it with a warmer subject line.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "onboarding-1",
+          "agenda": "onboarding",
+          "index": 8,
+          "role": "button"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "button",
+        "onboarding"
+      ]
+    },
+    {
+      "id": "synergy-7d1b05d6287af27b",
+      "character": "synergy",
+      "text": "Before we delve in, let’s optimize our value creation.",
+      "spokenText": "Before we delve in, let’s optimize our value creation.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 0,
+          "role": "opening"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "opening",
+        "unlock"
+      ]
+    },
+    {
+      "id": "accountant-01e4e8dcd2bb6bbf",
+      "character": "accountant",
+      "text": "What are we unlocking?",
+      "spokenText": "What are we unlocking?",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 1,
+          "role": "opening"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "opening",
+        "unlock"
+      ]
+    },
+    {
+      "id": "synthia-180e72af368fbd44",
+      "character": "synthia",
+      "text": "The untapped potential of our onboarding ecosystem.",
+      "spokenText": "The untapped potential of our onboarding ecosystem.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 2,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "unlock"
+      ]
+    },
+    {
+      "id": "guitar-3764925dc5aacc66",
+      "character": "guitar",
+      "text": "I’ve added a second tab to the spreadsheet.",
+      "spokenText": "I’ve added a second tab to the spreadsheet.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 3,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "unlock"
+      ]
+    },
+    {
+      "id": "keys-202143466ff0abd4",
+      "character": "keys",
+      "text": "I’m genuinely excited about what this unlocks.",
+      "spokenText": "I’m genuinely excited about what this unlocks.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 4,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "unlock"
+      ]
+    },
+    {
+      "id": "strategy-57da72df3a7bf416",
+      "character": "strategy",
+      "text": "A third tab would give us room to scale.",
+      "spokenText": "A third tab would give us room to scale.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 5,
+          "role": "exchange"
+        },
+        {
+          "type": "audition",
+          "index": 1,
+          "role": "character-read"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "unlock",
+        "audition",
+        "character-read"
+      ]
+    },
+    {
+      "id": "synergy-92f44fb745a3585a",
+      "character": "synergy",
+      "text": "Absolutely. We’ll take the third tab offline.",
+      "spokenText": "Absolutely. We’ll take the third tab offline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 6,
+          "role": "transition"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "transition",
+        "unlock"
+      ]
+    },
+    {
+      "id": "people-a03565c793db145d",
+      "character": "people",
+      "text": "Unlock the potential.",
+      "spokenText": "Unlock the potential.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        }
+      ],
+      "tags": [
+        "chorus",
+        "unlock"
+      ]
+    },
+    {
+      "id": "strategy-a03565c793db145d",
+      "character": "strategy",
+      "text": "Unlock the potential.",
+      "spokenText": "Unlock the potential.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        }
+      ],
+      "tags": [
+        "chorus",
+        "unlock"
+      ]
+    },
+    {
+      "id": "synthia-a03565c793db145d",
+      "character": "synthia",
+      "text": "Unlock the potential.",
+      "spokenText": "Unlock the potential.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        }
+      ],
+      "tags": [
+        "chorus",
+        "unlock"
+      ]
+    },
+    {
+      "id": "guitar-a03565c793db145d",
+      "character": "guitar",
+      "text": "Unlock the potential.",
+      "spokenText": "Unlock the potential.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        }
+      ],
+      "tags": [
+        "chorus",
+        "unlock"
+      ]
+    },
+    {
+      "id": "synergy-a03565c793db145d",
+      "character": "synergy",
+      "text": "Unlock the potential.",
+      "spokenText": "Unlock the potential.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        }
+      ],
+      "tags": [
+        "chorus",
+        "unlock"
+      ]
+    },
+    {
+      "id": "keys-a03565c793db145d",
+      "character": "keys",
+      "text": "Unlock the potential.",
+      "spokenText": "Unlock the potential.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        }
+      ],
+      "tags": [
+        "chorus",
+        "unlock"
+      ]
+    },
+    {
+      "id": "operations-a03565c793db145d",
+      "character": "operations",
+      "text": "Unlock the potential.",
+      "spokenText": "Unlock the potential.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        }
+      ],
+      "tags": [
+        "chorus",
+        "unlock"
+      ]
+    },
+    {
+      "id": "accountant-a03565c793db145d",
+      "character": "accountant",
+      "text": "Unlock the potential.",
+      "spokenText": "Unlock the potential.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        }
+      ],
+      "tags": [
+        "chorus",
+        "unlock"
+      ]
+    },
+    {
+      "id": "linda-a03565c793db145d",
+      "character": "linda",
+      "text": "Unlock the potential.",
+      "spokenText": "Unlock the potential.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        }
+      ],
+      "tags": [
+        "chorus",
+        "unlock"
+      ]
+    },
+    {
+      "id": "accountant-5f8f4f49521f1312",
+      "character": "accountant",
+      "text": "Optimize.",
+      "spokenText": "Optimize.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 4
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 4
+        }
+      ],
+      "tags": [
+        "chorus",
+        "unlock",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "linda-f471bcf9ea5401de",
+      "character": "linda",
+      "text": "Does the first tab still work?",
+      "spokenText": "Does the first tab still work?",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "unlock-0",
+          "agenda": "unlock",
+          "index": 8,
+          "role": "button"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "button",
+        "unlock"
+      ]
+    },
+    {
+      "id": "synergy-95b1b51dae68736a",
+      "character": "synergy",
+      "text": "Before we delve in, let’s optimize our opportunity pipeline.",
+      "spokenText": "Before we delve in, let’s optimize our opportunity pipeline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 0,
+          "role": "opening"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "opening",
+        "unlock"
+      ]
+    },
+    {
+      "id": "accountant-1b64aa93bdccaa86",
+      "character": "accountant",
+      "text": "Which opportunity are we discussing?",
+      "spokenText": "Which opportunity are we discussing?",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 1,
+          "role": "opening"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "opening",
+        "unlock"
+      ]
+    },
+    {
+      "id": "synthia-251eee12b0bb1515",
+      "character": "synthia",
+      "text": "The opportunity to identify further opportunities.",
+      "spokenText": "The opportunity to identify further opportunities.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 2,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "unlock"
+      ]
+    },
+    {
+      "id": "guitar-709dabc147b9da5a",
+      "character": "guitar",
+      "text": "I’ve opened a shared document.",
+      "spokenText": "I’ve opened a shared document.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 3,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "unlock"
+      ]
+    },
+    {
+      "id": "keys-c7a0b1d0a998a310",
+      "character": "keys",
+      "text": "This will unlock a whole new level of collaboration.",
+      "spokenText": "This will unlock a whole new level of collaboration.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 4,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "unlock"
+      ]
+    },
+    {
+      "id": "strategy-d00df1624b08a189",
+      "character": "strategy",
+      "text": "I’m excited to add a document about that document.",
+      "spokenText": "I’m excited to add a document about that document.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 5,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "unlock"
+      ]
+    },
+    {
+      "id": "synergy-6542020504f8ac3a",
+      "character": "synergy",
+      "text": "Phenomenal. We’ll take document ownership offline.",
+      "spokenText": "Phenomenal. We’ll take document ownership offline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 6,
+          "role": "transition"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "transition",
+        "unlock"
+      ]
+    },
+    {
+      "id": "linda-36c78ffe679b084e",
+      "character": "linda",
+      "text": "They’re both read-only.",
+      "spokenText": "They’re both read-only.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "unlock-1",
+          "agenda": "unlock",
+          "index": 8,
+          "role": "button"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "button",
+        "unlock"
+      ]
+    },
+    {
+      "id": "synergy-357e5ba1961786db",
+      "character": "synergy",
+      "text": "Before we delve in, let’s optimize the paperless rollout.",
+      "spokenText": "Before we delve in, let’s optimize the paperless rollout.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "paperless-0",
+          "agenda": "paperless",
+          "index": 0,
+          "role": "opening"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "opening",
+        "paperless"
+      ]
+    },
+    {
+      "id": "synthia-d0824ab5a32cb5aa",
+      "character": "synthia",
+      "text": "I’m humbled and honored to share our digital onboarding pack.",
+      "spokenText": "I’m humbled and honored to share our digital onboarding pack.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "paperless-0",
+          "agenda": "paperless",
+          "index": 1,
+          "role": "opening"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "opening",
+        "paperless"
+      ]
+    },
+    {
+      "id": "synergy-6b3332afeaaec988",
+      "character": "synergy",
+      "text": "This will unlock a truly sustainable paperless future.",
+      "spokenText": "This will unlock a truly sustainable paperless future.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "paperless-0",
+          "agenda": "paperless",
+          "index": 2,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "paperless"
+      ]
+    },
+    {
+      "id": "synthia-992cd7e83e8ccf61",
+      "character": "synthia",
+      "text": "I’ve printed the announcement for everyone.",
+      "spokenText": "I’ve printed the announcement for everyone.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "paperless-0",
+          "agenda": "paperless",
+          "index": 3,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "paperless"
+      ]
+    },
+    {
+      "id": "synergy-1e8860afeb12054d",
+      "character": "synergy",
+      "text": "Exceptional. How many copies?",
+      "spokenText": "Exceptional. How many copies?",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "paperless-0",
+          "agenda": "paperless",
+          "index": 4,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "paperless"
+      ]
+    },
+    {
+      "id": "synthia-1ea5400d8fab39a0",
+      "character": "synthia",
+      "text": "One for every stakeholder. Plus spares.",
+      "spokenText": "One for every stakeholder. Plus spares.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "paperless-0",
+          "agenda": "paperless",
+          "index": 5,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "paperless"
+      ]
+    },
+    {
+      "id": "synergy-397edd059e40747a",
+      "character": "synergy",
+      "text": "We’ll take the printing offline.",
+      "spokenText": "We’ll take the printing offline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "paperless-0",
+          "agenda": "paperless",
+          "index": 6,
+          "role": "transition"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "transition",
+        "paperless"
+      ]
+    },
+    {
+      "id": "synergy-4e10abe7b44db999",
+      "character": "synergy",
+      "text": "Paperless.",
+      "spokenText": "Paperless.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "paperless-0",
+          "agenda": "paperless",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "paperless-0",
+          "agenda": "paperless",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "paperless-1",
+          "agenda": "paperless",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "paperless-1",
+          "agenda": "paperless",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        }
+      ],
+      "tags": [
+        "chorus",
+        "paperless"
+      ]
+    },
+    {
+      "id": "synthia-4e10abe7b44db999",
+      "character": "synthia",
+      "text": "Paperless.",
+      "spokenText": "Paperless.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "paperless-0",
+          "agenda": "paperless",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "paperless-0",
+          "agenda": "paperless",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "paperless-1",
+          "agenda": "paperless",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "paperless-1",
+          "agenda": "paperless",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        }
+      ],
+      "tags": [
+        "chorus",
+        "paperless"
+      ]
+    },
+    {
+      "id": "synergy-5dc4ba13923cbc95",
+      "character": "synergy",
+      "text": "Optimize the paperless.",
+      "spokenText": "Optimize the paperless.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "paperless-0",
+          "agenda": "paperless",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "paperless-1",
+          "agenda": "paperless",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        }
+      ],
+      "tags": [
+        "chorus",
+        "paperless"
+      ]
+    },
+    {
+      "id": "synthia-5dc4ba13923cbc95",
+      "character": "synthia",
+      "text": "Optimize the paperless.",
+      "spokenText": "Optimize the paperless.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "paperless-0",
+          "agenda": "paperless",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "paperless-1",
+          "agenda": "paperless",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        }
+      ],
+      "tags": [
+        "chorus",
+        "paperless"
+      ]
+    },
+    {
+      "id": "synthia-1501482035b85eea",
+      "character": "synthia",
+      "text": "I’ll print the action items.",
+      "spokenText": "I’ll print the action items.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "paperless-0",
+          "agenda": "paperless",
+          "index": 8,
+          "role": "button"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "button",
+        "paperless"
+      ]
+    },
+    {
+      "id": "synergy-1ae747d6ffa85528",
+      "character": "synergy",
+      "text": "Before we delve in, let’s optimize our digital-first commitment.",
+      "spokenText": "Before we delve in, let’s optimize our digital-first commitment.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "paperless-1",
+          "agenda": "paperless",
+          "index": 0,
+          "role": "opening"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "opening",
+        "paperless"
+      ]
+    },
+    {
+      "id": "synthia-bfec78e5460ae68c",
+      "character": "synthia",
+      "text": "I’m excited to share that onboarding is now entirely online.",
+      "spokenText": "I’m excited to share that onboarding is now entirely online.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "paperless-1",
+          "agenda": "paperless",
+          "index": 1,
+          "role": "opening"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "opening",
+        "paperless"
+      ]
+    },
+    {
+      "id": "synergy-3e99b13935e1c4a3",
+      "character": "synergy",
+      "text": "This will unlock measurable reductions in paper consumption.",
+      "spokenText": "This will unlock measurable reductions in paper consumption.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "paperless-1",
+          "agenda": "paperless",
+          "index": 2,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "paperless"
+      ]
+    },
+    {
+      "id": "synthia-e860fa9cac5346b5",
+      "character": "synthia",
+      "text": "The printer is producing the measurement framework.",
+      "spokenText": "The printer is producing the measurement framework.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "paperless-1",
+          "agenda": "paperless",
+          "index": 3,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "paperless"
+      ]
+    },
+    {
+      "id": "synergy-7b322729f6320a3b",
+      "character": "synergy",
+      "text": "How long is the framework?",
+      "spokenText": "How long is the framework?",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "paperless-1",
+          "agenda": "paperless",
+          "index": 4,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "paperless"
+      ]
+    },
+    {
+      "id": "synthia-7c8ece1df240b5b7",
+      "character": "synthia",
+      "text": "Three hundred pages. We’ve included a sustainability appendix.",
+      "spokenText": "Three hundred pages. We’ve included a sustainability appendix.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "paperless-1",
+          "agenda": "paperless",
+          "index": 5,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "paperless"
+      ]
+    },
+    {
+      "id": "synergy-9f5196b9d5b29446",
+      "character": "synergy",
+      "text": "Wonderful. We’ll take the appendix offline.",
+      "spokenText": "Wonderful. We’ll take the appendix offline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "paperless-1",
+          "agenda": "paperless",
+          "index": 6,
+          "role": "transition"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "transition",
+        "paperless"
+      ]
+    },
+    {
+      "id": "synthia-7f7465df7e148ea1",
+      "character": "synthia",
+      "text": "It’s printing the second copy now.",
+      "spokenText": "It’s printing the second copy now.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "paperless-1",
+          "agenda": "paperless",
+          "index": 8,
+          "role": "button"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "button",
+        "paperless"
+      ]
+    },
+    {
+      "id": "synergy-ecb7a6fbe9879592",
+      "character": "synergy",
+      "text": "Before we delve in, let’s optimize our founder narrative.",
+      "spokenText": "Before we delve in, let’s optimize our founder narrative.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "founder-0",
+          "agenda": "founder",
+          "index": 0,
+          "role": "opening"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "opening",
+        "founder"
+      ]
+    },
+    {
+      "id": "guitar-65e1d7f02708bec1",
+      "character": "guitar",
+      "text": "I’m humbled and honored to announce our new LinkedIn headline.",
+      "spokenText": "I’m humbled and honored to announce our new LinkedIn headline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "founder-0",
+          "agenda": "founder",
+          "index": 1,
+          "role": "opening"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "opening",
+        "founder"
+      ]
+    },
+    {
+      "id": "people-452b1864a4d834ba",
+      "character": "people",
+      "text": "This will unlock a new chapter of category leadership.",
+      "spokenText": "This will unlock a new chapter of category leadership.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "founder-0",
+          "agenda": "founder",
+          "index": 2,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "founder"
+      ]
+    },
+    {
+      "id": "synthia-e3d5b1257865a8e0",
+      "character": "synthia",
+      "text": "A truly transformational positioning milestone.",
+      "spokenText": "A truly transformational positioning milestone.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "founder-0",
+          "agenda": "founder",
+          "index": 3,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "founder"
+      ]
+    },
+    {
+      "id": "guitar-12866693460f0726",
+      "character": "guitar",
+      "text": "It now says: building something exciting.",
+      "spokenText": "It now says: building something exciting.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "founder-0",
+          "agenda": "founder",
+          "index": 4,
+          "role": "exchange"
+        },
+        {
+          "type": "audition",
+          "index": 2,
+          "role": "character-read"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "founder",
+        "audition",
+        "character-read"
+      ]
+    },
+    {
+      "id": "synergy-16dac392c12f64b4",
+      "character": "synergy",
+      "text": "And what are we building?",
+      "spokenText": "And what are we building?",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "founder-0",
+          "agenda": "founder",
+          "index": 5,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "founder"
+      ]
+    },
+    {
+      "id": "guitar-aefe15989ec31ebb",
+      "character": "guitar",
+      "text": "We’ll take that offline.",
+      "spokenText": "We’ll take that offline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "founder-0",
+          "agenda": "founder",
+          "index": 6,
+          "role": "transition"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "transition",
+        "founder"
+      ]
+    },
+    {
+      "id": "guitar-f9f8311077f6fa69",
+      "character": "guitar",
+      "text": "Building.",
+      "spokenText": "Building.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "founder-0",
+          "agenda": "founder",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "founder-1",
+          "agenda": "founder",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        }
+      ],
+      "tags": [
+        "chorus",
+        "founder"
+      ]
+    },
+    {
+      "id": "synergy-f9f8311077f6fa69",
+      "character": "synergy",
+      "text": "Building.",
+      "spokenText": "Building.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "founder-0",
+          "agenda": "founder",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "founder-1",
+          "agenda": "founder",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        }
+      ],
+      "tags": [
+        "chorus",
+        "founder"
+      ]
+    },
+    {
+      "id": "synthia-f9f8311077f6fa69",
+      "character": "synthia",
+      "text": "Building.",
+      "spokenText": "Building.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "founder-0",
+          "agenda": "founder",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "founder-1",
+          "agenda": "founder",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        }
+      ],
+      "tags": [
+        "chorus",
+        "founder"
+      ]
+    },
+    {
+      "id": "people-f9f8311077f6fa69",
+      "character": "people",
+      "text": "Building.",
+      "spokenText": "Building.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "founder-0",
+          "agenda": "founder",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "founder-1",
+          "agenda": "founder",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        }
+      ],
+      "tags": [
+        "chorus",
+        "founder"
+      ]
+    },
+    {
+      "id": "guitar-c734df556774a676",
+      "character": "guitar",
+      "text": "Unlocking.",
+      "spokenText": "Unlocking.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "founder-0",
+          "agenda": "founder",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "founder-1",
+          "agenda": "founder",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        }
+      ],
+      "tags": [
+        "chorus",
+        "founder"
+      ]
+    },
+    {
+      "id": "synergy-c734df556774a676",
+      "character": "synergy",
+      "text": "Unlocking.",
+      "spokenText": "Unlocking.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "founder-0",
+          "agenda": "founder",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "founder-1",
+          "agenda": "founder",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        }
+      ],
+      "tags": [
+        "chorus",
+        "founder"
+      ]
+    },
+    {
+      "id": "synthia-c734df556774a676",
+      "character": "synthia",
+      "text": "Unlocking.",
+      "spokenText": "Unlocking.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "founder-0",
+          "agenda": "founder",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "founder-1",
+          "agenda": "founder",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        }
+      ],
+      "tags": [
+        "chorus",
+        "founder"
+      ]
+    },
+    {
+      "id": "people-c734df556774a676",
+      "character": "people",
+      "text": "Unlocking.",
+      "spokenText": "Unlocking.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "founder-0",
+          "agenda": "founder",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "founder-1",
+          "agenda": "founder",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        }
+      ],
+      "tags": [
+        "chorus",
+        "founder"
+      ]
+    },
+    {
+      "id": "guitar-8744e740f1c5baa9",
+      "character": "guitar",
+      "text": "Humbled and honored.",
+      "spokenText": "Humbled and honored.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "founder-0",
+          "agenda": "founder",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "founder-1",
+          "agenda": "founder",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        }
+      ],
+      "tags": [
+        "chorus",
+        "founder"
+      ]
+    },
+    {
+      "id": "synergy-8744e740f1c5baa9",
+      "character": "synergy",
+      "text": "Humbled and honored.",
+      "spokenText": "Humbled and honored.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "founder-0",
+          "agenda": "founder",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "founder-1",
+          "agenda": "founder",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        }
+      ],
+      "tags": [
+        "chorus",
+        "founder"
+      ]
+    },
+    {
+      "id": "synthia-8744e740f1c5baa9",
+      "character": "synthia",
+      "text": "Humbled and honored.",
+      "spokenText": "Humbled and honored.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "founder-0",
+          "agenda": "founder",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "founder-1",
+          "agenda": "founder",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        }
+      ],
+      "tags": [
+        "chorus",
+        "founder"
+      ]
+    },
+    {
+      "id": "people-8744e740f1c5baa9",
+      "character": "people",
+      "text": "Humbled and honored.",
+      "spokenText": "Humbled and honored.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "founder-0",
+          "agenda": "founder",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "founder-1",
+          "agenda": "founder",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        }
+      ],
+      "tags": [
+        "chorus",
+        "founder"
+      ]
+    },
+    {
+      "id": "guitar-4060f74f78b507c8",
+      "character": "guitar",
+      "text": "Excited to share.",
+      "spokenText": "Excited to share.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "founder-0",
+          "agenda": "founder",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        },
+        {
+          "type": "chorus",
+          "meeting": "founder-1",
+          "agenda": "founder",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        }
+      ],
+      "tags": [
+        "chorus",
+        "founder"
+      ]
+    },
+    {
+      "id": "synergy-4060f74f78b507c8",
+      "character": "synergy",
+      "text": "Excited to share.",
+      "spokenText": "Excited to share.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "founder-0",
+          "agenda": "founder",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        },
+        {
+          "type": "chorus",
+          "meeting": "founder-1",
+          "agenda": "founder",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        }
+      ],
+      "tags": [
+        "chorus",
+        "founder"
+      ]
+    },
+    {
+      "id": "synthia-4060f74f78b507c8",
+      "character": "synthia",
+      "text": "Excited to share.",
+      "spokenText": "Excited to share.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "founder-0",
+          "agenda": "founder",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        },
+        {
+          "type": "chorus",
+          "meeting": "founder-1",
+          "agenda": "founder",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        }
+      ],
+      "tags": [
+        "chorus",
+        "founder"
+      ]
+    },
+    {
+      "id": "people-4060f74f78b507c8",
+      "character": "people",
+      "text": "Excited to share.",
+      "spokenText": "Excited to share.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "founder-0",
+          "agenda": "founder",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        },
+        {
+          "type": "chorus",
+          "meeting": "founder-1",
+          "agenda": "founder",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        }
+      ],
+      "tags": [
+        "chorus",
+        "founder"
+      ]
+    },
+    {
+      "id": "people-eb54a611e2869e8e",
+      "character": "people",
+      "text": "I’ve already called it a movement.",
+      "spokenText": "I’ve already called it a movement.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "founder-0",
+          "agenda": "founder",
+          "index": 8,
+          "role": "button"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "button",
+        "founder"
+      ]
+    },
+    {
+      "id": "synergy-6642ff6095490337",
+      "character": "synergy",
+      "text": "Before we delve in, let’s optimize our launch momentum.",
+      "spokenText": "Before we delve in, let’s optimize our launch momentum.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "founder-1",
+          "agenda": "founder",
+          "index": 0,
+          "role": "opening"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "opening",
+        "founder"
+      ]
+    },
+    {
+      "id": "guitar-cc02e990cef9f11c",
+      "character": "guitar",
+      "text": "I’m humbled and honored to share that we have a waitlist.",
+      "spokenText": "I’m humbled and honored to share that we have a waitlist.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "founder-1",
+          "agenda": "founder",
+          "index": 1,
+          "role": "opening"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "opening",
+        "founder"
+      ]
+    },
+    {
+      "id": "people-9faea9d7d102426b",
+      "character": "people",
+      "text": "This will unlock a community of passionate early adopters.",
+      "spokenText": "This will unlock a community of passionate early adopters.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "founder-1",
+          "agenda": "founder",
+          "index": 2,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "founder"
+      ]
+    },
+    {
+      "id": "synthia-fe5371453f59c82b",
+      "character": "synthia",
+      "text": "We’re already designing their onboarding journey.",
+      "spokenText": "We’re already designing their onboarding journey.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "founder-1",
+          "agenda": "founder",
+          "index": 3,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "founder"
+      ]
+    },
+    {
+      "id": "guitar-3c6497e5cd5b6d2f",
+      "character": "guitar",
+      "text": "The sign-up button is absolutely beautiful.",
+      "spokenText": "The sign-up button is absolutely beautiful.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "founder-1",
+          "agenda": "founder",
+          "index": 4,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "founder"
+      ]
+    },
+    {
+      "id": "synergy-5cacbde3ea006369",
+      "character": "synergy",
+      "text": "How many people have signed up?",
+      "spokenText": "How many people have signed up?",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "founder-1",
+          "agenda": "founder",
+          "index": 5,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "founder"
+      ]
+    },
+    {
+      "id": "guitar-e58d06654992dcbe",
+      "character": "guitar",
+      "text": "We’ll take the numbers offline.",
+      "spokenText": "We’ll take the numbers offline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "founder-1",
+          "agenda": "founder",
+          "index": 6,
+          "role": "transition"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "transition",
+        "founder"
+      ]
+    },
+    {
+      "id": "people-c86472656eed6694",
+      "character": "people",
+      "text": "I’ll post about the overwhelming response.",
+      "spokenText": "I’ll post about the overwhelming response.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "founder-1",
+          "agenda": "founder",
+          "index": 8,
+          "role": "button"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "button",
+        "founder"
+      ]
+    },
+    {
+      "id": "synergy-2d4b01cce7425025",
+      "character": "synergy",
+      "text": "Before we delve in, let’s optimize our communication framework.",
+      "spokenText": "Before we delve in, let’s optimize our communication framework.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "offline-0",
+          "agenda": "offline",
+          "index": 0,
+          "role": "opening"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "opening",
+        "offline"
+      ]
+    },
+    {
+      "id": "strategy-f343074b08823ff9",
+      "character": "strategy",
+      "text": "I’m excited to share that I’ve booked the follow-up.",
+      "spokenText": "I’m excited to share that I’ve booked the follow-up.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "offline-0",
+          "agenda": "offline",
+          "index": 1,
+          "role": "opening"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "opening",
+        "offline"
+      ]
+    },
+    {
+      "id": "guitar-54028453efcdf29d",
+      "character": "guitar",
+      "text": "What is the follow-up for?",
+      "spokenText": "What is the follow-up for?",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "offline-0",
+          "agenda": "offline",
+          "index": 2,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "offline"
+      ]
+    },
+    {
+      "id": "synthia-bff02d97b312001c",
+      "character": "synthia",
+      "text": "To align on what we’re taking offline.",
+      "spokenText": "To align on what we’re taking offline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "offline-0",
+          "agenda": "offline",
+          "index": 3,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "offline"
+      ]
+    },
+    {
+      "id": "keys-2659138b9876ae2b",
+      "character": "keys",
+      "text": "This will unlock a more intentional meeting cadence.",
+      "spokenText": "This will unlock a more intentional meeting cadence.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "offline-0",
+          "agenda": "offline",
+          "index": 4,
+          "role": "exchange"
+        },
+        {
+          "type": "meeting",
+          "meeting": "offline-1",
+          "agenda": "offline",
+          "index": 4,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "offline"
+      ]
+    },
+    {
+      "id": "people-1ad6933357d438f2",
+      "character": "people",
+      "text": "Should we invite everyone from this meeting?",
+      "spokenText": "Should we invite everyone from this meeting?",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "offline-0",
+          "agenda": "offline",
+          "index": 5,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "offline"
+      ]
+    },
+    {
+      "id": "synergy-d8cf8592069e5634",
+      "character": "synergy",
+      "text": "Absolutely. We’ll call it a smaller working group.",
+      "spokenText": "Absolutely. We’ll call it a smaller working group.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "offline-0",
+          "agenda": "offline",
+          "index": 6,
+          "role": "transition"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "transition",
+        "offline"
+      ]
+    },
+    {
+      "id": "accountant-0b5b8838622df915",
+      "character": "accountant",
+      "text": "We’ll take this offline.",
+      "spokenText": "We’ll take this offline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "offline-0",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 0
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-0",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        }
+      ],
+      "tags": [
+        "chorus",
+        "offline"
+      ]
+    },
+    {
+      "id": "strategy-4fbda14953066a0c",
+      "character": "strategy",
+      "text": "Offline.",
+      "spokenText": "Offline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "offline-0",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-1",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        }
+      ],
+      "tags": [
+        "chorus",
+        "offline",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "synthia-4fbda14953066a0c",
+      "character": "synthia",
+      "text": "Offline.",
+      "spokenText": "Offline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "offline-0",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "offline-1",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        }
+      ],
+      "tags": [
+        "chorus",
+        "offline",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "accountant-4fbda14953066a0c",
+      "character": "accountant",
+      "text": "Offline.",
+      "spokenText": "Offline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "offline-0",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        }
+      ],
+      "tags": [
+        "chorus",
+        "offline",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "accountant-d2fa2bd53e45204a",
+      "character": "accountant",
+      "text": "Same link. Same time. Same people.",
+      "spokenText": "Same link. Same time. Same people.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "offline-0",
+          "agenda": "offline",
+          "index": 8,
+          "role": "button"
+        },
+        {
+          "type": "audition",
+          "index": 2,
+          "role": "character-read"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "button",
+        "offline",
+        "audition",
+        "character-read"
+      ]
+    },
+    {
+      "id": "synergy-de49b86248a41c99",
+      "character": "synergy",
+      "text": "Before we delve in, let’s optimize our meeting footprint.",
+      "spokenText": "Before we delve in, let’s optimize our meeting footprint.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "offline-1",
+          "agenda": "offline",
+          "index": 0,
+          "role": "opening"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "opening",
+        "offline"
+      ]
+    },
+    {
+      "id": "people-c0a7d9b025bec1a9",
+      "character": "people",
+      "text": "I’m thrilled to announce three listening sessions on fewer meetings.",
+      "spokenText": "I’m thrilled to announce three listening sessions on fewer meetings.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "offline-1",
+          "agenda": "offline",
+          "index": 1,
+          "role": "opening"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "opening",
+        "offline"
+      ]
+    },
+    {
+      "id": "guitar-8a0f64001c8dbb39",
+      "character": "guitar",
+      "text": "Could we just cancel one?",
+      "spokenText": "Could we just cancel one?",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "offline-1",
+          "agenda": "offline",
+          "index": 2,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "offline"
+      ]
+    },
+    {
+      "id": "synthia-82bc5d3b6125d18a",
+      "character": "synthia",
+      "text": "We need to bring everyone along on this journey.",
+      "spokenText": "We need to bring everyone along on this journey.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "offline-1",
+          "agenda": "offline",
+          "index": 3,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "offline"
+      ]
+    },
+    {
+      "id": "linda-b5f5f3e3247d0026",
+      "character": "linda",
+      "text": "I’m free right now.",
+      "spokenText": "I’m free right now.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "offline-1",
+          "agenda": "offline",
+          "index": 5,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "offline"
+      ]
+    },
+    {
+      "id": "synergy-bdd2b1ec64cfd1be",
+      "character": "synergy",
+      "text": "Excellent. We’ll take that availability offline.",
+      "spokenText": "Excellent. We’ll take that availability offline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "offline-1",
+          "agenda": "offline",
+          "index": 6,
+          "role": "transition"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "transition",
+        "offline"
+      ]
+    },
+    {
+      "id": "linda-4fbda14953066a0c",
+      "character": "linda",
+      "text": "Offline.",
+      "spokenText": "Offline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "offline-1",
+          "agenda": "offline",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 3
+        }
+      ],
+      "tags": [
+        "chorus",
+        "offline",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "people-823b0c89db449200",
+      "character": "people",
+      "text": "I’ve sent you a calendar invitation.",
+      "spokenText": "I’ve sent you a calendar invitation.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "offline-1",
+          "agenda": "offline",
+          "index": 8,
+          "role": "button"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "button",
+        "offline"
+      ]
+    },
+    {
+      "id": "synergy-089b086e02516bac",
+      "character": "synergy",
+      "text": "Before we delve in, let’s optimize the Q3 onboarding metrics.",
+      "spokenText": "Before we delve in, let’s optimize the Q3 onboarding metrics.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 0,
+          "role": "opening"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "opening",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "strategy-c3f97791b8c1c322",
+      "character": "strategy",
+      "text": "I’m incredibly excited about the momentum.",
+      "spokenText": "I’m incredibly excited about the momentum.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 1,
+          "role": "opening"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "opening",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "operations-4b5f84d1906f6a8d",
+      "character": "operations",
+      "text": "We’ve successfully onboarded the new dashboard.",
+      "spokenText": "We’ve successfully onboarded the new dashboard.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 2,
+          "role": "exchange"
+        },
+        {
+          "type": "audition",
+          "index": 2,
+          "role": "character-read"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "quarterly",
+        "audition",
+        "character-read"
+      ]
+    },
+    {
+      "id": "accountant-c61f92bdd02e8afe",
+      "character": "accountant",
+      "text": "Have we onboarded any customers?",
+      "spokenText": "Have we onboarded any customers?",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 3,
+          "role": "exchange"
+        },
+        {
+          "type": "audition",
+          "index": 1,
+          "role": "character-read"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "quarterly",
+        "audition",
+        "character-read"
+      ]
+    },
+    {
+      "id": "synthia-17004bd7151a9862",
+      "character": "synthia",
+      "text": "The dashboard is foundational to that journey.",
+      "spokenText": "The dashboard is foundational to that journey.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 4,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "keys-8881696f280e8ad0",
+      "character": "keys",
+      "text": "This will unlock visibility into our future visibility.",
+      "spokenText": "This will unlock visibility into our future visibility.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 5,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "synergy-1c76316d043a2864",
+      "character": "synergy",
+      "text": "We’ll take the customer piece offline.",
+      "spokenText": "We’ll take the customer piece offline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 6,
+          "role": "transition"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "transition",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "accountant-b521e13bc481292a",
+      "character": "accountant",
+      "text": "Onboard.",
+      "spokenText": "Onboard.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 5
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 1
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 5
+        }
+      ],
+      "tags": [
+        "chorus",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "people-45bb18b0318e1ec5",
+      "character": "people",
+      "text": "Unlock.",
+      "spokenText": "Unlock.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        }
+      ],
+      "tags": [
+        "chorus",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "strategy-45bb18b0318e1ec5",
+      "character": "strategy",
+      "text": "Unlock.",
+      "spokenText": "Unlock.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        }
+      ],
+      "tags": [
+        "chorus",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "synthia-45bb18b0318e1ec5",
+      "character": "synthia",
+      "text": "Unlock.",
+      "spokenText": "Unlock.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        }
+      ],
+      "tags": [
+        "chorus",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "guitar-45bb18b0318e1ec5",
+      "character": "guitar",
+      "text": "Unlock.",
+      "spokenText": "Unlock.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        }
+      ],
+      "tags": [
+        "chorus",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "synergy-45bb18b0318e1ec5",
+      "character": "synergy",
+      "text": "Unlock.",
+      "spokenText": "Unlock.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        }
+      ],
+      "tags": [
+        "chorus",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "keys-45bb18b0318e1ec5",
+      "character": "keys",
+      "text": "Unlock.",
+      "spokenText": "Unlock.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        }
+      ],
+      "tags": [
+        "chorus",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "operations-45bb18b0318e1ec5",
+      "character": "operations",
+      "text": "Unlock.",
+      "spokenText": "Unlock.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        }
+      ],
+      "tags": [
+        "chorus",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "accountant-45bb18b0318e1ec5",
+      "character": "accountant",
+      "text": "Unlock.",
+      "spokenText": "Unlock.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        }
+      ],
+      "tags": [
+        "chorus",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "linda-45bb18b0318e1ec5",
+      "character": "linda",
+      "text": "Unlock.",
+      "spokenText": "Unlock.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "chorus",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        },
+        {
+          "type": "chorus",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 7,
+          "role": "chorus",
+          "phraseIndex": 2
+        }
+      ],
+      "tags": [
+        "chorus",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "linda-ed9687d7d84fddfd",
+      "character": "linda",
+      "text": "I’ll carry the zero forward.",
+      "spokenText": "I’ll carry the zero forward.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "quarterly-0",
+          "agenda": "quarterly",
+          "index": 8,
+          "role": "button"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "button",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "synergy-1b305c2abef07059",
+      "character": "synergy",
+      "text": "Before we delve in, let’s optimize our quarterly impact narrative.",
+      "spokenText": "Before we delve in, let’s optimize our quarterly impact narrative.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 0,
+          "role": "opening"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "opening",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "strategy-75a73234604a0870",
+      "character": "strategy",
+      "text": "I’m humbled and honored to share a tremendous quarter.",
+      "spokenText": "I’m humbled and honored to share a tremendous quarter.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 1,
+          "role": "opening"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "opening",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "operations-2980d8a2262a77b7",
+      "character": "operations",
+      "text": "We’ve aligned every onboarding metric with the new framework.",
+      "spokenText": "We’ve aligned every onboarding metric with the new framework.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 2,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "accountant-75f111b33a1f57b2",
+      "character": "accountant",
+      "text": "Have the numbers changed?",
+      "spokenText": "Have the numbers changed?",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 3,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "synthia-42c131268e587bc2",
+      "character": "synthia",
+      "text": "We’ve changed the way we think about the numbers.",
+      "spokenText": "We’ve changed the way we think about the numbers.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 4,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "keys-097460aa73876003",
+      "character": "keys",
+      "text": "This will unlock a more holistic view of progress.",
+      "spokenText": "This will unlock a more holistic view of progress.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 5,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "synergy-1d876a3ac4d3d848",
+      "character": "synergy",
+      "text": "We’ll take the actual numbers offline.",
+      "spokenText": "We’ll take the actual numbers offline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 6,
+          "role": "transition"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "transition",
+        "quarterly"
+      ]
+    },
+    {
+      "id": "linda-da81b17a91089985",
+      "character": "linda",
+      "text": "I’ll reuse last quarter’s spreadsheet.",
+      "spokenText": "I’ll reuse last quarter’s spreadsheet.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "quarterly-1",
+          "agenda": "quarterly",
+          "index": 8,
+          "role": "button"
+        },
+        {
+          "type": "audition",
+          "index": 2,
+          "role": "character-read"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "button",
+        "quarterly",
+        "audition",
+        "character-read"
+      ]
+    },
+    {
+      "id": "people-510358aa367b464c",
+      "character": "people",
+      "text": "I’m humbled and honored to share a small update.",
+      "spokenText": "I’m humbled and honored to share a small update.",
+      "scriptStatus": "draft",
+      "usages": [
+        {
+          "type": "audition",
+          "index": 0,
+          "role": "shared-read"
+        }
+      ],
+      "tags": [
+        "audition",
+        "shared-read"
+      ]
+    },
+    {
+      "id": "strategy-510358aa367b464c",
+      "character": "strategy",
+      "text": "I’m humbled and honored to share a small update.",
+      "spokenText": "I’m humbled and honored to share a small update.",
+      "scriptStatus": "draft",
+      "usages": [
+        {
+          "type": "audition",
+          "index": 0,
+          "role": "shared-read"
+        }
+      ],
+      "tags": [
+        "audition",
+        "shared-read"
+      ]
+    },
+    {
+      "id": "guitar-510358aa367b464c",
+      "character": "guitar",
+      "text": "I’m humbled and honored to share a small update.",
+      "spokenText": "I’m humbled and honored to share a small update.",
+      "scriptStatus": "draft",
+      "usages": [
+        {
+          "type": "audition",
+          "index": 0,
+          "role": "shared-read"
+        }
+      ],
+      "tags": [
+        "audition",
+        "shared-read"
+      ]
+    },
+    {
+      "id": "keys-510358aa367b464c",
+      "character": "keys",
+      "text": "I’m humbled and honored to share a small update.",
+      "spokenText": "I’m humbled and honored to share a small update.",
+      "scriptStatus": "draft",
+      "usages": [
+        {
+          "type": "audition",
+          "index": 0,
+          "role": "shared-read"
+        }
+      ],
+      "tags": [
+        "audition",
+        "shared-read"
+      ]
+    },
+    {
+      "id": "operations-510358aa367b464c",
+      "character": "operations",
+      "text": "I’m humbled and honored to share a small update.",
+      "spokenText": "I’m humbled and honored to share a small update.",
+      "scriptStatus": "draft",
+      "usages": [
+        {
+          "type": "audition",
+          "index": 0,
+          "role": "shared-read"
+        }
+      ],
+      "tags": [
+        "audition",
+        "shared-read"
+      ]
+    },
+    {
+      "id": "accountant-510358aa367b464c",
+      "character": "accountant",
+      "text": "I’m humbled and honored to share a small update.",
+      "spokenText": "I’m humbled and honored to share a small update.",
+      "scriptStatus": "draft",
+      "usages": [
+        {
+          "type": "audition",
+          "index": 0,
+          "role": "shared-read"
+        }
+      ],
+      "tags": [
+        "audition",
+        "shared-read"
+      ]
+    },
+    {
+      "id": "linda-510358aa367b464c",
+      "character": "linda",
+      "text": "I’m humbled and honored to share a small update.",
+      "spokenText": "I’m humbled and honored to share a small update.",
+      "scriptStatus": "draft",
+      "usages": [
+        {
+          "type": "audition",
+          "index": 0,
+          "role": "shared-read"
+        }
+      ],
+      "tags": [
+        "audition",
+        "shared-read"
+      ]
+    }
+  ],
+  "meetings": {
+    "standup-0": {
+      "title": "What’s everyone working on?",
+      "bpm": 92,
+      "roster": [
+        "guitar",
+        "synergy",
+        "keys",
+        "operations",
+        "printer"
+      ],
+      "cues": [
+        {
+          "speaker": "synergy",
+          "line": "synergy-851dfd27c176cd07"
+        },
+        {
+          "speaker": "synergy",
+          "line": "synergy-38fb1c669b74c092"
+        },
+        {
+          "speaker": "guitar",
+          "line": "guitar-3173bd31003d5525"
+        },
+        {
+          "speaker": "keys",
+          "line": "keys-07b29e8f5126cf8e"
+        },
+        {
+          "speaker": "operations",
+          "line": "operations-4000617a904fc626"
+        },
+        {
+          "speaker": "guitar",
+          "line": "guitar-9820e58b40417f4e"
+        },
+        {
+          "speaker": "synergy",
+          "line": "synergy-58c7096d73e741af"
+        },
+        {
+          "speaker": "all",
+          "text": "Onboarding. Onboarding. We’ll take this offline. Offline.",
+          "phrases": [
+            {
+              "guitar": "guitar-1efeb38f28b4a855",
+              "synergy": "synergy-1efeb38f28b4a855",
+              "keys": "keys-1efeb38f28b4a855",
+              "operations": "operations-1efeb38f28b4a855"
+            },
+            {
+              "guitar": "guitar-1efeb38f28b4a855",
+              "synergy": "synergy-1efeb38f28b4a855",
+              "keys": "keys-1efeb38f28b4a855",
+              "operations": "operations-1efeb38f28b4a855"
+            },
+            {
+              "guitar": "guitar-0b5b8838622df915",
+              "synergy": "synergy-0b5b8838622df915",
+              "keys": "keys-0b5b8838622df915",
+              "operations": "operations-0b5b8838622df915"
+            },
+            {
+              "guitar": "guitar-4fbda14953066a0c",
+              "synergy": "synergy-4fbda14953066a0c",
+              "keys": "keys-4fbda14953066a0c",
+              "operations": "operations-4fbda14953066a0c"
+            }
+          ]
+        },
+        {
+          "speaker": "synergy",
+          "line": "synergy-420b5b23a6f89b84"
+        }
+      ]
+    },
+    "standup-1": {
+      "title": "The weekly momentum check",
+      "bpm": 92,
+      "roster": [
+        "guitar",
+        "synergy",
+        "keys",
+        "people",
+        "printer"
+      ],
+      "cues": [
+        {
+          "speaker": "synergy",
+          "line": "synergy-c109d5e80c2dff23"
+        },
+        {
+          "speaker": "synergy",
+          "line": "synergy-38fb1c669b74c092"
+        },
+        {
+          "speaker": "guitar",
+          "line": "guitar-f6fb8a4b4b1655bf"
+        },
+        {
+          "speaker": "keys",
+          "line": "keys-7f88372d0f60f5f8"
+        },
+        {
+          "speaker": "people",
+          "line": "people-747444e0ff14f7a1"
+        },
+        {
+          "speaker": "guitar",
+          "line": "guitar-89843d3d15e1d4df"
+        },
+        {
+          "speaker": "synergy",
+          "line": "synergy-4ac2cd351ae53f8d"
+        },
+        {
+          "speaker": "all",
+          "text": "Onboarding. Onboarding. We’ll take this offline. Offline.",
+          "phrases": [
+            {
+              "guitar": "guitar-1efeb38f28b4a855",
+              "synergy": "synergy-1efeb38f28b4a855",
+              "keys": "keys-1efeb38f28b4a855",
+              "people": "people-1efeb38f28b4a855"
+            },
+            {
+              "guitar": "guitar-1efeb38f28b4a855",
+              "synergy": "synergy-1efeb38f28b4a855",
+              "keys": "keys-1efeb38f28b4a855",
+              "people": "people-1efeb38f28b4a855"
+            },
+            {
+              "guitar": "guitar-0b5b8838622df915",
+              "synergy": "synergy-0b5b8838622df915",
+              "keys": "keys-0b5b8838622df915",
+              "people": "people-0b5b8838622df915"
+            },
+            {
+              "guitar": "guitar-4fbda14953066a0c",
+              "synergy": "synergy-4fbda14953066a0c",
+              "keys": "keys-4fbda14953066a0c",
+              "people": "people-4fbda14953066a0c"
+            }
+          ]
+        },
+        {
+          "speaker": "people",
+          "line": "people-ad5b6c354e4df5c7"
+        }
+      ]
+    },
+    "onboarding-0": {
+      "title": "Optimizing the onboarding",
+      "bpm": 100,
+      "roster": [
+        "people",
+        "strategy",
+        "synthia",
+        "guitar",
+        "synergy",
+        "keys",
+        "operations",
+        "pat",
+        "printer"
+      ],
+      "cues": [
+        {
+          "speaker": "synergy",
+          "line": "synergy-2d5786808a43ef3e"
+        },
+        {
+          "speaker": "people",
+          "line": "people-d8394dd2ee96ad2a"
+        },
+        {
+          "speaker": "strategy",
+          "line": "strategy-2e2591a335ecc9c7"
+        },
+        {
+          "speaker": "synthia",
+          "line": "synthia-18613a007e9f6ab5"
+        },
+        {
+          "speaker": "keys",
+          "line": "keys-31504c70ed87f8b0"
+        },
+        {
+          "speaker": "guitar",
+          "line": "guitar-6c6b2b2ebbc6118b"
+        },
+        {
+          "speaker": "synergy",
+          "line": "synergy-7f73866860111b35"
+        },
+        {
+          "speaker": "all",
+          "text": "Onboard. Optimize. Onboard. We’ll take this offline.",
+          "phrases": [
+            {
+              "people": "people-b521e13bc481292a",
+              "strategy": "strategy-b521e13bc481292a",
+              "synthia": "synthia-b521e13bc481292a",
+              "guitar": "guitar-b521e13bc481292a",
+              "synergy": "synergy-b521e13bc481292a",
+              "keys": "keys-b521e13bc481292a",
+              "operations": "operations-b521e13bc481292a"
+            },
+            {
+              "people": "people-5f8f4f49521f1312",
+              "strategy": "strategy-5f8f4f49521f1312",
+              "synthia": "synthia-5f8f4f49521f1312",
+              "guitar": "guitar-5f8f4f49521f1312",
+              "synergy": "synergy-5f8f4f49521f1312",
+              "keys": "keys-5f8f4f49521f1312",
+              "operations": "operations-5f8f4f49521f1312"
+            },
+            {
+              "people": "people-b521e13bc481292a",
+              "strategy": "strategy-b521e13bc481292a",
+              "synthia": "synthia-b521e13bc481292a",
+              "guitar": "guitar-b521e13bc481292a",
+              "synergy": "synergy-b521e13bc481292a",
+              "keys": "keys-b521e13bc481292a",
+              "operations": "operations-b521e13bc481292a"
+            },
+            {
+              "people": "people-0b5b8838622df915",
+              "strategy": "strategy-0b5b8838622df915",
+              "synthia": "synthia-0b5b8838622df915",
+              "guitar": "guitar-0b5b8838622df915",
+              "synergy": "synergy-0b5b8838622df915",
+              "keys": "keys-0b5b8838622df915",
+              "operations": "operations-0b5b8838622df915"
+            }
+          ]
+        },
+        {
+          "speaker": "people",
+          "line": "people-0c53aa081e07dced"
+        }
+      ]
+    },
+    "onboarding-1": {
+      "title": "A seamless first-touch experience",
+      "bpm": 100,
+      "roster": [
+        "people",
+        "strategy",
+        "synthia",
+        "guitar",
+        "synergy",
+        "keys",
+        "linda",
+        "pat",
+        "printer"
+      ],
+      "cues": [
+        {
+          "speaker": "synergy",
+          "line": "synergy-d4d66efb8267ea31"
+        },
+        {
+          "speaker": "people",
+          "line": "people-35d5ffb7338fd137"
+        },
+        {
+          "speaker": "guitar",
+          "line": "guitar-c693ed738cb6eb8b"
+        },
+        {
+          "speaker": "synthia",
+          "line": "synthia-fb1de6a779441b23"
+        },
+        {
+          "speaker": "keys",
+          "line": "keys-8de89d3af9189944"
+        },
+        {
+          "speaker": "linda",
+          "line": "linda-e6f3d78b2f0bc101"
+        },
+        {
+          "speaker": "synergy",
+          "line": "synergy-52f7c426a20ed831"
+        },
+        {
+          "speaker": "all",
+          "text": "Onboard. Optimize. Onboard. We’ll take this offline.",
+          "phrases": [
+            {
+              "people": "people-b521e13bc481292a",
+              "strategy": "strategy-b521e13bc481292a",
+              "synthia": "synthia-b521e13bc481292a",
+              "guitar": "guitar-b521e13bc481292a",
+              "synergy": "synergy-b521e13bc481292a",
+              "keys": "keys-b521e13bc481292a",
+              "linda": "linda-b521e13bc481292a"
+            },
+            {
+              "people": "people-5f8f4f49521f1312",
+              "strategy": "strategy-5f8f4f49521f1312",
+              "synthia": "synthia-5f8f4f49521f1312",
+              "guitar": "guitar-5f8f4f49521f1312",
+              "synergy": "synergy-5f8f4f49521f1312",
+              "keys": "keys-5f8f4f49521f1312",
+              "linda": "linda-5f8f4f49521f1312"
+            },
+            {
+              "people": "people-b521e13bc481292a",
+              "strategy": "strategy-b521e13bc481292a",
+              "synthia": "synthia-b521e13bc481292a",
+              "guitar": "guitar-b521e13bc481292a",
+              "synergy": "synergy-b521e13bc481292a",
+              "keys": "keys-b521e13bc481292a",
+              "linda": "linda-b521e13bc481292a"
+            },
+            {
+              "people": "people-0b5b8838622df915",
+              "strategy": "strategy-0b5b8838622df915",
+              "synthia": "synthia-0b5b8838622df915",
+              "guitar": "guitar-0b5b8838622df915",
+              "synergy": "synergy-0b5b8838622df915",
+              "keys": "keys-0b5b8838622df915",
+              "linda": "linda-0b5b8838622df915"
+            }
+          ]
+        },
+        {
+          "speaker": "people",
+          "line": "people-0956538ee4640e04"
+        }
+      ]
+    },
+    "unlock-0": {
+      "title": "Unlocking our collective potential",
+      "bpm": 108,
+      "roster": [
+        "people",
+        "strategy",
+        "synthia",
+        "guitar",
+        "synergy",
+        "keys",
+        "operations",
+        "accountant",
+        "linda",
+        "pat",
+        "droid",
+        "printer"
+      ],
+      "cues": [
+        {
+          "speaker": "synergy",
+          "line": "synergy-7d1b05d6287af27b"
+        },
+        {
+          "speaker": "accountant",
+          "line": "accountant-01e4e8dcd2bb6bbf"
+        },
+        {
+          "speaker": "synthia",
+          "line": "synthia-180e72af368fbd44"
+        },
+        {
+          "speaker": "guitar",
+          "line": "guitar-3764925dc5aacc66"
+        },
+        {
+          "speaker": "keys",
+          "line": "keys-202143466ff0abd4"
+        },
+        {
+          "speaker": "strategy",
+          "line": "strategy-57da72df3a7bf416"
+        },
+        {
+          "speaker": "synergy",
+          "line": "synergy-92f44fb745a3585a"
+        },
+        {
+          "speaker": "all",
+          "text": "Unlock the potential. Unlock the potential. Optimize.",
+          "phrases": [
+            {
+              "people": "people-a03565c793db145d",
+              "strategy": "strategy-a03565c793db145d",
+              "synthia": "synthia-a03565c793db145d",
+              "guitar": "guitar-a03565c793db145d",
+              "synergy": "synergy-a03565c793db145d",
+              "keys": "keys-a03565c793db145d",
+              "operations": "operations-a03565c793db145d",
+              "accountant": "accountant-a03565c793db145d",
+              "linda": "linda-a03565c793db145d"
+            },
+            {
+              "people": "people-a03565c793db145d",
+              "strategy": "strategy-a03565c793db145d",
+              "synthia": "synthia-a03565c793db145d",
+              "guitar": "guitar-a03565c793db145d",
+              "synergy": "synergy-a03565c793db145d",
+              "keys": "keys-a03565c793db145d",
+              "operations": "operations-a03565c793db145d",
+              "accountant": "accountant-a03565c793db145d",
+              "linda": "linda-a03565c793db145d"
+            },
+            {
+              "people": "people-5f8f4f49521f1312",
+              "strategy": "strategy-5f8f4f49521f1312",
+              "synthia": "synthia-5f8f4f49521f1312",
+              "guitar": "guitar-5f8f4f49521f1312",
+              "synergy": "synergy-5f8f4f49521f1312",
+              "keys": "keys-5f8f4f49521f1312",
+              "operations": "operations-5f8f4f49521f1312",
+              "accountant": "accountant-5f8f4f49521f1312",
+              "linda": "linda-5f8f4f49521f1312"
+            }
+          ]
+        },
+        {
+          "speaker": "linda",
+          "line": "linda-f471bcf9ea5401de"
+        }
+      ]
+    },
+    "unlock-1": {
+      "title": "The next chapter of value creation",
+      "bpm": 108,
+      "roster": [
+        "people",
+        "strategy",
+        "synthia",
+        "guitar",
+        "synergy",
+        "keys",
+        "operations",
+        "accountant",
+        "linda",
+        "pat",
+        "droid",
+        "printer"
+      ],
+      "cues": [
+        {
+          "speaker": "synergy",
+          "line": "synergy-95b1b51dae68736a"
+        },
+        {
+          "speaker": "accountant",
+          "line": "accountant-1b64aa93bdccaa86"
+        },
+        {
+          "speaker": "synthia",
+          "line": "synthia-251eee12b0bb1515"
+        },
+        {
+          "speaker": "guitar",
+          "line": "guitar-709dabc147b9da5a"
+        },
+        {
+          "speaker": "keys",
+          "line": "keys-c7a0b1d0a998a310"
+        },
+        {
+          "speaker": "strategy",
+          "line": "strategy-d00df1624b08a189"
+        },
+        {
+          "speaker": "synergy",
+          "line": "synergy-6542020504f8ac3a"
+        },
+        {
+          "speaker": "all",
+          "text": "Unlock the potential. Unlock the potential. Optimize.",
+          "phrases": [
+            {
+              "people": "people-a03565c793db145d",
+              "strategy": "strategy-a03565c793db145d",
+              "synthia": "synthia-a03565c793db145d",
+              "guitar": "guitar-a03565c793db145d",
+              "synergy": "synergy-a03565c793db145d",
+              "keys": "keys-a03565c793db145d",
+              "operations": "operations-a03565c793db145d",
+              "accountant": "accountant-a03565c793db145d",
+              "linda": "linda-a03565c793db145d"
+            },
+            {
+              "people": "people-a03565c793db145d",
+              "strategy": "strategy-a03565c793db145d",
+              "synthia": "synthia-a03565c793db145d",
+              "guitar": "guitar-a03565c793db145d",
+              "synergy": "synergy-a03565c793db145d",
+              "keys": "keys-a03565c793db145d",
+              "operations": "operations-a03565c793db145d",
+              "accountant": "accountant-a03565c793db145d",
+              "linda": "linda-a03565c793db145d"
+            },
+            {
+              "people": "people-5f8f4f49521f1312",
+              "strategy": "strategy-5f8f4f49521f1312",
+              "synthia": "synthia-5f8f4f49521f1312",
+              "guitar": "guitar-5f8f4f49521f1312",
+              "synergy": "synergy-5f8f4f49521f1312",
+              "keys": "keys-5f8f4f49521f1312",
+              "operations": "operations-5f8f4f49521f1312",
+              "accountant": "accountant-5f8f4f49521f1312",
+              "linda": "linda-5f8f4f49521f1312"
+            }
+          ]
+        },
+        {
+          "speaker": "linda",
+          "line": "linda-36c78ffe679b084e"
+        }
+      ]
+    },
+    "paperless-0": {
+      "title": "The paperless transformation",
+      "bpm": 84,
+      "roster": [
+        "synergy",
+        "synthia",
+        "printer"
+      ],
+      "cues": [
+        {
+          "speaker": "synergy",
+          "line": "synergy-357e5ba1961786db"
+        },
+        {
+          "speaker": "synthia",
+          "line": "synthia-d0824ab5a32cb5aa"
+        },
+        {
+          "speaker": "synergy",
+          "line": "synergy-6b3332afeaaec988"
+        },
+        {
+          "speaker": "synthia",
+          "line": "synthia-992cd7e83e8ccf61"
+        },
+        {
+          "speaker": "synergy",
+          "line": "synergy-1e8860afeb12054d"
+        },
+        {
+          "speaker": "synthia",
+          "line": "synthia-1ea5400d8fab39a0"
+        },
+        {
+          "speaker": "synergy",
+          "line": "synergy-397edd059e40747a"
+        },
+        {
+          "speaker": "all",
+          "text": "Paperless. Paperless. Optimize the paperless.",
+          "phrases": [
+            {
+              "synergy": "synergy-4e10abe7b44db999",
+              "synthia": "synthia-4e10abe7b44db999"
+            },
+            {
+              "synergy": "synergy-4e10abe7b44db999",
+              "synthia": "synthia-4e10abe7b44db999"
+            },
+            {
+              "synergy": "synergy-5dc4ba13923cbc95",
+              "synthia": "synthia-5dc4ba13923cbc95"
+            }
+          ]
+        },
+        {
+          "speaker": "synthia",
+          "line": "synthia-1501482035b85eea"
+        }
+      ]
+    },
+    "paperless-1": {
+      "title": "A fully digital onboarding journey",
+      "bpm": 84,
+      "roster": [
+        "synergy",
+        "synthia",
+        "printer"
+      ],
+      "cues": [
+        {
+          "speaker": "synergy",
+          "line": "synergy-1ae747d6ffa85528"
+        },
+        {
+          "speaker": "synthia",
+          "line": "synthia-bfec78e5460ae68c"
+        },
+        {
+          "speaker": "synergy",
+          "line": "synergy-3e99b13935e1c4a3"
+        },
+        {
+          "speaker": "synthia",
+          "line": "synthia-e860fa9cac5346b5"
+        },
+        {
+          "speaker": "synergy",
+          "line": "synergy-7b322729f6320a3b"
+        },
+        {
+          "speaker": "synthia",
+          "line": "synthia-7c8ece1df240b5b7"
+        },
+        {
+          "speaker": "synergy",
+          "line": "synergy-9f5196b9d5b29446"
+        },
+        {
+          "speaker": "all",
+          "text": "Paperless. Paperless. Optimize the paperless.",
+          "phrases": [
+            {
+              "synergy": "synergy-4e10abe7b44db999",
+              "synthia": "synthia-4e10abe7b44db999"
+            },
+            {
+              "synergy": "synergy-4e10abe7b44db999",
+              "synthia": "synthia-4e10abe7b44db999"
+            },
+            {
+              "synergy": "synergy-5dc4ba13923cbc95",
+              "synthia": "synthia-5dc4ba13923cbc95"
+            }
+          ]
+        },
+        {
+          "speaker": "synthia",
+          "line": "synthia-7f7465df7e148ea1"
+        }
+      ]
+    },
+    "founder-0": {
+      "title": "Humbled and honored to announce",
+      "bpm": 88,
+      "roster": [
+        "guitar",
+        "synergy",
+        "synthia",
+        "people",
+        "printer"
+      ],
+      "cues": [
+        {
+          "speaker": "synergy",
+          "line": "synergy-ecb7a6fbe9879592"
+        },
+        {
+          "speaker": "guitar",
+          "line": "guitar-65e1d7f02708bec1"
+        },
+        {
+          "speaker": "people",
+          "line": "people-452b1864a4d834ba"
+        },
+        {
+          "speaker": "synthia",
+          "line": "synthia-e3d5b1257865a8e0"
+        },
+        {
+          "speaker": "guitar",
+          "line": "guitar-12866693460f0726"
+        },
+        {
+          "speaker": "synergy",
+          "line": "synergy-16dac392c12f64b4"
+        },
+        {
+          "speaker": "guitar",
+          "line": "guitar-aefe15989ec31ebb"
+        },
+        {
+          "speaker": "all",
+          "text": "Building. Unlocking. Humbled and honored. Excited to share.",
+          "phrases": [
+            {
+              "guitar": "guitar-f9f8311077f6fa69",
+              "synergy": "synergy-f9f8311077f6fa69",
+              "synthia": "synthia-f9f8311077f6fa69",
+              "people": "people-f9f8311077f6fa69"
+            },
+            {
+              "guitar": "guitar-c734df556774a676",
+              "synergy": "synergy-c734df556774a676",
+              "synthia": "synthia-c734df556774a676",
+              "people": "people-c734df556774a676"
+            },
+            {
+              "guitar": "guitar-8744e740f1c5baa9",
+              "synergy": "synergy-8744e740f1c5baa9",
+              "synthia": "synthia-8744e740f1c5baa9",
+              "people": "people-8744e740f1c5baa9"
+            },
+            {
+              "guitar": "guitar-4060f74f78b507c8",
+              "synergy": "synergy-4060f74f78b507c8",
+              "synthia": "synthia-4060f74f78b507c8",
+              "people": "people-4060f74f78b507c8"
+            }
+          ]
+        },
+        {
+          "speaker": "people",
+          "line": "people-eb54a611e2869e8e"
+        }
+      ]
+    },
+    "founder-1": {
+      "title": "Building something extraordinary",
+      "bpm": 88,
+      "roster": [
+        "guitar",
+        "synergy",
+        "synthia",
+        "people",
+        "printer"
+      ],
+      "cues": [
+        {
+          "speaker": "synergy",
+          "line": "synergy-6642ff6095490337"
+        },
+        {
+          "speaker": "guitar",
+          "line": "guitar-cc02e990cef9f11c"
+        },
+        {
+          "speaker": "people",
+          "line": "people-9faea9d7d102426b"
+        },
+        {
+          "speaker": "synthia",
+          "line": "synthia-fe5371453f59c82b"
+        },
+        {
+          "speaker": "guitar",
+          "line": "guitar-3c6497e5cd5b6d2f"
+        },
+        {
+          "speaker": "synergy",
+          "line": "synergy-5cacbde3ea006369"
+        },
+        {
+          "speaker": "guitar",
+          "line": "guitar-e58d06654992dcbe"
+        },
+        {
+          "speaker": "all",
+          "text": "Building. Unlocking. Humbled and honored. Excited to share.",
+          "phrases": [
+            {
+              "guitar": "guitar-f9f8311077f6fa69",
+              "synergy": "synergy-f9f8311077f6fa69",
+              "synthia": "synthia-f9f8311077f6fa69",
+              "people": "people-f9f8311077f6fa69"
+            },
+            {
+              "guitar": "guitar-c734df556774a676",
+              "synergy": "synergy-c734df556774a676",
+              "synthia": "synthia-c734df556774a676",
+              "people": "people-c734df556774a676"
+            },
+            {
+              "guitar": "guitar-8744e740f1c5baa9",
+              "synergy": "synergy-8744e740f1c5baa9",
+              "synthia": "synthia-8744e740f1c5baa9",
+              "people": "people-8744e740f1c5baa9"
+            },
+            {
+              "guitar": "guitar-4060f74f78b507c8",
+              "synergy": "synergy-4060f74f78b507c8",
+              "synthia": "synthia-4060f74f78b507c8",
+              "people": "people-4060f74f78b507c8"
+            }
+          ]
+        },
+        {
+          "speaker": "people",
+          "line": "people-c86472656eed6694"
+        }
+      ]
+    },
+    "offline-0": {
+      "title": "We’ll take this offline",
+      "bpm": 92,
+      "roster": [
+        "people",
+        "strategy",
+        "synthia",
+        "guitar",
+        "synergy",
+        "keys",
+        "accountant",
+        "pat",
+        "printer"
+      ],
+      "cues": [
+        {
+          "speaker": "synergy",
+          "line": "synergy-2d4b01cce7425025"
+        },
+        {
+          "speaker": "strategy",
+          "line": "strategy-f343074b08823ff9"
+        },
+        {
+          "speaker": "guitar",
+          "line": "guitar-54028453efcdf29d"
+        },
+        {
+          "speaker": "synthia",
+          "line": "synthia-bff02d97b312001c"
+        },
+        {
+          "speaker": "keys",
+          "line": "keys-2659138b9876ae2b"
+        },
+        {
+          "speaker": "people",
+          "line": "people-1ad6933357d438f2"
+        },
+        {
+          "speaker": "synergy",
+          "line": "synergy-d8cf8592069e5634"
+        },
+        {
+          "speaker": "all",
+          "text": "We’ll take this offline. Offline. We’ll take this offline.",
+          "phrases": [
+            {
+              "people": "people-0b5b8838622df915",
+              "strategy": "strategy-0b5b8838622df915",
+              "synthia": "synthia-0b5b8838622df915",
+              "guitar": "guitar-0b5b8838622df915",
+              "synergy": "synergy-0b5b8838622df915",
+              "keys": "keys-0b5b8838622df915",
+              "accountant": "accountant-0b5b8838622df915"
+            },
+            {
+              "people": "people-4fbda14953066a0c",
+              "strategy": "strategy-4fbda14953066a0c",
+              "synthia": "synthia-4fbda14953066a0c",
+              "guitar": "guitar-4fbda14953066a0c",
+              "synergy": "synergy-4fbda14953066a0c",
+              "keys": "keys-4fbda14953066a0c",
+              "accountant": "accountant-4fbda14953066a0c"
+            },
+            {
+              "people": "people-0b5b8838622df915",
+              "strategy": "strategy-0b5b8838622df915",
+              "synthia": "synthia-0b5b8838622df915",
+              "guitar": "guitar-0b5b8838622df915",
+              "synergy": "synergy-0b5b8838622df915",
+              "keys": "keys-0b5b8838622df915",
+              "accountant": "accountant-0b5b8838622df915"
+            }
+          ]
+        },
+        {
+          "speaker": "accountant",
+          "line": "accountant-d2fa2bd53e45204a"
+        }
+      ]
+    },
+    "offline-1": {
+      "title": "A more intentional meeting cadence",
+      "bpm": 92,
+      "roster": [
+        "people",
+        "strategy",
+        "synthia",
+        "guitar",
+        "synergy",
+        "keys",
+        "linda",
+        "pat",
+        "printer"
+      ],
+      "cues": [
+        {
+          "speaker": "synergy",
+          "line": "synergy-de49b86248a41c99"
+        },
+        {
+          "speaker": "people",
+          "line": "people-c0a7d9b025bec1a9"
+        },
+        {
+          "speaker": "guitar",
+          "line": "guitar-8a0f64001c8dbb39"
+        },
+        {
+          "speaker": "synthia",
+          "line": "synthia-82bc5d3b6125d18a"
+        },
+        {
+          "speaker": "keys",
+          "line": "keys-2659138b9876ae2b"
+        },
+        {
+          "speaker": "linda",
+          "line": "linda-b5f5f3e3247d0026"
+        },
+        {
+          "speaker": "synergy",
+          "line": "synergy-bdd2b1ec64cfd1be"
+        },
+        {
+          "speaker": "all",
+          "text": "We’ll take this offline. Offline. We’ll take this offline.",
+          "phrases": [
+            {
+              "people": "people-0b5b8838622df915",
+              "strategy": "strategy-0b5b8838622df915",
+              "synthia": "synthia-0b5b8838622df915",
+              "guitar": "guitar-0b5b8838622df915",
+              "synergy": "synergy-0b5b8838622df915",
+              "keys": "keys-0b5b8838622df915",
+              "linda": "linda-0b5b8838622df915"
+            },
+            {
+              "people": "people-4fbda14953066a0c",
+              "strategy": "strategy-4fbda14953066a0c",
+              "synthia": "synthia-4fbda14953066a0c",
+              "guitar": "guitar-4fbda14953066a0c",
+              "synergy": "synergy-4fbda14953066a0c",
+              "keys": "keys-4fbda14953066a0c",
+              "linda": "linda-4fbda14953066a0c"
+            },
+            {
+              "people": "people-0b5b8838622df915",
+              "strategy": "strategy-0b5b8838622df915",
+              "synthia": "synthia-0b5b8838622df915",
+              "guitar": "guitar-0b5b8838622df915",
+              "synergy": "synergy-0b5b8838622df915",
+              "keys": "keys-0b5b8838622df915",
+              "linda": "linda-0b5b8838622df915"
+            }
+          ]
+        },
+        {
+          "speaker": "people",
+          "line": "people-823b0c89db449200"
+        }
+      ]
+    },
+    "quarterly-0": {
+      "title": "The Q3 alignment",
+      "bpm": 112,
+      "roster": [
+        "people",
+        "strategy",
+        "synthia",
+        "guitar",
+        "synergy",
+        "keys",
+        "operations",
+        "accountant",
+        "linda",
+        "pat",
+        "droid",
+        "printer"
+      ],
+      "cues": [
+        {
+          "speaker": "synergy",
+          "line": "synergy-089b086e02516bac"
+        },
+        {
+          "speaker": "strategy",
+          "line": "strategy-c3f97791b8c1c322"
+        },
+        {
+          "speaker": "operations",
+          "line": "operations-4b5f84d1906f6a8d"
+        },
+        {
+          "speaker": "accountant",
+          "line": "accountant-c61f92bdd02e8afe"
+        },
+        {
+          "speaker": "synthia",
+          "line": "synthia-17004bd7151a9862"
+        },
+        {
+          "speaker": "keys",
+          "line": "keys-8881696f280e8ad0"
+        },
+        {
+          "speaker": "synergy",
+          "line": "synergy-1c76316d043a2864"
+        },
+        {
+          "speaker": "all",
+          "text": "Optimize. Onboard. Unlock. Offline. Optimize. Onboard.",
+          "phrases": [
+            {
+              "people": "people-5f8f4f49521f1312",
+              "strategy": "strategy-5f8f4f49521f1312",
+              "synthia": "synthia-5f8f4f49521f1312",
+              "guitar": "guitar-5f8f4f49521f1312",
+              "synergy": "synergy-5f8f4f49521f1312",
+              "keys": "keys-5f8f4f49521f1312",
+              "operations": "operations-5f8f4f49521f1312",
+              "accountant": "accountant-5f8f4f49521f1312",
+              "linda": "linda-5f8f4f49521f1312"
+            },
+            {
+              "people": "people-b521e13bc481292a",
+              "strategy": "strategy-b521e13bc481292a",
+              "synthia": "synthia-b521e13bc481292a",
+              "guitar": "guitar-b521e13bc481292a",
+              "synergy": "synergy-b521e13bc481292a",
+              "keys": "keys-b521e13bc481292a",
+              "operations": "operations-b521e13bc481292a",
+              "accountant": "accountant-b521e13bc481292a",
+              "linda": "linda-b521e13bc481292a"
+            },
+            {
+              "people": "people-45bb18b0318e1ec5",
+              "strategy": "strategy-45bb18b0318e1ec5",
+              "synthia": "synthia-45bb18b0318e1ec5",
+              "guitar": "guitar-45bb18b0318e1ec5",
+              "synergy": "synergy-45bb18b0318e1ec5",
+              "keys": "keys-45bb18b0318e1ec5",
+              "operations": "operations-45bb18b0318e1ec5",
+              "accountant": "accountant-45bb18b0318e1ec5",
+              "linda": "linda-45bb18b0318e1ec5"
+            },
+            {
+              "people": "people-4fbda14953066a0c",
+              "strategy": "strategy-4fbda14953066a0c",
+              "synthia": "synthia-4fbda14953066a0c",
+              "guitar": "guitar-4fbda14953066a0c",
+              "synergy": "synergy-4fbda14953066a0c",
+              "keys": "keys-4fbda14953066a0c",
+              "operations": "operations-4fbda14953066a0c",
+              "accountant": "accountant-4fbda14953066a0c",
+              "linda": "linda-4fbda14953066a0c"
+            },
+            {
+              "people": "people-5f8f4f49521f1312",
+              "strategy": "strategy-5f8f4f49521f1312",
+              "synthia": "synthia-5f8f4f49521f1312",
+              "guitar": "guitar-5f8f4f49521f1312",
+              "synergy": "synergy-5f8f4f49521f1312",
+              "keys": "keys-5f8f4f49521f1312",
+              "operations": "operations-5f8f4f49521f1312",
+              "accountant": "accountant-5f8f4f49521f1312",
+              "linda": "linda-5f8f4f49521f1312"
+            },
+            {
+              "people": "people-b521e13bc481292a",
+              "strategy": "strategy-b521e13bc481292a",
+              "synthia": "synthia-b521e13bc481292a",
+              "guitar": "guitar-b521e13bc481292a",
+              "synergy": "synergy-b521e13bc481292a",
+              "keys": "keys-b521e13bc481292a",
+              "operations": "operations-b521e13bc481292a",
+              "accountant": "accountant-b521e13bc481292a",
+              "linda": "linda-b521e13bc481292a"
+            }
+          ]
+        },
+        {
+          "speaker": "linda",
+          "line": "linda-ed9687d7d84fddfd"
+        }
+      ]
+    },
+    "quarterly-1": {
+      "title": "An exceptional quarter of alignment",
+      "bpm": 112,
+      "roster": [
+        "people",
+        "strategy",
+        "synthia",
+        "guitar",
+        "synergy",
+        "keys",
+        "operations",
+        "accountant",
+        "linda",
+        "pat",
+        "droid",
+        "printer"
+      ],
+      "cues": [
+        {
+          "speaker": "synergy",
+          "line": "synergy-1b305c2abef07059"
+        },
+        {
+          "speaker": "strategy",
+          "line": "strategy-75a73234604a0870"
+        },
+        {
+          "speaker": "operations",
+          "line": "operations-2980d8a2262a77b7"
+        },
+        {
+          "speaker": "accountant",
+          "line": "accountant-75f111b33a1f57b2"
+        },
+        {
+          "speaker": "synthia",
+          "line": "synthia-42c131268e587bc2"
+        },
+        {
+          "speaker": "keys",
+          "line": "keys-097460aa73876003"
+        },
+        {
+          "speaker": "synergy",
+          "line": "synergy-1d876a3ac4d3d848"
+        },
+        {
+          "speaker": "all",
+          "text": "Optimize. Onboard. Unlock. Offline. Optimize. Onboard.",
+          "phrases": [
+            {
+              "people": "people-5f8f4f49521f1312",
+              "strategy": "strategy-5f8f4f49521f1312",
+              "synthia": "synthia-5f8f4f49521f1312",
+              "guitar": "guitar-5f8f4f49521f1312",
+              "synergy": "synergy-5f8f4f49521f1312",
+              "keys": "keys-5f8f4f49521f1312",
+              "operations": "operations-5f8f4f49521f1312",
+              "accountant": "accountant-5f8f4f49521f1312",
+              "linda": "linda-5f8f4f49521f1312"
+            },
+            {
+              "people": "people-b521e13bc481292a",
+              "strategy": "strategy-b521e13bc481292a",
+              "synthia": "synthia-b521e13bc481292a",
+              "guitar": "guitar-b521e13bc481292a",
+              "synergy": "synergy-b521e13bc481292a",
+              "keys": "keys-b521e13bc481292a",
+              "operations": "operations-b521e13bc481292a",
+              "accountant": "accountant-b521e13bc481292a",
+              "linda": "linda-b521e13bc481292a"
+            },
+            {
+              "people": "people-45bb18b0318e1ec5",
+              "strategy": "strategy-45bb18b0318e1ec5",
+              "synthia": "synthia-45bb18b0318e1ec5",
+              "guitar": "guitar-45bb18b0318e1ec5",
+              "synergy": "synergy-45bb18b0318e1ec5",
+              "keys": "keys-45bb18b0318e1ec5",
+              "operations": "operations-45bb18b0318e1ec5",
+              "accountant": "accountant-45bb18b0318e1ec5",
+              "linda": "linda-45bb18b0318e1ec5"
+            },
+            {
+              "people": "people-4fbda14953066a0c",
+              "strategy": "strategy-4fbda14953066a0c",
+              "synthia": "synthia-4fbda14953066a0c",
+              "guitar": "guitar-4fbda14953066a0c",
+              "synergy": "synergy-4fbda14953066a0c",
+              "keys": "keys-4fbda14953066a0c",
+              "operations": "operations-4fbda14953066a0c",
+              "accountant": "accountant-4fbda14953066a0c",
+              "linda": "linda-4fbda14953066a0c"
+            },
+            {
+              "people": "people-5f8f4f49521f1312",
+              "strategy": "strategy-5f8f4f49521f1312",
+              "synthia": "synthia-5f8f4f49521f1312",
+              "guitar": "guitar-5f8f4f49521f1312",
+              "synergy": "synergy-5f8f4f49521f1312",
+              "keys": "keys-5f8f4f49521f1312",
+              "operations": "operations-5f8f4f49521f1312",
+              "accountant": "accountant-5f8f4f49521f1312",
+              "linda": "linda-5f8f4f49521f1312"
+            },
+            {
+              "people": "people-b521e13bc481292a",
+              "strategy": "strategy-b521e13bc481292a",
+              "synthia": "synthia-b521e13bc481292a",
+              "guitar": "guitar-b521e13bc481292a",
+              "synergy": "synergy-b521e13bc481292a",
+              "keys": "keys-b521e13bc481292a",
+              "operations": "operations-b521e13bc481292a",
+              "accountant": "accountant-b521e13bc481292a",
+              "linda": "linda-b521e13bc481292a"
+            }
+          ]
+        },
+        {
+          "speaker": "linda",
+          "line": "linda-da81b17a91089985"
+        }
+      ]
+    }
+  },
+  "auditions": {
+    "people": [
+      "people-510358aa367b464c",
+      "people-747444e0ff14f7a1",
+      "people-ad5b6c354e4df5c7"
+    ],
+    "strategy": [
+      "strategy-510358aa367b464c",
+      "strategy-57da72df3a7bf416",
+      "strategy-2e2591a335ecc9c7"
+    ],
+    "guitar": [
+      "guitar-510358aa367b464c",
+      "guitar-9820e58b40417f4e",
+      "guitar-12866693460f0726"
+    ],
+    "keys": [
+      "keys-510358aa367b464c",
+      "keys-07b29e8f5126cf8e",
+      "keys-8de89d3af9189944"
+    ],
+    "operations": [
+      "operations-510358aa367b464c",
+      "operations-4000617a904fc626",
+      "operations-4b5f84d1906f6a8d"
+    ],
+    "accountant": [
+      "accountant-510358aa367b464c",
+      "accountant-c61f92bdd02e8afe",
+      "accountant-d2fa2bd53e45204a"
+    ],
+    "linda": [
+      "linda-510358aa367b464c",
+      "linda-e6f3d78b2f0bc101",
+      "linda-da81b17a91089985"
+    ]
+  }
+}

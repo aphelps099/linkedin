@@ -19,7 +19,8 @@
     "check:home2": "node scripts/check-home2.mjs",
     "check:feed": "node scripts/check-feed.mjs",
     "check:conversation": "node scripts/check-conversation.mjs",
-    "check:meeting": "node scripts/check-meeting-season.mjs"
+    "check:meeting": "node scripts/check-meeting-season.mjs",
+    "check:meeting-voices": "node scripts/check-meeting-voices.mjs"
   },
   "dependencies": {
     "@huggingface/transformers": "3.8.1",

@@ -2,3 +2,4 @@ node_modules/
 dist/
 *.local
 .DS_Store
+assets/meeting-voices/render.lock

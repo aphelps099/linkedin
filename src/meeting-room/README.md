@@ -24,6 +24,11 @@ These recordings are not the newer LinkedInifier Kokoro announcer or exact
 macOS Fred recordings. No voice service is called during playback. Swapping a
 recording requires regenerating its cue durations/envelopes, not just an MP3.
 
+The human replacement cast is being auditioned at `/studio/voices/`. See
+`voice-bank/README.md` for the reusable line catalog, cached lossless recordings,
+voice approval states, and production export. These candidates do not change
+the live meeting audio until casting and individual takes have been reviewed.
+
 ## Character continuity and movement
 
 Approved cast media is in `public/studio/season/`. Provenance and source takes are
