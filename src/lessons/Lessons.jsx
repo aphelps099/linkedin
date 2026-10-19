@@ -1,13 +1,13 @@
 import React, {useMemo,useRef,useState,useEffect} from 'react';
 import {ConceptHeader} from '../home-2/ConceptHeader.jsx';
 import '../home-2/header.css';
-import {Check,Copy,MessageSquarePlus,Minus,Plus} from 'lucide-react';
+import {Check,Copy,MessageSquarePlus,Minus} from 'lucide-react';
 import {ConceptFooter} from '../home-2/ConceptFooter.jsx';
 import '../home-2/footer.css';
 import {byId} from './categories.js';
 import {DEFAULT_ANSWERS,EXAMPLES,ANNOUNCEMENT_EXAMPLES} from './Intake.jsx';
 import {Sentence,sentenceParts} from './Sentence.jsx';
-import {roast,newSeed} from './generator.js';
+import {newSeed} from './generator.js';
 import {generateStage} from './stages.js';
 import {ScoreReadout} from './ScoreReadout.jsx';
 import './ignition.css';
@@ -28,7 +28,7 @@ export default function Lessons(){
   const [drafts,setDrafts]=useState(()=>Object.fromEntries(Object.entries(DEFAULT_ANSWERS).map(([k,v])=>[k,{...v}])));
   const [seed,setSeed]=useState(newSeed);
   const [isSupercharged,setIsSupercharged]=useState(false),[turboSeed,setTurboSeed]=useState(null);
-  const [contextOpen,setContextOpen]=useState(false),[toolsOpen,setToolsOpen]=useState(false),[roastOpen,setRoastOpen]=useState(false);
+  const [contextOpen,setContextOpen]=useState(false);
   const [copyStatus,setCopyStatus]=useState(''),[status,setStatus]=useState('');
   const [isCharging,setIsCharging]=useState(false),[boostCount,setBoostCount]=useState(0);
   const copied=copyStatus==='Copied ✓';
@@ -43,7 +43,6 @@ export default function Lessons(){
   const turboVersion=useMemo(()=>isSupercharged?generateStage({category:catId,answers,seed:turboSeed??seed,stage:'supercharged',minimumScore:firstVersion.score.index}):null,[catId,answers,seed,turboSeed,isSupercharged,firstVersion]);
   const {text,score}=turboVersion||firstVersion;
   const paras=text.split(/\n{2,}/);
-  const roastLines=useMemo(()=>roastOpen?roast(text,{score:score.index}):[],[roastOpen,text,score.index]);
   useEffect(()=>{setCopyStatus('');clearTimeout(copyTimer.current);},[text]);
   const resetStage=()=>{setSharedRecipe(null);setBeatMode(false);if(window.location.hash.startsWith('#mix='))history.replaceState(null,'',window.location.pathname+window.location.search);clearTimeout(chargeTimer.current);setIsCharging(false);setIsSupercharged(false);setTurboSeed(null);setBoostCount(0);};
   const update=(key,value)=>{
@@ -54,7 +53,7 @@ export default function Lessons(){
     }else setDrafts(d=>({...d,[catId]:{...d[catId],[key]:value}}));
     setStatus('');
   };
-  const pick=id=>{resetStage();setCatId(id);setContextOpen(false);setToolsOpen(false);setRoastOpen(false);setStatus('');};
+  const pick=id=>{resetStage();setCatId(id);setContextOpen(false);setStatus('');};
   const example=()=>{resetStage();setDrafts(d=>({...d,[catId]:{...(catId==='announce'?ANNOUNCEMENT_EXAMPLES[answers.kind]:EXAMPLES[catId])}}));setStatus('Example loaded. Edit the blue words to make it yours.');};
   const regenerate=()=>{setSharedRecipe(null);clearTimeout(chargeTimer.current);setIsCharging(false);setBoostCount(0);if(isSupercharged)setTurboSeed(newSeed());else setSeed(newSeed());setStatus(isSupercharged?'A fresh supercharged version is ready.':'A fresh LinkedIn version is ready.');};
   const supercharge=()=>{
@@ -118,13 +117,8 @@ export default function Lessons(){
           <PostBeat key={sharedRecipe?JSON.stringify(sharedRecipe):text} post={text} initialRecipe={sharedRecipe} onModeChange={setBeatMode}>
           <div className="el-post" aria-label={isSupercharged?'Your supercharged post':'Your LinkedIn post'}><p className={`el-post-lead ${paras[0].length>100?'is-long':''}`}>{paras[0]}</p>{paras.slice(1).map((p,i)=><p key={i}>{p}</p>)}</div>
           </PostBeat>
-          <div className="el-output-actions"><button className={`el-copy${copied?' is-copied':''}`} onClick={copy} aria-label={copied?'Copied to clipboard':'Copy to clipboard'} title={copied?'Copied!':'Copy to clipboard'}>{copied?<Check aria-hidden="true"/>:<Copy aria-hidden="true"/>}</button><button onClick={regenerate}>Try another</button>{isSupercharged&&<button onClick={()=>{resetStage();setStatus('Showing the first LinkedIn version.');}}>View first version</button>}<button className="el-more-tools" aria-expanded={toolsOpen} aria-controls="post-tools" onClick={()=>setToolsOpen(!toolsOpen)}><span>{toolsOpen?'Fewer tools':'More tools'}</span>{toolsOpen?<Minus aria-hidden="true"/>:<Plus aria-hidden="true"/>}</button></div>
+          <div className="el-output-actions"><button className={`el-copy${copied?' is-copied':''}`} onClick={copy} aria-label={copied?'Copied to clipboard':'Copy to clipboard'} title={copied?'Copied!':'Copy to clipboard'}>{copied?<Check aria-hidden="true"/>:<Copy aria-hidden="true"/>}</button><button onClick={regenerate}>Try another</button>{isSupercharged&&<button onClick={()=>{resetStage();setStatus('Showing the first LinkedIn version.');}}>View first version</button>}</div>
           <p className={copyStatus.startsWith('Copy unavailable')?'el-copy-status':'el-sr'} role={fullyCharged?undefined:'status'}>{copyStatus}</p>
-          {toolsOpen&&<div className="el-tools" id="post-tools">
-            <div className="el-modifiers"><button aria-expanded={roastOpen} onClick={()=>setRoastOpen(!roastOpen)}>Roast this post</button></div>
-            {roastOpen&&<div className="el-roast"><h3>The roast</h3>{roastLines.map((line,i)=><p key={i}>{line}</p>)}</div>}
-            <details className="el-diagnostics"><summary>Post diagnostics · {score.words} words</summary><dl>{[['Thought Leadership Index',`${score.index} / ${score.rank}`],['Humble-brag score',`${score.humbleBrag}%`],['Buzzword density',`${score.buzzDensity} per 100 words`],['Gratitude inflation',`${score.gratitude} · ${score.gratitudeLabel}`],['Dramatic one-liners',score.oneLiners],['Journey references',score.journeys],['Chance of “Well deserved!”',`${score.wellDeserved}%`]].map(([k,v])=><div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl></details>
-          </div>}
         </section>
       </div>
 
