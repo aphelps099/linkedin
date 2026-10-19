@@ -29,6 +29,11 @@ export default function MeetingRoom(){
   function newMeeting(){selectMeeting(nextVariant(meeting.agenda,meeting.variant));}
   function chooseAgenda(agenda){selectMeeting(nextVariant(agenda,lastVariants.current[agenda]??-1));}
   function togglePlay(){if(left)setLeft(false);if(state.playing||state.loading)engine.current?.pause();else engine.current?.play();}
+  function seekKey(e){
+    const now=engine.current?.elapsed()||0;
+    const targets={Home:0,End:meeting.duration,ArrowLeft:now-1,ArrowDown:now-1,ArrowRight:now+1,ArrowUp:now+1,PageDown:now-5,PageUp:now+5};
+    if(Object.hasOwn(targets,e.key)){e.preventDefault();engine.current?.seek(targets[e.key]);}
+  }
   async function fullscreen(){try{if(document.fullscreenElement)await document.exitFullscreen();else await room.current?.requestFullscreen?.();}catch{/* The room remains fully usable when the browser disallows fullscreen. */}}
   const cue=cueAt(meeting,time),frame={time,cue};
   const spotlight=pin||(follow?(cue?.speaker&&cue.speaker!=='all'?cue.speaker:'synergy'):null);
@@ -56,7 +61,7 @@ export default function MeetingRoom(){
           <span>{cue?speaker:finished?'Meeting minutes':time===0?'Your presence is incredibly valuable':'Please hold for further alignment'}</span>
           <p>{cue?cue.text:finished?'We’ll take the next steps offline.':time===0?'Press play. Let’s optimize the next forty seconds.':'♪ '+meeting.groove}</p>
         </div>
-        <div className="mr-timeline"><div><span><b>{meeting.bpm} BPM</b> · {meeting.groove}</span><output aria-label="Meeting playback time">{timeLabel(time)} <em>/ {timeLabel(meeting.duration)}</em></output></div><input type="range" min="0" max={meeting.duration} step=".1" value={time} style={{'--progress':`${fraction}%`}} aria-label="Seek meeting" aria-valuetext={`${timeLabel(time)} of ${timeLabel(meeting.duration)}`} onChange={e=>engine.current?.seek(e.target.value)}/></div>
+        <div className="mr-timeline"><div><span><b>{meeting.bpm} BPM</b> · {meeting.groove}</span><output aria-label="Meeting playback time">{timeLabel(time)} <em>/ {timeLabel(meeting.duration)}</em></output></div><input type="range" min="0" max={meeting.duration} step=".1" value={time} style={{'--progress':`${fraction}%`}} aria-label="Seek meeting" onKeyDown={seekKey} aria-valuetext={`${timeLabel(time)} of ${timeLabel(meeting.duration)}`} onChange={e=>engine.current?.seek(e.target.value)}/></div>
         {state.error&&<p className="mr-error" role="alert">{state.error} <button onClick={()=>engine.current?.play()}>Retry audio</button></p>}
         <div className="mr-toolbar">
           <div className="mr-playback"><button className="mr-play" ref={playButton} onClick={togglePlay} aria-label={state.loading?'Cancel audio loading':state.playing?'Pause meeting':finished?'Replay meeting':'Play meeting'}>{state.loading?<LoaderCircle className="mr-spin" aria-hidden="true"/>:state.playing?<Pause fill="currentColor" aria-hidden="true"/>:finished?<RotateCcw aria-hidden="true"/>:<Play fill="currentColor" aria-hidden="true"/>}<span>{state.loading?'Connecting':state.playing?'Pause':finished?'Replay':'Play meeting'}</span></button><button className="mr-tool" onClick={()=>engine.current?.setMix({muted:!state.muted})} aria-pressed={state.muted}>{state.muted?<VolumeX aria-hidden="true"/>:<Volume2 aria-hidden="true"/>}<span>{state.muted?'Unmute':'Sound'}</span></button></div>

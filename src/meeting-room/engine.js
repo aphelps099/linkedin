@@ -62,7 +62,11 @@ export function createMeetingEngine({onChange=()=>{},contextFactory=()=>new (win
     }catch(e){if(request!==generation||disposed)return;loading=false;playing=false;error=e.name==='AbortError'?'':e.message||'Audio could not start. Please try again.';emit();}
   }
   function pause(){generation++;controller?.abort();offset=elapsed();playing=false;loading=false;stop();emit();}
-  function seek(seconds){const resume=playing||loading;pause();offset=Math.max(0,Math.min(meeting.duration,Number(seconds)||0));emit();if(resume&&offset<meeting.duration)play();}
+  function seek(seconds){
+    const resume=playing||loading;generation++;controller?.abort();playing=false;loading=false;stop();
+    offset=Math.max(0,Math.min(meeting.duration,Number(seconds)||0));emit();
+    if(resume&&offset<meeting.duration)play();
+  }
   function setMix(values){
     if(values.muted!==undefined)muted=!!values.muted;
     if(values.music!==undefined)music=Math.max(0,Math.min(1,values.music));
