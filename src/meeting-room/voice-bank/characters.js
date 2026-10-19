@@ -21,8 +21,8 @@ export const characters = {
     'Precise and restrained. Ask the obvious question without announcing that it is a joke.', 'arjun-listening.jpg'),
   linda:human('Linda · Governance','af_nicole',.91,
     'Low and husky, dry and unhurried. The seasoned colleague who has seen this rollout before.', 'linda-listening.jpg','human-casting-2'),
-  synergy:{name:'Synergy',kind:'robot',status:'existing',version:'season-1',provider:'flite',voice:'kal16',pitch:.91,
-    direction:'Flat digital host. Keep the established identity; do not recast with a human voice.'},
+  synergy:{name:'Synergy',kind:'robot',status:'existing',version:'desktop-robot-2',provider:'espeak-ng',voice:'en-us',rate:154,pitch:35,pitchRange:4,
+    direction:'Flat retro desktop formant speech. Restrained pitch, crisp consonants, dry delivery. Old Mac-style approximation, not the original Fred engine. No fuzz or vocoder.'},
   synthia:{name:'Synthia',kind:'robot',status:'existing',version:'season-1',provider:'flite',voice:'slt',pitch:1.04,
     direction:'Distinct digital trainer. Clear and dry, not fried or melodic.'},
 };

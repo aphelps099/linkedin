@@ -22,9 +22,11 @@ export const cast={
 export const meetings=Object.fromEntries(Object.entries(library).map(([agenda,variants])=>[
   agenda,variants.map((meeting,variant)=>({...meeting,agenda,variant,id:`${agenda}-${variant}`,...audio.meetings[`${agenda}-${variant}`]})),
 ]));
-export function nextVariant(agenda,current,random=Math.random){
-  const choices=meetings[agenda].filter(meeting=>meeting.variant!==current);
-  return choices[Math.min(choices.length-1,Math.floor(random()*choices.length))];
+// Visit each agenda before its alternate take. Every meeting gets one turn.
+export const meetingSequence=[0,1].flatMap(variant=>agendas.map(([agenda])=>meetings[agenda][variant]));
+export function nextMeeting(currentId){
+  const index=meetingSequence.findIndex(meeting=>meeting.id===currentId);
+  return meetingSequence[(index+1)%meetingSequence.length];
 }
 export const timeLabel=seconds=>`${Math.floor(Math.max(0,seconds)/60)}:${String(Math.floor(Math.max(0,seconds)%60)).padStart(2,'0')}`;
 export function cueAt(meeting,time){return meeting?.cues.find(cue=>time>=cue.start&&time<cue.start+cue.duration)||null;}

@@ -6,7 +6,11 @@ import {buildLibrary,productionTake,takeKey} from '../src/meeting-room/voice-ban
 const root=fileURLToPath(new URL('../',import.meta.url));
 const bank=buildLibrary();
 const recordings=JSON.parse(await readFile(resolve(root,'public/studio/voices/recordings.json'),'utf8'));
-const result={version:1,characters:{},lines:{}};
+const result={version:1,characters:{},robots:{},lines:{}};
+for(const [id,profile] of Object.entries(bank.characters)){
+  if(profile.kind!=='robot')continue;
+  result.robots[id]=Object.fromEntries(['version','provider','voice','rate','pitch','pitchRange'].filter(key=>profile[key]!==undefined).map(key=>[key,profile[key]]));
+}
 const needed=bank.lines.filter(line=>bank.characters[line.character].kind==='human'&&line.usages.some(use=>use.type!=='audition'));
 for(const line of needed){
   const profile=bank.characters[line.character];
@@ -18,4 +22,4 @@ for(const line of needed){
 const destination=process.argv[2];
 if(!destination) throw new Error('Pass an export path. Example: /tmp/approved-meeting-voices.json');
 await writeFile(destination,JSON.stringify(result,null,2)+'\n');
-console.log(`Exported ${needed.length} validated human lines to ${destination}. Robot delivery is preserved.`);
+console.log(`Exported ${needed.length} validated human lines and ${Object.keys(result.robots).length} robot profiles to ${destination}.`);

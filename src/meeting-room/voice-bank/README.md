@@ -21,6 +21,15 @@ Strategy, and Kevin revision. Those identities now map to the full season.
 | Arjun / Finance | bm_george | 1.00 | Precise, restrained |
 | Linda / Governance | af_nicole | 0.91 | Low, husky, seasoned |
 
+Synergy's `desktop-robot-2` profile uses eSpeak NG `en-us`, 154 words/minute,
+pitch 35 and range 4: dry, nearly monotone formant synthesis. This follows the
+LinkedInifier's portable desktop-voice settings, with restrained inflection.
+It approximates the old Mac speech character; it is not the original Fred engine
+or a recording from a song. Synthia remains Flite `slt` at pitch factor 1.04.
+Both profiles and the actual eSpeak engine version are saved in every timeline.
+For offline regeneration install the system eSpeak NG library or
+`pip install espeakng-loader==0.2.4` (engine 1.52.0). No human take is reprocessed.
+
 These are synthetic casting identities, not clones extracted from the footage.
 Casting follows delivery, not an inferred accent based on appearance. Kokoro
 uses the preset and speed; direction text is an editorial brief, not a model

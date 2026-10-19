@@ -1,7 +1,8 @@
 import React,{useEffect,useRef,useState} from 'react';
-import {Play,Pause,Shuffle,Video,VideoOff,Volume2,VolumeX,Captions,SlidersHorizontal,Users,Grid2X2,Maximize2,Minimize2,LoaderCircle,RotateCcw,ChevronRight,Check, X} from 'lucide-react';
+import {Play,Pause,SkipForward,Video,VideoOff,Volume2,VolumeX,Captions,SlidersHorizontal,Users,Grid2X2,Maximize2,Minimize2,LoaderCircle,RotateCcw,ChevronRight,Check, X} from 'lucide-react';
 import {ConceptHeader} from '../home-2/ConceptHeader.jsx';
-import {agendas,cast,meetings,nextVariant,timeLabel,cueAt} from './catalog.js';
+import {ConceptFooter} from '../home-2/ConceptFooter.jsx';
+import {agendas,cast,meetings,meetingSequence,nextMeeting,timeLabel,cueAt} from './catalog.js';
 import {createMeetingEngine} from './engine.js';
 import {Participant} from './Participant.jsx';
 
@@ -10,8 +11,8 @@ export default function MeetingRoom(){
   const [meeting,setMeeting]=useState(meetings.standup[0]),[state,setState]=useState(initial),[time,setTime]=useState(0);
   const [captions,setCaptions]=useState(true),[videoOn,setVideoOn]=useState(true),[reactions,setReactions]=useState(true),[mixOpen,setMixOpen]=useState(false);
   const [follow,setFollow]=useState(false);
-  const [pin,setPin]=useState(null),[left,setLeft]=useState(false),[reduced,setReduced]=useState(false),[full,setFull]=useState(false),[number,setNumber]=useState(1);
-  const engine=useRef(null),room=useRef(null),playButton=useRef(null),mixButton=useRef(null),mixPanel=useRef(null),lastVariants=useRef({standup:0});
+  const [pin,setPin]=useState(null),[left,setLeft]=useState(false),[reduced,setReduced]=useState(false),[full,setFull]=useState(false);
+  const engine=useRef(null),room=useRef(null),playButton=useRef(null),mixButton=useRef(null),mixPanel=useRef(null);
   useEffect(()=>{
     const player=createMeetingEngine({onChange:setState});engine.current=player;player.setMeeting(meetings.standup[0]);
     const motion=window.matchMedia('(prefers-reduced-motion: reduce)');const update=()=>setReduced(motion.matches);update();motion.addEventListener('change',update);
@@ -25,9 +26,9 @@ export default function MeetingRoom(){
     const close=e=>{if(e.key==='Escape'){setMixOpen(false);mixButton.current?.focus();}};
     document.addEventListener('keydown',close);return()=>document.removeEventListener('keydown',close);
   },[mixOpen]);
-  function selectMeeting(next){engine.current?.setMeeting(next);setMeeting(next);setTime(0);setPin(null);setFollow(false);setLeft(false);setNumber(n=>n+1);lastVariants.current[next.agenda]=next.variant;}
-  function newMeeting(){selectMeeting(nextVariant(meeting.agenda,meeting.variant));}
-  function chooseAgenda(agenda){selectMeeting(nextVariant(agenda,lastVariants.current[agenda]??-1));}
+  function selectMeeting(next){engine.current?.setMeeting(next);setMeeting(next);setTime(0);setPin(null);setFollow(false);setLeft(false);}
+  function advanceMeeting(){selectMeeting(nextMeeting(meeting.id));}
+  function chooseAgenda(agenda){selectMeeting(meetings[agenda][0]);}
   function togglePlay(){if(left)setLeft(false);if(state.playing||state.loading)engine.current?.pause();else engine.current?.play();}
   function seekKey(e){
     const now=engine.current?.elapsed()||0;
@@ -40,15 +41,16 @@ export default function MeetingRoom(){
   const finished=time>=meeting.duration-.02&&!state.playing&&!state.loading;
   const speaker=cue?.speaker==='all'?'The whole meeting':cast[cue?.speaker]?.name;
   const fraction=Math.min(100,time/meeting.duration*100);
+  const number=meetingSequence.findIndex(item=>item.id===meeting.id)+1;
   return <div className="c2-home mr-page">
-    <ConceptHeader active="Studio" homeSectionBase="/"><a className="mr-nav-current" href="/studio/">Studio <span>↗</span></a></ConceptHeader>
+    <ConceptHeader active="Studio" homeSectionBase="/" theme="dark"/>
     <div className="mr-racing"><span className="mr-slashes" aria-hidden="true"/><span>SOUND LIKE YOU MEAN BUSINESS</span><span className="mr-racing-right">MEETING STUDIO / 01</span></div>
     <main>
       <section className={`mr-room${state.playing?' is-playing':''}`} ref={room} aria-label="LinkedIn Beats meeting studio">
         <div className="mr-windowbar"><Video aria-hidden="true"/><span>LinkedIn Beats Meeting</span><span className="mr-secure"><Check aria-hidden="true"/>Absolutely aligned</span></div>
         <div className="mr-room-head">
           <div className="mr-heading"><h1>{meeting.title}</h1><p><span className={`mr-dot${state.playing?' is-live':''}`} aria-hidden="true"/>{left?'You left the meeting':state.loading?'Connecting to the meeting…':state.playing?'Meeting in progress':finished?'Exceptional alignment. Zero action items.':'Hosted by Synergy'}<span className="mr-meta-separator">·</span><span>{meeting.roster.length} participants</span></p></div>
-          <div className="mr-room-options"><label className="mr-agenda">Agenda<select aria-label="Agenda" value={meeting.agenda} onChange={e=>chooseAgenda(e.target.value)}>{agendas.map(([id,label])=><option key={id} value={id}>{label}</option>)}</select></label><button className="mr-new" onClick={newMeeting}><Shuffle aria-hidden="true"/>New meeting</button></div>
+          <div className="mr-room-options"><label className="mr-agenda">Agenda<select aria-label="Agenda" value={meeting.agenda} onChange={e=>chooseAgenda(e.target.value)}>{agendas.map(([id,label])=><option key={id} value={id}>{label}</option>)}</select></label><button className="mr-new" onClick={advanceMeeting}><SkipForward aria-hidden="true"/>Next meeting</button></div>
         </div>
         <div className="mr-stage">
           <div className="mr-gallery-tools"><span><Users aria-hidden="true"/>{String(meeting.roster.length).padStart(2,'0')} in the room</span><button onClick={()=>{setPin(null);setFollow(!(follow||pin));}} aria-pressed={!!spotlight}><Grid2X2 aria-hidden="true"/>{spotlight?'Gallery view':'Speaker view'}</button></div>
@@ -69,10 +71,10 @@ export default function MeetingRoom(){
           <button className="mr-leave" onClick={()=>{engine.current?.pause();setLeft(true);}}>Leave</button>
         </div>
         {mixOpen&&<div className="mr-mix" id="mr-mix" ref={mixPanel} aria-label="Meeting mix"><div><strong>Your meeting. Your mix.</strong><button aria-label="Close mix" onClick={()=>{setMixOpen(false);mixButton.current?.focus();}}><X aria-hidden="true"/></button></div><label>Voices<input type="range" min="0" max="1" step=".01" value={state.voices} onChange={e=>engine.current?.setMix({voices:+e.target.value})}/></label><label>The beat<input type="range" min="0" max="1" step=".01" value={state.music} onChange={e=>engine.current?.setMix({music:+e.target.value})}/></label><label className="mr-check"><input type="checkbox" checked={reactions} onChange={e=>setReactions(e.target.checked)}/>Excessive encouragement</label></div>}
-        <div className="mr-room-foot"><span>MEETING {String(number).padStart(2,'0')} <i>/</i> HOSTED BY SYNERGY</span><span>This could have been a beat.</span></div>
+        <div className="mr-room-foot"><span>MEETING {String(number).padStart(2,'0')} OF {meetingSequence.length} <i>/</i> HOSTED BY SYNERGY</span><span>This could have been a beat.</span></div>
       </section>
       <section className="mr-next" aria-label="More meeting agendas"><div><span>THE AGENDA</span><h2>Exceptional meetings.<br/>Questionable outcomes.</h2></div><div className="mr-agenda-links">{agendas.map(([id,label],i)=><button key={id} className={meeting.agenda===id?'is-current':''} onClick={()=>{chooseAgenda(id);room.current?.scrollIntoView({behavior:reduced?'instant':'smooth',block:'start'});}}><span>{String(i+1).padStart(2,'0')}</span>{label}<ChevronRight aria-hidden="true"/></button>)}</div></section>
     </main>
-    <footer className="mr-site-foot"><a href="/">LinkedIn Beats_</a><p>Corporate jargon. Robot vocals. Unreasonably good beats.</p><a href="/lessons/">Get LinkedInified ↗</a></footer>
+    <ConceptFooter variant="dark"/>
   </div>;
 }

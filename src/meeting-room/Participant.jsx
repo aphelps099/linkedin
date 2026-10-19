@@ -2,6 +2,7 @@ import React,{memo,useEffect,useRef,useState} from 'react';
 import {Mic,MicOff,VideoOff,Pin,Music2} from 'lucide-react';
 import {cast,isSpeaker,cueLevel} from './catalog.js';
 import tracking from './robot-tracking.json';
+import {PrinterFeed} from './PrinterFeed.jsx';
 
 const base='/studio/season/';
 export function robotFrame(id,time){
@@ -33,7 +34,6 @@ export const Participant=memo(function Participant({id,meeting,frame,playing,aud
   const active=playing&&audible&&isSpeaker(id,frame.cue);
   const performing=playing&&musicOn&&!!c.instrument;
   let clip=c.robot?`${c.media}-listening`:c.silent?null:`${c.media}-${active?'speaking':performing?(Math.floor(frame.time/(240/meeting.bpm*4))%2?'listening':'playing'):'listening'}`;
-  if(id==='printer')clip='printer-printing';
   const moving=playing&&videoOn&&!reduced;
   const poster=id==='droid'?`${base}posters/droid.jpeg`:`${base}posters/${clip}.jpg`;
   frameRef.current={...frame,active};
@@ -41,20 +41,9 @@ export const Participant=memo(function Participant({id,meeting,frame,playing,aud
   useEffect(()=>{
     const v=video.current;if(!v)return;
     if(moving&&!failed){
-      // A printer completes one real print event, then holds its final frame.
-      // Its stack is never reset by a looping or reversed clip.
-      if(id!=='printer'||!v.ended)v.play().catch(()=>setFailed(true));
+      v.play().catch(()=>setFailed(true));
     }else v.pause();
   },[moving,clip,failed,id]);
-  useEffect(()=>{
-    const v=video.current;
-    if(id==='printer'&&v&&Number.isFinite(v.duration)){
-      const target=Math.max(0,Math.min(v.duration-.04,frame.time));
-      if(Math.abs(v.currentTime-target)>.3)v.currentTime=target;
-      if(target>=v.duration-.05)v.pause();
-      else if(moving&&v.paused)v.play().catch(()=>setFailed(true));
-    }
-  },[id,frame.time,moving]);
   useEffect(()=>{
     if(!c.robot||!videoOn)return;
     const ctx=canvas.current?.getContext('2d');if(!ctx)return;
@@ -69,8 +58,8 @@ export const Participant=memo(function Participant({id,meeting,frame,playing,aud
   const reaction=reactions&&playing&&!active&&!c.silent&&frame.cue&&['people','strategy','linda'].includes(id)&&frame.time%13<3;
   return <button type="button" className={`mr-tile${active?' is-speaking':''}${pinned?' is-pinned':''}`} onClick={()=>onPin(id)} aria-label={`${pinned?'Unpin':'Spotlight'} ${c.name}`} aria-pressed={pinned} data-character={id}>
     {c.offline||!videoOn?<div className="mr-camera-off"><VideoOff aria-hidden="true"/><div className="mr-avatar">{c.offline?'PT':c.name.split(' ').map(s=>s[0]).slice(0,2).join('')}</div><strong>{c.name}</strong><span>{c.offline?'Connecting to audio…':'Camera off'}</span></div>:<div className="mr-media">
-      <img className="mr-poster" src={poster} alt="" loading="eager"/>
-      {clip&&<video key={`${meeting.id}-${clip}`} ref={video} className={ready?'is-ready':''} src={moving||ready?`${base}clips/${clip}.mp4`:undefined} muted playsInline disablePictureInPicture loop={id!=='printer'} preload="none" onPlaying={()=>setReady(true)} onError={()=>setFailed(true)} aria-hidden="true"/>}
+      {id==='printer'?<PrinterFeed time={frame.time} playing={moving} reduced={reduced}/>:<img className="mr-poster" src={poster} alt="" loading="eager"/>}
+      {clip&&<video key={`${meeting.id}-${clip}`} ref={video} className={ready?'is-ready':''} src={moving||ready?`${base}clips/${clip}.mp4`:undefined} muted playsInline disablePictureInPicture loop preload="none" onPlaying={()=>setReady(true)} onError={()=>setFailed(true)} aria-hidden="true"/>}
       {c.robot&&<canvas className="mr-robot-display" ref={canvas} width="1280" height="720" aria-hidden="true"/>}
     </div>}
     <span className="mr-tile-top">

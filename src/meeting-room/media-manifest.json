@@ -528,7 +528,9 @@
       "seamlessLoop": false,
       "sourceType": "existing-approved-footage",
       "lipSync": "not-applicable",
-      "runtimeUse": "finite print event; cut away at end, no continuous loop",
+      "runtimeUse": "Source for continuous canvas print: fixed frame at 3.75s, photographic page artwork, 3.6s forward feed with persistent stack",
+      "derivedPoster": "posters/printer-neutral.jpg",
+      "compositor": "src/meeting-room/printer-paper.js",
       "sha256": "5276265e637f4cceb0d981e0ccb6432df7334fe46fe4b27a999edc8678a1c1db",
       "interfaceNotes": "Canonical participant name footer; generated reference edge labels masked. Use matching label strip in meeting compositor."
     }

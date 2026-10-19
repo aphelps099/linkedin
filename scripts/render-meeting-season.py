@@ -8,7 +8,8 @@ import json, math, subprocess, tempfile, argparse, unicodedata, hashlib
 from pathlib import Path
 import numpy as np
 from scipy.io import wavfile
-from scipy.signal import butter, sosfilt
+from scipy.signal import butter, sosfilt, resample_poly
+from retro_speech import RetroSpeech
 
 ROOT=Path(__file__).resolve().parents[1]
 OUT=ROOT/'public/studio/season/audio'
@@ -17,12 +18,15 @@ LIB=json.loads(Path('/tmp/meeting-scripts.json').read_text())
 STEMS=json.loads((ROOT/'src/studio-2/audio-manifest.json').read_text())['tracks']
 BEDS={'standup':'offline','onboarding':'circle-back','unlock':'alignment','paperless':'no-action','founder':'humbled','offline':'offline','quarterly':'synergy'}
 # Stable voices belong to characters, never to their position in the grid.
-VOICES={'synergy':('kal16',.91),'synthia':('slt',1.04)}
 CACHE={}
 parser=argparse.ArgumentParser()
 parser.add_argument('--voice-bank',required=True,help='Approved cast bank from export-meeting-voice-bank.mjs')
 ARGS=parser.parse_args()
 VOICE_BANK=json.loads(Path(ARGS.voice_bank).read_text()) if ARGS.voice_bank else None
+VOICES=VOICE_BANK['robots']
+RETRO=RetroSpeech()
+assert VOICES['synergy']['provider']=='espeak-ng' and VOICES['synthia']['provider']=='flite'
+VOICES['synergy']['engineVersion']=RETRO.version
 SPEAKERS=set(VOICES)|set(VOICE_BANK['characters'])
 
 def bank_key(character,text):
@@ -67,15 +71,21 @@ def speech(text,character,tmp):
         if len(active):x=x[max(0,active[0]-1200):min(len(x),active[-1]+3600)]
         CACHE[key]=x.copy()
         return x
-    voice,pitch=VOICES[character]
-    (tmp/'line.txt').write_text(text.replace('’',"'"))
-    ff('-f','lavfi','-i',f'flite=textfile={tmp}/line.txt:voice={voice}',
-       '-af',f'aresample={SR},asetrate={SR*pitch},aresample={SR},atempo={1/pitch}',
-       '-ar',SR,'-ac',1,tmp/'line.wav')
-    _,x=wavfile.read(tmp/'line.wav');x=x.astype(np.float64)/32768
+    profile=VOICES[character]
+    if profile['provider']=='espeak-ng':
+        rate,x=RETRO.synthesize(text,voice=profile['voice'],rate=profile['rate'],pitch=profile['pitch'],pitch_range=profile['pitchRange'])
+        factor=math.gcd(SR,rate);x=resample_poly(x,SR//factor,rate//factor)
+    else:
+        voice,pitch=profile['voice'],profile['pitch']
+        (tmp/'line.txt').write_text(text.replace('’',"'"))
+        ff('-f','lavfi','-i',f'flite=textfile={tmp}/line.txt:voice={voice}',
+           '-af',f'aresample={SR},asetrate={SR*pitch},aresample={SR},atempo={1/pitch}',
+           '-ar',SR,'-ac',1,tmp/'line.wav')
+        _,x=wavfile.read(tmp/'line.wav');x=x.astype(np.float64)/32768
     active=np.flatnonzero(np.abs(x)>.006)
     if len(active):x=x[max(0,active[0]-600):min(len(x),active[-1]+1800)]
-    x=sosfilt(butter(2,[180,6500],btype='bandpass',fs=SR,output='sos'),x)
+    band=[120,5000] if profile['provider']=='espeak-ng' else [180,6500]
+    x=sosfilt(butter(2,band,btype='bandpass',fs=SR,output='sos'),x)
     # Clear, deliberately dry computer speech; no fuzz, distortion or chorus FX.
     x*=.15/max(.001,np.sqrt(np.mean(x*x)))
     x*=min(1,.78/max(.001,np.max(np.abs(x))))
@@ -111,13 +121,13 @@ OUT.mkdir(parents=True,exist_ok=True)
 manifest_path=ROOT/'src/meeting-room/audio-manifest.json'
 previous=json.loads(manifest_path.read_text()) if manifest_path.exists() else {'meetings':{}}
 result={'version':1,'sampleRate':SR,'envelopeHz':25,'voiceCast':VOICE_BANK['characters'],
-        'robotCast':{who:{'provider':'flite','voice':voice,'pitch':pitch} for who,(voice,pitch) in VOICES.items()},'meetings':{}}
+        'robotCast':VOICES,'meetings':{}}
 
 def sources(who,text,roster):
     ids=[p for p in roster if p in SPEAKERS] if who=='all' else [who]
     phrases=[t.strip()+'.' for t in text.split('.') if t.strip()] if who=='all' else [text]
     return [{'character':person,'text':phrase,**(
-        {'provider':'flite','voice':VOICES[person][0],'pitch':VOICES[person][1]} if person in VOICES else
+        VOICES[person] if person in VOICES else
         {k:VOICE_BANK['lines'][bank_key(person,phrase)][k] for k in ('line','take','masterSha256')}
     )} for phrase in phrases for person in ids]
 

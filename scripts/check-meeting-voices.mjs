@@ -74,7 +74,13 @@ for(const [id,meeting] of Object.entries(bank.meetings)){
     for(const [i,lineId] of expected.entries()){
       const line=bank.lines.find(l=>l.id===lineId),profile=bank.characters[line.character],source=rendered.cues[index].sources[i];
       assert.equal(source.character,line.character);assert.equal(source.text,line.text);
-      if(profile.kind==='robot'){assert.equal(source.voice,profile.voice);assert.equal(source.pitch,profile.pitch);continue;}
+      if(profile.kind==='robot'){
+        for(const key of ['provider','version','voice','pitch','rate','pitchRange']){
+          assert.equal(source[key],profile[key]);assert.equal(season.robotCast[line.character][key],profile[key]);
+        }
+        if(line.character==='synergy')assert(source.engineVersion,'Record the actual retro speech engine version');
+        continue;
+      }
       assert.equal(season.voiceCast[line.character].voice,profile.voice);assert.equal(season.voiceCast[line.character].speed,profile.speed);
       const renderer=recordings.rendererByCharacter[line.character],take=productionTake(line,profile,recordings.takes,renderer);
       assert.equal(source.take,takeKey(line,profile,renderer));assert.equal(source.line,line.id);assert.equal(source.masterSha256,take.masterSha256);

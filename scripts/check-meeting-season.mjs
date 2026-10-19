@@ -5,9 +5,10 @@ import {pathToFileURL} from 'node:url';
 import React from 'react';
 import {renderToString} from 'react-dom/server';
 import {createMeetingEngine} from '../src/meeting-room/engine.js';
+import {PRINT_CYCLE,printerPhase,paperRow} from '../src/meeting-room/printer-paper.js';
 
 const bundle=await build({entryPoints:['src/meeting-room/catalog.js'],bundle:true,platform:'node',format:'esm',write:false});
-const {meetings,cast,nextVariant,cueAt,isSpeaker}=await import(`data:text/javascript;base64,${Buffer.from(bundle.outputFiles[0].text).toString('base64')}`);
+const {meetings,cast,meetingSequence,nextMeeting,cueAt,isSpeaker}=await import(`data:text/javascript;base64,${Buffer.from(bundle.outputFiles[0].text).toString('base64')}`);
 assert.equal(Object.keys(meetings).length,7);
 let total=0;
 for(const [agenda,variants] of Object.entries(meetings)){
@@ -25,7 +26,6 @@ for(const [agenda,variants] of Object.entries(meetings)){
     }
     assert(end<m.duration);assert(m.duration<60);assert.equal(cueAt(m,0),null);
     await access(`public/studio/season/audio/${m.voice}`);await access(`public/studio/season/audio/${m.bed}`);
-    assert.notEqual(nextVariant(agenda,m.variant).variant,m.variant);
     for(const id of m.roster){
       const c=cast[id];if(c.offline)continue;
       if(id==='droid'){await access('public/studio/season/posters/droid.jpeg');continue;}
@@ -35,6 +35,22 @@ for(const [agenda,variants] of Object.entries(meetings)){
   }
 }
 assert.equal(total,14);
+let current=meetingSequence[0];const visited=new Set();
+for(let i=0;i<14;i++){
+  assert(!visited.has(current.id),'Every meeting gets a turn before repeating');visited.add(current.id);
+  const next=nextMeeting(current.id);assert.notEqual(next.agenda,current.agenda);current=next;
+}
+assert.equal(current.id,meetingSequence[0].id,'The sequence wraps after all 14 meetings');
+await access('public/studio/season/posters/printer-neutral.jpg');
+for(let cycle=0;cycle<16;cycle++){
+  const mid=printerPhase(cycle*PRINT_CYCLE+1.8);
+  assert.equal(mid.completed,cycle);assert(mid.feed>0&&mid.feed<1,'Printer continues feeding beyond the first four seconds');
+  const before=printerPhase((cycle+1)*PRINT_CYCLE-.001),after=printerPhase((cycle+1)*PRINT_CYCLE+.001);
+  assert.equal(after.completed,before.completed+1,'Printed pages remain in the output stack');
+  assert.equal(before.settle,1,'Every sheet lands before the next begins');
+}
+assert.deepEqual(printerPhase(-1),printerPhase(0));
+const landed=paperRow(1,1,1,5);assert(landed.every(p=>p.every(Number.isFinite)));
 
 class Param{constructor(value=0){this.value=value;this.events=[];}setTargetAtTime(value,time){this.value=value;this.events.push([value,time]);}cancelScheduledValues(){}}
 class Node{constructor(){this.gain=new Param();this.connections=[];}connect(node){this.connections.push(node);}disconnect(){this.disconnected=true;}}
@@ -78,7 +94,7 @@ try{
   const html=renderToString(React.createElement(Room));
   assert.equal((html.match(/data-character=/g)||[]).length,5);
   assert.equal((html.match(/<option /g)||[]).length,7);
-  for(const text of ['Agenda','New meeting','Play meeting','Captions','Seek meeting','Stop video','Leave'])assert(html.includes(text));
+  for(const text of ['Agenda','Next meeting','Play meeting','Captions','Seek meeting','Stop video','Leave','c2-header--dark','c2-footer--dark','The necessary small print','mr-printer-display'])assert(html.includes(text));
   assert(!/<video[^>]*\ssrc=/.test(html),'Video downloads wait for play');assert(!/autoPlay/.test(html));
   assert(!html.includes('getUserMedia'));
   const rects=[];const drawing={clearRect(){},save(){},restore(){},translate(){},rotate(){},scale(){},fillRect:(...args)=>rects.push(args)};

@@ -6,10 +6,11 @@ the rest of the site still uses their existing shared audio components.
 
 ## Direction
 
-Seven agendas, two authored variants per agenda. `New meeting` chooses a variant
-other than the current one. Cast sizes are 3, 5, 9 or 12. We randomize complete
-scripts, not disconnected sentences: the setup, escalation, chorus and closing
-joke must remain in order. Synergy hosts every meeting.
+Seven agendas, two authored variants per agenda. `Next meeting` advances through
+all seven agendas, then their seven alternate takes, then wraps. No shuffling or
+repeats until all 14 meetings have played. Agenda selection opens its first take.
+Cast sizes are 3, 5, 9 or 12. The setup, escalation, chorus and closing joke remain
+in their authored order. Synergy hosts every meeting.
 
 `scripts.js` is the source of truth for the approved dialogue and cast.
 `audio-manifest.json` contains the actual rendered cue offsets, durations and
@@ -19,8 +20,10 @@ The speaking cast performs the shared chorus; printer, droid and Pat never sing.
 
 The human voices are the user-approved Kokoro cast from October 19. Linda uses
 Nicole, Strategy uses Onyx, and Kevin uses Puck; identities are fixed per
-character in `voice-bank/characters.js`. Synergy and Synthia keep their distinct
-Flite computer voices. The instrumental beds remain the original Studio 2 stems.
+character in `voice-bank/characters.js`. Synergy uses eSpeak NG formant speech,
+with a narrow pitch range and the LinkedInifier's portable robot rate/pitch.
+This is an old Mac-style approximation, not Apple's original Fred voice. Synthia
+keeps her distinct Flite voice. The instrumental beds remain the Studio 2 stems.
 No voice service is called during playback.
 
 All 14 timelines are rebuilt from the actual recordings. Each cue records its
@@ -52,10 +55,11 @@ Hidden tabs pause the meeting. Failed video playback leaves the poster visible.
   the screen. Light travels left to right. Vocal level affects brightness only.
   **Never animate vertical height, warp the metal, move the mouth into the
   middle of the head, or redesign either robot.** Eyes remain the source eyes.
-- Printer media is a finite real print event followed by a held last frame.
-  Seeking resets it to the corresponding moment. Do not loop a growing paper
-  stack or reverse pages back into the printer. A longer continuous print
-  action requires additional approved footage.
+- Printer uses the approved clip's last stable frame plus its real printed page
+  artwork. A canvas mesh feeds a sheet every 3.6 seconds and lands it on a growing
+  stack. The printer body stays fixed; sheets never reverse or vanish on repeat.
+  Meeting time determines the feed and page count, including after seek/replay.
+  Pause, camera-off and reduced motion stop the animation. No new generation.
 - The droid uses the approved still reference. Pat remains camera-off.
 
 Human clip transitions are editorial cuts. The plates are not certified
@@ -63,12 +67,13 @@ seamless loops; use future matched neutral endpoints to improve idle repeats.
 
 ## Controls and playback
 
-Agenda and New meeting reset to a paused meeting, retaining the user's mix.
+Agenda and Next meeting reset to a paused meeting, retaining the user's mix.
 Play is the only audio activation gesture. Sound mutes the entire meeting;
 Mix independently changes voices/music with no source restart. Speaker view
 follows the current speaker; clicking a tile manually spotlights that person.
 Stop video, captions, reactions, leave/rejoin, seek and replay are local controls.
 No webcam, microphone or third-party meeting service is accessed.
+The shared compact black navigation and complete dark site footer frame the room.
 
 The playback engine cancels stale loads, caches at most four decoded buffers,
 handles browser audio interruptions, ducks music under dialogue and limits
@@ -81,7 +86,8 @@ Run `npm run check:meeting` and `npm run build`.
 To regenerate the local audio, export `library` from `scripts.js` as JSON to
 `/tmp/meeting-scripts.json`, then export the approved voice bank and run
 `python scripts/render-meeting-season.py --voice-bank /tmp/approved-meeting-voices.json`.
-Requirements: ffmpeg with Flite, NumPy and SciPy. For new robot plates run
+Requirements: ffmpeg with Flite, NumPy, SciPy, and eSpeak NG (system library or
+`espeakng-loader==0.2.4`, currently bundles engine 1.52.0). For new robot plates run
 `python scripts/track-meeting-robots.py` (also needs OpenCV), then inspect every
 face overlay against the actual footage before shipping. Never reuse tracking
 coordinates for a different video.
