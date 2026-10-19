@@ -48,6 +48,13 @@ body.studio-meeting{margin:0;background:#090a0c}
 .mr-media>video.is-ready{opacity:1}
 .mr-media>video.mr-exact-performance{z-index:1;transition:none}
 .mr-media>video.mr-exact-performance.is-visible{opacity:1}
+.mr-tile[data-character="keys"] .mr-namebar{left:12.5%;right:auto;min-height:10%;max-width:65%;background:#15171b}
+.mr-tile.has-keyboard-detail .mr-media>video.mr-exact-performance{height:67%;bottom:auto;background:#111315}
+.mr-keyboard-detail{position:absolute;inset:67% 0 0;z-index:2;background:#111315;border-top:2px solid #393d45;opacity:0;pointer-events:none;overflow:hidden}
+.mr-keyboard-detail.is-visible{opacity:1}
+.mr-keyboard-detail>img,.mr-keyboard-detail>video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center top}
+.mr-tile.has-keyboard-detail .mr-namebar{left:0;min-height:22px;padding:4px 7px;font-size:10px;max-width:45%;background:#15171bd9}
+.mr-tile.has-keyboard-detail .mr-namebar small{display:none}
 .mr-robot-display,.mr-printer-display{pointer-events:none;z-index:2}
 .mr-namebar{position:absolute;bottom:0;left:0;right:0;min-height:29px;padding:7px 10px;background:#15171beb;display:flex;align-items:center;gap:7px;z-index:3;font-size:12px;line-height:1.2;color:#e1e4eb;white-space:nowrap}
 .mr-namebar>span:not(.mr-speaking-dots){overflow:hidden;text-overflow:ellipsis}

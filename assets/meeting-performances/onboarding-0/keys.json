@@ -1,0 +1,95 @@
+{
+  "character": "keys",
+  "meeting": "onboarding-0",
+  "status": "reviewed-integrated",
+  "audio": "keys-exact-onboarding-0.wav",
+  "audioSha256": "cb96ad49f3c77ac99d51289514290c4a3d131557b7b9957d0ea268a996cea45f",
+  "duration": 11.296833333333334,
+  "characterImage": "assets/meeting-performances/onboarding-0/keys-wide-reference.png",
+  "solos": [
+    {
+      "cueIndex": 4,
+      "offset": 0.25,
+      "duration": 3.696833333333333,
+      "sources": [
+        {
+          "character": "keys",
+          "text": "This will unlock our next generation of onboarding capacity.",
+          "line": "keys-31504c70ed87f8b0",
+          "take": "57f3af8a1fdfaab93249e40a208df205cb08318282670524c24aa26ba8066d99",
+          "masterSha256": "412e7e924005c20ef6f46e126872f43dcc8190980cd30bcfab7a3140ce92fc75"
+        }
+      ]
+    }
+  ],
+  "choruses": [
+    {
+      "cueIndex": 7,
+      "offset": 4.446833333333333,
+      "duration": 6.6,
+      "phrases": [
+        {
+          "start": 0.0,
+          "duration": 0.7520416666666667,
+          "slotDuration": 1.2,
+          "source": {
+            "character": "keys",
+            "text": "Onboard.",
+            "line": "keys-b521e13bc481292a",
+            "take": "00fb9225847a370a161912b958c3cdcd69c2cfb5fa93d31e5d868a73314ec114",
+            "masterSha256": "8c4d77a09bad15473e4fa34ac667dd206c0ad853e8a948d4c0e0148cfe8f6ef4"
+          }
+        },
+        {
+          "start": 1.2,
+          "duration": 0.925625,
+          "slotDuration": 1.8,
+          "source": {
+            "character": "keys",
+            "text": "Optimize.",
+            "line": "keys-5f8f4f49521f1312",
+            "take": "92262db9080dc5ff5c34b6bcd026ba8681103c6ab7bc332da9de8cb927923215",
+            "masterSha256": "e2c7d50eebe66451eb5885cb7d90a587cb1b405272caa64659728e23420847af"
+          }
+        },
+        {
+          "start": 3.0,
+          "duration": 0.7520416666666667,
+          "slotDuration": 1.2,
+          "source": {
+            "character": "keys",
+            "text": "Onboard.",
+            "line": "keys-b521e13bc481292a",
+            "take": "00fb9225847a370a161912b958c3cdcd69c2cfb5fa93d31e5d868a73314ec114",
+            "masterSha256": "8c4d77a09bad15473e4fa34ac667dd206c0ad853e8a948d4c0e0148cfe8f6ef4"
+          }
+        },
+        {
+          "start": 4.2,
+          "duration": 1.4415833333333334,
+          "slotDuration": 2.4,
+          "source": {
+            "character": "keys",
+            "text": "We’ll take this offline.",
+            "line": "keys-0b5b8838622df915",
+            "take": "866cf7e15ddc96c57fd3834994ca7c21cceabd936f22e2875f26815e43299b3c",
+            "masterSha256": "6852646c77fd2a66a2b30c343ea5db3216e9d14fa66984a4e2eca76f4961c750"
+          }
+        }
+      ]
+    }
+  ],
+  "direction": "Exact approved voice. Restrained natural articulation, subtle blinks, stable attached lips and headset. Preserve face identity.",
+  "workflow": "Runway Character Script to Video, uploaded Audio",
+  "taskId": "d8d9dd7e-fa8f-4a12-ad0b-904e859c893d",
+  "assetId": "7cdf4181-93f2-4e17-b0cd-05be5f799504",
+  "creditsSpent": 2,
+  "runwaySession": "5bb35d14-ea57-4d00-979c-8d4c846ccbad",
+  "output": "keys-performance.mp4",
+  "outputSha256": "3f0b23fb2b7f61baa4a7c2116c588de252b3c97ed8bcc1b65a93f05b37264867",
+  "runtimeVideo": "public/studio/performances/keys-onboarding-exact-v1.mp4",
+  "runtimeSha256": "04507cf7a32c4fe143cc5aa20ebd16c445dd16342910ced39690a600b1a365cd",
+  "audioLagSeconds": 0,
+  "audioWaveformCorrelation": 0.9998731662921204,
+  "reviewNotes": "Reviewed solo and chorus frames: stable face/headset, attached lips, subtle blinks. Original approved voice master stays in the live meeting. Keys has a separate approved keyboard camera during speech because the speech renderer reframes to a close shot."
+}

@@ -1,0 +1,80 @@
+{
+  "character": "operations",
+  "meeting": "onboarding-0",
+  "status": "reviewed-integrated",
+  "audio": "operations-exact-onboarding-0.wav",
+  "audioSha256": "0c66b1b1613d4abd8ba5506913ba65933070757f7da4aa5ebd84b8c20fc2c43f",
+  "duration": 7.1,
+  "characterImage": "public/studio/season/posters/drums-listening.jpg",
+  "solos": [],
+  "choruses": [
+    {
+      "cueIndex": 7,
+      "offset": 0.25,
+      "duration": 6.6,
+      "phrases": [
+        {
+          "start": 0.0,
+          "duration": 1.025,
+          "slotDuration": 1.2,
+          "source": {
+            "character": "operations",
+            "text": "Onboard.",
+            "line": "operations-b521e13bc481292a",
+            "take": "8ab00719d4484428f6c849a93df124b967600f275d4a76fde139224c3f0c73bb",
+            "masterSha256": "657afdbea7085f739013c219fef6583b1111f019cc042052a7634db4af19810c"
+          }
+        },
+        {
+          "start": 1.2,
+          "duration": 1.1491666666666667,
+          "slotDuration": 1.8,
+          "source": {
+            "character": "operations",
+            "text": "Optimize.",
+            "line": "operations-5f8f4f49521f1312",
+            "take": "d2bd7bca3f0c78d6700f73491b9bf2d239393afc96755aa911d859be0f1cae61",
+            "masterSha256": "a473649c22bc822954c56f9d10fb0a1e68d26317174730fea62675f8e6dea517"
+          }
+        },
+        {
+          "start": 3.0,
+          "duration": 1.025,
+          "slotDuration": 1.2,
+          "source": {
+            "character": "operations",
+            "text": "Onboard.",
+            "line": "operations-b521e13bc481292a",
+            "take": "8ab00719d4484428f6c849a93df124b967600f275d4a76fde139224c3f0c73bb",
+            "masterSha256": "657afdbea7085f739013c219fef6583b1111f019cc042052a7634db4af19810c"
+          }
+        },
+        {
+          "start": 4.2,
+          "duration": 1.6669166666666666,
+          "slotDuration": 2.4,
+          "source": {
+            "character": "operations",
+            "text": "We’ll take this offline.",
+            "line": "operations-0b5b8838622df915",
+            "take": "0eceb0e89d47fca2e1651244586c159e3c174ed17895229e6514e85220b2740a",
+            "masterSha256": "704d9856c7e6d2a9ef5052d26505ffc3c7a9e98f3de22f3976374039473fdd58"
+          }
+        }
+      ]
+    }
+  ],
+  "direction": "Exact approved voice. Restrained natural articulation, subtle blinks, stable attached lips and headset. Preserve face identity.",
+  "workflow": "Runway Character Script to Video, uploaded Audio",
+  "taskId": "44baa5b5-fde8-4db9-bc4a-e6ea57e3e319",
+  "assetId": "e8659501-9e44-4048-bb3b-3f50cafb82be",
+  "creditsSpent": 2,
+  "runwaySession": "5bb35d14-ea57-4d00-979c-8d4c846ccbad",
+  "output": "operations-performance.mp4",
+  "outputSha256": "570234deb4e95e95766867a5e7018eb3701f6beaecbf8d69b5a3b96f59516030",
+  "runtimeVideo": "public/studio/performances/operations-onboarding-exact-v1.mp4",
+  "runtimeSha256": "538388b32a73e695d617a4c65d2550c79841297923dbdd72fb3d1136915c6276",
+  "audioLagSeconds": 0,
+  "audioWaveformCorrelation": 0.9999850755111261,
+  "reviewNotes": "Reviewed solo and chorus frames: stable face/headset, attached lips, subtle blinks. Original approved voice master stays in the live meeting. Keys has a separate approved keyboard camera during speech because the speech renderer reframes to a close shot."
+}

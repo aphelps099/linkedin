@@ -1,0 +1,7 @@
+{
+  "tool": "built-in image_gen",
+  "reference": "public/studio/season/posters/keys-playing.jpg",
+  "output": "keys-wide-reference.png",
+  "prompt": "Preserve the exact woman, face, hairstyle, navy blouse, sales headset and fluorescent office. Reframe medium waist-up, both hands and three octaves of keyboard in the lower third, margin below instrument. Remove player borders and all text. No plants or new people.",
+  "result": "Wider reference prepared; the speech renderer still automatically cropped to her head and shoulders. Runtime uses a separate instrument-camera detail beneath the speaking performance."
+}

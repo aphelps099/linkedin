@@ -1,0 +1,95 @@
+{
+  "character": "strategy",
+  "meeting": "onboarding-0",
+  "status": "reviewed-integrated",
+  "audio": "strategy-exact-onboarding-0.wav",
+  "audioSha256": "6eb011a8657b6595b7503ce4aaa54a7e0506bf2f9bac3424b6e42ccb39f90641",
+  "duration": 9.598375,
+  "characterImage": "public/studio/season/posters/strategy-listening.jpg",
+  "solos": [
+    {
+      "cueIndex": 2,
+      "offset": 0.25,
+      "duration": 1.998375,
+      "sources": [
+        {
+          "character": "strategy",
+          "text": "What will they be working on?",
+          "line": "strategy-2e2591a335ecc9c7",
+          "take": "effe352570fba97e78523a75e4e0fbc70ec2ad4a15ae5b1c724a4f956f16a4a1",
+          "masterSha256": "28f20d2e86f67f06b4fb8d8d0488722d21a8cb7f259ca7c80b5e8fb505217f15"
+        }
+      ]
+    }
+  ],
+  "choruses": [
+    {
+      "cueIndex": 7,
+      "offset": 2.748375,
+      "duration": 6.6,
+      "phrases": [
+        {
+          "start": 0.0,
+          "duration": 1.0454166666666667,
+          "slotDuration": 1.2,
+          "source": {
+            "character": "strategy",
+            "text": "Onboard.",
+            "line": "strategy-b521e13bc481292a",
+            "take": "5d90a8ab433d062f355afdab269a13504e7d0c487d3de1f23a9505957373726b",
+            "masterSha256": "e08e04642cea2d23424cc56b97d48353b9c80e3ea9685ef0e94f35c368e0c8d0"
+          }
+        },
+        {
+          "start": 1.2,
+          "duration": 1.14625,
+          "slotDuration": 1.8,
+          "source": {
+            "character": "strategy",
+            "text": "Optimize.",
+            "line": "strategy-5f8f4f49521f1312",
+            "take": "c0ea6a70529864836b7d52f177cac7f821d5fd804c122deecc32673523d56938",
+            "masterSha256": "9d3b73246041fd83c61a3929e6eeceb8f6039d58085532d83595330627a69049"
+          }
+        },
+        {
+          "start": 3.0,
+          "duration": 1.0454166666666667,
+          "slotDuration": 1.2,
+          "source": {
+            "character": "strategy",
+            "text": "Onboard.",
+            "line": "strategy-b521e13bc481292a",
+            "take": "5d90a8ab433d062f355afdab269a13504e7d0c487d3de1f23a9505957373726b",
+            "masterSha256": "e08e04642cea2d23424cc56b97d48353b9c80e3ea9685ef0e94f35c368e0c8d0"
+          }
+        },
+        {
+          "start": 4.2,
+          "duration": 2.042333333333333,
+          "slotDuration": 2.4,
+          "source": {
+            "character": "strategy",
+            "text": "We’ll take this offline.",
+            "line": "strategy-0b5b8838622df915",
+            "take": "2c7c2b5cded6aa322e656f2ab9bb71a8b89ea227d5c9863758621a8988778640",
+            "masterSha256": "e97f2dda732f464d1e2d4803f842699b5cebb6706d30633cca761564dcc8caa0"
+          }
+        }
+      ]
+    }
+  ],
+  "direction": "Exact approved voice. Restrained natural articulation, subtle blinks, stable attached lips and headset. Preserve face identity.",
+  "workflow": "Runway Character Script to Video, uploaded Audio",
+  "taskId": "ac4f6e3d-3a44-4f74-accb-04a7a817bd40",
+  "assetId": "1229a830-ad8c-4d6f-a3b9-057756b56863",
+  "creditsSpent": 2,
+  "runwaySession": "5bb35d14-ea57-4d00-979c-8d4c846ccbad",
+  "output": "strategy-performance.mp4",
+  "outputSha256": "9c87521d711c1cee850010b9ba331869a72e11a41b9d019ec022f0d12dcbd85f",
+  "runtimeVideo": "public/studio/performances/strategy-onboarding-exact-v1.mp4",
+  "runtimeSha256": "a46c0a23e68caafe6429a64eaa651612ea940e1466e87a1e88848fbc7a6e0a0f",
+  "audioLagSeconds": 0,
+  "audioWaveformCorrelation": 0.9999864621261699,
+  "reviewNotes": "Reviewed solo and chorus frames: stable face/headset, attached lips, subtle blinks. Original approved voice master stays in the live meeting. Keys has a separate approved keyboard camera during speech because the speech renderer reframes to a close shot."
+}

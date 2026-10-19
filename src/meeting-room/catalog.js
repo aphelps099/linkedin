@@ -20,7 +20,7 @@ export const cast={
   people:{name:'People & Culture',role:'Human resources',media:'people'},
   strategy:{name:'Strategy',role:'Strategic alignment',media:'strategy'},
   guitar:{name:'Kevin',role:'Partnerships',media:'guitar',instrument:'Guitar'},
-  keys:{name:'Keys',role:'Enablement',media:'keys',instrument:'Keyboard'},
+  keys:{name:'Keys',role:'Enablement',media:'keys-full',instrument:'Keyboard'},
   operations:{name:'Operations',role:'Operational excellence',media:'drums',instrument:'Drum pad'},
   accountant:{name:'Arjun',role:'Finance',media:'arjun'},
   linda:{name:'Linda',role:'Governance',media:'linda'},
@@ -33,6 +33,10 @@ export const meetings=Object.fromEntries(Object.entries(library).map(([agenda,va
 ]));
 // Visit each agenda before its alternate take. Every meeting gets one turn.
 export const meetingSequence=[0,1].flatMap(variant=>agendas.map(([agenda])=>meetings[agenda][variant]));
+export function meetingFromSearch(search=''){
+  const id=new URLSearchParams(search).get('meeting');
+  return meetingSequence.find(meeting=>meeting.id===id)||meetings.standup[0];
+}
 export function nextMeeting(currentId){
   const index=meetingSequence.findIndex(meeting=>meeting.id===currentId);
   return meetingSequence[(index+1)%meetingSequence.length];

@@ -1,0 +1,109 @@
+{
+  "character": "people",
+  "meeting": "onboarding-0",
+  "status": "reviewed-integrated",
+  "audio": "people-exact-onboarding-0.wav",
+  "audioSha256": "3fdd4938caecad5ffbf191152ce97869eb046c0dfb39d28d0fa25217d7c7b62a",
+  "duration": 14.083583333333333,
+  "characterImage": "public/studio/season/posters/people-listening.jpg",
+  "solos": [
+    {
+      "cueIndex": 1,
+      "offset": 0.25,
+      "duration": 3.1952083333333334,
+      "sources": [
+        {
+          "character": "people",
+          "text": "We’re absolutely thrilled to be welcoming our new colleague.",
+          "line": "people-d8394dd2ee96ad2a",
+          "take": "7d7254bc07a3d794bfa0b71d9aaa5a12f3fa5fffd35835a6a96c782f3a41d0bc",
+          "masterSha256": "b1dffdcabf4c4580e72d3717504bdfcce5be85f19aa9ec5427bca2887402e161"
+        }
+      ]
+    },
+    {
+      "cueIndex": 8,
+      "offset": 3.9452083333333334,
+      "duration": 2.788375,
+      "sources": [
+        {
+          "character": "people",
+          "text": "We’re so excited to have them here. Eventually.",
+          "line": "people-0c53aa081e07dced",
+          "take": "93b82af4df2ce69098b92df3ec8b38ff2825868da0333b5963c533eed4b9e320",
+          "masterSha256": "bd59df2cff6f6a7b774fbb57714bab322e0bd23645e97bf2be14cb25aab82bc7"
+        }
+      ]
+    }
+  ],
+  "choruses": [
+    {
+      "cueIndex": 7,
+      "offset": 7.233583333333334,
+      "duration": 6.6,
+      "phrases": [
+        {
+          "start": 0.0,
+          "duration": 0.8044583333333334,
+          "slotDuration": 1.2,
+          "source": {
+            "character": "people",
+            "text": "Onboard.",
+            "line": "people-b521e13bc481292a",
+            "take": "fbaa6719c3539528300912a90233a1f06549253e90930081805af601ff8245fa",
+            "masterSha256": "b48a2358580b53223d5ad8791e74d647a9dd333e0ebe86814b6b87671a08d530"
+          }
+        },
+        {
+          "start": 1.2,
+          "duration": 0.9392916666666666,
+          "slotDuration": 1.8,
+          "source": {
+            "character": "people",
+            "text": "Optimize.",
+            "line": "people-5f8f4f49521f1312",
+            "take": "2d897a87543e4478375a6b86b5a59f4ab5756ee0fbfce22a7373eff7629b1b95",
+            "masterSha256": "8ee58530aecc109c746b5c3266567f7fd875bcabf914bf0cf8739f3869009df6"
+          }
+        },
+        {
+          "start": 3.0,
+          "duration": 0.8044583333333334,
+          "slotDuration": 1.2,
+          "source": {
+            "character": "people",
+            "text": "Onboard.",
+            "line": "people-b521e13bc481292a",
+            "take": "fbaa6719c3539528300912a90233a1f06549253e90930081805af601ff8245fa",
+            "masterSha256": "b48a2358580b53223d5ad8791e74d647a9dd333e0ebe86814b6b87671a08d530"
+          }
+        },
+        {
+          "start": 4.2,
+          "duration": 1.4722916666666668,
+          "slotDuration": 2.4,
+          "source": {
+            "character": "people",
+            "text": "We’ll take this offline.",
+            "line": "people-0b5b8838622df915",
+            "take": "bc0a00bd742cb56099415997cbd71c0e8463099d35d95045562942201b09ab5c",
+            "masterSha256": "ef39e70e2f6e970e08cee31a197f049634919682f4ee7536b863452cd866f5d8"
+          }
+        }
+      ]
+    }
+  ],
+  "direction": "Exact approved voice. Restrained natural articulation, subtle blinks, stable attached lips and headset. Preserve face identity.",
+  "workflow": "Runway Character Script to Video, uploaded Audio",
+  "taskId": "71ecc52c-5a99-4d1a-9603-ef6a4adce77c",
+  "assetId": "07c28229-2c26-42cb-a890-fb7c5fb3a700",
+  "creditsSpent": 2,
+  "runwaySession": "5bb35d14-ea57-4d00-979c-8d4c846ccbad",
+  "output": "people-performance.mp4",
+  "outputSha256": "3c96dcf5e240b6b49bb6cc49d2c33dd633e2f9f31a18e04e5e5bb03f32670c29",
+  "runtimeVideo": "public/studio/performances/people-onboarding-exact-v1.mp4",
+  "runtimeSha256": "213f8b9b958286f05e7815e184ff578f72df11d6e075e8842dd35fcf7f6fc086",
+  "audioLagSeconds": 0,
+  "audioWaveformCorrelation": 0.999752822057114,
+  "reviewNotes": "Reviewed solo and chorus frames: stable face/headset, attached lips, subtle blinks. Original approved voice master stays in the live meeting. Keys has a separate approved keyboard camera during speech because the speech renderer reframes to a close shot."
+}

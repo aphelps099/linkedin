@@ -73,7 +73,39 @@ After the first complete meeting passes review, reuse identical validated takes
 and render the remaining unique lines. Keep human identity and voice settings
 fixed. Frame each person clearly, with subtle facial motion and dry delivery.
 
-## Robot treatment
+## Onboarding performance set, 2026-10-19
+
+`onboarding-0` ("Optimizing the onboarding", 40.8 seconds) now has exact human
+performances for People & Culture's two lines, Strategy's question, Keys' capacity
+line, Kevin's question, and all five humans' isolated chorus stems. Five renders
+cost ten credits. The approved meeting audio is unchanged; measured returned
+audio lag is zero, with waveform correlation above 0.9997 for every output.
+Synergy and Synthia retain their established media and voices.
+
+`prepare-meeting-performances.py` reconstructs all human solos and chorus timing
+from the approved masters. Both robot voices participate in measuring the chorus
+slots; they are not regenerated for live playback. `package-onboarding-performances.py`
+validates the audio and exports exact take/hash bindings and offsets. The shared
+runtime supports both reviewed chorus sets, never matching caption text alone.
+
+Keyboard framing is a production requirement. Do not crop out hands/keys or
+cover the entire keyboard with a name strip. The original instrumental masters
+already contained the keyboard: `restore-keyboard-framing.py` restores that
+framing. Her compact corner name leaves the instrument visible. During exact
+speaking performances the tile shows a separate keyboard detail camera below
+the talking view; this is an editorial two-camera layout, not a pasted-on mouth.
+The detail camera is approved instrumental motion, not note-for-note MIDI sync.
+It follows play, pause and seek and does not consume new generation credits.
+
+The wider reference was prepared with the built-in image-generation tool, but
+Character Script to Video still reframed it to the face. Preserve the reference
+and review notes so a later full-frame performance workflow can use it. Do not
+silently claim that this renderer retained the keyboard in its speaking shot.
+
+Direct review link: `/studio/?meeting=onboarding-0`. The default is still the
+first stand-up; Next meeting advances through the existing sequence.
+
+## Robot treatment (unchanged)
 
 Synergy is a separate production problem. Generate a stable physical performance
 with a clean rigid black screen, then track the screen and composite the speech

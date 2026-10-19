@@ -9,7 +9,9 @@ import {PRINT_CYCLE,printerPhase,paperRow} from '../src/meeting-room/printer-pap
 import {exactPerformance,performanceForTime,performanceTime,syncPerformanceVideo} from '../src/meeting-room/performances.js';
 
 const bundle=await build({entryPoints:['src/meeting-room/catalog.js'],bundle:true,platform:'node',format:'esm',write:false});
-const {meetings,cast,meetingSequence,nextMeeting,cueAt,isSpeaker}=await import(`data:text/javascript;base64,${Buffer.from(bundle.outputFiles[0].text).toString('base64')}`);
+const {meetings,cast,meetingSequence,meetingFromSearch,nextMeeting,cueAt,isSpeaker}=await import(`data:text/javascript;base64,${Buffer.from(bundle.outputFiles[0].text).toString('base64')}`);
+assert.equal(meetingFromSearch('?meeting=onboarding-0').id,'onboarding-0');
+assert.equal(meetingFromSearch('?meeting=not-a-meeting').id,'standup-0');
 assert.equal(Object.keys(meetings).length,7);
 let total=0;
 for(const [agenda,variants] of Object.entries(meetings)){
@@ -68,6 +70,24 @@ for(const id of ['guitar','keys','operations']){
 }
 assert.equal(exactPerformance('synergy',hook),null,'Synergy retains his approved screen animation');
 assert.equal(exactPerformance('printer',hook),null,'Printer never sings');
+const onboarding=meetings.onboarding[0];
+for(const id of ['people','strategy','keys','guitar','operations']){
+  for(const cue of onboarding.cues.filter(c=>c.speaker===id||c.speaker==='all')){
+    const performance=exactPerformance(id,cue);
+    assert(performance,`${id}: exact onboarding solo and chorus coverage`);
+    await access(`public${performance.video}`);
+    assert(Math.abs(performance.duration-cue.duration)<.0001);
+    assert(Math.abs(performanceTime(performance,cue,cue.start+.4)-performance.offset-.4)<1e-9);
+  }
+  const altered=structuredClone(onboarding.cues[7]);altered.sources[2].pitch=1.2;
+  assert.equal(exactPerformance(id,altered),null,'A changed robot chorus voice also changes human timing');
+}
+const lastHuman=onboarding.cues[8];
+assert.equal(performanceForTime('people',onboarding,34).cue,lastHuman,'Return from chorus to the closing People & Culture line');
+assert.equal(exactPerformance('synergy',onboarding.cues[7]),null);
+assert.equal(exactPerformance('synthia',onboarding.cues[7]),null);
+await access('public/studio/season/clips/keys-detail.mp4');
+await access('public/studio/season/posters/keys-detail.jpg');
 let seeks=0,mediaTime=0;
 const media={readyState:0,duration:NaN,paused:true,ended:false,
   get currentTime(){return mediaTime;},set currentTime(value){assert(Number.isFinite(value));seeks++;mediaTime=value;},

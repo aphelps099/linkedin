@@ -2,19 +2,20 @@ import React,{useEffect,useRef,useState} from 'react';
 import {Play,Pause,SkipForward,Video,VideoOff,Volume2,VolumeX,Captions,SlidersHorizontal,Users,Grid2X2,Maximize2,Minimize2,LoaderCircle,RotateCcw,ChevronRight,ChevronDown, X} from 'lucide-react';
 import {ConceptHeader} from '../home-2/ConceptHeader.jsx';
 import {ConceptFooter} from '../home-2/ConceptFooter.jsx';
-import {agendas,agendaDescriptions,cast,meetings,meetingSequence,nextMeeting,timeLabel,cueAt} from './catalog.js';
+import {agendas,agendaDescriptions,cast,meetings,meetingSequence,meetingFromSearch,nextMeeting,timeLabel,cueAt} from './catalog.js';
 import {createMeetingEngine} from './engine.js';
 import {Participant} from './Participant.jsx';
 
 const initial={playing:false,loading:false,error:'',muted:false,music:.42,voices:1,elapsed:0};
 export default function MeetingRoom(){
-  const [meeting,setMeeting]=useState(meetings.standup[0]),[state,setState]=useState(initial),[time,setTime]=useState(0);
+  const [meeting,setMeeting]=useState(()=>meetingFromSearch(typeof window==='undefined'?'':window.location.search)),[state,setState]=useState(initial),[time,setTime]=useState(0);
+  const initialMeeting=useRef(meeting);
   const [captions,setCaptions]=useState(true),[videoOn,setVideoOn]=useState(true),[reactions,setReactions]=useState(true),[mixOpen,setMixOpen]=useState(false);
   const [follow,setFollow]=useState(false);
   const [pin,setPin]=useState(null),[left,setLeft]=useState(false),[reduced,setReduced]=useState(false),[full,setFull]=useState(false);
   const engine=useRef(null),room=useRef(null),playButton=useRef(null),mixButton=useRef(null),mixPanel=useRef(null);
   useEffect(()=>{
-    const player=createMeetingEngine({onChange:setState});engine.current=player;player.setMeeting(meetings.standup[0]);
+    const player=createMeetingEngine({onChange:setState});engine.current=player;player.setMeeting(initialMeeting.current);
     const motion=window.matchMedia('(prefers-reduced-motion: reduce)');const update=()=>setReduced(motion.matches);update();motion.addEventListener('change',update);
     const visibility=()=>{if(document.hidden)player.pause();};document.addEventListener('visibilitychange',visibility);
     const fullscreen=()=>setFull(!!document.fullscreenElement);document.addEventListener('fullscreenchange',fullscreen);
@@ -26,7 +27,9 @@ export default function MeetingRoom(){
     const close=e=>{if(e.key==='Escape'){setMixOpen(false);mixButton.current?.focus();}};
     document.addEventListener('keydown',close);return()=>document.removeEventListener('keydown',close);
   },[mixOpen]);
-  function selectMeeting(next){engine.current?.setMeeting(next);setMeeting(next);setTime(0);setPin(null);setFollow(false);setLeft(false);}
+  function selectMeeting(next){engine.current?.setMeeting(next);setMeeting(next);setTime(0);setPin(null);setFollow(false);setLeft(false);
+    const url=new URL(window.location.href);url.searchParams.set('meeting',next.id);window.history.replaceState(null,'',url);
+  }
   function advanceMeeting(){selectMeeting(nextMeeting(meeting.id));}
   function togglePlay(){if(left)setLeft(false);if(state.playing||state.loading)engine.current?.pause();else engine.current?.play();}
   function seekKey(e){

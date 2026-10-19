@@ -1,0 +1,33 @@
+{
+  "restored": [
+    {
+      "video": "public/studio/season/clips/keys-full-playing.mp4",
+      "source": "keys-playing.mp4",
+      "sourceSha256": "17fcdf68fe6abeb0b21a21ede903c2e81f53d628a1b650da9964f769646ef05e",
+      "sha256": "09fac6d5bba2add35db6859939deec023e0be15e8a15e7ab45232abe10317651",
+      "note": "Entire approved camera, keyboard and hands. The compact live label covers the original small corner name."
+    },
+    {
+      "video": "public/studio/season/clips/keys-full-listening.mp4",
+      "source": "keys-listening-v2.mp4",
+      "sourceSha256": "30ed73f9334ead4e2ff978df6e6a2143bcf2a3e764ed07d36b969f8809467df9",
+      "sha256": "9612a65644d51bbd680e50b24d40ca1b8b52a9b7ba0d4ff323dce10165797302",
+      "note": "Entire approved camera, keyboard and hands. The compact live label covers the original small corner name."
+    },
+    {
+      "video": "public/studio/season/clips/keys-full-speaking.mp4",
+      "source": "keys-speaking-v2.mp4",
+      "sourceSha256": "5521fbd355625568871d6f02fc28bbd30c913a3e26b7c9bec7e4cba8af613944",
+      "sha256": "f9dd913f7f95b872a77eec43dca1af0e45359f8c9d45871f9dc5818b6c46464b",
+      "note": "Entire approved camera, keyboard and hands. The compact live label covers the original small corner name."
+    }
+  ],
+  "detailCamera": "public/studio/season/clips/keys-detail.mp4",
+  "detailCrop": [
+    228,
+    620,
+    884,
+    214
+  ],
+  "purpose": "Hands remain visible in a separate camera strip during exact vocal performances. Reuses approved footage; no additional generation."
+}

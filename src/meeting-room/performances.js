@@ -1,4 +1,5 @@
 import {standupSolos,standupChorus} from './standup-performances.js';
+import {onboardingSolos,onboardingChorus} from './onboarding-performances.js';
 
 // A clip belongs to one exact recorded take, never merely to a character name.
 export const performances={
@@ -7,7 +8,9 @@ export const performances={
     video:'/studio/performances/kevin-new-folder-v1.mp4',offset:0,duration:2.8734583333333332,
   },
   ...standupSolos,
+  ...onboardingSolos,
 };
+const choruses=[standupChorus,onboardingChorus];
 const sourceSignature=sources=>JSON.stringify(sources?.map(source=>[
   source.character,source.text,source.take,source.masterSha256,source.version,
   source.provider,source.voice,source.rate,source.pitch,source.pitchRange,source.engineVersion,
@@ -17,9 +20,9 @@ export function exactPerformance(id,cue){
   if(cue.speaker==='all'){
     // Every singer has their own isolated driver, but the full cast determines
     // the beat-aligned gaps. Invalidate if any source or cue duration changes.
-    if(Math.abs(cue.duration-standupChorus.cueDuration)>.0001||
-      sourceSignature(cue.sources)!==sourceSignature(standupChorus.sources))return null;
-    return standupChorus.performances[id]||null;
+    const chorus=choruses.find(group=>Math.abs(cue.duration-group.cueDuration)<.0001&&
+      sourceSignature(cue.sources)===sourceSignature(group.sources));
+    return chorus?.performances[id]||null;
   }
   if(cue.speaker!==id)return null;
   const source=cue.sources?.find(source=>source.character===id);
