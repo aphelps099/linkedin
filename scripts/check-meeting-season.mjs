@@ -80,6 +80,13 @@ const parkedSeeks=seeks;syncPerformanceVideo(media,3.8,false,()=>{});assert.equa
 syncPerformanceVideo(media,4.2,true,()=>{});assert.equal(media.paused,false);assert.equal(media.currentTime,4.2);
 syncPerformanceVideo(media,4.25,false,()=>{});assert.equal(media.paused,true);assert.equal(media.currentTime,4.25);
 media.duration=NaN;assert.equal(syncPerformanceVideo(media,5,true,()=>{}),false);
+media.duration=10;media.readyState=1;
+assert.equal(syncPerformanceVideo(media,5.5636,false,()=>{}),false,'Seek in flight waits for a decoded frame');
+media.readyState=4;
+syncPerformanceVideo(media,5.5636,false,()=>{});
+assert.equal(media.currentTime,5.5636,'Media-ready events retry the latest paused timestamp after a rapid seek');
+const performanceComponent=await readFile('src/meeting-room/SpeechPerformance.jsx','utf8');
+assert(performanceComponent.includes('onCanPlay={synchronize}')&&performanceComponent.includes('onSeeked={synchronize}'),'Paused rapid seeks re-synchronize after media readiness, without needing another audio tick');
 let current=meetingSequence[0];const visited=new Set();
 for(let i=0;i<14;i++){
   assert(!visited.has(current.id),'Every meeting gets a turn before repeating');visited.add(current.id);
