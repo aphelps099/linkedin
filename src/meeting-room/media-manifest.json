@@ -1,7 +1,7 @@
 {
-  "version": 1,
+  "version": 2,
   "created": "2026-10-19",
-  "clipCount": 20,
+  "clipCount": 21,
   "credits": {
     "startingBalance": 2111,
     "authorizedMaximumSpend": 2000,
@@ -474,7 +474,7 @@
       "seamlessLoop": false,
       "sourceType": "new-generation",
       "lipSync": "not-applicable",
-      "runtimeUse": "silent body plate; add tracked face rig before speech",
+      "runtimeUse": "archived; superseded by synergy-camera-v2-listening",
       "sha256": "567670adf21555d286845247650bfdc293cf02e550f1a520abd6a5a46d9085a0",
       "requiresTrackedFaceRig": true,
       "interfaceNotes": "Canonical participant name footer; generated reference edge labels masked. Use matching label strip in meeting compositor."
@@ -533,6 +533,47 @@
       "compositor": "src/meeting-room/printer-paper.js",
       "sha256": "5276265e637f4cceb0d981e0ccb6432df7334fe46fe4b27a999edc8678a1c1db",
       "interfaceNotes": "Canonical participant name footer; generated reference edge labels masked. Use matching label strip in meeting compositor."
+    },
+    {
+      "id": "synergy-camera-v2-listening",
+      "character": "Synergy",
+      "state": "robot-idle",
+      "video": "clips/synergy-camera-v2-listening.mp4",
+      "poster": "posters/synergy-camera-v2-listening.jpg",
+      "width": 1280,
+      "height": 720,
+      "fps": 24.0,
+      "duration": 17.0,
+      "audio": false,
+      "sourceTaskId": "4f9c343b-fd5e-4f8a-996e-b6f26c56d2c9",
+      "sourceTake": "synergy-camera-v2",
+      "sourceRange": [
+        1,
+        9.5
+      ],
+      "sourceMaster": "assets/meeting-performances/synergy-v2/source.mp4",
+      "sourceType": "new-generation",
+      "hasBakedInterface": false,
+      "interfaceNotes": "Generated edge name removed below row 684; canonical live name bar is drawn by Studio. Original side framing preserved.",
+      "seamlessLoop": true,
+      "loopMethod": "restrained body motion forward then reversed; identical end/start frame",
+      "lipSync": "audio-envelope-driven horizontal display",
+      "runtimeUse": "silent physical plate with tracked fixed-height LED speech row",
+      "requiresTrackedFaceRig": true,
+      "sha256": "30052011a5753236c6bbfc27b309a6f18cc1f76b36df615461ab93e7dc4282ed",
+      "displayCleanup": "Remove only generated mouth dot pixels within tracked lower-screen band; preserve surrounding glass, eyes and chassis. No opaque runtime mouth patch."
+    }
+  ],
+  "revisions": [
+    {
+      "date": "2026-10-19",
+      "character": "Synergy",
+      "reason": "User approved the new camera plate; replace the old host footage.",
+      "sourceTaskId": "4f9c343b-fd5e-4f8a-996e-b6f26c56d2c9",
+      "creditsSpent": 170,
+      "balanceBefore": 20319,
+      "balanceAfter": 20149,
+      "cumulativeAssetSpendAgainstOriginal2000Budget": 1962
     }
   ]
 }

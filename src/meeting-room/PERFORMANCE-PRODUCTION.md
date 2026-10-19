@@ -53,6 +53,20 @@ Maintain the same ivory/chrome body, scale, headset, lanyard and coffee cup. The
 badge must read SYNERGY. Synthia remains her established distinct character.
 Review robot plates across the whole shot, including loop joins and silent cues.
 
+### Approved Synergy camera revision, 2026-10-19
+
+The user approved `synergy-camera-v2`. The source master and exact prompt are in
+`assets/meeting-performances/synergy-v2/`. Its restrained physical motion runs
+forward then backward for a matching loop boundary. The original green eyes,
+glass border, headset and metal are preserved. Only the generated decorative
+mouth dots are removed before encoding, using a tightly bounded mask and nearby
+glass pixels. Live speech needs no opaque patch on this new plate.
+
+The 22-LED mouth remains six pixels high at the 1280×720 working resolution.
+Only brightness and left-to-right phase change with speech. Review all 408
+frames of tracking when revising this clip. The original camera plate is retained
+as an archive; Synthia's media and approved human voices are unchanged.
+
 References checked 2026-10-19:
 - https://help.runwayml.com/hc/en-us/articles/51285026291219-Character-Script-to-Video
 - https://help.runwayml.com/hc/en-us/articles/42311337895827-Performance-Capture-with-Act-Two

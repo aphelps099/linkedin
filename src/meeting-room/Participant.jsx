@@ -14,16 +14,21 @@ export function drawRobotMouth(ctx,id,videoTime,audioTime,level){
   ctx.clearRect(0,0,1280,720);
   const [x,y,angle,scale]=robotFrame(id,videoTime);
   ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.scale(scale,scale);
-  // Cover ONLY the source mouth LEDs. Eyes, glass and metal remain untouched.
-  ctx.fillStyle='#07120b';ctx.shadowColor='#07120b';ctx.shadowBlur=3;
-  ctx.fillRect(-32,-6,64,12);ctx.shadowBlur=0;
+  // V2 Synergy has a clean glass plate, so no opaque patch can float on his face.
+  // Synthia retains the small mask for her original decorative LEDs.
+  if(id!=='synergy'){
+    ctx.fillStyle='#07120b';ctx.shadowColor='#07120b';ctx.shadowBlur=3;
+    ctx.fillRect(-32,-6,64,12);ctx.shadowBlur=0;
+  }
+  const height=id==='synergy'?6:4;
+  ctx.shadowColor='#4aff70';ctx.shadowBlur=id==='synergy'?2:0;
   const phase=(audioTime*15)%22;
   for(let i=0;i<22;i++){
     const distance=(phase-i+22)%22;
     const strength=level>.08?Math.max(.16,(1-distance/7)*level):.11;
     ctx.fillStyle=`rgba(74,255,112,${strength})`;
-    // Fixed four-pixel height. Energy changes brightness, never height.
-    ctx.fillRect(-46+i*4.3,-2,3.2,4);
+    // Each character has a fixed-height row. Speech changes brightness, never height.
+    ctx.fillRect(-46+i*4.3,-height/2,3.2,height);
   }
   ctx.restore();
 }

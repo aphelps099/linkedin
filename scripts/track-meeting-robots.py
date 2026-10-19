@@ -7,8 +7,11 @@ from scipy.signal import savgol_filter
 ROOT=Path(__file__).resolve().parents[1]
 result={}
 for who in ['synergy','synthia']:
-    cap=cv2.VideoCapture(str(ROOT/f'public/studio/season/clips/{who}-listening.mp4'))
-    positions=[];anchor=None
+    media='synergy-camera-v2' if who=='synergy' else who
+    cap=cv2.VideoCapture(str(ROOT/f'public/studio/season/clips/{media}-listening.mp4'))
+    # V2 Synergy's first source frame calibrates the speech row below the eyes.
+    # Fix the anchor even when the generated decorative dots blink out.
+    positions=[];anchor=np.array([4.90,46.74]) if who=='synergy' else None
     while True:
         ok,im=cap.read()
         if not ok:break

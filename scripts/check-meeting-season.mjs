@@ -103,8 +103,8 @@ try{
   assert(!html.includes('getUserMedia'));
   const rects=[];const drawing={clearRect(){},save(){},restore(){},translate(){},rotate(){},scale(){},fillRect:(...args)=>rects.push(args)};
   for(const id of ['synergy','synthia']){
-    for(const level of [0,.2,1]){rects.length=0;drawRobotMouth(drawing,id,4.1,12,level);assert.equal(rects.length,23);assert(rects.slice(1).every(r=>r[3]===4),'Robot mouth height never expands');}
-    for(let time=0;time<9.5;time+=.1){const [x,y,angle,scale]=robotFrame(id,time);assert(x>580&&x<720&&y>230&&y<300);assert(Math.abs(angle)<.2);assert(scale>.85&&scale<1.15);}
+    for(const level of [0,.2,1]){rects.length=0;drawRobotMouth(drawing,id,4.1,12,level);assert.equal(rects.length,id==='synergy'?22:23);assert(rects.slice(id==='synergy'?0:1).every(r=>r[3]===(id==='synergy'?6:4)),'Robot mouth height never expands');}
+    for(let time=0;time<(id==='synergy'?17:9.5);time+=.1){const [x,y,angle,scale]=robotFrame(id,time);assert(x>580&&x<720&&y>230&&y<300);assert(Math.abs(angle)<.2);assert(scale>.85&&scale<1.15);}
   }
 }finally{await unlink(temp);}
 const route=await readFile('src/studio-main.jsx','utf8');assert(route.includes('meeting-room/main.jsx'));

@@ -1,0 +1,23 @@
+{
+  "taskId": "4f9c343b-fd5e-4f8a-996e-b6f26c56d2c9",
+  "date": "2026-10-19",
+  "prompt": "Single continuous locked webcam shot for a deadpan corporate video meeting. Use the exact Synergy robot in the reference as the identity anchor: identical battered ivory and exposed chrome angular chassis, asymmetric wedge-shaped head, recessed rectangular black glass face, black customer-support headset with boom microphone, black lanyard and white badge. Do not redesign him. Reframe as a full-width 16:9 medium close-up at seated eye level, head and upper chest visible, face clearly readable, no pillarboxing or baked UI labels. Badge reads exactly SYNERGY. A normal fluorescent office with soft background focus. Keep the black glass facial screen geometrically rigid and almost frontal, with two tiny square green LED eyes high in the screen. The LOWER quarter of the screen is entirely dark and blank for a separately composited horizontal speech strip. No animated mouth, no vertical bars, no human lips. The robot holds his white coffee cup steadily at chest height for the entire clip without lifting, lowering, drinking or disappearing it. Only very restrained natural motion: one small attentive shoulder shift, faint mechanical breathing, one slow blink. The head stays almost perfectly still and face geometry does not change. No zoom, no cuts, no dramatic gestures, no scene change. Maintain identical robot scale, headset, badge, hands, cup and lighting throughout. Authentic mundane office webcam quality, visually clean and stable. Silent footage.",
+  "userApproval": "yes very good version of synergy - NICE",
+  "credits": 170,
+  "source": "source.mp4",
+  "target": "public/studio/season/clips/synergy-camera-v2-listening.mp4",
+  "edit": {
+    "size": [
+      1280,
+      720
+    ],
+    "fps": 24,
+    "sourceRange": [
+      1,
+      9.5
+    ],
+    "loop": "Forward then reverse for an identical end/start frame",
+    "interfaceRemoval": "Crop bottom 36px; pad 36px with #111315. Preserve original side framing.",
+    "face": "Track two original eye LEDs; remove only generated lower mouth-dot pixels with scripts/clean-synergy-plate.py, then live 22-LED horizontal row at fixed 6px height. No opaque runtime patch. Same approved voice."
+  }
+}

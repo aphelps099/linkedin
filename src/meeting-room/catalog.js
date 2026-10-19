@@ -15,7 +15,7 @@ export const agendaDescriptions={
   quarterly:'Twelve stakeholders, one dashboard, and tremendous momentum. Finance would like to see a number.',
 };
 export const cast={
-  synergy:{name:'Synergy',role:'Host',media:'synergy',robot:true},
+  synergy:{name:'Synergy',role:'Host',media:'synergy-camera-v2',robot:true},
   synthia:{name:'Synthia',role:'Corporate training',media:'synthia',robot:true},
   people:{name:'People & Culture',role:'Human resources',media:'people'},
   strategy:{name:'Strategy',role:'Strategic alignment',media:'strategy'},
