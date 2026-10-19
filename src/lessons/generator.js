@@ -3,6 +3,7 @@
 // Level 1 is genuinely publishable; level 5 is a corporate hallucination.
 // Seeded, so scrubbing the dial escalates the SAME post instead of writing a new one.
 // Entirely local — nothing leaves the browser.
+import {withDefaultAnswers} from './categories.js';
 
 export function mulberry32(seed){
   let a = seed >>> 0;
@@ -492,7 +493,7 @@ export function generate({ category, answers, level, seed, flags = {} }){
   const L = Math.max(1, Math.min(5, level));
   const rng = mulberry32(seed);
   const build = BUILDERS[category] || buildLesson;
-  let paras = build(answers || {}, L, rng).filter(Boolean);
+  let paras = build(withDefaultAnswers(category, answers), L, rng).filter(Boolean);
 
   if(flags.founder) paras = applyFounder(paras, rng);
   if(flags.synergy) paras = applySynergy(paras, rng, flags.synergy);

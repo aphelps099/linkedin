@@ -81,5 +81,24 @@ for(const stage of ['standard','supercharged']){
   if(result.score.index !== scorePost(result.text).index || !result.text.includes(longAnswers.quality.trim())) fail('long facts were truncated or their score was fabricated');
 }
 
+// Blank fields must describe the facts visible in the editor, across categories.
+const defaults = [
+  ['announce', {kind:'A new hire'}, ['Taylor','Marketing Coordinator','Acme Inc']],
+  ['announce', {kind:'A promotion'}, ['Taylor','Marketing Coordinator','Acme Inc']],
+  ['announce', {kind:'A product launch'}, ['FlowDeck','plan their week in five minutes','Acme Inc']],
+  ['announce', {kind:'A partnership'}, ['Northwind Systems','save customers an hour a day','Acme Inc']],
+  ['announce', {kind:'A company milestone'}, ['10,000 customers','ship the new platform','Acme Inc']],
+  ['sell', {}, ['Dana','Pipeline consulting','312% more qualified leads']],
+  ['ai', {}, ['ChatGPT','write our quarterly report']],
+];
+for(const [category,answers,facts] of defaults){
+  const text=generateStage({category,answers,seed:42}).text.toLowerCase();
+  for(const fact of facts) if(!text.includes(fact.toLowerCase())) fail(`default mismatch: ${category} ${answers.kind||''}: ${fact}`);
+}
+const edited=generateStage({category:'announce',answers:{kind:'A new hire',name:'Morgan'},seed:42}).text;
+if(!edited.includes('Morgan')||edited.includes('Taylor')) fail('default overrode an edited name');
+const cleared=generateStage({category:'announce',answers:{kind:'A new hire',name:'  '},seed:42}).text;
+if(!cleared.includes('Taylor')) fail('cleared name did not return to Taylor');
+
 if(failures){ console.error(`\n${failures} check(s) failed`); process.exit(1); }
-console.log('all checks passed: levels, variety, humanizer, two-stage scores, fact preservation');
+console.log('all checks passed: levels, variety, humanizer, two-stage scores, fact preservation, matching defaults');

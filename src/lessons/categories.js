@@ -26,7 +26,7 @@ export const CATEGORIES = [
         }),
       ];
       if(kind === 'A new hire' || kind === 'A promotion') return base.concat([
-        q('name', "What is the person's name?", { placeholder: 'Sarah',
+        q('name', "What is the person's name?", { placeholder: 'Taylor',
           react: v => `Excellent. Let's make ${v || 'their'}'s employment feel historically significant.` }),
         q('role', kind === 'A promotion' ? 'What is their new title?' : 'What is their new role?', { placeholder: 'Marketing Coordinator',
           react: () => 'Noted. We will imply the role was created by fate.' }),
@@ -161,3 +161,18 @@ export const CATEGORIES = [
 ];
 
 export const byId = id => CATEGORIES.find(c => c.id === id);
+
+// Empty fields display these placeholders, so the post must use the same facts.
+export function withDefaultAnswers(id, answers = {}){
+  const resolved = {...answers};
+  const category = byId(id);
+  if(!category?.steps) return resolved;
+  // Resolve choices first because the announcement type determines its fields.
+  for(const step of category.steps(resolved)){
+    if(step.type === 'choice' && !resolved[step.key]?.trim()) resolved[step.key] = step.options[0];
+  }
+  for(const step of category.steps(resolved)){
+    if(!resolved[step.key]?.trim() && step.placeholder) resolved[step.key] = step.placeholder;
+  }
+  return resolved;
+}
