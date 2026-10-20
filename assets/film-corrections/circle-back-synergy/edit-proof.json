@@ -1,0 +1,40 @@
+{
+  "source": "catalog/source/library/Circle-Back-Complete-720p.mp4",
+  "approvedPlate": "/workspace/scratch/e1832ea21c4b/linkedin-hero/public/studio/season/clips/synergy-camera-v2-listening.mp4",
+  "output": "circle-back-recut/Circle-Back-Complete-720p.mp4",
+  "duration": 90,
+  "resolution": [
+    1280,
+    720
+  ],
+  "fps": 24,
+  "frames": 2160,
+  "originalAudioPacketHash": "SHA256=be3db2650cf643a1b125ac802748dc13ff10d186a0c9f069c2394e0ada8d73d9",
+  "audioUnchanged": true,
+  "outsideTileExactChecks": 90,
+  "synergyTile": [
+    436,
+    20,
+    410,
+    318
+  ],
+  "speakingIntervals": [
+    [
+      3.5416666666666665,
+      8.833333333333334
+    ],
+    [
+      65.20833333333333,
+      67.70833333333333
+    ],
+    [
+      69.04166666666667,
+      85.5
+    ]
+  ],
+  "mouth": "Tracked fixed-height row, scrolling left to right, speaker-gated mixed-audio brightness.",
+  "scope": "Only Synergy camera replaced; all other performances, outline timing, script, voices and music retained.",
+  "runwayCredits": 0,
+  "sha256": "d6ecf22133ba858e9c0c9d293c79f6ea70733a34bb01d8238946d1397b99c323",
+  "bytes": 15573858
+}

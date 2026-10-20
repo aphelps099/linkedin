@@ -53,6 +53,39 @@
       "poster": "/cutting-room/posters/welcome-to-the-office-v6-5adc47bd.jpg"
     },
     {
+      "id": "let-s-circle-back-synergy-corrected-d6ecf221",
+      "title": "Let\u2019s Circle Back \u2014 Synergy corrected",
+      "category": "Finished films",
+      "description": "The complete musical meeting with the approved Synergy camera and tracked horizontal speech display.",
+      "cast": [
+        "Synergy",
+        "Keys",
+        "People & Culture",
+        "Operations",
+        "Arjun",
+        "Printer"
+      ],
+      "status": "Current edit",
+      "notes": "Synergy-only correction. Original 90-second script, voices, music, other performances and speaker outlines retained. Original AAC packets copied unchanged.",
+      "tags": [
+        "circle back",
+        "approved synergy",
+        "horizontal mouth",
+        "complete"
+      ],
+      "transcript": "",
+      "sha256": "d6ecf22133ba858e9c0c9d293c79f6ea70733a34bb01d8238946d1397b99c323",
+      "src": "/api/cutting-room/media/let-s-circle-back-synergy-corrected-d6ecf221.mp4",
+      "download": "/api/cutting-room/media/let-s-circle-back-synergy-corrected-d6ecf221.mp4?download=1",
+      "sourceReference": "libfile_c7305ec746f481919b14e9a76488e3bb",
+      "width": 1280,
+      "height": 720,
+      "duration": 90.0,
+      "audio": true,
+      "bytes": 15573858,
+      "poster": "/cutting-room/posters/let-s-circle-back-synergy-corrected-d6ecf221.jpg"
+    },
+    {
       "id": "authenticity-starts-here-measuring-b7f4c9cc",
       "title": "Authenticity Starts Here \u2014 measuring",
       "category": "Office scenes",
@@ -502,8 +535,8 @@
         "Arjun",
         "Printer"
       ],
-      "status": "Available edit",
-      "notes": "Sampled frames reviewed. Check the complete clip before a new final edit.",
+      "status": "Earlier version",
+      "notes": "Original edit before the Synergy camera correction. Script, soundtrack and other performers are retained in the current edit.",
       "tags": [],
       "transcript": "",
       "sha256": "872b60944de6a4dcfc3396e68d9479d290596aee9c154d588d3705459bc5bab0",

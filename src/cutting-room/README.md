@@ -21,3 +21,10 @@ Synergy and Synthia use the approved ivory/chrome designs and readable name badg
 ## Current film
 
 V6 restores the sign-installation arrival, printed banner setup, and measuring. It keeps the existing 720p music/dialogue mix, ends on the office applause, and omits the end card and tagline. No new Runway generation was used.
+
+The Circle Back correction adds a 153rd record. Only Synergy's tile uses the
+approved camera v2 footage and tracked horizontal speech row. The full 90-second
+soundtrack is packet-identical to the original. Other cameras and speaker borders
+retain their original pixels before delivery compression. The older cut remains
+available under Earlier versions. Rebuild with `scripts/recut-circle-back-synergy.py`;
+production checks are in `assets/film-corrections/circle-back-synergy/edit-proof.json`.
