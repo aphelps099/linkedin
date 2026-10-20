@@ -1,0 +1,284 @@
+{
+  "bpm": 88,
+  "drumsFromSeconds": 0,
+  "loudnessTargetLUFS": -16,
+  "peakBeforeMaster": 1.0070133209228516,
+  "guitarCues": [
+    {
+      "start": 6.8181818181818175,
+      "variant": 0,
+      "gain": 1.05
+    },
+    {
+      "start": 9.545454545454545,
+      "variant": 1,
+      "gain": 0.35
+    },
+    {
+      "start": 20.454545454545453,
+      "variant": 2,
+      "gain": 1.05
+    },
+    {
+      "start": 25.909090909090907,
+      "variant": 0,
+      "gain": 0.25
+    },
+    {
+      "start": 32.72727272727273,
+      "variant": 1,
+      "gain": 0.3
+    },
+    {
+      "start": 36.81818181818181,
+      "variant": 0,
+      "gain": 0.25
+    },
+    {
+      "start": 45.0,
+      "variant": 1,
+      "gain": 1.05
+    },
+    {
+      "start": 47.72727272727273,
+      "variant": 2,
+      "gain": 0.5
+    },
+    {
+      "start": 53.18181818181818,
+      "variant": 0,
+      "gain": 0.9
+    },
+    {
+      "start": 55.90909090909091,
+      "variant": 1,
+      "gain": 0.9
+    }
+  ],
+  "speech": [
+    {
+      "line": "humbled-phrase",
+      "speaker": "synergy",
+      "start": 12.422727272727272,
+      "end": 14.496456439393938
+    },
+    {
+      "line": "describe",
+      "speaker": "synergy",
+      "start": 17.877272727272725,
+      "end": 19.745439393939392
+    },
+    {
+      "line": "circle-phrase",
+      "speaker": "synthia",
+      "start": 23.33181818181818,
+      "end": 25.981818181818177
+    },
+    {
+      "line": "onboarding-phrase",
+      "speaker": "synergy",
+      "start": 41.059090909090905,
+      "end": 42.996840909090906
+    },
+    {
+      "line": "optimized",
+      "speaker": "synthia",
+      "start": 43.88636363636363,
+      "end": 44.730676136363634
+    },
+    {
+      "line": "tagline",
+      "speaker": "synthia",
+      "start": 57.522727272727266,
+      "end": 59.24372727272727
+    }
+  ],
+  "revision": "V4 clean footage and musical energy",
+  "duration": 60.0,
+  "width": 1280,
+  "height": 720,
+  "fps": 24,
+  "frameCount": 1440,
+  "shots": [
+    {
+      "start": 0.0,
+      "end": 1.3636363636363635,
+      "source": "arrival",
+      "sourceOffset": 0.5
+    },
+    {
+      "start": 1.3636363636363635,
+      "end": 5.454545454545454,
+      "source": "drummer-arrival",
+      "sourceOffset": 0.9
+    },
+    {
+      "start": 5.454545454545454,
+      "end": 6.8181818181818175,
+      "source": "drum-detail",
+      "sourceOffset": 5.6
+    },
+    {
+      "start": 6.8181818181818175,
+      "end": 9.545454545454545,
+      "source": "guitar-performance",
+      "sourceOffset": 0.6
+    },
+    {
+      "start": 9.545454545454545,
+      "end": 10.909090909090908,
+      "source": "keys-performance",
+      "sourceOffset": 2.2
+    },
+    {
+      "start": 10.909090909090908,
+      "end": 12.272727272727272,
+      "source": "keys-close",
+      "sourceOffset": 6
+    },
+    {
+      "start": 12.272727272727272,
+      "end": 14.999999999999998,
+      "source": "humbled-phrase",
+      "sourceOffset": 0
+    },
+    {
+      "start": 14.999999999999998,
+      "end": 19.09090909090909,
+      "source": "laptop-zoom",
+      "sourceOffset": 0.4
+    },
+    {
+      "start": 19.09090909090909,
+      "end": 20.454545454545453,
+      "source": "synergy",
+      "sourceOffset": 2.364
+    },
+    {
+      "start": 20.454545454545453,
+      "end": 21.818181818181817,
+      "source": "guitar-detail",
+      "sourceOffset": 4
+    },
+    {
+      "start": 21.818181818181817,
+      "end": 23.18181818181818,
+      "source": "drum-detail",
+      "sourceOffset": 7
+    },
+    {
+      "start": 23.18181818181818,
+      "end": 25.909090909090907,
+      "source": "circle-phrase",
+      "sourceOffset": 0
+    },
+    {
+      "start": 25.909090909090907,
+      "end": 29.999999999999996,
+      "source": "laptop-chatgpt",
+      "sourceOffset": 5
+    },
+    {
+      "start": 29.999999999999996,
+      "end": 32.72727272727273,
+      "source": "human-linkedin",
+      "sourceOffset": 0
+    },
+    {
+      "start": 32.72727272727273,
+      "end": 35.45454545454545,
+      "source": "linkedin-post",
+      "sourceOffset": 0
+    },
+    {
+      "start": 35.45454545454545,
+      "end": 39.54545454545454,
+      "source": "linkedin-comments",
+      "sourceOffset": 0
+    },
+    {
+      "start": 39.54545454545454,
+      "end": 40.90909090909091,
+      "source": "printer",
+      "sourceOffset": 0.25
+    },
+    {
+      "start": 40.90909090909091,
+      "end": 43.63636363636363,
+      "source": "onboarding-phrase",
+      "sourceOffset": 0
+    },
+    {
+      "start": 43.63636363636363,
+      "end": 45.0,
+      "source": "synthia",
+      "sourceOffset": 2
+    },
+    {
+      "start": 45.0,
+      "end": 46.36363636363636,
+      "source": "guitar-performance",
+      "sourceOffset": 6
+    },
+    {
+      "start": 46.36363636363636,
+      "end": 47.72727272727273,
+      "source": "guitar-detail",
+      "sourceOffset": 6
+    },
+    {
+      "start": 47.72727272727273,
+      "end": 49.090909090909086,
+      "source": "keys-performance",
+      "sourceOffset": 4.9
+    },
+    {
+      "start": 49.090909090909086,
+      "end": 50.45454545454545,
+      "source": "drum-detail",
+      "sourceOffset": 8.1
+    },
+    {
+      "start": 50.45454545454545,
+      "end": 51.81818181818181,
+      "source": "droid",
+      "sourceOffset": 2.2
+    },
+    {
+      "start": 51.81818181818181,
+      "end": 53.18181818181818,
+      "source": "banner",
+      "sourceOffset": 5
+    },
+    {
+      "start": 53.18181818181818,
+      "end": 57.272727272727266,
+      "source": "ensemble",
+      "sourceOffset": 0.15
+    },
+    {
+      "start": 57.272727272727266,
+      "end": 59.99999999999999,
+      "source": "end",
+      "sourceOffset": 0
+    }
+  ],
+  "editorialLowerThirds": false,
+  "sourceSpeed": 1,
+  "screenGraphics": "V3 tracked laptop preserved; active speaker follows retimed voice",
+  "newRunwayCredits": 170,
+  "totalProjectCredits": 1870,
+  "authorizedMaximumCredits": 10000,
+  "sha256": "e886cd751f47ecce120ae72dacc97ce927ded3a355ea4dab73eaa58c1667c57f",
+  "fileSizeBytes": 14269445,
+  "linkedinSequence": {
+    "start": 30,
+    "end": 39.545454545,
+    "humanUsesMouse": true,
+    "commentsNewestFirst": true,
+    "countStart": 124,
+    "countEnd": 1834,
+    "postMatchesChatGPT": true
+  },
+  "lowerThirdRemoval": "All editorial labels removed; real in-interface names remain."
+}

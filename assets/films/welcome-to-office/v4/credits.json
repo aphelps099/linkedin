@@ -1,0 +1,28 @@
+{
+  "authorizedMaximumCredits": 10000,
+  "priorProjectCredits": 1700,
+  "revisionCredits": 170,
+  "totalProjectCredits": 1870,
+  "accountBalanceAfterSubmission": 18351,
+  "submissions": [
+    {
+      "shot": "people-linkedin",
+      "taskId": "481074aa-9774-443d-8421-b5bc2961ba38",
+      "status": "SUCCEEDED",
+      "request": {
+        "model": "kling-o3-pro",
+        "startImageFile": "/workspace/scratch/e1832ea21c4b/generated_images/exec-37e99bf6-88b9-48d5-8313-68935f556199.png",
+        "ratio": "16:9",
+        "resolution": "720p",
+        "generateAudio": false,
+        "promptText": "One continuous 10-second realistic office shot. Use EXACTLY this reference composition, same woman, same face, braided bun, beige blouse, black headset, desk and computer. Completely locked tripod camera. The woman reads the monitor quietly, blinking naturally once or twice. Her right index finger gently clicks the mouse a few times; her hand makes a tiny natural scroll-wheel motion and stays on the mouse. Her shoulders breathe subtly. Around 3 seconds she gives one very small approving nod with a restrained earnest half-smile. No speaking, no broad smile, no big gestures, no looking at camera. Exact believable anatomy and identity throughout, exactly two arms, same fingers. The monitor, screen corners, bezel, keyboard, desk and pen cup remain rigid, stationary and identical in every frame. The display remains UNIFORMLY BLANK LIGHT GRAY, perfectly clean and completely unchanged for the whole shot. No text, graphics, reflections, interface, cursor, flicker or animations on the display; those will be composited later. Hands never cross the display. Natural fluorescent lighting stays steady. Same office background, no plants, no added people, no text overlays, no lower thirds, no camera movement, no cut. Preserve natural fine human movements rather than a freeze frame.",
+        "rationale": "User adds scenes to the authorized LinkedIn Beats brand film: a real human character using LinkedIn, reacting to an enthusiastic post and seeing supportive comments. One 10-second silent identity-locked office plate supports the sequence, with exact screen graphics composited locally. Cumulative spend before this request is 1700 of the authorized 10000 credits; this single source is expected to cost 170."
+      },
+      "chargedCredits": 170,
+      "sourceWidth": 1916,
+      "sourceHeight": 1080,
+      "sourceDurationSeconds": 10.041,
+      "hasSourceAudio": false
+    }
+  ]
+}

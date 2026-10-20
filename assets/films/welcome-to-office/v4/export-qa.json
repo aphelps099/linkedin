@@ -1,0 +1,9 @@
+{
+  "fullDecode": "passed; ffmpeg reported no video or audio decoding errors",
+  "durationSeconds": 60,
+  "video": "H264 1280x720 24 fps",
+  "audio": "AAC stereo 48000 Hz, 60 seconds",
+  "visualReview": "Contact sheet and full-resolution human/post/comment composites reviewed; no editorial lower thirds; stable tracked display; exact text and incoming comments; retained cast and instruments.",
+  "newRunwayTasks": 1,
+  "completedRunwayTasks": 1
+}

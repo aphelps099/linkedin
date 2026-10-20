@@ -81,7 +81,7 @@ def zoom_ui(local,global_t):
         d.rectangle((x+7,y+tile_h-33,x+tile_w-7,y+tile_h-7),fill='#151515')
         microphone(d,x+20,y+tile_h-22,13,muted=i!=0)
         txt(d,(x+35,y+tile_h-33),name,21,'white')
-        if i==0 and global_t>=22.068:
+        if i==0 and any(who=='synergy' and start<=global_t<start+len(B.voices[line])/B.SR for line,who,start in B.CUES):
             d.rectangle((x,y,x+tile_w-1,y+tile_h-1),outline='#64d35c',width=4)
     d.rectangle((0,718,SW,SH),fill='#252527')
     for x,label,kind in [(52,'Mute','mic'),(162,'Stop Video','camera'),(304,'Participants','people'),(465,'Chat','chat'),(600,'Share Screen','share'),(790,'More','more')]:

@@ -1,0 +1,13 @@
+{
+  "input_i": "-15.61",
+  "input_tp": "-1.49",
+  "input_lra": "3.30",
+  "input_thresh": "-25.65",
+  "output_i": "-15.92",
+  "output_tp": "-1.50",
+  "output_lra": "3.10",
+  "output_thresh": "-25.94",
+  "normalization_type": "dynamic",
+  "target_offset": "-0.08",
+  "description": "Measured V4 stereo master before AAC encoding; 48 kHz."
+}
