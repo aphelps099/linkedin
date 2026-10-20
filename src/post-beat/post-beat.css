@@ -68,3 +68,15 @@
 @media(max-width:520px){.pb-mini:not(.pb-ticket .pb-mini) .pb-settings-button{grid-column:3;grid-row:1}.pb-mini:not(.pb-ticket .pb-mini) .pb-meter{display:none}.pb-settings h2{font-size:40px}}
 @container(max-width:350px){.pb-ticket .pb-mini .pb-settings-button{grid-column:1;grid-row:4;justify-self:end}}
 @media(prefers-reduced-motion:reduce){.pb-settings{animation:none}.pb-sound-option i,.pb-sound-option i:before{transition:none}}
+
+/* One phrase owns the stage; reserve its height so the page never chases lyrics. */
+.pb-lyrics.pb-single-phrase{display:grid;place-items:center;height:auto;max-height:none;min-height:340px;overflow:visible;padding:28px 0 40px;mask-image:none;text-align:center}
+.pb-single-phrase p{grid-area:1/1;width:100%;margin:0;font-size:clamp(58px,6.4vw,94px);line-height:1.08;letter-spacing:-.02em;text-wrap:balance;overflow-wrap:anywhere}
+.pb-single-phrase.is-long p{font-size:clamp(48px,5vw,72px)}
+.pb-single-phrase .pb-phrase-sizer{visibility:hidden;pointer-events:none;user-select:none}
+.pb-current-phrase{animation:pb-phrase-arrive .18s ease-out}
+.pb-single-phrase .pb-word{opacity:.4}.pb-single-phrase .pb-word.was-sung{opacity:.75}.pb-single-phrase .pb-word.is-sung{opacity:1;color:var(--pb-yellow)}
+.pb-single-phrase.is-ready .pb-word{opacity:.72}
+@keyframes pb-phrase-arrive{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:520px){.pb-lyrics.pb-single-phrase{min-height:300px;padding:22px 0 30px}.pb-single-phrase p{font-size:clamp(54px,15vw,74px)}.pb-single-phrase.is-long p{font-size:clamp(44px,12vw,60px)}}
+@media(prefers-reduced-motion:reduce){.pb-current-phrase{animation:none}}

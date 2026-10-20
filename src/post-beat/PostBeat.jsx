@@ -22,7 +22,7 @@ export function PostBeat({post,initialRecipe,initialCover=DEFAULT_COVER,initialA
   const [shareOpen,setShareOpen]=useState(false),[cover,setCover]=useState(initialCover);
   const [artist,setArtist]=useState(initialArtist);const shareJob=useRef(null);
   const [shareCaption,setShareCaption]=useState(()=>suggestedCaption(recipe));
-  const engine=useRef(null),controller=useRef(null),frame=useRef(null),buffers=useRef(null),timeline=useRef([]),run=useRef(0),phaseRef=useRef('idle'),lyrics=useRef(null);
+  const engine=useRef(null),controller=useRef(null),frame=useRef(null),buffers=useRef(null),timeline=useRef([]),run=useRef(0),phaseRef=useRef('idle');
   const changeMix=value=>{setMix(value);engine.current?.setMix(value);};
   const busy=phase==='preparing',playing=phase==='playing';
   const changePhase=value=>{phaseRef.current=value;setPhase(value);};
@@ -34,10 +34,6 @@ export function PostBeat({post,initialRecipe,initialCover=DEFAULT_COVER,initialA
     document.addEventListener('visibilitychange',visibility);
     return ()=>{run.current++;controller.current?.abort();cancelAnimationFrame(frame.current);engine.current?.dispose();document.removeEventListener('visibilitychange',visibility);};
   },[]);
-  useEffect(()=>{
-    const container=lyrics.current,line=container?.querySelector(`[data-line="${active.line}"]`);
-    if(line){const top=Math.max(0,line.offsetTop-container.clientHeight*.28);container.scrollTo({top,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}
-  },[active.line,showSong]);
   const follow=()=>{
     let last=-1;
     const tick=()=>{
@@ -48,7 +44,7 @@ export function PostBeat({post,initialRecipe,initialCover=DEFAULT_COVER,initialA
       const row=cue?.id??timeline.current.findLast(c=>time>=c.start)?.id??-1;
       const word=cue?.words.findIndex(w=>time>=w.start&&time<w.end)??-1;
       setActive(prev=>prev.line===row&&prev.word===word?prev:{line:row,word});
-      if(time>=DURATION){changePhase('done');setActive({line:-1,word:-1});engine.current.stop();return;}
+      if(time>=DURATION){changePhase('done');engine.current.stop();return;}
       frame.current=requestAnimationFrame(tick);
     };tick();
   };
@@ -75,6 +71,10 @@ export function PostBeat({post,initialRecipe,initialCover=DEFAULT_COVER,initialA
   };
   const toggleView=()=>{if(showSong&&playing)pause();setShowSong(!showSong);};
   const share=()=>{if(busy)cancel();else if(playing)pause();shareJob.current=startShareClip({recipe,cover:{...getCover(cover),artist}});setShareOpen(true);};
+  const phraseIndex=active.line>=0?active.line:0;
+  const phrase=lines[phraseIndex];
+  const phraseSize=lines.some(line=>line.text.length>70)?' is-long':'';
+  const longestPhrase=lines.reduce((longest,line)=>line.text.length>longest.length?line.text:longest,'');
   const player=<div className={`pb-mini${playing?' is-playing':''}`} role="group" aria-label="Your beat player">
       <button className="pb-toggle" onClick={play} aria-label={busy?'Cancel beat preparation':playing?'Pause beat':phase==='paused'?'Resume beat':phase==='done'?'Replay beat':'Make and play beat'}>{busy?<X size={21}/>:playing?<Pause size={21} fill="currentColor"/>:<Play size={21} fill="currentColor"/>}</button>
       <div className="pb-track"><span>{busy?'Making your beat…':playing?'Now playing':phase==='paused'?'Paused':phase==='done'?'One more time?':'Your words. On repeat.'}</span><strong>{busy?<><LoaderCircle size={13}/>Finding the groove</>:phase==='idle'&&!initialRecipe?'Make this a beat':'The LinkedIn remix'}</strong></div>
@@ -94,9 +94,9 @@ export function PostBeat({post,initialRecipe,initialCover=DEFAULT_COVER,initialA
     {error&&<p className="pb-error" role="alert">{error}</p>}
     {settingsOpen&&<BeatSettings mix={mix} onChange={changeMix} onClose={()=>setSettingsOpen(false)} playing={playing} busy={busy} onPlay={play}/>}
     {shareOpen&&<ShareBeat initialJob={shareJob.current} artist={artist} onArtistChange={setArtist} recipe={recipe} coverId={cover} onCoverChange={setCover} caption={shareCaption} onCaptionChange={setShareCaption} onClose={()=>setShareOpen(false)}/>}
-    {showSong?<div className={`pb-lyrics${phase==='idle'||busy?' is-ready':''}`} ref={lyrics} role="region" aria-label="Singalong lyrics" tabIndex={0}>
-      {lines.map((line,i)=><p key={i} data-line={i} className={active.line===i?'is-current':''}>{line.text.split(/\s+/).map((word,j)=><span key={j} className={`pb-word${active.line===i&&active.word===j?' is-sung':''}${active.line===i&&active.word>j?' was-sung':''}`} aria-current={active.line===i&&active.word===j?'true':undefined}>{word}{' '}</span>)}</p>)}
-      <span className="pb-endnote">Please circle back for an encore.</span>
+    {showSong?<div className={`pb-lyrics pb-single-phrase${phraseSize}${phase==='idle'||busy?' is-ready':''}`} role="region" aria-label="Singalong lyrics">
+      <p className="pb-phrase-sizer" aria-hidden="true">{longestPhrase}</p>
+      <p key={phraseIndex} className="pb-current-phrase" aria-label={phrase.text}>{phrase.text.split(/\s+/).map((word,j)=><span key={j} className={`pb-word${active.word===j?' is-sung':''}${active.word>j||phase==='done'?' was-sung':''}`} aria-current={active.word===j?'true':undefined}>{word}{' '}</span>)}</p>
     </div>:children}
   </div>;
 }
