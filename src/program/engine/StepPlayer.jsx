@@ -6,6 +6,8 @@ import {PostBeat} from '../../post-beat/PostBeat.jsx';
 import {Markdown} from './markdown.jsx';
 import {isInteractive, PASSIVE_DELAY} from './types.js';
 import {perform, score, typewrite, levelName, seedFrom, LEVELS} from './performer.js';
+import {FeedPost, Profile} from '../components/FeedPost.jsx';
+import {LessonReward} from '../components/Rewards.jsx';
 
 // The step player. One chapter in, revealed one step at a time. Passive steps
 // advance on a timer; interactive steps wait. Live outputs are performed by
@@ -18,7 +20,7 @@ function exampleFor(category, answers){
   return category === 'announce' ? (ANNOUNCEMENT_EXAMPLES[answers?.kind] || EXAMPLES.announce) : EXAMPLES[category];
 }
 
-export function StepPlayer({chapter, userName, title, onName, onComplete, onPost}){
+export function StepPlayer({chapter, userName, title, onName, onComplete, onFinish, onPost}){
   const steps = chapter.steps;
   const [visibleCount, setVisibleCount] = useState(0);
   const [outputs, setOutputs] = useState({});       // step id → performed text
@@ -32,10 +34,13 @@ export function StepPlayer({chapter, userName, title, onName, onComplete, onPost
   const [nameValue, setNameValue] = useState(userName || '');
   const [titleValue, setTitleValue] = useState(title || '');
   const [copiedId, setCopiedId] = useState(null);
+  const [inputs, setInputs] = useState({});
+  const [copyStatus, setCopyStatus] = useState('');
 
   const scrollRef = useRef(null);
   const cancelRef = useRef(() => {});
   const advanceTimer = useRef(null);
+  const requestedScroll = useRef(false);
   const seed = useMemo(() => seedFrom(chapter.id + (userName || '')), [chapter.id, userName]);
 
   const personalize = useCallback(t => String(t || '')
@@ -52,14 +57,17 @@ export function StepPlayer({chapter, userName, title, onName, onComplete, onPost
     return () => { clearTimeout(t); cancelRef.current(); clearTimeout(advanceTimer.current); };
   }, [chapter.id]);
 
-  // Keep the newest step in view.
+  // Follow an explicit continue action only. Reading and streamed output never
+  // pull the page away from the learner while they inspect earlier material.
   useEffect(() => {
-    const el = scrollRef.current; if(!el) return;
-    const t = setTimeout(() => el.scrollTo({top: el.scrollHeight, behavior: 'smooth'}), 120);
-    return () => clearTimeout(t);
-  }, [visibleCount, outputs]);
+    if(!requestedScroll.current) return;
+    requestedScroll.current=false;
+    const el=scrollRef.current?.querySelector('.pg-in:last-child');
+    if(el && el.getBoundingClientRect().top>window.innerHeight-160) el.scrollIntoView({block:'start',behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'});
+  }, [visibleCount]);
 
-  const advance = useCallback((n = 1) => setVisibleCount(c => Math.min(c + n, steps.length)), [steps.length]);
+  const advance = useCallback((n = 1) => {requestedScroll.current=true;setVisibleCount(c => Math.min(c + n, steps.length));}, [steps.length]);
+  useEffect(()=>{if(steps[visibleCount-1]?.type==='chapter-end') onFinish?.(chapter.id);},[visibleCount,steps,chapter.id,onFinish]);
 
   // Auto-advance passive steps.
   useEffect(() => {
@@ -93,12 +101,12 @@ export function StepPlayer({chapter, userName, title, onName, onComplete, onPost
     switch(s.type){
       case 'prompt-card': return personalize(s.prompt);
       case 'output-card': return s.content;
-      case 'exercise-card': return outputs[sourceId] ?? filledTemplate(s);
+      case 'exercise-card': return inputs[sourceId] ?? filledTemplate(s);
       case 'intake-card': return answersFor(s);
       case 'dial': return inputFor(s.source);
       default: return outputs[sourceId] ?? '';
     }
-  }, [stepById, outputs, personalize, filledTemplate, answersFor]);
+  }, [stepById, outputs, inputs, personalize, filledTemplate, answersFor]);
 
   const run = useCallback((targetId, kind, input, {level = 3, after} = {}) => {
     cancelRef.current();
@@ -106,10 +114,11 @@ export function StepPlayer({chapter, userName, title, onName, onComplete, onPost
     try{ text = perform(kind, input, {seed, level}); }
     catch(e){ text = `*${e.message}*`; }
     setPerforming(targetId);
+    setInputs(o=>({...o,[targetId]:input}));
     setOutputs(o => ({...o, [targetId]: ''}));
     cancelRef.current = typewrite(text, chunk => setOutputs(o => ({...o, [targetId]: chunk})), () => {
       setPerforming(null);
-      onPost?.(targetId, text, score(text));
+      if(kind !== 'score') onPost?.(targetId, text, score(text));
       after?.(text);
     });
   }, [seed, onPost]);
@@ -123,9 +132,9 @@ export function StepPlayer({chapter, userName, title, onName, onComplete, onPost
     run(cur.id, cur.performs || 'linkedinify', inputFor(cur.source), {level: cur.level || 3, after: () => { advanceTimer.current = setTimeout(() => advance(), 900); }});
   }, [visibleCount, steps, run, inputFor, advance]);
 
-  const copy = useCallback((id, text) => {
-    try{ navigator.clipboard?.writeText(text); }catch{ /* ignore */ }
-    setCopiedId(id); setTimeout(() => setCopiedId(c => (c === id ? null : c)), 2000);
+  const copy = useCallback(async (id, text) => {
+    try{await navigator.clipboard.writeText(text);setCopiedId(id);setCopyStatus('Copied to clipboard.');setTimeout(() => setCopiedId(c => (c === id ? null : c)), 2000);}
+    catch{setCopyStatus('Copy unavailable. Select the post text to copy it.');}
   }, []);
 
   const submitName = () => {
@@ -137,18 +146,7 @@ export function StepPlayer({chapter, userName, title, onName, onComplete, onPost
   // ── renderers ────────────────────────────────────────────────────────
   const Output = ({id, label, streaming}) => {
     const text = outputs[id] ?? '';
-    const paras = text.split(/\n{2,}/).filter(Boolean);
-    return <div className={`pg-output${streaming ? ' is-live' : ''}`}>
-      <div className="pg-card-head"><i/><span>{streaming ? 'Printing…' : (label || 'The LinkedIn version')}</span>
-        {!streaming && text && <button type="button" className="pg-mini" onClick={() => copy(id, text)}>{copiedId === id ? <Check size={12}/> : <Copy size={12}/>}{copiedId === id ? 'Copied' : 'Copy'}</button>}
-      </div>
-      <div className="pg-post">
-        {!paras.length ? <p className="pg-muted">…</p>
-          : text.includes('**') ? <Markdown text={text}/>
-          : paras.map((p, i) => <p key={i} className={i === 0 && p.length < 110 ? 'pg-post-lead' : ''}>{p}</p>)}
-        {streaming && <span className="pg-cursor"/>}
-      </div>
-    </div>;
+    return <FeedPost text={text} name={userName} title={title} streaming={streaming} label={label || 'The LinkedIn version'} onCopy={!streaming && text ? ()=>copy(id,text) : undefined} copied={copiedId===id}/>;
   };
 
   const ScoreBlock = ({text, title: t}) => {
@@ -169,22 +167,22 @@ export function StepPlayer({chapter, userName, title, onName, onComplete, onPost
 
       case 'name-input':
         return <div className="pg-indent pg-name">
-          <input value={nameValue} onChange={e => setNameValue(e.target.value)} onKeyDown={e => { if(e.key === 'Enter' && !step.askTitle) submitName(); }} placeholder={step.placeholder || 'Your first name'} autoFocus aria-label="Your name"/>
-          {step.askTitle && <input value={titleValue} onChange={e => setTitleValue(e.target.value)} onKeyDown={e => { if(e.key === 'Enter') submitName(); }} placeholder={step.titlePlaceholder || 'Your job title'} aria-label="Your job title"/>}
-          <button type="button" className="pg-btn" onClick={submitName} disabled={!nameValue.trim()}>{step.buttonLabel || "Let's go"}<ArrowRight size={15}/></button>
+          <input disabled={!isLast} maxLength={60} value={nameValue} onChange={e => setNameValue(e.target.value)} onKeyDown={e => { if(e.key === 'Enter' && !step.askTitle) submitName(); }} placeholder={step.placeholder || 'Your first name'} autoFocus aria-label="Your name"/>
+          {step.askTitle && <input disabled={!isLast} maxLength={100} value={titleValue} onChange={e => setTitleValue(e.target.value)} onKeyDown={e => { if(e.key === 'Enter') submitName(); }} placeholder={step.titlePlaceholder || 'Your job title'} aria-label="Your job title"/>}
+          <button type="button" className="pg-btn" onClick={submitName} disabled={!isLast || !nameValue.trim()}>{isLast ? (step.buttonLabel || "Let's go") : 'Enrolled'}<ArrowRight size={15}/></button>
         </div>;
 
       case 'prompt-card':
         return <div className="pg-indent"><div className="pg-prompt">
           <div className="pg-prompt-head"><span>{step.label || 'What actually happened'}</span>
-            <div>{step.tryMe && <button type="button" className="pg-mini pg-mini-play" onClick={() => advance()}><Play size={10} fill="currentColor"/>Make it LinkedIn</button>}
+            <div>{step.tryMe && isLast && <button type="button" className="pg-mini pg-mini-play" onClick={() => advance()}><Play size={10} fill="currentColor"/>Make it LinkedIn</button>}
               <button type="button" className={`pg-mini${copiedId === step.id ? ' is-copied' : ''}`} onClick={() => copy(step.id, personalize(step.prompt))}>{copiedId === step.id ? <Check size={11}/> : <Copy size={11}/>}{copiedId === step.id ? 'Copied' : 'Copy'}</button></div>
           </div>
           <pre>{personalize(step.prompt)}</pre>
         </div></div>;
 
       case 'output-card':
-        return <div className="pg-indent"><div className="pg-output"><div className="pg-card-head"><i/><span>{step.label || 'The LinkedIn version'}</span></div><div className="pg-post">{step.content.split(/\n{2,}/).map((p, i) => <p key={i} className={i === 0 && p.length < 110 ? 'pg-post-lead' : ''}>{p}</p>)}</div></div></div>;
+        return <div className="pg-indent"><FeedPost text={personalize(step.content)} name={userName} title={title} label={step.label || 'Worked example'} onCopy={()=>copy(step.id,personalize(step.content))} copied={copiedId===step.id}/></div>;
 
       case 'live-output':
         return <div className="pg-indent"><Output id={step.id} label={step.label} streaming={performing === step.id}/></div>;
@@ -195,7 +193,7 @@ export function StepPlayer({chapter, userName, title, onName, onComplete, onPost
       case 'before-after':
         return <div className="pg-indent pg-compare">
           <div className="pg-card"><div className="pg-card-head pg-head-muted"><i/><span>{step.beforeLabel || 'What actually happened'}</span></div><Markdown className="pg-card-body" text={personalize(step.before)}/></div>
-          <div className="pg-card pg-card-blue"><div className="pg-card-head"><i/><span>{step.afterLabel || 'The LinkedIn version'}</span></div><Markdown className="pg-card-body" text={personalize(step.after)}/></div>
+          <FeedPost text={personalize(step.after)} name={userName} title={title} label={step.afterLabel || 'The LinkedIn version'}/>
         </div>;
 
       case 'takeaway-card':
@@ -206,16 +204,16 @@ export function StepPlayer({chapter, userName, title, onName, onComplete, onPost
         const parts = step.template.split(/(\{\{\w+\}\})/g);
         return <div className="pg-indent">
           <div className="pg-card pg-exercise">
-            <div className="pg-card-head"><i/><span>{step.title}</span></div>
+            <div className="pg-card-head"><span>Try this</span><strong>{step.title}</strong></div><div className="pg-composer-profile"><Profile name={userName} title={title}/></div>
             <div className="pg-card-body">{step.description && <p className="pg-muted">{step.description}</p>}
               <pre className="pg-template">{parts.map((p, i) => { const m = p.match(/^\{\{(\w+)\}\}$/); if(!m) return <span key={i}>{p}</span>; const b = step.blanks.find(x => x.id === m[1]); return <mark key={i}>{(vals[`${step.id}.${m[1]}`] ?? b?.defaultValue ?? '') || b?.placeholder}</mark>; })}</pre>
             </div>
-            <div className="pg-fields">{step.blanks.map(b => <label key={b.id}><span>{b.label}</span><input value={vals[`${step.id}.${b.id}`] ?? b.defaultValue ?? ''} placeholder={b.placeholder} onChange={e => setVals(v => ({...v, [`${step.id}.${b.id}`]: e.target.value}))}/></label>)}</div>
-            <div className="pg-card-foot"><span className="pg-muted">Generated in your browser. Nothing is saved.</span>
-              <button type="button" className="pg-btn pg-btn-sm" disabled={running} onClick={() => run(step.id, step.performs || 'linkedinify', filledTemplate(step), {level: step.level || 3, after: () => setDone(d => ({...d, [step.id]: true}))})}><Play size={11} fill="currentColor"/>{step.runLabel || 'Make it LinkedIn'}</button></div>
+            <div className="pg-fields">{step.blanks.map(b => <label key={b.id}><span>{b.label}</span><input disabled={!isLast || running} value={vals[`${step.id}.${b.id}`] ?? b.defaultValue ?? ''} placeholder={b.placeholder} onChange={e => setVals(v => ({...v, [`${step.id}.${b.id}`]: e.target.value}))}/></label>)}</div>
+            <div className="pg-card-foot"><span className="pg-muted">Practice only. Nothing is published.</span>
+              <button type="button" className="pg-btn pg-btn-sm" disabled={!isLast || !!performing} onClick={() => run(step.id, step.performs || 'linkedinify', filledTemplate(step), {level: step.level || 3, after: () => setDone(d => ({...d, [step.id]: true}))})}><Play size={11} fill="currentColor"/>{step.runLabel || 'Make it LinkedIn'}</button></div>
           </div>
-          {(running || out !== undefined) && <div className="pg-after"><Output id={step.id} label={step.outputLabel} streaming={running}/></div>}
-          {done[step.id] && isLast && <div className="pg-row"><button type="button" className="pg-pill" onClick={() => { setOutputs(o => { const n = {...o}; delete n[step.id]; return n; }); setDone(d => ({...d, [step.id]: false})); }}><RotateCcw size={13}/>Try again</button><Continue/></div>}
+          {(running || out !== undefined) && <div className="pg-after">{step.performs==='score' ? <><FeedPost text={inputs[step.id] || filledTemplate(step)} name={userName} title={title} label="Your practice post"/><div className="pg-after"><ScoreBlock text={inputs[step.id] || filledTemplate(step)} title={step.outputLabel}/></div></> : <Output id={step.id} label={step.outputLabel} streaming={running}/>}</div>}
+          {done[step.id] && !performing && isLast && <div className="pg-row"><button type="button" className="pg-pill" onClick={() => { setOutputs(o => { const n = {...o}; delete n[step.id]; return n; }); setDone(d => ({...d, [step.id]: false})); }}><RotateCcw size={13}/>Try again</button><Continue/></div>}
         </div>;
       }
 
@@ -227,17 +225,17 @@ export function StepPlayer({chapter, userName, title, onName, onComplete, onPost
         const set = (key, value) => setAnswers(x => ({...x, [step.id]: {...(x[step.id] || {}), [key]: value}}));
         return <div className="pg-indent">
           <div className="pg-card pg-exercise">
-            <div className="pg-card-head"><i/><span>{step.title}</span><span className="pg-form-no">Form {cat.form}</span></div>
-            {step.choose && <div className="pg-choices">{Object.entries(CATEGORY_NAMES).map(([id, name]) => <button type="button" key={id} aria-pressed={id === category} onClick={() => { setCategories(c => ({...c, [step.id]: id})); setAnswers(x => ({...x, [step.id]: {}})); }}>{name}</button>)}</div>}
+            <div className="pg-card-head"><span>Try this</span><strong>{step.title}</strong></div><div className="pg-composer-profile"><Profile name={userName} title={title}/></div>
+            {step.choose && <div className="pg-choices">{Object.entries(CATEGORY_NAMES).map(([id, name]) => <button type="button" key={id} disabled={!isLast || !!performing} aria-pressed={id === category} onClick={() => { setCategories(c => ({...c, [step.id]: id})); setAnswers(x => ({...x, [step.id]: {}})); }}>{name}</button>)}</div>}
             <div className="pg-card-body">{step.description && <p className="pg-muted">{step.description}</p>}</div>
             <div className="pg-fields">{fields.map(f => f.type === 'choice'
-              ? <div className="pg-choice" key={f.key}><span>{f.ask}</span><div>{f.options.map(o => <button type="button" key={o} aria-pressed={a[f.key] === o} onClick={() => set(f.key, o)}>{o}</button>)}</div></div>
-              : <label key={f.key}><span>{f.ask}</span><input value={answers[step.id]?.[f.key] ?? ''} placeholder={a[f.key] || f.placeholder} onChange={e => set(f.key, e.target.value)}/></label>)}</div>
+              ? <div className="pg-choice" key={f.key}><span>{f.ask}</span><div>{f.options.map(o => <button type="button" key={o} disabled={!isLast || !!performing} aria-pressed={a[f.key] === o} onClick={() => set(f.key, o)}>{o}</button>)}</div></div>
+              : <label key={f.key}><span>{f.ask}</span><input disabled={!isLast || !!performing} value={answers[step.id]?.[f.key] ?? ''} placeholder={a[f.key] || f.placeholder} onChange={e => set(f.key, e.target.value)}/></label>)}</div>
             <div className="pg-card-foot"><span className="pg-muted">Blank fields use the example. Your answers stay here.</span>
-              <button type="button" className="pg-btn pg-btn-sm" disabled={running} onClick={() => run(step.id, 'generate', answersFor(step), {level: step.level || 3, after: () => setDone(d => ({...d, [step.id]: true}))})}><Play size={11} fill="currentColor"/>{step.runLabel || 'File this post'}</button></div>
+              <button type="button" className="pg-btn pg-btn-sm" disabled={!isLast || !!performing} onClick={() => run(step.id, 'generate', answersFor(step), {level: step.level || 3, after: () => setDone(d => ({...d, [step.id]: true}))})}><Play size={11} fill="currentColor"/>{step.runLabel || 'File this post'}</button></div>
           </div>
           {(running || out !== undefined) && <div className="pg-after"><Output id={step.id} label={step.outputLabel || `Level ${step.level || 3} · ${levelName(step.level || 3)}`} streaming={running}/></div>}
-          {done[step.id] && isLast && <div className="pg-row"><button type="button" className="pg-pill" onClick={() => run(step.id, 'generate', answersFor(step), {level: step.level || 3})}><RotateCcw size={13}/>Another take</button><Continue/></div>}
+          {done[step.id] && !performing && isLast && <div className="pg-row"><button type="button" className="pg-pill" onClick={() => run(step.id, 'generate', answersFor(step), {level: step.level || 3})}><RotateCcw size={13}/>Another take</button><Continue/></div>}
         </div>;
       }
 
@@ -251,10 +249,10 @@ export function StepPlayer({chapter, userName, title, onName, onComplete, onPost
           <div className="pg-card pg-dial">
             <div className="pg-card-head"><i/><span>{step.title || 'The dial'}</span></div>
             <div className="pg-dial-row"><output>{level}</output><div><strong>{name}</strong><span>{LEVELS[level - 1].blurb}</span></div></div>
-            <input type="range" min={step.min || 1} max={step.max || 5} value={level} style={{'--level': `${((level - 1) / 4) * 100}%`}} onChange={e => { const n = Number(e.target.value); setLevels(l => ({...l, [step.id]: n})); setOutputs(o => ({...o, [step.id]: perform('generate', input, {seed, level: n})})); setDone(d => ({...d, [step.id]: true})); }} aria-label="LinkedInification level"/>
+            <input disabled={!isLast} type="range" min={step.min || 1} max={step.max || 5} value={level} style={{'--level': `${((level - 1) / 4) * 100}%`}} onChange={e => { const n = Number(e.target.value); setLevels(l => ({...l, [step.id]: n})); setOutputs(o => ({...o, [step.id]: perform('generate', input, {seed, level: n})})); setDone(d => ({...d, [step.id]: true})); }} aria-label="LinkedInification level"/>
             <div className="pg-dial-scale"><span>Almost human</span><span>Corporate hallucination</span></div>
           </div>
-          <div className="pg-after"><div className="pg-output"><div className="pg-card-head"><i/><span>Level {level} · {name}</span></div><div className="pg-post">{text.split(/\n{2,}/).map((p, i) => <p key={i} className={i === 0 && p.length < 110 ? 'pg-post-lead' : ''}>{p}</p>)}</div></div></div>
+          <div className="pg-after"><FeedPost text={text} name={userName} title={title} label={`Level ${level} · ${name}`}/></div>
           <div className="pg-after"><ScoreBlock text={text}/></div>
           {isLast && <div className="pg-row"><Continue label={done[step.id] ? 'Keep going' : 'Scrub the dial, then keep going'} onClick={() => { setOutputs(o => ({...o, [step.id]: text})); advance(); }}/></div>}
         </div>;
@@ -268,19 +266,19 @@ export function StepPlayer({chapter, userName, title, onName, onComplete, onPost
         const picked = spotted[step.id] || new Set();
         const checked = !!done[step.id];
         const correct = new Set(step.answers.map(a => lines.findIndex(l => l.trim() === a.trim())));
-        const toggle = i => { if(checked) return; setSpotted(s => { const n = new Set(s[step.id] || []); n.has(i) ? n.delete(i) : n.add(i); return {...s, [step.id]: n}; }); };
+        const toggle = i => { if(checked || !isLast) return; setSpotted(s => { const n = new Set(s[step.id] || []); n.has(i) ? n.delete(i) : n.add(i); return {...s, [step.id]: n}; }); };
         const hits = [...picked].filter(i => correct.has(i)).length;
         return <div className="pg-indent">
           <div className="pg-card pg-spot">
-            <div className="pg-card-head"><i/><span>{step.title}</span></div>
+            <div className="pg-card-head"><span>Try this</span><strong>{step.title}</strong></div><div className="pg-composer-profile"><Profile name={userName} title={title}/></div>
             <div className="pg-card-body"><p className="pg-muted">{step.description || 'Click every line that is doing LinkedIn things.'}</p>
-              <div className="pg-spot-lines">{lines.map((l, i) => <button type="button" key={i} aria-pressed={picked.has(i)} className={checked ? (correct.has(i) ? 'is-trope' : picked.has(i) ? 'is-miss' : '') : ''} onClick={() => toggle(i)}>{l}</button>)}</div>
+              <div className="pg-spot-lines">{lines.map((l, i) => <button type="button" key={i} disabled={checked || !isLast} aria-pressed={picked.has(i)} className={checked ? (correct.has(i) ? 'is-trope' : picked.has(i) ? 'is-miss' : '') : ''} onClick={() => toggle(i)}>{l}</button>)}</div>
             </div>
-            <div className="pg-card-foot"><span className="pg-muted">{checked ? `${hits} of ${correct.size} found.` : `${picked.size} selected`}</span>
+            <div className="pg-card-foot"><span className="pg-muted">{checked ? `${hits} of ${correct.size} found${picked.size > hits ? ` · ${picked.size-hits} extra selected` : ''}.` : `${picked.size} selected`}</span>
               {!checked && <button type="button" className="pg-btn pg-btn-sm" onClick={() => setDone(d => ({...d, [step.id]: true}))}>Check</button>}</div>
           </div>
-          {checked && <div className="pg-after"><div className="pg-card pg-insight"><div className="pg-card-head"><i/><span>{hits === correct.size ? 'Full marks' : 'What you missed'}</span></div><Markdown className="pg-card-body" text={step.explanation}/></div></div>}
-          {checked && isLast && <div className="pg-row"><Continue/></div>}
+          {checked && <div className="pg-after"><div className="pg-card pg-insight"><div className="pg-card-head"><i/><span>{hits === correct.size && picked.size===correct.size ? 'Full marks' : 'Let’s look at the lines'}</span></div><Markdown className="pg-card-body" text={step.explanation}/></div></div>}
+          {checked && isLast && <div className="pg-row"><button className="pg-pill" onClick={()=>{setDone(d=>({...d,[step.id]:false}));setSpotted(s=>({...s,[step.id]:new Set()}));}}><RotateCcw size={13}/>Try again</button><Continue/></div>}
         </div>;
       }
 
@@ -294,18 +292,13 @@ export function StepPlayer({chapter, userName, title, onName, onComplete, onPost
       }
 
       case 'pause':
-        return <div className="pg-indent"><button type="button" className="pg-pill" onClick={() => advance()}>{step.buttonLabel || 'Continue'}<ArrowRight size={13}/></button></div>;
+        return isLast ? <div className="pg-indent pg-continue-row"><button type="button" className="pg-btn" onClick={() => advance()}>{step.buttonLabel || 'Continue'}<ArrowRight size={15}/></button></div> : null;
 
       case 'buttons':
-        return <div className="pg-indent pg-row">{step.buttons.map((b, i) => <button type="button" key={i} className={b.variant === 'secondary' ? 'pg-pill' : 'pg-btn'} onClick={() => (b.action === 'nextChapter' ? onComplete() : advance())}>{b.label}</button>)}</div>;
+        return isLast ? <div className="pg-indent pg-row">{step.buttons.map((b, i) => <button type="button" key={i} className={b.variant === 'secondary' ? 'pg-pill' : 'pg-btn'} onClick={() => (b.action === 'nextChapter' ? onComplete() : advance())}>{b.label}</button>)}</div> : null;
 
       case 'chapter-end':
-        return <div className="pg-indent"><div className="pg-end">
-          <span className="pg-eyebrow">{step.isFinal ? 'Program complete' : 'You have reached'}</span>
-          <strong>{step.isFinal ? 'Certification pending your signature.' : `Level ${chapter.level} · ${chapter.levelName}`}</strong>
-          {!step.isFinal && step.nextChapterTitle && <span className="pg-muted">Next: {step.nextChapterTitle}</span>}
-          <button type="button" className="pg-btn" onClick={onComplete}>{step.isFinal ? 'Get certified' : `Begin: ${step.nextChapterTitle || 'Next lesson'}`}<ArrowRight size={15}/></button>
-        </div></div>;
+        return <div className="pg-indent"><LessonReward chapter={chapter} final={step.isFinal} nextTitle={step.nextChapterTitle} onContinue={onComplete}/></div>;
 
       case 'divider':
         return <div className="pg-indent"><hr className="pg-hair"/></div>;
@@ -317,11 +310,10 @@ export function StepPlayer({chapter, userName, title, onName, onComplete, onPost
 
   return <div className="pg-scroll" ref={scrollRef}>
     <div className="pg-lesson">
-      <div className="pg-strip"><span>Lesson {String(chapter.number).padStart(2, '0')} / 05</span><i/><span>{chapter.minutes} min</span></div>
-      <div className="pg-eyebrow pg-eyebrow-blue">Level {chapter.level} · {chapter.levelName}</div>
-      <h1 className="pg-h1">{chapter.title}</h1>
-      <p className="pg-sub">{chapter.subtitle}</p>
-      <div className="pg-steps">{steps.slice(0, visibleCount).map((step, i) => <div key={step.id} className="pg-in">{renderStep(step, i === visibleCount - 1)}</div>)}</div>
+      <div className="pg-strip"><span>{String(chapter.number).padStart(2, '0')} / {chapter.title}</span><span>The lesson · {chapter.minutes} min</span></div>
+      <h1 className="pg-h1">{({hook:"Make an entrance.",inflation:"Make a little news.",vocabulary:"Learn the language.",shape:"Give it some space.",single:"Bring it all together."})[chapter.id]}</h1>
+      <p className="pg-sub">Level {chapter.level} · {chapter.levelName}</p>
+      <span className="pg-sr-only" role="status">{copyStatus}</span><div className="pg-steps">{steps.slice(0, visibleCount).map((step, i) => <div key={step.id} className="pg-in">{renderStep(step, i === visibleCount - 1)}</div>)}</div>
     </div>
   </div>;
 }

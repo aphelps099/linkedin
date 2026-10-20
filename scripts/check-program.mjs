@@ -14,6 +14,7 @@ import {CHAPTERS} from '../src/program/chapters/index.js';
 import {INTERACTIVE, PASSIVE_DELAY, PERFORMS} from '../src/program/engine/types.js';
 import {perform, score} from '../src/program/engine/performer.js';
 import {byId, withDefaultAnswers} from '../src/lessons/categories.js';
+import {loadProgress, saveProgress} from '../src/program/engine/progress.js';
 // Example answers mirror src/lessons/Intake.jsx (JSX, so not importable here).
 const EXAMPLES = {
   announce: {kind: 'A new hire', name: 'Jordan', role: 'Director of Vibes', before: 'a very long meeting', quality: 'an inbox at zero', goal: 'make Fridays feel like Fridays', company: 'Circle Back Inc.'},
@@ -111,6 +112,20 @@ CHAPTERS.forEach((ch, ci) => {
   if(!!last?.isFinal !== (ci === CHAPTERS.length - 1)) fail(`${where}: isFinal should be ${ci === CHAPTERS.length - 1}`);
   if(ci === 0 && !ch.steps.some(s => s.type === 'name-input')) fail(`${where}: the first chapter must ask for a name`);
 });
+
+// Existing learners keep v1 progress; malformed storage cannot unlock awards.
+let stored=JSON.stringify({userName:'Alex',title:'Coordinator',currentChapter:1,completedChapters:['hook','hook','not-a-lesson'],posts:{hook:'A saved post'}});
+Object.defineProperty(globalThis,'localStorage',{configurable:true,value:{getItem:()=>stored,setItem:(_,value)=>{stored=value;}}});
+const returning=loadProgress();
+if(returning.userName!=='Alex' || returning.completedChapters.join(',')!=='hook' || returning.posts.hook!=='A saved post') fail('v1 learner progress did not migrate intact');
+const next=saveProgress({completedChapters:['hook','inflation']},returning);
+if(loadProgress().completedChapters.length!==2 || next.title!=='Coordinator') fail('chapter completion did not persist');
+stored='{invalid';
+if(loadProgress().completedChapters.length!==0) fail('invalid storage should start an incomplete course');
+globalThis.localStorage.setItem=()=>{throw new Error('Storage blocked');};
+const inMemory=saveProgress({title:'Director'},next);
+if(inMemory.completedChapters.length!==2 || inMemory.userName!=='Alex') fail('blocked storage should retain in-memory course progress');
+delete globalThis.localStorage;
 
 if(failures){ console.error(`\n${failures} check(s) failed`); process.exit(1); }
 console.log(`OK program: ${CHAPTERS.length} chapters, ${CHAPTERS.reduce((n, c) => n + c.steps.length, 0)} steps`);

@@ -4,13 +4,14 @@ import React, {Fragment} from 'react';
 // bullet lists, and GFM tables. The chapters are written to this subset.
 function inline(text, keyBase){
   const out = [];
-  const re = /(\*\*[^*]+\*\*|\*[^*\n]+\*|`[^`]+`)/g;
+  const re = /(\*\*[^*]+\*\*|\*[^*\n]+\*|`[^`]+`|#[\p{L}\p{N}_]+)/gu;
   let last = 0, m, i = 0;
   while((m = re.exec(text)) !== null){
     if(m.index > last) out.push(text.slice(last, m.index));
     const tok = m[0], key = `${keyBase}-${i++}`;
     if(tok.startsWith('**')) out.push(<strong key={key}>{tok.slice(2, -2)}</strong>);
     else if(tok.startsWith('`')) out.push(<code key={key}>{tok.slice(1, -1)}</code>);
+    else if(tok.startsWith('#')) out.push(<span className="pg-hashtag" key={key}>{tok}</span>);
     else out.push(<em key={key}>{tok.slice(1, -1)}</em>);
     last = m.index + tok.length;
   }
