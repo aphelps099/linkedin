@@ -11,28 +11,24 @@ function lines(ctx,text,width){
   for(const word of text.split(/\s+/)){const next=row?`${row} ${word}`:word;if(row&&ctx.measureText(next).width>width){result.push(row);row=word;}else row=next;}
   if(row)result.push(row);return result;
 }
+// Artwork and the personal title have separate moments; never a square collage.
 export function drawShareArtwork(canvas,image,recipe,elapsed=0,spectrum=null){
-  const c=canvas.getContext('2d');c.fillStyle='#0757ec';c.fillRect(0,0,1080,1080);
-  c.fillStyle='#fbf6e8';c.font='600 22px C2Hoves, Arial';c.fillText('LINKEDIN BEATS',52,62);
-  c.textAlign='right';c.font='22px C2Hoves, Arial';c.fillText('YOUR DEBUT SINGLE',1028,62);c.textAlign='left';
-  c.fillStyle='#fbf6e85c';c.fillRect(52,85,976,1);
-  let size=110,rows;
-  do{c.font=`${size}px Anton, Impact, sans-serif`;rows=lines(c,recipe.chorus.toUpperCase(),976);if(rows.length<=3&&rows.length*(size+10)<=260)break;size-=2;}while(size>40);
-  const baseline=108+(260-rows.length*(size+10))/2+size*.86;
-  c.fillStyle='#fbf6e8';rows.forEach((row,i)=>c.fillText(row,52,baseline+i*(size+10)));
-  const h=1080*image.height/image.width;c.drawImage(image,0,380,1080,h);
-  const bins=52,gap=7,w=(976-gap*(bins-1))/bins;
+  const c=canvas.getContext('2d'),w=canvas.width,h=canvas.height,artH=545;
+  c.fillStyle='#0757ec';c.fillRect(0,0,w,h);
+  c.drawImage(image,0,0,w,artH);
+  c.fillStyle='#0757ec';c.fillRect(0,artH,w,h-artH);
+  const bins=60,gap=6,bw=(w-64-gap*(bins-1))/bins;
   for(let i=0;i<bins;i++){
     const energy=spectrum?.[Math.floor(i*(spectrum.length*.7)/bins)]||0;
-    const height=spectrum?7+Math.min(70,energy*.27):8+Math.abs(Math.sin(i*1.7)*Math.cos(i*.39))*37;c.fillStyle=i/bins<elapsed/LENGTH?'#fff349':'#a2c2fa';
-    c.fillRect(52+i*(w+gap),962-height/2,w,height);
+    const height=spectrum?4+Math.min(27,energy*.12):5+Math.abs(Math.sin(i*1.7)*Math.cos(i*.39))*16;
+    c.fillStyle=i/bins<elapsed/LENGTH?'#fff349':'#a2c2fa';c.fillRect(32+i*(bw+gap),artH+32-height/2,bw,height);
   }
-  c.font='23px C2Hoves, Arial';c.fillStyle='#fbf6e8';c.fillText('linkedinbeats.com',52,1040);c.textAlign='right';c.fillText(`0:${String(Math.min(10,Math.floor(elapsed))).padStart(2,'0')} / 0:10`,1028,1040);c.textAlign='left';
-  if(elapsed>8.6){
-    c.fillStyle=`rgba(7,87,236,${Math.min(1,(elapsed-8.6)/.22)})`;c.fillRect(0,0,1080,1080);
-    c.fillStyle='#fbf6e8';c.font='88px Anton, Impact, sans-serif';c.fillText('MAKE YOUR OWN.',60,493);
-    c.font='40px C2Hoves, Arial';c.fillText('linkedinbeats.com',64,570);
-    c.fillStyle='#fff349';c.font='25px C2Hoves, Arial';c.fillText('Send it to someone who gets it.',64,664);
+  if(elapsed>8.2){
+    c.fillStyle=`rgba(7,87,236,${Math.min(1,(elapsed-8.2)/.18)})`;c.fillRect(0,0,w,h);
+    let size=83,rows;
+    do{c.font=`${size}px Anton, Impact, sans-serif`;rows=lines(c,recipe.chorus.toUpperCase(),w-104);if(rows.length<=3&&rows.length*(size+9)<=320)break;size-=2;}while(size>36);
+    c.fillStyle='#fbf6e8';rows.forEach((row,i)=>c.fillText(row,52,120+size+i*(size+9)));
+    c.font='28px C2Hoves, Arial';c.fillText('linkedinbeats.com',52,h-49);
   }
 }
 function mediaCapture(canvas,audio){
@@ -57,7 +53,7 @@ export async function createShareClip({recipe,cover,signal,onProgress=()=>{}}){
     const image=new Image();image.src=cover.image;
     const [buffers]=await Promise.all([player.prepare(recipe,signal),image.decode(),document.fonts.load('60px Anton'),document.fonts.load('24px C2Hoves')]);
     if(signal?.aborted)throw aborted();
-    const canvas=document.createElement('canvas');canvas.width=canvas.height=1080;
+    const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=608;
     drawShareArtwork(canvas,image,recipe,0,null);
     const mp4=await mp4Support(player.sampleRate());
     if(signal?.aborted)throw aborted();
