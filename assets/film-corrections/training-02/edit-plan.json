@@ -1,0 +1,104 @@
+{
+  "duration": 50,
+  "fps": 24,
+  "resolution": [
+    1280,
+    720
+  ],
+  "script": "Original deadline-question, evasive reply and working-group sequence retained. Newly synthesized in approved Synergy desktop voice.",
+  "cuts": [
+    [
+      0,
+      3,
+      "Typing wide, title"
+    ],
+    [
+      3,
+      4,
+      "Deadline question"
+    ],
+    [
+      4,
+      7,
+      "Synergy sees an opportunity"
+    ],
+    [
+      7,
+      10.5,
+      "Friday typed and selected"
+    ],
+    [
+      10.5,
+      12,
+      "Too measurable"
+    ],
+    [
+      12,
+      14,
+      "Typing hands"
+    ],
+    [
+      14,
+      16.8,
+      "Physical ChatGPT screen"
+    ],
+    [
+      16.8,
+      18,
+      "Readable screen insert"
+    ],
+    [
+      18,
+      21,
+      "Phased approach"
+    ],
+    [
+      21,
+      23.5,
+      "Synergy close"
+    ],
+    [
+      23.5,
+      30.5,
+      "Reply grows, reactions increase"
+    ],
+    [
+      30.5,
+      32,
+      "Typing hands"
+    ],
+    [
+      32,
+      35.5,
+      "So Friday?"
+    ],
+    [
+      35.5,
+      38.5,
+      "Working group proposal"
+    ],
+    [
+      38.5,
+      42.5,
+      "Weekly meeting scheduled"
+    ],
+    [
+      42.5,
+      47,
+      "Synergy pleased with the progress"
+    ],
+    [
+      47,
+      50,
+      "Question unanswered, meeting scheduled"
+    ]
+  ],
+  "music": "Original jazzy hip-hop instrumental. Duck under speech; restore between lines.",
+  "mouth": "Fixed-height horizontal LED row with left-to-right traveling brightness. No vertical expansion.",
+  "runwayTaskIds": [
+    "ef4bc48a-30c6-4f47-a987-0fb696e7a294",
+    "ee2e522b-8646-4ca5-af93-b529c6215c07",
+    "2eea69e6-7cf0-4c3d-ae50-112ed3f9d47e"
+  ],
+  "runwayCredits": 348
+}

@@ -27,4 +27,13 @@ engine.clock=6;tick();const pausedAt=player.elapsed();player.pause();assert.equa
 player.resume();assert(tick);assert(!engine.suspended);assert.equal(player.elapsed(),pausedAt);
 player.play(recipe,buffers);assert(engine.disposed);assert.equal(player.elapsed(),0);
 engines.at(-1).clock=31;tick();assert.equal(tick,null);player.dispose();assert(engines.at(-1).disposed);
-console.log('Post-beat transport passed: original recorded female vocals, homepage band, bounded word cues, no overlap, pause/resume, clean restart and cleanup.');
+// Clip capture starts at the user's chorus and retains the graph unlocked by
+// the initiating tap. A new graph after awaiting voices can lose iOS activation.
+player.unlock();const captureEngine=engines.at(-1),beforeCapture=engines.length;
+player.play(recipe,buffers,{offset:5,reuseGraph:true});
+assert.equal(engines.length,beforeCapture,'capture must keep the unlocked context');
+assert(!captureEngine.disposed);assert(Math.abs(player.elapsed()-4.92)<.001);
+const firstVoice=captureEngine.events.find(e=>e[0]==='voice');
+assert.equal(firstVoice[1],buffers[0],'clip must start with the personalized chorus, not the generic opener');
+assert.equal(firstVoice[2].offset,0);player.dispose();
+console.log('Post-beat transport passed: voice timing, capture chorus offset, retained mobile audio context, pause/resume, restart and cleanup.');

@@ -17,6 +17,35 @@
   ],
   "assets": [
     {
+      "id": "training-02-caffeinated-edition-0d1af435",
+      "title": "Training 02 \u2014 Caffeinated Edition",
+      "category": "Finished films",
+      "description": "How to answer without answering, with overcaffeinated Synergy, fast ChatGPT typing, coffee cups and a playful jazz beat.",
+      "cast": [
+        "Synergy"
+      ],
+      "status": "Current edit",
+      "notes": "50-second recut. Approved digital voice, expressive performance, tracked glass-only face with blinking eyes and fixed-height left-to-right speech lights. Full stereo music and dialogue.",
+      "tags": [
+        "training",
+        "ChatGPT",
+        "jazz",
+        "coffee",
+        "how to answer without answering"
+      ],
+      "transcript": "An excellent opportunity to demonstrate leadership.\nToo measurable.\nWe're taking a phased approach.\nAligning key stakeholders.\nPressure-testing the roadmap.\nWe will share more when we have greater visibility.\nLet's establish a working group.\nExcellent.\nWe've moved this forward.",
+      "sha256": "0d1af4350db27f787d2d529c44fffb1cdda7540bd2a4d5353335292251b59219",
+      "src": "/api/cutting-room/media/training-02-caffeinated-edition-0d1af435.mp4",
+      "download": "/api/cutting-room/media/training-02-caffeinated-edition-0d1af435.mp4?download=1",
+      "poster": "/cutting-room/posters/training-02-caffeinated-edition-0d1af435.jpg",
+      "width": 1280,
+      "height": 720,
+      "duration": 50.0,
+      "audio": true,
+      "bytes": 7720918,
+      "sourceReference": "libfile_cc75c578d1e481919c89229f828cc6c0"
+    },
+    {
       "id": "welcome-to-the-office-v6-5adc47bd",
       "title": "Welcome to the Office \u2014 V6",
       "category": "Finished films",
@@ -872,8 +901,8 @@
       "cast": [
         "Synergy"
       ],
-      "status": "Available edit",
-      "notes": "Sampled frames reviewed. Check the complete clip before a new final edit.",
+      "status": "Earlier version",
+      "notes": "Original training before the Caffeinated Edition. Retained for comparison; the new edit preserves the question/Friday/working-group joke.",
       "tags": [],
       "transcript": "",
       "sha256": "266e4b7a39f3ac897297ba3142135976f9a1ebec77b75a6adfceedc47712170f",
@@ -3640,6 +3669,60 @@
       "audio": true,
       "bytes": 14269445,
       "poster": "/cutting-room/posters/welcome-to-the-office-v4-e886cd75.jpg"
+    },
+    {
+      "id": "synergy-caffeinated-typing-and-celebration-2ed6a793",
+      "title": "Synergy \u2014 caffeinated typing and celebration",
+      "category": "Character performances",
+      "description": "Reusable performance plate from Training 02: Caffeinated Edition.",
+      "cast": [
+        "Synergy"
+      ],
+      "status": "Source take",
+      "notes": "Raw generated face. Apply the tracked glass display from the training compositor before using as a finished speaking performance. Silent source plate.",
+      "tags": [
+        "training",
+        "coffee",
+        "expressive"
+      ],
+      "transcript": "",
+      "sha256": "2ed6a79357a75a796438ec80dbeb268a91b4da44ee9c751ccac7ea2e5d7e72c0",
+      "src": "/api/cutting-room/media/synergy-caffeinated-typing-and-celebration-2ed6a793.mp4",
+      "download": "/api/cutting-room/media/synergy-caffeinated-typing-and-celebration-2ed6a793.mp4?download=1",
+      "poster": "/cutting-room/posters/synergy-caffeinated-typing-and-celebration-2ed6a793.jpg",
+      "width": 1920,
+      "height": 1080,
+      "duration": 10.042,
+      "audio": false,
+      "bytes": 9229418,
+      "sourceTaskId": "ef4bc48a-30c6-4f47-a987-0fb696e7a294"
+    },
+    {
+      "id": "synergy-enthusiastic-training-close-up-f94b8848",
+      "title": "Synergy \u2014 enthusiastic training close-up",
+      "category": "Character performances",
+      "description": "Reusable performance plate from Training 02: Caffeinated Edition.",
+      "cast": [
+        "Synergy"
+      ],
+      "status": "Source take",
+      "notes": "Raw generated face. Apply the tracked glass display from the training compositor before using as a finished speaking performance. Silent source plate.",
+      "tags": [
+        "training",
+        "coffee",
+        "expressive"
+      ],
+      "transcript": "",
+      "sha256": "f94b8848c9146c6169b326aecbff163d51230f2bd9337bddbdf6da4b797e197a",
+      "src": "/api/cutting-room/media/synergy-enthusiastic-training-close-up-f94b8848.mp4",
+      "download": "/api/cutting-room/media/synergy-enthusiastic-training-close-up-f94b8848.mp4?download=1",
+      "poster": "/cutting-room/posters/synergy-enthusiastic-training-close-up-f94b8848.jpg",
+      "width": 1920,
+      "height": 1080,
+      "duration": 10.042,
+      "audio": false,
+      "bytes": 10557122,
+      "sourceTaskId": "ee2e522b-8646-4ca5-af93-b529c6215c07"
     }
   ]
 }

@@ -28,7 +28,7 @@ export function ShareBeat({recipe,coverId,onCoverChange,caption,onCaptionChange,
   };
   const save=file=>{
     const href=URL.createObjectURL(file),a=document.createElement('a');a.href=href;a.download=file.name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(href),60000);
-    setNotice('Clip saved. Drop it into your group chat.');
+    setNotice('Download started. Drop the clip into your group chat.');
   };
   const send=async(linkOnly=false)=>{
     if(pending.current)return;

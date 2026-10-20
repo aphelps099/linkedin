@@ -58,7 +58,7 @@ export async function createShareClip({recipe,cover,signal,onProgress=()=>{}}){
     artwork(canvas,image,recipe,0,null);
     const mp4=await mp4Support(player.sampleRate());
     if(signal?.aborted)throw aborted();
-    // Preparation creates a temporary graph; play creates the actual capture graph.
+    // Keep the graph unlocked by the original tap for mobile capture.
     player.play(recipe,buffers,{offset:5,reuseGraph:true});
     capture=mp4?startMp4Capture({canvas,audioTrack:player.audioTrack(),sampleRate:player.sampleRate()}):mediaCapture(canvas,player.stream());
     await new Promise((resolve,reject)=>{

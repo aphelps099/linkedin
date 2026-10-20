@@ -1,0 +1,87 @@
+{
+  "title": "Training 02 \u2014 Caffeinated Edition",
+  "sha256": "0d1af4350db27f787d2d529c44fffb1cdda7540bd2a4d5353335292251b59219",
+  "durationSeconds": 50,
+  "width": 1280,
+  "height": 720,
+  "fps": 24,
+  "audio": "AAC, stereo, 48 kHz, 192 kb/s; music and voice",
+  "sourceTasks": {
+    "wide": "ef4bc48a-30c6-4f47-a987-0fb696e7a294",
+    "close": "ee2e522b-8646-4ca5-af93-b529c6215c07",
+    "music": "2eea69e6-7cf0-4c3d-ae50-112ed3f9d47e"
+  },
+  "runwayCredits": 348,
+  "voice": {
+    "engine": "eSpeak NG",
+    "profile": "Synergy",
+    "language": "en-us",
+    "rate": 154,
+    "pitch": 35,
+    "pitchRange": 4
+  },
+  "loudness": {
+    "integratedLUFS": -18.6,
+    "truePeakDBFS": -1.3
+  },
+  "decodeErrors": 0,
+  "libraryFileId": "libfile_cc75c578d1e481919c89229f828cc6c0",
+  "libraryVersion": 3,
+  "videoUrl": "https://linkedinbeats.com/cutting-room/#training-02-caffeinated-edition-0d1af435",
+  "sourceAssets": [
+    {
+      "id": "synergy-caffeinated-typing-and-celebration-2ed6a793",
+      "title": "Synergy \u2014 caffeinated typing and celebration",
+      "category": "Character performances",
+      "description": "Reusable performance plate from Training 02: Caffeinated Edition.",
+      "cast": [
+        "Synergy"
+      ],
+      "status": "Source take",
+      "notes": "Raw generated face. Apply the tracked glass display from the training compositor before using as a finished speaking performance. Silent source plate.",
+      "tags": [
+        "training",
+        "coffee",
+        "expressive"
+      ],
+      "transcript": "",
+      "sha256": "2ed6a79357a75a796438ec80dbeb268a91b4da44ee9c751ccac7ea2e5d7e72c0",
+      "src": "/api/cutting-room/media/synergy-caffeinated-typing-and-celebration-2ed6a793.mp4",
+      "download": "/api/cutting-room/media/synergy-caffeinated-typing-and-celebration-2ed6a793.mp4?download=1",
+      "poster": "/cutting-room/posters/synergy-caffeinated-typing-and-celebration-2ed6a793.jpg",
+      "width": 1920,
+      "height": 1080,
+      "duration": 10.042,
+      "audio": false,
+      "bytes": 9229418,
+      "sourceTaskId": "ef4bc48a-30c6-4f47-a987-0fb696e7a294"
+    },
+    {
+      "id": "synergy-enthusiastic-training-close-up-f94b8848",
+      "title": "Synergy \u2014 enthusiastic training close-up",
+      "category": "Character performances",
+      "description": "Reusable performance plate from Training 02: Caffeinated Edition.",
+      "cast": [
+        "Synergy"
+      ],
+      "status": "Source take",
+      "notes": "Raw generated face. Apply the tracked glass display from the training compositor before using as a finished speaking performance. Silent source plate.",
+      "tags": [
+        "training",
+        "coffee",
+        "expressive"
+      ],
+      "transcript": "",
+      "sha256": "f94b8848c9146c6169b326aecbff163d51230f2bd9337bddbdf6da4b797e197a",
+      "src": "/api/cutting-room/media/synergy-enthusiastic-training-close-up-f94b8848.mp4",
+      "download": "/api/cutting-room/media/synergy-enthusiastic-training-close-up-f94b8848.mp4?download=1",
+      "poster": "/cutting-room/posters/synergy-enthusiastic-training-close-up-f94b8848.jpg",
+      "width": 1920,
+      "height": 1080,
+      "duration": 10.042,
+      "audio": false,
+      "bytes": 10557122,
+      "sourceTaskId": "ee2e522b-8646-4ca5-af93-b529c6215c07"
+    }
+  ]
+}

@@ -24,6 +24,11 @@ def add(p,title,cat,desc,cast=[],status='Source take',notes='',tags=[],transcrip
  assets.append(a)
 add(W/'brand-story/v6/LinkedIn-Beats-Welcome-to-the-Office-720p.mp4','Welcome to the Office — V6','Finished films','The banner crew returns. Instruments, robot jargon, and a corporate round of applause.',['Synergy','Synthia','Kevin','Keys','Operations','People & Culture','Banner crew','Printer','Paper droid'],'Current edit','End card and tagline removed. Restores arrival, installation, and measuring footage. Full music and dialogue.',['brand story','signs','humbled and honored','optimize onboarding','circle back'],rank=0)
 circle_recut=W/'circle-back-recut/Circle-Back-Complete-720p.mp4'
+training_recut=W/'training-02-recut/Training-02-Final-Mix.mp4'
+if training_recut.exists():
+ add(training_recut,'Training 02 — Caffeinated Edition','Finished films','How to answer without answering, with overcaffeinated Synergy, fast ChatGPT typing, coffee cups and a playful jazz beat.',['Synergy'],'Current edit','50-second recut. Approved digital voice, expressive performance, tracked glass-only face with blinking eyes and fixed-height left-to-right speech lights. Full stereo music and dialogue.',['training','ChatGPT','jazz','coffee','how to answer without answering'],rank=1,source='libfile_cc75c578d1e481919c89229f828cc6c0')
+ for name,title,task in [('wide','Synergy — caffeinated typing and celebration','ef4bc48a-30c6-4f47-a987-0fb696e7a294'),('close','Synergy — enthusiastic training close-up','ee2e522b-8646-4ca5-af93-b529c6215c07')]:
+  add(W/f'training-02-recut/source/synergy-{name}.mp4',title,'Character performances','Reusable performance plate from Training 02: Caffeinated Edition.',['Synergy'],'Source take','Raw generated face. Apply the tracked glass display from the training compositor before using as a finished speaking performance. Silent source plate.',['training','coffee','expressive'],rank=3,task=task)
 if circle_recut.exists():
  add(circle_recut,'Let’s Circle Back — Synergy corrected','Finished films','The complete musical meeting with the approved Synergy camera and tracked horizontal speech display.',['Synergy','Keys','People & Culture','Operations','Arjun','Printer'],'Current edit','Synergy-only correction. Original 90-second script, voices, music, other performances and speaker outlines retained. Original AAC packets copied unchanged.',['circle back','approved synergy','horizontal mouth','complete'],rank=1,source=libmeta.get('Circle-Back-Complete-720p.mp4',{}).get('library_file_id'))
 add(W/'brand-story/v5/LinkedIn-Beats-Welcome-to-the-Office-720p.mp4','Welcome to the Office — V5','Finished films','Previous brand edit with the final blue end card.',['Synergy','Synthia','Kevin','Keys','Printer'],'Earlier version','Superseded by V6. Retained for comparison.',rank=8)
@@ -45,6 +50,7 @@ for p in sorted((W/'catalog/source/library').glob('*.mp4')):
  if 'Paperless' in stem:cast=['Synthia','Synergy','People & Culture','Operations','Paper droid','Printer'];desc='Synthia introduces paperless working as the paper cart fills up.'
  if 'Quick-Sync' in stem:cast=['Synergy','Synthia'];desc='A brief office exchange between the two robots.'
  if 'Masterclass' in stem or 'Training-02' in stem:cast=['Synergy'];desc='Blue-screen robot vocabulary training with a realistic post and reaction activity.';cat='Finished films'
+ if stem=='Training-02-Final-Mix' and training_recut.exists():status='Earlier version';rank=8;notes='Original training before the Caffeinated Edition. Retained for comparison; the new edit preserves the question/Friday/working-group joke.'
  if 'Dropdown' in stem or 'We-Added' in stem:cast=['Synergy','Kevin','Keys','Strategy'];desc='A tiny onboarding change is inflated into an extraordinary professional accomplishment.'
  if 'Animatic' in stem:cat='Experiments';status='Earlier version'
  if 'Scene-4' in stem:cat='Screen inserts';desc='The onboarding post fills the screen while the chorus plays.'

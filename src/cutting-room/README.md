@@ -28,3 +28,10 @@ soundtrack is packet-identical to the original. Other cameras and speaker border
 retain their original pixels before delivery compression. The older cut remains
 available under Earlier versions. Rebuild with `scripts/recut-circle-back-synergy.py`;
 production checks are in `assets/film-corrections/circle-back-synergy/edit-proof.json`.
+
+Training 02: Caffeinated Edition adds a 50-second current edit and two reusable
+Synergy performance plates. The original training remains under Earlier versions.
+The recut has an original jazzy beat, approved digital voice, fast ChatGPT typing,
+coffee cups and a tracked horizontal speech display. Rebuild instructions are in
+`scripts/training_02/README.md`; continuity and delivery checks are in
+`assets/film-corrections/training-02/`.
