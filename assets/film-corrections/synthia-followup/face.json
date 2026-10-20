@@ -1,0 +1,50 @@
+{
+  "referenceQuad": [
+    [
+      553,
+      158
+    ],
+    [
+      681,
+      127
+    ],
+    [
+      688,
+      220
+    ],
+    [
+      560,
+      236
+    ]
+  ],
+  "mouth_cleanup": [
+    [
+      602,
+      210
+    ],
+    [
+      648,
+      204
+    ],
+    [
+      649,
+      219
+    ],
+    [
+      604,
+      226
+    ]
+  ],
+  "mouth_line": [
+    [
+      593,
+      216
+    ],
+    [
+      657,
+      207
+    ]
+  ],
+  "tracking": "Optical flow of planar bezel, RANSAC homography, forward/backward check, 7-frame smoothing",
+  "minimumInliers": 67
+}

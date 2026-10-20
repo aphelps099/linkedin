@@ -1,0 +1,36 @@
+{
+  "requestDate": "2026-10-20",
+  "sourceAsset": "6f1d11bd-024a-403f-8f7c-829100167801",
+  "newShotTask": "8816c3c6-0bcb-4404-a3d1-6c05cda0bfb5",
+  "userCorrection": "Synthia opens her laptop and says Then we will schedule a follow-up.",
+  "characterLock": {
+    "name": "Synthia",
+    "badge": "SYNTHIA",
+    "body": "Same weathered ivory/chrome faceted robot, cream scarf, headset",
+    "display": "Two green pixel eyes, one fixed-height lower horizontal mouth row scrolling left to right; all light inside black glass",
+    "voice": "Approved flite slt, pitch 1.04, dry digital speech"
+  },
+  "editIntent": "Keep original anthem and question. Cut to Synthia opening laptop, give her final line, end on printer detail. This is the closing movement of the longer Authenticity Rollout.",
+  "creditSpend": 170,
+  "preserve": "Original Synergy design, original people, original printing motion, original music outside dialogue replacement. No changes to Studio website assets.",
+  "editTiming": {
+    "closeup": [
+      19,
+      26
+    ],
+    "sourceIn": 1.5,
+    "playbackRate": 1.2,
+    "SynthiaLineStart": 23.8,
+    "printerDetail": [
+      26,
+      30.041667
+    ]
+  },
+  "review": {
+    "screen": "Original pixel eyes restored through planar tracked display; no vertical mouth animation, no glowing metal",
+    "badge": "SYNTHIA readable on cut-in and during delivery; naturally occluded while lifting lid",
+    "laptop": "Opens on its hinge, hand releases and rests on keyboard",
+    "oldReply": "Removed; final line verified in finished AAC soundtrack",
+    "resolution": "1280x720, 24 fps, 30.041667 sec, stereo AAC"
+  }
+}

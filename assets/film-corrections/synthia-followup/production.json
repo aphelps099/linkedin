@@ -1,0 +1,36 @@
+{
+  "sourceAsset": "6f1d11bd-024a-403f-8f7c-829100167801",
+  "synthiaTask": "8816c3c6-0bcb-4404-a3d1-6c05cda0bfb5",
+  "credits": 170,
+  "purpose": "Closing movement of longer Authenticity Rollout, not a new opening",
+  "resolution": [
+    1280,
+    720
+  ],
+  "fps": 24,
+  "frames": 721,
+  "closeup": [
+    19.0,
+    26.0
+  ],
+  "voice": {
+    "character": "Synthia",
+    "text": "Then we will schedule a follow-up.",
+    "provider": "flite",
+    "voice": "slt",
+    "pitch": 1.04,
+    "start": 23.8,
+    "end": 25.726083333333335
+  },
+  "audioReplacement": [
+    21.57,
+    24.23
+  ],
+  "mouth": "22 LEDs, fixed 3px height, brightness scrolls left to right, aligned to Synthia voice only; original eyes and glass retained",
+  "trackingMinInliers": 67,
+  "clipSourceIn": 1.5,
+  "clipRate": 1.2,
+  "sourceSha256": "301e4def86d7606e0db872c9049dded49df857b92a7925990430336c11eced0a",
+  "closeupSha256": "09f6613246dbe823425bbbff62564fd55a67b3aa17a51cdbdcaf7d228d3033ce",
+  "outputSha256": "48d7c275e9567ab4a83c1a13899881d6da1dda5ddee3301823e75c52bc788bb3"
+}
