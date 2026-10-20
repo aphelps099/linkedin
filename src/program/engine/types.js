@@ -14,6 +14,7 @@
 //   synergy-tip   { content }                          compact instructor note; **bold** gets yellow underline.
 //   output-card   { content, label? }                   a canned "LinkedIn version".
 //   insight-card  { title, content }                    "notice what happened" explainer.
+//   level-chart   { title?, caption? }                  five ordinal bars with explorable definitions.
 //   takeaway-card { takeaways: string[] }               three key points.
 //   before-after  { before, after, beforeLabel?, afterLabel? }
 //   divider       {}
@@ -37,7 +38,7 @@
 //                                                       from src/lessons/categories.js. Run performs
 //                                                       generate() at `level` (default 3).
 //   dial          { title?, source, min?, max?, initial? }
-//                                                       level slider 1–5 that re-renders the source
+//                                                       selectable level bars 1–5 that re-render the source
 //                                                       intake-card's answers live.
 //   score-card    { source, title? }                    the Thought Leadership Index of the source's
 //                                                       latest output, with sub-metrics.
@@ -62,6 +63,7 @@ export const PASSIVE_DELAY = {
   'synergy-tip': 700,
   'output-card': 900,
   'insight-card': 1000,
+  'level-chart': 1000,
   'takeaway-card': 1000,
   'before-after': 1100,
   'score-card': 900,
