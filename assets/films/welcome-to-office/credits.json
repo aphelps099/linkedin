@@ -1,0 +1,57 @@
+{
+  "project": "LinkedIn Beats \u2014 Welcome to the Office",
+  "authorizedMaximumCredits": 10000,
+  "startingAccountCredits": 20221,
+  "spentCredits": 680,
+  "remainingProjectBudget": 9320,
+  "submissions": [
+    {
+      "shot": "arrival",
+      "taskId": "e0a61b2f-c794-4301-89f7-93ed8acb8039",
+      "model": "kling-o3-pro",
+      "expectedCost": 170,
+      "creditsAfter": 20051,
+      "prompt": "One continuous low-angle shot, camera physically dollying backward slowly along the office aisle as these exact two ordinary corporate installers walk toward it. Calm purposeful walking, natural footfalls, subtle clothing movement. Same man in blue suit and same woman in CIRCLE BACK blue T-shirt, same faces and clothing. They carry the same solid silver banner cases securely without changing grip. They look ahead with very serious professional expressions, not toward each other. Frame their full bodies and cases, keep a consistent distance as camera retreats. A very ordinary modern office filmed as an earnest midcentury company orientation film: restrained, observational, slightly awkward. Stable real human proportions, natural leg gait, rigid cases, believable carpet contact, consistent office and light. No speaking, no lip movement, no new people entering, no cuts, no text overlays, no dancing. Preserve the readable white CIRCLE BACK shirt lettering and the small blue lapel pin. Do not add plants, instruments, robots, or signs. Gentle camera motion only; no shaking or extreme effects.",
+      "status": "SUCCEEDED",
+      "actualCost": 170
+    },
+    {
+      "shot": "banner-install",
+      "taskId": "4d403fcb-279d-4bb4-9906-fb94091e0272",
+      "model": "kling-o3-pro",
+      "expectedCost": 170,
+      "creditsAfter": 19881,
+      "prompt": "Locked-off continuous full-body office shot. Preserve this exact composition, these two installers and ALL THREE flat BLUE retractable banners. The central banner is fully extended, perfectly stationary and taut for the entire shot. No camera motion. The blue-suited man cautiously releases the top bar, lowers his hands, and takes a small half-step back to inspect the already stable banner. The woman in the CIRCLE BACK shirt keeps the small spirit level against the outside silver right edge for three seconds, looks at its bubble with intense dry concentration, then lowers the level and gives the smallest satisfied nod. The joke is how seriously they take this tiny job. Both remain outside the front blue printable area. All three banner surfaces stay perfectly blank blue with rigid straight edges and no wrinkles, no letters, no pattern or logo. Preserve natural office light, faces, bodies, clothing, hands, silver feet and cases. Subtle natural breathing, occasional normal blink. Nobody speaks. No additional people or objects, no cuts, no zooms, no handheld shake. Natural real-time movement, credible weight, authentic awkward company orientation footage.",
+      "status": "SUCCEEDED",
+      "actualCost": 170
+    },
+    {
+      "shot": "banner-measure",
+      "taskId": "b25b751c-225d-4800-9ca3-085cb0bda8ab",
+      "model": "kling-o3-pro",
+      "expectedCost": 170,
+      "creditsAfter": 19711,
+      "prompt": "One locked-off continuous medium shot of these exact corporate installers measuring the tiny gap between two identical blue corporate banners. Preserve the first-frame composition, people, clothing, props, banners and lighting. The man holds the extended yellow tape steady, looks closely at the measurement, then lifts his eyes to the woman as if awaiting approval. The woman in CIRCLE BACK shirt studies the gap, gives a tiny serious nod, and makes one short note on her clipboard. Restrained natural human breathing and blinking, subtle realistic hand movements. Both remain silent with closed mouths. The banner panels and silver rails remain completely stationary, smooth and blank cobalt blue, with no letters, no logos and no changing shapes. Keep all objects physically connected, no object appears or disappears. The yellow measuring tape remains extended across the gap throughout; do not retract it. Dry office absurdity, ordinary photographic realism, no smile or comic mugging, no camera movement, cuts or zooms.",
+      "status": "SUCCEEDED",
+      "actualCost": 170
+    },
+    {
+      "shot": "ensemble",
+      "taskId": "e7c6c02e-3e82-48a9-91b2-5994f040065b",
+      "model": "kling-o3-pro",
+      "expectedCost": 170,
+      "creditsAfter": 19541,
+      "prompt": "A single locked camera wide shot of this EXACT seven-member office band. Preserve every character, seating position, face, headset, outfit, instrument, printer, table and banner from the first frame. Very subtle realistic continuous life: the keyboardist at far left softly plays simple repeating chords with small finger presses, bald drummer taps the pad with his sticks, guitarist at far right gently picks a simple repeated riff. Others remain seated and attentive with occasional natural blink, breathing or tiny glance; not statues. Nobody sings or speaks. Robot heads and hands remain rigid and nearly motionless: Synergy holds the same coffee cup completely still, Synthia sits calmly with scarf unchanged. Their black displays keep the exact same two small green square eyes and single THIN low horizontal line; NO expressive face change, no waveform, no green light outside black display. The printer slowly ejects one normal sheet onto the supported output tray; paper remains solid, flat and correctly sized. Existing paper stacks on table do NOT shift, shimmer or multiply. All plain blue banners and the rectangular wall panel stay perfectly still and BLANK; no added letters, logos, pattern or symbols. Same fluorescent light and natural office realism. Gentle understated hobby music performance, dry seriousness, no grand gestures, no camera moves, zooms, cuts, frozen people or shifting geometry.",
+      "status": "SUCCEEDED",
+      "actualCost": 170
+    }
+  ],
+  "output": {
+    "width": 1280,
+    "height": 720,
+    "seconds": 60
+  },
+  "rule": "Record every paid submission. Do not submit a request whose conservative reservation exceeds remaining budget. No unrelated generation.",
+  "finishedGenerations": true,
+  "endingAccountCredits": 19541
+}

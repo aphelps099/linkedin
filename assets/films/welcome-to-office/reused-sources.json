@@ -1,0 +1,47 @@
+{
+  "droidDeparture": {
+    "taskId": "9443d16e-ae16-4733-b110-96f371146c6a",
+    "localSource": "watercooler/closing/departure.mp4"
+  },
+  "musicStemManifest": {
+    "file": "humbled-music.mp3",
+    "stems": {
+      "drums": {
+        "start": 0.0,
+        "duration": 21.8181875
+      },
+      "bass": {
+        "start": 21.8181875,
+        "duration": 21.8181875
+      },
+      "keys": {
+        "start": 43.636375,
+        "duration": 21.8181875
+      },
+      "lift": {
+        "start": 65.4545625,
+        "duration": 21.8181875
+      }
+    },
+    "duration": 21.8181875,
+    "peak": 0.7
+  },
+  "referenceImages": [
+    {
+      "shot": "arrival",
+      "imagegenFile": "exec-0bb2ad77-328a-4cb6-bc22-93336583e5cb.png"
+    },
+    {
+      "shot": "banner",
+      "imagegenFile": "exec-08055636-ab86-4d37-9995-5ff3f93d04be.png"
+    },
+    {
+      "shot": "measure",
+      "imagegenFile": "exec-e136dcc8-c64a-4df8-a4d9-651d84e1987e.png"
+    },
+    {
+      "shot": "ensemble",
+      "imagegenFile": "exec-4ce92984-1bb3-4a86-85c7-cad50be17c8c.png"
+    }
+  ]
+}
