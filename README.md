@@ -49,12 +49,15 @@ can call the site's audio services. Progress
 plain static entry in `vite.config.js`. The original `/program/` address remains
 an alias using the same course and saved progress.
 
-The portal uses a cream focus-mode layout with a persistent lesson rail and a
-mobile course menu. Teaching, examples, explanations, exercises and takeaways
+The portal uses a cream layout with a compact header, illustrated course overview
+and one focused lesson column. Teaching, examples, explanations, exercises and takeaways
 stay in one reading column. `components/FeedPost.jsx` renders practice outputs
-with compact system typography, a three-line “…more” fold and simulated
+with compact system typography, fully expanded post text and simulated
 engagement. Reactions, reposts and comments stay in the practice card; Send
 copies the post text. No action publishes to LinkedIn.
+Exercises have a cobalt **Try this** badge, stronger labels and larger controls;
+longer answers use wrapping textareas. Desktop and mobile examples are captured
+in `docs/program/practice-readability.jpg`.
 The shared site's menu links to the portal under **Learn**.
 
 Vocabulary and Shape each include an optional `video-recap` with Synergy after
@@ -69,6 +72,10 @@ Effort**. Downloads render the displayed artwork as high-resolution PNGs; the
 certificate also has a print / save PDF layout. The certificate route requires
 all five completed chapter IDs. Completion recognizes participation, not a score
 threshold. The final saved post remains available in its beat player there.
+`components/BrandArtwork.jsx` embeds the site's actual vector wordmark and LB
+monogram in the exported artwork. The certificate uses a navy masthead, vinyl
+seal and Synergy signature. Both certificate and sticker PNG exports were
+verified in the browser. The existing singalong audio player is unchanged.
 
 Progress persists at the chapter level, not the individual exercise level;
 reopening a lesson starts its walkthrough again. Earlier controls stop advancing

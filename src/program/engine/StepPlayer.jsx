@@ -232,7 +232,7 @@ export function StepPlayer({chapter, userName, title, onName, onComplete, onFini
             <div className="pg-card-body">{step.description && <p className="pg-muted">{step.description}</p>}</div>
             <div className="pg-fields">{fields.map(f => f.type === 'choice'
               ? <div className="pg-choice" key={f.key}><span>{f.ask}</span><div>{f.options.map(o => <button type="button" key={o} disabled={!isLast || !!performing} aria-pressed={a[f.key] === o} onClick={() => set(f.key, o)}>{o}</button>)}</div></div>
-              : <label key={f.key}><span>{f.ask}</span><input disabled={!isLast || !!performing} value={answers[step.id]?.[f.key] ?? ''} placeholder={a[f.key] || f.placeholder} onChange={e => set(f.key, e.target.value)}/></label>)}</div>
+              : <label key={f.key}><span>{f.ask}</span>{['moment','lesson','before','quality','goal','problem','result','task','doomed'].includes(f.key) ? <textarea rows={2} disabled={!isLast || !!performing} value={answers[step.id]?.[f.key] ?? ''} placeholder={a[f.key] || f.placeholder} onChange={e => set(f.key, e.target.value)}/> : <input disabled={!isLast || !!performing} value={answers[step.id]?.[f.key] ?? ''} placeholder={a[f.key] || f.placeholder} onChange={e => set(f.key, e.target.value)}/>}</label>)}</div>
             <div className="pg-card-foot"><span className="pg-muted">Blank fields use the example. Your answers stay here.</span>
               <button type="button" className="pg-btn pg-btn-sm" disabled={!isLast || !!performing} onClick={() => run(step.id, 'generate', answersFor(step), {level: step.level || 3, after: () => setDone(d => ({...d, [step.id]: true}))})}><Play size={11} fill="currentColor"/>{step.runLabel || 'File this post'}</button></div>
           </div>

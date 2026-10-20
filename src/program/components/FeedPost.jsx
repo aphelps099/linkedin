@@ -1,4 +1,4 @@
-import React, {useId, useLayoutEffect, useRef, useState} from 'react';
+import React, {useRef, useState} from 'react';
 import {Check, ChevronDown, Copy, Globe2, Heart, Lightbulb, MessageSquare, MoreHorizontal, Repeat2, Send, ThumbsUp} from 'lucide-react';
 
 export function Profile({name, title, composer = false}){
@@ -18,22 +18,15 @@ function PostText({text}){
 }
 
 export function FeedPost({text, name, title, label = 'Worked example', streaming, onCopy, copied}){
-  const [expanded,setExpanded]=useState(false),[overflows,setOverflows]=useState(false),[liked,setLiked]=useState(false),[reposted,setReposted]=useState(false);
+  const [liked,setLiked]=useState(false),[reposted,setReposted]=useState(false);
   const [menu,setMenu]=useState(false),[commentsOpen,setCommentsOpen]=useState(false),[comment,setComment]=useState(''),[comments,setComments]=useState([]),[status,setStatus]=useState('');
-  const body=useRef(null),commentInput=useRef(null),id=useId();
-  useLayoutEffect(()=>{
-    const el=body.current;if(!el)return;
-    const measure=()=>setOverflows(el.scrollHeight>62);
-    measure();const observer=new ResizeObserver(measure);observer.observe(el);
-    return()=>observer.disconnect();
-  },[text]);
+  const commentInput=useRef(null);
   const copy=async()=>{
     try{if(onCopy){if(await onCopy()===false)return;}else await navigator.clipboard.writeText(text || '');setStatus('Post text copied.');}
     catch{setStatus('Select the post text to copy it.');}
     setMenu(false);
   };
   const toggleComments=()=>setCommentsOpen(v=>!v);
-  const collapsed=!expanded&&!streaming&&overflows;
   return <section className="pg-feed-wrap" aria-label={label} aria-busy={!!streaming}>
     <div className="pg-feed-label"><span className="pg-eyebrow">{label}</span><span>Practice feed</span></div>
     <article className="pg-feed">
@@ -41,9 +34,8 @@ export function FeedPost({text, name, title, label = 'Worked example', streaming
         <button type="button" className="pg-icon-button" aria-label="Post options" aria-expanded={menu} onClick={()=>setMenu(v=>!v)}><MoreHorizontal size={22}/></button>
         {menu && <div className="pg-post-menu-panel"><button type="button" onClick={copy} disabled={streaming}>{copied ? <Check size={16}/> : <Copy size={16}/>}Copy post text</button></div>}
       </div></div>
-      <div className={`pg-post${collapsed ? ' is-collapsed' : ''}`}>
-        <div ref={body} id={id} className="pg-post-text"><PostText text={text || (streaming ? 'Writing your post…' : '')}/>{streaming && <span className="pg-cursor" aria-hidden="true"/>}</div>
-        {collapsed && <button type="button" className="pg-see-more" aria-expanded={false} aria-controls={id} onClick={()=>setExpanded(true)}>…more</button>}
+      <div className="pg-post">
+        <div className="pg-post-text"><PostText text={text || (streaming ? 'Writing your post…' : '')}/>{streaming && <span className="pg-cursor" aria-hidden="true"/>}</div>
       </div>
       <div className="pg-reactions" aria-label="Simulated engagement"><span><i><ThumbsUp size={10} fill="currentColor"/></i><i><Heart size={10} fill="currentColor"/></i><i><Lightbulb size={10}/></i><span>{liked ? 'You and 48 others' : '48'}</span></span><button type="button" onClick={toggleComments}>{12+comments.length} comments · {2+Number(reposted)} reposts</button></div>
       <div className="pg-feed-actions">

@@ -1,6 +1,7 @@
 import React, {useRef, useState} from 'react';
 import {ArrowRight, Check, Download} from 'lucide-react';
 import {SynergyTip} from './SynergyTip.jsx';
+import {BrandArtwork} from './BrandArtwork.jsx';
 
 export const REWARDS = [
   {name:'Certified Attention Seeker', lines:['CERTIFIED','ATTENTION','SEEKER'], color:'#0757ec', ink:'#fff', foot:'A STRONG OPENING.'},
@@ -33,15 +34,17 @@ export async function downloadArt(svg, filename){
 
 export function Sticker({number = 1, svgRef}){
   const reward=REWARDS[number-1];
-  const y=reward.lines.length===3 ? 94 : 111;
+  const y=reward.lines.length===3 ? 112 : 132;
   return <svg ref={svgRef} className="pg-sticker" viewBox="0 0 400 264" role="img" aria-label={reward.name}>
     <rect x="8" y="8" width="384" height="248" rx="22" fill="white"/>
     <rect x="16" y="16" width="368" height="232" rx="16" fill={reward.color}/>
+    <BrandArtwork x={38} y={32} width={244} height={24} color={reward.ink}/>
     <g fill={reward.ink} fontFamily="Arial, sans-serif" textAnchor="middle">
-      <text x="200" y="49" fontSize="12" letterSpacing="3">LINKEDIN BEATS · LESSON 0{number}</text>
+      <text x="361" y="49" fontSize="11" fontWeight="700" textAnchor="end">0{number} / 05</text>
+      <text x="38" y="74" fontSize="9" letterSpacing="1.5" textAnchor="start">ACADEMY · PROFESSIONAL EFFORT, VERIFIED</text>
       {reward.lines.map((line,i)=><text key={line} x="200" y={y+i*40} fontSize="35" fontWeight="900" letterSpacing="-1">{line}</text>)}
-      <path d="M38 195H362" stroke={reward.ink} opacity=".45"/>
-      <text x="200" y="222" fontSize="9" letterSpacing="1.4">{reward.foot}</text>
+      <path d="M38 207H362" stroke={reward.ink} opacity=".45"/>
+      <text x="200" y="229" fontSize="9" letterSpacing="1">{reward.foot}</text>
     </g>
   </svg>;
 }
@@ -63,27 +66,29 @@ export function LessonReward({chapter, nextTitle, final, onContinue}){
 export function CertificateArt({name, svgRef}){
   const nameSize=Math.min(90, 1350/Math.max(name.length,1));
   return <svg ref={svgRef} className="pg-certificate-art" viewBox="0 0 1200 850" role="img" aria-label={`Certificate of Professional Effort awarded to ${name}. Certified Thought Leader.`}>
-    <defs><linearGradient id="pg-silver" x2="1" y2="1"><stop stopColor="#f8f8f5"/><stop offset=".48" stopColor="#b5b7b7"/><stop offset=".7" stopColor="#eee"/><stop offset="1" stopColor="#999c9e"/></linearGradient></defs>
     <rect width="1200" height="850" fill="#fbf8ef"/>
-    <g fill="#11110e" fontFamily="Arial, sans-serif">
-      <text x="65" y="75" fontSize="32" fontWeight="700" letterSpacing="-1.5">linkedin<tspan fill="#0757ec"> beats</tspan></text>
-      <g fontFamily="monospace" fontSize="11" letterSpacing="2"><text x="850" y="54">DEPARTMENT OF</text><text x="850" y="73">PROFESSIONAL DEVELOPMENT</text></g>
-      <path d="M65 99H1135" stroke="#11110e"/>
-      <text x="65" y="144" fill="#0757ec" fontFamily="monospace" fontSize="13" letterSpacing="2">OFFICIAL RECORD OF COMPLETION</text>
-      <g fontWeight="900" fontSize="65" letterSpacing="-3"><text x="60" y="220">CERTIFICATE OF</text><text x="60" y="293">PROFESSIONAL EFFORT</text></g>
-      <text x="65" y="343" fontFamily="monospace" fontSize="12" letterSpacing="2">THIS CERTIFIES THAT</text>
-      <text x="62" y="435" fontFamily="Georgia, serif" fontSize={nameSize}>{name}</text>
-      <path d="M65 462H1135" stroke="#11110e"/>
-      <g fontSize="23"><text x="65" y="504">has completed five lessons in strategic self-importance,</text><text x="65" y="539">demonstrated advanced synergy, and remained</text><text x="65" y="574">humbled throughout.</text></g>
-      <text x="65" y="622" fontFamily="monospace" fontSize="12" letterSpacing="2">AND IS HEREBY RECOGNIZED AS A</text>
-      <text x="63" y="665" fontSize="37" fontWeight="900" fill="#0757ec" letterSpacing="-1">CERTIFIED THOUGHT LEADER</text>
-      <text x="70" y="719" fontFamily="Georgia, serif" fontStyle="italic" fontSize="29">The Department</text>
-      <path d="M65 730H420" stroke="#11110e"/>
-      <text x="65" y="752" fontFamily="monospace" fontSize="10" letterSpacing="1.3">DIRECTOR OF STRATEGIC ALIGNMENT</text>
-      <g fontFamily="monospace" textAnchor="middle" fontSize="12" letterSpacing="1.8"><text x="622" y="716">PROGRAM COMPLETED</text><text x="622" y="741">5 OF 5 LESSONS</text></g>
-      <g transform="translate(1000 625)"><circle r="115" fill="url(#pg-silver)" stroke="#8b8e91" strokeWidth="3" strokeDasharray="2 5"/><circle r="99" fill="none" stroke="#666"/><circle r="64" fill="#0757ec" stroke="#fff"/><text y="35" textAnchor="middle" fontSize="110" fill="#e5e7e7">*</text><g textAnchor="middle" fontFamily="monospace" fontSize="12" letterSpacing="2"><text y="-78">EFFORT VERIFIED</text><text y="88">LINKEDIN BEATS</text></g></g>
-      <path d="M65 785H1135" stroke="#11110e"/>
-      <g fontFamily="monospace" fontSize="11" letterSpacing="1"><text x="65" y="815">Considerable effort. Unclear business impact.</text><text x="1135" y="815" textAnchor="end" fill="#0757ec">LINKEDINBEATS.COM</text></g>
+    <rect width="1200" height="150" fill="#10182f"/>
+    <rect y="150" width="1200" height="7" fill="#0757ec"/>
+    <BrandArtwork x={65} y={42} width={680} height={66} color="#fff"/>
+    <g fill="#10182f" fontFamily="Arial, sans-serif">
+      <text x="1135" y="75" textAnchor="end" fontSize="25" letterSpacing="5" fill="#fff349">ACADEMY</text>
+      <text x="1135" y="101" textAnchor="end" fontSize="13" fill="#d6dfef">PROFESSIONAL DEVELOPMENT, ALLEGEDLY.</text>
+      <text x="65" y="199" fill="#0757ec" fontSize="13" fontWeight="700" letterSpacing="2">OFFICIAL RECORD OF COMPLETION</text>
+      <g fontWeight="900" fontSize="62" letterSpacing="-2.7"><text x="61" y="266">CERTIFICATE OF</text><text x="61" y="334">PROFESSIONAL EFFORT</text></g>
+      <path d="M64 352C260 346 493 348 725 351" stroke="#ffe65c" strokeWidth="11" strokeLinecap="round"/>
+      <text x="65" y="391" fontSize="12" letterSpacing="2">AWARDED WITH APPROPRIATE ENTHUSIASM TO</text>
+      <text x="62" y="473" fontFamily="Georgia, serif" fontSize={nameSize}>{name}</text>
+      <path d="M65 494H1135" stroke="#10182f" strokeOpacity=".3"/>
+      <g fontSize="22"><text x="65" y="534">For completing five lessons in strategic self-importance,</text><text x="65" y="567">demonstrating advanced synergy, and remaining</text><text x="65" y="600">humbled throughout.</text></g>
+      <text x="65" y="641" fontSize="12" letterSpacing="2">AND NOW OFFICIALLY RECOGNIZED AS A</text>
+      <text x="63" y="681" fontSize="35" fontWeight="900" fill="#0757ec" letterSpacing="-1">CERTIFIED THOUGHT LEADER</text>
+      <text x="65" y="733" fontFamily="Georgia, serif" fontStyle="italic" fontSize="29">Synergy</text>
+      <path d="M65 745H345" stroke="#10182f"/>
+      <text x="65" y="766" fontSize="10" letterSpacing="1">HEAD OF PROFESSIONAL DEVELOPMENT OPTIMIZATION</text>
+      <g textAnchor="middle" fontSize="12" letterSpacing="1.5"><text x="643" y="731">FIVE LESSONS. ONE MILESTONE.</text><text x="643" y="754" fill="#0757ec" fontWeight="700">CONSIDERABLE EFFORT. VERIFIED.</text></g>
+      <g transform="translate(1000 646)"><circle r="116" fill="#10182f"/><circle r="105" fill="none" stroke="#687184"/><circle r="93" fill="none" stroke="#687184" strokeOpacity=".6"/><circle r="67" fill="#fff349"/><BrandArtwork variant="monogram" x={-42} y={-42} width={84} height={84}/><g textAnchor="middle" fontSize="11" letterSpacing="2" fill="#fff"><text y="-80">EFFORT VERIFIED</text><text y="91">LINKEDIN BEATS</text></g></g>
+      <path d="M65 790H1135" stroke="#10182f" strokeOpacity=".3"/>
+      <g fontSize="12"><text x="65" y="820">Considerable effort. Unclear business impact.</text><text x="1135" y="820" textAnchor="end" fill="#0757ec" fontWeight="700" letterSpacing="1">LINKEDINBEATS.COM / LEARN</text></g>
     </g>
   </svg>;
 }
