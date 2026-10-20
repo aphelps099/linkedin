@@ -1,0 +1,33 @@
+// LESSON 02 — Small News, Big Deal. Level 2: Professionally Optimized.
+export const inflation = {
+  id: 'inflation',
+  number: 2,
+  title: 'Small News, Big Deal',
+  subtitle: 'Nothing happened. Announce it like a milestone.',
+  level: 2,
+  levelName: 'Professionally Optimized',
+  minutes: 5,
+  steps: [
+    { type: 'bot-message', id: 'n-1', content: "{{name}}, lesson two is the engine of the whole genre: **inflation.** You take an ordinary event and raise its stakes until it sounds historically significant.", delayMs: 300 },
+    { type: 'bot-message', id: 'n-2', content: "The facts never change. Only the **framing**: the stakes, the gratitude, and the number of people who apparently made it possible.", delayMs: 500 },
+    { type: 'pause', id: 'n-p1', buttonLabel: 'Show me an example' },
+    { type: 'bot-message', id: 'n-3', content: "Here is an ordinary moment. Press **Make it LinkedIn** and watch the department go to work.", delayMs: 300 },
+    { type: 'prompt-card', id: 'n-prompt', label: 'What actually happened', tryMe: true,
+      prompt: 'Today I made a cup of coffee. It was pretty good.' },
+    { type: 'live-output', id: 'n-out', performs: 'linkedinify', source: 'n-prompt' },
+    { type: 'insight-card', id: 'n-i1', title: 'Notice what happened', content: "One sentence became a press release. Count the moves:\n\n- **An opener that announces an announcement.** Humbled, honored, thrilled, or a small but meaningful milestone.\n- **A pivot.** *This is about more than coffee. It's about showing up.*\n- **Engagement bait.** Share it. Someone needs to hear it today. 🚀\n- **A hashtag wall.** Six of them. None related to coffee." },
+    { type: 'pause', id: 'n-p2', buttonLabel: 'Now the dial' },
+    { type: 'bot-message', id: 'n-4', content: "Inflation has **five settings.** Level one is a post a human would write. Level five is a transformational moment for the global business community. Same facts at every level.", delayMs: 300 },
+    { type: 'bot-message', id: 'n-5', content: "**Your turn.** File a small announcement below. Blank fields use the example. Then scrub the dial.", delayMs: 400 },
+    { type: 'intake-card', id: 'n-intake', title: 'Announce something small', description: 'A hire, a promotion, a launch, a milestone. The smaller the better.', category: 'announce', level: 2, runLabel: 'File this post', fields: ['kind', 'name', 'role', 'before', 'quality', 'goal', 'company'] },
+    { type: 'dial', id: 'n-dial', title: 'The LinkedInification dial', source: 'n-intake', initial: 2 },
+    { type: 'insight-card', id: 'n-i2', title: 'The five levels', content: "| Level | Name | What changes |\n|---|---|---|\n| 1 | Almost Human | Clear, useful, relatively normal |\n| 2 | Professionally Optimized | Polished, a modest amount of excitement |\n| 3 | Thought Leader | Lessons, gratitude and strategic alignment |\n| 4 | Peak LinkedIn | Humbled. Honored. Journey. Six unnecessary paragraphs |\n| 5 | Corporate Hallucination | An ordinary Tuesday becomes a movement |\n\nThe score never goes **down** when the dial goes up. That is the whole business model." },
+    { type: 'bot-message', id: 'n-6', content: "💡 **Tip:** Level two is where most real posts should live. Level five is for the certificate.", delayMs: 400 },
+    { type: 'takeaway-card', id: 'n-t', takeaways: [
+      'Inflation changes the framing, never the facts. The stakes rise; the event does not.',
+      'Every announcement has an opener, a pivot, a thank-you and a hashtag wall. Learn to see all four.',
+      'The dial has five settings. Know which one you are on before you post.',
+    ] },
+    { type: 'chapter-end', id: 'n-end', nextChapterTitle: 'The Vocabulary' },
+  ],
+};

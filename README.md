@@ -26,6 +26,31 @@ Then open the printed local URL. `npm run build` produces a static bundle in
 (enable Pages → Source: GitHub Actions in the repo settings, or trigger the
 workflow manually from the Actions tab).
 
+## Professional Development Program (`/program/`)
+
+A five-lesson guided course that teaches the genre one notch of the dial at a
+time: **The Hook** (Almost Human), **Small News, Big Deal** (Professionally
+Optimized), **The Vocabulary** (Thought Leader), **The Shape** (Peak LinkedIn)
+and **Release Your Single** (Corporate Hallucination), which ends in a beat and
+a certificate.
+
+The course is data. `src/program/chapters/*.js` are ordered lists of typed
+steps (`bot-message`, `before-after`, `prompt-card` → `live-output`,
+`exercise-card`, `intake-card`, `dial`, `score-card`, `spot-the-trope`,
+`beat-card`, `chapter-end`…); the contract is documented in
+`src/program/engine/types.js`. `StepPlayer.jsx` reveals steps one at a time —
+passive steps on a timer, interactive steps when the learner acts. Every "AI"
+performance is local: `engine/performer.js` wraps the Lessons generator, the
+humanizer and the Thought Leadership Index and types the result out, so nothing
+leaves the browser and every example is deterministic per learner. Progress
+(name, title, completed lessons, best score) lives in `localStorage` under
+`lb_program_v1`. Routes are in the hash (`/program/#/hook`), so the page is a
+plain static entry in `vite.config.js`.
+
+`npm run check:program` validates the chapters: exactly five, unique step ids,
+every live output pointing at an earlier step that can feed it, every blank with
+a fallback, and every performance actually running on its example input.
+
 The build is multi-page: the LinkedIn Beats homepage at `/`, the mixer at `/studio/`, **LinkedIn Lessons™** at
 `/lessons/`, **Roast My LinkedIn™** at `/roast/`, **The Museum of
 Professional Communication** at `/museum/`, **The Company Store** at
