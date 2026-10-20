@@ -5,11 +5,13 @@ import {EXAMPLES, ANNOUNCEMENT_EXAMPLES, DEFAULT_ANSWERS} from '../../lessons/In
 import {PostBeat} from '../../post-beat/PostBeat.jsx';
 import {Markdown} from './markdown.jsx';
 import {isInteractive, PASSIVE_DELAY} from './types.js';
-import {perform, score, typewrite, levelName, seedFrom, LEVELS} from './performer.js';
+import {perform, score, typewrite, levelName, seedFrom} from './performer.js';
 import {FeedPost, Profile} from '../components/FeedPost.jsx';
 import {LessonReward} from '../components/Rewards.jsx';
 import {VideoRecap} from '../components/VideoRecap.jsx';
 import {SynergyTip} from '../components/SynergyTip.jsx';
+import {LevelChart} from '../components/LevelChart.jsx';
+import {PostScore} from '../components/PostScore.jsx';
 import {LESSON_PRESENTATION} from '../chapters/presentation.js';
 
 // The step player. One chapter in, revealed one step at a time. Passive steps
@@ -152,15 +154,6 @@ export function StepPlayer({chapter, userName, title, onName, onComplete, onFini
     return <FeedPost text={text} name={userName} title={title} streaming={streaming} label={label || 'The LinkedIn version'} onCopy={!streaming && text ? ()=>copy(id,text) : undefined} copied={copiedId===id}/>;
   };
 
-  const ScoreBlock = ({text, title: t}) => {
-    const s = score(text);
-    const rows = [['Buzzwords per 100 words', s.buzzDensity], ['Gratitude', s.gratitudeLabel], ['Humble-brag', `${s.humbleBrag}%`], ['Dramatic one-liners', s.oneLiners], ['Journeys referenced', s.journeys], ['Chance of “Well deserved!”', `${s.wellDeserved}%`]];
-    return <div className="pg-score">
-      <div className="pg-score-window"><span className="pg-score-label">{t || 'Post score'}</span><strong>{String(s.index).padStart(2, '0')}</strong><span className="pg-score-scale">out of 100</span><span className="pg-score-rank">{s.rank}</span></div>
-      <dl>{rows.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>
-    </div>;
-  };
-
   const Continue = ({label = 'Keep going', onClick}) => <button type="button" className="pg-btn" onClick={onClick || (() => advance())}>{label}<ArrowRight size={15}/></button>;
 
   const renderStep = (step, isLast) => {
@@ -196,6 +189,9 @@ export function StepPlayer({chapter, userName, title, onName, onComplete, onFini
       case 'insight-card':
         return <div className="pg-indent"><div className="pg-card pg-insight"><div className="pg-card-head"><i/><span>{step.title}</span></div><Markdown className="pg-card-body" text={personalize(step.content)}/></div></div>;
 
+      case 'level-chart':
+        return <div className="pg-indent"><LevelChart title={step.title}/>{step.caption && <p className="pg-level-footnote">{step.caption}</p>}</div>;
+
       case 'before-after':
         return <div className="pg-indent pg-compare">
           <div className="pg-card"><div className="pg-card-head pg-head-muted"><i/><span>{step.beforeLabel || 'What actually happened'}</span></div><Markdown className="pg-card-body" text={personalize(step.before)}/></div>
@@ -218,7 +214,7 @@ export function StepPlayer({chapter, userName, title, onName, onComplete, onFini
             <div className="pg-card-foot"><span className="pg-muted">Practice only. Nothing is published.</span>
               <button type="button" className="pg-btn pg-btn-sm" disabled={!isLast || !!performing} onClick={() => run(step.id, step.performs || 'linkedinify', filledTemplate(step), {level: step.level || 3, after: () => setDone(d => ({...d, [step.id]: true}))})}><Play size={11} fill="currentColor"/>{step.runLabel || 'Make it LinkedIn'}</button></div>
           </div>
-          {(running || out !== undefined) && <div className="pg-after">{step.performs==='score' ? <><FeedPost text={inputs[step.id] || filledTemplate(step)} name={userName} title={title} label="Your practice post"/><div className="pg-after"><ScoreBlock text={inputs[step.id] || filledTemplate(step)} title={step.outputLabel}/></div></> : renderOutput(step.id, step.outputLabel, running)}</div>}
+          {(running || out !== undefined) && <div className="pg-after">{step.performs==='score' ? <><FeedPost text={inputs[step.id] || filledTemplate(step)} name={userName} title={title} label="Your practice post"/><div className="pg-after"><PostScore text={inputs[step.id] || filledTemplate(step)} title={step.outputLabel}/></div></> : renderOutput(step.id, step.outputLabel, running)}</div>}
           {done[step.id] && !performing && isLast && <div className="pg-row"><button type="button" className="pg-pill" onClick={() => { setOutputs(o => { const n = {...o}; delete n[step.id]; return n; }); setDone(d => ({...d, [step.id]: false})); }}><RotateCcw size={13}/>Try again</button><Continue/></div>}
         </div>;
       }
@@ -252,20 +248,15 @@ export function StepPlayer({chapter, userName, title, onName, onComplete, onFini
         const text = input ? perform('generate', input, {seed, level}) : '';
         const name = levelName(level);
         return <div className="pg-indent">
-          <div className="pg-card pg-dial">
-            <div className="pg-card-head"><i/><span>{step.title || 'The dial'}</span></div>
-            <div className="pg-dial-row"><output>{level}</output><div><strong>{name}</strong><span>{LEVELS[level - 1].blurb}</span></div></div>
-            <input disabled={!isLast} type="range" min={step.min || 1} max={step.max || 5} value={level} style={{'--level': `${((level - 1) / 4) * 100}%`}} onChange={e => { const n = Number(e.target.value); setLevels(l => ({...l, [step.id]: n})); setOutputs(o => ({...o, [step.id]: perform('generate', input, {seed, level: n})})); setDone(d => ({...d, [step.id]: true})); }} aria-label="LinkedInification level"/>
-            <div className="pg-dial-scale"><span>Almost human</span><span>Corporate hallucination</span></div>
-          </div>
+          <LevelChart title={step.title || 'The LinkedInification levels'} value={level} min={step.min || 1} max={step.max || 5} disabled={!isLast} onChange={n=>{setLevels(l=>({...l,[step.id]:n}));setOutputs(o=>({...o,[step.id]:perform('generate',input,{seed,level:n})}));setDone(d=>({...d,[step.id]:true}));}}/>
           <div className="pg-after"><FeedPost text={text} name={userName} title={title} label={`Level ${level} · ${name}`}/></div>
-          <div className="pg-after"><ScoreBlock text={text}/></div>
-          {isLast && <div className="pg-row"><Continue label={done[step.id] ? 'Keep going' : 'Scrub the dial, then keep going'} onClick={() => { setOutputs(o => ({...o, [step.id]: text})); advance(); }}/></div>}
+          <div className="pg-after"><PostScore text={text}/></div>
+          {isLast && <div className="pg-row"><Continue label="Keep going" onClick={() => { setOutputs(o => ({...o, [step.id]: text})); advance(); }}/></div>}
         </div>;
       }
 
       case 'score-card':
-        return <div className="pg-indent"><ScoreBlock text={inputFor(step.source)} title={step.title}/></div>;
+        return <div className="pg-indent"><PostScore text={inputFor(step.source)} title={step.title}/></div>;
 
       case 'spot-the-trope': {
         const lines = step.text.split('\n').filter(l => l.trim());

@@ -16,6 +16,34 @@ bookmarks still work and share the same saved progress.
 
 ## Illustrated Academy lessons
 
+### Level charts, score gauges, and Synergy v2
+
+`components/LevelChart.jsx` renders five ascending ordinal bars using the
+generator's existing level names and descriptions. In a `dial` step, selecting
+a bar regenerates the same announcement and score immediately. Native radios
+support touch and arrow keys; completed practice controls are disabled. The
+passive `{type: 'level-chart', id, title?, caption?}` step replaces the five-level
+Markdown table and lets learners explore the definitions without another gate.
+Bar height represents level, not a predicted post score.
+
+`components/PostScore.jsx` uses the existing scorer without changing its math.
+An accessible 0–100 ring displays the exact index and named rank. Humble-brag
+and the satirical “Well deserved!” probability have percentage bars; counts
+and gratitude details stay available in a native disclosure. Reduced-motion
+preferences suppress transitions. Higher scores mean more LinkedIn intensity,
+not better work.
+
+The instructor portraits now retain the real Synergy's angular diamond head,
+headset, coffee and small square green LED eyes. The expression is restrained
+and enthusiastic. The two 512 px v2 WebPs total 71 KB and are used in tips,
+the overview, completion and recap headings. Previous portrait files remain
+available. Built-in imagegen edit prompts are in `synergy-v2-prompts.json`.
+
+Browser verification covered 375 px and 805 px content widths without overflow,
+pointer and keyboard level selection, live score updates, and score disclosure.
+
+![Level bars and score gauge](levels-and-score.jpg)
+
 The approved lesson design is implemented: a centered 720 px reading column,
 112 px lesson artwork (76–88 px on phones), navy Hoves headings, cobalt actions,
 and a compact pale-yellow Synergy note. The overview uses thumbnail lesson rows
