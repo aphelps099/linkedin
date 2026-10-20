@@ -10,7 +10,8 @@ export const inflation = {
   steps: [
     { type: 'bot-message', id: 'n-1', content: "{{name}}, lesson two is the engine of the whole genre: **inflation.** You take an ordinary event and raise its stakes until it sounds historically significant.", delayMs: 300 },
     { type: 'bot-message', id: 'n-2', content: "The facts never change. Only the **framing**: the stakes, the gratitude, and the number of people who apparently made it possible.", delayMs: 500 },
-    { type: 'pause', id: 'n-p1', buttonLabel: 'Show me an example' },
+    { type: 'synergy-tip', id: 'n-synergy', content: 'Bought a coffee? Congratulations on your latest **strategic acquisition.**' },
+    { type: 'pause', id: 'n-p1', nextLabel: 'see the transformation', buttonLabel: 'Show me an example' },
     { type: 'bot-message', id: 'n-3', content: "Here is an ordinary moment. Press **Make it LinkedIn** and watch the department go to work.", delayMs: 300 },
     { type: 'prompt-card', id: 'n-prompt', label: 'What actually happened', tryMe: true,
       prompt: 'Today I made a cup of coffee. It was pretty good.' },
@@ -22,7 +23,7 @@ export const inflation = {
     { type: 'intake-card', id: 'n-intake', title: 'Announce something small', description: 'A hire, a promotion, a launch, a milestone. The smaller the better.', category: 'announce', level: 2, runLabel: 'File this post', fields: ['kind', 'name', 'role', 'before', 'quality', 'goal', 'company'] },
     { type: 'dial', id: 'n-dial', title: 'The LinkedInification dial', source: 'n-intake', initial: 2 },
     { type: 'insight-card', id: 'n-i2', title: 'The five levels', content: "| Level | Name | What changes |\n|---|---|---|\n| 1 | Almost Human | Clear, useful, relatively normal |\n| 2 | Professionally Optimized | Polished, a modest amount of excitement |\n| 3 | Thought Leader | Lessons, gratitude and strategic alignment |\n| 4 | Peak LinkedIn | Humbled. Honored. Journey. Six unnecessary paragraphs |\n| 5 | Corporate Hallucination | An ordinary Tuesday becomes a movement |\n\nThe score never goes **down** when the dial goes up. That is the whole business model." },
-    { type: 'bot-message', id: 'n-6', content: "💡 **Tip:** Level two is where most real posts should live. Level five is for the certificate.", delayMs: 400 },
+    { type: 'synergy-tip', id: 'n-6', content: "Level two is where most real posts should live. Level five is for the certificate.", delayMs: 400 },
     { type: 'takeaway-card', id: 'n-t', takeaways: [
       'Inflation changes the framing, never the facts. The stakes rise; the event does not.',
       'Every announcement has an opener, a pivot, a thank-you and a hashtag wall. Learn to see all four.',

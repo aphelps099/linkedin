@@ -11,6 +11,8 @@
 // 5. every performance actually runs on its example input and scores;
 // 6. each chapter ends with chapter-end, and only the last one is final.
 import {CHAPTERS} from '../src/program/chapters/index.js';
+import {LESSON_PRESENTATION} from '../src/program/chapters/presentation.js';
+import {existsSync} from 'node:fs';
 import {INTERACTIVE, PASSIVE_DELAY, PERFORMS} from '../src/program/engine/types.js';
 import {perform, score} from '../src/program/engine/performer.js';
 import {byId, withDefaultAnswers} from '../src/lessons/categories.js';
@@ -37,6 +39,8 @@ CHAPTERS.forEach((ch, ci) => {
   if(ch.number !== ci + 1) fail(`${where}: number ${ch.number} should be ${ci + 1}`);
   if(ch.level !== ci + 1) fail(`${where}: level ${ch.level} should be ${ci + 1}`);
   if(!ch.title || !ch.subtitle || !ch.levelName || !ch.minutes) fail(`${where}: missing title/subtitle/levelName/minutes`);
+  const presentation = LESSON_PRESENTATION[ch.id];
+  if(!presentation?.heading || !presentation?.summary || !presentation?.format || !presentation?.image || !existsSync(new URL(`../public${presentation.image}`, import.meta.url))) fail(`${where}: missing presentation or artwork`);
   const ids = new Set();
   ch.steps.forEach((s, si) => {
     const at = `${where} step ${si} (${s.id})`;
@@ -52,7 +56,7 @@ CHAPTERS.forEach((ch, ci) => {
       return src;
     };
     switch(s.type){
-      case 'bot-message': if(!s.content) fail(`${at}: empty content`); break;
+      case 'bot-message': case 'synergy-tip': if(!s.content) fail(`${at}: empty content`); break;
       case 'live-output': {
         const src = resolve(s.source, 'source');
         if(!PERFORMS.has(s.performs || 'linkedinify')) fail(`${at}: unknown performs ${s.performs}`);

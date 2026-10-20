@@ -11,6 +11,7 @@
 // Passive (auto-advance):
 //   bot-message   { content, delayMs? }                 markdown paragraph from the guide.
 //                                                       {{name}} and {{title}} are substituted.
+//   synergy-tip   { content }                          compact instructor note; **bold** gets yellow underline.
 //   output-card   { content, label? }                   a canned "LinkedIn version".
 //   insight-card  { title, content }                    "notice what happened" explainer.
 //   takeaway-card { takeaways: string[] }               three key points.
@@ -18,7 +19,7 @@
 //   divider       {}
 //
 // Interactive (wait):
-//   pause         { buttonLabel? }                      one pill button.
+//   pause         { buttonLabel?, nextLabel? }          one next action with an optional preview.
 //   buttons       { buttons: [{label, action:'next'|'nextChapter', variant?}] }
 //   name-input    { placeholder?, buttonLabel?, askTitle? }
 //                                                       captures {{name}} (and {{title}} when askTitle).
@@ -58,6 +59,7 @@ export const INTERACTIVE = new Set([
 
 export const PASSIVE_DELAY = {
   'bot-message': 700,
+  'synergy-tip': 700,
   'output-card': 900,
   'insight-card': 1000,
   'takeaway-card': 1000,

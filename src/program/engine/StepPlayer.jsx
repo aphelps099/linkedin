@@ -9,6 +9,8 @@ import {perform, score, typewrite, levelName, seedFrom, LEVELS} from './performe
 import {FeedPost, Profile} from '../components/FeedPost.jsx';
 import {LessonReward} from '../components/Rewards.jsx';
 import {VideoRecap} from '../components/VideoRecap.jsx';
+import {SynergyTip} from '../components/SynergyTip.jsx';
+import {LESSON_PRESENTATION} from '../chapters/presentation.js';
 
 // The step player. One chapter in, revealed one step at a time. Passive steps
 // advance on a timer; interactive steps wait. Live outputs are performed by
@@ -166,6 +168,9 @@ export function StepPlayer({chapter, userName, title, onName, onComplete, onFini
       case 'bot-message':
         return <div className="pg-step"><Markdown className="pg-step-body" text={personalize(step.content)}/></div>;
 
+      case 'synergy-tip':
+        return <SynergyTip content={personalize(step.content)}/>;
+
       case 'name-input':
         return <div className="pg-indent pg-name">
           <input disabled={!isLast} maxLength={60} value={nameValue} onChange={e => setNameValue(e.target.value)} onKeyDown={e => { if(e.key === 'Enter' && !step.askTitle) submitName(); }} placeholder={step.placeholder || 'Your first name'} autoFocus aria-label="Your name"/>
@@ -296,7 +301,7 @@ export function StepPlayer({chapter, userName, title, onName, onComplete, onFini
       }
 
       case 'pause':
-        return isLast ? <div className="pg-indent pg-continue-row"><button type="button" className="pg-btn" onClick={() => advance()}>{step.buttonLabel || 'Continue'}<ArrowRight size={15}/></button></div> : null;
+        return isLast ? <div className="pg-indent pg-continue-row">{step.nextLabel && <span><strong>Next:</strong> {step.nextLabel}</span>}<button type="button" className="pg-btn" onClick={() => advance()}>{step.buttonLabel || 'Continue'}<ArrowRight size={15}/></button></div> : null;
 
       case 'buttons':
         return isLast ? <div className="pg-indent pg-row">{step.buttons.map((b, i) => <button type="button" key={i} className={b.variant === 'secondary' ? 'pg-pill' : 'pg-btn'} onClick={() => (b.action === 'nextChapter' ? onComplete() : advance())}>{b.label}</button>)}</div> : null;
@@ -314,9 +319,11 @@ export function StepPlayer({chapter, userName, title, onName, onComplete, onFini
 
   return <div className="pg-scroll" ref={scrollRef}>
     <div className="pg-lesson">
-      <div className="pg-strip pg-lesson-breadcrumb"><a href="#"><ArrowLeft size={14}/>Course overview</a><span>Lesson {chapter.number} of 5 · {chapter.minutes} min</span></div>
-      <h1 className="pg-h1">{({hook:"Make an entrance.",inflation:"Make a little news.",vocabulary:"Learn the language.",shape:"Give it some space.",single:"Bring it all together."})[chapter.id]}</h1>
-      <p className="pg-sub">Level {chapter.level} · {chapter.levelName}</p>
+      <div className="pg-strip pg-lesson-breadcrumb"><a href="#"><ArrowLeft size={16}/>All lessons</a><span>Lesson {chapter.number} of 5 · {chapter.minutes} min</span></div>
+      <header className="pg-lesson-heading">
+        <img className="pg-lesson-art" src={LESSON_PRESENTATION[chapter.id].image} alt="" width="112" height="112" fetchpriority="high"/>
+        <div><h1 className="pg-h1">{LESSON_PRESENTATION[chapter.id].heading}</h1><p className="pg-sub">{chapter.title}</p></div>
+      </header>
       <span className="pg-sr-only" role="status">{copyStatus}</span><div className="pg-steps">{steps.slice(0, visibleCount).map((step, i) => <div key={step.id} className="pg-in">{renderStep(step, i === visibleCount - 1)}</div>)}</div>
     </div>
   </div>;

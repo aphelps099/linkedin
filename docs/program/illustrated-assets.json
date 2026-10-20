@@ -1,0 +1,33 @@
+{
+  "generator": "Built-in image_gen",
+  "assets": [
+    {
+      "file": "public/learn/art/hook.webp",
+      "prompt": "Use case: product-mockup. Asset type: production square thumbnail illustration for LinkedIn Beats Academy. Generate ONLY the artwork, no webpage, no UI, no border, no rounded corners. Polished whimsical editorial 3D product photography, physically detailed materials, soft studio shadows, crisp cobalt blue accents, simple readable silhouette at 80px. Square 1:1. The object fills the middle 75% of the canvas with safe space all around. Seamless colored floor and backdrop. No logos, watermark, captions, extra objects. Subject: one beautifully curved chrome fish hook suspended from a fine line, catching a glossy cobalt-blue speech notification bubble with a white heart inset. Charming tangible sculptural objects. Backdrop pale sky blue. The visual joke is a literal hook capturing engagement."
+    },
+    {
+      "file": "public/learn/art/inflation.webp",
+      "prompt": "Use case: product-mockup. Asset type: production square thumbnail illustration for LinkedIn Beats Academy. Generate ONLY the artwork, no webpage, no UI, no border, no rounded corners. Polished whimsical editorial 3D product photography, physically detailed materials, soft studio shadows, crisp cobalt blue accents, simple readable silhouette at 80px. Square 1:1. The object fills the middle 75% of the canvas with safe space all around. Seamless colored floor and backdrop. No logos, watermark, captions, extra objects. Subject: an ordinary glossy white ceramic coffee mug on the tallest cobalt blue winners podium, sculptural extruded white numeral 1 on its front. Two small lower podium steps, subtle curved steam, three small cobalt celebratory strokes above mug. Background rich sunny yellow. Match the small coffee podium reference precisely in composition and premium look."
+    },
+    {
+      "file": "public/learn/art/vocabulary.webp",
+      "prompt": "Use case: product-mockup. Asset type: production square thumbnail illustration for LinkedIn Beats Academy. Generate ONLY the artwork, no webpage, no UI, no border, no rounded corners. Polished whimsical editorial 3D product photography, physically detailed materials, soft studio shadows, crisp cobalt blue accents, simple readable silhouette at 80px. Square 1:1. The object fills the middle 75% of the canvas with safe space all around. Seamless colored floor and backdrop. No logos, watermark, captions, extra objects. Subject: a close three-quarter view of three oversized cobalt blue mechanical keyboard keys on a small ivory keyboard base. Legible white labels, one on each key: 'Humbled', 'Honored', 'Aligned'. Sculptural tactile matte plastic, a delightful corporate jargon machine. Background very pale lilac."
+    },
+    {
+      "file": "public/learn/art/shape.webp",
+      "prompt": "Use case: product-mockup. Asset type: production square thumbnail illustration for LinkedIn Beats Academy. Generate ONLY the artwork, no webpage, no UI, no border, no rounded corners. Polished whimsical editorial 3D product photography, physically detailed materials, soft studio shadows, crisp cobalt blue accents, simple readable silhouette at 80px. Square 1:1. The object fills the middle 75% of the canvas with safe space all around. Seamless colored floor and backdrop. No logos, watermark, captions, extra objects. Subject: a long ivory paper receipt elegantly cascading down three simple pale lilac steps, blank line breaks and a few short abstract navy horizontal ink strokes only; subtle paper curl at bottom. One cobalt metal paper clip near top. It suggests dramatic LinkedIn line breaks. Background soft lavender. No readable words."
+    },
+    {
+      "file": "public/learn/art/single.webp",
+      "prompt": "Use case: product-mockup. Asset type: production square thumbnail illustration for LinkedIn Beats Academy. Generate ONLY the artwork, no webpage, no UI, no border, no rounded corners. Polished whimsical editorial 3D product photography, physically detailed materials, soft studio shadows, crisp cobalt blue accents, simple readable silhouette at 80px. Square 1:1. The object fills the middle 75% of the canvas with safe space all around. Seamless colored floor and backdrop. No logos, watermark, captions, extra objects. Subject: a beautiful cobalt blue vinyl record with fine concentric grooves and warm ivory center label, leaning slightly against an ivory album sleeve. A small corporate ID badge with blue lanyard leans at its foot. Anonymous abstract badge markings only, no readable text or logos. Background warm apricot orange."
+    },
+    {
+      "file": "public/learn/art/synergy-tip.webp",
+      "prompt": "Use case: stylized-concept. Asset type: small instructor portrait for LinkedIn Beats Academy. Reference image is the approved instructor appearance, NOT a layout to reproduce. Generate ONLY a square close-up chest-up portrait of this friendly ivory-and-chrome robot with softly rounded rectangular black screen face, bright green smiling caret pixel eyes, black over-ear headset with tiny mic, tasteful cobalt details. Head tilted slightly in a knowing helpful expression, one metal index finger raised beside its head with a little friendly idea gesture, visible within frame. Yellow seamless background, no circle mask, no text or UI. Premium 3D product realism, soft studio light, glossy screen, visible seams and brushed metal joints. Keep expression charming and wry. Subject fills 85% of square and remains readable at 64px."
+    },
+    {
+      "file": "public/learn/art/synergy-celebrate.webp",
+      "prompt": "Use case: stylized-concept. Asset type: completion instructor portrait for LinkedIn Beats Academy. Reference image is the approved instructor appearance, NOT a layout to reproduce. Generate ONLY a square chest-up portrait of this friendly ivory-and-chrome robot with softly rounded rectangular black screen face, bright green smiling caret pixel eyes, black over-ear headset and small mic, tasteful cobalt accents. Robot gives one confident thumbs-up beside its face. Yellow seamless background, three very small cobalt confetti shapes. No text or UI, no circle mask. Premium detailed 3D product realism, soft studio light, glossy screen, visible seams and brushed metal joints. Same recognizable character as reference. Subject fills 85% of square with entire thumb in frame."
+    }
+  ]
+}
