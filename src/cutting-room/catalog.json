@@ -17,6 +17,67 @@
   ],
   "assets": [
     {
+      "id": "learn-to-speak-linkedin-synergy-recut-e95adb5d",
+      "title": "Learn to Speak LinkedIn \u2014 Synergy recut",
+      "category": "Finished films",
+      "description": "Approved glassy-face Synergy at his computer, a blinking close-up with a reflected loading window, typing inserts and the evolving LinkedIn post.",
+      "cast": [
+        "Synergy"
+      ],
+      "status": "Current edit",
+      "notes": "44-second picture recut. Original soundtrack copied unchanged. Tracked, fixed-height horizontal speech lights; the personal post, reactions and self-comment remain part of the lesson.",
+      "tags": [
+        "approved Synergy",
+        "glassy face",
+        "horizontal mouth"
+      ],
+      "transcript": "",
+      "sha256": "e95adb5dc1b6a7db9e93bb6aeb632eb46625954817be70d474342804b1477000",
+      "src": "/api/cutting-room/media/learn-to-speak-linkedin-synergy-recut-e95adb5d.mp4",
+      "download": "/api/cutting-room/media/learn-to-speak-linkedin-synergy-recut-e95adb5d.mp4?download=1",
+      "poster": "/cutting-room/posters/learn-to-speak-linkedin-synergy-recut-e95adb5d.jpg",
+      "width": 1280,
+      "height": 720,
+      "duration": 44.0,
+      "audio": true,
+      "bytes": 7203200,
+      "sourceReference": "libfile_690e21a1915c8191af65c753c51e4515"
+    },
+    {
+      "id": "one-mind-many-perspectives-synergy-corrected-4f6769ca",
+      "title": "One Mind, Many Perspectives \u2014 Synergy corrected",
+      "category": "Finished films",
+      "description": "The singularity-equality meeting with the approved glassy-face Synergy camera and horizontal speech display.",
+      "cast": [
+        "Synergy",
+        "Synthia",
+        "Kevin",
+        "People & Culture",
+        "Keys",
+        "Linda",
+        "Arjun",
+        "Printer"
+      ],
+      "status": "Current edit",
+      "notes": "Only Synergy\u2019s camera picture is replaced. Original soundtrack, corrected closing voice, other eleven tiles, name labels, subtitles and active-speaker outlines are retained.",
+      "tags": [
+        "approved Synergy",
+        "glassy face",
+        "horizontal mouth"
+      ],
+      "transcript": "",
+      "sha256": "4f6769caed60a823e64b9c2829b39f891a0646a9ad98a6f1c293dc1cb6d22c2c",
+      "src": "/api/cutting-room/media/one-mind-many-perspectives-synergy-corrected-4f6769ca.mp4",
+      "download": "/api/cutting-room/media/one-mind-many-perspectives-synergy-corrected-4f6769ca.mp4?download=1",
+      "poster": "/cutting-room/posters/one-mind-many-perspectives-synergy-corrected-4f6769ca.jpg",
+      "width": 1280,
+      "height": 720,
+      "duration": 98.346,
+      "audio": true,
+      "bytes": 19911737,
+      "sourceReference": "libfile_a43090fa516c8191aff6de8e7b25eb5a"
+    },
+    {
       "id": "training-02-caffeinated-edition-0d1af435",
       "title": "Training 02 \u2014 Caffeinated Edition",
       "category": "Finished films",
@@ -536,8 +597,8 @@
       "cast": [
         "Synergy"
       ],
-      "status": "Available edit",
-      "notes": "Sampled frames reviewed. Check the complete clip before a new final edit.",
+      "status": "Earlier version",
+      "notes": "Earlier Synergy appearance. The new \u201cLearn to Speak LinkedIn \u2014 Synergy recut\u201d edit preserves the original soundtrack.",
       "tags": [],
       "transcript": "",
       "sha256": "5199b9c6044ca4d23ccbcf11afe23af963d9bd82a232a2a0a45e6d60bb966046",
@@ -697,8 +758,8 @@
         "Arjun",
         "Printer"
       ],
-      "status": "Available edit",
-      "notes": "Sampled frames reviewed. Check the complete clip before a new final edit.",
+      "status": "Earlier version",
+      "notes": "Earlier Synergy appearance. The new \u201cOne Mind, Many Perspectives \u2014 Synergy corrected\u201d edit preserves the original soundtrack.",
       "tags": [],
       "transcript": "",
       "sha256": "cf16fe400533d22bb6f02896452738a7abf451f6d71f30c48e225c2a4a1db00d",

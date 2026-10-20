@@ -1,0 +1,72 @@
+{
+  "source": "catalog/source/library/One-Mind-Many-Perspectives-Debra-Voice-Fixed-720p.mp4",
+  "approvedPlate": "/workspace/scratch/e1832ea21c4b/linkedin-hero/public/studio/season/clips/synergy-camera-v2-listening.mp4",
+  "output": "one-mind-recut/One-Mind-Many-Perspectives-Debra-Voice-Fixed-720p.mp4",
+  "duration": 98.346,
+  "resolution": [
+    1280,
+    720
+  ],
+  "fps": 24,
+  "frames": 2359,
+  "originalAudioPacketHash": "SHA256=aca2ba761e6e491bb81cf02dbd89ae40b3d08b012cdaf32a5e7f232bba610f26",
+  "audioUnchanged": true,
+  "outsideTileExactChecks": 99,
+  "synergyTile": [
+    71,
+    30,
+    275,
+    187
+  ],
+  "speakingIntervals": [
+    [
+      2.5,
+      8.125
+    ],
+    [
+      46.0,
+      47.333333333333336
+    ],
+    [
+      71.125,
+      75.375
+    ],
+    [
+      82.5,
+      83.54166666666667
+    ],
+    [
+      83.75,
+      84.79166666666667
+    ],
+    [
+      85.0,
+      86.04166666666667
+    ],
+    [
+      86.25,
+      87.29166666666667
+    ],
+    [
+      87.5,
+      88.54166666666667
+    ],
+    [
+      88.75,
+      89.79166666666667
+    ],
+    [
+      93.29166666666667,
+      94.33333333333333
+    ]
+  ],
+  "mouth": "Tracked fixed-height row, scrolling left to right, speaker-gated mixed-audio brightness.",
+  "scope": "Only Synergy camera picture replaced. All names, other tiles, active-speaker outlines, subtitles, voices and music retained.",
+  "runwayCredits": 0,
+  "sha256": "4f6769caed60a823e64b9c2829b39f891a0646a9ad98a6f1c293dc1cb6d22c2c",
+  "bytes": 19911737,
+  "libraryFileId": "libfile_a43090fa516c8191aff6de8e7b25eb5a",
+  "videoUrl": "https://linkedinbeats.com/cutting-room/#one-mind-many-perspectives-synergy-corrected-4f6769ca",
+  "sourceOriginal": "one-mind-many-perspectives-corrected-voice-cf16fe40",
+  "libraryVersion": 4
+}

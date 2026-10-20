@@ -24,7 +24,7 @@ export const CHARACTERS = [
 
 // A homepage transport can own its graph without interrupting the studio.
 export function createAudioEngine() {
-  let ctx, master, comp, noiseBuf, streamDest, analyser, specArr, lp, voxIn, voxDelay,
+  let ctx, master, comp, monitor, noiseBuf, streamDest, analyser, specArr, lp, voxIn, voxDelay,
       voxChar, voxDrive, voxCrush, voxDry, voxRing, voxRingOsc, voxWob, voxFb, voxVerb;
   const channels = {};
   let fx = {weird:0, dist:.12, character:'boardroom'};
@@ -37,7 +37,7 @@ export function createAudioEngine() {
     lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 20000; lp.Q.value = 1.2;
     comp = ctx.createDynamicsCompressor();
     comp.threshold.value = -6; comp.ratio.value = 12; comp.attack.value = .003; comp.release.value = .15;
-    master.connect(lp); lp.connect(comp); comp.connect(ctx.destination);
+    master.connect(lp); lp.connect(comp); monitor=ctx.createGain(); monitor.gain.value=1; comp.connect(monitor); monitor.connect(ctx.destination);
     // the vox bus — character filter → drive → bitcrush → ring mod → wobble →
     // presence peak → master, with a tempo-locked delay send (the talkbox trick)
     voxIn = ctx.createGain();
@@ -326,6 +326,7 @@ export function createAudioEngine() {
     state: ()=> ctx ? ctx.state : 'uninitialized',
     suspend: ()=> ctx?.suspend(),
     setChannelGain(name,value){init();if(channels[name] && Number.isFinite(value))channels[name].gain.setTargetAtTime(Math.max(0,Math.min(1,value)),ctx.currentTime,.015);},
+    setMonitor(enabled){ init(); monitor.gain.setValueAtTime(enabled ? 1 : 0, ctx.currentTime); },
     setVolume(value){ init(); master.gain.setTargetAtTime(Math.max(0, Math.min(1, value)) * .85, ctx.currentTime, .015); },
     dispose(){
       if(silentEl){

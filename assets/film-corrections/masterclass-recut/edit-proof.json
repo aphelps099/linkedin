@@ -1,0 +1,28 @@
+{
+  "source": "catalog/source/library/LinkedIn-Masterclass-Realistic-Post.mp4",
+  "output": "masterclass-recut/LinkedIn-Masterclass-Realistic-Post.mp4",
+  "duration": 44,
+  "resolution": [
+    1280,
+    720
+  ],
+  "fps": 24,
+  "frames": 1056,
+  "audioUnchanged": true,
+  "originalAudioPacketHash": "SHA256=1f01ef54073ff1876d998716c55733dce8b4b1ee0230e2b55ac50555e0858719",
+  "mouth": "Tracked black glass only. Fixed-height light row scrolls left to right; brightness follows the original speech intervals.",
+  "shots": [
+    "0\u20133 desk opening",
+    "3\u20135 blinking face with reflected loading window",
+    "5\u20138.5 typing and screen",
+    "8.5\u201344 post, camera, typing inserts and existing lesson progression"
+  ],
+  "decodeErrors": 0,
+  "runwayCredits": 0,
+  "sha256": "e95adb5dc1b6a7db9e93bb6aeb632eb46625954817be70d474342804b1477000",
+  "bytes": 7203200,
+  "libraryFileId": "libfile_690e21a1915c8191af65c753c51e4515",
+  "videoUrl": "https://linkedinbeats.com/cutting-room/#learn-to-speak-linkedin-synergy-recut-e95adb5d",
+  "sourceOriginal": "learn-to-speak-linkedin-masterclass-5199b9c6",
+  "libraryVersion": 6
+}

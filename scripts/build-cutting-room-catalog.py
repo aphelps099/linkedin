@@ -25,6 +25,12 @@ def add(p,title,cat,desc,cast=[],status='Source take',notes='',tags=[],transcrip
 add(W/'brand-story/v6/LinkedIn-Beats-Welcome-to-the-Office-720p.mp4','Welcome to the Office — V6','Finished films','The banner crew returns. Instruments, robot jargon, and a corporate round of applause.',['Synergy','Synthia','Kevin','Keys','Operations','People & Culture','Banner crew','Printer','Paper droid'],'Current edit','End card and tagline removed. Restores arrival, installation, and measuring footage. Full music and dialogue.',['brand story','signs','humbled and honored','optimize onboarding','circle back'],rank=0)
 circle_recut=W/'circle-back-recut/Circle-Back-Complete-720p.mp4'
 training_recut=W/'training-02-recut/Training-02-Final-Mix.mp4'
+masterclass_recut=W/'masterclass-recut/LinkedIn-Masterclass-Realistic-Post.mp4'
+one_mind_recut=W/'one-mind-recut/One-Mind-Many-Perspectives-Debra-Voice-Fixed-720p.mp4'
+if masterclass_recut.exists():
+ add(masterclass_recut,'Learn to Speak LinkedIn — Synergy recut','Finished films','Approved glassy-face Synergy at his computer, a blinking close-up with a reflected loading window, typing inserts and the evolving LinkedIn post.',['Synergy'],'Current edit','44-second picture recut. Original soundtrack copied unchanged. Tracked fixed-height horizontal speech lights.',['training','approved Synergy','glassy face','horizontal mouth'],rank=1,source='libfile_690e21a1915c8191af65c753c51e4515')
+if one_mind_recut.exists():
+ add(one_mind_recut,'One Mind, Many Perspectives — Synergy corrected','Finished films','The singularity-equality meeting with the approved glassy-face Synergy camera and horizontal speech display.',['Synergy','Synthia','Kevin','People & Culture','Keys','Linda','Arjun','Printer'],'Current edit','Only Synergy’s camera picture is replaced. Original soundtrack, corrected closing voice, other eleven tiles, name labels, subtitles and active-speaker outlines retained.',['approved Synergy','glassy face','horizontal mouth'],rank=1,source='libfile_a43090fa516c8191aff6de8e7b25eb5a')
 if training_recut.exists():
  add(training_recut,'Training 02 — Caffeinated Edition','Finished films','How to answer without answering, with overcaffeinated Synergy, fast ChatGPT typing, coffee cups and a playful jazz beat.',['Synergy'],'Current edit','50-second recut. Approved digital voice, expressive performance, tracked glass-only face with blinking eyes and fixed-height left-to-right speech lights. Full stereo music and dialogue.',['training','ChatGPT','jazz','coffee','how to answer without answering'],rank=1,source='libfile_cc75c578d1e481919c89229f828cc6c0')
  for name,title,task in [('wide','Synergy — caffeinated typing and celebration','ef4bc48a-30c6-4f47-a987-0fb696e7a294'),('close','Synergy — enthusiastic training close-up','ee2e522b-8646-4ca5-af93-b529c6215c07')]:
@@ -44,6 +50,7 @@ for p in sorted((W/'catalog/source/library').glob('*.mp4')):
  if 'Circle-Back' in stem:cast=['Synergy','Keys','People & Culture','Operations','Arjun','Printer'];desc='A musical Zoom meeting finds an entire chorus in “let’s circle back.”'
  if stem=='Circle-Back-Complete-720p' and circle_recut.exists():status='Earlier version';rank=8;notes='Original edit before the Synergy camera correction. Script, soundtrack and other performers are retained in the current edit.'
  if 'One-Mind' in stem:cast=['Synergy','Synthia','Kevin','People & Culture','Keys','Linda','Arjun','Printer'];desc='Corporate training on singularity equality, with the corrected closing voice.'
+ if stem=='One-Mind-Many-Perspectives-Debra-Voice-Fixed-720p' and one_mind_recut.exists():status='Earlier version';rank=8;notes='Earlier Synergy appearance. The corrected edit preserves the soundtrack and all other participants.'
  if 'Make-It' in stem:cast=['Synergy','Printer'];desc='A deadpan robot post about writing posts, plus a ChatGPT typing sequence.'
  if 'Authenticity' in stem:cast=['Synergy','Synthia','Kevin','Keys','People & Culture','Operations','Arjun','Printer'];desc='The conference-room authenticity training, with continual LinkedIn paperwork.';status='Needs review';notes='Continuity has previously needed repair. Check robot mouths, paper stability, laptop action, and voice assignment before reusing.'
  if 'Synthia-Closeup' in stem:status='Available edit';notes='Revised 30-second edit with Synthia’s conference-room close-up.'
@@ -51,6 +58,7 @@ for p in sorted((W/'catalog/source/library').glob('*.mp4')):
  if 'Quick-Sync' in stem:cast=['Synergy','Synthia'];desc='A brief office exchange between the two robots.'
  if 'Masterclass' in stem or 'Training-02' in stem:cast=['Synergy'];desc='Blue-screen robot vocabulary training with a realistic post and reaction activity.';cat='Finished films'
  if stem=='Training-02-Final-Mix' and training_recut.exists():status='Earlier version';rank=8;notes='Original training before the Caffeinated Edition. Retained for comparison; the new edit preserves the question/Friday/working-group joke.'
+ if stem=='LinkedIn-Masterclass-Realistic-Post' and masterclass_recut.exists():status='Earlier version';rank=8;notes='Earlier Synergy appearance. The new picture recut keeps the same soundtrack.'
  if 'Dropdown' in stem or 'We-Added' in stem:cast=['Synergy','Kevin','Keys','Strategy'];desc='A tiny onboarding change is inflated into an extraordinary professional accomplishment.'
  if 'Animatic' in stem:cat='Experiments';status='Earlier version'
  if 'Scene-4' in stem:cat='Screen inserts';desc='The onboarding post fills the screen while the chorus plays.'

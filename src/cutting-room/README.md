@@ -35,3 +35,9 @@ The recut has an original jazzy beat, approved digital voice, fast ChatGPT typin
 coffee cups and a tracked horizontal speech display. Rebuild instructions are in
 `scripts/training_02/README.md`; continuity and delivery checks are in
 `assets/film-corrections/training-02/`.
+
+## Synergy corrections — 20 October 2026
+
+The masterclass recut uses the approved caffeinated desk and close-up plates, a two-second blink/reflection insert, tracked typing footage, and a clean post-and-camera composition. Its 44-second soundtrack remains packet-identical to the original. The saved compositor is `scripts/recut-masterclass-synergy.py`; run from the workspace with the documented Training 02 source plates and tracking files.
+
+One Mind, Many Perspectives replaces only Synergy's camera interior with the approved studio v2 plate. The original labels, active-speaker borders, other eleven tiles and corrected audio remain. The fixed-height speech row scrolls sideways and follows the original active-speaker cue. The renderer checks unchanged pixels outside the tile before encoding and verifies copied AAC packets. See `scripts/recut-one-mind-synergy.py` and the corresponding `assets/film-corrections` reports. Both corrections reuse existing media and use zero new Runway credits.

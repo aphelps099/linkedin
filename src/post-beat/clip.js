@@ -2,7 +2,7 @@ import {createPostBeat} from './audio.js';
 import {VIDEO_MIMES,pickMime,extFor,mp4Support,startMp4Capture} from '../exporter.js';
 
 const LENGTH=10,cache=new Map();
-export const clipKey=(recipe,cover)=>JSON.stringify([recipe,cover.id]);
+export const clipKey=(recipe,cover)=>JSON.stringify(['release-v3',recipe,cover.id,cover.artist||'']);
 export const cachedClip=(recipe,cover)=>cache.get(clipKey(recipe,cover));
 const aborted=()=>new DOMException('Cancelled','AbortError');
 
@@ -11,25 +11,29 @@ function lines(ctx,text,width){
   for(const word of text.split(/\s+/)){const next=row?`${row} ${word}`:word;if(row&&ctx.measureText(next).width>width){result.push(row);row=word;}else row=next;}
   if(row)result.push(row);return result;
 }
-// Artwork and the personal title have separate moments; never a square collage.
-export function drawShareArtwork(canvas,image,recipe,elapsed=0,spectrum=null){
-  const c=canvas.getContext('2d'),w=canvas.width,h=canvas.height,artH=545;
-  c.fillStyle='#0757ec';c.fillRect(0,0,w,h);
-  c.drawImage(image,0,0,w,artH);
-  c.fillStyle='#0757ec';c.fillRect(0,artH,w,h-artH);
-  const bins=60,gap=6,bw=(w-64-gap*(bins-1))/bins;
-  for(let i=0;i<bins;i++){
-    const energy=spectrum?.[Math.floor(i*(spectrum.length*.7)/bins)]||0;
-    const height=spectrum?4+Math.min(27,energy*.12):5+Math.abs(Math.sin(i*1.7)*Math.cos(i*.39))*16;
-    c.fillStyle=i/bins<elapsed/LENGTH?'#fff349':'#a2c2fa';c.fillRect(32+i*(bw+gap),artH+32-height/2,bw,height);
+// A typographic sleeve. No stock thumbnail/personal-title collage.
+export function drawShareArtwork(canvas,_image,recipe,elapsed=0,spectrum=null,cover={}){
+  const c=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
+  const themes={'paper-jam':['#0c1222','#222838','#ffffff','#fff349'],'printer-overload':['#fff349','#e8d832','#111827','#111827'],'overprinted':['#f5f1e6','#e5e0d5','#1649e7','#1649e7']};
+  const [base,stripe,ink,accent]=themes[cover.id]||themes['paper-jam'];
+  c.fillStyle=base;c.fillRect(0,0,w,h);c.save();c.translate(w/2,h/2);c.rotate(-Math.PI/4);c.fillStyle=stripe;for(let x=-w*2;x<w*2;x+=64)c.fillRect(x,-h*2,30,h*4);c.restore();
+  c.fillStyle=accent;c.font='600 25px C2Hoves, Arial';c.fillText(`${(cover.name||'Paper Jam').toUpperCase()} SERIES`,64,83);
+  c.font='19px C2Hoves, Arial';c.textAlign='right';c.fillText('LINKEDIN BEATS',w-64,83);c.textAlign='left';
+  let size=220,rows;
+  do{c.font=`${size}px Anton, Impact, sans-serif`;rows=lines(c,recipe.chorus.toUpperCase(),w-128);if(rows.length*size*.94<=645&&rows.every(row=>c.measureText(row).width<=w-128))break;size-=2;}while(size>48);
+  const top=880-rows.length*size*.94;c.fillStyle=ink;rows.forEach((row,i)=>c.fillText(row,64,top+size*.85+i*size*.94));
+  c.font='600 32px C2Hoves, Arial';c.fillText(cover.artist||'LinkedIn Beats',68,973);
+  if(spectrum){
+    const bins=62,gap=5,bw=(w-136-gap*(bins-1))/bins;
+    for(let i=0;i<bins;i++){const energy=spectrum[Math.floor(i*spectrum.length*.7/bins)]||0;const bh=3+Math.min(31,energy*.13);c.fillStyle=i/bins<elapsed/LENGTH?accent:ink;c.globalAlpha=.8;c.fillRect(68+i*(bw+gap),1030-bh/2,bw,bh);}c.globalAlpha=1;
   }
-  if(elapsed>8.2){
-    c.fillStyle=`rgba(7,87,236,${Math.min(1,(elapsed-8.2)/.18)})`;c.fillRect(0,0,w,h);
-    let size=83,rows;
-    do{c.font=`${size}px Anton, Impact, sans-serif`;rows=lines(c,recipe.chorus.toUpperCase(),w-104);if(rows.length<=3&&rows.length*(size+9)<=320)break;size-=2;}while(size>36);
-    c.fillStyle='#fbf6e8';rows.forEach((row,i)=>c.fillText(row,52,120+size+i*(size+9)));
-    c.font='28px C2Hoves, Arial';c.fillText('linkedinbeats.com',52,h-49);
-  }
+  if(elapsed>8.5){c.fillStyle=base;c.fillRect(58,938,w-116,63);c.fillStyle=ink;c.font='600 32px C2Hoves, Arial';c.fillText('linkedinbeats.com',68,978);}
+}
+// Start inside the original user tap so audio can unlock before any await.
+export function startShareClip({recipe,cover}){
+  const job={controller:new AbortController(),progress:0,listeners:new Set()};
+  job.promise=createShareClip({recipe,cover,signal:job.controller.signal,quiet:true,onProgress:p=>{job.progress=p;job.listeners.forEach(fn=>fn(p));}});
+  job.promise.catch(()=>{});return job;
 }
 function mediaCapture(canvas,audio){
   const mime=pickMime(VIDEO_MIMES);if(!mime)throw new Error('This browser can share the listening link, but cannot make a video clip.');
@@ -45,16 +49,16 @@ function mediaCapture(canvas,audio){
 
 // Records the personalized chorus and the same band heard in the player.
 // No microphone, account login, or third-party upload is requested.
-export async function createShareClip({recipe,cover,signal,onProgress=()=>{}}){
+export async function createShareClip({recipe,cover,signal,onProgress=()=>{},quiet=false}){
   const existing=cachedClip(recipe,cover);if(existing)return existing;
-  const player=createPostBeat();player.unlock(); // keep mobile unlock in the tap
+  const player=createPostBeat();player.unlock();if(quiet)player.monitor(false); // keep mobile unlock in the tap
   let capture,raf,stopped=false;
   try{
-    const image=new Image();image.src=cover.image;
-    const [buffers]=await Promise.all([player.prepare(recipe,signal),image.decode(),document.fonts.load('60px Anton'),document.fonts.load('24px C2Hoves')]);
+    const image=null;
+    const [buffers]=await Promise.all([player.prepare(recipe,signal),document.fonts.load('60px Anton'),document.fonts.load('24px C2Hoves')]);
     if(signal?.aborted)throw aborted();
-    const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=608;
-    drawShareArtwork(canvas,image,recipe,0,null);
+    const canvas=document.createElement('canvas');canvas.width=canvas.height=1080;
+    drawShareArtwork(canvas,image,recipe,0,null,cover);
     const mp4=await mp4Support(player.sampleRate());
     if(signal?.aborted)throw aborted();
     // Keep the graph unlocked by the original tap for mobile capture.
@@ -66,7 +70,7 @@ export async function createShareClip({recipe,cover,signal,onProgress=()=>{}}){
       const cleanup=()=>{signal?.removeEventListener('abort',cancel);document.removeEventListener('visibilitychange',hidden);cancelAnimationFrame(raf);};
       signal?.addEventListener('abort',cancel,{once:true});document.addEventListener('visibilitychange',hidden);
       const tick=()=>{
-        const t=Math.max(0,player.elapsed()-5);if(t>9.5)player.volume(.75*Math.max(0,(LENGTH-t)/.5));drawShareArtwork(canvas,image,recipe,t,player.spectrum());onProgress(Math.min(1,t/LENGTH));
+        const t=Math.max(0,player.elapsed()-5);if(t>9.5)player.volume(.75*Math.max(0,(LENGTH-t)/.5));drawShareArtwork(canvas,image,recipe,t,player.spectrum(),cover);onProgress(Math.min(1,t/LENGTH));
         if(t>=LENGTH){cleanup();resolve();}else raf=requestAnimationFrame(tick);
       };tick();
     });

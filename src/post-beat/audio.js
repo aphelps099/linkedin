@@ -83,6 +83,7 @@ export function createPostBeat({engineFactory=createAudioEngine,interval=setInte
     stream(){return init().stream();},
     audioTrack(){return init().audioTrack();},
     sampleRate(){return init().sampleRate();},
+    monitor(enabled){init().setMonitor?.(enabled);},
     volume(value){init().setVolume(value);},
     stop(){playing=false;clearTick();engine?.dispose();engine=null;},
     dispose(){playing=false;clearTick();engine?.dispose();engine=null;},
