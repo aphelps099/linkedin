@@ -43,13 +43,13 @@ expectThrow(() => normalizeCart([{ sku: 'CS-999', qty: 1 }]), 'unknown SKU accep
 expectThrow(() => normalizeCart([{ sku: 'CS-101', size: 'M', qty: 0 }]), 'zero quantity accepted');
 expectThrow(() => normalizeCart([{ sku: 'CS-101', size: 'XXL', qty: 1 }]), 'unknown size accepted');
 expectThrow(() => normalizeCart([{ sku: 'CS-101', qty: 1 }]), 'shirt without a size accepted');
-if(normalizeCart([{ sku: 'CS-301', size: 'M', qty: 1 }])[0].size !== null) fail('size not stripped from an unsized product');
+if(normalizeCart([{ sku: 'CS-201', size: 'M', qty: 1 }])[0].size !== null) fail('size not stripped from an unsized product');
 
 // --- checkout params ---
 const origin = 'https://linkedinbeats.com';
-const small = buildCheckoutParams(normalizeCart([{ sku: 'CS-302', qty: 1 }]), origin, { flatShippingCents: 500 });
+const small = buildCheckoutParams(normalizeCart([{ sku: 'CS-202', qty: 1 }]), origin, { flatShippingCents: 500 });
 if(small.get('shipping_options[0][shipping_rate_data][fixed_amount][amount]') !== '500') fail('small order did not get the flat rate');
-if(small.get('line_items[0][price_data][unit_amount]') !== '400') fail('sticker not priced at 400 cents');
+if(small.get('line_items[0][price_data][unit_amount]') !== '2400') fail('cap not priced at 2400 cents');
 if(small.get('success_url') !== origin + '/store/?order=filed') fail('success_url is off the form');
 if(small.get('cancel_url') !== origin + '/store/?order=tabled') fail('cancel_url is off the form');
 
@@ -61,7 +61,7 @@ const everything = normalizeCart(PRODUCTS.filter(p=>!p.previewOnly).map(p => ({ 
 const full = buildCheckoutParams(everything, origin, {});
 const meta = full.get('metadata[cart]');
 if(meta.length > 500) fail(`metadata cart overflows Stripe's 500-char limit (${meta.length})`);
-if(JSON.parse(meta).length !== 9) fail('metadata cart does not round-trip');
+if(JSON.stringify(JSON.parse(meta)) !== JSON.stringify(everything.map(line=>[line.sku,line.size,line.qty]))) fail('metadata cart does not round-trip');
 
 // --- webhook signature ---
 const secret = 'whsec_test';
@@ -77,13 +77,13 @@ if(verifyStripeSignature({ payload, header: `t=${t},v1=deadbeef`, secret, now: t
 // --- Printify order building ---
 const session = {
   id: 'cs_test_abcdefgh',
-  metadata: { cart: JSON.stringify([['CS-101', 'M', 2], ['CS-301', null, 1]]) },
+  metadata: { cart: JSON.stringify([['CS-101', 'M', 2], ['CS-201', null, 1]]) },
   customer_details: { name: 'Brenda Synergy', email: 'brenda@example.com', phone: '' },
   shipping_details: { name: 'Brenda Synergy', address: { line1: '1 Alignment Way', line2: '', city: 'Austin', state: 'TX', postal_code: '73301', country: 'US' } },
 };
 const skuMap = {
   'CS-101': { productId: 'p1', variants: { S: 11, M: 12, L: 13, XL: 14 } },
-  'CS-301': { productId: 'p3', variantId: 31 },
+  'CS-201': { productId: 'p3', variantId: 31 },
 };
 const { order, unmapped } = buildPrintifyOrder({ session, skuMap });
 if(unmapped.length) fail('mapped SKUs reported unmapped');
@@ -95,7 +95,7 @@ if(order.address_to.zip !== '73301' || order.address_to.country !== 'US') fail('
 if(order.send_shipping_notification !== true) fail('shipping notification not requested');
 
 const partial = buildPrintifyOrder({ session, skuMap: { 'CS-101': skuMap['CS-101'] } });
-if(partial.order !== null || !partial.unmapped.includes('CS-301')) fail('unmapped SKU not refused');
+if(partial.order !== null || !partial.unmapped.includes('CS-201')) fail('unmapped SKU not refused');
 
 for(const p of PRODUCTS.filter(p=>p.previewOnly)){
   if(p.price!==null || !p.img) fail('Preview must have image and no price: '+p.sku);

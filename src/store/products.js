@@ -15,7 +15,7 @@ const comingSoon = (sku,cat,name,filename,desc,specs,images) => ({
   specs:[...specs,['Status','Design preview — not yet available']],
   ...(images?{images}:{}),
 });
-const FEATURED_ORDER = ['CS-108','CS-107','CS-203','CS-201','CS-202','CS-103','CS-104','CS-105','CS-106','CS-109','CS-110','CS-501','CS-403','CS-404','CS-405','CS-303','CS-101','CS-102','CS-301','CS-302','CS-401','CS-402'];
+const FEATURED_ORDER = ['CS-108','CS-107','CS-203','CS-201','CS-202','CS-103','CS-104','CS-105','CS-106','CS-109','CS-110','CS-501','CS-403','CS-404','CS-405','CS-303','CS-101','CS-102'];
 
 export const PRODUCTS = [
   { sku: 'CS-104', cat: 'Sweatshirts', name: 'Out of Office Crewneck', price: null, sizes: null, img: 'cs-104.webp', previewOnly: true,
@@ -57,22 +57,6 @@ export const PRODUCTS = [
     ph: 'Drop mockup — cap, 3/4 view',
     desc: 'The meeting-ender, embroidered in white on ink. Wearing it does not end meetings.',
     specs: [['Body', 'Unstructured six-panel'], ['Embroidery', 'White, front'], ['Size', 'One size, adjustable']] },
-  { sku: 'CS-301', cat: 'Stickers', name: 'Glyph Set Sticker Sheet', price: 6, sizes: null,
-    ph: 'Drop mockup — sheet, straight on',
-    desc: 'Nine glyphs from the official set, die-cut. The block cursor is the popular one.',
-    specs: [['Material', 'Matte vinyl, die-cut'], ['Sheet', '4 × 6 in, 9 stickers'], ['Finish', 'Laptop-grade']] },
-  { sku: 'CS-302', cat: 'Stickers', name: 'Approved — HR Sticker', price: 4, sizes: null,
-    ph: 'Drop mockup — sticker, straight on',
-    desc: 'The rubber stamp, for laptops and water bottles. Confers no actual approval.',
-    specs: [['Material', 'Matte vinyl, die-cut'], ['Size', '3 in wide'], ['Angle', 'Pre-tilted, −4°']] },
-  { sku: 'CS-401', cat: 'Posters', name: 'The Tagline Poster', price: 18, sizes: null,
-    ph: 'Drop mockup — poster in frame',
-    desc: '“It’s not an instrument. It’s a journey.” At 104 points, in corporate blue, on paper.',
-    specs: [['Size', '18 × 24 in'], ['Stock', 'Matte, 200 gsm'], ['Ships', 'Rolled, in a tube']] },
-  { sku: 'CS-402', cat: 'Posters', name: 'Museum Admission Poster', price: 18, sizes: null,
-    ph: 'Drop mockup — poster in frame',
-    desc: 'Wing I of the Museum of Professional Communication. Admission free; the poster is not.',
-    specs: [['Size', '18 × 24 in'], ['Stock', 'Matte, 200 gsm'], ['Ships', 'Rolled, in a tube']] },
   comingSoon('CS-105','Sweatshirts','Out of Office Hoodie','out-of-office-hoodie',
     'Your status, permanently set. A dusty pink hoodie with a small Out of Office chest print and a cobalt full stop.',
     [['Design','Dusty pink pullover hoodie'],['Artwork','Black chest lettering with cobalt accent']]),
