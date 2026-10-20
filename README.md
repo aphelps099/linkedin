@@ -26,7 +26,7 @@ Then open the printed local URL. `npm run build` produces a static bundle in
 (enable Pages → Source: GitHub Actions in the repo settings, or trigger the
 workflow manually from the Actions tab).
 
-## Professional Development Program (`/program/`)
+## Professional Development Program (`/learn/`)
 
 A five-lesson guided course that teaches the genre one notch of the dial at a
 time: **The Hook** (Almost Human), **Small News, Big Deal** (Professionally
@@ -45,8 +45,9 @@ humanizer and the Thought Leadership Index and types the result out. Text
 generation is local and deterministic per learner; the existing beat player
 can call the site's audio services. Progress
 (name, title, completed lessons, best score) lives in `localStorage` under
-`lb_program_v1`. Routes are in the hash (`/program/#/hook`), so the page is a
-plain static entry in `vite.config.js`.
+`lb_program_v1`. Routes are in the hash (`/learn/#/hook`), so the page is a
+plain static entry in `vite.config.js`. The original `/program/` address remains
+an alias using the same course and saved progress.
 
 The portal uses a cream focus-mode layout with a persistent lesson rail and a
 mobile course menu. Teaching, examples, explanations, exercises and takeaways

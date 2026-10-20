@@ -1,7 +1,8 @@
 # Learning portal UI
 
-The existing `/program/` course now uses a quiet cream focus-mode shell and
-LinkedIn-style practice cards. The site menu exposes it as **Learn**.
+The `/learn/` course uses a quiet cream focus-mode shell and LinkedIn-style
+practice cards. The site menu exposes it as **Learn**. Existing `/program/`
+bookmarks still work and share the same saved progress.
 
 - Read, see an example, understand the changes, try it, review the takeaways.
 - Earlier content stays in the reading column. Completed controls cannot skip

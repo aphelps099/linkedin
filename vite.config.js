@@ -104,7 +104,8 @@ export default defineConfig({
         studio3: fileURLToPath(new URL('./studio-3/index.html', import.meta.url)),
         // LinkedIn Lessons — the guided post generator, served at /lessons/
         lessons: fileURLToPath(new URL('./lessons/index.html', import.meta.url)),
-        // Professional Development Program — the five-step guided course, served at /program/
+        // Learn is the main course entry; retain /program/ for existing bookmarks.
+        learn: fileURLToPath(new URL('./learn/index.html', import.meta.url)),
         program: fileURLToPath(new URL('./program/index.html', import.meta.url)),
         // Roast My LinkedIn — the inspection office, served at /roast/
         roast: fileURLToPath(new URL('./roast/index.html', import.meta.url)),

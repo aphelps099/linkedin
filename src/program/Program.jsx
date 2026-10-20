@@ -6,7 +6,7 @@ import {loadProgress, saveProgress} from './engine/progress.js';
 import {CertificateArt, downloadArt, REWARDS, Sticker} from './components/Rewards.jsx';
 import {PostBeat} from '../post-beat/PostBeat.jsx';
 
-// Keep the existing static route and hash links: /program/#/hook.
+// Static entries at /learn/ and /program/ share hash links and saved progress.
 const route = () => window.location.hash.replace(/^#\/?/, '') || '';
 const go = id => { window.location.hash = id ? `#/${id}` : ''; };
 const allComplete = progress => CHAPTERS.every(c => progress.completedChapters.includes(c.id));
