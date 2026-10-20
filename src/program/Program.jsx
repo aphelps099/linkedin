@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {ArrowLeft, ArrowRight, Award, BookOpen, Check, ChevronDown, Download, LockKeyhole, Music2, Printer, X} from 'lucide-react';
+import {ArrowLeft, ArrowRight, Award, BookOpen, Check, ChevronDown, Clock3, Download, LockKeyhole, Music2, Printer, Quote, X} from 'lucide-react';
 import {CHAPTERS, chapterById} from './chapters/index.js';
 import {StepPlayer} from './engine/StepPlayer.jsx';
 import {loadProgress, saveProgress} from './engine/progress.js';
@@ -19,7 +19,7 @@ export default function Program(){
   useEffect(()=>{const change=()=>{setPath(route());setMenuOpen(false);window.scrollTo(0,0);mainRef.current?.focus({preventScroll:true});};window.addEventListener('hashchange',change);return()=>window.removeEventListener('hashchange',change);},[]);
   useEffect(()=>{const sync=e=>{if(e.key==='lb_program_v1' || e.key===null)setProgress(loadProgress());};window.addEventListener('storage',sync);return()=>window.removeEventListener('storage',sync);},[]);
   useEffect(()=>{if(index>=0)update({currentChapter:index});},[index,update]);
-  useEffect(()=>{document.title=`${chapter?.title || (path==='certified' ? 'Your certificate' : 'Learn')} — LinkedIn Beats`;},[chapter,path]);
+  useEffect(()=>{document.title=`${chapter?.title || (path==='certified' ? 'Your certificate' : 'Academy')} — LinkedIn Beats`;},[chapter,path]);
   const finish=useCallback(id=>update(p=>({completedChapters:[...new Set([...p.completedChapters,id])]})),[update]);
   const next=()=>{const nextIndex=index+1;go(nextIndex<CHAPTERS.length ? CHAPTERS[nextIndex].id : 'certified');};
   const savePost=useCallback((id,text,s)=>update(p=>({bestScore:Math.max(s.index,p.bestScore||0),posts:{...p.posts,[chapter.id]:text}})),[chapter?.id,update]);
@@ -38,7 +38,7 @@ export default function Program(){
           {CHAPTERS.map(c=>{const done=progress.completedChapters.includes(c.id);return <a key={c.id} href={`#/${c.id}`} className={`pg-rail-item${c.id===path ? ' is-active' : ''}`} aria-current={c.id===path ? 'step' : undefined}><span className={`pg-state${done ? ' is-done' : ''}`}>{done ? <Check size={14}/> : c.number}</span><span>{c.title}<small>{done ? 'Completed' : `${c.minutes} min`}</small></span></a>;})}
         </nav>
         {complete ? <a href="#/certified" className="pg-rail-certificate"><Award size={17}/>Your certificate<ArrowRight size={14}/></a> : <div className="pg-rail-certificate is-locked"><LockKeyhole size={15}/><span>Certificate of Professional Effort<small>Complete all five lessons to unlock.</small></span></div>}
-        <div className="pg-rail-foot"><span className="pg-eyebrow">Learning tour</span><span>Saved on this device</span></div>
+        <div className="pg-rail-foot"><span>Progress saved on this device</span></div>
       </div>
     </aside>
     <main id="program-main" className="pg-main" ref={mainRef} tabIndex={-1}>
@@ -51,21 +51,29 @@ export default function Program(){
 
 function Syllabus({progress,resume,lockedCertificate}){
   const complete=allComplete(progress), started=!!progress.userName || progress.completedChapters.length>0;
+  const summaries={hook:'Make the first line worth the second.',inflation:'Turn a small update into a major announcement.',vocabulary:'Sound humbled, honored, and strategically aligned.',shape:'Master the line break. Manufacture the revelation.',single:'Write your post. Drop your beat. Get certified.'};
   return <div className="pg-home">
-    <div className="pg-strip"><span>Professional development, allegedly.</span><span>5 lessons · 25 min</span></div>
+    <div className="pg-strip pg-academy-header"><span><BookOpen size={17}/>LinkedIn Beats Academy</span><span><Clock3 size={14}/>25 min · Self-paced</span></div>
     {lockedCertificate && <p className="pg-notice">Your certificate is waiting. Finish all five lessons to make it official.</p>}
-    <div className="pg-masthead">
-      <span className="pg-eyebrow pg-eyebrow-blue">The professional development optimization program</span>
-      <h1 className="pg-display">Your career isn’t going<br/><em>to congratulate itself.</em></h1>
-      <p className="pg-lead">Welcome to LinkedIn. The premier platform for career growth, professional development, and letting 800 acquaintances know you attended a webinar.</p>
-      <p className="pg-pitch">Doing good work is a wonderful start. But have you positioned it as a journey? In five short lessons, turn routine updates into leadership insights, minor setbacks into origin stories, and a perfectly normal Tuesday into a personal brand milestone.</p>
-      <div className="pg-row"><button className="pg-btn" type="button" onClick={()=>go(complete ? 'certified' : resume.id)}>{complete ? 'View my certificate' : started ? 'Continue my optimization' : 'Optimize my professional existence'}<ArrowRight size={17}/></button></div>
-      <p className="pg-enrollment-note">25 minutes. Five lessons. One deeply unnecessary credential.</p>
-      <div className="pg-synergy-quote"><img src="/studio/season/posters/synergy-camera-v2-listening.jpg" alt="Synergy, your robot instructor"/><div><blockquote>“If a milestone happens and nobody is humbled to announce it, did it even happen?”</blockquote><p><strong>Synergy</strong> · Head of Professional Development Optimization</p></div></div>
+    <div className="pg-academy-intro">
+      <div className="pg-masthead">
+        <span className="pg-eyebrow pg-eyebrow-blue">Professional development, allegedly.</span>
+        <h1 className="pg-display">Your career isn’t going <em>to congratulate itself.</em></h1>
+        <p className="pg-lead">Welcome to LinkedIn Beats Academy. On the world’s premier professional network, doing the work is only half the job. Announcing it is the other 900%.</p>
+        <p className="pg-pitch">Five short lessons in hooks, humblebrags, and turning a perfectly normal Tuesday into a personal brand milestone.</p>
+        <div className="pg-row"><button className="pg-btn" type="button" onClick={()=>go(complete ? 'certified' : resume.id)}>{complete ? 'View my certificate' : started ? 'Continue learning' : 'Start learning'}<ArrowRight size={16}/></button><span className="pg-enrollment-note">One deeply unnecessary credential.</span></div>
+      </div>
+      <aside className="pg-synergy-quote" aria-label="A word from your instructor">
+        <div className="pg-synergy-tag"><span>Synergy says</span><Quote size={25} aria-hidden="true"/></div>
+        <blockquote>“If a milestone happens and nobody is humbled to announce it, <em>did it even happen?</em>”</blockquote>
+        <div className="pg-synergy-signature"><img src="/studio/season/posters/synergy-camera-v2-listening.jpg" alt="Synergy, your robot instructor"/><p><strong>Synergy</strong><span>Head of Professional <br/>Development Optimization</span></p></div>
+      </aside>
     </div>
-    <div className="pg-course-heading"><h2>Your course</h2><span className="pg-eyebrow">Read. Try. Understand.</span></div>
-    <div className="pg-index">{CHAPTERS.map(c=>{const done=progress.completedChapters.includes(c.id);return <a className="pg-row-item" key={c.id} href={`#/${c.id}`}><span className={`pg-state${done ? ' is-done' : ''}`}>{done ? <Check size={16}/> : String(c.number).padStart(2,'0')}</span><span><span className="pg-row-title">{c.title}</span><span className="pg-row-sub">{c.number===1 ? 'Make the first line worth the second.' : c.subtitle}</span></span><span className="pg-row-meta">{done ? 'Revisit' : `${c.minutes} min`}<ArrowRight size={17}/></span></a>;})}</div>
-    <section className="pg-earned-teaser"><div><span className="pg-eyebrow pg-eyebrow-blue">Something to show for it</span><h2>Real effort. Questionable credentials.</h2><p>Collect a sticker after every lesson. Bring everything together in your own beat, then claim your Certificate of Professional Effort.</p></div><div className="pg-teaser-sticker"><Sticker number={2}/></div></section>
+    <section className="pg-course-overview" aria-labelledby="pg-course-heading">
+      <div className="pg-course-heading"><h2 id="pg-course-heading">Course content</h2><span className="pg-muted">{progress.completedChapters.length} of 5 complete</span></div>
+      <div className="pg-index">{CHAPTERS.map(c=>{const done=progress.completedChapters.includes(c.id), next=!done && c.id===resume.id;return <a className={`pg-row-item${next ? ' is-next' : ''}`} key={c.id} href={`#/${c.id}`}><span className={`pg-state${done ? ' is-done' : ''}`}>{done ? <Check size={15}/> : String(c.number).padStart(2,'0')}</span><span><span className="pg-row-title">{c.title}</span><span className="pg-row-sub">{summaries[c.id]}</span></span><span className="pg-row-duration">{c.minutes} min</span><span className="pg-row-meta"><span className={`pg-course-status${done ? ' is-done' : next ? ' is-next' : ''}`}>{done ? 'Completed' : next ? 'Next up' : 'Start'}</span><ArrowRight size={16}/></span></a>;})}</div>
+    </section>
+    <section className="pg-earned-teaser"><div className="pg-teaser-sticker"><Sticker number={2}/></div><div><h2>Real effort. Questionable credentials.</h2><p>Earn five stickers, unlock your own beat, and graduate with a Certificate of Professional Effort.</p></div><Award size={25} aria-hidden="true"/></section>
     <p className="pg-smallprint">A satirical learning experience by LinkedIn Beats. Your practice posts are never published to LinkedIn. Course progress is saved in this browser.</p>
   </div>;
 }
