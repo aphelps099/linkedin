@@ -16,6 +16,7 @@ CV=R/'public/studio/season/clips';A=D/'audio';OUT=D/'LinkedIn-Beats-Welcome-to-t
 FONT=R/'public/home-2/fonts/tt-hoves-regular.ttf';BOLD=R/'public/home-2/fonts/tt-hoves-demibold.ttf'
 IVORY=(244,240,226);BLUE=(10,76,186);INK=(27,39,52)
 tracking=json.loads((R/'src/meeting-room/robot-tracking.json').read_text())
+BLINK_TIMES={'synergy':[11.0,47.7],'synthia':[16.7,49.9]}
 
 def font(size,bold=False):return ImageFont.truetype(str(BOLD if bold else FONT),size)
 def audio(path,n=2):
@@ -117,7 +118,7 @@ def transform_robot(f,character,j,t):
     M[:,2]-=M[:,:2]@np.array([80,50])
     f=np.clip(f.astype(float)+cv2.warpAffine(light,M,(1280,720)),0,255).astype(np.uint8)
     # An occasional blink, restricted to the original square eye pixels.
-    times=[11.0,47.7] if character=='synergy' else [16.7,49.9]
+    times=BLINK_TIMES[character]
     blink=max([max(0,1-abs(t-(b+.12))/.12) for b in times])
     if blink>.02:
         ref=values[0];a0=ref[2];s0=ref[3]
@@ -289,25 +290,28 @@ def render(t):
     if name=='droid':f=object_credit(f,'Delivery','Moving the conversation forward.')
     return f
 
-review_times=[1,5.5,10.5,11.125,14,16.83,19,23,26,29.3,31.3,33.3,35.3,37.5,39.8,44.5,47.2,49.3,51.5,54.5,58,59]
-reviews=[]
-if args.stills:
-    for t in review_times:
-        f=render(t);cv2.imwrite(str(D/'review'/f'edit-{t:g}.jpg'),f);reviews.append((t,f))
-else:
-    proof=make_audio();silent=D/'edit-silent.mp4'
-    enc=subprocess.Popen(['ffmpeg','-v','error','-y','-f','rawvideo','-pix_fmt','bgr24','-s','1280x720','-r',str(FPS),'-i','-','-an','-c:v','libx264','-crf','18','-preset','medium','-pix_fmt','yuv420p','-movflags','+faststart',str(silent)],stdin=subprocess.PIPE)
-    review_frames={round(t*FPS) for t in review_times}
-    for i in range(FPS*LENGTH):
-        f=render(i/FPS);enc.stdin.write(f.tobytes())
-        if i in review_frames:reviews.append((i/FPS,f.copy()))
-        if i%240==0:print(f'Rendered {i/FPS:.0f} / {LENGTH} seconds',flush=True)
-    enc.stdin.close();assert enc.wait()==0
-    subprocess.run(['ffmpeg','-v','error','-y','-i',str(silent),'-i',str(A/'master.wav'),'-map','0:v:0','-map','1:a:0','-c:v','copy','-c:a','aac','-b:a','192k','-t',str(LENGTH),'-movflags','+faststart',str(OUT)],check=True)
-    proof.update({'resolution':[1280,720],'fps':FPS,'duration':LENGTH,'shots':TIMELINE,'credits':680,'mouth':'22 fixed-height LEDs, brightness scrolling left to right, tracked to the approved face','sha256':hashlib.sha256(OUT.read_bytes()).hexdigest()})
-    (D/'edit-proof.json').write_text(json.dumps(proof,indent=2)+'\n');print(str(OUT),flush=True)
-sheet=Image.new('RGB',(1280,math.ceil(len(reviews)/4)*207),'#171717');d=ImageDraw.Draw(sheet)
-for k,(t,f) in enumerate(reviews):
-    x=k%4*320;y=k//4*207;sheet.paste(Image.fromarray(cv2.cvtColor(f,cv2.COLOR_BGR2RGB)).resize((320,180)),(x,y+23));d.text((x+8,y+5),f'{t:.2f}s',fill='white')
-sheet.save(D/'review/edit-contact.jpg')
-for r in readers.values():r[0].release()
+def main():
+    review_times=[1,5.5,10.5,11.125,14,16.83,19,23,26,29.3,31.3,33.3,35.3,37.5,39.8,44.5,47.2,49.3,51.5,54.5,58,59]
+    reviews=[]
+    if args.stills:
+        for t in review_times:
+            f=render(t);cv2.imwrite(str(D/'review'/f'edit-{t:g}.jpg'),f);reviews.append((t,f))
+    else:
+        proof=make_audio();silent=D/'edit-silent.mp4'
+        enc=subprocess.Popen(['ffmpeg','-v','error','-y','-f','rawvideo','-pix_fmt','bgr24','-s','1280x720','-r',str(FPS),'-i','-','-an','-c:v','libx264','-crf','18','-preset','medium','-pix_fmt','yuv420p','-movflags','+faststart',str(silent)],stdin=subprocess.PIPE)
+        review_frames={round(t*FPS) for t in review_times}
+        for i in range(FPS*LENGTH):
+            f=render(i/FPS);enc.stdin.write(f.tobytes())
+            if i in review_frames:reviews.append((i/FPS,f.copy()))
+            if i%240==0:print(f'Rendered {i/FPS:.0f} / {LENGTH} seconds',flush=True)
+        enc.stdin.close();assert enc.wait()==0
+        subprocess.run(['ffmpeg','-v','error','-y','-i',str(silent),'-i',str(A/'master.wav'),'-map','0:v:0','-map','1:a:0','-c:v','copy','-c:a','aac','-b:a','192k','-t',str(LENGTH),'-movflags','+faststart',str(OUT)],check=True)
+        proof.update({'resolution':[1280,720],'fps':FPS,'duration':LENGTH,'shots':TIMELINE,'credits':680,'mouth':'22 fixed-height LEDs, brightness scrolling left to right, tracked to the approved face','sha256':hashlib.sha256(OUT.read_bytes()).hexdigest()})
+        (D/'edit-proof.json').write_text(json.dumps(proof,indent=2)+'\n');print(str(OUT),flush=True)
+    sheet=Image.new('RGB',(1280,math.ceil(len(reviews)/4)*207),'#171717');d=ImageDraw.Draw(sheet)
+    for k,(t,f) in enumerate(reviews):
+        x=k%4*320;y=k//4*207;sheet.paste(Image.fromarray(cv2.cvtColor(f,cv2.COLOR_BGR2RGB)).resize((320,180)),(x,y+23));d.text((x+8,y+5),f'{t:.2f}s',fill='white')
+    sheet.save(D/'review/edit-contact.jpg')
+    for r in readers.values():r[0].release()
+
+if __name__=='__main__':main()

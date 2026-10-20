@@ -1,10 +1,16 @@
 {
   "library_file_id": "libfile_e55a7a3413488191b7821b70cb1f94b3",
+  "file_id": "file_00000000d2a081f68129960905b2d52c",
   "file_name": "LinkedIn-Beats-Welcome-to-the-Office-720p.mp4",
-  "version": 0,
+  "version": 1,
   "duration": 60,
   "width": 1280,
   "height": 720,
   "audio": "AAC stereo 48 kHz",
-  "credits": 680
+  "revisionCredits": 850,
+  "totalProjectCredits": 1530,
+  "authorizedMaximumCredits": 10000,
+  "sha256": "1bb45c533a459ca62ef8a447c32a5bc8887108a7c6002682b8f92c840e525962",
+  "fileSizeBytes": 14305125,
+  "revision": "V2 performance and blue phrase chorus"
 }

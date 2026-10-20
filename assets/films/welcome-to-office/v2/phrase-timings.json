@@ -1,0 +1,88 @@
+{
+  "humbled-phrase": {
+    "speaker": "synergy",
+    "text": "Humbled and honored to share.",
+    "duration": 2.073729166666667,
+    "words": [
+      {
+        "word": "Humbled",
+        "start": 0,
+        "end": 0.6119791666666666
+      },
+      {
+        "word": "and",
+        "start": 0.6119791666666666,
+        "end": 0.8419791666666666
+      },
+      {
+        "word": "honored",
+        "start": 0.8419791666666666,
+        "end": 1.2769791666666668
+      },
+      {
+        "word": "to",
+        "start": 1.2769791666666668,
+        "end": 1.4579791666666668
+      },
+      {
+        "word": "share",
+        "start": 1.4579791666666668,
+        "end": 2.073729166666667
+      }
+    ]
+  },
+  "onboarding-phrase": {
+    "speaker": "synergy",
+    "text": "Optimize the onboarding.",
+    "duration": 1.93775,
+    "words": [
+      {
+        "word": "Optimize",
+        "start": 0,
+        "end": 0.813
+      },
+      {
+        "word": "the",
+        "start": 0.813,
+        "end": 0.974
+      },
+      {
+        "word": "onboarding",
+        "start": 0.974,
+        "end": 1.93775
+      }
+    ]
+  },
+  "circle-phrase": {
+    "speaker": "synthia",
+    "text": "Let's circle back.",
+    "duration": 2.65,
+    "words": [
+      {
+        "word": "Let's",
+        "start": 0.08,
+        "end": 0.4410833333333333
+      },
+      {
+        "word": "circle",
+        "start": 0.74,
+        "end": 1.426375
+      },
+      {
+        "word": "back",
+        "start": 1.65,
+        "end": 1.9738333333333333
+      }
+    ]
+  },
+  "optimized": {
+    "speaker": "synthia",
+    "text": "Optimized.",
+    "duration": 0.8443125
+  },
+  "tagline": {
+    "speaker": "synthia",
+    "text": "Sound like you mean business.",
+    "duration": 1.721
+  }
+}

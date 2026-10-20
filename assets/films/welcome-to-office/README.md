@@ -2,6 +2,44 @@
 
 A 60-second LinkedIn Beats brand opening, 1280 × 720, 24 fps, stereo audio.
 
+## Current revision: performance and phrase chorus
+
+V2 replaces the long cast introductions with more instrument performance.
+The drummer walks to his desk, sits and starts playing, then an editorial
+punch-in shows his hands and pad without changing the instrument; Kevin gets a wide
+guitar performance and a separate hands detail; the keyboard player gets a
+wide performance and a close view with both hands and the keys visible.
+Short blue name labels sit over action rather than taking over the frame.
+
+Three full-screen blue phrases punctuate the 88 BPM groove:
+**HUMBLED AND HONORED TO SHARE**, **LET’S CIRCLE BACK**, and
+**OPTIMIZE THE ONBOARDING**. Every word starts at 16% white opacity and
+brightens to 100% at its actual spoken onset. The phrases are rendered locally
+from exact typography and retained speech events, not generated video text.
+
+The music continues underneath the blue screens; original guitar fills are
+more prominent whenever Kevin appears. Synergy and Synthia retain their
+approved distinct voices, physical plates, horizontal mouths and eye blinks.
+The printer, cart droid, banner installers and full-office reveal remain as
+short story beats. V2 targets −16 LUFS and ends at exactly 60 seconds.
+
+Run `scripts/render-office-brand-film-v2.py WORKSPACE [--stills]`. New source
+clips live in `WORKSPACE/brand-story/v2/raw/`, named `drummer-arrival.mp4`,
+`drum-detail.mp4`, `guitar-performance.mp4`, `guitar-detail.mp4` and
+`keys-performance.mp4`. The separate `drum-detail.mp4` is optional; without
+it, the renderer uses moving close crops of the completed arrival/performance
+take. The delivered V2 uses that continuous performance crop for exact instrument
+and room continuity. The extra generated detail take is retained as an alternate. Copy `v2/voices/*.wav` and `v2/phrase-timings.json`
+to `WORKSPACE/brand-story/v2/audio/`. The exact edit, source task IDs, prompt
+ledger and delivery identity are retained under `v2/`. Existing V1 inputs
+remain necessary for the approved robot, office and droid shots.
+
+**Budget across both versions: 1,530 of the authorized 10,000 Runway credits.**
+V1 used 680. Five new V2 performances/detail shots used 850. No paid text,
+voice or music generation was used for this revision.
+
+## Original version
+
 The office is being prepared for compulsory authenticity. Two completely
 serious installers arrive with retractable banners. They level the signage,
 then later measure the gap between two identical authenticity slogans.
@@ -30,9 +68,9 @@ reveals the fully branded office, with the band still playing.
 
 ## New footage and budget
 
-Hard authorization: at most **10,000 additional Runway credits**.
-Actual spend: **680 credits**. Verified account balance afterward: **19,541**.
-No further generations are queued. Full prompts and charges: `credits.json`.
+Hard authorization for this brand film across revisions: **10,000 Runway credits**.
+V1 spend: **680 credits**. Account balance after V1: **19,541**.
+V1 prompts and charges: `credits.json`. V2 is described above.
 
 | Shot | Task | Cost |
 | --- | --- | ---: |

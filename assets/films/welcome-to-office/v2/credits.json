@@ -1,0 +1,194 @@
+{
+  "authorizedMaximumCredits": 10000,
+  "priorVersionCredits": 680,
+  "revisionCredits": 850,
+  "totalProjectCredits": 1530,
+  "initialRevisionAccountCredits": 19541,
+  "lastAccountCredits": 18691,
+  "submissions": [
+    {
+      "shot": "drummer-arrival",
+      "request": {
+        "model": "kling-o3-pro",
+        "startImageFile": "/workspace/scratch/e1832ea21c4b/generated_images/exec-435df63c-a14c-4894-a59c-b57ef7e4d2a6.png",
+        "generateAudio": false,
+        "ratio": "16:9",
+        "resolution": "720p",
+        "promptText": "One continuous realistic office shot, same bald man, face, light blue shirt, headset, desk, black rolling chair and electronic drum pad from the exact start image. Camera remains at this eye level and nearly locked, tiny natural handheld drift only. In the first TWO seconds he takes two ordinary steps to the chair. At seconds 2 to 4 he turns toward the desk and naturally sits down in the existing chair, separating the two drumsticks so he holds one in each hand. By second 4 he is seated in front of the pad. From seconds 4 to 10 he plays a simple restrained steady 88 BPM groove on the existing black rubber pads, small alternating wrist taps and gentle body movement. Both sticks make believable contact and bounce off the pads, never the desk. Expression remains dry and focused, as if this is routine office work. Preserve exact face and body size, exactly two arms and two sticks, correct seated anatomy, chair remains one solid chair. No talking, no added people, no props moving or disappearing, no cuts, no whip pans, no zoom or freeze frames. All existing equipment is already present and stays unchanged. Natural fluorescent office light, realistic mundane workplace comedy."
+      },
+      "result": {
+        "kind": "task_pending",
+        "taskId": "d2ad38e7-20a4-426b-894d-4a13898ec085",
+        "meta": {
+          "modelId": "kling-o3-pro",
+          "modelLabel": "Kling O3 Pro",
+          "durationSeconds": 10
+        },
+        "creditsRemaining": 19371
+      },
+      "chargedCredits": 170,
+      "latestStatus": {
+        "kind": "video",
+        "taskId": "d2ad38e7-20a4-426b-894d-4a13898ec085",
+        "meta": {
+          "modelId": "kling-o3-pro",
+          "modelLabel": "Kling O3 Pro",
+          "width": 1916,
+          "height": 1080,
+          "durationSeconds": 10.041,
+          "hasAudio": false
+        }
+      },
+      "usedInDeliveredEdit": true
+    },
+    {
+      "shot": "guitar-performance",
+      "request": {
+        "model": "kling-o3-pro",
+        "startImageFile": "/workspace/scratch/e1832ea21c4b/generated_images/exec-3b4870fd-da07-41f1-a5ff-9439eb128eac.png",
+        "generateAudio": false,
+        "ratio": "16:9",
+        "resolution": "720p",
+        "promptText": "A single continuous live-action office music performance. Preserve this exact guitarist, face, pale blue shirt, black headset, blue six-string electric guitar, chair, desk and cubicle. He plays a simple enjoyable repeating 88 BPM electric-guitar riff the ENTIRE shot: small clear rhythmic pick strokes at the bridge, left fingertips deliberately changing between two nearby fretboard positions, relaxed slight nod on the beat. He occasionally looks down at his fretting hand, then back toward his monitor. His mouth stays closed. Genuine modest hobby guitarist at his office desk, dry focused demeanor, no rockstar posing. Camera slowly moves 15 centimeters closer, staying at the same modest three-quarter angle; keep both hands, neck and blue guitar body readable throughout. Correct six strings, physically plausible fingers pressing strings against frets, exactly two normal hands. Stable guitar geometry and clothing. Natural flat fluorescent light, photoreal everyday office footage, subtle continuous human movement. No cuts, no freeze frames, no captions, no theatrical lighting, no added people."
+      },
+      "result": {
+        "kind": "task_pending",
+        "taskId": "1badc7ee-f6f5-49fa-9906-df7de2eec8a8",
+        "meta": {
+          "modelId": "kling-o3-pro",
+          "modelLabel": "Kling O3 Pro",
+          "durationSeconds": 10
+        },
+        "creditsRemaining": 19201
+      },
+      "chargedCredits": 170,
+      "latestStatus": {
+        "kind": "video",
+        "taskId": "1badc7ee-f6f5-49fa-9906-df7de2eec8a8",
+        "meta": {
+          "modelId": "kling-o3-pro",
+          "modelLabel": "Kling O3 Pro",
+          "width": 1916,
+          "height": 1080,
+          "durationSeconds": 10.041,
+          "hasAudio": false
+        }
+      },
+      "usedInDeliveredEdit": true
+    },
+    {
+      "shot": "keys-performance",
+      "request": {
+        "model": "kling-o3-pro",
+        "generateAudio": false,
+        "ratio": "16:9",
+        "resolution": "720p",
+        "startImageFile": "/workspace/scratch/e1832ea21c4b/generated_images/exec-d88aab98-61f5-4e12-ab20-bac45b9f2876.png",
+        "promptText": "One continuous photoreal live-action office music shot. Preserve this EXACT woman, face, tied-back brown hair, navy blouse, black headset, desk, monitor and musical keyboard. She plays a simple warm two-handed repeating chord progression for the ENTIRE shot, 88 BPM, left hand holding low notes and right hand gently changing simple chords. Each visible pressed key moves slightly downward under the correct fingertip, then returns when released. Hands stay on the keyboard, five normal fingers each. She looks at the keys with quiet concentration, a subtle rhythmic nod and occasional natural blink. No speaking. Camera starts in this exact medium-wide view. For the first 4 seconds it holds the composition with both hands fully visible, then slowly glides a little downward and closer so the keyboard and hands become more prominent by the end, while retaining part of her navy sleeves and torso. Ordinary fluorescent cubicle light, real modest hobby-musician feel, no showmanship. No cuts, no new people, no labels, no instrument warping, no changing key layout, no frozen hands."
+      },
+      "result": {
+        "kind": "task_pending",
+        "taskId": "594d6dc9-7c15-4e6d-930b-2d62ae1c2f39",
+        "meta": {
+          "modelId": "kling-o3-pro",
+          "modelLabel": "Kling O3 Pro",
+          "durationSeconds": 10
+        },
+        "creditsRemaining": 19031
+      },
+      "chargedCredits": 170,
+      "latestStatus": {
+        "kind": "video",
+        "taskId": "594d6dc9-7c15-4e6d-930b-2d62ae1c2f39",
+        "meta": {
+          "modelId": "kling-o3-pro",
+          "modelLabel": "Kling O3 Pro",
+          "width": 1916,
+          "height": 1080,
+          "durationSeconds": 10.041,
+          "hasAudio": false
+        }
+      },
+      "usedInDeliveredEdit": true
+    },
+    {
+      "shot": "drum-detail",
+      "request": {
+        "model": "kling-o3-pro",
+        "generateAudio": false,
+        "ratio": "16:9",
+        "resolution": "720p",
+        "referenceImages": [
+          {
+            "url": "https://d2jqrm6oza8nb6.cloudfront.net/datasets/11740705-e745-48e2-9a28-7e8884af45fc.png",
+            "tag": "drummer"
+          }
+        ],
+        "promptText": "A NEW tight live-action insert shot from the same office scene in the reference. Frame ONLY the seated bald man's light-blue shirt torso, his two hands holding exactly two wooden drumsticks and the SAME compact black tabletop electronic drum pad with its fixed arrangement of round black rubber pads on the beige desk. The man is now seated in the existing black office chair. The computer monitor is a soft edge at right. No face needed. The two sticks play a simple steady relaxed 88 BPM rhythm continuously: right stick lightly tapping one upper pad on beats, left stick alternating a lower pad for a backbeat. Each stick makes visible contact and rebounds naturally, wrists small and precise. Both sticks remain solid and keep the same length; normal human hands, no extra fingers. Close low three-quarter angle from the aisle side, physically believable camera at desk height, camera nearly locked with tiny natural drift. Mundane office employee playing drums with complete seriousness. Real fluorescent lighting. One continuous shot, no cuts, no captions, no new objects, no reshaping of the pad, no people moving through the background."
+      },
+      "result": {
+        "kind": "task_pending",
+        "taskId": "37eee51a-6c6d-4c64-a9c2-1e2d5f6fb292",
+        "meta": {
+          "modelId": "kling-o3-pro",
+          "modelLabel": "Kling O3 Pro",
+          "resolution": "1920x1080",
+          "durationSeconds": 10
+        },
+        "creditsRemaining": 18861
+      },
+      "chargedCredits": 170,
+      "latestStatus": {
+        "kind": "video",
+        "taskId": "37eee51a-6c6d-4c64-a9c2-1e2d5f6fb292",
+        "status": "SUCCEEDED",
+        "durationSeconds": 10.041,
+        "hasAudio": false
+      },
+      "usedInDeliveredEdit": false
+    },
+    {
+      "shot": "guitar-detail",
+      "request": {
+        "model": "kling-o3-pro",
+        "generateAudio": false,
+        "ratio": "16:9",
+        "resolution": "720p",
+        "referenceImages": [
+          {
+            "url": "https://d2jqrm6oza8nb6.cloudfront.net/datasets/f8ac64c6-bf8f-426b-af48-9afe4fe1aec0.png",
+            "tag": "guitarist"
+          }
+        ],
+        "promptText": "A NEW photoreal live-action detail shot from the SAME guitarist and blue electric guitar in the reference. Tighter three-quarter camera view of the exact blue six-string guitar body and fretboard, both hands and the pale blue shirt cuffs; face mostly above the upper frame edge. The man is seated at his beige office cubicle desk, the same black strap across his pale blue shirt. Right hand holds a tiny pick and plays a simple repeating 88 BPM riff with modest clear alternating pick strokes near the bridge. Left fingertips change naturally between two close positions on the fretboard, pressing real strings to real frets. Both hands continuously performing, no freezing. Same six-string guitar geometry and blue paint, correct string attachment and normal fingers. Ordinary office background and fluorescent light, subtle realistic texture, no concert glamour. Camera holds steady with a barely perceptible slow move along the guitar, keeping both hands visible. One continuous take, no cuts, no speech, no titles, no extra people, no multiplying fingers, no instrument changing shape."
+      },
+      "result": {
+        "kind": "task_pending",
+        "taskId": "7b514682-1208-4d7e-86a5-5c0248237b88",
+        "meta": {
+          "modelId": "kling-o3-pro",
+          "modelLabel": "Kling O3 Pro",
+          "resolution": "1920x1080",
+          "durationSeconds": 10
+        },
+        "creditsRemaining": 18691
+      },
+      "chargedCredits": 170,
+      "latestStatus": {
+        "kind": "video",
+        "taskId": "7b514682-1208-4d7e-86a5-5c0248237b88",
+        "meta": {
+          "modelId": "kling-o3-pro",
+          "modelLabel": "Kling O3 Pro",
+          "width": 1920,
+          "height": 1080,
+          "durationSeconds": 10.041,
+          "hasAudio": false,
+          "resolution": "1920x1080"
+        }
+      },
+      "usedInDeliveredEdit": true
+    }
+  ],
+  "drumDetailEdit": "Delivered edit uses tight moving crops of the continuous drummer-arrival take for exact player, pad and room continuity. The extra generated detail take completed and is retained as an alternate."
+}
