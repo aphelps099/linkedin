@@ -1,0 +1,21 @@
+{
+  "durationSeconds": 60.0,
+  "video": {
+    "codec": "h264",
+    "width": 1280,
+    "height": 720,
+    "fps": "24/1",
+    "frames": "1440"
+  },
+  "audio": {
+    "codec": "aac",
+    "channels": 2,
+    "sampleRate": 48000,
+    "sampleCount": 2880512,
+    "rms": 0.12824302911758423,
+    "peakSample": 0.8567119836807251
+  },
+  "fullDecodeErrors": "",
+  "fileSizeBytes": 14878260,
+  "sha256": "7a0dce446f745e89ea52f910eeacd24bc65163f886618685310a44b9f4753fa6"
+}

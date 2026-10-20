@@ -1,0 +1,9 @@
+{
+  "framesChecked": 40,
+  "framesWithForegroundHoldout": 21,
+  "maximumPixelDifferenceAtFullyProtectedForeground": 0,
+  "screenTracking": "similarity transform on rigid bezel, no fallback frames",
+  "faceMouthHeightInCanonicalPixels": 6,
+  "faceMouthMotion": "left-to-right brightness only",
+  "faceDisplay": "tracked black glass interior, separate from metal body"
+}

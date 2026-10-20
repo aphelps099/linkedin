@@ -1,0 +1,60 @@
+{
+  "revision": 5,
+  "priorProjectCredits": 1870,
+  "newTasks": [
+    {
+      "name": "printer",
+      "taskId": "e2fbe30d-19eb-4353-bd43-96410f979217",
+      "model": "kling-o3-pro",
+      "durationSeconds": 10,
+      "generatedAudio": false,
+      "requestedDeliveryResolution": "720p",
+      "cost": 170,
+      "prompt": "Locked-off photorealistic office close-up, identical printer and room to the reference. The beige laser printer PRINTS OUT completed individual white pages bearing the same large blue LinkedIn 'in' logo. Every sheet moves ONLY OUTWARD from the front output slot toward the camera, AWAY from the printer, settling completely flat onto the supported stack on the wooden tabletop. The rear edge of each sheet fully clears the output rollers before the next page starts. About one complete page per second, a continuing stream of distinct sheets. The output pile grows slowly by one sheet at a time. Show the blue logo travel from the slot toward the viewer as each new page is ejected. The already printed stack on the left stays still. Printer housing, coffee machine and microwave remain absolutely rigid; only output paper and a small status light move. Restrained ordinary fluorescent office light, stable exposure, natural paper weight and contact. No human hands, no levitation, no reverse feeding, no paper pulled inward, no paper vanishing, no dissolving or rippling logo. No titles or camera cut."
+    },
+    {
+      "name": "synthia",
+      "taskId": "96cebcb6-9c78-4a6f-a11e-39b932fed86c",
+      "model": "kling-o3-pro",
+      "durationSeconds": 10,
+      "generatedAudio": false,
+      "requestedDeliveryResolution": "720p",
+      "cost": 170,
+      "prompt": "One continuous locked-camera photoreal office shot, exact Synthia from reference. Preserve the precise rigid worn ivory metal head, chrome joints, headset, ivory scarf, name badge reading SYNTHIA and coffee cup. Very subtle living motion: her torso settles as if listening, cup shifts one centimeter in her fingers and remains solid, and she makes one tiny approving nod. Head stays almost frontal in the existing three-quarter view and never turns to expose a different face. Her display remains COMPLETELY flat pure black edge to edge, with the exact two small square green pixel eyes. Eyes blink once. Her mouth is ONLY a single thin constant-height horizontal LED row low on the black screen: light travels sideways LEFT TO RIGHT along the row. Absolutely no changing mouth height, no stacked LED rows, no vertical equalizer, no opening mouth. The face is electronic glass, not anatomy: black display stays rigid, uniformly black, no cream/beige patches or reflections, no metal intrusion, no waviness. No extras or text overlays. Identical room, shallow focus, neutral office fluorescent lighting, natural restrained motion and fixed exposure. Keep exact badge and all physical proportions."
+    },
+    {
+      "name": "laptop",
+      "taskId": "56ecf7bc-fcc0-45c1-a610-cee48046f1d0",
+      "model": "kling-o3-pro",
+      "durationSeconds": 10,
+      "generatedAudio": false,
+      "requestedDeliveryResolution": "720p",
+      "cost": 170,
+      "prompt": "Locked-off close over-the-shoulder office film insert, preserve reference exactly. Same Synergy ivory metal robot, same silver laptop, same charcoal blank display. His articulated fingers make small realistic typing presses on the physical laptop keys across the bottom of the frame; knuckles stay LOW, wholly below the lower display bezel. No hand EVER touches, covers or passes over the display rectangle. Small shoulder breathing-like servo adjustment at far left. Display remains absolutely blank uniform charcoal gray, rigid, flat and motionless; no generated UI, no reflection, no text, no lighting change. Laptop bezel, hinge and screen corners stay fixed in position throughout. Foreground head remains out of focus, screen sharp. Ordinary neutral office fluorescent light, real commercial documentary camera. No camera move, zoom or cut. No additional objects. Clear empty hinge strip separates keyboard hands from screen. Finger movement only on keys, not waving."
+    },
+    {
+      "name": "celebration_wide",
+      "taskId": "031f683f-9f39-44b8-9ce7-6df6e6c45d88",
+      "model": "kling-o3-pro",
+      "durationSeconds": 10,
+      "generatedAudio": false,
+      "requestedDeliveryResolution": "720p",
+      "cost": 170,
+      "prompt": "Continuous photorealistic ordinary office scene, preserve exact identities and wardrobe from the frame. A colleague in left foreground is filming the corporate recognition ceremony with his bulky VHS camcorder. He makes tiny real hand grip adjustments and shifts his stance slightly, camera remains firmly against eye and shoulder. The four human coworkers applaud Synergy with restrained, uncomfortably sincere corporate pride: repeated natural complete clap cycles, hands separate, palms contact, hands separate. Four people clap at slightly different rhythms, subtle nods, natural blinks and tiny shifts of weight. No cheering mouths, no waving or sudden movements. Guitar hangs intact at man's hip as he claps; no strumming during applause. Synergy stays dignified and almost unimpressed, small restrained nod to acknowledge applause, hands settle lower near waist. Keep robot height, body and badge SYNERGY unchanged. His black face stays perfectly rigid and black with two small green pixel eyes, occasional blink, mouth a single fixed thin horizontal row low in screen, no talking or vertical bars. Banner logo stays fixed. Our camera makes a tiny natural documentary sway, not a pan or zoom. Fluorescent office lighting, no plants, no titles, no cut, no added objects, no confetti. Feels like a coworker awkwardly documenting a modest office achievement."
+    },
+    {
+      "name": "applause_close",
+      "taskId": "393f1428-a00d-4dad-8631-d78155ac116e",
+      "model": "kling-o3-pro",
+      "durationSeconds": 10,
+      "generatedAudio": false,
+      "requestedDeliveryResolution": "720p",
+      "cost": 170,
+      "prompt": "Natural continuous office applause close-up. Preserve all three exact established characters, clothing, headset, guitar and robot proportions from reference. The Black woman in beige and Kevin in light blue are applauding Synergy with small repeated sincere claps at chest height. Fingers stay attached, palms meet and then fully separate several times at subtly different rhythms; natural slight shoulder movement and breathing. They blink and glance from Synergy toward each other with a very slight proud closed-mouth smile, no speech. Kevin's blue guitar stays on its shoulder strap at his hip and is not played during the applause. Synergy keeps his hands loosely clasped at waist, looks calmly ahead, makes ONE small acknowledging head dip, two green square eyes blink once. His face screen remains uniformly deep BLACK with rigid metal border, no cream patches or reflections. Mouth is only a tiny constant-height green horizontal line LOW on screen. No vertical expansion or animated opening mouth. Same exact worn ivory plating, headset, physical badge spelling SYNERGY. Tiny authentic handheld camera drift, natural office fluorescent light, no camera cuts or dramatic moves. No text overlays, no cheering, no confetti, no plants. The joke is how terribly seriously everyone takes this completely ordinary corporate moment."
+    }
+  ],
+  "newCredits": 850,
+  "cumulativeCredits": 2720,
+  "authorizedMaximumCredits": 10000,
+  "accountBalanceAfterSubmissions": 17501
+}

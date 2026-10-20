@@ -1,16 +1,34 @@
 {
+  "operation": "replace_library_file",
+  "status": "succeeded",
+  "path": "/LinkedIn-Beats-Welcome-to-the-Office-720p.mp4",
+  "file_id": "file_000000001ec08243a325a747976fa496",
   "library_file_id": "libfile_e55a7a3413488191b7821b70cb1f94b3",
-  "file_id": "file_00000000a9788230b2049155f46e6c16",
   "file_name": "LinkedIn-Beats-Welcome-to-the-Office-720p.mp4",
-  "version": 3,
-  "duration": 60,
+  "current_version_number": 4,
+  "restored_from_version_number": null,
+  "xattrs": [
+    {
+      "name": "user.library-file-version",
+      "value": "4"
+    }
+  ],
+  "directory_id": "libdir_59bfb088ba3481918fd535c6c3365440",
+  "mime_type": "video/mp4",
+  "library_artifact_type": "other",
+  "file_size_bytes": 14878260,
+  "external_connectors_accessed": false,
+  "revision": "V5",
+  "durationSeconds": 60,
   "width": 1280,
   "height": 720,
-  "audio": "AAC stereo 48 kHz; V4 music and voice mix",
-  "revisionCredits": 170,
-  "totalProjectCredits": 1870,
-  "authorizedMaximumCredits": 10000,
-  "sha256": "e886cd751f47ecce120ae72dacc97ce927ded3a355ea4dab73eaa58c1667c57f",
-  "fileSizeBytes": 14269445,
-  "revision": "V4 clean clips, musical pacing and human LinkedIn reactions"
+  "fps": 24,
+  "hasAudio": true,
+  "audioChannels": 2,
+  "sha256": "7a0dce446f745e89ea52f910eeacd24bc65163f886618685310a44b9f4753fa6",
+  "fileSizeBytes": 14878260,
+  "sourceMasterVersion": "V4",
+  "sourceMasterSha256": "e886cd751f47ecce120ae72dacc97ce927ded3a355ea4dab73eaa58c1667c57f",
+  "totalProjectCredits": 2720,
+  "authorizedMaximumCredits": 10000
 }

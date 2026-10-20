@@ -1,0 +1,14 @@
+{
+  "sourceTake": "e2fbe30d-19eb-4353-bd43-96410f979217",
+  "verifiedIntervalSeconds": [
+    3.9,
+    4.4
+  ],
+  "trackedLogoFeatures": 2,
+  "medianLogoTravelPixelsXY": [
+    -30.33966064453125,
+    8.1309814453125
+  ],
+  "direction": "positive image Y is outward from front output slot toward viewer",
+  "visualReview": "Selected take ejects logo pages onto supported tabletop; no reversed footage."
+}

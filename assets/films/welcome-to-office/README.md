@@ -2,7 +2,49 @@
 
 A 60-second LinkedIn Beats brand opening, 1280 × 720, 24 fps, stereo audio.
 
-## Current revision: clean clips, musical pace and the LinkedIn feedback loop
+## Current revision: corrected physical action and corporate applause
+
+V5 replaces the reversed printer take with new footage of logo sheets being
+ejected outward onto the table. The printer now gets a full bar (38.18–40.91s),
+so the paper visibly clears the slot. The post and all three supportive comments
+remain readable before that cut.
+
+Both laptop inserts use a new closer angle. Graphics are mapped only inside
+the physical display; a foreground holdout retains the real fingers and
+knuckles when they rise near its bottom edge. Tracking uses a constrained
+similarity transform so the interface cannot distort or extend over the bezel.
+The Zoom meeting and ChatGPT conversation retain their exact approved wording.
+
+Synthia's 43.64s shot is recreated from her established ivory/chrome design,
+headset, scarf, cup and SYNTHIA badge. Her screen is clean black, with a tracked
+pixel face: two square eyes and a fixed-height horizontal LED mouth. Speech
+changes brightness travelling left to right; it never grows vertically. The
+same clean shot also replaces her small Zoom self-view.
+
+A coworker with a bulky VHS camcorder now opens the film. The final sequence
+returns to that office ceremony: a wide shot of the band applauding, a closer
+angle on People & Culture and Kevin, then a punch-in on Synergy's dry reaction.
+The cast blinks, shifts weight and claps naturally. Restrained applause sits
+under the music. No editorial character labels or lower thirds were added.
+
+The cut remains **60 seconds, 1280 × 720, 24 fps, with stereo audio**. All
+instrument performances, blue phrase cards, voice cues, the human LinkedIn
+scene and cart droid remain. Five new source takes used **850 credits**;
+cumulative brand-film spend is **2,720 of the authorized 10,000 credits**.
+
+Run `scripts/render-office-brand-film-v5.py WORKSPACE [--stills]`. Place the V4
+master at `brand-story/v5/source/LinkedIn-Beats-Welcome-to-the-Office-720p.mp4`
+and the five raw videos at `brand-story/v5/raw/`, using the names in
+`v5/credits.json`. Copy the retained tracking arrays to `brand-story/v5/review/`.
+The renderer imports V3's existing interface functions and needs the V1 voices
+at `brand-story/audio/` and V2 voices/phrase timings at `brand-story/v2/audio/`;
+both are retained in this production directory. V5 does not require the other
+historical raw takes because unchanged segments come from the V4 master.
+
+References, prompts, source task IDs, edit decisions and verification are in
+`v5/`. The full export is delivered separately, not added to the website bundle.
+
+## Previous revision: clean clips, musical pace and the LinkedIn feedback loop
 
 V4 removes every editorial character/name lower third. Live action now plays as
 simple story footage, with percussion from the first beat, stronger bass and
