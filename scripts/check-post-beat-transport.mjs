@@ -45,3 +45,17 @@ assert(band.every(e=>e[3]>=0&&e[3]<10),'no instrument is scheduled outside the c
 const voices=offline.events.filter(e=>e[0]==='voice');
 assert.equal(voices[0][1],buffers[0]);assert(voices.every(e=>e[2].when>=0&&e[2].when<10));player.dispose();
 console.log('Post-beat transport passed: voice timing, chorus offset, ten-second offline arrangement, retained mobile context, pause/resume, restart and cleanup.');
+
+// Mixer settings survive links and actually change the scheduled export.
+const {encodeRecipe,decodeRecipe}=await import('../src/post-beat/composition.js');
+const custom={...recipe,mix:{room:'boardroom',groove:'drums',sounds:['printer','typing','notification']}};
+assert.deepEqual(decodeRecipe(encodeRecipe(custom)),custom);
+player.schedule(custom,buffers,{offset:0,duration:10});
+const customEngine=engines.at(-1);
+for(const sound of ['office-printer','office-key','office-chime'])assert(customEngine.events.some(e=>e[1]===sound),sound+' is audible in exports');
+const before=customEngine.events.length;
+player.setMix({room:'call',groove:'keys',sounds:[]});
+assert.equal(customEngine.events.length,before,'changing settings does not restart voices');
+assert.deepEqual(decodeRecipe(encodeRecipe({...recipe,mix:{room:'invalid',groove:'invalid',sounds:['unsafe']}})).mix,{room:'desk',groove:'original',sounds:[]});
+player.dispose();
+console.log('Mix settings passed: recipe persistence, safe defaults, exported office percussion, uninterrupted settings changes.');

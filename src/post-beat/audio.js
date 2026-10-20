@@ -1,3 +1,4 @@
+import {normalizeMix} from './mix.js';
 import {createAudioEngine} from '../audio.js';
 import {bandAt} from '../song.js';
 import {TRACKS,arrangement as homeArrangement,speechBounds,wordTimings} from '../home/tracks.js';
@@ -15,6 +16,8 @@ export function makeTimedCues(recipe,buffers){
 // Reuse the homepage band, voice effects, and original female recordings.
 export function createPostBeat({engineFactory=createAudioEngine,interval=setInterval,clear=clearInterval,fetchImpl=fetch}={}){
   let engine=null,timer=null,origin=0,nextStep=0,nextCue=0,cues=[],buffers=[],playing=false;
+  let mix=normalizeMix();
+  const applyMix=()=>{if(!engine)return;engine.setVoxVerb(mix.room==='boardroom'?.22:mix.room==='call'?.025:.08);engine.setFilter?.(mix.room==='call'?4400:18000);};
   const song={...homeArrangement(TRACKS[0],0),arranged:true};
   const init=()=>{
     if(!engine){engine=engineFactory();engine.unlock();engine.setVolume(.75);engine.setVoxDelay(60/BPM*.75);engine.setVoxVerb(.08);}
@@ -30,13 +33,16 @@ export function createPostBeat({engineFactory=createAudioEngine,interval=setInte
     while(nextStep*stepSec<Math.min(DURATION,time+lookahead)){
       const s=nextStep%16,bar=Math.floor(nextStep/16),when=origin+nextStep*stepSec;
       const fade=Math.min(1,(DURATION-nextStep*stepSec)/.6);
-      if(s%4===0)engine.trigger('kick',.62*fade,when);
-      if(s===4||s===12)engine.trigger('snare',.43*fade,when);
+      if(mix.groove==='drums'?[0,3,8,10].includes(s):s%4===0)engine.trigger('kick',(mix.groove==='keys'?.38:.62)*fade,when);
+      if(s===4||s===12)engine.trigger('snare',(mix.groove==='keys'?.23:.43)*fade,when);
       if(s%2===0)engine.trigger('ch',(s%4===2?.22:.14)*fade,when);
       if(s===14&&bar%4===3)engine.trigger('oh',.16*fade,when);
       // A deterministic motif: retain the homepage bass, keys and arp without
       // its random blips, so opening a saved recipe preserves the arrangement.
-      for(const e of bandAt(song,nextStep,0))engine.trigger(e.v,e.vel*.43*fade,when,e);
+      for(const e of bandAt(song,nextStep,0)){if(mix.groove==='drums'&&!['bass','sub'].includes(e.v)&&s%4!==0)continue;engine.trigger(e.v,e.vel*(mix.groove==='keys'?.56:.43)*fade,when,e);}
+      if(mix.sounds.includes('typing')&&[2,7,10].includes(s))engine.trigger('office-key',.23*fade,when);
+      if(mix.sounds.includes('printer')&&s===0&&bar%2===0)engine.trigger('office-printer',.2*fade,when);
+      if(mix.sounds.includes('notification')&&s===14&&bar%4===3)engine.trigger('office-chime',.22*fade,when);
       nextStep++;
     }
     while(nextCue<cues.length&&cues[nextCue].start<time+lookahead){
@@ -73,16 +79,17 @@ export function createPostBeat({engineFactory=createAudioEngine,interval=setInte
     play(recipe,decoded,{offset=0,reuseGraph=false}={}){
       // Recreate the graph for a clean restart; decoded buffers survive it.
       clearTick();if(!reuseGraph){engine?.dispose();engine=null;}init();
-      buffers=decoded;cues=makeTimedCues(recipe,buffers);origin=engine.now()+.08-Math.max(0,Math.min(DURATION,offset));nextStep=0;nextCue=0;playing=true;
+      mix=normalizeMix(recipe.mix);applyMix();buffers=decoded;cues=makeTimedCues(recipe,buffers);origin=engine.now()+.08-Math.max(0,Math.min(DURATION,offset));nextStep=0;nextCue=0;playing=true;
       timer=interval(tick,25);tick();return {cues,duration:DURATION};
     },
     // Schedule the identical arrangement in an OfflineAudioContext. A fixed
     // sample timeline prevents slow rendering from stretching the exported song.
     schedule(recipe,decoded,{offset=5,duration=10}={}){
-      clearTick();init();buffers=decoded;cues=makeTimedCues(recipe,buffers);
+      clearTick();init();mix=normalizeMix(recipe.mix);applyMix();buffers=decoded;cues=makeTimedCues(recipe,buffers);
       origin=engine.now()-offset;nextStep=0;nextCue=0;playing=true;
       tick(duration);playing=false;
     },
+    setMix(value){mix=normalizeMix(value);applyMix();},
     pause(){playing=false;clearTick();engine?.suspend();},
     resume(){engine?.unlock();playing=true;timer=interval(tick,25);tick();},
     elapsed,

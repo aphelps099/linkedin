@@ -146,7 +146,16 @@ export function createAudioEngine({context}={}) {
     const t = when===undefined ? ctx.currentTime+.001 : when;
     const out = ctx.createGain(); out.gain.value = .8*vel; out.connect(channels[['bass','sub'].includes(v)?'bass':['kick','snare','clap','ch','oh','shk','cow','zap'].includes(v)?'drums':'music']);
     const T = x => x.stop(t+4);
-    if(v==='kick'){
+    if(v==='office-key'){
+      const nz=noise(t,.025),bp=filt('bandpass',2300,2),g=env(t,.45,.018);
+      nz.connect(bp);bp.connect(g);g.connect(out);
+    } else if(v==='office-printer'){
+      const o=osc('sawtooth',105,t),bp=filt('bandpass',650,1.5),g=env(t,.22,.65,.02);
+      o.frequency.linearRampToValueAtTime(175,t+.4);o.connect(bp);bp.connect(g);g.connect(out);o.stop(t+.8);
+      [0,.16,.32].forEach(off=>{const nz=noise(t+off,.08),ng=env(t+off,.12,.06),hp=filt('highpass',1600);nz.connect(hp);hp.connect(ng);ng.connect(out);});
+    } else if(v==='office-chime'){
+      [660,880].forEach((hz,i)=>{const o=osc('sine',hz,t+i*.12),g=env(t+i*.12,.4,.24,.004);o.connect(g);g.connect(out);o.stop(t+i*.12+.4);});
+    } else if(v==='kick'){
       const o = osc('sine',150,t); o.frequency.exponentialRampToValueAtTime(46,t+.07);
       const g = env(t,1,.36,.002); o.connect(g); g.connect(out); T(o);
       const nz = noise(t,.03), hp = filt('highpass',1200), ng = env(t,.25,.025);

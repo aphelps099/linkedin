@@ -1,3 +1,4 @@
+import {normalizeMix} from './mix.js';
 import {LINES} from '../home/tracks.js';
 // A post supplies the words; the arrangement supplies the repetition.
 export const BPM=96;
@@ -54,6 +55,6 @@ export function decodeRecipe(hash){
     const r=JSON.parse(decodeURIComponent(escape(atob(raw.replace(/-/g,'+').replace(/_/g,'/')))));
     if(![1,2].includes(r.version)||r.bpm!==BPM||typeof r.chorus!=='string'||!r.chorus.trim()||r.chorus.length>120||!Array.isArray(r.keywords)||r.keywords.length<1||r.keywords.length>4||r.keywords.some(k=>typeof k!=='string'||!k.trim()||k.length>60))return null;
     if(r.version===2&&(!Number.isInteger(r.opening)||!Number.isInteger(r.answer)||!LINES[r.opening]||!LINES[r.answer]))return null;
-    return {version:r.version,bpm:BPM,chorus:r.chorus,keywords:r.keywords,...(r.version===2?{opening:r.opening,answer:r.answer}:{})};
+    return {version:r.version,bpm:BPM,chorus:r.chorus,keywords:r.keywords,...(r.mix?{mix:normalizeMix(r.mix)}:{}),...(r.version===2?{opening:r.opening,answer:r.answer}:{})};
   }catch{return null;}
 }
