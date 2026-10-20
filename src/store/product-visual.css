@@ -22,3 +22,9 @@
 .merch-poster-museum strong { font-size: 12.4cqw; line-height: .98; }
 
 .merch-photo-preview{object-fit:contain;background:#f5f1e7}
+.merch-sticker-kit{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3%;width:100%;height:100%;padding:8%;background:#f5f1e7}
+.merch-sticker-kit>img{width:100%;height:100%;min-height:0;object-fit:contain}
+.merch-photo-swap{display:block;position:relative;width:100%;height:100%}
+.merch-photo-swap-default,.merch-photo-swap-model{display:block;position:absolute;inset:0;transition:opacity .22s ease}
+.merch-photo-swap-default{opacity:1}
+.merch-photo-swap-model{opacity:0;pointer-events:none;background:#f5f1e7}

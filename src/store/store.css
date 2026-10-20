@@ -61,6 +61,12 @@
 .shop-product-image{display:block;border:0;padding:0;aspect-ratio:1;width:100%;position:relative;overflow:hidden;background:#f5f1e7}
 .shop-product-image .merch-photo{transition:transform .4s;object-fit:contain}
 .shop-product-image:hover .merch-photo,.shop-product-image:focus-visible .merch-photo{transform:scale(1.035)}
+.shop-product-image:focus-visible .merch-photo-swap-default{opacity:0}
+.shop-product-image:focus-visible .merch-photo-swap-model{opacity:1}
+@media(hover:hover) and (pointer:fine){
+  .shop-product-image:hover .merch-photo-swap-default{opacity:0}
+  .shop-product-image:hover .merch-photo-swap-model{opacity:1}
+}
 .shop-product-tag{position:absolute;top:12px;left:12px;padding:5px 9px;background:#fbf6e8e8;font-size:12px;color:#565e51;line-height:1.4}
 .shop-product-open{position:absolute;inset:auto 12px 12px;display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#fbf6e8ee;font-size:14px;transform:translateY(6px);opacity:0;transition:opacity .18s,transform .18s}
 .shop-product-image:hover .shop-product-open,.shop-product-image:focus-visible .shop-product-open{opacity:1;transform:none}
@@ -86,6 +92,14 @@
 .shop-dialog-product>.shop-close{position:absolute;right:12px;top:12px}.shop-close:hover{background:#e8e8df}
 .shop-detail-image{aspect-ratio:1;align-self:start;position:relative;min-width:0;background:#f5f1e7}
 .shop-detail-image .merch-photo{object-fit:contain}
+.shop-detail-gallery{align-self:start;min-width:0;background:#f5f1e7}
+.shop-detail-gallery .shop-detail-image{width:100%;overflow:hidden}
+.shop-detail-gallery .shop-detail-image.is-on-model{aspect-ratio:4/5;max-height:calc(100dvh - 180px)}
+.shop-gallery-thumbnails{display:flex;gap:8px;overflow-x:auto;padding:14px 14px 0}
+.shop-app .shop-gallery-thumbnails button{padding:0;border:1px solid #b6b9af;background:var(--shop-paper);width:68px;aspect-ratio:1;flex-shrink:0;overflow:hidden}
+.shop-app .shop-gallery-thumbnails button.is-selected{border:2px solid var(--shop-blue)}
+.shop-gallery-thumbnails .merch-photo{object-fit:contain}
+.shop-app .shop-gallery-caption{font-size:12px;line-height:1.5;color:#65695f;padding:10px 14px 14px}
 .shop-preview-label{position:absolute;bottom:15px;left:15px;padding:7px 10px;background:var(--shop-paper);font:12px var(--shop-text)}
 .shop-detail-info{padding:50px 36px 30px;min-width:0}
 .shop-detail-info h2{font:600 clamp(28px,3vw,38px)/1.12 C2Hoves,Arial,sans-serif;letter-spacing:-.035em;margin:14px 0 18px}
@@ -128,6 +142,7 @@
   .shop-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 14px}.shop-card-caption{padding-top:12px}.shop-card-caption h3{font-size:15px}.shop-card-caption .shop-card-price{font-size:13px}
   .shop-product-tag{left:8px;top:8px;padding:4px 7px;font-size:11px}.shop-collection .shop-collection-note{font-size:13px;margin-top:24px}
   .shop-dialog{max-width:100vw;max-height:100dvh}.shop-dialog-product[open]{width:100%;height:100dvh;grid-template-columns:1fr;margin:0}.shop-dialog-product>.shop-close{position:fixed;right:12px;top:12px}.shop-detail-image{max-height:52dvh;width:100%;aspect-ratio:1}.shop-detail-info{padding:26px 24px 35px}.shop-detail-info h2{font-size:32px}.shop-detail-info .shop-add-row{flex-wrap:nowrap}
+  .shop-detail-gallery .shop-detail-image.is-on-model{max-height:52dvh}
   .shop-dialog-bag{padding:24px 20px}.shop-cart-image{width:80px}.shop-cart-row{gap:14px}.shop-cart-info h3{font-size:15px}.shop-cart-info>p{font-size:11px}.shop-cart-info>div{gap:8px}.shop-bag-head h2{font-size:34px}
 }
 @media(max-width:520px){
@@ -140,7 +155,7 @@
   .shop-grid{gap:24px 12px}.shop-card-caption h3{font-size:14px}.shop-filters{gap:18px}.shop-detail-info .shop-add-row{flex-wrap:wrap}.shop-cart-info>div{flex-wrap:wrap}.shop-cart-image{width:65px}
 }
 @media(hover:none){.shop-product-open{display:none}}
-@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.shop-app *{transition:none!important;animation:none!important}.shop-product-image:hover .merch-photo{transform:none}.shop-app .shop-hero-motion{display:none}.shop-hero-photo{will-change:auto}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.shop-app *{transition:none!important;animation:none!important}.shop-product-image:hover .merch-photo,.shop-product-image:focus-visible .merch-photo{transform:none}.shop-app .shop-hero-motion{display:none}.shop-hero-photo{will-change:auto}}
 
 /* Mobile retail layout: campaign, collection masthead, continuous two-column grid. */
 @media(max-width:760px){

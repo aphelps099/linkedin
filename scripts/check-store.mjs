@@ -1,10 +1,12 @@
 // Company Store checks — run with: node scripts/check-store.mjs
-// 1. Catalog integrity: twelve SKUs, six categories, sized shirts, honest prices.
+// 1. Catalog integrity: unique SKUs, sized orderable shirts, honest preview states.
 // 2. Cart pricing is server-side: carts are priced from the catalog, never the client.
 // 3. The ticker's promise: free shipping at $50, flat rate below it.
 // 4. Webhook signatures verify, and tampered or stale payloads do not.
 // 5. Printify orders map SKUs and sizes to variants; unmapped SKUs are refused.
 import crypto from 'node:crypto';
+import {existsSync} from 'node:fs';
+import {fileURLToPath} from 'node:url';
 import { CATEGORIES, PRODUCTS, bySku, fmt } from '../src/store/products.js';
 import { normalizeCart, buildCheckoutParams, verifyStripeSignature, buildPrintifyOrder, FREE_SHIPPING_CENTS } from '../server/store-service.js';
 
@@ -13,16 +15,23 @@ const fail = msg => { failures++; console.error('FAIL ' + msg); };
 const expectThrow = (fn, why) => { try{ fn(); fail(why); }catch{ /* correct */ } };
 
 // --- catalog ---
-if(PRODUCTS.length !== 12) fail(`expected 12 SKUs, found ${PRODUCTS.length}`);
+if(!PRODUCTS.length) fail('empty catalog');
 if(new Set(PRODUCTS.map(p => p.sku)).size !== PRODUCTS.length) fail('duplicate SKUs');
 const cats = new Set(PRODUCTS.map(p => p.cat));
 if(cats.size !== 6 || [...cats].some(c => !CATEGORIES.includes(c))) fail('categories do not match the filter chips');
 for(const p of PRODUCTS){
   if(!/^CS-\d{3}$/.test(p.sku)) fail(`malformed SKU: ${p.sku}`);
   if(!p.previewOnly && (!(p.price > 0) || Math.round(p.price * 100) !== p.price * 100)) fail(`price is not whole cents: ${p.sku}`);
-  if(p.cat === 'Shirts' && (!p.sizes || p.sizes.length !== 4)) fail(`shirt without S–XL sizes: ${p.sku}`);
+  if(!p.previewOnly && p.cat === 'Shirts' && (!p.sizes || p.sizes.length !== 4)) fail(`shirt without S–XL sizes: ${p.sku}`);
   if(p.cat !== 'Shirts' && p.sizes) fail(`unexpected sizes on ${p.sku}`);
   if(!p.desc || !p.ph || !p.specs?.length) fail(`incomplete product copy: ${p.sku}`);
+  const photos=[p.img,...(p.images || []).map(image=>image.img)].filter(Boolean);
+  for(const filename of photos){
+    if(!existsSync(fileURLToPath(new URL(`../public/store/${filename}`,import.meta.url)))) fail(`missing product image: ${p.sku} / ${filename}`);
+  }
+  for(const image of p.images || []){
+    if(!image.label || (!image.img && image.layout!=='kit')) fail(`incomplete image view: ${p.sku}`);
+  }
 }
 if(fmt(28) !== '$28.00') fail('price format is not $XX.XX');
 

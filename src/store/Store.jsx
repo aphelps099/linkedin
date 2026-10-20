@@ -1,7 +1,8 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {ArrowRight, X, Minus, Plus, ShoppingBag} from 'lucide-react';
 import {PRODUCTS, bySku, fmt} from './products.js';
-import {ProductVisual, isDesignPreview} from './ProductVisual.jsx';
+import {ProductVisual} from './ProductVisual.jsx';
+import {ProductGallery} from './ProductGallery.jsx';
 import {ConceptHeader} from '../home-2/ConceptHeader.jsx';
 import {ConceptFooter} from '../home-2/ConceptFooter.jsx';
 import {FirstInLine} from './FirstInLine.jsx';
@@ -138,10 +139,10 @@ export default function Store(){
         <button className="shop-mobile-filter-toggle" aria-expanded={filtersOpen} aria-controls="shop-filter-options" onClick={()=>setFiltersOpen(open=>!open)}><span>Filter & sort</span><span aria-hidden="true">{filtersOpen?'−':'+'}</span></button>
         <div id="shop-filter-options" className={`shop-filter-row${filtersOpen?' is-open':''}`}><div className="shop-filters" role="group" aria-label="Filter products">{Object.keys(DEPARTMENTS).map(c=><button key={c} className={c===filter?'is-selected':''} aria-pressed={c===filter} onClick={()=>setFilter(c)}>{c==='All'?'Shop all':c}</button>)}</div><div className="shop-sort"><span className="shop-count" role="status">{items.length} products</span><label htmlFor="shop-sort">Sort by</label><select id="shop-sort" value={sort} onChange={e=>setSort(e.target.value)}><option value="featured">Featured</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="name">Name: A–Z</option></select></div></div>
         <div className="shop-grid">{items.map(p=><article className="shop-product" key={p.sku}>
-          <button className={`shop-product-image shop-image-${p.sku}`} onClick={()=>openDetail(p)} aria-label={`View ${p.name}, ${p.previewOnly?'design preview':fmt(p.price)}`}><ProductVisual product={p}/>{p.previewOnly&&<span className="shop-product-tag">Preview</span>}<span className="shop-product-open">View details <Plus size={17} aria-hidden="true"/></span></button>
+          <button className={`shop-product-image shop-image-${p.sku}`} onClick={()=>openDetail(p)} aria-label={`View ${p.name}, ${p.previewOnly?'design preview':fmt(p.price)}`}><ProductVisual product={p} hoverModel/>{p.previewOnly&&<span className="shop-product-tag">Preview</span>}<span className="shop-product-open">View details <Plus size={17} aria-hidden="true"/></span></button>
           <div className="shop-card-caption"><h3><button onClick={()=>openDetail(p)}>{p.name}</button></h3><p className={`shop-card-price ${p.previewOnly?'is-preview':''}`}>{p.previewOnly?'Coming soon':fmt(p.price)}</p></div>
         </article>)}</div>
-        <p className="shop-collection-note">The crewneck, Circle Back cap and email mug are design previews. Pricing and availability to come.</p>
+        <p className="shop-collection-note">Items marked Coming soon are design previews. Pricing and availability to come.</p>
       </section>
     </main>
     <StoreMarquee/>
@@ -149,7 +150,7 @@ export default function Store(){
     <FirstInLine hidden={Boolean(d)||drawer}/>
     {d&&<Modal kind="product" label="product-title" onClose={closeDetail}>
       <button className="shop-close" onClick={closeDetail} aria-label="Close product detail"><X size={23}/></button>
-      <div className="shop-detail-image"><ProductVisual product={d} eager/>{isDesignPreview(d)&&<span className="shop-preview-label">DESIGN PREVIEW</span>}</div>
+      <ProductGallery key={d.sku} product={d}/>
       <div className="shop-detail-info"><span className="shop-label">{d.cat}</span><h2 id="product-title">{d.name}</h2><div className="shop-detail-price">{d.previewOnly?'DESIGN PREVIEW':<>{fmt(d.price)} <span>USD</span></>}</div><p className="shop-description">{d.desc}</p>
         {!d.previewOnly&&(d.sizes?<fieldset className="shop-size-field"><legend>SIZE <span>{size||'SELECT YOUR SIZE'}</span></legend><div className="shop-sizes">{d.sizes.map(s=><button key={s} className={s===size?'is-selected':''} aria-pressed={s===size} onClick={()=>{setSize(s);setQty(1);}}>{s}</button>)}</div></fieldset>:<p className="shop-one-size">{d.cat==='Hats'?'ONE SIZE / ADJUSTABLE':'ONE SIZE'}</p>)}
         {!d.previewOnly&&<div className="shop-add-row"><Quantity value={qty} max={remaining} onChange={setQty}/><button className="shop-primary" onClick={addToBag} disabled={(d.sizes&&!size)||remaining<qty}>{remaining<qty?'BAG LIMIT REACHED':d.sizes&&!size?'SELECT A SIZE':'ADD TO BAG'}<ArrowRight size={20}/></button></div>}
