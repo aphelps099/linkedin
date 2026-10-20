@@ -23,14 +23,14 @@ export const CHARACTERS = [
 ];
 
 // A homepage transport can own its graph without interrupting the studio.
-export function createAudioEngine() {
+export function createAudioEngine({context}={}) {
   let ctx, master, comp, monitor, noiseBuf, streamDest, analyser, specArr, lp, voxIn, voxDelay,
       voxChar, voxDrive, voxCrush, voxDry, voxRing, voxRingOsc, voxWob, voxFb, voxVerb;
   const channels = {};
   let fx = {weird:0, dist:.12, character:'boardroom'};
   function init(){
     if(ctx) return;
-    ctx = new (window.AudioContext||window.webkitAudioContext)();
+    ctx = context || new (window.AudioContext||window.webkitAudioContext)();
     master = ctx.createGain(); master.gain.value = .85;
     for(const name of ['drums','bass','music','vox','samples']){channels[name]=ctx.createGain();channels[name].gain.value=1;channels[name].connect(master);}
     // performance filter — the build/drop sweeps this
@@ -82,8 +82,8 @@ export function createAudioEngine() {
     voxFb = ctx.createGain(); voxFb.gain.value = .34;
     const wet = ctx.createGain(); wet.gain.value = .3;
     peak.connect(voxDelay); voxDelay.connect(voxFb); voxFb.connect(voxDelay); voxDelay.connect(wet); wet.connect(channels.vox);
-    streamDest = ctx.createMediaStreamDestination();
-    comp.connect(streamDest);
+    streamDest = ctx.createMediaStreamDestination?.();
+    if(streamDest) comp.connect(streamDest);
     analyser = ctx.createAnalyser(); analyser.fftSize = 256; analyser.smoothingTimeConstant = .78;
     comp.connect(analyser);
     specArr = new Uint8Array(analyser.frequencyBinCount);
@@ -91,7 +91,7 @@ export function createAudioEngine() {
     for(let i=0;i<len;i++) d[i] = Math.random()*2-1;
     noiseBuf = b;
   }
-  const rs = ()=> ctx && ctx.state==='suspended' && ctx.resume();
+  const rs = ()=> !context && ctx && ctx.state==='suspended' && ctx.resume();
 
   // Mobile audio unlock. Must be called synchronously from inside a real user
   // gesture handler (tap/click/keydown):
@@ -112,6 +112,7 @@ export function createAudioEngine() {
   }
   function unlock(){
     init();
+    if(context) return;
     try{ if(ctx.state === 'suspended') ctx.resume(); }catch(e){}
     if(unlocked) return;
     unlocked = true;
@@ -334,7 +335,7 @@ export function createAudioEngine() {
         URL.revokeObjectURL(silentEl.src);
         silentEl.remove();
       }
-      if(ctx && ctx.state !== 'closed') ctx.close().catch(()=>{});
+      if(ctx?.close && ctx.state !== 'closed') ctx.close().catch(()=>{});
     },
   };
 }

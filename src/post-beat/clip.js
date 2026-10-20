@@ -1,8 +1,10 @@
 import {createPostBeat} from './audio.js';
+import {createAudioEngine} from '../audio.js';
+import {supportsOfflineClip,encodeOfflineClip} from './encode.js';
 import {VIDEO_MIMES,pickMime,extFor,mp4Support,startMp4Capture} from '../exporter.js';
 
 const LENGTH=10,cache=new Map();
-export const clipKey=(recipe,cover)=>JSON.stringify(['release-v3',recipe,cover.id,cover.artist||'']);
+export const clipKey=(recipe,cover)=>JSON.stringify(['release-v4',recipe,cover.id,cover.artist||'']);
 export const cachedClip=(recipe,cover)=>cache.get(clipKey(recipe,cover));
 const aborted=()=>new DOMException('Cancelled','AbortError');
 
@@ -59,6 +61,20 @@ export async function createShareClip({recipe,cover,signal,onProgress=()=>{},qui
     if(signal?.aborted)throw aborted();
     const canvas=document.createElement('canvas');canvas.width=canvas.height=1080;
     drawShareArtwork(canvas,image,recipe,0,null,cover);
+    if(await supportsOfflineClip(player.sampleRate())){
+      const sampleRate=player.sampleRate();player.dispose();onProgress(.04);
+      const context=new OfflineAudioContext(2,Math.round(LENGTH*sampleRate),sampleRate);
+      const offline=createPostBeat({engineFactory:()=>createAudioEngine({context})});
+      let audio;
+      try{offline.schedule(recipe,buffers,{offset:5,duration:LENGTH});audio=await context.startRendering();}finally{offline.dispose();}
+      if(signal?.aborted)throw aborted();
+      // Smooth ending without tying automation to a live browser clock.
+      for(let c=0;c<audio.numberOfChannels;c++){const pcm=audio.getChannelData(c);for(let i=Math.floor((LENGTH-.5)*sampleRate);i<pcm.length;i++)pcm[i]*=(pcm.length-i)/(.5*sampleRate);}
+      onProgress(.12);
+      const blob=await encodeOfflineClip({canvas,audio,signal,onProgress,draw:(time,wave)=>drawShareArtwork(canvas,image,recipe,time,wave,cover)});
+      const file=new File([blob],`linkedin-beats-${cover.id}.mp4`,{type:'video/mp4'});
+      if(cache.size>=3)cache.delete(cache.keys().next().value);cache.set(clipKey(recipe,cover),file);return file;
+    }
     const mp4=await mp4Support(player.sampleRate());
     if(signal?.aborted)throw aborted();
     // Keep the graph unlocked by the original tap for mobile capture.

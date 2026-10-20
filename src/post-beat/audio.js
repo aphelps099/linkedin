@@ -22,12 +22,12 @@ export function createPostBeat({engineFactory=createAudioEngine,interval=setInte
   };
   const elapsed=()=>engine?Math.max(0,Math.min(DURATION,engine.now()-origin)):0;
   const clearTick=()=>{if(timer!==null)clear(timer);timer=null;};
-  const tick=()=>{
+  const tick=(lookahead=.12)=>{
     if(!playing||!engine)return;
     const time=elapsed(),stepSec=60/BPM/4;
     if(time>=DURATION){clearTick();return;}
     nextStep=Math.max(nextStep,Math.ceil((time-.03)/stepSec));
-    while(nextStep*stepSec<Math.min(DURATION,time+.12)){
+    while(nextStep*stepSec<Math.min(DURATION,time+lookahead)){
       const s=nextStep%16,bar=Math.floor(nextStep/16),when=origin+nextStep*stepSec;
       const fade=Math.min(1,(DURATION-nextStep*stepSec)/.6);
       if(s%4===0)engine.trigger('kick',.62*fade,when);
@@ -39,7 +39,7 @@ export function createPostBeat({engineFactory=createAudioEngine,interval=setInte
       for(const e of bandAt(song,nextStep,0))engine.trigger(e.v,e.vel*.43*fade,when,e);
       nextStep++;
     }
-    while(nextCue<cues.length&&cues[nextCue].start<time+.12){
+    while(nextCue<cues.length&&cues[nextCue].start<time+lookahead){
       const cue=cues[nextCue++];
       if(cue.end<=time)continue;
       engine.playBuffer(buffers[cue.clip],{when:Math.max(engine.now()+.005,origin+cue.start),offset:Math.max(0,time-cue.start)*cue.rate,rate:cue.rate,bus:'vox',vel:cue.role==='robot'?.8:1});
@@ -75,6 +75,13 @@ export function createPostBeat({engineFactory=createAudioEngine,interval=setInte
       clearTick();if(!reuseGraph){engine?.dispose();engine=null;}init();
       buffers=decoded;cues=makeTimedCues(recipe,buffers);origin=engine.now()+.08-Math.max(0,Math.min(DURATION,offset));nextStep=0;nextCue=0;playing=true;
       timer=interval(tick,25);tick();return {cues,duration:DURATION};
+    },
+    // Schedule the identical arrangement in an OfflineAudioContext. A fixed
+    // sample timeline prevents slow rendering from stretching the exported song.
+    schedule(recipe,decoded,{offset=5,duration=10}={}){
+      clearTick();init();buffers=decoded;cues=makeTimedCues(recipe,buffers);
+      origin=engine.now()-offset;nextStep=0;nextCue=0;playing=true;
+      tick(duration);playing=false;
     },
     pause(){playing=false;clearTick();engine?.suspend();},
     resume(){engine?.unlock();playing=true;timer=interval(tick,25);tick();},
