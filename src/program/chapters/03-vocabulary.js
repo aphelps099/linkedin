@@ -41,6 +41,12 @@ export const vocabulary = {
       'Density beats volume. One sincere thank-you is free; the rest is inflation.',
       'Humanize before you post. If nothing is left, there was nothing to say.',
     ] },
+    { type: 'video-recap', id: 'v-recap', title: 'Say nothing. Sound essential.', duration: '0:50',
+      src: '/api/cutting-room/media/training-02-caffeinated-edition-0d1af435.mp4',
+      poster: '/cutting-room/posters/training-02-caffeinated-edition-0d1af435.jpg',
+      description: 'Synergy demonstrates the vocabulary in action: a phased approach, aligned stakeholders, and a working group. A remarkable amount of progress without an answer.',
+      recap: ['Buzzwords make a simple update sound bigger than it is.', 'Gratitude and journey language supply the emotional packaging.', 'Translate it back into ordinary English to find the actual information.'],
+    },
     { type: 'chapter-end', id: 'v-end', nextChapterTitle: 'The Shape' },
   ],
 };

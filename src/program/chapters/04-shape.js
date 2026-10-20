@@ -30,6 +30,12 @@ export const shape = {
       'The vulnerability pivot (failure, dark moment, rebuild, lesson) is the most reliable shape on LinkedIn.',
       'The ending asks: a sink-in, an Agree?, a repost, a hashtag wall. Recognize all four.',
     ] },
+    { type: 'video-recap', id: 's-recap', title: 'A post becomes a performance.', duration: '0:44',
+      src: '/api/cutting-room/media/learn-to-speak-linkedin-synergy-recut-e95adb5d.mp4',
+      poster: '/cutting-room/posters/learn-to-speak-linkedin-synergy-recut-e95adb5d.jpg',
+      description: 'Watch Synergy build a post, admire the engagement, and contribute to the conversation himself. Notice how the presentation does as much work as the words.',
+      recap: ['The opening earns the click on “…more.”', 'Short lines and deliberate white space turn a paragraph into a performance.', 'The ending invites a response. Recognize the difference between a question and engagement bait.'],
+    },
     { type: 'chapter-end', id: 's-end', nextChapterTitle: 'Release Your Single' },
   ],
 };

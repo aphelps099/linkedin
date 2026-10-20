@@ -101,6 +101,12 @@ CHAPTERS.forEach((ch, ci) => {
         if(!s.explanation) fail(`${at}: needs explanation`);
         break;
       }
+      case 'video-recap':
+        if(!s.title || !s.description || !/^\d+:\d{2}$/.test(s.duration || '')) fail(`${at}: needs recap title, description and duration`);
+        if(!s.src?.startsWith('/api/cutting-room/media/') || !s.src.endsWith('.mp4')) fail(`${at}: recap needs a catalog video`);
+        if(!s.poster?.startsWith('/cutting-room/posters/')) fail(`${at}: recap needs a poster`);
+        if(!Array.isArray(s.recap) || s.recap.length!==3 || s.recap.some(line=>!line.trim())) fail(`${at}: recap needs three written takeaways`);
+        break;
       case 'before-after': if(!s.before || !s.after) fail(`${at}: needs before + after`); break;
       case 'takeaway-card': if(!Array.isArray(s.takeaways) || s.takeaways.length !== 3) fail(`${at}: exactly three takeaways`); break;
       case 'chapter-end': if(si !== ch.steps.length - 1) fail(`${at}: chapter-end must be last`); break;

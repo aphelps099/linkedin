@@ -44,6 +44,8 @@
 //                                                       the learner clicks the lines that are tropes.
 //   beat-card     { source, title? }                    make the source's latest output a beat
 //                                                       (wraps src/post-beat/PostBeat.jsx).
+//   video-recap   { title, src, poster, duration, description, recap: string[] }
+//                                                       optional film + written recap; explicit Continue.
 //   chapter-end   { nextChapterTitle?, isFinal? }
 //
 // Chapter: { id, number, title, subtitle, level, levelName, minutes, steps }
@@ -51,7 +53,7 @@
 
 export const INTERACTIVE = new Set([
   'pause', 'buttons', 'name-input', 'live-output', 'exercise-card', 'intake-card',
-  'dial', 'spot-the-trope', 'beat-card', 'chapter-end',
+  'dial', 'spot-the-trope', 'beat-card', 'video-recap', 'chapter-end',
 ]);
 
 export const PASSIVE_DELAY = {

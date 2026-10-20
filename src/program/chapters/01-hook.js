@@ -8,8 +8,8 @@ export const hook = {
   levelName: 'Almost Human',
   minutes: 4,
   steps: [
-    { type: 'bot-message', id: 'h-1', content: '**Welcome to the Program.** Five lessons. One certificate. By the end you will be able to describe a cup of coffee as a turning point.', delayMs: 300 },
-    { type: 'bot-message', id: 'h-2', content: "First, for the certificate. **What should we call you**, and what do you do? (A title helps. We will inflate it later.)", delayMs: 500 },
+    { type: 'bot-message', id: 'h-1', content: '**Welcome to your next professional evolution.** LinkedIn is the premier platform for career growth, professional development, and announcing that you are delighted to announce something. Your ability to do the job is admirable. Your ability to turn it into content is why we are here.', delayMs: 300 },
+    { type: 'bot-message', id: 'h-2', content: "Before we begin optimizing your professional existence: **what should we call you**, and what do you do? This goes on your certificate. Your actual qualifications will not be checked.", delayMs: 500 },
     { type: 'name-input', id: 'h-name', placeholder: 'Your first name', askTitle: true, titlePlaceholder: 'Marketing Coordinator', buttonLabel: 'Enroll me' },
     { type: 'bot-message', id: 'h-3', content: "Welcome aboard, **{{name}}**. Lesson one is the only thing on LinkedIn anyone actually reads: **the first line.**", delayMs: 300 },
     { type: 'bot-message', id: 'h-4', content: "Think of the lines before *…see more* as your opening act. **The hook earns the next line.** Give the reader a reason to keep going.", delayMs: 500 },
