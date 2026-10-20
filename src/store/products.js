@@ -15,7 +15,7 @@ const comingSoon = (sku,cat,name,filename,desc,specs,images) => ({
   specs:[...specs,['Status','Design preview — not yet available']],
   ...(images?{images}:{}),
 });
-const FEATURED_ORDER = ['CS-108','CS-107','CS-203','CS-201','CS-202','CS-103','CS-104','CS-105','CS-106','CS-109','CS-110','CS-501','CS-403','CS-404','CS-405','CS-303','CS-101','CS-102'];
+const FEATURED_ORDER = ['CS-108','CS-107','CS-203','CS-201','CS-202','CS-103','CS-104','CS-105','CS-106','CS-109','CS-110','CS-501','CS-403','CS-404','CS-405','CS-406','CS-407','CS-408','CS-409','CS-303','CS-101','CS-102'];
 
 export const PRODUCTS = [
   { sku: 'CS-104', cat: 'Sweatshirts', name: 'Out of Office Crewneck', price: null, sizes: null, img: 'cs-104.webp', previewOnly: true,
@@ -86,6 +86,22 @@ export const PRODUCTS = [
   comingSoon('CS-405','Posters','The Feedback Loop Print','feedback-loop-print',
     'A bass player, a speaker stack and a very productive inbox. An original LinkedIn Beats print in rust red and cream.',
     [['Artwork','The Feedback Loop'],['Palette','Rust red, black and cream'],['Format','Final print size to come']]),
+  comingSoon('CS-406','Posters','Sound Like LinkedIn Print','sound-like-linkedin-print',
+    'The boardroom is the stage. A four-piece office band beneath towering type, with a meeting that could have been a beat.',
+    [['Artwork','Sound Like LinkedIn'],['Palette','Yellow, black, cyan and red'],['Format','Final print size to come']],
+    [collectionImage('sound-like-linkedin-print','Print design preview',{alt:'Yellow and black Sound Like LinkedIn poster with an office band around a conference table',width:1024,height:1536})]),
+  comingSoon('CS-407','Posters','High Performer Print','high-performer-print',
+    'A guitar solo with very strong quarterly results. Halftone portrait, lightning bolts and oversized High Performer lettering.',
+    [['Artwork','High Performer'],['Palette','Yellow, black and red with cobalt and cream accents'],['Format','Final print size to come']],
+    [collectionImage('high-performer-print','Print design preview',{alt:'High Performer poster showing a guitarist beneath yellow, black and red lightning bolts',width:1024,height:1536})]),
+  comingSoon('CS-408','Posters','Per My Last Beat Print','per-my-last-beat-print',
+    'A meeting headset, an open collar and one very loud follow-up. A monochrome singer framed by fractured lettering.',
+    [['Artwork','Per My Last Beat'],['Palette','Black and cream with a cobalt accent'],['Format','Final print size to come']],
+    [collectionImage('per-my-last-beat-print','Print design preview',{alt:'Black and cream Per My Last Beat poster with a singer, microphone and meeting headset',width:1024,height:1536})]),
+  comingSoon('CS-409','Posters','Let’s Sync Up Print','lets-sync-up-print',
+    'Four colleagues, one table and a room full of synths. A meeting with something worth mixing.',
+    [['Artwork','Let’s Sync Up'],['Palette','Cream, black and yellow'],['Format','Final print size to come']],
+    [collectionImage('lets-sync-up-print','Print design preview',{alt:'Let’s Sync Up poster with four colleagues making music around a table of synthesizers',width:1024,height:1536})]),
   comingSoon('CS-303','Stickers','Office Essentials Sticker Kit','sticker-synergy',
     'Synergy on keys, an onboarding conversation taken offline, and two very different paper jams. Four designs from the LinkedIn Beats office.',
     [['Designs','Synergy; Onboarding Offline; Paper Jam; Paper Jam Session'],['Format','Final sizes and finish to come']],
