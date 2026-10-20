@@ -11,18 +11,21 @@ function lines(ctx,text,width){
   for(const word of text.split(/\s+/)){const next=row?`${row} ${word}`:word;if(row&&ctx.measureText(next).width>width){result.push(row);row=word;}else row=next;}
   if(row)result.push(row);return result;
 }
-function artwork(canvas,image,recipe,elapsed,spectrum){
+export function drawShareArtwork(canvas,image,recipe,elapsed=0,spectrum=null){
   const c=canvas.getContext('2d');c.fillStyle='#0757ec';c.fillRect(0,0,1080,1080);
-  c.fillStyle='#fbf6e8';c.font='600 23px C2Hoves, Arial';c.fillText('LINKEDIN BEATS / YOUR DEBUT SINGLE',52,68);
-  let size=78,rows;
-  do{c.font=`${size}px Anton, Impact, sans-serif`;rows=lines(c,recipe.chorus.toUpperCase(),976);size-=2;}while(rows.length>3&&size>40);
-  rows.forEach((row,i)=>c.fillText(row,52,164+i*(size+11)));
-  const h=1000*image.height/image.width;c.drawImage(image,40,390+(476-h)/2,1000,h);
+  c.fillStyle='#fbf6e8';c.font='600 22px C2Hoves, Arial';c.fillText('LINKEDIN BEATS',52,62);
+  c.textAlign='right';c.font='22px C2Hoves, Arial';c.fillText('YOUR DEBUT SINGLE',1028,62);c.textAlign='left';
+  c.fillStyle='#fbf6e85c';c.fillRect(52,85,976,1);
+  let size=110,rows;
+  do{c.font=`${size}px Anton, Impact, sans-serif`;rows=lines(c,recipe.chorus.toUpperCase(),976);if(rows.length<=3&&rows.length*(size+10)<=260)break;size-=2;}while(size>40);
+  const baseline=108+(260-rows.length*(size+10))/2+size*.86;
+  c.fillStyle='#fbf6e8';rows.forEach((row,i)=>c.fillText(row,52,baseline+i*(size+10)));
+  const h=1080*image.height/image.width;c.drawImage(image,0,380,1080,h);
   const bins=52,gap=7,w=(976-gap*(bins-1))/bins;
   for(let i=0;i<bins;i++){
     const energy=spectrum?.[Math.floor(i*(spectrum.length*.7)/bins)]||0;
-    const height=7+Math.min(86,energy*.34);c.fillStyle=i/bins<elapsed/LENGTH?'#fff349':'#a2c2fa';
-    c.fillRect(52+i*(w+gap),940-height/2,w,height);
+    const height=spectrum?7+Math.min(70,energy*.27):8+Math.abs(Math.sin(i*1.7)*Math.cos(i*.39))*37;c.fillStyle=i/bins<elapsed/LENGTH?'#fff349':'#a2c2fa';
+    c.fillRect(52+i*(w+gap),962-height/2,w,height);
   }
   c.font='23px C2Hoves, Arial';c.fillStyle='#fbf6e8';c.fillText('linkedinbeats.com',52,1040);c.textAlign='right';c.fillText(`0:${String(Math.min(10,Math.floor(elapsed))).padStart(2,'0')} / 0:10`,1028,1040);c.textAlign='left';
   if(elapsed>8.6){
@@ -55,7 +58,7 @@ export async function createShareClip({recipe,cover,signal,onProgress=()=>{}}){
     const [buffers]=await Promise.all([player.prepare(recipe,signal),image.decode(),document.fonts.load('60px Anton'),document.fonts.load('24px C2Hoves')]);
     if(signal?.aborted)throw aborted();
     const canvas=document.createElement('canvas');canvas.width=canvas.height=1080;
-    artwork(canvas,image,recipe,0,null);
+    drawShareArtwork(canvas,image,recipe,0,null);
     const mp4=await mp4Support(player.sampleRate());
     if(signal?.aborted)throw aborted();
     // Keep the graph unlocked by the original tap for mobile capture.
@@ -67,7 +70,7 @@ export async function createShareClip({recipe,cover,signal,onProgress=()=>{}}){
       const cleanup=()=>{signal?.removeEventListener('abort',cancel);document.removeEventListener('visibilitychange',hidden);cancelAnimationFrame(raf);};
       signal?.addEventListener('abort',cancel,{once:true});document.addEventListener('visibilitychange',hidden);
       const tick=()=>{
-        const t=Math.max(0,player.elapsed()-5);if(t>9.5)player.volume(.75*Math.max(0,(LENGTH-t)/.5));artwork(canvas,image,recipe,t,player.spectrum());onProgress(Math.min(1,t/LENGTH));
+        const t=Math.max(0,player.elapsed()-5);if(t>9.5)player.volume(.75*Math.max(0,(LENGTH-t)/.5));drawShareArtwork(canvas,image,recipe,t,player.spectrum());onProgress(Math.min(1,t/LENGTH));
         if(t>=LENGTH){cleanup();resolve();}else raf=requestAnimationFrame(tick);
       };tick();
     });

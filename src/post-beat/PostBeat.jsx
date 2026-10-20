@@ -76,7 +76,7 @@ export function PostBeat({post,initialRecipe,initialCover=DEFAULT_COVER,children
     </div>;
   return <div className={`pb-inline${ticketControls?' pb-has-ticket':''}`}>
     {ticketControls?<section className="pb-ticket el-controls" aria-label="Supercharge and play your post"><div className="pb-ticket-main">{ticketControls}{player}</div>{ticketScore}</section>:player}
-    {ticketControls&&<div className="pb-share-below"><button type="button" onClick={share} aria-haspopup="dialog"><Share2 size={24}/><span>Share this beat</span><span aria-hidden="true">↗</span></button><p>For the colleague who says “let’s take this offline.”</p></div>}
+    {ticketControls&&<div className="pb-share-below"><button type="button" onClick={share} aria-haspopup="dialog"><Share2 size={24} aria-hidden="true"/><span>Share this beat</span></button><p>For the colleague who says “let’s take this offline.”</p></div>}
     {ticketNotice}
     {heading}
     {showSong&&<div className="pb-view-tools"><span><Music2 size={13}/>Sing along</span><div><button onClick={restart} aria-label="Restart beat" disabled={busy}><RotateCcw size={13}/></button>{!initialRecipe&&<button onClick={toggleView}>Read post</button>}</div></div>}

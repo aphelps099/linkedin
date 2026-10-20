@@ -22,8 +22,11 @@
 .pb-ticket::after{z-index:-1;background:linear-gradient(to right,#fbf6e8 var(--ticket-split),#e7e9de var(--ticket-split))}
 .pb-ticket-main{min-width:0;padding:0 22px 15px}
 .pb-ticket .el-boost-control{width:max-content;max-width:calc(100% + 12px);margin:-10px 0 21px -7px}
-.pb-ticket .el-supercharge{min-height:58px;filter:drop-shadow(4px 5px 0 #0c203260);color:#0c2032}
-.pb-ticket .el-supercharge>.el-boost-face{min-height:58px;padding:10px 20px;gap:9px}
+.pb-ticket .el-supercharge{min-height:58px;filter:drop-shadow(4px 5px 0 #0c203260);color:#fff349}
+.pb-ticket .el-supercharge::before{background:#10110f}
+.pb-ticket .el-supercharge>.el-boost-face{min-height:58px;padding:10px 20px;gap:9px;background:#10110f;color:#fff349}
+.pb-ticket .el-supercharge:hover>.el-boost-face{background:#20231d;color:#fff349}
+.pb-ticket .el-boost-face::before{background:#34402a}
 .pb-ticket .el-supercharge .el-boost-label{font-size:24px}
 .pb-ticket .el-boost-stripes{display:flex}
 .pb-ticket .el-supercharge:focus-visible{outline-color:#0c2032}
