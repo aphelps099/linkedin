@@ -7,19 +7,25 @@ export const COVERS=[
 ];
 export const DEFAULT_COVER=COVERS[0].id;
 export const getCover=id=>COVERS.find(cover=>cover.id===id)||COVERS[0];
+export const SLEEVE_THEMES={'paper-jam':['#0c1222','#222838','#ffffff','#fff349'],'printer-overload':['#fff349','#e8d832','#111827','#111827'],'hr-paper-storm':['#f5f1e6','#e5e0d5','#1649e7','#1649e7']};
 
 // Query parameters are visible to social crawlers. Old #mix links still play.
 // The URL carries the frozen recipe: no database, video export, or expiry needed.
-export function shareUrl(origin,recipe,coverId=DEFAULT_COVER){
+export function shareUrl(origin,recipe,coverId=DEFAULT_COVER,artist=''){
   const url=new URL('/lessons/',origin);
   url.searchParams.set('beat',encodeRecipe(recipe));
   url.searchParams.set('cover',getCover(coverId).id);
+  if(artist.trim())url.searchParams.set('artist',artist.trim().slice(0,48));
   return url.href;
+}
+export function coverPreviewUrl(origin,recipe,coverId=DEFAULT_COVER,artist=''){
+  const url=new URL(shareUrl(origin,recipe,coverId,artist));url.pathname='/api/beat/cover.png';return url.href;
 }
 export function readSharedBeat(href){
   const url=new URL(href,'https://linkedinbeats.com');
   const recipe=decodeRecipe(url.searchParams.has('beat')?url.searchParams.get('beat'):url.hash);
-  return recipe?{recipe,cover:getCover(url.searchParams.get('cover'))}:null;
+  const artist=(url.searchParams.get('artist')||'').trim().slice(0,48);
+  return recipe?{recipe,cover:getCover(url.searchParams.get('cover')),...(artist?{artist}:{})}:null;
 }
 export const suggestedCaption=recipe=>`I turned my LinkedIn post into a banger. HR would like a word.\n\n“${recipe.chorus}”`;
 export function shareDestinations(url,caption){

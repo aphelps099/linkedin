@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Circle Back® — The Professional Phrase Organ. A satirical LinkedIn audio mixer.",
+  "description": "Circle Back\u00ae \u2014 The Professional Phrase Organ. A satirical LinkedIn audio mixer.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -32,7 +32,8 @@
     "lucide-react": "^0.468.0",
     "mp4-muxer": "^5.2.2",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "sharp": "0.34.5"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.4",

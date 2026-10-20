@@ -12,7 +12,7 @@ import {generateStage} from './stages.js';
 import {ScoreReadout} from './ScoreReadout.jsx';
 import './ignition.css';
 import {PostBeat} from '../post-beat/PostBeat.jsx';
-import {readSharedBeat} from '../post-beat/share.js';
+import {readSharedBeat,coverPreviewUrl} from '../post-beat/share.js';
 import './ticket.css';
 
 const TABS=[['announce','Announce'],['lesson','Find a lesson'],['sell','Sell'],['urgency','Create urgency'],['ai','Talk AI']];
@@ -86,7 +86,7 @@ export default function Lessons(){
   </div>;
   if(sharedRecipe)return <div className="ll-app c2-home">
     <ConceptHeader base="../" homeSectionBase="../" active="LinkedInifier"/>
-    <main className="pb-shared"><div className="pb-shared-inner"><p className="pb-shared-eyebrow">A LITTLE PROFESSIONAL DEVELOPMENT.</p>{sharedCover&&<img className="pb-shared-cover" src={sharedCover.image} width={sharedCover.width} height={sharedCover.height} alt={sharedCover.alt}/>}<h1 className="pb-shared-title">{sharedCover?.name||'Your words. On repeat.'}</h1><p className="pb-shared-chorus">“{sharedRecipe.chorus}”</p><PostBeat key={JSON.stringify(sharedRecipe)} post="" initialRecipe={sharedRecipe} initialCover={sharedCover?.id}/><a className="pb-make-own" href="/lessons/">Make your own beat ↗</a></div></main>
+    <main className="pb-shared"><div className="pb-shared-inner"><p className="pb-shared-eyebrow">A LITTLE PROFESSIONAL DEVELOPMENT.</p>{sharedCover&&<img className="pb-shared-cover" src={coverPreviewUrl(window.location.origin,sharedRecipe,sharedCover.id,readSharedBeat(window.location.href)?.artist)} width={1200} height={630} alt={sharedRecipe.chorus}/>}<h1 className="pb-shared-title">{sharedRecipe.chorus}</h1><p className="pb-shared-chorus">“{sharedRecipe.chorus}”</p><PostBeat key={JSON.stringify(sharedRecipe)} post="" initialRecipe={sharedRecipe} initialCover={sharedCover?.id} initialArtist={readSharedBeat(window.location.href)?.artist}/><a className="pb-make-own" href="/lessons/">Make your own beat ↗</a></div></main>
     <ConceptFooter base="../"/>
   </div>;
   return <div className="ll-app c2-home">

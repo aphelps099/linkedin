@@ -8,13 +8,13 @@ import {startShareClip} from './clip.js';
 import './post-beat.css';
 const clock=t=>`0:${String(Math.floor(t)).padStart(2,'0')}`;
 const WAVEFORM=[25,52,35,77,94,55,39,64,83,45,30,70,100,66,40,54,90,74,47,32,62,88,52,30,70,48,94,61,42,22,57,79,37,60,44,25];
-export function PostBeat({post,initialRecipe,initialCover=DEFAULT_COVER,children,onModeChange,ticketControls,ticketScore,ticketNotice,heading}){
+export function PostBeat({post,initialRecipe,initialCover=DEFAULT_COVER,initialArtist='',children,onModeChange,ticketControls,ticketScore,ticketNotice,heading}){
   const recipe=useMemo(()=>initialRecipe||makeRecipe(post),[post,initialRecipe]);
   const lines=useMemo(()=>{const voices=voiceLines(recipe);return arrangement(recipe).map((event,id)=>({...event,...voices[event.clip],id}));},[recipe]);
   const [phase,setPhase]=useState('idle'),[elapsed,setElapsed]=useState(0),[active,setActive]=useState({line:-1,word:-1});
   const [showSong,setShowSong]=useState(!!initialRecipe),[error,setError]=useState('');
   const [shareOpen,setShareOpen]=useState(false),[cover,setCover]=useState(initialCover);
-  const [artist,setArtist]=useState('');const shareJob=useRef(null);
+  const [artist,setArtist]=useState(initialArtist);const shareJob=useRef(null);
   const [shareCaption,setShareCaption]=useState(()=>suggestedCaption(recipe));
   const engine=useRef(null),controller=useRef(null),frame=useRef(null),buffers=useRef(null),timeline=useRef([]),run=useRef(0),phaseRef=useRef('idle'),lyrics=useRef(null);
   const busy=phase==='preparing',playing=phase==='playing';

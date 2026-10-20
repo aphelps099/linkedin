@@ -15,7 +15,7 @@ export function ShareBeat({initialJob,recipe,coverId,onCoverChange,artist,onArti
   const dialog=useRef(null),video=useRef(null),job=useRef(null),alive=useRef(true),unsubscribe=useRef(null),posting=useRef(false);
   const [clip,setClip]=useState(null),[clipUrl,setClipUrl]=useState(''),[making,setMaking]=useState(true),[progress,setProgress]=useState(0),[error,setError]=useState(''),[notice,setNotice]=useState('');
   const [playing,setPlaying]=useState(false),[elapsed,setElapsed]=useState(0),[duration,setDuration]=useState(10),[handoff,setHandoff]=useState(null),[editing,setEditing]=useState(false),[draftCover,setDraftCover]=useState(coverId),[draftArtist,setDraftArtist]=useState(artist||'');
-  const cover={...getCover(coverId),artist},url=shareUrl(window.location.origin,recipe,cover.id),targets=shareDestinations(url,caption);
+  const cover={...getCover(coverId),artist},url=shareUrl(window.location.origin,recipe,cover.id,artist),targets=shareDestinations(url,caption);
   const releaseCode=String([...recipe.chorus].reduce((n,c)=>(n*31+c.charCodeAt(0))%10000,417)).padStart(4,'0');
   const attach=next=>{
     unsubscribe.current?.();if(job.current&&job.current!==next)job.current.controller.abort();job.current=next;

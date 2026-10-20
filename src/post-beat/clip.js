@@ -1,6 +1,7 @@
 import {createPostBeat} from './audio.js';
 import {createAudioEngine} from '../audio.js';
 import {supportsOfflineClip,encodeOfflineClip} from './encode.js';
+import {SLEEVE_THEMES} from './share.js';
 import {VIDEO_MIMES,pickMime,extFor,mp4Support,startMp4Capture} from '../exporter.js';
 
 const LENGTH=10,cache=new Map();
@@ -16,8 +17,7 @@ function lines(ctx,text,width){
 // A typographic sleeve. No stock thumbnail/personal-title collage.
 export function drawShareArtwork(canvas,_image,recipe,elapsed=0,spectrum=null,cover={}){
   const c=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
-  const themes={'paper-jam':['#0c1222','#222838','#ffffff','#fff349'],'printer-overload':['#fff349','#e8d832','#111827','#111827'],'overprinted':['#f5f1e6','#e5e0d5','#1649e7','#1649e7']};
-  const [base,stripe,ink,accent]=themes[cover.id]||themes['paper-jam'];
+  const [base,stripe,ink,accent]=SLEEVE_THEMES[cover.id]||SLEEVE_THEMES['paper-jam'];
   c.fillStyle=base;c.fillRect(0,0,w,h);c.save();c.translate(w/2,h/2);c.rotate(-Math.PI/4);c.fillStyle=stripe;for(let x=-w*2;x<w*2;x+=64)c.fillRect(x,-h*2,30,h*4);c.restore();
   c.fillStyle=accent;c.font='600 25px C2Hoves, Arial';c.fillText(`${(cover.name||'Paper Jam').toUpperCase()} SERIES`,64,83);
   c.font='19px C2Hoves, Arial';c.textAlign='right';c.fillText('LINKEDIN BEATS',w-64,83);c.textAlign='left';
