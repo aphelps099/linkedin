@@ -168,12 +168,21 @@ with tempfile.TemporaryDirectory(prefix='meeting-season-') as directory:
             cues=[];events=[];interludes=[]
             for index,(who,text) in enumerate(meeting['lines']):
                 if who=='all':x,speaker_levels=chorus(text,meeting['roster'],beat,tmp)
-                else:x,speaker_levels=speech(text,who,tmp),None
+                else:
+                    x,speaker_levels=speech(text,who,tmp),None
+                    joining=meeting.get('joins',{}).get(str(index),[])
+                    if joining:
+                        ids=[who,*joining];takes=[speech(text,person,tmp) for person in ids]
+                        stems={person:np.pad(take,(0,max(map(len,takes))-len(take))) for person,take in zip(ids,takes)}
+                        x=sum(stems.values())/math.sqrt(len(ids))
+                        x*=min(1,.82/max(.001,np.max(abs(x))))
+                        speaker_levels={person:envelope(stem) for person,stem in stems.items()}
                 duration=len(x)/SR
                 if speaker_levels:
                     speaker_levels={person:levels[:math.ceil(round(duration,4)*25)] for person,levels in speaker_levels.items()}
                 cues.append({'speaker':who,'text':text,'start':round(cursor,4),'duration':round(duration,4),'level':envelope(x),
-                             'sources':sources(who,text,meeting['roster']),
+                             'sources':sources(who,text,meeting['roster'])+sum([sources(person,text,meeting['roster']) for person in meeting.get('joins',{}).get(str(index),[])],[]),
+                             **({'speakers':[who,*meeting['joins'][str(index)]]} if str(index) in meeting.get('joins',{}) else {}),
                              **({'speakerLevels':speaker_levels} if speaker_levels else {})})
                 events.append((round(cursor*SR),x))
                 # Short pauses keep the joke moving. Chorus starts on a full bar.

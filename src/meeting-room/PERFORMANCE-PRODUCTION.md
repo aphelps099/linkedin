@@ -38,9 +38,9 @@ continues outside the sentence. Do not use this one performance for other words.
 `SpeechPerformance.jsx` preloads the next validated line after Play, seeks its
 video from the meeting's audio clock, preserves the corresponding paused frame,
 and never loops the sentence. Missing performances retain the existing generic
-motion plates. The first variants of Stand-up, Onboarding, Unlocking potential and Offline
+motion plates. The first variants of Stand-up, Onboarding, Unlocking potential, Offline and Q3 alignment
 now have exact performances for every human solo turn and chorus. The two
-paperless meetings contain only robots and the printer. The remaining eight
+paperless meetings contain only robots and the printer. The remaining seven
 meetings with humans still need line-specific performances; the season is not
 yet fully lip-synced.
 
@@ -252,3 +252,34 @@ as an archive; Synthia's media and approved human voices are unchanged.
 References checked 2026-10-19:
 - https://help.runwayml.com/hc/en-us/articles/51285026291219-Character-Script-to-Video
 - https://help.runwayml.com/hc/en-us/articles/42311337895827-Performance-Capture-with-Act-Two
+
+
+## Q3 alignment and revised Offline ending, 2026-10-19
+
+`quarterly-0` now has exact performances for all seven humans: People & Culture,
+Strategy, Kevin, Keys, Operations, Arjun and Linda. The twelve cameras use equal
+4:3 frames; Keys retains the separate instrument detail. Existing approved
+voices, backing track, Synergy/Synthia cameras and printer are retained. The
+robot chorus uses separate envelopes from each isolated voice. Seven renders
+cost 14 credits. Runtime videos total approximately 6.8 MB and load on demand.
+Linda’s solo occurs after the chorus but earlier in her source performance;
+seek handling is covered explicitly.
+
+The user found Arjun’s Offline articulation insufficient. A new exact-audio
+performance replaces his solo and chorus. He now also speaks the former silent
+end caption, “We’ll take the next steps offline,” with Synthia joining him.
+Both are highlighted; each robot/human follows its own voice. The preceding
+nine cues and all other meetings retain their approved timing and sources.
+The new ending is a real two-voice mix, not merely an added caption or animated
+silent mouth. This extra performance costs two credits.
+
+This turn spends 16 credits from the new 6,000-credit allowance. Including the
+previous four, 20 have been used and 5,980 remain. These are allocation figures;
+the account balance may include other credits. No Mux assets were added.
+
+The separate archived conference ending has a local tracked face repair and
+an editorial close-up during “Then we’ll schedule a follow-up.” The original
+AAC audio is copied without re-encoding and hash-checked. The horizontal row
+never changes height. The repair does not change the approved Studio Synergy
+camera. Its source asset, output hash and tracking evidence are recorded in
+`assets/film-corrections/synergy-followup/`; zero generation credits are used.

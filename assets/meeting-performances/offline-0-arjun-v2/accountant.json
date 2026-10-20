@@ -1,0 +1,96 @@
+{
+  "character": "accountant",
+  "meeting": "offline-0",
+  "status": "reviewed-integrated",
+  "audio": "accountant-exact-offline-0.wav",
+  "audioSha256": "b1ad8b5a345a0e6d4898907ae2e74d7fe1117de1b33606741c67826a1ac69a6d",
+  "duration": 13.124208333333334,
+  "characterImage": "public/studio/season/posters/arjun-listening.jpg",
+  "solos": [
+    {
+      "cueIndex": 8,
+      "offset": 0.25,
+      "duration": 2.9219583333333334,
+      "sources": [
+        {
+          "character": "accountant",
+          "text": "Same link. Same time. Same people.",
+          "line": "accountant-d2fa2bd53e45204a",
+          "take": "2168c2081ffb463671553e83466eb619b2551c8729666cb558dc837409e8fa56",
+          "masterSha256": "78dd2846b34b821d04fd4b554af63d8c338a3cdd9e8eb6a76066f4d949473404"
+        }
+      ]
+    },
+    {
+      "cueIndex": 9,
+      "offset": 3.6719583333333334,
+      "duration": 2.1805,
+      "sources": [
+        {
+          "character": "accountant",
+          "text": "We’ll take the next steps offline.",
+          "line": "accountant-0b2d46c5c42493c2",
+          "take": "41194b389804db8cbcdda83a2913a7c40c23b455bc3830b3251972e32af14481",
+          "masterSha256": "512587df7daa1ac9fdbeed09cdb18bae7a19613f0ca54756aa6784c65f83bd79"
+        }
+      ]
+    }
+  ],
+  "choruses": [
+    {
+      "cueIndex": 7,
+      "offset": 6.352458333333334,
+      "duration": 6.52175,
+      "phrases": [
+        {
+          "start": 0.0,
+          "duration": 1.92075,
+          "slotDuration": 2.6087083333333334,
+          "source": {
+            "character": "accountant",
+            "text": "We’ll take this offline.",
+            "line": "accountant-0b5b8838622df915",
+            "take": "d8217375027e15d24c1d917e4207c4ea5abee5ec045686616847c6e38c0e1ae9",
+            "masterSha256": "c66d9fcccf8774df476f637a7d7d4e4de84b863bbed25199a6fb5c4bda525f18"
+          }
+        },
+        {
+          "start": 2.6087083333333334,
+          "duration": 1.0212916666666667,
+          "slotDuration": 1.3043333333333333,
+          "source": {
+            "character": "accountant",
+            "text": "Offline.",
+            "line": "accountant-4fbda14953066a0c",
+            "take": "2deafa320b006a0a83629ac2330593ac1938ee565c929000fb71fa1ccde64ded",
+            "masterSha256": "afe970c75ceb162dd04701ba50975e7b8d67cec92cd4fa3016a33b0810e78a49"
+          }
+        },
+        {
+          "start": 3.9130416666666665,
+          "duration": 1.92075,
+          "slotDuration": 2.6087083333333334,
+          "source": {
+            "character": "accountant",
+            "text": "We’ll take this offline.",
+            "line": "accountant-0b5b8838622df915",
+            "take": "d8217375027e15d24c1d917e4207c4ea5abee5ec045686616847c6e38c0e1ae9",
+            "masterSha256": "c66d9fcccf8774df476f637a7d7d4e4de84b863bbed25199a6fb5c4bda525f18"
+          }
+        }
+      ]
+    }
+  ],
+  "direction": "Exact approved voice. Restrained natural articulation, subtle blinks, stable attached lips and headset. Preserve face identity.",
+  "workflow": "Runway Character Script to Video, uploaded Audio",
+  "taskId": "11627c49-6eea-46e7-a925-4594b9539bc5",
+  "assetId": "c819695a-f931-49f3-afcc-a535649a17a5",
+  "creditsSpent": 2,
+  "output": "accountant-performance.mp4",
+  "outputSha256": "d7f5ecd8ad28d4c5b46b0f265f756536839cdd9c3108534863b65d42a3846764",
+  "runtimeVideo": "public/studio/performances/accountant-offline-exact-v2.mp4",
+  "runtimeSha256": "0f139d99729c9c2ea87d03bf69971dc160e02037020234b76abb084557753f67",
+  "audioLagSeconds": 0,
+  "audioWaveformCorrelation": 0.9999912297733297,
+  "reviewNotes": "Revised exact recording supplies Arjun’s solo button, shared final line and isolated chorus. Synthia joins only the final line, animated from her own envelope. No generic talking loop is substituted for these words."
+}

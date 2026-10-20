@@ -1,0 +1,126 @@
+{
+  "character": "strategy",
+  "meeting": "quarterly-0",
+  "status": "reviewed-integrated",
+  "audio": "strategy-exact-quarterly-0.wav",
+  "audioSha256": "9bec971ecac11303bd6a5c3552645240127d9e8114966635c64b2475b90f513d",
+  "duration": 13.904125,
+  "characterImage": "public/studio/season/posters/strategy-listening.jpg",
+  "solos": [
+    {
+      "cueIndex": 1,
+      "offset": 0.25,
+      "duration": 3.261375,
+      "sources": [
+        {
+          "character": "strategy",
+          "text": "I’m incredibly excited about the momentum.",
+          "line": "strategy-c3f97791b8c1c322",
+          "take": "e0f54a223e570c3ef5e9b8e0d99624833e059bbdd08d94ddb6efbd60a2635a2f",
+          "masterSha256": "4448642f440d6d837313f0ef01e84bc5872bcf598b42a6980db50b73b905503f"
+        }
+      ]
+    }
+  ],
+  "choruses": [
+    {
+      "cueIndex": 7,
+      "offset": 4.011375,
+      "duration": 9.64275,
+      "phrases": [
+        {
+          "start": 0.0,
+          "duration": 1.14625,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "strategy",
+            "text": "Optimize.",
+            "line": "strategy-5f8f4f49521f1312",
+            "take": "c0ea6a70529864836b7d52f177cac7f821d5fd804c122deecc32673523d56938",
+            "masterSha256": "9d3b73246041fd83c61a3929e6eeceb8f6039d58085532d83595330627a69049"
+          }
+        },
+        {
+          "start": 1.607125,
+          "duration": 1.0454166666666667,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "strategy",
+            "text": "Onboard.",
+            "line": "strategy-b521e13bc481292a",
+            "take": "5d90a8ab433d062f355afdab269a13504e7d0c487d3de1f23a9505957373726b",
+            "masterSha256": "e08e04642cea2d23424cc56b97d48353b9c80e3ea9685ef0e94f35c368e0c8d0"
+          }
+        },
+        {
+          "start": 3.21425,
+          "duration": 0.97075,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "strategy",
+            "text": "Unlock.",
+            "line": "strategy-45bb18b0318e1ec5",
+            "take": "1ef7848834159a5e63e042df34e535cc45ba545c1251de5d1015a20c71b669a7",
+            "masterSha256": "c83359acaf1ed5546950052127ca7dccac88631192f329d1295c9c5551dd36e2"
+          }
+        },
+        {
+          "start": 4.821375,
+          "duration": 1.070375,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "strategy",
+            "text": "Offline.",
+            "line": "strategy-4fbda14953066a0c",
+            "take": "9833f57e5a675bbd11c99ea2270a94187b62ade5c1fb7aa40e18c70eeea36293",
+            "masterSha256": "2d93ad58561f876619e2c7038ffbbb972a771d992566f7e6a8eef724ddaab2f9"
+          }
+        },
+        {
+          "start": 6.4285,
+          "duration": 1.14625,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "strategy",
+            "text": "Optimize.",
+            "line": "strategy-5f8f4f49521f1312",
+            "take": "c0ea6a70529864836b7d52f177cac7f821d5fd804c122deecc32673523d56938",
+            "masterSha256": "9d3b73246041fd83c61a3929e6eeceb8f6039d58085532d83595330627a69049"
+          }
+        },
+        {
+          "start": 8.035625,
+          "duration": 1.0454166666666667,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "strategy",
+            "text": "Onboard.",
+            "line": "strategy-b521e13bc481292a",
+            "take": "5d90a8ab433d062f355afdab269a13504e7d0c487d3de1f23a9505957373726b",
+            "masterSha256": "e08e04642cea2d23424cc56b97d48353b9c80e3ea9685ef0e94f35c368e0c8d0"
+          }
+        }
+      ]
+    }
+  ],
+  "direction": "Exact approved voice. Restrained natural articulation, subtle blinks, stable attached lips and headset. Preserve face identity.",
+  "workflow": "Runway Character Script to Video, uploaded Audio",
+  "taskId": "82e4eaa6-fb2f-4d11-b0f6-800efaacf16c",
+  "assetId": "e7e35cf8-ec72-4894-b3f9-ea54c0e3a643",
+  "creditsSpent": 2,
+  "runwaySession": "5bb35d14-ea57-4d00-979c-8d4c846ccbad",
+  "output": "strategy-performance.mp4",
+  "outputSha256": "7f10083140fed1bb8c92d4ab506727d4dcadc19b40d03b8b7618bb666e77ae38",
+  "runtimeVideo": "public/studio/performances/strategy-quarterly-exact-v1.mp4",
+  "runtimeSha256": "1c8b1186ba02a0f4a4103a0452f39644ffd6bb055859b9ca42b2d4d7782e5260",
+  "audioLagSeconds": 0,
+  "audioWaveformCorrelation": 0.9999851326066062,
+  "deliveryEncoding": {
+    "width": 720,
+    "height": 540,
+    "audio": false,
+    "keyframeIntervalFrames": 24,
+    "bFrames": 0
+  },
+  "reviewNotes": "Reviewed solo and chorus frames: attached lips, stable headset and identity, subtle eye movement. Live audio retains the approved master. Keys uses the approved separate keyboard detail view during her speaking performance."
+}

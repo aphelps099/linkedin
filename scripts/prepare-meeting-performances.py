@@ -15,9 +15,11 @@ SR = 24000
 parser = argparse.ArgumentParser()
 parser.add_argument('--meeting', required=True)
 parser.add_argument('--bpm', required=True, type=float)
+parser.add_argument('--character')
+parser.add_argument('--revision')
 args = parser.parse_args()
 meeting = json.loads((ROOT/'src/meeting-room/audio-manifest.json').read_text())['meetings'][args.meeting]
-out = ROOT/'assets/meeting-performances'/args.meeting
+out = ROOT/'assets/meeting-performances'/(args.revision or args.meeting)
 out.mkdir(parents=True, exist_ok=True)
 retro = RetroSpeech()
 cache = {}
@@ -66,11 +68,15 @@ for index, cue in enumerate(meeting['cues']):
 
 characters = sorted({s['character'] for cue in meeting['cues'] for s in cue['sources'] if s.get('take')})
 for character in characters:
+    if args.character and args.character != character: continue
     parts=[np.zeros(round(.25*SR))]; cursor=len(parts[0]); solos=[]; hooks=[]
     for index,cue in enumerate(meeting['cues']):
         if cue['speaker'] != character: continue
-        x=take(cue['sources'][0]); assert abs(len(x)/SR-cue['duration']) < .0001
-        solos.append({'cueIndex':index,'offset':cursor/SR,'duration':len(x)/SR,'sources':cue['sources']})
+        source=next(s for s in cue['sources'] if s['character']==character)
+        x=take(source)
+        if cue.get('speakers'):x=np.pad(x,(0,max(0,round(cue['duration']*SR)-len(x))))
+        assert abs(len(x)/SR-cue['duration']) < .0001
+        solos.append({'cueIndex':index,'offset':cursor/SR,'duration':len(x)/SR,'sources':[source]})
         parts.extend([x,np.zeros(round(.5*SR))]); cursor+=len(x)+round(.5*SR)
     for index,cue,groups,slots in choruses:
         offset=cursor; phrases=[]

@@ -1,0 +1,10 @@
+{
+  "meeting": "quarterly-0",
+  "voice": "quarterly-0-voice-18d7028567f6.mp3",
+  "voiceSha256": "18d7028567f6964e8511fab213db3d2bff9f9e20a1f5d95cacd92067626b94cd",
+  "zeroOffsetCorrelation": 0.999778492346589,
+  "sampleRate": 24000,
+  "envelopeHz": 25,
+  "audioReplaced": false,
+  "generationCreditsUsed": 0
+}

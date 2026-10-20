@@ -1,0 +1,126 @@
+{
+  "character": "linda",
+  "meeting": "quarterly-0",
+  "status": "reviewed-integrated",
+  "audio": "linda-exact-quarterly-0.wav",
+  "audioSha256": "15bf1b46c0b1e4b0b85bf79f0544c96e5c1ef2a58c792e81f7cfbad151212a52",
+  "duration": 12.882916666666667,
+  "characterImage": "public/studio/season/posters/linda-listening.jpg",
+  "solos": [
+    {
+      "cueIndex": 8,
+      "offset": 0.25,
+      "duration": 2.2401666666666666,
+      "sources": [
+        {
+          "character": "linda",
+          "text": "I’ll carry the zero forward.",
+          "line": "linda-ed9687d7d84fddfd",
+          "take": "fa8739778a53fa0e56eaaa785ba83b0760e59a3ddc8428dbe5406e68e2f2ad2a",
+          "masterSha256": "b52a472d270abef86413cf45bd126ca312f3e131eb9122d5d8b2a290529dd505"
+        }
+      ]
+    }
+  ],
+  "choruses": [
+    {
+      "cueIndex": 7,
+      "offset": 2.9901666666666666,
+      "duration": 9.64275,
+      "phrases": [
+        {
+          "start": 0.0,
+          "duration": 1.2351666666666667,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "linda",
+            "text": "Optimize.",
+            "line": "linda-5f8f4f49521f1312",
+            "take": "e7bbe4cb3dd1985f1637160f032a67ed5b6e70cd4d9e4fa4fc979159f19e6d3c",
+            "masterSha256": "b75a743899fc21cf2293eda87bdf837b216b74a2f61dfd91b55c0c95c4a1c65c"
+          }
+        },
+        {
+          "start": 1.607125,
+          "duration": 1.1034166666666667,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "linda",
+            "text": "Onboard.",
+            "line": "linda-b521e13bc481292a",
+            "take": "5f261b51442f6b00a2e533bf83d4bd155e19ffe6b3daee21ebd9728b60a18f22",
+            "masterSha256": "fec6ab16843d705a0bb2c1308d9c4d496d36a3e60a7cd4dc1d49d74fe7ff8b29"
+          }
+        },
+        {
+          "start": 3.21425,
+          "duration": 1.0834583333333334,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "linda",
+            "text": "Unlock.",
+            "line": "linda-45bb18b0318e1ec5",
+            "take": "99bacd099c52d446f1a718f194e1c6f706034379a641f157a42f5b2723f1c079",
+            "masterSha256": "9016ef4631499562fe7630d97bdee42210632ea5848d7291defd0f23db5ccf5c"
+          }
+        },
+        {
+          "start": 4.821375,
+          "duration": 1.093375,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "linda",
+            "text": "Offline.",
+            "line": "linda-4fbda14953066a0c",
+            "take": "6336fdfbcc6b7e79252f58cad4c1a7ed94f2968d28bd02e27a7583f851296aab",
+            "masterSha256": "530f8a273c0b2cb2c09fd34307f9a9ed2fafbea27c8a4675a2f64470f7da5950"
+          }
+        },
+        {
+          "start": 6.4285,
+          "duration": 1.2351666666666667,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "linda",
+            "text": "Optimize.",
+            "line": "linda-5f8f4f49521f1312",
+            "take": "e7bbe4cb3dd1985f1637160f032a67ed5b6e70cd4d9e4fa4fc979159f19e6d3c",
+            "masterSha256": "b75a743899fc21cf2293eda87bdf837b216b74a2f61dfd91b55c0c95c4a1c65c"
+          }
+        },
+        {
+          "start": 8.035625,
+          "duration": 1.1034166666666667,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "linda",
+            "text": "Onboard.",
+            "line": "linda-b521e13bc481292a",
+            "take": "5f261b51442f6b00a2e533bf83d4bd155e19ffe6b3daee21ebd9728b60a18f22",
+            "masterSha256": "fec6ab16843d705a0bb2c1308d9c4d496d36a3e60a7cd4dc1d49d74fe7ff8b29"
+          }
+        }
+      ]
+    }
+  ],
+  "direction": "Exact approved voice. Restrained natural articulation, subtle blinks, stable attached lips and headset. Preserve face identity.",
+  "workflow": "Runway Character Script to Video, uploaded Audio",
+  "taskId": "2a5f7e54-a769-416a-bbc7-a0d84e6d9b07",
+  "assetId": "589908ce-53cf-4fa6-ae49-741dab423b95",
+  "creditsSpent": 2,
+  "runwaySession": "5bb35d14-ea57-4d00-979c-8d4c846ccbad",
+  "output": "linda-performance.mp4",
+  "outputSha256": "bf8d11353a6e6f1c2087c08627933e3e248f28cd56ad666d1ff7e55808a3ac40",
+  "runtimeVideo": "public/studio/performances/linda-quarterly-exact-v1.mp4",
+  "runtimeSha256": "ec78ef922caf2864217b9e46bf1111ea1d30175bc75c187374b1950354b2b36c",
+  "audioLagSeconds": 0,
+  "audioWaveformCorrelation": 0.9999823878869273,
+  "deliveryEncoding": {
+    "width": 720,
+    "height": 540,
+    "audio": false,
+    "keyframeIntervalFrames": 24,
+    "bFrames": 0
+  },
+  "reviewNotes": "Reviewed solo and chorus frames: attached lips, stable headset and identity, subtle eye movement. Live audio retains the approved master. Keys uses the approved separate keyboard detail view during her speaking performance."
+}

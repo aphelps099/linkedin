@@ -1,0 +1,126 @@
+{
+  "character": "keys",
+  "meeting": "quarterly-0",
+  "status": "reviewed-integrated",
+  "audio": "keys-exact-quarterly-0.wav",
+  "audioSha256": "9e5135f415140bdd2ac8421a887cef70103232023c2b83dc8f01f37b84f00909",
+  "duration": 14.060125,
+  "characterImage": "assets/meeting-performances/onboarding-0/keys-wide-reference.png",
+  "solos": [
+    {
+      "cueIndex": 5,
+      "offset": 0.25,
+      "duration": 3.417375,
+      "sources": [
+        {
+          "character": "keys",
+          "text": "This will unlock visibility into our future visibility.",
+          "line": "keys-8881696f280e8ad0",
+          "take": "42cc75fd97cf9b02409e483fc4e979986d05c56fb324cb988551ef654e5d3841",
+          "masterSha256": "c2ceb15a815c0d6c7c81380d4a29088d26bbfbbd467918b2d201a0379c066b91"
+        }
+      ]
+    }
+  ],
+  "choruses": [
+    {
+      "cueIndex": 7,
+      "offset": 4.167375,
+      "duration": 9.64275,
+      "phrases": [
+        {
+          "start": 0.0,
+          "duration": 0.925625,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "keys",
+            "text": "Optimize.",
+            "line": "keys-5f8f4f49521f1312",
+            "take": "92262db9080dc5ff5c34b6bcd026ba8681103c6ab7bc332da9de8cb927923215",
+            "masterSha256": "e2c7d50eebe66451eb5885cb7d90a587cb1b405272caa64659728e23420847af"
+          }
+        },
+        {
+          "start": 1.607125,
+          "duration": 0.7520416666666667,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "keys",
+            "text": "Onboard.",
+            "line": "keys-b521e13bc481292a",
+            "take": "00fb9225847a370a161912b958c3cdcd69c2cfb5fa93d31e5d868a73314ec114",
+            "masterSha256": "8c4d77a09bad15473e4fa34ac667dd206c0ad853e8a948d4c0e0148cfe8f6ef4"
+          }
+        },
+        {
+          "start": 3.21425,
+          "duration": 0.7805833333333333,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "keys",
+            "text": "Unlock.",
+            "line": "keys-45bb18b0318e1ec5",
+            "take": "3e83b211e0e3904796199a7468a02c6c0a79a7f3832ee9e210feb66e31f345e2",
+            "masterSha256": "7c4e58423cd49806374d14c09dc5e63a2cdd341f2b6ed3ff013932398be0c5f1"
+          }
+        },
+        {
+          "start": 4.821375,
+          "duration": 0.7932083333333333,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "keys",
+            "text": "Offline.",
+            "line": "keys-4fbda14953066a0c",
+            "take": "7f6a86163b4198a7f0ebcb92d0a700aca50711b4f90c450962f919ae129533c0",
+            "masterSha256": "29fe8beb447e2c904117ec9d54191f08dfa2e896cff6da22924895565e713ef6"
+          }
+        },
+        {
+          "start": 6.4285,
+          "duration": 0.925625,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "keys",
+            "text": "Optimize.",
+            "line": "keys-5f8f4f49521f1312",
+            "take": "92262db9080dc5ff5c34b6bcd026ba8681103c6ab7bc332da9de8cb927923215",
+            "masterSha256": "e2c7d50eebe66451eb5885cb7d90a587cb1b405272caa64659728e23420847af"
+          }
+        },
+        {
+          "start": 8.035625,
+          "duration": 0.7520416666666667,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "keys",
+            "text": "Onboard.",
+            "line": "keys-b521e13bc481292a",
+            "take": "00fb9225847a370a161912b958c3cdcd69c2cfb5fa93d31e5d868a73314ec114",
+            "masterSha256": "8c4d77a09bad15473e4fa34ac667dd206c0ad853e8a948d4c0e0148cfe8f6ef4"
+          }
+        }
+      ]
+    }
+  ],
+  "direction": "Exact approved voice. Restrained natural articulation, subtle blinks, stable attached lips and headset. Preserve face identity.",
+  "workflow": "Runway Character Script to Video, uploaded Audio",
+  "taskId": "b332bcf0-c615-4340-8544-1e1a3f1857ec",
+  "assetId": "80925cb9-bd68-461c-982f-3d260f32f586",
+  "creditsSpent": 2,
+  "runwaySession": "5bb35d14-ea57-4d00-979c-8d4c846ccbad",
+  "output": "keys-performance.mp4",
+  "outputSha256": "dbc1d3a0832885e4be0cb5fee06c39f160a36d1b4c7b41c79b4bb305cd21f4ff",
+  "runtimeVideo": "public/studio/performances/keys-quarterly-exact-v1.mp4",
+  "runtimeSha256": "2f05b24137ae86cc2b6d60192be8015dc48661cf9157803dcf32ea74243165e0",
+  "audioLagSeconds": 0,
+  "audioWaveformCorrelation": 0.9998711666705592,
+  "deliveryEncoding": {
+    "width": 720,
+    "height": 540,
+    "audio": false,
+    "keyframeIntervalFrames": 24,
+    "bFrames": 0
+  },
+  "reviewNotes": "Reviewed solo and chorus frames: attached lips, stable headset and identity, subtle eye movement. Live audio retains the approved master. Keys uses the approved separate keyboard detail view during her speaking performance."
+}

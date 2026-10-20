@@ -34,7 +34,7 @@ export function buildLibrary() {
       meetings[id]={title:meeting.title,bpm:meeting.bpm,roster:meeting.roster,cues:meeting.lines.map(([speaker,text],index)=>{
         const role=index<2?'opening':index===6?'transition':index===7?'chorus':index===8?'button':'exchange';
         const usage={type:'meeting',meeting:id,agenda,index,role};
-        if(speaker!=='all') return {speaker,line:add(speaker,text,usage)};
+        if(speaker!=='all') return {speaker,line:add(speaker,text,usage),...(meeting.joins?.[index]?{joining:meeting.joins[index].map(who=>({speaker:who,line:add(who,text,usage)}))}:{})};
         // Short hook phrases are separate recordings. Dialogue remains whole sentences.
         const phrases=text.split('.').map(t=>t.trim()).filter(Boolean).map(t=>`${t}.`);
         return {speaker,text,phrases:phrases.map((phrase,phraseIndex)=>Object.fromEntries(

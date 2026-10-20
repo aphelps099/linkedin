@@ -1,0 +1,111 @@
+{
+  "character": "people",
+  "meeting": "quarterly-0",
+  "status": "reviewed-integrated",
+  "audio": "people-exact-quarterly-0.wav",
+  "audioSha256": "f2373fa60f4e658649ef667fef100f652d0a9977aa6f0db5349c91b4ebc8cc8c",
+  "duration": 10.14275,
+  "characterImage": "public/studio/season/posters/people-listening.jpg",
+  "solos": [],
+  "choruses": [
+    {
+      "cueIndex": 7,
+      "offset": 0.25,
+      "duration": 9.64275,
+      "phrases": [
+        {
+          "start": 0.0,
+          "duration": 0.9392916666666666,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "people",
+            "text": "Optimize.",
+            "line": "people-5f8f4f49521f1312",
+            "take": "2d897a87543e4478375a6b86b5a59f4ab5756ee0fbfce22a7373eff7629b1b95",
+            "masterSha256": "8ee58530aecc109c746b5c3266567f7fd875bcabf914bf0cf8739f3869009df6"
+          }
+        },
+        {
+          "start": 1.607125,
+          "duration": 0.8044583333333334,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "people",
+            "text": "Onboard.",
+            "line": "people-b521e13bc481292a",
+            "take": "fbaa6719c3539528300912a90233a1f06549253e90930081805af601ff8245fa",
+            "masterSha256": "b48a2358580b53223d5ad8791e74d647a9dd333e0ebe86814b6b87671a08d530"
+          }
+        },
+        {
+          "start": 3.21425,
+          "duration": 0.8260833333333333,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "people",
+            "text": "Unlock.",
+            "line": "people-45bb18b0318e1ec5",
+            "take": "64aab8ce62269e6a5bda45aa8e3fd3e3b940fc0a6bfa373b54c273653780f6ce",
+            "masterSha256": "df4a32d287d679da4fbf618b18f2b24e411a6dc1aea662c503509f22d5eed709"
+          }
+        },
+        {
+          "start": 4.821375,
+          "duration": 0.828,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "people",
+            "text": "Offline.",
+            "line": "people-4fbda14953066a0c",
+            "take": "e18f24468d6356aa8aa1a805273d893dec32f42644818fd73c4cf59bd89e02fe",
+            "masterSha256": "fc22905f57e35adffb2e47ea66db18461146aedfc060364a8a54982daa107a00"
+          }
+        },
+        {
+          "start": 6.4285,
+          "duration": 0.9392916666666666,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "people",
+            "text": "Optimize.",
+            "line": "people-5f8f4f49521f1312",
+            "take": "2d897a87543e4478375a6b86b5a59f4ab5756ee0fbfce22a7373eff7629b1b95",
+            "masterSha256": "8ee58530aecc109c746b5c3266567f7fd875bcabf914bf0cf8739f3869009df6"
+          }
+        },
+        {
+          "start": 8.035625,
+          "duration": 0.8044583333333334,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "people",
+            "text": "Onboard.",
+            "line": "people-b521e13bc481292a",
+            "take": "fbaa6719c3539528300912a90233a1f06549253e90930081805af601ff8245fa",
+            "masterSha256": "b48a2358580b53223d5ad8791e74d647a9dd333e0ebe86814b6b87671a08d530"
+          }
+        }
+      ]
+    }
+  ],
+  "direction": "Exact approved voice. Restrained natural articulation, subtle blinks, stable attached lips and headset. Preserve face identity.",
+  "workflow": "Runway Character Script to Video, uploaded Audio",
+  "taskId": "a76dbb54-974c-4e30-9163-ee5ea2a78e30",
+  "assetId": "3b180621-cf3a-4156-a4ea-153d50456ced",
+  "creditsSpent": 2,
+  "runwaySession": "5bb35d14-ea57-4d00-979c-8d4c846ccbad",
+  "output": "people-performance.mp4",
+  "outputSha256": "3d60c2d91b7b1f3a9b42bcc4e24c95e507c98e4cda2ce66e53a7f7d439aa815c",
+  "runtimeVideo": "public/studio/performances/people-quarterly-exact-v1.mp4",
+  "runtimeSha256": "57216a7d5cd0c224b1de3ca031da677f1c6808246e7a776c8b857c34f0b3461c",
+  "audioLagSeconds": 0,
+  "audioWaveformCorrelation": 0.9999255864852049,
+  "deliveryEncoding": {
+    "width": 720,
+    "height": 540,
+    "audio": false,
+    "keyframeIntervalFrames": 24,
+    "bFrames": 0
+  },
+  "reviewNotes": "Reviewed solo and chorus frames: attached lips, stable headset and identity, subtle eye movement. Live audio retains the approved master. Keys uses the approved separate keyboard detail view during her speaking performance."
+}

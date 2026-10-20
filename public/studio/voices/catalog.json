@@ -5456,6 +5456,48 @@
       ]
     },
     {
+      "id": "accountant-0b2d46c5c42493c2",
+      "character": "accountant",
+      "text": "We’ll take the next steps offline.",
+      "spokenText": "We’ll take the next steps offline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "offline-0",
+          "agenda": "offline",
+          "index": 9,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "offline"
+      ]
+    },
+    {
+      "id": "synthia-0b2d46c5c42493c2",
+      "character": "synthia",
+      "text": "We’ll take the next steps offline.",
+      "spokenText": "We’ll take the next steps offline.",
+      "scriptStatus": "authored",
+      "usages": [
+        {
+          "type": "meeting",
+          "meeting": "offline-0",
+          "agenda": "offline",
+          "index": 9,
+          "role": "exchange"
+        }
+      ],
+      "tags": [
+        "meeting",
+        "exchange",
+        "offline"
+      ]
+    },
+    {
       "id": "synergy-de49b86248a41c99",
       "character": "synergy",
       "text": "Before we delve in, let’s optimize our meeting footprint.",
@@ -7296,6 +7338,16 @@
         {
           "speaker": "accountant",
           "line": "accountant-d2fa2bd53e45204a"
+        },
+        {
+          "speaker": "accountant",
+          "line": "accountant-0b2d46c5c42493c2",
+          "joining": [
+            {
+              "speaker": "synthia",
+              "line": "synthia-0b2d46c5c42493c2"
+            }
+          ]
         }
       ]
     },

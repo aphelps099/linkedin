@@ -1,0 +1,30 @@
+{
+  "linda": [
+    "2a5f7e54-a769-416a-bbc7-a0d84e6d9b07",
+    "589908ce-53cf-4fa6-ae49-741dab423b95"
+  ],
+  "operations": [
+    "384e9bf4-8178-4551-8b2f-fb1b5a97e545",
+    "b1138e18-3868-4375-99d7-875c86cdc86b"
+  ],
+  "accountant": [
+    "2691a6a0-4b5e-44dd-a0bf-527a4300e706",
+    "a1b4ce20-e822-44c9-a57b-c615e10be0d4"
+  ],
+  "strategy": [
+    "82e4eaa6-fb2f-4d11-b0f6-800efaacf16c",
+    "e7e35cf8-ec72-4894-b3f9-ea54c0e3a643"
+  ],
+  "keys": [
+    "b332bcf0-c615-4340-8544-1e1a3f1857ec",
+    "80925cb9-bd68-461c-982f-3d260f32f586"
+  ],
+  "people": [
+    "a76dbb54-974c-4e30-9163-ee5ea2a78e30",
+    "3b180621-cf3a-4156-a4ea-153d50456ced"
+  ],
+  "guitar": [
+    "02cccb0d-ea64-477c-b6e7-9fe047dd3ddf",
+    "3af05177-a1bc-41cf-8557-8668da69c1df"
+  ]
+}

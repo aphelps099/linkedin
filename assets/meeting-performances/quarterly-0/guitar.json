@@ -1,0 +1,111 @@
+{
+  "character": "guitar",
+  "meeting": "quarterly-0",
+  "status": "reviewed-integrated",
+  "audio": "guitar-exact-quarterly-0.wav",
+  "audioSha256": "7bf93921350bf370a813661abfd90a51e43c85387a1d56da52d0f591485491ad",
+  "duration": 10.14275,
+  "characterImage": "public/studio/season/posters/guitar-listening.jpg",
+  "solos": [],
+  "choruses": [
+    {
+      "cueIndex": 7,
+      "offset": 0.25,
+      "duration": 9.64275,
+      "phrases": [
+        {
+          "start": 0.0,
+          "duration": 0.8752083333333334,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "guitar",
+            "text": "Optimize.",
+            "line": "guitar-5f8f4f49521f1312",
+            "take": "a60f4d48b05e850eb557afc0f9ff6810dbd05cac7fa10dd3d25eefcd53234ff7",
+            "masterSha256": "67dcc49bd4e3e781df46ce52f3ad8c4f63386f247da3fbacffa52b60305fc023"
+          }
+        },
+        {
+          "start": 1.607125,
+          "duration": 0.7543333333333333,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "guitar",
+            "text": "Onboard.",
+            "line": "guitar-b521e13bc481292a",
+            "take": "73fd902130648f260ee1a2ec84ad187fb51ceb19cdcdd02e0a33b5b3aa6c0a8a",
+            "masterSha256": "9dee653d7633a660176b3753ebc232122cedb5cf9addc8f3d13e7bb7eb06a8cc"
+          }
+        },
+        {
+          "start": 3.21425,
+          "duration": 0.724625,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "guitar",
+            "text": "Unlock.",
+            "line": "guitar-45bb18b0318e1ec5",
+            "take": "2a034a7799d6681fa4e6d4da406d6b1efdc174a503e6aed0b5a347e9de72f7b5",
+            "masterSha256": "148891542bcf22c6e36f1b0c690dde917232d8892011bf5b1878394576ea39f1"
+          }
+        },
+        {
+          "start": 4.821375,
+          "duration": 0.7796666666666666,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "guitar",
+            "text": "Offline.",
+            "line": "guitar-4fbda14953066a0c",
+            "take": "cb055f7d6f021bd3fdccacfa341ab3066d9359999aa2f36ab6f78aab5aec6c58",
+            "masterSha256": "f6c2ea14ee0dc6cb174a07967079d130427b98739383fb6e6bf81ec3cc86b052"
+          }
+        },
+        {
+          "start": 6.4285,
+          "duration": 0.8752083333333334,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "guitar",
+            "text": "Optimize.",
+            "line": "guitar-5f8f4f49521f1312",
+            "take": "a60f4d48b05e850eb557afc0f9ff6810dbd05cac7fa10dd3d25eefcd53234ff7",
+            "masterSha256": "67dcc49bd4e3e781df46ce52f3ad8c4f63386f247da3fbacffa52b60305fc023"
+          }
+        },
+        {
+          "start": 8.035625,
+          "duration": 0.7543333333333333,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "guitar",
+            "text": "Onboard.",
+            "line": "guitar-b521e13bc481292a",
+            "take": "73fd902130648f260ee1a2ec84ad187fb51ceb19cdcdd02e0a33b5b3aa6c0a8a",
+            "masterSha256": "9dee653d7633a660176b3753ebc232122cedb5cf9addc8f3d13e7bb7eb06a8cc"
+          }
+        }
+      ]
+    }
+  ],
+  "direction": "Exact approved voice. Restrained natural articulation, subtle blinks, stable attached lips and headset. Preserve face identity.",
+  "workflow": "Runway Character Script to Video, uploaded Audio",
+  "taskId": "02cccb0d-ea64-477c-b6e7-9fe047dd3ddf",
+  "assetId": "3af05177-a1bc-41cf-8557-8668da69c1df",
+  "creditsSpent": 2,
+  "runwaySession": "5bb35d14-ea57-4d00-979c-8d4c846ccbad",
+  "output": "guitar-performance.mp4",
+  "outputSha256": "90859b9c88bbf210ea7715e2e3ef96060d01c221c60b76852509eddc68ddbe3f",
+  "runtimeVideo": "public/studio/performances/guitar-quarterly-exact-v1.mp4",
+  "runtimeSha256": "39a7c3c6d52703d0908a02f52ff67d96d3d5a09c68c5035021db81583c888b87",
+  "audioLagSeconds": 0,
+  "audioWaveformCorrelation": 0.9999793868787743,
+  "deliveryEncoding": {
+    "width": 720,
+    "height": 540,
+    "audio": false,
+    "keyframeIntervalFrames": 24,
+    "bFrames": 0
+  },
+  "reviewNotes": "Reviewed solo and chorus frames: attached lips, stable headset and identity, subtle eye movement. Live audio retains the approved master. Keys uses the approved separate keyboard detail view during her speaking performance."
+}

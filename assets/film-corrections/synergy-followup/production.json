@@ -1,0 +1,23 @@
+{
+  "sourceAsset": "6f1d11bd-024a-403f-8f7c-829100167801",
+  "sourceSha256": "301e4def86d7606e0db872c9049dded49df857b92a7925990430336c11eced0a",
+  "outputSha256": "48ceb9a806f1cf9eb85405e7be273d8e7cc0f53b1a94af4c756b33aa17a6c749",
+  "audioUnchanged": true,
+  "audioAacSha256": "81ca1ffbfcef13393a0bf32a9675ec4a4c884d1aed04eccd374cd7738a05ebd2",
+  "frameCount": 721,
+  "fps": 24.0,
+  "closeup": [
+    21.35,
+    24.6
+  ],
+  "crop": [
+    280,
+    110,
+    384,
+    216
+  ],
+  "mouth": "18 LEDs, fixed 1.4px height at source resolution; brightness travels left to right; source eyes retained",
+  "trackingMinCorrelation": 0.9850447523173856,
+  "trackingMedianCorrelation": 0.9946660556634531,
+  "creditsUsed": 0
+}

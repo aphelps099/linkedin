@@ -18,7 +18,7 @@ for(const [agenda,variants] of Object.entries(meetings)){
   assert.equal(variants.length,2);
   for(const m of variants){
     total++;assert([3,5,9,12].includes(m.roster.length));assert.equal(new Set(m.roster).size,m.roster.length);
-    assert.equal(m.cues.length,9);assert.equal(m.cues.length,m.lines.length);
+    assert.equal(m.cues.length,m.id==='offline-0'?10:9);assert.equal(m.cues.length,m.lines.length);
     let end=0;
     for(const [i,cue] of m.cues.entries()){
       assert.deepEqual([cue.speaker,cue.text],m.lines[i]);assert(cue.start>end);assert(cue.duration>0);
@@ -148,7 +148,33 @@ const arjunClosing=offline.cues[8];
 assert.equal(performanceForTime('accountant',offline,arjunClosing.start+.4).cue,arjunClosing);
 assert(exactPerformance('accountant',arjunClosing).offset<exactPerformance('accountant',offlineHook).offset,'Arjun seeks back to his source solo after the chorus');
 assert.equal(arjunClosing.text,'Same link. Same time. Same people.');
-assert.equal(performanceForTime('accountant',offline,arjunClosing.start+arjunClosing.duration+.01),null);
+assert.equal(performanceForTime('accountant',offline,arjunClosing.start+arjunClosing.duration+.01).cue,offline.cues[9]);
+const sharedClosing=offline.cues[9];
+assert.deepEqual(sharedClosing.speakers,['accountant','synthia']);
+assert(isSpeaker('accountant',sharedClosing)&&isSpeaker('synthia',sharedClosing));
+assert(!isSpeaker('synergy',sharedClosing)&&!isSpeaker('people',sharedClosing));
+assert.notDeepEqual(sharedClosing.speakerLevels.accountant,sharedClosing.speakerLevels.synthia);
+assert.equal(exactPerformance('synthia',sharedClosing),null);
+assert(exactPerformance('accountant',sharedClosing));
+assert.equal(performanceForTime('accountant',offline,sharedClosing.start+sharedClosing.duration+.01),null);
+const quarterly=meetings.quarterly[0],quarterlyHook=quarterly.cues[7];
+assert.equal(nextMeeting(offline.id).id,quarterly.id);
+assert.equal(quarterly.roster.length,12);
+for(const id of ['people','strategy','guitar','keys','operations','accountant','linda']){
+  for(const cue of quarterly.cues.filter(c=>c.speaker===id||c.speaker==='all')){
+    const performance=exactPerformance(id,cue);
+    assert(performance,`${id}: exact quarterly solo/chorus coverage`);
+    await access(`public${performance.video}`);
+    assert(Math.abs(performance.duration-cue.duration)<.0001);
+    assert(Math.abs(performanceTime(performance,cue,cue.start+.4)-performance.offset-.4)<1e-9);
+  }
+  const altered=structuredClone(quarterlyHook);altered.sources[0].masterSha256='changed';
+  assert.equal(exactPerformance(id,altered),null);
+  assert.equal(exactPerformance(id,{...quarterlyHook,duration:quarterlyHook.duration+.1}),null);
+}
+assert.equal(performanceForTime('people',quarterly,0).current,false);
+assert.equal(performanceForTime('linda',quarterly,quarterly.cues[8].start+.3).cue,quarterly.cues[8]);
+assert.notDeepEqual(quarterlyHook.speakerLevels.synergy,quarterlyHook.speakerLevels.synthia);
 for(const id of ['synergy','synthia','printer','pat'])assert.equal(exactPerformance(id,offlineHook),null);
 assert.notDeepEqual(offlineHook.speakerLevels.synergy,offlineHook.speakerLevels.synthia);
 for(const id of ['synergy','synthia']){

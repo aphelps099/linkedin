@@ -69,7 +69,7 @@ let mapped=0;
 for(const [id,meeting] of Object.entries(bank.meetings)){
   const rendered=season.meetings[id];
   for(const [index,cue] of meeting.cues.entries()){
-    const expected=cue.speaker==='all'?cue.phrases.flatMap(phrase=>Object.values(phrase)):[cue.line];
+    const expected=cue.speaker==='all'?cue.phrases.flatMap(phrase=>Object.values(phrase)):[cue.line,...(cue.joining||[]).map(part=>part.line)];
     assert.equal(rendered.cues[index].sources.length,expected.length);
     for(const [i,lineId] of expected.entries()){
       const line=bank.lines.find(l=>l.id===lineId),profile=bank.characters[line.character],source=rendered.cues[index].sources[i];

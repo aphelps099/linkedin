@@ -41,7 +41,7 @@ export default function MeetingRoom(){
   const cue=cueAt(meeting,time),frame={time,cue};
   const spotlight=pin||(follow?(cue?.speaker&&cue.speaker!=='all'?cue.speaker:'synergy'):null);
   const finished=time>=meeting.duration-.02&&!state.playing&&!state.loading;
-  const speaker=cue?.speaker==='all'?'The whole meeting':cast[cue?.speaker]?.name;
+  const speaker=cue?.speaker==='all'?'The whole meeting':cue?.speakers?cue.speakers.map(id=>cast[id].name).join(' + '):cast[cue?.speaker]?.name;
   const fraction=Math.min(100,time/meeting.duration*100);
   const number=meetingSequence.findIndex(item=>item.id===meeting.id)+1;
   return <div className="c2-home mr-page">

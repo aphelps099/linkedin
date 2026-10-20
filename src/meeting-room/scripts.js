@@ -120,7 +120,7 @@
         ]}
       ],
       offline:[
-        {title:"We’ll take this offline",bpm:92,groove:"Dusty office hip-hop",roster:['people','strategy','synthia','guitar','synergy','keys','accountant','pat','printer'],lines:[
+        {title:"We’ll take this offline",bpm:92,groove:"Dusty office hip-hop",joins:{9:['synthia']},roster:['people','strategy','synthia','guitar','synergy','keys','accountant','pat','printer'],lines:[
           ['synergy','Before we delve in, let’s optimize our communication framework.'],
           ['strategy','I’m excited to share that I’ve booked the follow-up.'],
           ['guitar','What is the follow-up for?'],
@@ -129,7 +129,8 @@
           ['people','Should we invite everyone from this meeting?'],
           ['synergy','Absolutely. We’ll call it a smaller working group.'],
           ['all','We’ll take this offline. Offline. We’ll take this offline.'],
-          ['accountant','Same link. Same time. Same people.']
+          ['accountant','Same link. Same time. Same people.'],
+          ['accountant','We’ll take the next steps offline.']
         ]},
         {title:"A more intentional meeting cadence",bpm:92,groove:"Dusty office hip-hop",roster:['people','strategy','synthia','guitar','synergy','keys','linda','pat','printer'],lines:[
           ['synergy','Before we delve in, let’s optimize our meeting footprint.'],

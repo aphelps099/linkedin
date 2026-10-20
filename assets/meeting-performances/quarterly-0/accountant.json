@@ -1,0 +1,126 @@
+{
+  "character": "accountant",
+  "meeting": "quarterly-0",
+  "status": "reviewed-integrated",
+  "audio": "accountant-exact-quarterly-0.wav",
+  "audioSha256": "66bec8fa63cbb85c0bf2a0cab6fcae3247426355c030a101e291dabe6ae53b3e",
+  "duration": 13.036166666666666,
+  "characterImage": "public/studio/season/posters/arjun-listening.jpg",
+  "solos": [
+    {
+      "cueIndex": 3,
+      "offset": 0.25,
+      "duration": 2.3934166666666665,
+      "sources": [
+        {
+          "character": "accountant",
+          "text": "Have we onboarded any customers?",
+          "line": "accountant-c61f92bdd02e8afe",
+          "take": "d3743a1e7a3633fcb13d19d10fe6b91141898dfe34d51b596d5d9158b09792cf",
+          "masterSha256": "cce641386e0368ce14e73bcc29983f3be19bf220d8f7dd524bb617d780bb8d6a"
+        }
+      ]
+    }
+  ],
+  "choruses": [
+    {
+      "cueIndex": 7,
+      "offset": 3.1434166666666665,
+      "duration": 9.64275,
+      "phrases": [
+        {
+          "start": 0.0,
+          "duration": 1.1501666666666666,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "accountant",
+            "text": "Optimize.",
+            "line": "accountant-5f8f4f49521f1312",
+            "take": "f56dbc277335fbcae4ff6b8376c2f7003c5893d7588601509b1b2713d3fa308c",
+            "masterSha256": "4de3cd5df58b5ab1c94af4cc615007dfd0e60fb503939f66f0f8a76daff23da3"
+          }
+        },
+        {
+          "start": 1.607125,
+          "duration": 1.0510416666666667,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "accountant",
+            "text": "Onboard.",
+            "line": "accountant-b521e13bc481292a",
+            "take": "5221a7612aecf1476417525395b9633c220dfc64235b6d2470c27b2b05e314a5",
+            "masterSha256": "10588b07ea9ebd569edce23e464d4928409ec6bc1f4dac80e5ac255df4d867ba"
+          }
+        },
+        {
+          "start": 3.21425,
+          "duration": 0.9266666666666666,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "accountant",
+            "text": "Unlock.",
+            "line": "accountant-45bb18b0318e1ec5",
+            "take": "401419909e5e652900850a46359b55633f4e3fbca01e3fc0dacd6ef7fbfc4503",
+            "masterSha256": "3e8c0a60bbbd9861b77f4910fe31ecb54378abe32776486ea20b4af51bbc7fc7"
+          }
+        },
+        {
+          "start": 4.821375,
+          "duration": 1.0212916666666667,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "accountant",
+            "text": "Offline.",
+            "line": "accountant-4fbda14953066a0c",
+            "take": "2deafa320b006a0a83629ac2330593ac1938ee565c929000fb71fa1ccde64ded",
+            "masterSha256": "afe970c75ceb162dd04701ba50975e7b8d67cec92cd4fa3016a33b0810e78a49"
+          }
+        },
+        {
+          "start": 6.4285,
+          "duration": 1.1501666666666666,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "accountant",
+            "text": "Optimize.",
+            "line": "accountant-5f8f4f49521f1312",
+            "take": "f56dbc277335fbcae4ff6b8376c2f7003c5893d7588601509b1b2713d3fa308c",
+            "masterSha256": "4de3cd5df58b5ab1c94af4cc615007dfd0e60fb503939f66f0f8a76daff23da3"
+          }
+        },
+        {
+          "start": 8.035625,
+          "duration": 1.0510416666666667,
+          "slotDuration": 1.607125,
+          "source": {
+            "character": "accountant",
+            "text": "Onboard.",
+            "line": "accountant-b521e13bc481292a",
+            "take": "5221a7612aecf1476417525395b9633c220dfc64235b6d2470c27b2b05e314a5",
+            "masterSha256": "10588b07ea9ebd569edce23e464d4928409ec6bc1f4dac80e5ac255df4d867ba"
+          }
+        }
+      ]
+    }
+  ],
+  "direction": "Exact approved voice. Restrained natural articulation, subtle blinks, stable attached lips and headset. Preserve face identity.",
+  "workflow": "Runway Character Script to Video, uploaded Audio",
+  "taskId": "2691a6a0-4b5e-44dd-a0bf-527a4300e706",
+  "assetId": "a1b4ce20-e822-44c9-a57b-c615e10be0d4",
+  "creditsSpent": 2,
+  "runwaySession": "5bb35d14-ea57-4d00-979c-8d4c846ccbad",
+  "output": "accountant-performance.mp4",
+  "outputSha256": "38625db5a222b4631f8739a9660e40518a37326ada68586437e3329227d62d2d",
+  "runtimeVideo": "public/studio/performances/accountant-quarterly-exact-v1.mp4",
+  "runtimeSha256": "a0b9f229d48380e777833bf5eb7239afbbe321026837e4284e57a6e936ad4c55",
+  "audioLagSeconds": 0,
+  "audioWaveformCorrelation": 0.9999922924016725,
+  "deliveryEncoding": {
+    "width": 720,
+    "height": 540,
+    "audio": false,
+    "keyframeIntervalFrames": 24,
+    "bFrames": 0
+  },
+  "reviewNotes": "Reviewed solo and chorus frames: attached lips, stable headset and identity, subtle eye movement. Live audio retains the approved master. Keys uses the approved separate keyboard detail view during her speaking performance."
+}

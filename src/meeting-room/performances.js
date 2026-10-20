@@ -2,6 +2,7 @@ import {standupSolos,standupChorus} from './standup-performances.js';
 import {onboardingSolos,onboardingChorus} from './onboarding-performances.js';
 import {unlockSolos,unlockChorus} from './unlock-performances.js';
 import {offlineSolos,offlineChorus} from './offline-performances.js';
+import {quarterlySolos,quarterlyChorus} from './quarterly-performances.js';
 
 // A clip belongs to one exact recorded take, never merely to a character name.
 export const performances={
@@ -13,8 +14,9 @@ export const performances={
   ...onboardingSolos,
   ...unlockSolos,
   ...offlineSolos,
+  ...quarterlySolos,
 };
-const choruses=[standupChorus,onboardingChorus,unlockChorus,offlineChorus];
+const choruses=[standupChorus,onboardingChorus,unlockChorus,offlineChorus,quarterlyChorus];
 const sourceSignature=sources=>JSON.stringify(sources?.map(source=>[
   source.character,source.text,source.take,source.masterSha256,source.version,
   source.provider,source.voice,source.rate,source.pitch,source.pitchRange,source.engineVersion,
