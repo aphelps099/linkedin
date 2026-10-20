@@ -1,0 +1,59 @@
+{
+  "revision": "V3 Synergy laptop: meeting and ChatGPT",
+  "duration": 60,
+  "width": 1280,
+  "height": 720,
+  "fps": 24,
+  "audio": "Approved V2 stereo music/voice master preserved",
+  "replacements": [
+    [
+      19.09090909090909,
+      23.18181818181818,
+      "laptop-zoom",
+      0.4
+    ],
+    [
+      23.18181818181818,
+      24.545454545454543,
+      "synergy",
+      2.364
+    ],
+    [
+      34.090909090909086,
+      38.18181818181818,
+      "laptop-chatgpt",
+      5.0
+    ],
+    [
+      38.18181818181818,
+      39.54545454545454,
+      "printer",
+      1.614
+    ],
+    [
+      49.090909090909086,
+      50.45454545454545,
+      "droid",
+      2.2
+    ],
+    [
+      50.45454545454545,
+      51.81818181818181,
+      "banner",
+      5.0
+    ]
+  ],
+  "newRunwayCredits": 170,
+  "totalProjectCredits": 1700,
+  "authorizedMaximumCredits": 10000,
+  "screenText": {
+    "meeting": "Weekly Alignment",
+    "prompt": "Turn this into a LinkedIn post: I booked a meeting.",
+    "reply": "Humbled and honored to unlock a new era of alignment."
+  },
+  "sha256": "ba08c48c35593c433bcf8d2184c15ce97371ccdfb331fa541623973986f64119",
+  "audioVerification": {
+    "approvedV2AudioIdentical": true,
+    "aacSha256": "9c86ee5c50c116e384fab97e6940b3faeba4bdeec60903cfab4585fa3b3dc822"
+  }
+}

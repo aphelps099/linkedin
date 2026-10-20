@@ -179,24 +179,28 @@ def render(t):
     return f
 
 times=[.6,2.5,5.5,7.2,9,12,15.15,15.7,16.3,17.6,19.7,20.8,22.7,25.6,28.6,30.15,31.1,32.4,34.7,37.6,39.7,40.6,41.8,44.5,47.5,50.3,53.2,56.5,58.5]
-reviews=[]
-if B.args.stills:
-    for t in times:
-        f=render(t);reviews.append((t,f));cv2.imwrite(str(REVIEW/f'frame-{t:g}.jpg'),f)
-else:
-    proof=make_audio();silent=D/'edit-silent.mp4'
-    enc=subprocess.Popen(['ffmpeg','-v','error','-y','-f','rawvideo','-pix_fmt','bgr24','-s','1280x720','-r',str(FPS),'-i','-','-an','-c:v','libx264','-crf','18','-preset','medium','-threads','4','-pix_fmt','yuv420p','-movflags','+faststart',str(silent)],stdin=subprocess.PIPE)
-    wanted={round(t*FPS) for t in times}
-    for i in range(LENGTH*FPS):
-        f=render(i/FPS);enc.stdin.write(f.tobytes())
-        if i in wanted:reviews.append((i/FPS,f.copy()))
-        if i%240==0:print(f'Rendered {i/FPS:.0f} / {LENGTH} seconds',flush=True)
-    enc.stdin.close();assert enc.wait()==0
-    subprocess.run(['ffmpeg','-v','error','-y','-i',str(silent),'-i',str(A/'master.wav'),'-map','0:v:0','-map','1:a:0','-c:v','copy','-c:a','aac','-b:a','192k','-t','60','-movflags','+faststart',str(OUT)],check=True)
-    proof.update({'width':1280,'height':720,'fps':FPS,'duration':60,'shots':SHOTS,'drumDetailSource':'separate generated take' if USE_SEPARATE_DRUM_DETAIL else 'continuous drummer-arrival take, editorial crop','phraseWords':timings,'revisionCredits':850,'totalProjectCredits':1530,'maximumCredits':10000,'sha256':hashlib.sha256(OUT.read_bytes()).hexdigest()})
-    (D/'edit-proof.json').write_text(json.dumps(proof,indent=2)+'\n');print(str(OUT),flush=True)
-sheet=Image.new('RGB',(1280,math.ceil(len(reviews)/4)*207),'#171717');d=ImageDraw.Draw(sheet)
-for k,(t,f) in enumerate(reviews):
-    x=k%4*320;y=k//4*207;sheet.paste(Image.fromarray(cv2.cvtColor(f,cv2.COLOR_BGR2RGB)).resize((320,180)),(x,y+23));d.text((x+8,y+4),f'{t:.2f}s',fill='white')
-sheet.save(REVIEW/'edit-contact.jpg')
-for r in B.readers.values():r[0].release()
+
+def main():
+    reviews=[]
+    if B.args.stills:
+        for t in times:
+            f=render(t);reviews.append((t,f));cv2.imwrite(str(REVIEW/f'frame-{t:g}.jpg'),f)
+    else:
+        proof=make_audio();silent=D/'edit-silent.mp4'
+        enc=subprocess.Popen(['ffmpeg','-v','error','-y','-f','rawvideo','-pix_fmt','bgr24','-s','1280x720','-r',str(FPS),'-i','-','-an','-c:v','libx264','-crf','18','-preset','medium','-threads','4','-pix_fmt','yuv420p','-movflags','+faststart',str(silent)],stdin=subprocess.PIPE)
+        wanted={round(t*FPS) for t in times}
+        for i in range(LENGTH*FPS):
+            f=render(i/FPS);enc.stdin.write(f.tobytes())
+            if i in wanted:reviews.append((i/FPS,f.copy()))
+            if i%240==0:print(f'Rendered {i/FPS:.0f} / {LENGTH} seconds',flush=True)
+        enc.stdin.close();assert enc.wait()==0
+        subprocess.run(['ffmpeg','-v','error','-y','-i',str(silent),'-i',str(A/'master.wav'),'-map','0:v:0','-map','1:a:0','-c:v','copy','-c:a','aac','-b:a','192k','-t','60','-movflags','+faststart',str(OUT)],check=True)
+        proof.update({'width':1280,'height':720,'fps':FPS,'duration':60,'shots':SHOTS,'drumDetailSource':'separate generated take' if USE_SEPARATE_DRUM_DETAIL else 'continuous drummer-arrival take, editorial crop','phraseWords':timings,'revisionCredits':850,'totalProjectCredits':1530,'maximumCredits':10000,'sha256':hashlib.sha256(OUT.read_bytes()).hexdigest()})
+        (D/'edit-proof.json').write_text(json.dumps(proof,indent=2)+'\n');print(str(OUT),flush=True)
+    sheet=Image.new('RGB',(1280,math.ceil(len(reviews)/4)*207),'#171717');d=ImageDraw.Draw(sheet)
+    for k,(t,f) in enumerate(reviews):
+        x=k%4*320;y=k//4*207;sheet.paste(Image.fromarray(cv2.cvtColor(f,cv2.COLOR_BGR2RGB)).resize((320,180)),(x,y+23));d.text((x+8,y+4),f'{t:.2f}s',fill='white')
+    sheet.save(REVIEW/'edit-contact.jpg')
+    for r in B.readers.values():r[0].release()
+
+if __name__=="__main__":main()

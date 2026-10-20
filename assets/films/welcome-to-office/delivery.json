@@ -1,16 +1,16 @@
 {
   "library_file_id": "libfile_e55a7a3413488191b7821b70cb1f94b3",
-  "file_id": "file_00000000d2a081f68129960905b2d52c",
+  "file_id": "file_0000000095c08243845e7984b8b396a5",
   "file_name": "LinkedIn-Beats-Welcome-to-the-Office-720p.mp4",
-  "version": 1,
+  "version": 2,
   "duration": 60,
   "width": 1280,
   "height": 720,
-  "audio": "AAC stereo 48 kHz",
-  "revisionCredits": 850,
-  "totalProjectCredits": 1530,
+  "audio": "AAC stereo 48 kHz; identical to approved V2",
+  "revisionCredits": 170,
+  "totalProjectCredits": 1700,
   "authorizedMaximumCredits": 10000,
-  "sha256": "1bb45c533a459ca62ef8a447c32a5bc8887108a7c6002682b8f92c840e525962",
-  "fileSizeBytes": 14305125,
-  "revision": "V2 performance and blue phrase chorus"
+  "sha256": "ba08c48c35593c433bcf8d2184c15ce97371ccdfb331fa541623973986f64119",
+  "fileSizeBytes": 14751201,
+  "revision": "V3 Synergy laptop: meeting and ChatGPT"
 }

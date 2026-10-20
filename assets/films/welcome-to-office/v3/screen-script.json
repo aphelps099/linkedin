@@ -1,0 +1,37 @@
+{
+  "meeting": "Weekly Alignment",
+  "participants": [
+    "Synergy",
+    "Synthia",
+    "People & Culture",
+    "Kevin",
+    "Keys",
+    "Operations",
+    "Arjun",
+    "Linda",
+    "Workflow Automation"
+  ],
+  "chatgptPrompt": "Turn this into a LinkedIn post: I booked a meeting.",
+  "chatgptReply": "Humbled and honored to unlock a new era of alignment.",
+  "interaction": "Typing, response appearing word by word, Copy changes to Copied",
+  "styleReference": "https://help.openai.com/en/articles/9982051-using-the-chatgpt-windows-app",
+  "sourceImage": "generated_images/exec-48b1441a-9429-4ccc-a074-a5b8baf8574c.png",
+  "laptopQuadAt1280x720": [
+    [
+      616,
+      168
+    ],
+    [
+      1186,
+      174
+    ],
+    [
+      1155,
+      552
+    ],
+    [
+      579,
+      489
+    ]
+  ]
+}

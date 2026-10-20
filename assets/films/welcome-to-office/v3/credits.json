@@ -1,0 +1,28 @@
+{
+  "authorizedMaximumCredits": 10000,
+  "priorProjectCredits": 1530,
+  "revisionCredits": 170,
+  "totalProjectCredits": 1700,
+  "accountBalanceAfterSubmission": 18521,
+  "submissions": [
+    {
+      "shot": "synergy-laptop",
+      "taskId": "8c0c2a4a-bad8-4210-b2e6-981f0ef0be98",
+      "status": "SUCCEEDED",
+      "request": {
+        "model": "kling-o3-pro",
+        "startImageFile": "generated_images/exec-48b1441a-9429-4ccc-a074-a5b8baf8574c.png",
+        "generateAudio": false,
+        "ratio": "16:9",
+        "resolution": "720p",
+        "promptText": "One continuous 10-second photorealistic office shot using EXACTLY this reference composition, same Synergy robot and same laptop. Camera is completely locked to a tripod, no camera movement or zoom. The laptop lid and its four screen corners remain perfectly stationary. Synergy quietly types using small believable alternating taps of his articulated fingers on real keyboard keys. Right hand occasionally makes a short natural trackpad movement and returns to the keys, never touching or crossing the display. Both hands remain below the laptop display at all times. His shoulders and head have barely perceptible attentive movement, no big gestures, no turn toward the camera. Preserve the exact worn ivory/chrome head, headset, metal joints, scale and geometry, exactly two hands, no extra digits. The display stays uniformly blank dark charcoal gray throughout, with a clean stable rectangular bezel. NO letters, interface, animation, windows, glow or reflections on the screen: graphics will be added later. Coffee cup, desk, laptop and background stay unchanged and stationary. Natural fluorescent office light, deadpan routine office work, no cuts, no freeze frames, no plant, no other characters. Do not reshape the robot or laptop. No talking, the face is not visible from this angle.",
+        "rationale": "User requests Synergy loading Zoom meetings on his laptop and using ChatGPT to write LinkedIn posts in the existing 60-second brand film. One silent identity-locked typing plate will support two separately composited screen sequences. Existing project spend is 1530 of the authorized cumulative 10000 credits."
+      },
+      "chargedCredits": 170,
+      "sourceWidth": 1916,
+      "sourceHeight": 1080,
+      "sourceDurationSeconds": 10.041,
+      "hasSourceAudio": false
+    }
+  ]
+}
