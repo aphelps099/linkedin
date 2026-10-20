@@ -73,9 +73,25 @@ certificate also has a print / save PDF layout. The certificate route requires
 all five completed chapter IDs. Completion recognizes participation, not a score
 threshold. The final saved post remains available in its beat player there.
 `components/BrandArtwork.jsx` embeds the site's actual vector wordmark and LB
-monogram in the exported artwork. The certificate uses a navy masthead, vinyl
-seal and Synergy signature. Both certificate and sticker PNG exports were
-verified in the browser. The existing singalong audio player is unchanged.
+monogram in the exported artwork. The certificate uses a navy masthead, fine
+fleur-de-lis border, gold laurel seal with ribbons and Synergy signature. These
+are self-contained SVG details, including the seal lettering, so PNG downloads
+and printing preserve the ornament. Preview: `docs/program/certificate-finish.jpg`.
+
+**Share certificate** opens image download and caption-copy controls, plus a link
+to LinkedIn where the learner attaches the image and publishes their own post.
+Browsers supporting file sharing also offer a native share sheet. The image is
+prepared before that tap, regenerated when the displayed name changes, and never
+uploaded by the course. Sharing cancellation and API failures retain the download
+path. `node scripts/check-certificate-share.mjs` checks activation ordering, the
+file-only payload, unsupported browsers, cancellation and failures. Browser QA
+covered PNG export, caption copy, long-name fit, 375px layout and the mobile Main
+site link; a device-native share target still needs a supported device.
+
+Graduation has a 4.2-second canvas confetti burst once per tab session, skipped
+for reduced motion and cleaned up on navigation, resize or hiding the page. Main
+site links remain available in the responsive menu and at both ends of the
+certificate page. The existing singalong audio player is unchanged.
 
 Progress persists at the chapter level, not the individual exercise level;
 reopening a lesson starts its walkthrough again. Earlier controls stop advancing
