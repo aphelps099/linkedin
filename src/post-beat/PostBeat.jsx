@@ -71,11 +71,12 @@ export function PostBeat({post,initialRecipe,initialCover=DEFAULT_COVER,children
       <div className="pb-track"><span>{busy?'Making your beat…':playing?'Now playing':phase==='paused'?'Paused':phase==='done'?'One more time?':'Your words. On repeat.'}</span><strong>{busy?<><LoaderCircle size={13}/>Finding the groove</>:phase==='idle'&&!initialRecipe?'Make this a beat':'The LinkedIn remix'}</strong></div>
       {ticketControls?<div className="pb-waveform" role="progressbar" aria-label="Beat progress" aria-valuenow={Math.floor(elapsed)} aria-valuemin={0} aria-valuemax={DURATION}>{WAVEFORM.map((height,i)=><i key={i} className={elapsed>0&&i/WAVEFORM.length<=elapsed/DURATION?'is-past':''} style={{height:`${height}%`}}/>)}</div>:<div className="pb-meter" aria-hidden="true">{[10,18,27,14,23,32,18,26,12].map((height,i)=><i key={i} style={{height,'--delay':`${-i*.13}s`}}/>)}</div>}
       <span className="pb-time">{clock(elapsed)}<small> / 0:30</small></span>
-      <button className="pb-share" onClick={share} aria-label="Share this beat" aria-haspopup="dialog"><Share2 size={15}/><span>Share this beat</span></button>
+      {!ticketControls&&<button className="pb-share" onClick={share} aria-label="Share this beat" aria-haspopup="dialog"><Share2 size={15}/><span>Share this beat</span></button>}
       {!ticketControls&&<div className="pb-progress" role="progressbar" aria-label="Beat progress" aria-valuenow={Math.floor(elapsed)} aria-valuemin={0} aria-valuemax={DURATION}><span style={{width:`${elapsed/DURATION*100}%`}}/></div>}
     </div>;
   return <div className={`pb-inline${ticketControls?' pb-has-ticket':''}`}>
     {ticketControls?<section className="pb-ticket el-controls" aria-label="Supercharge and play your post"><div className="pb-ticket-main">{ticketControls}{player}</div>{ticketScore}</section>:player}
+    {ticketControls&&<div className="pb-share-below"><button type="button" onClick={share} aria-haspopup="dialog"><Share2 size={24}/><span>Share this beat</span><span aria-hidden="true">↗</span></button><p>For the colleague who says “let’s take this offline.”</p></div>}
     {ticketNotice}
     {heading}
     {showSong&&<div className="pb-view-tools"><span><Music2 size={13}/>Sing along</span><div><button onClick={restart} aria-label="Restart beat" disabled={busy}><RotateCcw size={13}/></button>{!initialRecipe&&<button onClick={toggleView}>Read post</button>}</div></div>}

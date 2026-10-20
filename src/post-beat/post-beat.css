@@ -18,3 +18,13 @@
   .pb-toggle{grid-column:1;grid-row:1}.pb-track{grid-column:2;grid-row:1}.pb-meter{grid-column:3;grid-row:1;margin:0;justify-content:flex-end}
   .pb-time{grid-column:1/3;grid-row:2;padding:0;justify-self:start}.pb-share{grid-column:2/4;grid-row:2;padding:0;justify-self:end;margin:0}
 }
+/* A separate invitation below the receipt, with its own visual weight. */
+.pb-share-below{margin:25px 0 0;text-align:center}
+.pb-share-below>button{display:flex;align-items:center;justify-content:center;gap:13px;width:100%;min-height:67px;padding:16px 22px;border:1px solid #fff349;border-radius:5px;background:#fff349;color:#0c2032;box-shadow:0 5px 0 #003b9f;font:600 clamp(21px,2.1vw,28px)/1.1 C2Hoves,Arial,sans-serif;cursor:pointer;transition:background .15s,transform .15s,box-shadow .15s}
+.pb-share-below>button>svg{flex:none}.pb-share-below>button>span:last-child{font-size:28px}
+.pb-share-below>button:hover{background:#fff9a6;transform:translateY(-2px);box-shadow:0 7px 0 #003b9f}
+.pb-share-below>button:active{transform:translateY(2px);box-shadow:0 3px 0 #003b9f}
+.pb-share-below>button:focus-visible{outline:3px solid #fbf6e8;outline-offset:5px}
+.pb-share-below>p{max-width:340px;margin:13px auto 0;font:13px/1.5 C2Hoves,Arial,sans-serif;color:#d2e3ff;text-wrap:balance}
+@media(max-width:520px){.pb-share-below{margin-top:23px}.pb-share-below>button{min-height:64px;font-size:24px}.pb-share-below>p{font-size:12px;max-width:290px}}
+@media(prefers-reduced-motion:reduce){.pb-share-below>button{transition:none}}

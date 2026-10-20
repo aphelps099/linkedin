@@ -13,3 +13,16 @@
 .pb-shared-cover{display:block;width:100%;height:auto;border-radius:6px;margin:0 0 26px}.pb-shared .pb-shared-chorus{font:400 20px/1.4 C2Hoves,Arial,sans-serif;margin:-12px 0 25px;color:#fbf6e8}.pb-shared .pb-shared-title{font-size:44px;margin-bottom:22px}
 @media(max-width:800px){.pbs-dialog{max-width:620px}.pbs-layout{grid-template-columns:minmax(0,1fr);gap:0}}
 @media(max-width:520px){.pbs-dialog{width:calc(100% - 16px);max-height:calc(100dvh - 16px)}.pbs-content{padding:18px 14px}.pbs-header p{font-size:9px}.pbs-intro{font-size:13px}.pbs-covers{gap:6px}.pbs-covers label>span{font-size:11px;margin-inline:0;flex-wrap:wrap}.pbs-covers label{padding:3px}.pbs-dialog textarea{font-size:16px}.pbs-main-actions{flex-wrap:wrap}.pbs-main-actions button{font-size:13px;padding-inline:12px}.pbs-destinations{grid-template-columns:repeat(2,minmax(0,1fr))}.pbs-instagram{flex-wrap:wrap;gap:10px}.pbs-instagram>div{flex-basis:calc(100% - 32px)}.pbs-instagram a{padding-left:30px}.pb-shared .pb-shared-title{font-size:36px}}
+.pbs-header h2:focus{outline:none}
+.pbs-friend-line{margin:0 0 18px;font-size:clamp(20px,2.3vw,25px);font-weight:600;line-height:1.28;max-width:310px;text-wrap:balance}
+.pbs-main-actions{display:grid;grid-template-columns:1fr;margin:0;gap:10px}
+.pbs-main-actions .pbs-send-friend{min-height:56px;border-color:#0c2032;background:#fff349;color:#0c2032;font-size:18px;box-shadow:0 3px 0 #0c2032}
+.pbs-send-friend:hover{background:#fff8a1}.pbs-send-friend:disabled{cursor:wait;opacity:.8}
+.pbs-main-actions .pbs-copy-link{min-height:43px;background:transparent;border-color:#0c20323a;box-shadow:none;font-size:14px}.pbs-main-actions .pbs-copy-link:hover{background:#e7e9de}
+.pbs-quick-links{display:flex;gap:16px;flex-wrap:wrap;margin:13px 0 19px}.pbs-quick-links button,.pbs-making button{display:flex;align-items:center;gap:5px;border:0;background:none;color:#0757ec;font-size:12px;padding:4px 0;text-decoration:underline;text-underline-offset:3px}
+.pbs-making{display:flex;align-items:center;gap:12px;margin-top:12px}.pbs-making p{font-size:12px;line-height:1.5;margin:0;color:#4b6070}
+.pbs-linkedin{display:flex;align-items:center;justify-content:center;gap:9px;min-height:46px;padding:10px;border:1px solid #0c2032;border-radius:4px;background:#0c2032;color:#fbf6e8;text-decoration:none;font-size:14px;font-weight:600;margin:20px 0}.pbs-linkedin:hover{background:#244157}
+.pbs-destinations{display:flex;flex-wrap:wrap;gap:17px;margin:17px 0}.pbs-destinations a,.pbs-destinations button{display:flex;align-items:center;gap:6px;min-height:30px;padding:2px 0;border:0;background:none;border-radius:0;color:#4b6070;font-size:12px;text-decoration:none}.pbs-destinations a:hover,.pbs-destinations button:hover{background:none;color:#0757ec}
+.pbs-hint{display:flex;align-items:flex-start;gap:7px}.pbs-hint svg{flex:none}.pbs-clip-detail{font-size:12px;line-height:1.5;color:#4b6070;margin:-6px 0 22px}.pbs-covers:disabled{opacity:.6}.pbs-spinner{animation:pbs-spin 1s linear infinite}@keyframes pbs-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.pbs-spinner{animation:none}}
+.pbs-clip-preview{display:block;width:100%;max-width:440px;aspect-ratio:1;margin:auto;border-radius:5px;background:#0757ec}

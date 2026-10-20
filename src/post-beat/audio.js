@@ -70,16 +70,20 @@ export function createPostBeat({engineFactory=createAudioEngine,interval=setInte
       if(signal?.aborted)throw new DOMException('Cancelled','AbortError');
       return Promise.all(lines.map(line=>active.decode(rawCache.get(key(line)).slice(0))));
     },
-    play(recipe,decoded){
+    play(recipe,decoded,{offset=0,reuseGraph=false}={}){
       // Recreate the graph for a clean restart; decoded buffers survive it.
-      clearTick();engine?.dispose();engine=null;init();
-      buffers=decoded;cues=makeTimedCues(recipe,buffers);origin=engine.now()+.08;nextStep=0;nextCue=0;playing=true;
+      clearTick();if(!reuseGraph){engine?.dispose();engine=null;}init();
+      buffers=decoded;cues=makeTimedCues(recipe,buffers);origin=engine.now()+.08-Math.max(0,Math.min(DURATION,offset));nextStep=0;nextCue=0;playing=true;
       timer=interval(tick,25);tick();return {cues,duration:DURATION};
     },
     pause(){playing=false;clearTick();engine?.suspend();},
     resume(){engine?.unlock();playing=true;timer=interval(tick,25);tick();},
     elapsed,
     spectrum(){return engine?.spectrum?.();},
+    stream(){return init().stream();},
+    audioTrack(){return init().audioTrack();},
+    sampleRate(){return init().sampleRate();},
+    volume(value){init().setVolume(value);},
     stop(){playing=false;clearTick();engine?.dispose();engine=null;},
     dispose(){playing=false;clearTick();engine?.dispose();engine=null;},
   };
