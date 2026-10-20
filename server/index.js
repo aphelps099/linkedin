@@ -8,6 +8,7 @@ import { createPostBeatService } from './post-beat-service.js';
 import { localAnnouncer } from './local-announcer.js';
 import { beatRobot } from './beat-robot.js';
 import { createBeatShareRouter } from './beat-share.js';
+import { createCuttingRoomRouter } from './cutting-room.js';
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
@@ -54,6 +55,8 @@ app.post('/api/store/webhook', express.raw({type:'application/json'}), async (re
   res.json({received:true});
 });
 
+app.use('/api/cutting-room', createCuttingRoomRouter());
+app.use('/cutting-room', (_req,res,next)=>{res.set('X-Robots-Tag','noindex, nofollow, noarchive');next();});
 app.use(express.json({limit:'32kb'}));
 app.use('/api/newsletter', newsletter.router);
 app.use('/api/post-beat/voices', postBeat.router);
