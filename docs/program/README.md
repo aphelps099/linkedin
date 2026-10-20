@@ -13,7 +13,32 @@ bookmarks still work and share the same saved progress.
 - Existing `lb_program_v1` progress is retained. Persistence is by chapter;
   reopening an unfinished lesson restarts its walkthrough.
 
-## Implementation captures
+## Feed polish and Synergy recaps
+
+The introduction now pitches professional development optimization with a more
+pointed corporate satire. Lesson prose and post previews use a narrower reading
+column; feed cards cap at 556 px and switch to compact Arial/system typography.
+Posts preserve line breaks, expand with “…more,” and include a profile header,
+post-options copy menu, reaction totals and local practice actions. Social state
+is ephemeral; no content is published or sent to LinkedIn.
+
+Vocabulary and Shape end with optional Synergy video recaps before their sticker.
+These use the existing Caffeinated Edition and current masterclass recut, not new
+recordings. The recap block includes native playback controls, a written summary,
+a failure fallback and a Continue button that pauses the film. Watching is optional.
+
+Both production film URLs were verified in a real browser (50 s / 44 s, playing,
+readyState 4). The dev media proxy did not stream them, so media playback was
+checked using their production URLs in an isolated preview fixture. The actual
+lesson uses same-origin URLs in production. The fixture is not shipped.
+
+Browser checks cover post expansion, local likes/comments, mobile layout at
+375 px content width without horizontal overflow, and video pause on Continue.
+`check:program` validates 74 steps including the new recap fields. Build passes.
+
+![Refined practice feed](feed-polish.jpg)
+
+## Original implementation captures
 
 Synthetic learner data is used in these browser screenshots.
 

@@ -52,8 +52,16 @@ an alias using the same course and saved progress.
 The portal uses a cream focus-mode layout with a persistent lesson rail and a
 mobile course menu. Teaching, examples, explanations, exercises and takeaways
 stay in one reading column. `components/FeedPost.jsx` renders practice outputs
-with familiar feed anatomy; its social actions and counts are illustrative.
+with compact system typography, a three-line “…more” fold and simulated
+engagement. Reactions, reposts and comments stay in the practice card; Send
+copies the post text. No action publishes to LinkedIn.
 The shared site's menu links to the portal under **Learn**.
+
+Vocabulary and Shape each include an optional `video-recap` with Synergy after
+the takeaways. The films reuse the current Cutting Room edits (50 and 44 seconds)
+through the existing media endpoint. Each has a written recap, native video
+controls, a load-error fallback, and an explicit Continue that pauses playback.
+Recap fields and behavior are documented in `engine/types.js`.
 
 Each chapter earns a sticker after its takeaways. `components/Rewards.jsx`
 owns the five SVG sticker designs and personalized **Certificate of Professional
