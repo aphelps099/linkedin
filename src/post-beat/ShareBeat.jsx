@@ -3,7 +3,7 @@ import {createPortal} from 'react-dom';
 import {Check,Copy,Download,Linkedin,LoaderCircle,Pause,Play,X} from 'lucide-react';
 import {COVERS,getCover,shareUrl,shareDestinations} from './share.js';
 import {drawShareArtwork,startShareClip} from './clip.js';
-import {beginClipHandoff,downloadClip,LINKEDIN_HOME} from './handoff.js';
+import {beginClipHandoff,downloadClip,copyText,LINKEDIN_HOME} from './handoff.js';
 import './share-beat.css';
 const clock=t=>`0:${String(Math.floor(t||0)).padStart(2,'0')}`;
 function Sleeve({recipe,cover}){
@@ -28,7 +28,7 @@ export function ShareBeat({initialJob,recipe,coverId,onCoverChange,artist,onArti
     return()=>{alive.current=false;job.current?.controller.abort();unsubscribe.current?.();video.current?.pause();element.close();document.body.style.overflow=overflow;focused?.focus({preventScroll:true});};
   },[]);
   useEffect(()=>{if(!clip){setClipUrl('');return;}const href=URL.createObjectURL(clip);setClipUrl(href);return()=>URL.revokeObjectURL(href);},[clip]);
-  const copy=async(text,message)=>{try{await navigator.clipboard.writeText(text);if(alive.current){setNotice(message);if(text===caption)setHandoff(prev=>prev?{...prev,caption:'copied'}:prev);}}catch{if(alive.current){setError('Copy is unavailable here. Select the caption or link below.');setEditing(true);}}};
+  const copy=async(text,message)=>{try{await copyText(text);if(alive.current){setNotice(message);if(text===caption)setHandoff(prev=>prev?{...prev,caption:'copied'}:prev);}}catch{if(alive.current){setError('Copy is unavailable here. Select the caption or link below.');setEditing(true);}}};
   const play=()=>{if(!clipUrl)return;if(!video.current.paused){video.current.pause();return;}video.current.play().catch(()=>setError('Playback could not start. Try the play button again.'));};
   const save=()=>{if(!clip)return;try{downloadClip(clip);setNotice('Download started.');}catch{setError('The download could not start. Try again, or post the link instead.');}};
   const post=()=>{

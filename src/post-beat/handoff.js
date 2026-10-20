@@ -10,14 +10,20 @@ export function openLinkedIn(){
   if(tab)tab.opener=null;
   return !!tab;
 }
+export function copyText(text,nav=navigator,timeout=2500){
+  return new Promise((resolve,reject)=>{
+    const timer=setTimeout(()=>reject(new Error('Clipboard permission is still pending')),timeout);
+    try{Promise.resolve(nav.clipboard.writeText(text)).then(()=>{clearTimeout(timer);resolve();},error=>{clearTimeout(timer);reject(error);});}
+    catch(error){clearTimeout(timer);reject(error);}
+  });
+}
 // All activation-sensitive calls happen synchronously in the posting tap.
 // The clip already exists; no rendering or fetch is allowed in this function.
 export function beginClipHandoff({file,caption,onUpdate,nav=navigator,download=downloadClip,open=openLinkedIn}){
   const native=canShareClip(file,nav);
   const state={kind:native?'native':'desktop',caption:'pending',download:false,opened:false,sharing:native};
   onUpdate({...state});
-  let copy;
-  try{copy=Promise.resolve(nav.clipboard.writeText(caption));}catch{copy=Promise.reject(new Error('Clipboard unavailable'));}
+  const copy=copyText(caption,nav);
   const copied=copy.then(()=>{state.caption='copied';onUpdate({...state});},()=>{state.caption='failed';onUpdate({...state});});
   if(native){
     let shared;

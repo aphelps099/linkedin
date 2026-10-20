@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
-import {beginClipHandoff,canShareClip} from '../src/post-beat/handoff.js';
+import {beginClipHandoff,canShareClip,copyText} from '../src/post-beat/handoff.js';
 const file={name:'single.mp4',type:'video/mp4'};
+await assert.rejects(copyText('caption',{clipboard:{writeText:()=>new Promise(()=>{})}},5),/pending/,'a stalled permission prompt must expose the manual copy path');
 // A slow clipboard operation must never delay the activation-sensitive share.
 {
  let resolveCopy;const order=[],updates=[];
