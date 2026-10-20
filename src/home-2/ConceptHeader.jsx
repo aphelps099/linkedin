@@ -4,7 +4,7 @@ import {LoaderCircle, Pause, Play} from 'lucide-react';
 export const ConceptHeader = memo(function ConceptHeader({base='/', onRadio, playing=false, loading=false, homeSectionBase='', active, children, overlay=false, theme='light'}) {
   const [open,setOpen]=useState(false);
   const root=useRef(null), trigger=useRef(null), directory=useRef(null), focusFirst=useRef(false), id=useId();
-  const links=[['Listen',`${homeSectionBase}#c2-player`],['LinkedInifier',`${base}lessons/`],['Studio',`${base}studio/`],['Shop',`${base}store/`]];
+  const links=[['Listen',`${homeSectionBase}#c2-player`],['LinkedInifier',`${base}lessons/`],['Learn',`${base}learn/`],['Studio',`${base}studio/`],['Shop',`${base}store/`]];
   useEffect(()=>{
     if(!open)return;
     if(focusFirst.current){focusFirst.current=false;directory.current?.querySelector('a')?.focus();}
@@ -26,7 +26,7 @@ export const ConceptHeader = memo(function ConceptHeader({base='/', onRadio, pla
         </picture>
       </a>
       <nav className="c2-header-links" aria-label="Featured navigation">
-        {links.filter(([name])=>name!=='Studio').map(([name,href])=><a key={name} href={href} aria-current={active===name?'page':undefined}>{name}</a>)}
+        {links.filter(([name])=>!['Studio','Learn'].includes(name)).map(([name,href])=><a key={name} href={href} aria-current={active===name?'page':undefined}>{name}</a>)}
       </nav>
       <div className="c2-header-actions">
         {children}
