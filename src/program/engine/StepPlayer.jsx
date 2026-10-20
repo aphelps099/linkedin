@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {ArrowRight, Check, Copy, Play, RotateCcw, Sparkles} from 'lucide-react';
+import {ArrowLeft, ArrowRight, Check, Copy, Play, RotateCcw} from 'lucide-react';
 import {byId} from '../../lessons/categories.js';
 import {EXAMPLES, ANNOUNCEMENT_EXAMPLES, DEFAULT_ANSWERS} from '../../lessons/Intake.jsx';
 import {PostBeat} from '../../post-beat/PostBeat.jsx';
@@ -164,7 +164,7 @@ export function StepPlayer({chapter, userName, title, onName, onComplete, onFini
   const renderStep = (step, isLast) => {
     switch(step.type){
       case 'bot-message':
-        return <div className="pg-step"><span className="pg-step-mark"><Sparkles size={12}/></span><Markdown className="pg-step-body" text={personalize(step.content)}/></div>;
+        return <div className="pg-step"><Markdown className="pg-step-body" text={personalize(step.content)}/></div>;
 
       case 'name-input':
         return <div className="pg-indent pg-name">
@@ -314,7 +314,7 @@ export function StepPlayer({chapter, userName, title, onName, onComplete, onFini
 
   return <div className="pg-scroll" ref={scrollRef}>
     <div className="pg-lesson">
-      <div className="pg-strip"><span>{String(chapter.number).padStart(2, '0')} / {chapter.title}</span><span>The lesson · {chapter.minutes} min</span></div>
+      <div className="pg-strip pg-lesson-breadcrumb"><a href="#"><ArrowLeft size={14}/>Course overview</a><span>Lesson {chapter.number} of 5 · {chapter.minutes} min</span></div>
       <h1 className="pg-h1">{({hook:"Make an entrance.",inflation:"Make a little news.",vocabulary:"Learn the language.",shape:"Give it some space.",single:"Bring it all together."})[chapter.id]}</h1>
       <p className="pg-sub">Level {chapter.level} · {chapter.levelName}</p>
       <span className="pg-sr-only" role="status">{copyStatus}</span><div className="pg-steps">{steps.slice(0, visibleCount).map((step, i) => <div key={step.id} className="pg-in">{renderStep(step, i === visibleCount - 1)}</div>)}</div>

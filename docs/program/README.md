@@ -13,6 +13,25 @@ bookmarks still work and share the same saved progress.
 - Existing `lb_program_v1` progress is retained. Persistence is by chapter;
   reopening an unfinished lesson restarts its walkthrough.
 
+## Compact Academy layout
+
+The overview is now branded **LinkedIn Beats Academy**. A shorter introduction
+and bold yellow Synergy instructor card sit side by side on desktop. Five
+72 px syllabus rows show lesson summaries, durations, and completion states.
+At widths below 991 px, the syllabus comes before the instructor card.
+
+The course shell uses Hoves sans-serif labels instead of uppercase monospace.
+The rail is narrower, lesson headings and vertical gaps are smaller, and a
+Course overview breadcrumb replaces the extra lesson labels. Feed cards retain
+their 556 px cap and LinkedIn typography; lesson data, saved progress, recap
+videos, and reward behavior are unchanged.
+
+Verified the desktop overview, enrollment and first worked example, the mobile
+course menu and lesson transition, and mobile/tablet layouts without horizontal
+overflow. Program validation (5 chapters / 74 steps) and the full build pass.
+
+![Compact Academy overview](academy-overview.jpg)
+
 ## Feed polish and Synergy recaps
 
 The introduction now pitches professional development optimization with a more
