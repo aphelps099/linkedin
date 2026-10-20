@@ -10,7 +10,8 @@ export const vocabulary = {
   steps: [
     { type: 'bot-message', id: 'v-1', content: "{{name}}, lesson three is the dialect itself. LinkedIn has a vocabulary, and the Thought Leadership Index is tuned to hear it.", delayMs: 300 },
     { type: 'bot-message', id: 'v-2', content: "Three families of words do the work:\n\n- **Buzzwords.** Synergy, leverage, pivot, bandwidth, ecosystem, category-defining.\n- **Gratitude.** Humbled, honored, blessed, grateful. One is sincere. Four is a weather event.\n- **The journey.** Chapter, adventure, movement, era. Employment, reframed as an epic.", delayMs: 500 },
-    { type: 'pause', id: 'v-p1', buttonLabel: 'Test my ear' },
+    { type: 'synergy-tip', id: 'v-synergy', content: 'If a sentence makes perfect sense, try adding **stakeholder alignment.**' },
+    { type: 'pause', id: 'v-p1', nextLabel: 'spot the corporate dialect', buttonLabel: 'Test my ear' },
     { type: 'bot-message', id: 'v-3', content: "Here is a post from the archive. **Click every line that is doing LinkedIn things.**", delayMs: 300 },
     { type: 'spot-the-trope', id: 'v-spot', title: 'Spot the vocabulary',
       text: "Humbled and honored to share that I've accepted a new role.\nI'll be joining Northwind as Head of Partnerships.\nThis is the next chapter in a journey that started in a garage.\nGrateful to everyone who believed in me along the way.\nWe're going to leverage synergies across the whole ecosystem.\nMy first day is Monday.",

@@ -1,5 +1,6 @@
 import React, {useRef, useState} from 'react';
 import {ArrowRight, Check, Download} from 'lucide-react';
+import {SynergyTip} from './SynergyTip.jsx';
 
 export const REWARDS = [
   {name:'Certified Attention Seeker', lines:['CERTIFIED','ATTENTION','SEEKER'], color:'#0757ec', ink:'#fff', foot:'A STRONG OPENING.'},
@@ -55,7 +56,7 @@ export function LessonReward({chapter, nextTitle, final, onContinue}){
     <div className="pg-sticker-stage"><Sticker number={chapter.number} svgRef={art}/></div>
     <button type="button" className="pg-text-button" onClick={download}><Download size={15}/>Download sticker</button>
     <span className="pg-download-status" role="status">{status}</span>
-    <div className="pg-end-next"><span>{final ? 'Your five-lesson journey, in writing.' : <>Up next<br/><strong>{nextTitle}</strong></>}</span><button type="button" className="pg-btn" onClick={onContinue}>{final ? 'View my certificate' : 'Begin next lesson'}<ArrowRight size={16}/></button></div>
+    <SynergyTip celebrate content={final ? "Five lessons. One beat. Your professional development is now **officially overdeveloped.**" : "That is another milestone for the feed. Please remain **appropriately humbled.**"}/><div className="pg-end-next"><span>{final ? 'Your five-lesson journey, in writing.' : <>Up next<br/><strong>{nextTitle}</strong></>}</span><button type="button" className="pg-btn" onClick={onContinue}>{final ? 'View my certificate' : 'Begin next lesson'}<ArrowRight size={16}/></button></div>
   </section>;
 }
 

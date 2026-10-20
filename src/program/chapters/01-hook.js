@@ -14,7 +14,8 @@ export const hook = {
     { type: 'bot-message', id: 'h-3', content: "Welcome aboard, **{{name}}**. Lesson one is the only thing on LinkedIn anyone actually reads: **the first line.**", delayMs: 300 },
     { type: 'bot-message', id: 'h-4', content: "Think of the lines before *…see more* as your opening act. **The hook earns the next line.** Give the reader a reason to keep going.", delayMs: 500 },
     { type: 'bot-message', id: 'h-5', content: "A hook does one job: it makes the reader need the next line. It does this by **withholding the point.**", delayMs: 400 },
-    { type: 'pause', id: 'h-p1', buttonLabel: 'Show me' },
+    { type: 'synergy-tip', id: 'h-synergy', content: 'Give them a reason to tap …more. Ideally, **before they remember they have work to do.**' },
+    { type: 'pause', id: 'h-p1', nextLabel: 'see the hook at work', buttonLabel: 'Show me an example' },
     { type: 'before-after', id: 'h-ba1',
       before: 'Today I made a cup of coffee. It was pretty good.',
       after: "I almost didn't make coffee today.\n\nHere's why that matters." },
@@ -32,7 +33,7 @@ export const hook = {
         { id: 'thing', label: 'The ordinary thing', placeholder: 'make coffee', defaultValue: 'make coffee' },
         { id: 'payoff', label: 'The point you withheld', placeholder: 'Sometimes the smallest routines carry the most weight.', defaultValue: 'Sometimes the smallest routines carry the most weight.' },
       ] },
-    { type: 'bot-message', id: 'h-8', content: "💡 **Tip:** A zero reads *Refreshingly Human*. Enjoy it. It is the last time the index will say that to you. The hook is the only line that must be good: if you edit one thing before you post, edit the first line. Twice.", delayMs: 400 },
+    { type: 'synergy-tip', id: 'h-8', content: "A zero reads *Refreshingly Human*. Enjoy it. It is the last time the index will say that to you. The hook is the only line that must be good: if you edit one thing before you post, edit the first line. Twice.", delayMs: 400 },
     { type: 'takeaway-card', id: 'h-t', takeaways: [
       'Your opening lines earn the rest of the post. Spend them on the hook.',
       'A hook withholds the point: a near-miss, a question, or a promise of meaning after the fold.',

@@ -6,31 +6,48 @@ bookmarks still work and share the same saved progress.
 
 - Read, see an example, understand the changes, try it, review the takeaways.
 - Earlier content stays in the reading column. Completed controls cannot skip
-  later steps. The rail becomes a sticky course menu on narrow screens.
+  later steps. A slim Academy header replaces the persistent sidebar; mobile
+  navigation opens only when requested.
 - A sticker is earned at each chapter end. Finishing all five unlocks a
   personalized Certificate of Professional Effort and the saved final post's
   existing beat player. PNG downloads are created locally from SVG artwork.
 - Existing `lb_program_v1` progress is retained. Persistence is by chapter;
   reopening an unfinished lesson restarts its walkthrough.
 
-## Compact Academy layout
+## Illustrated Academy lessons
 
-The overview is now branded **LinkedIn Beats Academy**. A shorter introduction
-and bold yellow Synergy instructor card sit side by side on desktop. Five
-72 px syllabus rows show lesson summaries, durations, and completion states.
-At widths below 991 px, the syllabus comes before the instructor card.
+The approved lesson design is implemented: a centered 720 px reading column,
+112 px lesson artwork (76–88 px on phones), navy Hoves headings, cobalt actions,
+and a compact pale-yellow Synergy note. The overview uses thumbnail lesson rows
+and a single progress/continue area. `/learn/#/achievements` shows earned sticker
+downloads, locked rewards, and the certificate entry point.
 
-The course shell uses Hoves sans-serif labels instead of uppercase monospace.
-The rail is narrower, lesson headings and vertical gaps are smaller, and a
-Course overview breadcrumb replaces the extra lesson labels. Feed cards retain
-their 556 px cap and LinkedIn typography; lesson data, saved progress, recap
-videos, and reward behavior are unchanged.
+Five generated lesson covers and two matching Synergy portraits live in
+`public/learn/art/`. The seven 512 × 512 WebP assets total about 160 KB. Their
+original prompts and generator are recorded in `illustrated-assets.json`.
+`underline.svg` is a small vector brushstroke, applied to real selectable text
+with per-line wrapping. It is not baked into the image.
 
-Verified the desktop overview, enrollment and first worked example, the mobile
-course menu and lesson transition, and mobile/tablet layouts without horizontal
-overflow. Program validation (5 chapters / 74 steps) and the full build pass.
+`SynergyTip` is shared by lessons, the overview, and completion screens. Author
+`{type: 'synergy-tip', id, content}` in a chapter; `**bold**` phrases receive the
+yellow underline. These are passive teaching steps, not new interaction gates.
+`chapters/presentation.js` controls the lesson headings, art, overview summaries,
+and format labels. A pause can supply `nextLabel` alongside its button label.
 
-![Compact Academy overview](academy-overview.jpg)
+Existing examples, exercises, local generator, video recaps, chapter-level
+progress, and reward exports are retained. No new API or API key is required.
+
+Browser verification: desktop and 390 px mobile lesson layouts; mobile overview
+at 375 px and tablet at 805 px content width without horizontal overflow; menu
+navigation; coffee performance; expanded/liked post surviving advancement;
+announcement generation; dial at level five; lesson completion, sticker PNG
+download, achievements and certificate navigation. Program validation passes
+with 5 chapters / 79 steps. The complete Vite build passes. The existing beat
+service and recap films are unchanged; playback was not re-tested in this pass.
+
+![Illustrated lesson](illustrated-lesson.jpg)
+
+![Illustrated overview](illustrated-overview.jpg)
 
 ## Feed polish and Synergy recaps
 
@@ -53,7 +70,8 @@ lesson uses same-origin URLs in production. The fixture is not shipped.
 
 Browser checks cover post expansion, local likes/comments, mobile layout at
 375 px content width without horizontal overflow, and video pause on Continue.
-`check:program` validates 74 steps including the new recap fields. Build passes.
+The earlier feed-polish pass validated 74 steps including the recap fields.
+The illustrated pass above now includes five additional instructor notes.
 
 ![Refined practice feed](feed-polish.jpg)
 

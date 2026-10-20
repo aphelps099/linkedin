@@ -10,7 +10,8 @@ export const shape = {
   steps: [
     { type: 'bot-message', id: 's-1', content: "{{name}}, you have the hook, the inflation and the vocabulary. Lesson four is the **shape**: how a post looks before anyone reads a word of it.", delayMs: 300 },
     { type: 'bot-message', id: 's-2', content: "LinkedIn rewards white space. A paragraph is a wall. A sentence on its own line is a **statement**. The same words, broken differently, score differently.", delayMs: 500 },
-    { type: 'pause', id: 's-p1', buttonLabel: 'Show me' },
+    { type: 'synergy-tip', id: 's-synergy', content: 'A line break costs nothing. Which makes it our most **scalable thought leadership strategy.**' },
+    { type: 'pause', id: 's-p1', nextLabel: 'see the same story, reframed', buttonLabel: 'Show me an example' },
     { type: 'before-after', id: 's-ba1', beforeLabel: 'A paragraph', afterLabel: 'The shape',
       before: 'Last year our biggest client left. I spent a week thinking the company was finished. Then we rebuilt the pipeline from scratch and ended the year up 20%. The lesson is that losing a client is not the end.',
       after: 'Last year our biggest client left.\n\nI thought we were finished.\n\nWe rebuilt the pipeline from scratch.\n\nWe ended the year up 20%.\n\nLosing a client is not the end.\n\nIt is the beginning.' },
