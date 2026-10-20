@@ -1,0 +1,57 @@
+{
+  "duration": 59.958333333333336,
+  "newCredits": 0,
+  "shots": [
+    {
+      "name": "arrival",
+      "start": 0,
+      "duration": 2.7083333333333335,
+      "source": "brand-story/raw/arrival.mp4",
+      "sourceStart": 0
+    },
+    {
+      "name": "camcorder",
+      "start": 2.7083333333333335,
+      "duration": 1.375,
+      "source": "brand-story/v5/LinkedIn-Beats-Welcome-to-the-Office-720p.mp4",
+      "sourceStart": 0
+    },
+    {
+      "name": "drummer",
+      "start": 4.083333333333334,
+      "duration": 4.083333333333333,
+      "source": "brand-story/v5/LinkedIn-Beats-Welcome-to-the-Office-720p.mp4",
+      "sourceStart": 1.3636363636363635
+    },
+    {
+      "name": "banner",
+      "start": 8.166666666666668,
+      "duration": 2.7083333333333335,
+      "source": "brand-story/v6/banner-printed.mp4",
+      "sourceStart": 0.8
+    },
+    {
+      "name": "main",
+      "start": 10.875000000000002,
+      "duration": 13.625,
+      "source": "brand-story/v5/LinkedIn-Beats-Welcome-to-the-Office-720p.mp4",
+      "sourceStart": 6.8181818181818175
+    },
+    {
+      "name": "measure",
+      "start": 24.5,
+      "duration": 1.375,
+      "source": "brand-story/v6/measure-printed.mp4",
+      "sourceStart": 0.2
+    },
+    {
+      "name": "main-end",
+      "start": 25.875,
+      "duration": 34.083333333333336,
+      "source": "brand-story/v5/LinkedIn-Beats-Welcome-to-the-Office-720p.mp4",
+      "sourceStart": 21.818181818181817
+    }
+  ],
+  "removed": "Final blue end card, tagline voiceover and preceding repeated Synergy reaction",
+  "restored": "Arrival, printed banner installation, banner measuring"
+}

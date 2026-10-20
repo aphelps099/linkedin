@@ -1,0 +1,24 @@
+{
+  "duration": "59.958333",
+  "streams": [
+    {
+      "type": "video",
+      "codec": "h264",
+      "width": 1280,
+      "height": 720,
+      "frames": "1439",
+      "sampleRate": null,
+      "channels": null
+    },
+    {
+      "type": "audio",
+      "codec": "aac",
+      "width": null,
+      "height": null,
+      "frames": "2812",
+      "sampleRate": "48000",
+      "channels": 2
+    }
+  ],
+  "newRunwayCredits": 0
+}

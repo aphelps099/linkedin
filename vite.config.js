@@ -84,6 +84,7 @@ function localCheckoutApi(){
 }
 
 export default defineConfig({
+  server: {allowedHosts:['terminal.local'], proxy:{'/api/cutting-room/media':{target:'https://linkedinbeats.com',changeOrigin:true,followRedirects:true}}},
   plugins: [react(), localVoiceApi(), localCheckoutApi(), postBeatApi(), beatSharePreview()],
   // Relative base so the built index.html works when served from a
   // GitHub Pages project path (https://<user>.github.io/linkedin/).
@@ -92,6 +93,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
+        cuttingRoom: fileURLToPath(new URL('./cutting-room/index.html', import.meta.url)),
         // Static-host fallback for the former concept route; production redirects to /.
         home2: fileURLToPath(new URL('./home-2/index.html', import.meta.url)),
         home3: fileURLToPath(new URL('./home-3/index.html', import.meta.url)),
