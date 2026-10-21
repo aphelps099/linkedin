@@ -3,3 +3,6 @@ dist/
 *.local
 .DS_Store
 assets/meeting-voices/render.lock
+public/brand/afterbeat/png/
+public/brand/afterbeat/identity-guide.png
+public/brand/afterbeat/linkedin-beats-afterbeat-kit.zip

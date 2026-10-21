@@ -94,6 +94,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
+        identity: fileURLToPath(new URL('./brand/afterbeat/index.html', import.meta.url)),
         cuttingRoom: fileURLToPath(new URL('./cutting-room/index.html', import.meta.url)),
         // Static-host fallback for the former concept route; production redirects to /.
         home2: fileURLToPath(new URL('./home-2/index.html', import.meta.url)),

@@ -17,7 +17,7 @@ export function Header({base='/',active,onRadio,playing=false,loading=false,list
   const radioContents=<>{loading?<LoaderCircle className="cb-header-spinner"/>:playing?<Pause fill="currentColor"/>:<Play fill="currentColor"/>}<span>{loading?'Loading':playing?'Pause radio':'Play radio'}</span></>;
   return <header className="cb-header" ref={root}>
     <div className="cb-header-row">
-      <a className="cb-header-brand" href={base} aria-label="LinkedIn Beats home">LINKEDIN BEATS</a>
+      <a className="cb-header-brand" href={base} aria-label="LinkedIn Beats home"><img src={`${base}brand/afterbeat/wordmark-color.svg`} width="330" height="40" alt="LinkedIn Beats"/></a>
       <span className="cb-header-tagline">DEPARTMENT OF<br/>PROFESSIONAL<br/>NONSENSE</span>
       <div className="cb-header-actions">
         {children}

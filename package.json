@@ -6,7 +6,7 @@
   "description": "Circle Back\u00ae \u2014 The Professional Phrase Organ. A satirical LinkedIn audio mixer.",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "node scripts/package-afterbeat-identity.mjs && vite build",
     "start": "node server/index.js",
     "preview": "vite preview",
     "check:voice": "node scripts/check-voice.mjs",

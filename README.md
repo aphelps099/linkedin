@@ -608,3 +608,19 @@ The default is Play/Pause, Phrase, Build, Drop, shuffle, and auto phrases. Pads 
 ### Store campaign film
 
 The store hero uses the supplied 8.9-second campaign film, encoded as an 832×480 muted H.264 loop with a first-frame WebP poster. It plays inline, pauses in hidden tabs, provides a pause/play control, and starts still when reduced motion is preferred. A failed video falls back to the poster. The centered white wordmark retains its cobalt bar: three half-second pulses on arrival, then solid blue. Reduced motion disables the logo pulse. The former Ken Burns image animation is removed.
+
+## Afterbeat identity
+
+The approved lowercase TT Hoves identity lives at `/brand/afterbeat/`, with a
+downloadable kit, outlined SVG masters, transparent PNGs and a usage guide.
+`linkedin` is Ink (`#111111`); `beats` and the terminal underscore are Cobalt
+(`#0757EC`). The `lb_` small mark is used in the favicon and certificate seal.
+The site uses the supplied white variation over dark backgrounds.
+
+Rebuild with `python3 scripts/build-afterbeat-identity.py` then
+`node scripts/package-afterbeat-identity.mjs`. Python needs fonttools and Pillow;
+PNG and ZIP export run automatically during `npm run build`, using Node and
+the existing Sharp dependency. Font files stay in the project.
+The shared headers, footer, Academy rewards and certificate exports consume the
+same artwork. Certificate shares use v3 URLs to refresh social image caches;
+existing v2 certificate links continue to work.

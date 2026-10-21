@@ -83,3 +83,8 @@
 @media(max-width:650px){.pg-certificate-controls .pg-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.pg-certificate-controls .pg-row>.pg-btn{grid-column:1/-1}.pg-certificate-controls .pg-row>.pg-pill{padding:12px 10px;gap:8px}}
 @media(prefers-reduced-motion:reduce){.pg-in,.pg-cursor{animation:none}.pg-app *{scroll-behavior:auto!important;transition:none!important}}
 @media print{@page{size:landscape;margin:10mm}body{background:white}.pg-topbar,.pg-skip,.pg-certificate-page>:not(.pg-certificate-art){display:none!important}.pg-main{margin:0}.pg-certificate-page{max-width:none;padding:0}.pg-certificate-art{width:100%;max-height:180mm;border:0;box-shadow:none;print-color-adjust:exact;-webkit-print-color-adjust:exact}.pg-main:not(:has(.pg-certificate-art)){display:none}}
+
+/* Afterbeat wordmark: exact vector lettering with a persistent terminal beat. */
+.pg-wordmark-art{display:block;width:224px;height:auto;flex:none}.pg-brand-suffix{font-weight:400}
+@media(max-width:650px){.pg-wordmark-art{width:182px}.pg-brand-suffix{font-size:14px}}
+@media(max-width:360px){.pg-wordmark-art{width:162px}.pg-brand{gap:7px}}

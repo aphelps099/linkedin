@@ -1,6 +1,6 @@
 import {certificateName} from './certificate-art.js';
 export const CERTIFICATE_FILENAME='linkedin-beats-certificate-of-professional-effort.png';
-export const CERTIFICATE_SHARE_VERSION='2';
+export const CERTIFICATE_SHARE_VERSION='3';
 export function certificateShareUrl(name,origin='https://linkedinbeats.com'){
   const url=new URL('/learn/certificate/',origin);
   url.searchParams.set('name',certificateName(name));
@@ -17,7 +17,7 @@ export function readCertificateName(href){
   try{
     if(href.length>1000)return null;
     const url=new URL(href,'https://linkedinbeats.com'), names=url.searchParams.getAll('name');
-    if(names.length!==1||!names[0].trim()||[...names[0]].length>60||url.searchParams.get('v')!==CERTIFICATE_SHARE_VERSION)return null;
+    if(names.length!==1||!names[0].trim()||[...names[0]].length>60||!['2',CERTIFICATE_SHARE_VERSION].includes(url.searchParams.get('v')))return null;
     return certificateName(names[0]);
   }catch{return null;}
 }
