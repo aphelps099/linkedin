@@ -1,0 +1,29 @@
+@import '../brand/type-system.css';
+
+.pg-app :is(.pg-display,.pg-h1,.pg-row-title){
+  font-family:var(--lb-font-headline);font-weight:var(--lb-weight-headline);
+  font-synthesis:none;letter-spacing:-.025em;
+}
+.pg-app .pg-display{font-size:clamp(40px,4.5vw,56px);line-height:1.05}
+.pg-app .pg-h1{line-height:1.12}
+.pg-app .pg-row-title{font-size:24px;line-height:1.2}
+.pg-app :is(.pg-course-heading h2,.pg-certificate-unlock h2,.pg-beat-unlock h2){
+  font-family:var(--lb-font-section);font-weight:var(--lb-weight-section);
+  font-synthesis:none;font-size:30px;line-height:1.05;letter-spacing:.01em;text-transform:uppercase;
+}
+.pg-app :is(.pg-eyebrow,.pg-strip,.pg-row-format,.pg-course-duration,.pg-brand-suffix){
+  font-family:var(--lb-font-meta);font-variant-numeric:tabular-nums;
+}
+.pg-app .pg-row-format{font-size:11px;line-height:1.5}
+.pg-app .pg-resume-info>div:not(.pg-progress-track){font-family:var(--lb-font-meta);font-size:11px}
+.pg-app :is(.pg-teaser-copy h2,.pg-achievement h2){font-family:var(--lb-font-headline);font-weight:var(--lb-weight-headline);font-size:23px;line-height:1.15;font-synthesis:none}
+@media(max-width:700px){
+  .pg-app .pg-topbar-inner{padding-inline:18px;gap:12px}
+  .pg-app .pg-brand{gap:6px}
+  .pg-app .pg-brand .pg-wordmark-art{width:clamp(132px,42vw,180px);height:auto}
+  .pg-app .pg-brand-suffix{font-size:12px;letter-spacing:0}
+  .pg-app .pg-display{font-size:clamp(36px,9vw,48px)}
+  .pg-app .pg-row-title{font-size:22px}
+  .pg-app .pg-course-heading h2{font-size:28px}
+  .pg-app .pg-resume-info>div:not(.pg-progress-track){flex-wrap:wrap;gap:7px}
+}

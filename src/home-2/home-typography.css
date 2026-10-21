@@ -1,10 +1,4 @@
-@font-face {
-  font-family: 'LB Futura Black';
-  src: url('/home-2/fonts/futura-extra-black-bt.woff') format('woff');
-  font-style: normal;
-  font-weight: 900;
-  font-display: swap;
-}
+@import '../brand/type-system.css';
 
 @font-face {
   font-family: 'LB Futura Round';
@@ -14,22 +8,25 @@
   font-display: swap;
 }
 
-/* Futura headlines, with the original custom iPod lettering preserved. */
-.c2-home--conversation :is(.c2-film-copy, .conversation-heading, .c2-section-head, .c2-linkedinifier-copy, .c2-newsletter-copy, .c2-newsletter-dialog) :is(h1, h2) {
-  font-family: 'LB Futura Black', C2Hoves, Arial, sans-serif;
-  font-weight: 900;
-  font-synthesis: none;
-  text-transform: none;
-  line-height: 1.02;
+/* Editorial headlines and emphatic section headings have separate roles. */
+.c2-home--conversation :is(.c2-film-copy,.c2-section-head,.c2-newsletter-copy,.c2-newsletter-dialog) :is(h1,h2){
+  font-family:var(--lb-font-headline);font-weight:var(--lb-weight-headline);
+  font-synthesis:none;text-transform:none;line-height:1.03;letter-spacing:-.035em;
 }
-
-.c2-home--conversation .conversation-heading h2 .conversation-stamp {
-  font-family: 'LB Futura Black', C2Hoves, Arial, sans-serif;
-  font-weight: 900;
-  font-size: .78em;
-  letter-spacing: .025em;
+.c2-home--conversation :is(.conversation-heading,.c2-linkedinifier-copy) h2,
+.c2-home--conversation .conversation-heading h2 .conversation-stamp{
+  font-family:var(--lb-font-section);font-weight:var(--lb-weight-section);
+  font-synthesis:none;text-transform:uppercase;line-height:1;letter-spacing:.005em;
 }
-
+.c2-home--conversation .conversation-heading h2 .conversation-stamp{font-size:.88em;letter-spacing:.045em}
+.c2-home--conversation .conversation-certify{font-family:var(--lb-font-section);font-weight:var(--lb-weight-section);font-size:27px;line-height:1;letter-spacing:.025em}
+.c2-home--conversation :is(.c2-eyebrow,.c2-announcement-heading,.c2-footer-fineprint h2,.c2-track-genre,.c2-time){font-family:var(--lb-font-meta)}
+.c2-home--conversation .c2-section-head .c2-eyebrow,
+.c2-home--conversation .development-kicker{
+  font-family:var(--lb-font-label);font-weight:var(--lb-weight-label);font-synthesis:none;
+  font-size:clamp(22px,2.6vw,36px);line-height:1.2;letter-spacing:.02em;text-transform:uppercase;
+}
+.c2-home--conversation .development-kicker{margin-bottom:22px;color:#fff}
 .c2-home--conversation .c2-header :is(.c2-header-links a, .c2-header-menu, .c2-header-directory a, .c2-header-radio) {
   font-family: 'LB Futura Round', C2Hoves, Arial, sans-serif;
   font-weight: 700;
@@ -37,15 +34,8 @@
   letter-spacing: -.015em;
 }
 
-@media (max-width: 700px) {
-  .c2-home--conversation .c2-film-copy h1 { font-size: clamp(32px, 10.2vw, 70px); }
-}
 
-/* The wider face needs a little more room in the two-column tool section. */
-.c2-home--conversation .c2-campaigns h2 { font-size: calc(128 * var(--c2-poster)); }
-@media (max-width: 900px) {
-  .c2-home--conversation .c2-campaigns h2 { font-size: clamp(64px, 10.5vw, 100px); }
-}
-@media (max-width: 520px) {
-  .c2-home--conversation .c2-campaigns h2 { font-size: clamp(50px, 15.4vw, 76px); }
+@media(max-width:700px){
+  .c2-home--conversation .c2-film-copy h1{font-size:clamp(36px,10.2vw,70px)}
+  .c2-home--conversation .development-kicker{margin-bottom:18px}
 }

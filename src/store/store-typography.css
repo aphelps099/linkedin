@@ -1,0 +1,26 @@
+@import '../brand/type-system.css';
+
+.shop-app{--shop-display:var(--lb-font-section)}
+.shop-app .shop-hero-copy h1,.shop-app .shop-detail-info h2{
+  font-family:var(--lb-font-headline);font-weight:var(--lb-weight-headline);
+  font-synthesis:none;letter-spacing:-.035em;line-height:1.03;
+}
+.shop-app .shop-hero-copy .shop-hero-eyebrow{
+  font-family:var(--lb-font-label);font-weight:var(--lb-weight-label);
+  font-size:clamp(18px,2vw,28px);letter-spacing:.02em;line-height:1.2;
+}
+.shop-app .shop-collection-heading h2,.shop-app .shop-bag-head h2,.shop-app .shop-empty h3{
+  font-family:var(--lb-font-section);font-weight:var(--lb-weight-section);
+  font-synthesis:none;text-transform:uppercase;letter-spacing:.005em;
+}
+.shop-app .shop-collection-heading h2{font-size:clamp(40px,4vw,58px)}
+.shop-app .shop-collection-slash{font-family:var(--lb-font-body);font-weight:400}
+.shop-app :is(.shop-label,.shop-count,.shop-card-price,.shop-detail-price,.shop-preview-label,.shop-size-field legend,.shop-one-size,.shop-details summary,.shop-subtotal){
+  font-family:var(--lb-font-meta);font-weight:400;font-variant-numeric:tabular-nums;
+}
+.shop-app .shop-card-caption .shop-card-price.is-preview{font-family:var(--lb-font-meta);font-size:12px}
+.shop-app .shop-detail-price>span{display:inline-block}
+@media(max-width:760px){
+  .shop-app .shop-collection-heading h2{font-size:clamp(36px,9vw,46px)}
+  .shop-app .shop-hero-copy h1{font-size:clamp(40px,9.7vw,70px)}
+}

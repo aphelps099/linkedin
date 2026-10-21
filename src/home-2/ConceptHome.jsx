@@ -149,7 +149,7 @@ export default function ConceptHome({playerFactory=createPortraitRadio, variant=
       <section id="c2-store" className="c2-store" aria-labelledby="c2-store-title">
         <div className="c2-container">
           <div className="c2-section-head">
-            <p className="c2-eyebrow">The company store</p>
+            <p className="c2-eyebrow">Store</p>
             <h2 id="c2-store-title">Wear your boundaries.</h2>
             <p className="c2-store-intro">Threads and wares for when you take it offline.</p>
           </div>
