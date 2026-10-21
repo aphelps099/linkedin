@@ -1,0 +1,79 @@
+// Fictional editorial content for the LinkedIn Beats homepage.
+// Media points to the existing band library; songs use the main radio transport.
+export const DISPATCHES = [
+  {
+    id:'office-band', type:'video', label:'Office sessions', shape:'wide', art:'session',
+    title:'The office has a band. Productivity has left the building.',
+    image:'cutting-room/posters/office-band-loop-concept-6747aa0e.jpg',
+    video:'api/cutting-room/media/office-band-loop-concept-6747aa0e.mp4',
+    eyebrow:'LIVE FROM CONFERENCE ROOM B', headline:['BUSINESS','UNUSUAL.'],
+    description:'Thirty seconds with the office band. Drums, cubicles, and a droid with a very important delivery.',
+  },
+  {
+    id:'synergy-single', type:'song', label:'New single', shape:'square', art:'record', track:0,
+    title:'Synergy in B2B Minor. Finally, alignment you can dance to.',
+    eyebrow:'LINKEDIN BEATS / VOL. 01', headline:['SYNERGY','IN B2B MINOR'],
+    description:'Boardroom house. 112 BPM. An unreasonable amount of stakeholder buy-in.',
+  },
+  {
+    id:'circle-back', type:'press', label:'Press release', shape:'square', art:'announcement',
+    title:'LinkedIn Beats announces a strategic partnership with itself.',
+    eyebrow:'FOR IMMEDIATE ALIGNMENT', headline:['A powerful','new partnership.'],
+    body:[
+      'LinkedIn Beats today announced a landmark strategic partnership with LinkedIn Beats, bringing together two teams that were, following a brief internal review, the same team.',
+      'The partnership combines our deep expertise in saying “circle back” with our proven ability to say it again over a four-on-the-floor beat. Both parties described the opportunity as “incredibly exciting” before realizing they were on the same side of the call.',
+      '“We have long admired our work,” said a spokesperson, speaking on behalf of both organizations. “This feels like a natural next step in our journey toward arranging another meeting.”',
+      'The agreement is effective immediately. Integration is expected to take zero business days. A 90-day integration steering committee has nevertheless been formed.',
+    ],
+  },
+  {
+    id:'first-day', type:'post', label:'LinkedInified', shape:'wide', art:'post',
+    title:'I made a new folder. Here’s what it taught me about leadership.',
+    image:'cutting-room/posters/office-band-loop-silent-243353b4.jpg',
+    eyebrow:'A SMALL UPDATE. A BIG JOURNEY.', headline:['Humbled.','Honored.','New folder.'],
+    body:[
+      'Humbled and honored to announce that I have created a new folder.',
+      'Not just a folder. A container for possibility. A home for the work we haven’t yet had the courage to name final_final_v3.',
+      'Three things this journey taught me about leadership: create space, bring people together, and make sure someone has edit access.',
+      'Couldn’t have done it without my incredible team, who have already asked which drive it’s on. Onwards and upwards. #Leadership #Growth #NewFolder',
+    ],
+  },
+  {
+    id:'unpack-that', type:'blog', label:'Field notes', shape:'square', art:'unpack',
+    title:'“Let’s unpack that.” A practical guide to leaving it packed.',
+    eyebrow:'THE THOUGHT LEADERSHIP JOURNAL', headline:['Let’s','unpack','that.'],
+    body:[
+      'Some ideas need room to breathe. Others need a 45-minute calendar hold with six optional attendees. Knowing the difference is a skill we are not offering to teach.',
+      'First, acknowledge the complexity. A thoughtful nod will do. If remote, unmute, say “there’s a lot here,” and mute again. You have now contributed.',
+      'Next, establish a framework. Two axes are traditional, but a circle is easier to draw and implies that you will eventually come back to where you started.',
+      'Finally, take the discussion offline. This frees everyone to attend their next meeting about the same issue. The original idea remains safely packed, exactly as intended.',
+    ],
+  },
+  {
+    id:'conference-room-radio', type:'song', label:'On the record', shape:'wide', art:'turntable', track:2,
+    title:'Per My Last Email. Best enjoyed with your notifications off.',
+    image:'store/press-conference-turntable.webp',
+    eyebrow:'CONFERENCE ROOM RADIO', headline:['PER MY','LAST EMAIL.'],
+    description:'Passive-aggressive disco. 104 BPM. For everyone who has already attached the document twice.',
+  },
+  {
+    id:'certified-nonsense', type:'press', label:'Company news', shape:'square', art:'certified',
+    title:'Our professional nonsense is now officially certified.',
+    eyebrow:'INDEPENDENTLY SELF-VERIFIED', headline:['100%','CERTIFIED','NONSENSE'],
+    body:[
+      'LinkedIn Beats has awarded LinkedIn Beats its highest possible rating for professional nonsense, following an exhaustive evaluation conducted by LinkedIn Beats.',
+      'The assessment covered five core competencies: strategic nodding, circular language, passive-aggressive follow-up, performative humility, and knowing when to say “great question.”',
+      'Every criterion was met. Several were invented shortly after they were met. The review panel praised the organization’s commitment to maintaining standards that do not technically exist.',
+      'You, too, can become certified. Our five-course Learn portal turns everyday vocabulary into something your manager will describe as “a really interesting development opportunity.”',
+    ],
+    link:{href:'learn/',label:'Get certified'},
+  },
+  {
+    id:'musical-meeting', type:'video', label:'Music video', shape:'wide', art:'session',
+    title:'Let’s Circle Back. A meeting that finally goes somewhere.',
+    image:'cutting-room/posters/let-s-circle-back-synergy-corrected-d6ecf221.jpg',
+    video:'api/cutting-room/media/let-s-circle-back-synergy-corrected-d6ecf221.mp4',
+    eyebrow:'THE FULL 90-SECOND MUSICAL', headline:['LET’S','CIRCLE BACK.'],
+    description:'The complete musical meeting. Featuring the house band, Synergy, and the printer. Attendance is optional. The chorus is not.',
+  },
+];

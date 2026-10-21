@@ -7,6 +7,7 @@ import {HeroVideo} from './HeroVideo.jsx';
 import {Campaigns} from './Campaigns.jsx';
 import {ConceptFooter} from './ConceptFooter.jsx';
 import {NewsletterSignup} from './NewsletterSignup.jsx';
+import {DispatchCarousel} from './DispatchCarousel.jsx';
 import {createPortraitRadio} from './portraitRadio.js';
 import {PixelSpectrum} from './PixelSpectrum.jsx';
 import {FeedScene, ExperimentLinks} from '../home-experiments/FeedScene.jsx';
@@ -63,7 +64,7 @@ export default function ConceptHome({playerFactory=createPortraitRadio, variant=
     const anchors = {'#listen':'c2-player', '#store':'c2-store', '#about':'c2-footer'};
     const followAnchor = (initial=false) => {
       const hash = window.location.hash;
-      const target = anchors[hash] || (initial && ['#c2-title','#c2-player','#c2-store','#c2-tools','#c2-footer','#newsletter'].includes(hash) ? hash.slice(1) : null);
+      const target = anchors[hash] || (initial && ['#c2-title','#c2-player','#c2-store','#c2-tools','#c2-footer','#newsletter','#c2-dispatch'].includes(hash) ? hash.slice(1) : null);
       if (!target) return;
       if (anchors[hash]) window.history.replaceState(null,'',`${window.location.pathname}${window.location.search}#${target}`);
       document.getElementById(target)?.scrollIntoView({behavior:'instant', block:'start'});
@@ -77,7 +78,7 @@ export default function ConceptHome({playerFactory=createPortraitRadio, variant=
     const player = playerFactory({phraseBase:`${base}phrases/`, onState:setState});
     radio.current = player;
     const key = e => {
-      if (e.code !== 'Space' || e.repeat || e.metaKey || e.ctrlKey || e.altKey || e.target.closest('input,textarea,button,a,select,[contenteditable="true"]')) return;
+      if (e.code !== 'Space' || e.repeat || e.metaKey || e.ctrlKey || e.altKey || e.target.closest('input,textarea,button,a,select,dialog,video,audio,[contenteditable="true"]')) return;
       e.preventDefault(); player.toggle();
     };
     window.addEventListener('keydown',key);
@@ -164,6 +165,7 @@ export default function ConceptHome({playerFactory=createPortraitRadio, variant=
       </section>
       <Campaigns base={base}/>
       <NewsletterSignup/>
+      <DispatchCarousel base={base} motion={motion} state={state} onPlayTrack={index=>radio.current?.play(index)} onToggle={()=>radio.current?.toggle()} onSeek={seek} onPause={()=>{const current=radio.current?.getState();if(current?.playing||current?.loading)radio.current.toggle();}}/>
     </main>
     <ConceptFooter base={base}/>
   </div>;
