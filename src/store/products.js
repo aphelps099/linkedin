@@ -1,5 +1,5 @@
 // Shared storefront and server catalog. Prices and preview states are authoritative.
-// Eleven-piece collection approved October 2026.
+// Curated existing collection, October 2026.
 export const CATEGORIES = ['All', 'Shirts', 'Hats', 'Mugs', 'Posters', 'Stickers'];
 
 export const PRODUCTS = [
@@ -116,31 +116,6 @@ export const PRODUCTS = [
       [
         "Size",
         "One size, adjustable"
-      ]
-    ]
-  },
-  {
-    "sku": "CS-111",
-    "cat": "Shirts",
-    "name": "Take This Offline Tee",
-    "price": null,
-    "sizes": null,
-    "img": "new-collection/take-this-offline-tee.webp",
-    "previewOnly": true,
-    "ph": "Design preview — cobalt Take This Offline tee",
-    "desc": "A meeting exit strategy, in cream on cobalt. Take This Offline lettering with one helpful arrow.",
-    "specs": [
-      [
-        "Design",
-        "Cobalt tee"
-      ],
-      [
-        "Artwork",
-        "Cream stacked lettering and curved arrow"
-      ],
-      [
-        "Status",
-        "Design preview — not yet available"
       ]
     ]
   },
