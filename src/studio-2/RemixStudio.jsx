@@ -1,3 +1,4 @@
+import {SiteFooter} from '../brand/SiteFooter.jsx';
 import React, {useEffect, useRef, useState} from 'react';
 import {ArrowUpRight, ArrowDown, Plus, Play, Pause, SkipBack, SkipForward, RotateCcw, Volume2, VolumeX, LoaderCircle, Check, SlidersHorizontal, X} from 'lucide-react';
 import {ConceptHeader} from '../home-2/ConceptHeader.jsx';
@@ -60,6 +61,6 @@ export function RemixStudio() {
         </div>
       </section>
     </main>
-    <footer className="s2-footer"><span>LinkedIn Beats / Corporate racing division</span><a href="../studio/">Meeting studio <ArrowUpRight aria-hidden="true"/></a><a href="../store/">Shop wears <ArrowUpRight aria-hidden="true"/></a></footer>
+    <SiteFooter base="../"/>
   </div>;
 }

@@ -1,3 +1,4 @@
+import {SiteFooter} from '../brand/SiteFooter.jsx';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {ArrowRight, ArrowUpRight, X, Minus, Plus, ShoppingBag} from 'lucide-react';
 import {PRODUCTS, bySku, fmt} from './products.js';
@@ -165,13 +166,7 @@ export default function Store(){
     </main>
     <StoreMarquee/>
     <FirstInLine hidden={Boolean(d || drawer)}/>
-    <footer className="shop-footer">
-      <div className="shop-footer-top">
-        <a href="../" className="shop-footer-brand" aria-label="LinkedIn Beats home"><img src="../brand/afterbeat/wordmark-color.svg?v=afterbeat-2" width="7015" height="862" alt="LinkedIn Beats" loading="lazy"/></a>
-      </div>
-      <p className="shop-footer-disclaimer">LinkedIn Beats is an independent parody project. Not affiliated with, endorsed by, or sponsored by LinkedIn Corporation. All trademarks belong to their respective owners.</p>
-      <div className="shop-footer-bottom"><p>© {new Date().getFullYear()} LinkedIn Beats. All expectations managed.</p><a href="https://look-serious.com/">Built by <strong>Look Serious</strong></a></div>
-    </footer>
+    <SiteFooter base="../"/>
     {d&&<Modal kind="product" label="product-title" onClose={closeDetail}>
       <button className="shop-close" onClick={closeDetail} aria-label="Close product detail"><X size={23}/></button>
       <ProductGallery key={d.sku} product={d}/>

@@ -1,3 +1,4 @@
+import {SiteFooter} from '../brand/SiteFooter.jsx';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {ArrowLeft, ArrowRight, Award, Check, ChevronDown, Clock3, Download, LockKeyhole, Music2, Printer, X} from 'lucide-react';
 import {CHAPTERS, chapterById} from './chapters/index.js';
@@ -50,6 +51,7 @@ export default function Program(){
         : path==='certified' && complete ? <Certificate progress={progress} update={update}/>
         : <Syllabus progress={progress} resume={resume} lockedCertificate={path==='certified'}/>}
     </main>
+    <SiteFooter base="../"/>
   </div>;
 }
 

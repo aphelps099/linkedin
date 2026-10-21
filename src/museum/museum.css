@@ -1,3 +1,6 @@
+body:has(.museum-page){padding-bottom:0}
+.museum-page{width:100%;min-width:0}
+.museum-page .museum-shell{margin-inline:auto}
 .museum-shell {
   width: 100%;
   max-width: 1280px;

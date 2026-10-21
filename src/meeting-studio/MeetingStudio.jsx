@@ -1,3 +1,4 @@
+import {SiteFooter} from '../brand/SiteFooter.jsx';
 import React,{useCallback,useEffect,useRef,useState} from 'react';
 import {Play,Pause,SkipBack,SkipForward,Volume2,VolumeX,LoaderCircle,ListMusic,Grid2X2,SlidersHorizontal,X,RotateCcw,ArrowUpRight,Check,Clapperboard,Subtitles,Mic,MicOff,Video,VideoOff,ChevronDown,UserRound} from 'lucide-react';
 import {ConceptHeader} from '../home-2/ConceptHeader.jsx';
@@ -113,6 +114,6 @@ export function MeetingStudio(){
         </>}
       </section>
     </main>
-    <footer className="meeting-footer"><span>LinkedIn Beats / Corporate racing division</span><a href="../studio-2/">ASCII studio <ArrowUpRight aria-hidden="true"/></a><a href="../store/">Shop wears <ArrowUpRight aria-hidden="true"/></a></footer>
+    <SiteFooter base="../"/>
   </div>;
 }

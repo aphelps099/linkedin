@@ -1,7 +1,8 @@
+import {SiteFooter} from '../brand/SiteFooter.jsx';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import '../styles.css';
 import './museum.css';
 import Museum from './Museum.jsx';
 
-ReactDOM.createRoot(document.getElementById('root')).render(<Museum />);
+ReactDOM.createRoot(document.getElementById('root')).render(<div className="museum-page"><Museum /><SiteFooter base="../"/></div>);

@@ -9,14 +9,15 @@ const MONTHLY_CONSENT = 'Monthly emails from LinkedIn Beats about new music, too
 
 // One private record per address, on the mounted volume. No emails are sent here.
 // Publishing a record with link() is atomic and also deduplicates concurrent joins.
-async function saveSubscriber(directory, email, profile) {
+async function saveSubscriber(directory, email, profile, source) {
   const filename = createHash('sha256').update(email).digest('hex') + '.json';
   const temporary = path.join(directory, `.${randomUUID()}.tmp`);
   const destination = path.join(directory, filename);
   const subscribedAt = new Date().toISOString();
-  const monthlyOptIn = profile ? {source:'home-monthly', consent:MONTHLY_CONSENT, consentVersion:2, subscribedAt} : undefined;
-  const record = {email, subscribedAt, source:profile?'home-monthly':'store-first-in-line', consent:profile?MONTHLY_CONSENT:CONSENT, consentVersion:profile?2:1,
-    ...(profile ? {...profile, monthlyOptIn} : {})};
+  const monthly = source === 'home-monthly' || source === 'site-footer';
+  const monthlyOptIn = monthly ? {source, consent:MONTHLY_CONSENT, consentVersion:2, subscribedAt} : undefined;
+  const record = {email, subscribedAt, source, consent:monthly?MONTHLY_CONSENT:CONSENT, consentVersion:monthly?2:1,
+    ...profile, ...(monthly ? {monthlyOptIn} : {})};
   try {
     const file = await open(temporary, 'wx', 0o600);
     try {
@@ -26,11 +27,11 @@ async function saveSubscriber(directory, email, profile) {
     try { await link(temporary, destination); }
     catch (error) {
       if (error.code !== 'EEXIST') throw error;
-      if (profile) {
+      if (monthly) {
         // A store subscriber can join the monthly list without losing the
         // original consent record. Rename publishes the completed update atomically.
         const existing = JSON.parse(await readFile(destination, 'utf8'));
-        if (existing.firstName !== profile.firstName || existing.lastName !== profile.lastName || !existing.monthlyOptIn) {
+        if (!existing.monthlyOptIn || (profile && (existing.firstName !== profile.firstName || existing.lastName !== profile.lastName))) {
           await writeFile(temporary, JSON.stringify({...existing, ...profile, monthlyOptIn:existing.monthlyOptIn || monthlyOptIn}) + '\n');
           await rename(temporary, destination);
         }
@@ -83,7 +84,7 @@ export function createNewsletter({directory}) {
         res.status(400).json({error:'Please enter your first and last name (up to 80 characters each).'}); return;
       }
       profile = {firstName, lastName};
-    } else if (req.body?.source && req.body.source !== 'store-first-in-line') {
+    } else if (req.body?.source && !['store-first-in-line','site-footer'].includes(req.body.source)) {
       res.status(400).json({error:'Please subscribe from the LinkedIn Beats website.'}); return;
     }
     await ready;
@@ -91,7 +92,7 @@ export function createNewsletter({directory}) {
       res.status(503).json({error:'Signups are temporarily unavailable. Please try again shortly.'}); return;
     }
     try {
-      await saveSubscriber(directory, email, profile);
+      await saveSubscriber(directory, email, profile, req.body.source || 'store-first-in-line');
       res.json({subscribed:true});
     } catch {
       console.error('newsletter: could not save a signup');
