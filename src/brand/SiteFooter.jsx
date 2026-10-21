@@ -82,7 +82,6 @@ export const SiteFooter = memo(function SiteFooter({base='/'}) {
     <div className="lb-footer" id="about">
       <div className="lb-footer-links">
         <section className="lb-signup" id="newsletter" aria-labelledby={title}>
-          <span className="lb-tag"><span className="lb-tag-dot"/>The occasional email</span>
           <h2 id={title}>Let’s circle back.</h2>
           <NewsletterForm/>
         </section>
