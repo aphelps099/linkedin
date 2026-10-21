@@ -15,10 +15,11 @@ const fail = msg => { failures++; console.error('FAIL ' + msg); };
 const expectThrow = (fn, why) => { try{ fn(); fail(why); }catch{ /* correct */ } };
 
 // --- catalog ---
-if(!PRODUCTS.length) fail('empty catalog');
+if(PRODUCTS.length !== 11) fail('expected the curated eleven-product collection');
+expectThrow(() => normalizeCart([{sku:'CS-101',size:'M',qty:1}]), 'retired product accepted at checkout');
 if(new Set(PRODUCTS.map(p => p.sku)).size !== PRODUCTS.length) fail('duplicate SKUs');
 const cats = new Set(PRODUCTS.map(p => p.cat));
-if(cats.size !== 6 || [...cats].some(c => !CATEGORIES.includes(c))) fail('categories do not match the filter chips');
+if(cats.size !== 5 || [...cats].some(c => !CATEGORIES.includes(c))) fail('categories do not match the filter chips');
 for(const p of PRODUCTS){
   if(!/^CS-\d{3}$/.test(p.sku)) fail(`malformed SKU: ${p.sku}`);
   if(!p.previewOnly && (!(p.price > 0) || Math.round(p.price * 100) !== p.price * 100)) fail(`price is not whole cents: ${p.sku}`);
@@ -36,24 +37,24 @@ for(const p of PRODUCTS){
 if(fmt(28) !== '$28.00') fail('price format is not $XX.XX');
 
 // --- cart normalization (the server prices the cart, the client only names it) ---
-const priced = normalizeCart([{ sku: 'CS-101', size: 'M', qty: 2, price: 0.01 }]);
-if(priced[0].price !== bySku('CS-101').price) fail('client-supplied price was believed');
+const priced = normalizeCart([{ sku: 'CS-103', size: 'M', qty: 2, price: 0.01 }]);
+if(priced[0].price !== bySku('CS-103').price) fail('client-supplied price was believed');
 expectThrow(() => normalizeCart([]), 'empty cart accepted');
 expectThrow(() => normalizeCart([{ sku: 'CS-999', qty: 1 }]), 'unknown SKU accepted');
-expectThrow(() => normalizeCart([{ sku: 'CS-101', size: 'M', qty: 0 }]), 'zero quantity accepted');
-expectThrow(() => normalizeCart([{ sku: 'CS-101', size: 'XXL', qty: 1 }]), 'unknown size accepted');
-expectThrow(() => normalizeCart([{ sku: 'CS-101', qty: 1 }]), 'shirt without a size accepted');
+expectThrow(() => normalizeCart([{ sku: 'CS-103', size: 'M', qty: 0 }]), 'zero quantity accepted');
+expectThrow(() => normalizeCart([{ sku: 'CS-103', size: 'XXL', qty: 1 }]), 'unknown size accepted');
+expectThrow(() => normalizeCart([{ sku: 'CS-103', qty: 1 }]), 'shirt without a size accepted');
 if(normalizeCart([{ sku: 'CS-201', size: 'M', qty: 1 }])[0].size !== null) fail('size not stripped from an unsized product');
 
 // --- checkout params ---
 const origin = 'https://linkedinbeats.com';
-const small = buildCheckoutParams(normalizeCart([{ sku: 'CS-202', qty: 1 }]), origin, { flatShippingCents: 500 });
+const small = buildCheckoutParams(normalizeCart([{ sku: 'CS-201', qty: 1 }]), origin, { flatShippingCents: 500 });
 if(small.get('shipping_options[0][shipping_rate_data][fixed_amount][amount]') !== '500') fail('small order did not get the flat rate');
 if(small.get('line_items[0][price_data][unit_amount]') !== '2400') fail('cap not priced at 2400 cents');
 if(small.get('success_url') !== origin + '/store/?order=filed') fail('success_url is off the form');
 if(small.get('cancel_url') !== origin + '/store/?order=tabled') fail('cancel_url is off the form');
 
-const big = buildCheckoutParams(normalizeCart([{ sku: 'CS-101', size: 'L', qty: 2 }]), origin, { flatShippingCents: 500 });
+const big = buildCheckoutParams(normalizeCart([{ sku: 'CS-103', size: 'L', qty: 2 }]), origin, { flatShippingCents: 500 });
 if(big.get('shipping_options[0][shipping_rate_data][fixed_amount][amount]') !== '0') fail(`$56 order was not shipped free (threshold ${FREE_SHIPPING_CENTS})`);
 if(!big.get('line_items[0][price_data][product_data][name]').includes('— L')) fail('size missing from the line item name');
 
@@ -77,12 +78,12 @@ if(verifyStripeSignature({ payload, header: `t=${t},v1=deadbeef`, secret, now: t
 // --- Printify order building ---
 const session = {
   id: 'cs_test_abcdefgh',
-  metadata: { cart: JSON.stringify([['CS-101', 'M', 2], ['CS-201', null, 1]]) },
+  metadata: { cart: JSON.stringify([['CS-103', 'M', 2], ['CS-201', null, 1]]) },
   customer_details: { name: 'Brenda Synergy', email: 'brenda@example.com', phone: '' },
   shipping_details: { name: 'Brenda Synergy', address: { line1: '1 Alignment Way', line2: '', city: 'Austin', state: 'TX', postal_code: '73301', country: 'US' } },
 };
 const skuMap = {
-  'CS-101': { productId: 'p1', variants: { S: 11, M: 12, L: 13, XL: 14 } },
+  'CS-103': { productId: 'p1', variants: { S: 11, M: 12, L: 13, XL: 14 } },
   'CS-201': { productId: 'p3', variantId: 31 },
 };
 const { order, unmapped } = buildPrintifyOrder({ session, skuMap });
@@ -94,7 +95,7 @@ if(order.address_to.first_name !== 'Brenda' || order.address_to.last_name !== 'S
 if(order.address_to.zip !== '73301' || order.address_to.country !== 'US') fail('address mapping failed');
 if(order.send_shipping_notification !== true) fail('shipping notification not requested');
 
-const partial = buildPrintifyOrder({ session, skuMap: { 'CS-101': skuMap['CS-101'] } });
+const partial = buildPrintifyOrder({ session, skuMap: { 'CS-103': skuMap['CS-103'] } });
 if(partial.order !== null || !partial.unmapped.includes('CS-201')) fail('unmapped SKU not refused');
 
 for(const p of PRODUCTS.filter(p=>p.previewOnly)){

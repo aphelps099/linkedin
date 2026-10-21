@@ -24,7 +24,7 @@ import '../home-experiments/development-radio.css';
 
 const INITIAL = {index:0, playing:false, loading:false, elapsed:0, volume:.8, text:LINES[1], word:-1, mouth:'rest', levels:null, error:''};
 const PORTRAITS = [{index:2,tone:'ice'}, {index:0,tone:'paper'}, {index:1,tone:'pink'}, {index:3,tone:'navy'}];
-const FEATURED = ['CS-104','CS-203','CS-501'].map(sku => PRODUCTS.find(p => p.sku === sku));
+const FEATURED = ['CS-106','CS-203','CS-501'].map(sku => PRODUCTS.find(p => p.sku === sku));
 // Singing frames replace only the feathered lip area. A separate, brief
 // illustrated head turn introduces the selected singer when playback starts.
 const CROPS = {rest:[142,80], ah:[618,81], ee:[1094,80], oh:[144,540], oo:[621,540], closed:[1096,538]};

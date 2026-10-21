@@ -1,7 +1,7 @@
 import React, {memo, useEffect, useId, useRef, useState} from 'react';
 import {LoaderCircle, Pause, Play} from 'lucide-react';
 
-export const ConceptHeader = memo(function ConceptHeader({base='/', onRadio, playing=false, loading=false, homeSectionBase='', active, children, overlay=false, theme='light'}) {
+export const ConceptHeader = memo(function ConceptHeader({base='/', onRadio, playing=false, loading=false, homeSectionBase='', active, children, overlay=false, theme='light', storefront=false}) {
   const [open,setOpen]=useState(false);
   const root=useRef(null), trigger=useRef(null), directory=useRef(null), focusFirst=useRef(false), id=useId();
   const links=[['Listen',`${homeSectionBase}#c2-player`],['LinkedInifier',`${base}lessons/`],['Learn',`${base}learn/`],['Studio',`${base}studio/`],['Shop',`${base}store/`]];
@@ -21,12 +21,12 @@ export const ConceptHeader = memo(function ConceptHeader({base='/', onRadio, pla
     <div className="c2-container c2-header-row">
       <a className="c2-header-brand" href={base} aria-label="LinkedIn Beats home">
         <picture>
-          <source media="(max-width: 700px)" srcSet={`${base}home-2/brand/wordmark-stacked.svg?v=afterbeat-2`} width="3857.0" height="1742"/>
+          {!storefront&&<source media="(max-width: 700px)" srcSet={`${base}home-2/brand/wordmark-stacked.svg?v=afterbeat-2`} width="3857.0" height="1742"/>}
           <img src={`${base}home-2/brand/wordmark-horizontal.svg?v=afterbeat-2`} alt="LinkedIn Beats" width="7015.0" height="862" fetchpriority="high"/>
         </picture>
       </a>
       <nav className="c2-header-links" aria-label="Featured navigation">
-        {links.filter(([name])=>!['Studio','Learn'].includes(name)).map(([name,href])=><a key={name} href={href} aria-current={active===name?'page':undefined}>{name}</a>)}
+        {links.filter(([name])=>storefront?['Listen','Learn','Shop'].includes(name):!['Studio','Learn'].includes(name)).map(([name,href])=><a key={name} href={href} aria-current={active===name?'page':undefined}>{storefront&&name==='Shop'?'Store':name}</a>)}
       </nav>
       <div className="c2-header-actions">
         {children}
