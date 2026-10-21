@@ -1,27 +1,28 @@
-.shop-first-in-line{position:fixed;z-index:45;left:max(22px,env(safe-area-inset-left));bottom:max(22px,env(safe-area-inset-bottom));width:112px;height:112px}
-.shop-app .shop-first-trigger{width:100%;height:100%;border:0;border-radius:50%;background:var(--shop-blue);color:#fbf6e8;box-shadow:0 5px 18px #172b541c;display:grid;place-items:center;padding:14px;transition:transform .2s ease;transform-origin:center}
-.shop-first-trigger span{font:600 16px/.98 C2Hoves,Arial,sans-serif;letter-spacing:-.02em;text-align:center;text-transform:uppercase}
-.shop-first-trigger:focus-visible{outline-color:#20221e;outline-offset:5px}
-.shop-signup{position:fixed;inset:0;width:720px;max-width:calc(100vw - 40px);max-height:calc(100dvh - 40px);margin:auto;overflow:auto;overscroll-behavior:contain;border:0;padding:72px 56px 56px;background:#1e211d;color:#fbf6e8;text-align:center}
+.shop-first-in-line{display:flex;align-items:center;gap:24px}
+.shop-first-in-line h2{font:600 22px/1.2 C2Hoves,Arial,sans-serif;letter-spacing:-.025em}
+.shop-app .shop-first-trigger{border:0;border-radius:30px;background:var(--shop-blue);color:#fff;display:flex;align-items:center;justify-content:center;gap:20px;min-height:48px;padding:14px 24px;font:600 16px/1.2 C2Hoves,Arial,sans-serif}
+.shop-first-trigger:hover{background:#0345c4}
+.shop-signup{position:fixed;inset:0;width:720px;max-width:calc(100vw - 40px);max-height:calc(100dvh - 40px);margin:auto;overflow:auto;overscroll-behavior:contain;border:0;border-radius:24px;padding:72px 56px 56px;background:#fff;color:#20221e;text-align:center}
 .shop-signup::backdrop{background:#171a1770;backdrop-filter:blur(2px)}
-.shop-app .shop-signup-close{position:absolute;right:16px;top:16px;display:grid;place-items:center;width:44px;height:44px;padding:0;border:1px solid #6c7066;background:transparent;color:#fbf6e8}
-.shop-signup-close:hover{background:#363b32}
+.shop-app .shop-signup-close{position:absolute;right:16px;top:16px;display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;border-radius:50%;background:#f1f2f5;color:#20221e}
+.shop-signup-close:hover{background:#e5e8ed}
 .shop-signup h2{font:600 clamp(36px,4vw,56px)/1.04 C2Hoves,Arial,sans-serif;letter-spacing:-.045em;text-wrap:balance}
-.shop-signup #shop-signup-description{max-width:420px;margin:22px auto 30px;font-size:18px;line-height:1.5;color:#e2e3d8;text-wrap:balance}
+.shop-signup #shop-signup-description{max-width:420px;margin:22px auto 30px;font-size:18px;line-height:1.5;color:#4c5148;text-wrap:balance}
 .shop-signup form{max-width:410px;margin:0 auto}
-.shop-signup input[type=email]{display:block;width:100%;min-height:58px;border:1px solid #9b9e91;border-radius:0;background:transparent;color:#fbf6e8;padding:16px 18px;font:400 17px/1.4 C2Hoves,Arial,sans-serif}
-.shop-signup input::placeholder{color:#c1c5b9;opacity:1}
+.shop-signup input[type=email]{display:block;width:100%;min-height:58px;border:0;border-radius:12px;background:#f1f2f5;color:#20221e;padding:16px 18px;font:400 17px/1.4 C2Hoves,Arial,sans-serif}
+.shop-signup input::placeholder{color:#65695f;opacity:1}
 .shop-signup :focus-visible{outline-color:#a5beff;outline-offset:4px}
-.shop-app .shop-signup-submit{display:inline-flex;align-items:center;justify-content:center;gap:28px;min-height:54px;padding:15px 24px;margin-top:18px;border:1px solid #fbf6e8;background:#fbf6e8;color:#1e211d;font:600 17px/1.3 C2Hoves,Arial,sans-serif}
-.shop-signup-submit:hover:not(:disabled){background:#dce6ff;border-color:#dce6ff}
-.shop-signup .shop-signup-consent{font:400 12px/1.55 C2Hoves,Arial,sans-serif;color:#b6bcae;margin:24px auto 0;max-width:355px}
-.shop-signup .shop-signup-error{font-size:14px;line-height:1.5;color:#ffd6c9;margin:18px 0 0}
+.shop-app .shop-signup-submit{display:inline-flex;align-items:center;justify-content:center;gap:28px;min-height:54px;padding:15px 24px;margin-top:18px;border:0;border-radius:30px;background:var(--shop-blue);color:#fff;font:600 17px/1.3 C2Hoves,Arial,sans-serif}
+.shop-signup-submit:hover:not(:disabled){background:#0345c4}
+.shop-signup .shop-signup-consent{font:400 12px/1.55 C2Hoves,Arial,sans-serif;color:#65695f;margin:24px auto 0;max-width:355px}
+.shop-signup .shop-signup-error{font-size:14px;line-height:1.5;color:#a22c1d;margin:18px 0 0}
 .shop-signup-trap{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}
-.shop-signup-success>svg{margin:0 auto 22px;color:#d4e4c1}
-@media(hover:hover) and (prefers-reduced-motion:no-preference){.shop-first-trigger:hover{transform:scale(1.05)}}
+.shop-signup-success>svg{margin:0 auto 22px;color:var(--shop-blue)}
+
 @media(max-width:650px){
-  .shop-first-in-line{width:88px;height:88px;left:max(16px,env(safe-area-inset-left));bottom:max(16px,env(safe-area-inset-bottom))}
-  .shop-first-trigger span{font-size:13px}
+  .shop-first-in-line{width:100%;justify-content:space-between;gap:16px}
+  .shop-first-in-line h2{font-size:20px}
+  .shop-app .shop-first-trigger{padding-inline:18px;gap:12px}
   .shop-signup{max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);padding:70px 24px 36px}
   .shop-signup #shop-signup-description{font-size:17px;margin-top:18px;margin-bottom:26px}
 }

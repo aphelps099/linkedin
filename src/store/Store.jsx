@@ -4,16 +4,13 @@ import {PRODUCTS, bySku, fmt} from './products.js';
 import {ProductVisual} from './ProductVisual.jsx';
 import {ProductGallery} from './ProductGallery.jsx';
 import {ConceptHeader} from '../home-2/ConceptHeader.jsx';
-import {ConceptFooter} from '../home-2/ConceptFooter.jsx';
 import {FirstInLine} from './FirstInLine.jsx';
 import {StoreHero} from './StoreHero.jsx';
-import {StoreMarquee} from './StoreMarquee.jsx';
 import '../home-2/header.css';
-import '../home-2/footer.css';
 
 const DEPARTMENTS = {
   'All': null,
-  'Apparel': ['Sweatshirts', 'Shirts'],
+  'Apparel': ['Shirts'],
   'Hats': ['Hats'],
   'Desk supplies': ['Mugs', 'Stickers', 'Posters'],
 };
@@ -130,24 +127,29 @@ export default function Store(){
 
   return <div className="shop-app c2-home">
     <a className="shop-skip" href="#collection">Skip to products</a>
-    <ConceptHeader base="../" homeSectionBase="../" active="Shop"><button className="shop-header-bag" onClick={openBag} aria-label={`Open bag, ${cartCount} items`}><ShoppingBag size={21} aria-hidden="true"/><span>Bag</span><span className="shop-bag-count">{cartCount}</span></button></ConceptHeader>
+    <ConceptHeader base="../" homeSectionBase="../" active="Shop" storefront><button className="shop-header-bag" onClick={openBag} aria-label={`Open bag, ${cartCount} items`}><ShoppingBag size={21} aria-hidden="true"/><span className="shop-bag-count">{cartCount}</span></button></ConceptHeader>
     {notice&&<div className="shop-notice" role="status"><span>{notice==='filed'?'Order filed. Thank you for your contribution to corporate culture.':'Checkout paused. Your bag is right where you left it.'}</span><button onClick={()=>setNotice(null)} aria-label="Dismiss notice"><X size={18}/></button></div>}
     <main>
       <StoreHero/>
       <section className="shop-collection" id="collection" aria-labelledby="collection-title">
         <header className="shop-collection-heading"><h2 id="collection-title" tabIndex="-1">Shop wears</h2></header>
         <button className="shop-mobile-filter-toggle" aria-expanded={filtersOpen} aria-controls="shop-filter-options" onClick={()=>setFiltersOpen(open=>!open)}><span>Filter & sort</span><span aria-hidden="true">{filtersOpen?'−':'+'}</span></button>
-        <div id="shop-filter-options" className={`shop-filter-row${filtersOpen?' is-open':''}`}><div className="shop-filters" role="group" aria-label="Filter products">{Object.keys(DEPARTMENTS).map(c=><button key={c} className={c===filter?'is-selected':''} aria-pressed={c===filter} onClick={()=>setFilter(c)}>{c==='All'?'Shop all':c}</button>)}</div><div className="shop-sort"><span className="shop-count" role="status">{items.length} products</span><label htmlFor="shop-sort">Sort by</label><select id="shop-sort" value={sort} onChange={e=>setSort(e.target.value)}><option value="featured">Featured</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="name">Name: A–Z</option></select></div></div>
+        <div id="shop-filter-options" className={`shop-filter-row${filtersOpen?' is-open':''}`}><div className="shop-filters" role="group" aria-label="Filter products">{Object.keys(DEPARTMENTS).map(c=><button key={c} className={c===filter?'is-selected':''} aria-pressed={c===filter} onClick={()=>setFilter(c)}>{c}</button>)}</div><div className="shop-sort"><span className="shop-count" role="status">{items.length} products</span><label htmlFor="shop-sort">Sort by</label><select id="shop-sort" value={sort} onChange={e=>setSort(e.target.value)}><option value="featured">Featured</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="name">Name: A–Z</option></select></div></div>
         <div className="shop-grid">{items.map(p=><article className="shop-product" key={p.sku}>
-          <button className={`shop-product-image shop-image-${p.sku}`} onClick={()=>openDetail(p)} aria-label={`View ${p.name}, ${p.previewOnly?'design preview':fmt(p.price)}`}><ProductVisual product={p} hoverModel/>{p.previewOnly&&<span className="shop-product-tag">Preview</span>}<span className="shop-product-open">View details <Plus size={17} aria-hidden="true"/></span></button>
+          <button className={`shop-product-image shop-image-${p.sku}`} onClick={()=>openDetail(p)} aria-label={`View ${p.name}, ${p.previewOnly?'design preview':fmt(p.price)}`}><ProductVisual product={p} hoverModel/><span className="shop-product-open">View details <Plus size={17} aria-hidden="true"/></span></button>
           <div className="shop-card-caption"><h3><button onClick={()=>openDetail(p)}>{p.name}</button></h3><p className={`shop-card-price ${p.previewOnly?'is-preview':''}`}>{p.previewOnly?'Coming soon':fmt(p.price)}</p></div>
         </article>)}</div>
         <p className="shop-collection-note">Items marked Coming soon are design previews. Pricing and availability to come.</p>
       </section>
     </main>
-    <StoreMarquee/>
-    <ConceptFooter base="../"/>
-    <FirstInLine hidden={Boolean(d)||drawer}/>
+    <footer className="shop-footer">
+      <div className="shop-footer-top">
+        <a href="../" className="shop-footer-brand" aria-label="LinkedIn Beats home"><img src="../brand/afterbeat/wordmark-color.svg" width="6717" height="810" alt="LinkedIn Beats" loading="lazy"/></a>
+        <FirstInLine/>
+      </div>
+      <p className="shop-footer-disclaimer">LinkedIn Beats is an independent parody project. Not affiliated with, endorsed by, or sponsored by LinkedIn Corporation. All trademarks belong to their respective owners.</p>
+      <div className="shop-footer-bottom"><p>© {new Date().getFullYear()} LinkedIn Beats. All expectations managed.</p><a href="https://look-serious.com/">Built by <strong>Look Serious</strong></a></div>
+    </footer>
     {d&&<Modal kind="product" label="product-title" onClose={closeDetail}>
       <button className="shop-close" onClick={closeDetail} aria-label="Close product detail"><X size={23}/></button>
       <ProductGallery key={d.sku} product={d}/>

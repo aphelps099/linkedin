@@ -9,7 +9,7 @@ import {Footer} from '../brand/Footer.jsx';
 import '../brand/fonts.css';
 import './home.css';
 
-const FEATURED = ['CS-104','CS-203','CS-501'].map(sku=>PRODUCTS.find(p=>p.sku===sku));
+const FEATURED = ['CS-106','CS-203','CS-501'].map(sku=>PRODUCTS.find(p=>p.sku===sku));
 const initial={index:0,playing:false,loading:false,elapsed:0,volume:.8,shuffle:false,text:LINES[1],word:-1,error:''};
 
 export default function Homepage(){

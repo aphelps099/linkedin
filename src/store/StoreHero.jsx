@@ -22,7 +22,7 @@ export function StoreHero(){
         <source media="(max-width: 760px)" srcSet="../store/look-serious-circle-back-mobile.webp" width="1254" height="1254"/>
         <img className="shop-hero-photo" style={{animationPlayState:paused||!visible?'paused':'running'}} src="../store/look-serious-circle-back-hero.webp" width="1650" height="953" fetchPriority="high" alt="Five models in a sunlit parking garage wearing the LinkedIn Beats Look Serious collection: SERIOUS. tees, stacked CIRCLE BACK on the kneeling model’s navy shirt, and stacked OUT OF OFFICE on blue and pink tops."/>
       </picture>
-      <h1 id="shop-title" className="shop-hero-lockup"><img src="../store/wordmark-white-pulse.svg" width="1087" height="104" alt="LinkedIn Beats"/><span>Store</span></h1>
+      <h1 id="shop-title" className="shop-hero-lockup"><img src="../brand/afterbeat/wordmark-white.svg" width="6717" height="810" alt="LinkedIn Beats"/><span>Store</span></h1>
       <button className="shop-hero-motion" type="button" aria-label={paused?'Play hero motion':'Pause hero motion'} aria-pressed={paused} onClick={()=>setPaused(value=>!value)}>{paused?<Play size={16} fill="currentColor" aria-hidden="true"/>:<Pause size={16} fill="currentColor" aria-hidden="true"/>}</button>
     </div>
   </section>;
