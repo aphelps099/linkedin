@@ -13,7 +13,7 @@
 /* White Afterbeat navigation, scoped to the store. */
 .shop-app .c2-header{background:#fff;color:#111}
 .shop-app .c2-header-row{min-height:88px;padding-block:16px;gap:24px}
-.shop-app .c2-header-brand{width:clamp(245px,24vw,320px)}
+.shop-app .c2-header-brand{width:clamp(200px,20vw,240px)}
 .shop-app .c2-header-brand img{filter:none}
 .shop-app .c2-header-links{position:static;transform:none;margin-left:auto;gap:32px}
 .shop-app .c2-header-links a{font-size:18px;min-height:48px}
@@ -180,14 +180,14 @@
 }
 @media(max-width:700px){
   .shop-app .c2-header-row{min-height:80px;padding-block:14px;gap:16px}
-  .shop-app .c2-header-brand{width:200px}
+  .shop-app .c2-header-brand{width:170px}
   .shop-app .c2-header-actions{gap:16px}
   .shop-app .c2-header .c2-header-menu{min-width:26px;padding:0}
   .shop-app .c2-header-menu>span:first-child{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 }
 @media(max-width:360px){
   :root{--shop-gutter:16px}
-  .shop-app .c2-header-brand{width:175px}
+  .shop-app .c2-header-brand{width:150px}
   .shop-app .c2-header-actions{gap:12px}
   .shop-grid{gap:14px 10px}.shop-card-caption{padding:12px 11px 14px}.shop-card-caption h3{font-size:16px}
   .shop-detail-info .shop-add-row{flex-wrap:wrap}.shop-cart-info>div{flex-wrap:wrap}.shop-cart-image{width:65px}
