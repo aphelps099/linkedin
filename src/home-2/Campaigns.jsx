@@ -28,7 +28,7 @@ export const Campaigns = memo(function Campaigns({base='/'}) {
         <div className="lp-team">{[['people','People'],['keys-full','Keys'],['strategy','Strategy']].map(([image,name])=><div className="lp-person" key={name}><img src={poster(image)} alt={`${name}, a member of the band`} loading="lazy"/><span className="lp-person-label">{name}</span></div>)}</div>
         <div className="lp-room-controls" aria-hidden="true"><span><Mic/></span><span><Video/></span><span><Users/></span><span className="lp-hangup"><PhoneOff/></span></div>
       </div>
-      <a className="lp-enter" href={`${base}studio/`}>Enter the studio<PixelArrow/></a>
+      <a className="lp-enter" href={`${base}synth/`}>Enter the studio<PixelArrow/></a>
       <p className="lp-caption">No agenda. Excellent synergy.</p>
     </section>
   </div></div>;

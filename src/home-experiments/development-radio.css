@@ -1,10 +1,12 @@
 /* One instrument on a blue-lit stage: the iPod is the music player. */
 .development-radio{position:relative;overflow:hidden;isolation:isolate;background:#03152b;color:#fff;border-bottom:1px solid #b5d9ff33;font:400 17px/1.45 C2Hoves,Arial,sans-serif}
 .development-inner{position:relative;max-width:1600px;margin:auto;min-height:clamp(560px,44vw,704px);padding:64px clamp(40px,4.8vw,76px);display:grid;grid-template-columns:43% 57%;align-items:center}
-.development-copy{position:relative;z-index:4;width:100%;max-width:580px;min-width:0}
+.development-copy{position:relative;z-index:4;width:100%;max-width:580px;min-width:0;container-type:inline-size}
 @media(min-width:1101px){.development-copy{left:24px}}
-.c2-home .development-copy h2{width:100%;max-width:580px;margin:0 0 24px;line-height:0}
-.c2-home .development-copy h2 img{display:block;width:100%;height:auto;filter:drop-shadow(0 2px 1px #00102660)}
+.c2-home .development-copy h2{width:100%;max-width:580px;margin:0 0 24px;font-family:'LB Astro',Arial,sans-serif;font-size:28cqw;font-weight:300;font-style:normal;font-synthesis:none;line-height:1;letter-spacing:-.025em;text-transform:uppercase;white-space:nowrap;color:#fbf6e8}
+.c2-home .development-kicker{text-decoration:none;transition:background .2s ease,border-color .2s ease,color .2s ease}
+.c2-home.c2-home--conversation .development-kicker:is(:hover,:focus-visible){background:#c8e0ff1a;border-color:#e5effb;color:#fff;opacity:1}
+.c2-home .development-kicker:focus-visible{outline:2px solid #e5effb;outline-offset:4px}
 .development-radio .development-intro{font-size:clamp(17px,1.55vw,23px);line-height:1.45;color:#d8e7f5;max-width:36ch;letter-spacing:-.02em}
 .c2-home .development-studio{display:inline-flex;align-items:center;gap:7px;min-height:44px;margin-top:22px;font-size:14px;font-weight:500;line-height:1.4;color:#c1d5e6;text-decoration:none;transition:color .2s ease}
 .development-studio svg{width:15px;height:15px;transition:transform .2s ease}
@@ -126,8 +128,8 @@
 }
 @media(forced-colors:active){
  .development-tow{display:none!important}
- .development-stage,.development-copy h2 img,.development-inner::before,.development-radio::before,.development-device-image,.development-display,.development-equalizer{display:none!important}
- .c2-home .development-copy h2 .c2-sr{position:static;width:auto;height:auto;clip-path:none;overflow:visible;white-space:normal;font:600 40px/1.05 C2Hoves,Arial,sans-serif;color:CanvasText}
+ .development-stage,.development-inner::before,.development-radio::before,.development-device-image,.development-display,.development-equalizer{display:none!important}
+ .c2-home .development-copy h2{color:CanvasText}
  .development-inner{display:block}
  .development-art{position:relative;inset:auto;height:auto;max-width:480px;margin:32px 0}
  .development-device{position:relative;inset:auto;width:100%;translate:none;transform:none;display:flex;flex-wrap:wrap;gap:12px;color:CanvasText}
