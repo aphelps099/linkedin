@@ -110,10 +110,10 @@ export function DevelopmentRadio({base,state,track,seconds,motion,onToggle,onSki
     <img className="development-stage" src={`${base}home-experiments/music-stage.webp`} alt="" width="1774" height="887" loading="lazy" decoding="async"/>
     <div className="development-inner">
       <div className="development-copy">
-        <p className="development-kicker">Beats</p>
-        <h2 id="development-title"><span className="c2-sr">Sound like you mean business</span><img src={`${base}home-experiments/sound-like-business.svg`} width="700" height="170" alt="" loading="lazy" decoding="async"/></h2>
+        <a className="development-kicker" href={`${base}synth/`}>Studio</a>
+        <h2 id="development-title">BEATS</h2>
         <p className="development-intro">Corporate jargon. Robot vocals.<br/>Unreasonably good beats.</p>
-        <a className="development-studio" href={`${base}studio/`}>Make your own in the studio <ArrowUpRight aria-hidden="true"/></a>
+        <a className="development-studio" href={`${base}synth/`}>Make your own in the studio <ArrowUpRight aria-hidden="true"/></a>
       </div>
       <PocketPlayer motion={motion} base={base} state={state} track={track} seconds={seconds} onToggle={onToggle} onSkip={onSkip} onSeek={onSeek} onSelect={onSelect}/>
     </div>

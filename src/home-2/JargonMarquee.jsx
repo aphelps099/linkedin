@@ -19,7 +19,7 @@ export const JargonMarquee = memo(function JargonMarquee({base}) {
       <button type="button" className="c2-marquee-pause" aria-label={paused ? 'Resume marquee' : 'Pause marquee'} aria-pressed={paused} onClick={() => setPaused(value => !value)}>
         {paused ? <Play aria-hidden="true"/> : <Pause aria-hidden="true"/>}
       </button>
-      <a className="c2-marquee-link" href={`${base}studio/`}>Make a beat <ArrowUpRight aria-hidden="true"/></a>
+      <a className="c2-marquee-link" href={`${base}synth/`}>Make a beat <ArrowUpRight aria-hidden="true"/></a>
     </div>
   </aside>;
 });
