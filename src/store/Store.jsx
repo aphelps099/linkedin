@@ -144,7 +144,7 @@ export default function Store(){
     </main>
     <footer className="shop-footer">
       <div className="shop-footer-top">
-        <a href="../" className="shop-footer-brand" aria-label="LinkedIn Beats home"><img src="../brand/afterbeat/wordmark-color.svg" width="6717" height="810" alt="LinkedIn Beats" loading="lazy"/></a>
+        <a href="../" className="shop-footer-brand" aria-label="LinkedIn Beats home"><img src="../brand/afterbeat/wordmark-color.svg?v=afterbeat-2" width="7015" height="862" alt="LinkedIn Beats" loading="lazy"/></a>
         <FirstInLine/>
       </div>
       <p className="shop-footer-disclaimer">LinkedIn Beats is an independent parody project. Not affiliated with, endorsed by, or sponsored by LinkedIn Corporation. All trademarks belong to their respective owners.</p>
