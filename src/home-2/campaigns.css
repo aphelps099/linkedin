@@ -12,6 +12,7 @@
 .c2-home .lb-feature-cards :is(.lc-pill,.lp-pill){align-self:flex-start;display:inline-block;font:500 11px/1 LBFoundersMono,monospace;letter-spacing:.025em;padding:5px 10px;border:1px solid currentColor;border-radius:20px}
 .c2-home .lb-feature-cards .lc-pill{color:#d7e3ff}
 .c2-home .lb-feature-cards h2{font:600 clamp(30px,2.8vw,38px)/1.08 'LB Azeret Mono',monospace;letter-spacing:-.065em;margin:12px 0 0;color:inherit}
+.c2-home .lb-feature-cards .lc-description{max-width:34ch;margin:12px 180px 0 0;color:#e4edff;font:400 16px/1.4 C2Hoves,Arial,sans-serif;text-wrap:pretty}
 .c2-home .lb-feature-cards .lc-scene{position:relative;margin:70px 0 12px;isolation:isolate}
 .c2-home .lb-feature-cards .lc-robot{position:absolute;right:7px;top:0;width:235px;max-width:72%;height:auto;transform:translateY(-88.8%) scaleX(-1);transform-origin:center;z-index:2;pointer-events:none}
 .c2-home .lb-feature-cards .lc-paper{position:relative;padding:18px 22px 20px;background:#f9fbff;color:#25374c;border:0;border-radius:14px}
@@ -49,3 +50,4 @@
 @media(min-width:601px) and (max-width:900px){.c2-home .c2-store>.c2-container{width:calc(100% - 32px)}.c2-home .lb-feature-cards{padding:0 16px 16px}}
 @media(max-width:600px){.c2-home .c2-store>.c2-container{width:calc(100% - 20px)}.c2-home .lb-feature-cards{padding:0 10px 14px}.c2-home .lb-feature-cards :is(.lc-panel,.lp-studio){padding:20px}.c2-home .lb-feature-cards h2{font-size:30px}.c2-home .lb-feature-cards .lc-paper{padding:17px 19px 19px}.c2-home .lb-feature-cards .lc-post{font-size:21px}.c2-home .lb-feature-cards .lc-stamp{width:96px}.c2-home .lb-feature-cards .lc-action{padding-inline:12px}.c2-home .lb-feature-cards .lc-example{padding-inline:10px}.c2-home .lb-feature-cards .lp-room{width:calc(100% + 54px);margin-left:8px}}
 @media(prefers-reduced-motion:reduce){.c2-home .lb-feature-cards *{transition:none!important}}
+@container(max-width:1000px){.c2-home .lb-feature-cards .lc-description{margin-right:0;max-width:34ch}.c2-home .lb-feature-cards .lc-scene{margin-top:76px}}
