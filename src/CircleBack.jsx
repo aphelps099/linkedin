@@ -961,7 +961,7 @@ export default function CircleBack({stagePreview=false,racingPreview=false}){
     isolation:'isolate'}}>
     <Backdrop stateRef={ref} focusRef={canvasRef}/>
     {racingPreview ? <RacingHeader onAudioTools={()=>setAudioDrawer(true)}/> : stagePreview ? <header className="stage2-header">
-      <a href="../" aria-label="LinkedIn Beats home"><img src="../home-2/brand/wordmark-horizontal.svg" alt="LinkedIn Beats"/></a>
+      <a href="../" aria-label="LinkedIn Beats home"><img src="../home-2/brand/wordmark-horizontal.svg?v=afterbeat-1" alt="LinkedIn Beats"/></a>
       <span className="stage2-label">Studio</span>
       <nav aria-label="Studio navigation"><button onClick={()=>setAudioDrawer(true)}>Mix <Settings size={17}/></button><details onKeyDown={e=>{if(e.key==='Escape'){e.currentTarget.open=false;e.currentTarget.querySelector('summary').focus();}}}><summary>Menu <span aria-hidden="true">☰</span></summary><div>
         <a href="../">Home</a><a href="../lessons/">LinkedInifier</a><a href="../store/">Shop</a>

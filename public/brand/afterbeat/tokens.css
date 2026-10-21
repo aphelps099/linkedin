@@ -1,0 +1,6 @@
+/* LinkedIn Beats / Afterbeat */
+:root{--lb-ink:#111111;--lb-cobalt:#0757ec;--lb-paper:#fafaf7;--lb-white:#ffffff;--lb-type:"TT Hoves",Arial,sans-serif;}
+/* The terminal beat may pulse once on deliberate interaction. Never blink continuously. */
+@keyframes lb-afterbeat{0%,100%{opacity:1}45%{opacity:.3}}
+.lb-afterbeat-motion:hover [data-afterbeat]{animation:lb-afterbeat 700ms ease-out 1;}
+@media(prefers-reduced-motion:reduce){.lb-afterbeat-motion [data-afterbeat]{animation:none!important;}}

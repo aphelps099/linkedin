@@ -4,7 +4,7 @@ export const escapeCertificateText = value => String(value).replace(/[&<>"']/g, 
 export const certificateName = value => [...String(value || '').normalize('NFC').replace(/[\p{Cc}\p{Cf}]/gu,'').replace(/\s+/gu,' ').trim()].slice(0,60).join('') || 'Aspiring Thought Leader';
 const fleur = (transform, color='#a18443') => `<g transform="${transform}" fill="${color}"><path d="M0-23C-8-14-8-7-3 2H3C8-7 8-14 0-23ZM-3 2C-5-13-20-15-20-5C-20 2-13 5-8 0C-10-5-14-4-14-1C-12-3-8-1-7 3ZM3 2C5-13 20-15 20-5C20 2 13 5 8 0C10-5 14-4 14-1C12-3 8-1 7 3Z"/><rect x="-9" y="3" width="18" height="3" rx="1"/><path d="M-4 7C-4 12-8 15-12 15C-7 19-2 15 0 12C2 15 7 19 12 15C8 15 4 12 4 7Z"/></g>`;
 const rosette = Array.from({length:144}, (_,i) => {const a=i*Math.PI/72,r=i%2?108:114;return `${i?'L':'M'}${(Math.cos(a)*r).toFixed(2)} ${(Math.sin(a)*r).toFixed(2)}`;}).join(' ')+'Z';
-const brand = (raw,x,y,width,height,color,monogram=false) => `<svg x="${x}" y="${y}" width="${width}" height="${height}" viewBox="${monogram?'0 0 100 100':'0 -2 1087 104'}" fill="${color}">${raw.replace(/<svg[^>]*>|<\/svg>|<title>.*?<\/title>/g,'').replace(/fill="#[a-f0-9]+"/gi,`fill="${color}"`)}</svg>`;
+const brand = (raw,x,y,width,height,color) => `<svg x="${x}" y="${y}" width="${width}" height="${height}" viewBox="${raw.match(/viewBox="([^"]+)"/)[1]}" fill="${color}">${raw.replace(/<svg[^>]*>|<\/svg>|<title>.*?<\/title>/g,'').replace(/fill="#[a-f0-9]+"/gi,`fill="${color}"`)}</svg>`;
 
 function border(){
   // All decoration stays in the 18–63px frame; content begins at x78/y76.
@@ -25,12 +25,12 @@ function seal(monogram,id){
   <path d="${rosette}" fill="url(#${id}-gold)" stroke="#92703a"/><circle r="102" fill="none" stroke="#fff0c6" stroke-width="2"/><circle r="98" fill="none" stroke="#98733b" stroke-width=".8"/><circle r="92" fill="none" stroke="#98733b" stroke-width=".6" stroke-dasharray="1 3"/>
   <g font-family="Arial, Liberation Sans, sans-serif" font-size="10" font-weight="700" fill="#493819">${arcText('EFFORT VERIFIED',83,-132,-48)}${arcText('LINKEDIN BEATS',87,130,50)}</g>
   <g fill="#83652e">${[-1,1].map(side=>`<g transform="scale(${side} 1)"><path d="M-23 66C-65 48-76 4-54-37" fill="none" stroke="#83652e" stroke-width="1.1"/>${[-42,-24,-6,12,30,48].map((a,i)=>`<g transform="translate(${-59-Math.sin(i/5*Math.PI)*11} ${a}) rotate(${-30+i*13})"><ellipse rx="3" ry="8"/><ellipse cx="8" cy="5" rx="3" ry="7" transform="rotate(60 8 5)"/></g>`).join('')}</g>`).join('')}</g>
-  <circle r="54" fill="#10182f" stroke="#f4dda1" stroke-width="2"/><circle r="48" fill="none" stroke="#cfad69" stroke-width=".7"/>${brand(monogram,-32,-32,64,64,'#f5e5bc',true)}${fleur('translate(0 67) scale(.25)','#765824')}</g>`;
+  <circle r="54" fill="#10182f" stroke="#f4dda1" stroke-width="2"/><circle r="48" fill="none" stroke="#cfad69" stroke-width=".7"/>${brand(monogram,-32,-32,64,64,'#f5e5bc')}${fleur('translate(0 67) scale(.25)','#765824')}</g>`;
 }
 export function certificateMarkup(value,{wordmark,monogram},id='lb-certificate'){
   const name=certificateName(value), nameSize=Math.min(86,1030/Math.max([...name].length,1));
   return `<rect width="1200" height="850" fill="#fbf8ef"/>${border()}
-  <rect x="78" y="76" width="1044" height="98" fill="#10182f"/><rect x="78" y="171" width="1044" height="3" fill="#b79a5d"/>${brand(wordmark,98,96,586,57,'#fff')}
+  <rect x="78" y="76" width="1044" height="98" fill="#10182f"/><rect x="78" y="171" width="1044" height="3" fill="#b79a5d"/>${brand(wordmark,98,91,586,67,'#fff')}
   <g fill="#10182f" font-family="Arial, Liberation Sans, sans-serif">
     <text x="1096" y="116" text-anchor="end" font-size="23" letter-spacing="5" fill="#f4df9d">ACADEMY</text><text x="1096" y="142" text-anchor="end" font-size="11" fill="#d6dfef">PROFESSIONAL DEVELOPMENT, ALLEGEDLY.</text>
     <text x="85" y="214" fill="#0757ec" font-size="12" font-weight="700" letter-spacing="2">OFFICIAL RECORD OF COMPLETION</text>

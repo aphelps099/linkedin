@@ -1,0 +1,20 @@
+{
+  "name": "LinkedIn Beats / Afterbeat",
+  "version": 1,
+  "font": "TT Hoves DemiBold (outlined; font not included)",
+  "colors": {
+    "ink": "#111111",
+    "cobalt": "#0757ec",
+    "paper": "#fafaf7",
+    "white": "#ffffff"
+  },
+  "wordmarkViewBox": "0 0 6717.0 810",
+  "wordmarkAspect": 8.292592592592593,
+  "minimumPixels": {
+    "wordmark": 160,
+    "stacked": 88,
+    "icon": 24
+  },
+  "clearSpace": "height of lowercase b on each side where practical; compact UI uses at least half this height",
+  "motion": "one 700ms opacity pulse on deliberate interaction; static at rest; reduced motion respected"
+}
