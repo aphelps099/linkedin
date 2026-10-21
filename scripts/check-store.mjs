@@ -15,7 +15,7 @@ const fail = msg => { failures++; console.error('FAIL ' + msg); };
 const expectThrow = (fn, why) => { try{ fn(); fail(why); }catch{ /* correct */ } };
 
 // --- catalog ---
-if(PRODUCTS.length !== 11) fail('expected the curated eleven-product collection');
+if(PRODUCTS.length !== 10) fail('expected the curated ten-product existing collection');
 expectThrow(() => normalizeCart([{sku:'CS-101',size:'M',qty:1}]), 'retired product accepted at checkout');
 if(new Set(PRODUCTS.map(p => p.sku)).size !== PRODUCTS.length) fail('duplicate SKUs');
 const cats = new Set(PRODUCTS.map(p => p.cat));
