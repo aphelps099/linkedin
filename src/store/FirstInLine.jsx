@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import {ArrowRight, Check, X} from 'lucide-react';
 import './first-in-line.css';
 
-export function FirstInLine({hidden=false}) {
+export function FirstInLine() {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState('idle');
@@ -47,9 +47,10 @@ export function FirstInLine({hidden=false}) {
   }
 
   return <>
-    <div className="shop-first-in-line" hidden={hidden || open}>
+    <div className="shop-first-in-line">
+      <h2>Be first in line.</h2>
       <button ref={trigger} type="button" className="shop-first-trigger" aria-haspopup="dialog" aria-controls="shop-signup" onClick={() => setOpen(true)}>
-        <span>Be first<br/>in line</span>
+        <span>Notify me</span><ArrowRight size={18} aria-hidden="true"/>
       </button>
     </div>
     {open && <dialog ref={dialog} id="shop-signup" className="shop-signup" aria-labelledby="shop-signup-title" aria-describedby="shop-signup-description"
