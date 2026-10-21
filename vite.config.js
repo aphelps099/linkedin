@@ -93,6 +93,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
+        sectionArchive: fileURLToPath(new URL('./archive/sections/index.html', import.meta.url)),
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
         identity: fileURLToPath(new URL('./brand/afterbeat/index.html', import.meta.url)),
         cuttingRoom: fileURLToPath(new URL('./cutting-room/index.html', import.meta.url)),

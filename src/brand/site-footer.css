@@ -7,14 +7,12 @@
 :root .lb-site-footer button{min-width:0;min-height:0;border:0;box-shadow:none;text-transform:none;letter-spacing:normal;cursor:pointer}
 :root .lb-site-footer :is(a,button,input):focus-visible{outline:2px solid currentColor;outline-offset:5px}
 :root .lb-site-footer .lb-footer{width:100%;max-width:1120px;margin:0 auto;container-type:inline-size}
-:root .lb-site-footer .lb-signup-grid{display:grid;grid-template-columns:1.65fr 1fr;gap:12px;scroll-margin-top:100px}
 :root .lb-site-footer .lb-signup{display:flex;flex-direction:column;min-width:0;min-height:300px;padding:23px 24px 20px;border-radius:24px;background:var(--lb-blue);color:var(--lb-ice)}
 :root .lb-site-footer .lb-tag{display:flex;align-items:center;gap:6px;width:max-content;font:500 10px/1.1 var(--lb-mono);text-transform:uppercase;letter-spacing:.035em}
 :root .lb-site-footer .lb-tag-pill{border:1px solid #e5effb75;border-radius:30px;padding:6px 9px}
 :root .lb-site-footer .lb-tag-dot{height:4px;width:4px;flex:none;border-radius:50%;background:currentColor}
 :root .lb-site-footer .lb-signup h2{margin:18px 0 12px;font:600 clamp(34px,6.2cqw,60px)/1.04 LBFooterAzeret,monospace;letter-spacing:-.065em;text-transform:none;color:var(--lb-ice)}
 :root .lb-site-footer .lb-signup h2 span{display:block;color:inherit}
-:root .lb-site-footer .lb-intro{font:400 15px/1.4 LBFooterBody,Arial,sans-serif;max-width:340px;margin:0 0 18px;color:var(--lb-ice)}
 :root .lb-site-footer .lb-signup-form{display:block;width:100%;margin-top:auto}
 :root .lb-site-footer .lb-input-row{display:flex;align-items:center;gap:4px;padding:5px;border-radius:32px;background:#0637b5}
 :root .lb-site-footer .lb-input-row input{display:block;min-width:0;flex:1;width:0;height:44px;border:0;background:transparent;border-radius:26px;color:var(--lb-ice);font:400 16px/1.2 LBFooterBody,Arial,sans-serif;padding:9px 10px;box-shadow:none}
@@ -27,22 +25,6 @@
 :root .lb-site-footer .lb-form-note{margin-top:9px;color:#d2e0ff;font:400 10px/1.4 LBFooterBody,Arial,sans-serif}
 :root .lb-site-footer .lb-form-error{margin-top:10px;color:#fff;font:400 13px/1.4 LBFooterBody,Arial,sans-serif}
 :root .lb-site-footer .lb-visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
-:root .lb-site-footer .lb-cover{min-width:0;display:flex;flex-direction:column;overflow:hidden;border-radius:24px;padding:21px 19px 14px;background:var(--lb-ice);color:var(--lb-ink)}
-:root .lb-site-footer .lb-cover-top{display:flex;align-items:center;justify-content:space-between;gap:10px;font:500 10px/1 var(--lb-mono);text-transform:uppercase;letter-spacing:.035em}
-:root .lb-site-footer .lb-cover-top svg{width:16px;height:16px;stroke-width:1.5}
-:root .lb-site-footer .lb-mail-stack{position:relative;min-height:210px;flex:1;margin:17px 6px 8px;perspective:800px}
-:root .lb-site-footer .lb-envelope{position:absolute;inset:8px 3px 3px;border-radius:11px;background:#9abef4;transform:rotate(-8deg);transition:transform .35s}
-:root .lb-site-footer .lb-envelope::after{content:'';position:absolute;inset:0;background:#739fea;clip-path:polygon(0 0,100% 0,50% 60%);border-radius:11px}
-:root .lb-site-footer .lb-envelope-insert{position:absolute;inset:2px 13px 12px 8px;transform:rotate(-3deg);background:#f8fbff;border-radius:9px;box-shadow:0 2px 3px #0a204d10;transition:transform .35s}
-:root .lb-site-footer .lb-cover-sheet{position:absolute;inset:0 4px;display:flex;flex-direction:column;padding:15px 16px 13px;border-radius:11px;background:var(--lb-blue);color:var(--lb-ice);transform:rotate(4deg);box-shadow:0 5px 11px #0a204d20;transition:transform .35s}
-:root .lb-site-footer .lb-cover-masthead{display:flex;justify-content:space-between;gap:12px;font:500 7px/1.2 var(--lb-mono);letter-spacing:.08em;text-transform:uppercase}
-:root .lb-site-footer .lb-poster-title{display:block;margin:auto 0;font:650 clamp(25px,4.1cqw,44px)/.98 LBFooterAzeret,monospace;letter-spacing:-.075em;color:var(--lb-ice)}
-:root .lb-site-footer .lb-poster-title span{display:block;color:inherit}
-:root .lb-site-footer .lb-poster-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;font:500 8px/1.15 var(--lb-mono);letter-spacing:.035em}
-:root .lb-site-footer .lb-equalizer{display:flex;align-items:flex-end;gap:3px}
-:root .lb-site-footer .lb-equalizer b{width:4px;height:var(--bar-height);background:currentColor;border-radius:1px}
-:root .lb-site-footer .lb-preview-link{display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;min-height:44px;padding:6px 0 0;background:none;border-radius:0;color:var(--lb-ink);font:500 11px/1.2 var(--lb-mono);text-align:left}
-:root .lb-site-footer .lb-preview-link span{text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:1px}
 :root .lb-site-footer .lb-pixel-arrow{display:block;width:11px;height:11px;flex:none;transition:transform .2s}
 :root .lb-site-footer .lb-footer-links{display:grid;grid-template-columns:1.3fr 1fr;gap:24px;padding:30px 14px 31px}
 :root .lb-site-footer .lb-signoff{font:400 19px/1.25 LBFooterBody,Arial,sans-serif;color:var(--lb-ice)}
@@ -66,21 +48,48 @@
 :root .lb-site-footer .lb-bottom a{white-space:nowrap;font:inherit;color:#a2a2a2}
 :root .lb-site-footer .lb-bottom strong{font:inherit;font-weight:700;color:#d5d5d5}
 :root .lb-site-footer .lb-bottom a:hover strong{text-decoration:underline;text-underline-offset:3px}
-:root .lb-site-footer .lb-email-dialog{position:fixed;inset:0;max-width:560px;width:calc(100% - 32px);max-height:calc(100dvh - 48px);margin:auto;padding:35px;border:0;border-radius:22px;background:var(--lb-ice);color:var(--lb-ink);overflow:auto;box-shadow:0 24px 100px #0005;text-align:left}
-:root .lb-site-footer .lb-email-dialog::backdrop{background:#020815b8;backdrop-filter:blur(7px)}
-:root .lb-site-footer .lb-email-close{position:absolute;right:14px;top:14px;display:flex;align-items:center;justify-content:center;width:40px;height:40px;padding:9px;border-radius:50%;background:#cadcf3;color:var(--lb-ink)}
-:root .lb-site-footer .lb-email-close svg{width:20px;height:20px}
-:root .lb-site-footer .lb-email-meta{padding-right:32px;font:500 9px/1.5 var(--lb-mono);text-transform:uppercase;letter-spacing:.03em}
-:root .lb-site-footer .lb-email-dialog h2{margin:27px 0 20px;color:var(--lb-blue);font:600 clamp(32px,6vw,46px)/1.08 LBFooterAzeret,monospace;letter-spacing:-.065em;text-transform:none}
-:root .lb-site-footer .lb-email-to{font:500 10px/1.65 var(--lb-mono);color:#526581;margin-bottom:25px}
-:root .lb-site-footer .lb-email-body{font:400 15px/1.55 LBFooterBody,Arial,sans-serif}
-:root .lb-site-footer .lb-email-body p{margin:0 0 16px;color:inherit;font:inherit}
-:root .lb-site-footer .lb-email-body strong{color:inherit;font-weight:700}
-:root .lb-site-footer .lb-email-body>a{display:inline-flex;align-items:center;gap:12px;margin:0 0 22px;font:500 11px/1.3 var(--lb-mono);text-decoration:underline;text-underline-offset:4px}
-:root .lb-site-footer .lb-email-body .lb-email-ps{font-size:11px;color:#526581;margin-bottom:0}
-@media(hover:hover){:root .lb-site-footer .lb-cover:hover .lb-cover-sheet{transform:translateY(-3px) rotate(1deg)}:root .lb-site-footer .lb-cover:hover .lb-envelope{transform:rotate(-11deg)}:root .lb-site-footer .lb-cover:hover .lb-envelope-insert{transform:rotate(-6deg)}:root .lb-site-footer .lb-preview-link:hover .lb-pixel-arrow,:root .lb-site-footer .lb-link-group a:hover .lb-pixel-arrow{transform:translate(2px,-2px)}:root .lb-site-footer .lb-link-group a:hover{text-decoration:underline;text-underline-offset:4px}:root .lb-site-footer .lb-seals li:hover .lb-seal-art{filter:drop-shadow(0 2px 2px #0008) brightness(1.2)}}
-@container(max-width:570px){:root .lb-site-footer .lb-signup-grid{grid-template-columns:1fr}:root .lb-site-footer .lb-signup{padding:22px 23px 19px;min-height:290px}:root .lb-site-footer .lb-signup h2{font-size:clamp(34px,8.3cqw,46px)}:root .lb-site-footer .lb-cover{display:grid;grid-template-columns:.85fr 1.15fr;grid-template-rows:auto 1fr;gap:0 18px;min-height:228px;padding:22px}:root .lb-site-footer .lb-cover-top{align-self:start;line-height:1.4}:root .lb-site-footer .lb-cover-top svg{display:none}:root .lb-site-footer .lb-mail-stack{grid-column:2;grid-row:1/3;min-height:183px;margin:2px 0}:root .lb-site-footer .lb-cover-sheet{padding:12px 10px}:root .lb-site-footer .lb-cover-masthead{font-size:5px;gap:3px}:root .lb-site-footer .lb-poster-title{font-size:clamp(24px,6cqw,33px)}:root .lb-site-footer .lb-poster-foot{font-size:6px}:root .lb-site-footer .lb-equalizer{gap:2px}:root .lb-site-footer .lb-equalizer b{width:3px}:root .lb-site-footer .lb-preview-link{align-self:end;display:block;line-height:1.5;padding:0 0 2px}:root .lb-site-footer .lb-preview-link .lb-pixel-arrow{margin-top:12px}:root .lb-site-footer .lb-footer-links{grid-template-columns:1fr;gap:24px;padding:28px 8px}:root .lb-site-footer .lb-link-group{display:grid;grid-template-columns:1fr 1fr;gap:25px}:root .lb-site-footer .lb-link-group a{min-height:40px}:root .lb-site-footer .lb-wordmark-link{padding:0 8px}:root .lb-site-footer .lb-fineprint{grid-template-columns:1fr;gap:19px;padding:23px 8px 0}:root .lb-site-footer .lb-assurance{max-width:252px}:root .lb-site-footer .lb-bottom{align-items:flex-start;gap:18px;padding:24px 8px 0;flex-direction:column}:root .lb-site-footer .lb-bottom p span{display:block}}
-@media(max-width:600px){:root .lb-site-footer{padding:20px 14px 24px}:root .lb-site-footer .lb-email-dialog{padding:29px 24px}}
-@container(max-width:340px){:root .lb-site-footer .lb-signup{padding:20px 18px}:root .lb-site-footer .lb-signup h2{font-size:32px}:root .lb-site-footer .lb-intro{font-size:14px}:root .lb-site-footer .lb-submit{font-size:11px;padding:11px;gap:8px}:root .lb-site-footer .lb-cover{padding:20px 17px;gap:0 10px}:root .lb-site-footer .lb-poster-title{font-size:23px}}
 @media(prefers-reduced-motion:reduce){:root .lb-site-footer *{transition:none!important}}
 @media print{:root .lb-site-footer{display:none!important}}
+
+/* Compact integrated signup, with the approved charcoal assurance marks. */
+:root .lb-site-footer{padding:38px 24px 26px}
+:root .lb-site-footer .lb-signup{display:block;max-width:390px;min-height:0;margin:0 14px;padding:0;border-radius:0;background:transparent;scroll-margin-top:100px}
+:root .lb-site-footer .lb-tag{color:#a4b1c3;font-size:11px;gap:8px}
+:root .lb-site-footer .lb-tag-dot{width:5px;height:5px;background:#719aff}
+:root .lb-site-footer .lb-signup h2{font-size:28px;line-height:1.12;letter-spacing:-.065em;margin:9px 0 14px}
+:root .lb-site-footer .lb-signup-form{margin:0}
+:root .lb-site-footer .lb-input-row{background:#1b212c}
+:root .lb-site-footer .lb-input-row input{height:42px;padding-inline:13px}
+:root .lb-site-footer .lb-input-row input::placeholder{color:#a7b3c3}
+:root .lb-site-footer .lb-submit{background:var(--lb-blue);color:var(--lb-ice);min-height:42px;font-size:13px;padding:12px 16px;gap:9px}
+:root .lb-site-footer .lb-submit:hover{background:#2862f6}
+:root .lb-site-footer .lb-form-note{color:#808080;font-size:11px;margin-left:2px}
+:root .lb-site-footer .lb-footer-links{padding-top:32px;padding-bottom:29px}
+:root .lb-site-footer .lb-signoff{font-size:24px;letter-spacing:-.025em}
+:root .lb-site-footer .lb-signoff small{font-size:12px;letter-spacing:0;max-width:300px}
+:root .lb-site-footer .lb-link-group a{font-size:14px;min-height:35px}
+:root .lb-site-footer .lb-fineprint{grid-template-columns:minmax(0,1fr) 308px;gap:28px}
+:root .lb-site-footer .lb-seals{gap:4px}
+:root .lb-site-footer .lb-seals li{width:100px}
+:root .lb-site-footer .lb-seal-art{filter:none;opacity:.96}
+:root .lb-site-footer .lb-assurance-note{font-size:10px}
+:root .lb-site-footer .lb-signup-dialog{position:fixed;inset:0;width:calc(100% - 32px);max-width:460px;max-height:calc(100dvh - 40px);margin:auto;padding:30px;border:0;border-radius:24px;background:var(--lb-blue);color:var(--lb-ice);overflow:auto;box-shadow:0 20px 90px #0005}
+:root .lb-site-footer .lb-signup-dialog::backdrop{background:#04080dbd;backdrop-filter:blur(6px)}
+:root .lb-site-footer .lb-signup-close{position:absolute;right:15px;top:15px;display:grid;place-items:center;width:36px;height:36px;padding:8px;border-radius:50%;background:#ffffff1a;color:var(--lb-ice)}
+:root .lb-site-footer .lb-signup-close svg{width:19px;height:19px}
+:root .lb-site-footer .lb-signup-dialog .lb-tag{color:#cadbff;font-size:11px;padding-right:28px}
+:root .lb-site-footer .lb-signup-dialog h2{margin:23px 0 12px;font:600 29px/1.13 LBFooterAzeret,monospace;letter-spacing:-.06em;text-transform:none;color:var(--lb-ice)}
+:root .lb-site-footer .lb-dialog-intro{font:400 15px/1.4 LBFooterBody,Arial,sans-serif;color:var(--lb-ice);margin-bottom:22px}
+:root .lb-site-footer .lb-detail-form{display:grid;grid-template-columns:1fr 1fr;gap:15px 12px}
+:root .lb-site-footer .lb-detail-form label{display:flex;flex-direction:column;min-width:0;gap:7px;font:500 11px/1.2 var(--lb-mono);color:var(--lb-ice)}
+:root .lb-site-footer .lb-email-label{grid-column:1/-1}
+:root .lb-site-footer .lb-detail-form input{display:block;width:100%;height:46px;padding:13px 14px;border:0;border-radius:13px;background:#0637b5;color:var(--lb-ice);font:400 16px/1.2 LBFooterBody,Arial,sans-serif;box-shadow:none}
+:root .lb-site-footer .lb-detail-form input::placeholder{color:#cadbff;opacity:1}
+:root .lb-site-footer .lb-detail-submit{display:flex;align-items:center;justify-content:space-between;grid-column:1/-1;min-height:46px;padding:14px 18px;border-radius:27px;background:var(--lb-ice);color:#123693;font:500 13px/1.2 var(--lb-mono)}
+:root .lb-site-footer .lb-detail-submit:disabled{opacity:.7;cursor:wait}
+:root .lb-site-footer .lb-dialog-note,:root .lb-site-footer .lb-detail-form .lb-form-error{grid-column:1/-1;font:400 11px/1.4 LBFooterBody,Arial,sans-serif;color:#d7e3ff}
+@media(hover:hover){:root .lb-site-footer .lb-link-group a:hover{text-decoration:underline;text-underline-offset:4px}:root .lb-site-footer .lb-link-group a:hover .lb-pixel-arrow{transform:translate(2px,-2px)}}
+@container(max-width:660px){:root .lb-site-footer .lb-signup{margin-inline:8px}:root .lb-site-footer .lb-footer-links{grid-template-columns:1fr;gap:23px;padding:28px 8px}:root .lb-site-footer .lb-link-group{display:grid;grid-template-columns:1fr 1fr;gap:25px}:root .lb-site-footer .lb-link-group a{min-height:40px}:root .lb-site-footer .lb-wordmark-link{padding:0 8px}:root .lb-site-footer .lb-fineprint{grid-template-columns:1fr;gap:22px;padding:23px 8px 0}:root .lb-site-footer .lb-assurance{max-width:308px}:root .lb-site-footer .lb-bottom{align-items:flex-start;gap:14px;padding:24px 8px 0;flex-wrap:wrap}:root .lb-site-footer .lb-bottom p span{display:block}}
+@media(max-width:600px){:root .lb-site-footer{padding:28px 14px 24px}}
+@container(max-width:340px){:root .lb-site-footer .lb-submit{font-size:12px;padding-inline:12px}:root .lb-site-footer .lb-signup h2{font-size:26px}:root .lb-site-footer .lb-seals li{width:calc((100% - 8px)/3)}}
+@media(max-width:380px){:root .lb-site-footer .lb-signup-dialog{padding:27px 22px}:root .lb-site-footer .lb-detail-form{grid-template-columns:1fr}}

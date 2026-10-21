@@ -93,6 +93,15 @@ try {
   assert.equal(footerUpgrade.consent,storeRecord.record.consent);
   assert.equal(footerUpgrade.subscribedAt,storeRecord.record.subscribedAt);
   assert.equal(footerUpgrade.monthlyOptIn.source,'site-footer');
+  const namedFooter = await serve(directory);
+  const namedSignup = {email:'named-footer@example.com',source:'site-footer',consent:true,firstName:' Morgan ',lastName:' Lee '};
+  assert.equal((await namedFooter.post({...namedSignup,lastName:''})).status,400);
+  assert.equal((await namedFooter.post({...namedSignup,firstName:{value:'Morgan'}})).status,400);
+  assert.equal((await namedFooter.post(namedSignup)).status,200);
+  const namedRecords=await Promise.all((await readdir(directory)).map(async file=>JSON.parse(await readFile(path.join(directory,file),'utf8'))));
+  const namedRecord=namedRecords.find(record=>record.email===namedSignup.email);
+  assert.equal(namedRecord.firstName,'Morgan');assert.equal(namedRecord.lastName,'Lee');
+  assert.equal(namedRecord.monthlyOptIn.source,'site-footer');
   const duplicateFooter = await readFile(path.join(directory,footerRecord.filename),'utf8');
   assert.equal((await footer.post(footerSignup)).status,200);
   assert.equal(await readFile(path.join(directory,footerRecord.filename),'utf8'),duplicateFooter);
