@@ -1,3 +1,4 @@
+@font-face{font-family:ShopFutura;src:url('/home-2/fonts/futura-extra-black-bt.woff') format('woff');font-weight:900;font-display:swap}
 @font-face{font-family:C2Hoves;src:url('/home-2/fonts/tt-hoves-regular.ttf') format('truetype');font-weight:400;font-display:swap}
 @font-face{font-family:C2Hoves;src:url('/home-2/fonts/tt-hoves-demibold.ttf') format('truetype');font-weight:600;font-display:swap}
 :root{font-family:C2Hoves,Arial,sans-serif;color:#20221e;background:#faf8f2;font-synthesis:none;--shop-paper:#faf8f2;--shop-blue:#0757ec;--shop-display:Anton,Impact,sans-serif;--shop-text:C2Hoves,Arial,sans-serif;--shop-gutter:clamp(20px,3.2vw,56px);--shop-radius:20px}
@@ -10,11 +11,11 @@
 .shop-app button:disabled{cursor:default;opacity:.45}.shop-app :focus-visible{outline:3px solid var(--shop-blue);outline-offset:5px}
 .shop-app svg{flex-shrink:0}.shop-app [hidden]{display:none!important}.shop-app img{display:block;max-width:100%}
 .shop-app .c2-container{width:calc(100% - var(--shop-gutter)*2);max-width:1500px;margin-inline:auto}
-/* White Afterbeat navigation, scoped to the store. */
-.shop-app .c2-header{background:#fff;color:#111}
+/* Dark Afterbeat navigation, scoped to the store. */
+.shop-app .c2-header{background:#11110e;color:#fbf6e8}
 .shop-app .c2-header-row{min-height:88px;padding-block:16px;gap:24px}
 .shop-app .c2-header-brand{width:clamp(200px,20vw,240px)}
-.shop-app .c2-header-brand img{filter:none}
+.shop-app .c2-header-brand img{filter:brightness(0) invert(1)}
 .shop-app .c2-header-links{position:static;transform:none;margin-left:auto;gap:32px}
 .shop-app .c2-header-links a{font-size:18px;min-height:48px}
 .shop-app .c2-header-actions{gap:26px;margin-left:12px}
@@ -24,8 +25,8 @@
 .shop-app .c2-header-burger i{height:2px}
 .shop-app .c2-header-directory{color:#20221e;top:100%;background:#fff;border-radius:16px}
 .shop-app.c2-home .c2-header :is(a,button):focus-visible{outline-color:#91b2ff}
-.shop-app .c2-header-links a:hover,.shop-app .c2-header .c2-header-menu:hover{color:var(--shop-blue)}
-.shop-app .c2-header-links a[aria-current=page]{color:var(--shop-blue);text-decoration:none}
+.shop-app .c2-header-links a:hover,.shop-app .c2-header .c2-header-menu:hover{color:#a9c7ff}
+.shop-app .c2-header-links a[aria-current=page]{color:#a9c7ff;text-decoration:none}
 .shop-app .shop-header-bag{display:flex;align-items:center;justify-content:center;gap:10px;min-height:44px;padding:8px 0;background:none;font-size:16px;font-weight:600}
 .shop-bag-count{font:400 13px/1 var(--shop-text);display:grid;place-items:center;min-width:26px;height:26px;border-radius:50%;background:transparent;color:inherit}
 .shop-skip{position:absolute;z-index:60;left:20px;top:10px;padding:15px;background:var(--shop-paper);transform:translateY(-200%)}.shop-skip:focus{transform:none}
@@ -33,16 +34,21 @@
 .shop-label{font:400 13px/1.5 var(--shop-text);text-transform:uppercase}
 .shop-notice{background:#e3edcf;padding:16px var(--shop-gutter);display:flex;align-items:center;justify-content:space-between;gap:20px}.shop-notice button{border:0;background:none;padding:10px}
 
-/* The original campaign is inset and clipped to a rounded frame. */
+/* Original campaign photography, edge to edge, with rounded corners. */
 .shop-visually-hidden{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
-.shop-hero{width:calc(100% - var(--shop-gutter)*2);max-width:1500px;margin:16px auto 0;background:var(--shop-paper)}
+.shop-hero{width:100%;margin:0;background:#11110e}
 .shop-hero-art{position:relative;isolation:isolate;overflow:hidden;border-radius:var(--shop-radius);background:#3a4034}
 .shop-hero-photo{display:block;width:100%;height:auto;aspect-ratio:1650/953;object-fit:contain;transform-origin:52% 45%;animation:shop-kenburns 24s ease-in-out infinite alternate;will-change:transform}
 @keyframes shop-kenburns{from{transform:scale(1) translate(0,0)}to{transform:scale(1.075) translate(-.5%,-.3%)}}
-.shop-hero-lockup{position:absolute;z-index:1;left:50%;top:50%;transform:translate(-50%,-50%);width:min(50%,760px);display:flex;flex-direction:column;align-items:center;gap:clamp(12px,1.7vw,26px);color:#fff;pointer-events:none}
-.shop-hero-lockup>img{width:100%;height:auto;filter:drop-shadow(0 1px 10px #16171130)}
-.shop-hero-lockup>span{font:600 clamp(15px,1.5vw,23px)/1 C2Hoves,Arial,sans-serif;letter-spacing:.22em;text-indent:.22em;text-transform:uppercase;text-shadow:0 1px 10px #16171170}
-.shop-app .shop-hero-motion{position:absolute;z-index:2;right:20px;bottom:20px;display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;border-radius:50%;background:#141a164a;color:#fff;backdrop-filter:blur(8px);transition:background .18s}
+.shop-hero-art::after{content:'';position:absolute;inset:30% 0 0;z-index:0;pointer-events:none;background:linear-gradient(transparent,#111c2370 55%,#111c23ba)}
+.shop-hero-copy{position:absolute;left:4%;bottom:7%;z-index:1;color:#fff;max-width:80%;pointer-events:none}
+.shop-hero-copy .shop-hero-eyebrow{font-size:clamp(11px,1.3vw,16px);font-weight:600;letter-spacing:.07em;margin-bottom:16px;text-transform:uppercase}
+.shop-hero-copy h1{font:900 clamp(42px,7.3vw,112px)/.98 ShopFutura,Arial,sans-serif;letter-spacing:-.045em}
+.shop-hero-copy h1 span{display:block}
+.shop-app .shop-hero-go{position:absolute;right:4%;bottom:7%;z-index:2;width:64px;height:64px;border-radius:50%;display:grid;place-items:center;background:var(--shop-blue);color:#fff;transition:background .2s,color .2s,transform .25s}
+.shop-app .shop-hero-go:hover{background:#fff;color:var(--shop-blue);transform:rotate(-8deg)}
+.shop-app .shop-hero-go:focus-visible{outline-color:#fff}
+.shop-app .shop-hero-motion{position:absolute;z-index:2;right:20px;top:20px;display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;border-radius:50%;background:#141a164a;color:#fff;backdrop-filter:blur(8px);transition:background .18s}
 .shop-hero-motion:hover{background:#141a1680}.shop-hero-motion:focus-visible{outline-color:#fff;outline-offset:4px}
 .shop-primary{display:inline-flex;align-items:center;justify-content:space-between;gap:24px;background:var(--shop-blue);color:#fff!important;border:0;border-radius:30px;text-decoration:none;font:600 15px/1.3 C2Hoves,Arial,sans-serif;min-height:52px;padding:16px 20px;transition:background .18s,border-color .18s}
 .shop-primary:hover:not(:disabled){background:var(--shop-blue);border-color:var(--shop-blue)}
@@ -70,17 +76,26 @@
 .shop-product-tag{position:absolute;top:12px;left:12px;padding:5px 9px;background:#faf8f2e8;font-size:12px;color:#565e51;line-height:1.4}
 .shop-product-open{position:absolute;inset:auto 12px 12px;display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#faf8f2ee;font-size:14px;transform:translateY(6px);opacity:0;transition:opacity .18s,transform .18s}
 .shop-product-image:hover .shop-product-open,.shop-product-image:focus-visible .shop-product-open{opacity:1;transform:none}
-.shop-card-caption{padding:18px 20px 20px;flex:1;min-height:98px}
+.shop-card-caption{padding:18px 20px 20px;flex:1;min-height:98px;position:relative;transition:background .25s,color .25s}
 .shop-card-caption h3{font:600 18px/1.3 C2Hoves,Arial,sans-serif;letter-spacing:-.01em}
-.shop-card-caption h3 button{border:0;padding:0;background:none;text-align:left;line-height:inherit;font-weight:inherit}
-.shop-card-caption h3 button:hover{text-decoration:underline;text-underline-offset:4px}
-.shop-card-caption .shop-card-price{font:400 14px/1.5 var(--shop-text);margin-top:6px}
-.shop-card-caption .shop-card-price.is-preview{font-family:C2Hoves,Arial,sans-serif;color:#686c63;font-size:14px}
+.shop-card-caption h3 button{border:0;padding:0;background:none;text-align:left;line-height:inherit;font-weight:inherit;width:100%;padding-right:24px}
+.shop-card-arrow{position:absolute;right:17px;top:18px;transition:transform .25s}
+.shop-product:focus-within .shop-card-caption{background:var(--shop-blue);color:#fff}
+.shop-product:focus-within .shop-card-price{color:#fff}
+.shop-product:focus-within .shop-card-arrow{transform:translate(3px,-3px)}
+.shop-product:focus-within .shop-card-caption :focus-visible{outline-color:#fff}
+@media(hover:hover) and (pointer:fine){.shop-product:hover .shop-card-caption{background:var(--shop-blue);color:#fff}.shop-product:hover .shop-card-price{color:#fff}.shop-product:hover .shop-card-arrow{transform:translate(3px,-3px)}}
+.shop-card-caption .shop-card-price{font:400 14px/1.5 var(--shop-text);margin-top:6px;color:#686c63}
+.shop-card-caption .shop-card-price.is-preview{font-family:C2Hoves,Arial,sans-serif;font-size:14px}
 .shop-collection .shop-collection-note{font-size:14px;color:#65695f;margin-top:28px;line-height:1.5}
 
 .shop-mobile-filter-toggle{display:none}
-.shop-collection-heading{padding:4px 0 26px}
+.shop-collection-heading{padding:4px 0 26px;text-align:center}
 .shop-collection-heading h2{font:600 clamp(32px,3.2vw,48px)/1.08 var(--shop-text);letter-spacing:-.04em}
+.shop-collection-heading h2 a{display:inline-block;padding-block:6px;transition:color .15s,transform .2s}
+.shop-collection-heading h2 a:hover,.shop-collection-heading h2 a[aria-current=true]{color:var(--shop-blue)}
+.shop-collection-heading h2 a:hover{transform:translateY(-3px)}
+.shop-collection-slash{font-weight:400;color:#8c8e87}
 /* Shared footer and CSS product artwork also use the store's sans serif. */
 .shop-app .c2-footer-fineprint h2,.shop-app .merch-sheet-label,.shop-app .merch-sheet>small,.shop-app .merch-poster small,.shop-app .merch-poster>span{font-family:var(--shop-text)}
 
@@ -147,13 +162,16 @@
 @media(max-width:1000px){.shop-app .c2-header-actions{margin-left:auto}}
 @media(max-width:760px){
   :root{--shop-gutter:20px;--shop-radius:16px}
-  .shop-hero{margin-top:12px}
   .shop-hero-photo{aspect-ratio:1;object-fit:contain}
-  .shop-hero-lockup{width:76%;gap:14px}.shop-hero-lockup>span{font-size:15px}
-  .shop-app .shop-hero-motion{right:12px;bottom:12px;width:40px;height:40px}
+  .shop-hero-copy{left:6%;bottom:8%;max-width:88%}
+  .shop-hero-copy h1{font-size:clamp(38px,8.8vw,64px)}
+  .shop-hero-copy .shop-hero-eyebrow{font-size:11px;margin-bottom:12px}
+  .shop-app .shop-hero-go{right:16px;top:16px;bottom:auto;width:46px;height:46px}
+  .shop-hero-go svg{width:22px;height:22px}
+  .shop-app .shop-hero-motion{right:16px;top:auto;bottom:16px;width:40px;height:40px}
   .shop-collection{margin-block:28px 36px}
   .shop-collection-heading{padding:0 0 18px}
-  .shop-collection-heading h2{font-size:34px}
+  .shop-collection-heading h2{font-size:clamp(27px,6.8vw,34px)}
   .shop-app .shop-mobile-filter-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:46px;padding:10px 16px;border:0;border-radius:24px;background:#fff;font-size:15px;margin-bottom:18px}
   .shop-mobile-filter-toggle>span:last-child{font-size:22px;line-height:1}
   .shop-filter-row{display:none;flex-wrap:wrap;gap:8px;margin-bottom:20px}
@@ -164,7 +182,8 @@
   .shop-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 14px}
   .shop-card-caption{padding:14px 14px 16px;min-height:112px}
   .shop-card-caption h3{font-size:17px;line-height:1.22;overflow-wrap:break-word}
-  .shop-card-caption h3 button{display:block;width:100%}
+  .shop-card-caption h3 button{display:block;width:100%;padding-right:16px}
+  .shop-card-arrow{right:10px;top:15px;width:15px;height:15px}
   .shop-card-caption .shop-card-price{font-size:14px;margin-top:8px}
   .shop-collection .shop-collection-note{font-size:13px;margin-top:24px}
   .shop-dialog{max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);border-radius:20px}

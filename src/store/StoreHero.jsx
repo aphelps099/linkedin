@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {Pause, Play} from 'lucide-react';
+import {ArrowDownRight, Pause, Play} from 'lucide-react';
 
 export function StoreHero(){
   const hero=useRef(null);
@@ -22,7 +22,8 @@ export function StoreHero(){
         <source media="(max-width: 760px)" srcSet="../store/look-serious-circle-back-mobile.webp" width="1254" height="1254"/>
         <img className="shop-hero-photo" style={{animationPlayState:paused||!visible?'paused':'running'}} src="../store/look-serious-circle-back-hero.webp" width="1650" height="953" fetchPriority="high" alt="Five models in a sunlit parking garage wearing the LinkedIn Beats Look Serious collection: SERIOUS. tees, stacked CIRCLE BACK on the kneeling model’s navy shirt, and stacked OUT OF OFFICE on blue and pink tops."/>
       </picture>
-      <h1 id="shop-title" className="shop-hero-lockup"><img src="../brand/afterbeat/wordmark-white.svg?v=afterbeat-2" width="7015" height="862" alt="LinkedIn Beats"/><span>Store</span></h1>
+      <div className="shop-hero-copy"><p className="shop-hero-eyebrow">The company store</p><h1 id="shop-title"><span>Wear your</span><span>boundaries.</span></h1></div>
+      <a className="shop-hero-go" href="#collection" aria-label="Shop the collection"><ArrowDownRight size={28} aria-hidden="true"/></a>
       <button className="shop-hero-motion" type="button" aria-label={paused?'Play hero motion':'Pause hero motion'} aria-pressed={paused} onClick={()=>setPaused(value=>!value)}>{paused?<Play size={16} fill="currentColor" aria-hidden="true"/>:<Pause size={16} fill="currentColor" aria-hidden="true"/>}</button>
     </div>
   </section>;
