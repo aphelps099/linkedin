@@ -2,25 +2,14 @@ import React, {memo, useCallback, useEffect, useRef, useState} from 'react';
 import {ArrowUpRight, ExternalLink, Check, Copy, FileText, Headphones, Linkedin, LoaderCircle, Pause, Play, X} from 'lucide-react';
 import {DISPATCHES} from './dispatches.js';
 import {TRACKS, formatTime} from '../home/tracks.js';
+import {CarouselArtwork} from './CarouselArtwork.jsx';
 import './dispatch-carousel.css';
 
 const ICONS = {video:Play, song:Headphones, post:Linkedin, press:FileText, blog:FileText};
 const ACTIONS = {video:'Watch film', song:'Listen now', post:'Read post', press:'Read release', blog:'Read story'};
 
 const Artwork = memo(function Artwork({item, base}) {
-  return <div className={`dispatch-art dispatch-art--${item.art}`} aria-hidden="true">
-    {item.image&&<img className="dispatch-photo" src={`${base}${item.image}`} alt="" loading="lazy" decoding="async"/>}
-    <img className="dispatch-wordmark" src={`${base}brand/afterbeat/wordmark-${['session','record','turntable','certified'].includes(item.art)?'white':'black'}.svg`} alt="" loading="lazy"/>
-    <span className="dispatch-art-eyebrow">{item.eyebrow}</span>
-    <div className="dispatch-art-title">{item.headline.map(line=><span key={line}>{line}</span>)}</div>
-    {item.art==='session'&&<><span className="dispatch-on-air"><i/>OFFICE SESSIONS / 001</span></>}
-    {item.art==='record'&&<><div className="dispatch-vinyl"><span>LB<br/><b>01</b></span></div><span className="dispatch-record-note">112 BPM · BOARDROOM HOUSE</span></>}
-    {item.art==='announcement'&&<><div className="dispatch-loops"><i/><i/></div><span className="dispatch-partnership">US <span>×</span> ALSO US</span></>}
-    {item.art==='post'&&<span className="dispatch-post-note">A career-defining right click. ↗</span>}
-    {item.art==='unpack'&&<><span className="dispatch-asterisk">✳</span><span className="dispatch-unpack-note">FIELD NOTES / NO. 001</span></>}
-    {item.art==='turntable'&&<span className="dispatch-track-note">SIDE B / NO REPLY REQUIRED</span>}
-    {item.art==='certified'&&<><div className="dispatch-award"><span>✓</span><small>SELF<br/>APPROVED</small></div><span className="dispatch-certified-note">NO EXTERNAL OVERSIGHT.</span></>}
-  </div>;
+  return <div className="dispatch-art dispatch-art--editorial" aria-hidden="true"><CarouselArtwork artwork={item.artwork} base={base}/></div>;
 });
 
 function DispatchDialog({item, base, state, onToggle, onSeek, onClose}) {
