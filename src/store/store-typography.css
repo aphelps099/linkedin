@@ -1,4 +1,5 @@
 @import '../brand/type-system.css';
+@import '../brand/category-pill.css';
 
 .shop-app{--shop-display:var(--lb-font-section)}
 .shop-app .shop-hero-copy h1,.shop-app .shop-detail-info h2{
