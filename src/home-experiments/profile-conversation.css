@@ -1,12 +1,14 @@
 .c2-home--conversation{--c2-panel-radius:clamp(28px,3.2vw,52px)}
-/* The blue panel overlaps the real film above and the dark stage below. */
+/* The blue panel overlaps the film above; both lower panels sit on black. */
+.c2-home--conversation main{background:#000}
 .c2-home--conversation .c2-film{height:calc(86vh + var(--c2-panel-radius));height:calc(86svh + var(--c2-panel-radius));min-height:calc(560px + var(--c2-panel-radius))}
 .c2-home--conversation .c2-film-copy{bottom:calc(100px + var(--c2-panel-radius))}
 .c2-home--conversation .c2-film-bottom{bottom:calc(28px + var(--c2-panel-radius))}
 .c2-home--conversation .c2-hero{background:#0b4bef;overflow:hidden;border-radius:var(--c2-panel-radius);margin-top:calc(-1 * var(--c2-panel-radius));z-index:2}
-.c2-home--conversation .development-radio{margin-top:calc(-1 * var(--c2-panel-radius));padding-top:var(--c2-panel-radius)}
-.c2-home--conversation .development-stage{top:var(--c2-panel-radius);height:calc(100% - var(--c2-panel-radius))}
-.c2-home--conversation .development-tow{top:var(--c2-panel-radius)}
+.c2-home--conversation .development-radio{margin-top:0;padding-top:0;border-radius:var(--c2-panel-radius);border-bottom:0}
+.c2-home--conversation .development-stage{top:0;height:100%}
+.c2-home--conversation .development-tow{top:0}
+.c2-home--conversation .c2-store{border-top:0}
 .c2-home--conversation .c2-hero::after{display:none}
 .profile-conversation{position:relative;isolation:isolate;height:clamp(700px,57vw,950px);overflow:hidden;color:#fbf6e8}
 .conversation-canvas{position:absolute;inset:0;z-index:-1;overflow:hidden;mask-image:linear-gradient(#000 88%,transparent 100%)}
