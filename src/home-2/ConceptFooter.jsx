@@ -12,7 +12,7 @@ export const ConceptFooter = memo(function ConceptFooter({base='/',variant='ligh
     <div className="c2-container">
       <div className="c2-footer-main">
         <div className="c2-footer-identity">
-          <a className="c2-footer-brand" href={base} aria-label="LinkedIn Beats home"><img src={`${base}home-2/brand/wordmark-stacked.svg?v=afterbeat-1`} width="737" height="328" alt="LinkedIn Beats" loading="lazy"/></a>
+          <a className="c2-footer-brand" href={base} aria-label="LinkedIn Beats home"><img src={`${base}home-2/brand/wordmark-stacked.svg?v=afterbeat-2`} width="3857.0" height="1742" alt="LinkedIn Beats" loading="lazy"/></a>
           <p>Independent music<br/>for dependent employees.</p>
         </div>
         <div className="c2-footer-fineprint">
