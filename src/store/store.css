@@ -63,7 +63,7 @@
 .shop-sort select{font-size:14px;border:0;background:transparent;max-width:170px;padding:12px 20px 12px 4px;min-height:48px;cursor:pointer}
 .shop-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
 .shop-product{min-width:0;display:flex;flex-direction:column;border-radius:var(--shop-radius);overflow:hidden;background:#fff}
-.shop-product-image{display:block;border:0;padding:0;aspect-ratio:1;width:100%;position:relative;overflow:hidden;background:#f5f1e7}
+.shop-product-image{display:block;border:0;border-radius:var(--shop-radius);padding:0;aspect-ratio:1;width:100%;position:relative;overflow:hidden;background:#f5f1e7}
 .shop-product-image .merch-photo{transition:transform .4s;object-fit:contain}
 .shop-product-image:hover .merch-photo,.shop-product-image:focus-visible .merch-photo{transform:scale(1.035)}
 .shop-product-image:focus-visible .merch-photo-swap-default{opacity:0}

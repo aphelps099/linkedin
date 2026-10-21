@@ -131,7 +131,7 @@ body{margin:0;background:#fbf6e8}html{scroll-behavior:smooth;scroll-padding-top:
 .c2-section-head .c2-store-intro { margin-top: 15px; font-size: 19px; line-height: 1.4; color: #d7d8d1; }
 .c2-products { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; gap: 28px; }
 .c2-product { display: block; min-width: 0; }
-.c2-product-image { aspect-ratio: 1.1; background: #f5f1e7; overflow: hidden; }
+.c2-product-image { aspect-ratio: 1.1; background: #f5f1e7; overflow: hidden; border-radius: 24px; }
 .c2-product-image img { height: 100%; width: 100%; object-fit: contain; transition: transform .3s ease; }
 .c2-product:hover img, .c2-product:focus-visible img { transform: scale(1.025); }
 .c2-product-info { display: flex; align-items: start; justify-content: space-between; gap: 12px; padding-top: 12px; }
