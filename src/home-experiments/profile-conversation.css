@@ -1,6 +1,6 @@
 .c2-home--conversation{--c2-panel-radius:clamp(28px,3.2vw,52px)}
 /* The blue panel overlaps the real film above and the dark stage below. */
-.c2-home--conversation .c2-film{height:calc(78vh + var(--c2-panel-radius));height:calc(78svh + var(--c2-panel-radius));min-height:calc(520px + var(--c2-panel-radius))}
+.c2-home--conversation .c2-film{height:calc(86vh + var(--c2-panel-radius));height:calc(86svh + var(--c2-panel-radius));min-height:calc(560px + var(--c2-panel-radius))}
 .c2-home--conversation .c2-film-copy{bottom:calc(100px + var(--c2-panel-radius))}
 .c2-home--conversation .c2-film-bottom{bottom:calc(28px + var(--c2-panel-radius))}
 .c2-home--conversation .c2-hero{background:#0b4bef;overflow:hidden;border-radius:var(--c2-panel-radius);margin-top:calc(-1 * var(--c2-panel-radius));z-index:2}
