@@ -78,15 +78,32 @@ fleur-de-lis border, gold laurel seal with ribbons and Synergy signature. These
 are self-contained SVG details, including the seal lettering, so PNG downloads
 and printing preserve the ornament. Preview: `docs/program/certificate-finish.jpg`.
 
-**Share certificate** opens image download and caption-copy controls, plus a link
-to LinkedIn where the learner attaches the image and publishes their own post.
-Browsers supporting file sharing also offer a native share sheet. The image is
-prepared before that tap, regenerated when the displayed name changes, and never
-uploaded by the course. Sharing cancellation and API failures retain the download
-path. `node scripts/check-certificate-share.mjs` checks activation ordering, the
-file-only payload, unsupported browsers, cancellation and failures. Browser QA
-covered PNG export, caption copy, long-name fit, 375px layout and the mobile Main
-site link; a device-native share target still needs a supported device.
+**Post to LinkedIn** is a single, direct handoff to LinkedIn's share composer.
+The personalized `/learn/certificate/?name=…&v=2` page supplies server-rendered
+Open Graph metadata and `/api/learn/certificate.png` supplies its public PNG.
+The entire certificate is padded to 1200 × 630 so LinkedIn's landscape preview
+does not crop the border. The learner reviews and publishes on LinkedIn; this
+is an image **link preview**, not an API-uploaded photo. No account connection,
+API key, image upload, clipboard permission or manual attachment is needed.
+LinkedIn controls the final presentation and may cache the preview. The ordinary
+PNG download and print controls remain available.
+
+`components/certificate-art.js` is the shared vector source for the browser,
+public page and server PNG, with the actual embedded wordmark and monogram.
+All corner ornaments sit inside a consistent frame, clear of the masthead and
+footer. Seal lettering uses individually positioned letters for compatibility
+with browser and server PNG renderers. The production image includes Liberation
+fonts. Names are normalized, bounded to 60 characters, escaped in markup and
+encoded in URLs; image caching is bounded. Public certificate pages are read-only
+and noindex, disclose only the chosen display name, and never modify the viewer's
+course progress. As with browser-local course completion, these satirical
+certificates are not an identity-verified credential registry.
+
+`node scripts/check-certificate-share.mjs` checks personalized links, safe HTML,
+public PNG dimensions, download headers, Unicode/long names, malformed URLs and
+ordinary course routes. Browser QA covers the single-button controls, updated
+names, PNG export, public certificate view and mobile layout. Preview: `docs/program/certificate-sharing.jpg`. A signed-in LinkedIn
+composer is still needed to verify LinkedIn's actual preview rendering end to end.
 
 Graduation has a 4.2-second canvas confetti burst once per tab session, skipped
 for reduced motion and cleaned up on navigation, resize or hiding the page. Main

@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { postBeatApi } from './server/post-beat-dev.js';
+import { certificateSharePreview } from './server/certificate-share.js';
 import { beatSharePreview } from './server/beat-share.js';
 import { fileURLToPath } from 'node:url';
 import { generateVoiceClips } from './server/voice-service.js';
@@ -85,7 +86,7 @@ function localCheckoutApi(){
 
 export default defineConfig({
   server: {allowedHosts:['terminal.local'], proxy:{'/api/cutting-room/media':{target:'https://linkedinbeats.com',changeOrigin:true,followRedirects:true}}},
-  plugins: [react(), localVoiceApi(), localCheckoutApi(), postBeatApi(), beatSharePreview()],
+  plugins: [react(), localVoiceApi(), localCheckoutApi(), postBeatApi(), beatSharePreview(), certificateSharePreview()],
   // Relative base so the built index.html works when served from a
   // GitHub Pages project path (https://<user>.github.io/linkedin/).
   base: './',

@@ -1,10 +1,23 @@
+import {certificateName} from './certificate-art.js';
 export const CERTIFICATE_FILENAME='linkedin-beats-certificate-of-professional-effort.png';
-export function canShareCertificate(file,nav=navigator){
-  try{return !!file && typeof nav.share==='function' && !!nav.canShare?.({files:[file]});}catch{return false;}
+export const CERTIFICATE_SHARE_VERSION='2';
+export function certificateShareUrl(name,origin='https://linkedinbeats.com'){
+  const url=new URL('/learn/certificate/',origin);
+  url.searchParams.set('name',certificateName(name));
+  url.searchParams.set('v',CERTIFICATE_SHARE_VERSION);
+  return url.href;
 }
-export function shareCertificateFile(file,nav=navigator){
-  if(!canShareCertificate(file,nav))return Promise.resolve('unavailable');
+export function certificateImageUrl(name,origin='https://linkedinbeats.com'){
+  const url=new URL(certificateShareUrl(name,origin));url.pathname='/api/learn/certificate.png';return url.href;
+}
+export function linkedInCertificateUrl(name,origin='https://linkedinbeats.com'){
+  return `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(certificateShareUrl(name,origin))}`;
+}
+export function readCertificateName(href){
   try{
-    return Promise.resolve(nav.share({files:[file]})).then(()=> 'shared',error=>error.name==='AbortError' ? 'cancelled' : 'failed');
-  }catch(error){return Promise.resolve(error.name==='AbortError' ? 'cancelled' : 'failed');}
+    if(href.length>1000)return null;
+    const url=new URL(href,'https://linkedinbeats.com'), names=url.searchParams.getAll('name');
+    if(names.length!==1||!names[0].trim()||[...names[0]].length>60||url.searchParams.get('v')!==CERTIFICATE_SHARE_VERSION)return null;
+    return certificateName(names[0]);
+  }catch{return null;}
 }
