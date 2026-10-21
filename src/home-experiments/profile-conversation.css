@@ -6,22 +6,16 @@
 .conversation-film{opacity:0;transition:opacity .3s}
 .conversation-film.is-ready{opacity:1}
 .conversation-heading{position:absolute;top:clamp(34px,3.6vw,62px);left:50%;transform:translateX(-50%);width:55%;text-align:center}
-.conversation-heading .conversation-eyebrow{font:400 12px/1.4 C2Mono,monospace;letter-spacing:.1em;text-transform:uppercase;margin:0 0 18px}
 .conversation-heading h2{font:400 clamp(62px,7.2vw,118px)/.98 Anton,Arial,sans-serif;letter-spacing:-.025em;text-transform:uppercase}
 .conversation-heading h2 span{display:block}
+.conversation-heading h2 .conversation-stamp{display:table;margin:17px auto 27px;padding:.09em .22em .06em;border:.055em solid currentColor;border-radius:.035em;font-family:Anton,Impact,sans-serif;font-size:.88em;font-weight:400;line-height:1.05;letter-spacing:.055em;text-transform:uppercase;transform:rotate(-6deg)}
 .conversation-heading p{font-size:clamp(17px,1.55vw,24px);line-height:1.35;margin-top:21px;text-wrap:balance}
 .conversation-dialogue{position:absolute;left:50%;top:60%;transform:translate(-50%,-50%);width:51%;text-align:center}
-.conversation-phrase-label{font:400 11px/1.4 C2Mono,monospace;text-transform:uppercase;letter-spacing:.06em;opacity:.8;margin-bottom:15px!important}
 .conversation-phrase{font:400 clamp(27px,3.2vw,54px)/1.2 C2Hoves,Arial,sans-serif;letter-spacing:-.03em;min-height:2.4em;display:flex;align-items:center;justify-content:center;transition:opacity .28s ease,transform .35s ease}
 .conversation-phrase.is-leaving{opacity:0;transform:translateY(-5px)}
 .conversation-line{display:block;text-wrap:balance}
 .conversation-line>span{display:inline-block;opacity:0;transform:translateY(5px);filter:blur(3px);transition:opacity .25s ease,transform .3s ease,filter .3s ease}
 .conversation-line>span.is-revealed{opacity:1;transform:none;filter:blur(0)}
-.conversation-controls{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:7px;min-height:44px}
-.c2-home .conversation-controls button{width:44px;height:44px;display:grid;place-items:center;color:#fff;border-radius:50%}
-.c2-home .conversation-controls button:hover{background:#ffffff1f}
-.conversation-controls svg{width:16px;height:16px}
-.conversation-count{font:400 11px/1 C2Mono,monospace;opacity:.8;min-width:56px}
 .conversation-enroll{position:absolute;bottom:45px;left:50%;transform:translateX(-50%);width:56%;text-align:center}
 .c2-home .conversation-certify{display:inline-flex;align-items:center;justify-content:center;gap:25px;min-height:56px;padding:15px 30px;border-radius:32px;background:#fbf6e8;color:#0b4bef;font:600 17px/1.3 C2Hoves,Arial,sans-serif;text-transform:uppercase;transition:background .15s,color .15s}
 .c2-home .conversation-certify:hover{background:#fff;color:#092f9c}
@@ -34,19 +28,15 @@
 @media(max-width:700px){
   .profile-conversation{height:auto;display:grid;grid-template-columns:1fr;padding:38px 0 35px;overflow:visible}
   .conversation-heading{position:relative;inset:auto;transform:none;width:calc(100% - 36px);margin:auto;grid-area:1/1;z-index:1}
-  .conversation-heading .conversation-eyebrow{font-size:11px;margin-bottom:15px}
   .conversation-heading h2{font-size:clamp(60px,14vw,85px);line-height:1}
   .conversation-heading p{font-size:18px;max-width:340px;margin:19px auto 4px}
   .conversation-canvas{position:relative;inset:auto;grid-area:2/1;width:100%;aspect-ratio:16/10;margin-top:20px;z-index:0;mask-image:linear-gradient(transparent,#000 10%,#000 88%,transparent)}
   .conversation-poster,.conversation-film{object-fit:cover}
   .conversation-dialogue{position:relative;inset:auto;transform:none;grid-area:2/1;align-self:center;justify-self:center;width:52%;margin-top:15%;z-index:1}
-  .conversation-phrase-label{display:none}
   .conversation-phrase{font-size:clamp(20px,4.6vw,30px);line-height:1.15;min-height:2.3em}
-  .conversation-controls{gap:0;margin-top:5px}
-  .conversation-count{font-size:10px;min-width:48px}
   .conversation-enroll{position:relative;inset:auto;transform:none;grid-area:3/1;width:calc(100% - 40px);margin:10px auto 0}
   .conversation-enroll p{font-size:14px;max-width:300px;margin:15px auto 0}
   .c2-home--conversation .c2-player{margin-top:10px}.c2-home--conversation .feed-compare{gap:15px;font-size:11px}
 }
 @media(prefers-reduced-motion:reduce){.conversation-film{display:none}.conversation-phrase,.conversation-line>span,.c2-home .conversation-certify{transition:none;filter:none}}
-@media(forced-colors:active){.conversation-heading,.conversation-dialogue{background:Canvas;color:CanvasText}.c2-home .conversation-certify,.c2-home .conversation-controls button{border:1px solid CanvasText}}
+@media(forced-colors:active){.conversation-heading,.conversation-dialogue{background:Canvas;color:CanvasText}.c2-home .conversation-certify{border:1px solid CanvasText}}

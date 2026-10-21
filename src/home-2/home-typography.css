@@ -1,43 +1,50 @@
 @font-face {
-  font-family: 'TT Norms Pro';
-  src: url('/home-2/fonts/tt-norms-pro-extrabold.woff2') format('woff2');
+  font-family: 'LB Futura Black';
+  src: url('/home-2/fonts/futura-extra-black-bt.woff') format('woff');
   font-style: normal;
-  font-weight: 800;
+  font-weight: 900;
   font-display: swap;
 }
 
-/* Homepage display type: the uploaded ExtraBold face, in sentence case. */
-.c2-home--conversation :is(.c2-film-copy, .conversation-heading, .development-copy, .c2-section-head, .c2-linkedinifier-copy, .c2-newsletter-copy, .c2-newsletter-dialog) :is(h1, h2) {
-  font-family: 'TT Norms Pro', C2Hoves, Arial, sans-serif;
-  font-weight: 800;
+@font-face {
+  font-family: 'LB Futura Round';
+  src: url('/home-2/fonts/futura-round-bold.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+/* Futura headlines, with the original custom iPod lettering preserved. */
+.c2-home--conversation :is(.c2-film-copy, .conversation-heading, .c2-section-head, .c2-linkedinifier-copy, .c2-newsletter-copy, .c2-newsletter-dialog) :is(h1, h2) {
+  font-family: 'LB Futura Black', C2Hoves, Arial, sans-serif;
+  font-weight: 900;
   font-synthesis: none;
   text-transform: none;
   line-height: 1.02;
 }
 
-/* Use the accessible text counterpart of the old outlined radio artwork. */
-.c2-home--conversation .development-copy h2 {
-  font-size: clamp(40px, 4.1vw, 64px);
-  letter-spacing: -.025em;
-  text-wrap: balance;
+.c2-home--conversation .conversation-heading h2 .conversation-stamp {
+  font-family: 'LB Futura Black', C2Hoves, Arial, sans-serif;
+  font-weight: 900;
+  font-size: .78em;
+  letter-spacing: .025em;
 }
-.c2-home--conversation .development-copy h2 img { display: none; }
-.c2-home--conversation .development-copy h2 .c2-sr {
-  position: static;
-  width: auto;
-  height: auto;
-  overflow: visible;
-  clip-path: none;
-  white-space: normal;
+
+.c2-home--conversation .c2-header :is(.c2-header-links a, .c2-header-menu, .c2-header-directory a, .c2-header-radio) {
+  font-family: 'LB Futura Round', C2Hoves, Arial, sans-serif;
+  font-weight: 700;
+  font-synthesis: none;
+  letter-spacing: -.015em;
+}
+
+@media (max-width: 700px) {
+  .c2-home--conversation .c2-film-copy h1 { font-size: clamp(32px, 10.2vw, 70px); }
 }
 
 /* The wider face needs a little more room in the two-column tool section. */
 .c2-home--conversation .c2-campaigns h2 { font-size: calc(128 * var(--c2-poster)); }
 @media (max-width: 900px) {
   .c2-home--conversation .c2-campaigns h2 { font-size: clamp(64px, 10.5vw, 100px); }
-}
-@media (max-width: 600px) {
-  .c2-home--conversation .development-copy h2 { font-size: clamp(38px, 9.2vw, 52px); }
 }
 @media (max-width: 520px) {
   .c2-home--conversation .c2-campaigns h2 { font-size: clamp(50px, 15.4vw, 76px); }
