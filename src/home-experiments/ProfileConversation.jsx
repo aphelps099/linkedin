@@ -1,13 +1,15 @@
 import React, {memo, useEffect, useRef, useState} from 'react';
-import {CONVERSATION, TURN_DURATION, conversationFrame} from './conversation-timeline.js';
+import {ArrowUpRight, Pause, Play, SkipForward} from 'lucide-react';
+import {CONVERSATION, TURN_DURATION, VIDEO_DURATION, conversationFrame} from './conversation-timeline.js';
 
 export const ProfileConversation=memo(function ProfileConversation({base,motion}) {
   const root=useRef(null), video=useRef(null);
+  const clock=useRef({loops:0,previous:0});
   const [frame,setFrame]=useState(()=>conversationFrame(0));
   const [blocked,setBlocked]=useState(false), [visible,setVisible]=useState(false);
-  const [started,setStarted]=useState(false), [failed,setFailed]=useState(false);
-  const running=motion&&!blocked&&visible&&!failed;
-  const staticText=!motion||blocked||failed||!started;
+  const [started,setStarted]=useState(false), [failed,setFailed]=useState(false), [paused,setPaused]=useState(false);
+  const running=motion&&!paused&&!blocked&&visible&&!failed;
+  const staticText=!motion||paused||blocked||failed||!started;
   const scene=CONVERSATION[frame.index];
   const poster=`${base}home-experiments/profile-conversation.webp`;
 
@@ -26,7 +28,10 @@ export const ProfileConversation=memo(function ProfileConversation({base,motion}
     if(!running){film.pause();return;}
     let cancelled=false, request;
     const tick=()=>{
-      const next=conversationFrame(film.currentTime*1000);
+      const time=film.currentTime*1000;
+      if(time<clock.current.previous-1000) clock.current.loops=(clock.current.loops+1)%(CONVERSATION.length/2);
+      clock.current.previous=time;
+      const next=conversationFrame(clock.current.loops*VIDEO_DURATION+time);
       setFrame(previous=>previous.index===next.index&&previous.words===next.words&&previous.speaking===next.speaking&&previous.leaving===next.leaving?previous:next);
       request=requestAnimationFrame(tick);
     };
@@ -39,10 +44,13 @@ export const ProfileConversation=memo(function ProfileConversation({base,motion}
   },[running]);
 
   const choose=index=>{
-    if(video.current&&!failed)video.current.currentTime=index*TURN_DURATION/1000;
+    const time=(index%2)*TURN_DURATION;
+    clock.current={loops:Math.floor(index/2),previous:time};
+    if(video.current&&!failed)video.current.currentTime=time/1000;
     setFrame(conversationFrame(index*TURN_DURATION));
     setBlocked(false);
   };
+  const toggleMotion=()=>{if(blocked)setBlocked(false);else setPaused(value=>!value);};
   let wordIndex=0;
   return <div className={`profile-conversation${!motion?' is-still':''}`} ref={root}>
     <div className="conversation-canvas" aria-hidden="true">
@@ -50,18 +58,28 @@ export const ProfileConversation=memo(function ProfileConversation({base,motion}
       {!failed&&<video ref={video} className={`conversation-film${started&&motion?' is-ready':''}`} src={`${base}home-experiments/profile-conversation.mp4`} poster={poster} width="1280" height="720" muted playsInline loop preload="metadata" disablePictureInPicture onError={()=>setFailed(true)} aria-hidden="true"/>}
     </div>
     <header className="conversation-heading">
-      <h1 id="c2-title"><span>Learn to speak</span><span>like LinkedIn.</span></h1>
-      <p>Professional development for aspiring thought leaders.</p>
+      <p className="conversation-eyebrow">LinkedIn Beats Academy</p>
+      <h2 id="c2-title"><span>Make it</span><span>official.</span></h2>
+      <p>Five short courses.<br/>One very official-looking certificate.</p>
     </header>
     <div className="conversation-dialogue">
+      <p className="conversation-phrase-label">A little professional vocabulary</p>
       <p className={`conversation-phrase${!staticText&&frame.leaving?' is-leaving':''}`} aria-hidden="true" key={frame.index}>{scene.lines.map((line,lineIndex)=><span className="conversation-line" key={lineIndex}>{line.split(' ').map(word=>{
         const index=wordIndex++;
         return <React.Fragment key={index}><span className={staticText||index<frame.words?'is-revealed':''}>{word}</span>{' '}</React.Fragment>;
       })}</span>)}</p>
-      <div className="conversation-controls" aria-label="Conversation controls">
-        <div className="conversation-turns" aria-label="Choose a speaker">{CONVERSATION.map((turn,index)=><button type="button" key={turn.speaker} aria-label={`Replay ${turn.speaker} speaker`} aria-pressed={frame.index===index} onClick={()=>choose(index)}><span/></button>)}</div>
+      <div className="conversation-controls" role="group" aria-label="Vocabulary preview controls">
+        {motion&&!failed&&<button type="button" onClick={toggleMotion} aria-label={paused||blocked?'Play vocabulary preview':'Pause vocabulary preview'}>
+          {paused||blocked?<Play aria-hidden="true"/>:<Pause aria-hidden="true"/>}
+        </button>}
+        <span className="conversation-count" aria-hidden="true">{String(frame.index+1).padStart(2,'0')} / {String(CONVERSATION.length).padStart(2,'0')}</span>
+        <button type="button" onClick={()=>choose((frame.index+1)%CONVERSATION.length)} aria-label="Next vocabulary phrase"><SkipForward aria-hidden="true"/></button>
       </div>
     </div>
-    <div className="c2-sr"><h2>A fictional corporate conversation</h2><p>Left speaker: {CONVERSATION[0].lines.join(' ')}</p><p>Right speaker: {CONVERSATION[1].lines.join(' ')}</p></div>
+    <div className="conversation-enroll">
+      <a className="conversation-certify" href={`${base}learn/`}>Get certified <ArrowUpRight aria-hidden="true"/></a>
+      <p>Professional development for aspiring thought leaders.</p>
+    </div>
+    <div className="c2-sr"><h3>Vocabulary you’ll master</h3><ul>{CONVERSATION.map(turn=><li key={turn.lines.join(' ')}>{turn.lines.join(' ')}</li>)}</ul></div>
   </div>;
 });

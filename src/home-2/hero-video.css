@@ -18,3 +18,21 @@
 @media (prefers-reduced-motion: reduce) {
   .c2-film-controls button { transition: none !important; }
 }
+
+/* The homepage promise lives over the film; the Academy owns the next section. */
+.c2-film--headline{min-height:520px}
+.c2-film--headline::after{background:linear-gradient(180deg,#07100eb3 0,#07100e52 18%,#07100e42 35%,#07100e66 68%,#07100e82 100%)}
+.c2-film-copy{position:absolute;z-index:1;inset:115px 0 100px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;pointer-events:none;color:var(--c2-paper)}
+.c2-film-copy h1{font:400 clamp(56px,8.9vw,142px)/.99 Anton,Arial,sans-serif;letter-spacing:-.025em;text-transform:uppercase;text-shadow:0 2px 20px #0002}
+.c2-film-copy h1 span{display:block;white-space:nowrap}
+.c2-home .c2-film-copy p{margin-top:25px;font-size:clamp(18px,1.8vw,27px);line-height:1.35;text-wrap:balance;max-width:1000px;text-shadow:0 1px 12px #0007}
+.c2-home .c2-film-controls .c2-film-sound{min-width:92px;gap:10px;background:#111a1d80}
+.c2-home .c2-film-sound[aria-pressed=true]{background:var(--c2-paper);color:var(--c2-ink);border-color:var(--c2-paper)}
+@media(max-width:700px){
+  .c2-film-copy{inset:105px 0 105px}
+  .c2-film-copy h1{font-size:clamp(41px,10.2vw,70px);line-height:1.03}
+  .c2-home .c2-film-copy p{font-size:18px;max-width:340px;margin-top:22px}
+}
+@media(max-height:560px) and (min-width:701px){.c2-film--headline{min-height:480px}.c2-film-copy h1{font-size:80px}}
+.c2-film-controls{flex-wrap:wrap;justify-content:flex-end}
+.c2-film-audio-error{font-size:13px;flex-basis:100%;text-align:right}
