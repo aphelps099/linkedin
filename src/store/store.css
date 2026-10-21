@@ -183,7 +183,7 @@
   .shop-app .c2-header-brand{width:180px}
   .shop-app .c2-header-actions{gap:16px}
   .shop-app .c2-header .c2-header-menu{min-width:26px;padding:0}
-  .shop-app .c2-header-menu>span:first-child{display:none}
+  .shop-app .c2-header-menu>span:first-child{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 }
 @media(max-width:360px){
   :root{--shop-gutter:16px}
