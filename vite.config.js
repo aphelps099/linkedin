@@ -93,6 +93,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
+        synth: fileURLToPath(new URL('./synth/index.html', import.meta.url)),
         sectionArchive: fileURLToPath(new URL('./archive/sections/index.html', import.meta.url)),
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
         identity: fileURLToPath(new URL('./brand/afterbeat/index.html', import.meta.url)),
