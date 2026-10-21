@@ -6,6 +6,7 @@ import {ProductGallery} from './ProductGallery.jsx';
 import {ConceptHeader} from '../home-2/ConceptHeader.jsx';
 import {FirstInLine} from './FirstInLine.jsx';
 import {StoreHero} from './StoreHero.jsx';
+import {StoreMarquee} from './StoreMarquee.jsx';
 import '../home-2/header.css';
 
 const DEPARTMENTS = {
@@ -142,10 +143,11 @@ export default function Store(){
         <p className="shop-collection-note">Items marked Coming soon are design previews. Pricing and availability to come.</p>
       </section>
     </main>
+    <StoreMarquee/>
+    <FirstInLine hidden={Boolean(d || drawer)}/>
     <footer className="shop-footer">
       <div className="shop-footer-top">
         <a href="../" className="shop-footer-brand" aria-label="LinkedIn Beats home"><img src="../brand/afterbeat/wordmark-color.svg?v=afterbeat-2" width="7015" height="862" alt="LinkedIn Beats" loading="lazy"/></a>
-        <FirstInLine/>
       </div>
       <p className="shop-footer-disclaimer">LinkedIn Beats is an independent parody project. Not affiliated with, endorsed by, or sponsored by LinkedIn Corporation. All trademarks belong to their respective owners.</p>
       <div className="shop-footer-bottom"><p>© {new Date().getFullYear()} LinkedIn Beats. All expectations managed.</p><a href="https://look-serious.com/">Built by <strong>Look Serious</strong></a></div>

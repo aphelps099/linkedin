@@ -12,11 +12,11 @@
 .shop-app .c2-container{width:calc(100% - var(--shop-gutter)*2);max-width:1500px;margin-inline:auto}
 /* White Afterbeat navigation, scoped to the store. */
 .shop-app .c2-header{background:#fff;color:#111}
-.shop-app .c2-header-row{min-height:68px;padding-block:8px;gap:24px}
-.shop-app .c2-header-brand{width:clamp(205px,20vw,260px)}
+.shop-app .c2-header-row{min-height:88px;padding-block:16px;gap:24px}
+.shop-app .c2-header-brand{width:clamp(245px,24vw,320px)}
 .shop-app .c2-header-brand img{filter:none}
 .shop-app .c2-header-links{position:static;transform:none;margin-left:auto;gap:32px}
-.shop-app .c2-header-links a{font-size:16px;min-height:44px}
+.shop-app .c2-header-links a{font-size:18px;min-height:48px}
 .shop-app .c2-header-actions{gap:26px;margin-left:12px}
 .shop-app .c2-header :is(button,a){border:0}
 .shop-app .c2-header .c2-header-menu{background:none;min-height:44px;min-width:86px;font-size:17px;gap:12px;padding-block:8px}
@@ -179,15 +179,15 @@
   .shop-footer-bottom{flex-direction:column;gap:12px}
 }
 @media(max-width:700px){
-  .shop-app .c2-header-row{min-height:68px;padding-block:10px;gap:16px}
-  .shop-app .c2-header-brand{width:180px}
+  .shop-app .c2-header-row{min-height:80px;padding-block:14px;gap:16px}
+  .shop-app .c2-header-brand{width:200px}
   .shop-app .c2-header-actions{gap:16px}
   .shop-app .c2-header .c2-header-menu{min-width:26px;padding:0}
   .shop-app .c2-header-menu>span:first-child{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 }
 @media(max-width:360px){
   :root{--shop-gutter:16px}
-  .shop-app .c2-header-brand{width:160px}
+  .shop-app .c2-header-brand{width:175px}
   .shop-app .c2-header-actions{gap:12px}
   .shop-grid{gap:14px 10px}.shop-card-caption{padding:12px 11px 14px}.shop-card-caption h3{font-size:16px}
   .shop-detail-info .shop-add-row{flex-wrap:wrap}.shop-cart-info>div{flex-wrap:wrap}.shop-cart-image{width:65px}
