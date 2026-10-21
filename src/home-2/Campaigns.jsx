@@ -10,6 +10,7 @@ export const Campaigns = memo(function Campaigns({base='/'}) {
     <a className="lc-panel" href={`${base}lessons/`} aria-label="Open the LinkedInifier">
       <span className="lc-pill">LINKEDINIFIER</span>
       <h2 id="lc-title">Small news.<br/>Big deal.</h2>
+      <p className="lc-description">Turn small news into a stronger LinkedIn post. Boost your post score.</p>
       <div className="lc-scene">
         <img className="lc-robot" src={`${base}home-2/certificate-robot.webp`} width="1774" height="887" alt="" loading="lazy" decoding="async"/>
         <div className="lc-paper">

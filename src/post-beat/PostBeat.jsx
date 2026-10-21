@@ -10,7 +10,8 @@ import {startShareClip} from './clip.js';
 import './post-beat.css';
 const clock=t=>`0:${String(Math.floor(t)).padStart(2,'0')}`;
 const WAVEFORM=[25,52,35,77,94,55,39,64,83,45,30,70,100,66,40,54,90,74,47,32,62,88,52,30,70,48,94,61,42,22,57,79,37,60,44,25];
-export function PostBeat({post,initialRecipe,initialCover=DEFAULT_COVER,initialArtist='',children,onModeChange,ticketControls,ticketScore,ticketNotice,heading}){
+export function PostBeat({post,initialRecipe,initialCover=DEFAULT_COVER,initialArtist='',children,onModeChange,ticketControls,ticketScore,ticketNotice,heading,presentation='default',postHeader,postActions}){
+  const postView=presentation==='post';
   const baseRecipe=useMemo(()=>initialRecipe||makeRecipe(post),[post,initialRecipe]);
   const [mix,setMix]=useState(()=>normalizeMix(initialRecipe?.mix));
   const mixRef=useRef(mix);mixRef.current=mix;
@@ -62,7 +63,7 @@ export function PostBeat({post,initialRecipe,initialCover=DEFAULT_COVER,initialA
       buffers.current=prepared;
       timeline.current=engine.current.play({...recipe,mix:mixRef.current},prepared).cues;
       changePhase('playing');setElapsed(0);follow();
-    }catch(e){if(attempt===run.current&&e.name!=='AbortError'){setError(e.message);changePhase('idle');}}
+    }catch(e){if(attempt===run.current&&e.name!=='AbortError'){setError(e.message);changePhase('idle');if(postView)setShowSong(false);}}
   };
   const restart=()=>{
     cancel();setShowSong(true);
@@ -76,27 +77,49 @@ export function PostBeat({post,initialRecipe,initialCover=DEFAULT_COVER,initialA
   const phraseSize=lines.some(line=>line.text.length>70)?' is-long':'';
   const longestPhrase=lines.reduce((longest,line)=>line.text.length>longest.length?line.text:longest,'');
   const player=<div className={`pb-mini${playing?' is-playing':''}`} role="group" aria-label="Your beat player">
-      <button className="pb-toggle" onClick={play} aria-label={busy?'Cancel beat preparation':playing?'Pause beat':phase==='paused'?'Resume beat':phase==='done'?'Replay beat':'Make and play beat'}>{busy?<X size={21}/>:playing?<Pause size={21} fill="currentColor"/>:<Play size={21} fill="currentColor"/>}</button>
-      <div className="pb-track"><span>{busy?'Making your beat…':playing?'Now playing':phase==='paused'?'Paused':phase==='done'?'One more time?':'Your words. On repeat.'}</span><strong>{busy?<><LoaderCircle size={13}/>Finding the groove</>:phase==='idle'&&!initialRecipe?'Make this a beat':'The LinkedIn remix'}</strong></div>
+      <button className="pb-toggle" onClick={play} aria-label={busy?'Cancel beat preparation':playing?'Pause beat':phase==='paused'?'Resume beat':phase==='done'?'Replay beat':postView?'Play the post':'Make and play beat'}>{busy?<X size={21}/>:playing?<Pause size={21} fill="currentColor"/>:<Play size={21} fill="currentColor"/>}{postView&&<span>{busy?'Cancel':playing?'Pause':phase==='paused'?'Resume':'Play the post'}</span>}</button>
+      <div className="pb-track"><span>{busy?'Making your beat…':playing?'Now playing':phase==='paused'?'Paused':phase==='done'?'One more time?':postView?'30-second remix · robot vocals':'Your words. On repeat.'}</span><strong>{busy?<><LoaderCircle size={13}/>Finding the groove</>:postView?'Your words. Remixed.':phase==='idle'&&!initialRecipe?'Make this a beat':'The LinkedIn remix'}</strong></div>
       {ticketControls?<div className="pb-waveform" role="progressbar" aria-label="Beat progress" aria-valuenow={Math.floor(elapsed)} aria-valuemin={0} aria-valuemax={DURATION}>{WAVEFORM.map((height,i)=><i key={i} className={elapsed>0&&i/WAVEFORM.length<=elapsed/DURATION?'is-past':''} style={{height:`${height}%`}}/>)}</div>:<div className="pb-meter" aria-hidden="true">{[10,18,27,14,23,32,18,26,12].map((height,i)=><i key={i} style={{height,'--delay':`${-i*.13}s`}}/>)}</div>}
       <span className="pb-time">{clock(elapsed)}<small> / 0:30</small></span>
       <button className="pb-settings-button" onClick={()=>setSettingsOpen(true)} aria-label="Beat settings" aria-haspopup="dialog"><Settings2 size={19}/></button>
       {!ticketControls&&<button className="pb-share" onClick={share} aria-label="Release your single" aria-haspopup="dialog"><Share2 size={15}/><span>Release your single</span></button>}
       {!ticketControls&&<div className="pb-progress" role="progressbar" aria-label="Beat progress" aria-valuenow={Math.floor(elapsed)} aria-valuemin={0} aria-valuemax={DURATION}><span style={{width:`${elapsed/DURATION*100}%`}}/></div>}
     </div>;
-  return <div className={`pb-inline${ticketControls?' pb-has-ticket':''}`}>
-    {ticketControls?<section className="pb-ticket el-controls" aria-label="Supercharge and play your post"><div className="pb-ticket-main">{ticketControls}{player}</div>{ticketScore}</section>:player}
-    {ticketControls&&<div className="pb-share-below"><button type="button" onClick={share} aria-haspopup="dialog"><Share2 size={24} aria-hidden="true"/><span>Release your single</span></button></div>}
-    {ticketNotice}
-    {heading}
-    {showSong&&<div className="pb-view-tools"><span><Music2 size={13}/>Sing along</span><div><button onClick={restart} aria-label="Restart beat" disabled={busy}><RotateCcw size={13}/></button>{!initialRecipe&&<button onClick={toggleView}>Read post</button>}</div></div>}
-    {!showSong&&phase!=='idle'&&<div className="pb-view-tools"><span/><button onClick={toggleView}>Sing along</button></div>}
-    {error&&<p className="pb-error" role="alert">{error}</p>}
+  const lyrics=<div className={`pb-lyrics pb-single-phrase${phraseSize}${phase==='idle'||busy?' is-ready':''}`} role="region" aria-label="Singalong lyrics">
+    <p className="pb-phrase-sizer" aria-hidden="true">{longestPhrase}</p>
+    <p key={phraseIndex} className="pb-current-phrase" aria-label={phrase.text}>{phrase.text.split(/\s+/).map((word,j)=><span key={j} className={`pb-word${active.word===j?' is-sung':''}${active.word>j||phase==='done'?' was-sung':''}`} aria-current={active.word===j?'true':undefined}>{word}{' '}</span>)}</p>
+  </div>;
+  return <div className={`pb-inline${postView?' pb-post-view':ticketControls?' pb-has-ticket':''}`}>
+    {postView?<>
+      {heading}
+      <section className="el-amplify el-controls" aria-label="Improve your post score">
+        {ticketScore}
+        <div className="el-amplify-action"><p>A little more thought leadership?</p>{ticketControls}</div>
+      </section>
+      <p className="el-score-note">Our very unofficial thought-leadership score. Not a LinkedIn ranking.</p>
+      {ticketNotice}
+      <article className="el-social-post" aria-label="LinkedIn-style post preview">
+        {postHeader}
+        {children}
+        <div className="el-post-audio">
+          {player}
+          {error&&<p className="pb-error" role="alert">{error}</p>}
+          {showSong&&<><div className="pb-view-tools"><span><Music2 size={14}/>Your post, on repeat.</span><button onClick={toggleView}>Hide lyrics</button></div>{lyrics}</>}
+          {!showSong&&phase!=='idle'&&<div className="pb-view-tools"><span/><button onClick={toggleView}>Show lyrics</button></div>}
+        </div>
+        <div className="el-post-footer">{postActions}<button className="el-share-remix" type="button" onClick={share} aria-haspopup="dialog"><Share2 size={17} aria-hidden="true"/>Share the remix</button></div>
+      </article>
+    </>:<>
+      {ticketControls?<section className="pb-ticket el-controls" aria-label="Supercharge and play your post"><div className="pb-ticket-main">{ticketControls}{player}</div>{ticketScore}</section>:player}
+      {ticketControls&&<div className="pb-share-below"><button type="button" onClick={share} aria-haspopup="dialog"><Share2 size={24} aria-hidden="true"/><span>Release your single</span></button></div>}
+      {ticketNotice}
+      {heading}
+      {showSong&&<div className="pb-view-tools"><span><Music2 size={13}/>Sing along</span><div><button onClick={restart} aria-label="Restart beat" disabled={busy}><RotateCcw size={13}/></button>{!initialRecipe&&<button onClick={toggleView}>Read post</button>}</div></div>}
+      {!showSong&&phase!=='idle'&&<div className="pb-view-tools"><span/><button onClick={toggleView}>Sing along</button></div>}
+      {error&&<p className="pb-error" role="alert">{error}</p>}
+      {showSong?lyrics:children}
+    </>}
     {settingsOpen&&<BeatSettings mix={mix} onChange={changeMix} onClose={()=>setSettingsOpen(false)} playing={playing} busy={busy} onPlay={play}/>}
     {shareOpen&&<ShareBeat initialJob={shareJob.current} artist={artist} onArtistChange={setArtist} recipe={recipe} coverId={cover} onCoverChange={setCover} caption={shareCaption} onCaptionChange={setShareCaption} onClose={()=>setShareOpen(false)}/>}
-    {showSong?<div className={`pb-lyrics pb-single-phrase${phraseSize}${phase==='idle'||busy?' is-ready':''}`} role="region" aria-label="Singalong lyrics">
-      <p className="pb-phrase-sizer" aria-hidden="true">{longestPhrase}</p>
-      <p key={phraseIndex} className="pb-current-phrase" aria-label={phrase.text}>{phrase.text.split(/\s+/).map((word,j)=><span key={j} className={`pb-word${active.word===j?' is-sung':''}${active.word>j||phase==='done'?' was-sung':''}`} aria-current={active.word===j?'true':undefined}>{word}{' '}</span>)}</p>
-    </div>:children}
   </div>;
 }
