@@ -77,7 +77,7 @@ export function createNewsletter({directory}) {
       res.status(400).json({error:'Please agree to receive LinkedIn Beats emails.'}); return;
     }
     let profile;
-    if (req.body?.source === 'home-monthly') {
+    if (req.body?.source === 'home-monthly' || (req.body?.source === 'site-footer' && (req.body.firstName !== undefined || req.body.lastName !== undefined))) {
       const name = value => typeof value === 'string' ? value.trim().replace(/\s+/gu, ' ') : '';
       const firstName = name(req.body.firstName), lastName = name(req.body.lastName);
       if (![firstName,lastName].every(value => value.length > 0 && value.length <= 80 && !/[\u0000-\u001f\u007f]/u.test(value))) {
