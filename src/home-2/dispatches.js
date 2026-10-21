@@ -7,18 +7,21 @@ export const DISPATCHES = [
     image:'cutting-room/posters/office-band-loop-concept-6747aa0e.jpg',
     video:'api/cutting-room/media/office-band-loop-concept-6747aa0e.mp4',
     eyebrow:'LIVE FROM CONFERENCE ROOM B', headline:['BUSINESS','UNUSUAL.'],
+    artwork:{tone:'black',image:'cutting-room/posters/office-band-loop-concept-6747aa0e.jpg',imagePosition:'50% 30%',layout:'film',placement:'bottom',highlight:'cobalt',lines:['Business','unusual.'],footer:'OFFICE SESSIONS / 001'},
     description:'Thirty seconds with the office band. Drums, cubicles, and a droid with a very important delivery.',
   },
   {
     id:'synergy-single', type:'song', label:'New single', shape:'square', art:'record', track:0,
     title:'Synergy in B2B Minor. Finally, alignment you can dance to.',
     eyebrow:'LINKEDIN BEATS / VOL. 01', headline:['SYNERGY','IN B2B MINOR'],
+    artwork:{tone:'orange',placement:'top',motif:'vinyl',lines:['Synergy','in B2B','minor.'],footer:'112 BPM / BOARDROOM HOUSE'},
     description:'Boardroom house. 112 BPM. An unreasonable amount of stakeholder buy-in.',
   },
   {
     id:'circle-back', type:'press', label:'Press release', shape:'square', art:'announcement',
     title:'LinkedIn Beats announces a strategic partnership with itself.',
     eyebrow:'FOR IMMEDIATE ALIGNMENT', headline:['A powerful','new partnership.'],
+    artwork:{tone:'sky',texture:'halftone',highlight:'yellow',lines:['A strategic','partnership.','With ourselves.'],footer:'FOR IMMEDIATE ALIGNMENT'},
     body:[
       'LinkedIn Beats today announced a landmark strategic partnership with LinkedIn Beats, bringing together two teams that were, following a brief internal review, the same team.',
       'The partnership combines our deep expertise in saying “circle back” with our proven ability to say it again over a four-on-the-floor beat. Both parties described the opportunity as “incredibly exciting” before realizing they were on the same side of the call.',
@@ -31,6 +34,7 @@ export const DISPATCHES = [
     title:'I made a new folder. Here’s what it taught me about leadership.',
     image:'cutting-room/posters/office-band-loop-silent-243353b4.jpg',
     eyebrow:'A SMALL UPDATE. A BIG JOURNEY.', headline:['Humbled.','Honored.','New folder.'],
+    artwork:{tone:'cobalt',image:'home-2/artwork/thought-leadership-chair.webp',layout:'chair',placement:'center',lines:['Humbled.','Honored.','New folder.'],footer:'A CAREER-DEFINING RIGHT CLICK.'},
     body:[
       'Humbled and honored to announce that I have created a new folder.',
       'Not just a folder. A container for possibility. A home for the work we haven’t yet had the courage to name final_final_v3.',
@@ -42,6 +46,7 @@ export const DISPATCHES = [
     id:'unpack-that', type:'blog', label:'Field notes', shape:'square', art:'unpack',
     title:'“Let’s unpack that.” A practical guide to leaving it packed.',
     eyebrow:'THE THOUGHT LEADERSHIP JOURNAL', headline:['Let’s','unpack','that.'],
+    artwork:{tone:'paper',texture:'grid',highlight:'cobalt',motif:'wave',lines:['Let’s','unpack','that.'],footer:'FIELD NOTES / NO. 001'},
     body:[
       'Some ideas need room to breathe. Others need a 45-minute calendar hold with six optional attendees. Knowing the difference is a skill we are not offering to teach.',
       'First, acknowledge the complexity. A thoughtful nod will do. If remote, unmute, say “there’s a lot here,” and mute again. You have now contributed.',
@@ -54,12 +59,14 @@ export const DISPATCHES = [
     title:'Per My Last Email. Best enjoyed with your notifications off.',
     image:'store/press-conference-turntable.webp',
     eyebrow:'CONFERENCE ROOM RADIO', headline:['PER MY','LAST EMAIL.'],
+    artwork:{tone:'black',image:'home-2/artwork/email-wireframe.webp',layout:'email',placement:'center',kicker:'CONFERENCE ROOM RADIO',lines:['Per my','last email.'],footer:'SIDE B / NO REPLY REQUIRED'},
     description:'Passive-aggressive disco. 104 BPM. For everyone who has already attached the document twice.',
   },
   {
     id:'certified-nonsense', type:'press', label:'Company news', shape:'square', art:'certified',
     title:'Our professional nonsense is now officially certified.',
     eyebrow:'INDEPENDENTLY SELF-VERIFIED', headline:['100%','CERTIFIED','NONSENSE'],
+    artwork:{tone:'yellow',placement:'top',motif:'steps',lines:['100%','certified','nonsense.'],footer:'INDEPENDENTLY SELF-VERIFIED'},
     body:[
       'LinkedIn Beats has awarded LinkedIn Beats its highest possible rating for professional nonsense, following an exhaustive evaluation conducted by LinkedIn Beats.',
       'The assessment covered five core competencies: strategic nodding, circular language, passive-aggressive follow-up, performative humility, and knowing when to say “great question.”',
@@ -74,6 +81,7 @@ export const DISPATCHES = [
     image:'cutting-room/posters/let-s-circle-back-synergy-corrected-d6ecf221.jpg',
     video:'api/cutting-room/media/let-s-circle-back-synergy-corrected-d6ecf221.mp4',
     eyebrow:'THE FULL 90-SECOND MUSICAL', headline:['LET’S','CIRCLE BACK.'],
+    artwork:{tone:'cobalt',motif:'orbit',layout:'loop',lines:['CIRCLE','BACK'],footer:'THE FULL 90-SECOND MUSICAL'},
     description:'The complete musical meeting. Featuring the house band, Synergy, and the printer. Attendance is optional. The chorus is not.',
   },
 ];
