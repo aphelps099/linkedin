@@ -163,7 +163,7 @@ export default function ConceptHome({playerFactory=createPortraitRadio, variant=
             <div className="c2-product-info"><h3>{product.name}</h3><ArrowUpRight aria-hidden="true"/></div>
           </a>)}</div>
           <div className="c2-store-action">
-            <a className="c2-collection-link" href={`${base}store/`}>Explore the collection <ArrowUpRight aria-hidden="true"/></a>
+            <a className="c2-collection-link" href={`${base}store/`}><span>Explore the collection</span><svg aria-hidden="true" viewBox="0 0 14 14" fill="currentColor"><path d="M4 0h10v10h-2V4h-2v2H8v2H6v2H4v2H2v2H0v-2h2v-2h2V8h2V6h2V4h2V2H4Z"/></svg></a>
           </div>
         </div>
       </section>
