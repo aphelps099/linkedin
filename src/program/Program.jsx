@@ -59,7 +59,6 @@ function Syllabus({progress,resume,lockedCertificate}){
     {lockedCertificate && <p className="pg-notice">Your certificate is waiting. Finish all five lessons to make it official.</p>}
     <div className="pg-academy-intro">
       <div className="pg-masthead">
-        <span className="pg-eyebrow pg-eyebrow-blue">Professional development, allegedly.</span>
         <h1 className="pg-display">Your career isn’t going <em>to congratulate itself.</em></h1>
         <p className="pg-lead">On the world’s premier professional network, doing the work is only half the job. Announcing it is the other 900%.</p>
         <p className="pg-pitch">Five short lessons. One very public personal brand. A deeply unnecessary credential.</p>
