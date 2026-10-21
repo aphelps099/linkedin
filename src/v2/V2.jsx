@@ -1,3 +1,4 @@
+import {SiteFooter} from '../brand/SiteFooter.jsx';
 import React, { useEffect, useRef, useState } from 'react';
 import { Pad, KeyPlate } from '../components/pads/Pad.jsx';
 import { StepGrid } from '../components/sequencer/StepGrid.jsx';
@@ -491,13 +492,7 @@ export default function V2() {
         <button className="lb-cta-btn" onClick={sendCoworker}>Send to a coworker <span>↗</span></button>
         <small>Anonymous-ish. Loving-ish. Extremely shareable.</small>
       </div>
-
-      {/* footer */}
-      <footer className="lb-foot">
-        <span className="lb-foot-wordmark">LinkedIn <b className="lb-beats-chip">Beats</b><span className="lb-cursor">▮</span></span>
-        <span className="lb-foot-disclaimer">We make professional networking slightly less professional. Not affiliated with your network.</span>
-        <Stamp>Humbled — Allegedly</Stamp>
-      </footer>
     </div>
+    <SiteFooter base="../"/>
   </div>;
 }

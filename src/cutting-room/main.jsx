@@ -1,3 +1,4 @@
+import {SiteFooter} from '../brand/SiteFooter.jsx';
 import React, {useEffect,useMemo,useRef,useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import {ArrowUpRight,Bookmark,Check,ChevronDown,Download,Film,Play,Search,SlidersHorizontal,Volume2,VolumeX,X} from 'lucide-react';
@@ -50,7 +51,8 @@ function App(){
       </section>
       <section className="cr-edit-note"><span>FOR THE NEXT EDIT</span><p>Start with a very small achievement.<br/>Add a very large announcement.</p><div>Save the best reactions, a musical interruption, and one unnecessary printer shot. Your shortlist and notes stay in this browser; export them to keep or share an edit plan.</div></section>
     </main>
-    <footer><a className="cr-logo" href="/">LINKEDIN BEATS_</a><p>Sound like you mean business.</p><small>Unlisted catalog · Anyone with the link can view it · {catalog.updated}</small></footer>
+    <p className="cr-catalog-note">Unlisted catalog · Anyone with the link can view it · {catalog.updated}</p>
+    <SiteFooter base="../"/>
     <dialog ref={dialog} className="cr-dialog" onCancel={()=>setActive(null)} onClick={e=>{if(e.target===dialog.current)setActive(null)}}>{active&&<div className="cr-modal"><div className="cr-modal-top"><span>{active.category} / {active.status}</span><button onClick={()=>setActive(null)} aria-label="Close player"><X/></button></div><video key={active.id} src={active.src} poster={active.poster} controls playsInline preload="metadata" onError={()=>setError(true)}/>{error&&<p role="alert" className="cr-player-error">This clip couldn’t load. <a href={active.src} target="_blank" rel="noreferrer">Open the video directly</a> or try again.</p>}<div className="cr-modal-content"><div><p className="cr-kicker">{fmt(active.duration)} · {active.width} × {active.height} · {active.audio?'Audio included':'Silent footage'}</p><h2>{active.title}</h2><p>{active.description}</p>{active.notes&&<p className="cr-clip-notes">{active.notes}</p>}{active.transcript&&<details><summary>Dialogue / phrases</summary><p>{active.transcript}</p></details>}<div className="cr-modal-actions"><button className="cr-primary" onClick={()=>toggle(active.id)}>{saved.shortlist.includes(active.id)?<Check size={16}/>:<Bookmark size={16}/>} {saved.shortlist.includes(active.id)?'Shortlisted':'Add to shortlist'}</button><a href={active.download||active.src} download><Download size={16}/> Download</a><button onClick={()=>share(active)}>Copy link <ArrowUpRight size={16}/></button></div><p role="status" className="cr-notice">{notice}</p></div><label className="cr-notes-label">YOUR EDIT NOTES<textarea value={saved.notes[active.id]||''} onChange={e=>setSaved(s=>({...s,notes:{...s.notes,[active.id]:e.target.value}}))} placeholder="Great reaction at 0:06. Cut to printer. Hold the silence."/><small>Saved on this device. Included in shortlist export.</small></label></div></div>}</dialog>
   </div>
 }

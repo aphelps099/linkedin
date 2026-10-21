@@ -4,6 +4,7 @@ import './first-in-line.css';
 
 export function FirstInLine({hidden = false}) {
   const [open, setOpen] = useState(false);
+  const [footerVisible, setFooterVisible] = useState(false);
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState('');
@@ -11,6 +12,13 @@ export function FirstInLine({hidden = false}) {
   const request = useRef(null);
 
   useEffect(() => () => request.current?.abort(), []);
+  useEffect(() => {
+    const footer = document.getElementById('c2-footer');
+    if (!footer || !('IntersectionObserver' in window)) return;
+    const observer = new IntersectionObserver(([entry]) => setFooterVisible(entry.isIntersecting));
+    observer.observe(footer);
+    return () => observer.disconnect();
+  }, []);
   useEffect(() => {
     if (!open) return;
     const previousOverflow = document.body.style.overflow;
@@ -47,7 +55,7 @@ export function FirstInLine({hidden = false}) {
   }
 
   return <>
-    <div className="shop-first-in-line" hidden={hidden || open}>
+    <div className="shop-first-in-line" hidden={hidden || open || footerVisible}>
       <button ref={trigger} type="button" className="shop-first-trigger" aria-haspopup="dialog" aria-controls="shop-signup" onClick={() => setOpen(true)}>
         <span>Be first<br/>in line</span>
       </button>
