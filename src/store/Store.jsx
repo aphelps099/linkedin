@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {ArrowRight, X, Minus, Plus, ShoppingBag} from 'lucide-react';
+import {ArrowRight, ArrowUpRight, X, Minus, Plus, ShoppingBag} from 'lucide-react';
 import {PRODUCTS, bySku, fmt} from './products.js';
 import {ProductVisual} from './ProductVisual.jsx';
 import {ProductGallery} from './ProductGallery.jsx';
@@ -7,14 +7,13 @@ import {ConceptHeader} from '../home-2/ConceptHeader.jsx';
 import {FirstInLine} from './FirstInLine.jsx';
 import {StoreHero} from './StoreHero.jsx';
 import {StoreMarquee} from './StoreMarquee.jsx';
-import '../home-2/header.css';
 
 const DEPARTMENTS = {
   'All': null,
-  'Apparel': ['Shirts'],
-  'Hats': ['Hats'],
-  'Desk supplies': ['Mugs', 'Stickers', 'Posters'],
+  'Wears': ['Shirts', 'Hats'],
+  'Wares': ['Mugs', 'Stickers', 'Posters'],
 };
+const readCollection = () => ({wears:'Wears',wares:'Wares'}[new URLSearchParams(location.search).get('collection')] || 'All');
 const CART_KEY = 'cs-order';
 const endpoint = () => import.meta.env.VITE_VOICE_API_URL
   ? new URL('/api/checkout', import.meta.env.VITE_VOICE_API_URL).href : '/api/checkout';
@@ -65,7 +64,7 @@ function Quantity({value, max=99, onChange, label='Quantity'}){
 
 export default function Store(){
   const [filtersOpen,setFiltersOpen] = useState(false);
-  const [filter,setFilter] = useState('All'), [sort,setSort] = useState('featured'), [sel,setSel] = useState(null);
+  const [filter,setFilter] = useState(readCollection), [sort,setSort] = useState('featured'), [sel,setSel] = useState(null);
   const [size,setSize] = useState(null), [qty,setQty] = useState(1);
   const [cart,setCart] = useState(loadCart), [drawer,setDrawer] = useState(false);
   const [submitting,setSubmitting] = useState(false), [note,setNote] = useState(''), [notice,setNotice] = useState(null);
@@ -83,6 +82,27 @@ export default function Store(){
   const cartCount = cart.reduce((t,c)=>t+c.qty,0);
   const subtotal = cart.reduce((t,c)=>t+bySku(c.sku).price*c.qty,0);
   const remaining = d ? 99 - (cart.find(c=>c.sku===d.sku && c.size===(d.sizes?size:null))?.qty || 0) : 99;
+
+  const collectionHref = collection => {
+    const params=new URLSearchParams(location.search);
+    if(collection==='All')params.delete('collection');
+    else params.set('collection',collection.toLowerCase());
+    return location.pathname+(params.size?'?'+params.toString():'')+'#collection';
+  };
+  const selectCollection = collection => {
+    setFilter(collection);
+    history.pushState(null,'',collectionHref(collection));
+  };
+  const followCollection = (event,collection) => {
+    if(event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+    event.preventDefault();
+    selectCollection(collection);
+  };
+  useEffect(()=>{
+    const sync=()=>setFilter(readCollection());
+    window.addEventListener('popstate',sync);
+    return()=>window.removeEventListener('popstate',sync);
+  },[]);
 
   useEffect(()=>{try{localStorage.setItem(CART_KEY,JSON.stringify(cart));}catch{/* Bag remains usable in memory. */}},[cart]);
   useEffect(()=>{
@@ -128,17 +148,17 @@ export default function Store(){
 
   return <div className="shop-app c2-home">
     <a className="shop-skip" href="#collection">Skip to products</a>
-    <ConceptHeader base="../" homeSectionBase="../" active="Shop" storefront><button className="shop-header-bag" onClick={openBag} aria-label={`Open bag, ${cartCount} items`}><ShoppingBag size={21} aria-hidden="true"/><span className="shop-bag-count">{cartCount}</span></button></ConceptHeader>
+    <ConceptHeader base="../" homeSectionBase="../" active="Shop" theme="dark" storefront><button className="shop-header-bag" onClick={openBag} aria-label={`Open bag, ${cartCount} items`}><ShoppingBag size={21} aria-hidden="true"/><span className="shop-bag-count">{cartCount}</span></button></ConceptHeader>
     {notice&&<div className="shop-notice" role="status"><span>{notice==='filed'?'Order filed. Thank you for your contribution to corporate culture.':'Checkout paused. Your bag is right where you left it.'}</span><button onClick={()=>setNotice(null)} aria-label="Dismiss notice"><X size={18}/></button></div>}
     <main>
       <StoreHero/>
       <section className="shop-collection" id="collection" aria-labelledby="collection-title">
-        <header className="shop-collection-heading"><h2 id="collection-title" tabIndex="-1">Shop wears</h2></header>
+        <header className="shop-collection-heading"><h2 id="collection-title" tabIndex="-1">Shop <a href={collectionHref('Wears')} aria-current={filter==='Wears'?'true':undefined} onClick={event=>followCollection(event,'Wears')}>wears</a> <span className="shop-collection-slash" aria-hidden="true">/</span> <a href={collectionHref('Wares')} aria-current={filter==='Wares'?'true':undefined} onClick={event=>followCollection(event,'Wares')}>wares</a></h2></header>
         <button className="shop-mobile-filter-toggle" aria-expanded={filtersOpen} aria-controls="shop-filter-options" onClick={()=>setFiltersOpen(open=>!open)}><span>Filter & sort</span><span aria-hidden="true">{filtersOpen?'−':'+'}</span></button>
-        <div id="shop-filter-options" className={`shop-filter-row${filtersOpen?' is-open':''}`}><div className="shop-filters" role="group" aria-label="Filter products">{Object.keys(DEPARTMENTS).map(c=><button key={c} className={c===filter?'is-selected':''} aria-pressed={c===filter} onClick={()=>setFilter(c)}>{c}</button>)}</div><div className="shop-sort"><span className="shop-count" role="status">{items.length} products</span><label htmlFor="shop-sort">Sort by</label><select id="shop-sort" value={sort} onChange={e=>setSort(e.target.value)}><option value="featured">Featured</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="name">Name: A–Z</option></select></div></div>
+        <div id="shop-filter-options" className={`shop-filter-row${filtersOpen?' is-open':''}`}><div className="shop-filters" role="group" aria-label="Filter products">{Object.keys(DEPARTMENTS).map(c=><button key={c} className={c===filter?'is-selected':''} aria-pressed={c===filter} onClick={()=>selectCollection(c)}>{c}</button>)}</div><div className="shop-sort"><span className="shop-count" role="status">{items.length} products</span><label htmlFor="shop-sort">Sort by</label><select id="shop-sort" value={sort} onChange={e=>setSort(e.target.value)}><option value="featured">Featured</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="name">Name: A–Z</option></select></div></div>
         <div className="shop-grid">{items.map(p=><article className="shop-product" key={p.sku}>
-          <button className={`shop-product-image shop-image-${p.sku}`} onClick={()=>openDetail(p)} aria-label={`View ${p.name}, ${p.previewOnly?'design preview':fmt(p.price)}`}><ProductVisual product={p} hoverModel/><span className="shop-product-open">View details <Plus size={17} aria-hidden="true"/></span></button>
-          <div className="shop-card-caption"><h3><button onClick={()=>openDetail(p)}>{p.name}</button></h3><p className={`shop-card-price ${p.previewOnly?'is-preview':''}`}>{p.previewOnly?'Coming soon':fmt(p.price)}</p></div>
+          <button className={`shop-product-image shop-image-${p.sku}`} onClick={()=>openDetail(p)} aria-label={`View ${p.name}, ${p.previewOnly?'design preview':fmt(p.price)}`}><ProductVisual product={p} hoverModel/><span className="shop-product-open">Closer look <Plus size={17} aria-hidden="true"/></span></button>
+          <div className="shop-card-caption"><h3><button onClick={()=>openDetail(p)}>{p.name}<ArrowUpRight className="shop-card-arrow" size={21} aria-hidden="true"/></button></h3><p className={`shop-card-price ${p.previewOnly?'is-preview':''}`}>{p.previewOnly?'Coming soon':fmt(p.price)}</p></div>
         </article>)}</div>
         <p className="shop-collection-note">Items marked Coming soon are design previews. Pricing and availability to come.</p>
       </section>
