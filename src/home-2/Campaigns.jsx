@@ -66,7 +66,6 @@ export const Campaigns = memo(function Campaigns({base='/'}) {
     <section className="lp-studio" aria-labelledby="lp-studio-title">
       <span className="lp-pill">THE STUDIO</span>
       <h2 id="lp-studio-title">This meeting<br/>has a beat.</h2>
-      <p className="lp-description">Synergy and the team<br/>are ready to circle back.</p>
       <div className="lp-room" aria-label="Studio preview with Synergy and the band">
         <div className="lp-room-title"><span>SYNERGY &amp; CO.</span><span className="lp-status">STUDIO</span></div>
         <div className="lp-host"><img src={poster('synergy-camera-v2')} alt="Synergy at his desk with coffee" loading="lazy"/><span className="lp-person-label"><Mic aria-hidden="true"/>Synergy · Host</span></div>

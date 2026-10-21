@@ -33,7 +33,6 @@
 .c2-home .lb-feature-cards .lp-studio :is(p,h2){margin:0}
 .c2-home .lb-feature-cards .lp-pill{align-self:flex-start;border:1px solid currentColor;border-radius:30px;padding:5px 10px;font:500 11px/1 LBFoundersMono,monospace;letter-spacing:.025em}
 .c2-home .lb-feature-cards .lp-studio h2{font:600 29px/1.12 'LB Azeret Mono',monospace;letter-spacing:-.065em;margin-top:15px;color:#102a62}
-.c2-home .lb-feature-cards .lp-description{font:400 15px/1.35 C2Hoves,Arial,sans-serif;margin-top:9px!important;color:#102a62}
 .c2-home .lb-feature-cards .lp-room{flex:none;width:calc(100% + 62px);background:#14243c;border-radius:12px;padding:6px;box-shadow:0 5px 0 #bdcde5;transform:rotate(1.4deg);transform-origin:center left;margin:22px 0 18px 12px}
 .c2-home .lb-feature-cards .lp-room-title{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 7px 9px;color:#bbcae1;font:500 9px/1 LBFoundersMono,monospace;letter-spacing:.04em}
 .c2-home .lb-feature-cards .lp-status{display:inline-flex;gap:5px;align-items:center}
@@ -68,7 +67,6 @@
 .c2-home .lb-feature-cards .lc-stamp{width:132px}
 .c2-home .lb-feature-cards .lp-host{height:174px}
 .c2-home .lb-feature-cards .lp-person{height:65px}
-.c2-home .lb-feature-cards .lp-description{font-size:17px;margin-top:13px!important}
 .c2-home .lb-feature-cards .lp-room{margin-top:25px;margin-bottom:25px}
 .c2-home .lb-feature-cards .lp-enter .lp-pixel-arrow{width:13px;height:13px}
 .c2-home .lb-feature-cards .lc-entry input::placeholder{color:#c5d8ff}
