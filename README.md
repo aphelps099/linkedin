@@ -611,16 +611,16 @@ The store hero uses the supplied 8.9-second campaign film, encoded as an 832×48
 
 ## Afterbeat identity
 
-The approved lowercase TT Hoves identity lives at `/brand/afterbeat/`, with a
+The approved lowercase TT Hoves identity, with custom heavy outlined lettering, lives at `/brand/afterbeat/`, with a
 downloadable kit, outlined SVG masters, transparent PNGs and a usage guide.
 `linkedin` is Ink (`#111111`); `beats` and the terminal underscore are Cobalt
 (`#0757EC`). The `lb_` small mark is used in the favicon and certificate seal.
 The site uses the supplied white variation over dark backgrounds.
 
 Rebuild with `python3 scripts/build-afterbeat-identity.py` then
-`node scripts/package-afterbeat-identity.mjs`. Python needs fonttools and Pillow;
+`node scripts/package-afterbeat-identity.mjs`. Python needs fonttools, Pillow and skia-pathops;
 PNG and ZIP export run automatically during `npm run build`, using Node and
 the existing Sharp dependency. Font files stay in the project.
 The shared headers, footer, Academy rewards and certificate exports consume the
-same artwork. Certificate shares use v3 URLs to refresh social image caches;
-existing v2 certificate links continue to work.
+same artwork. Certificate shares use v4 URLs to refresh social image caches;
+existing v2/v3 certificate links continue to work.

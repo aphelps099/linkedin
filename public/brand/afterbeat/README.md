@@ -14,7 +14,7 @@ Approved direction: lowercase TT Hoves DemiBold, with a compact terminal undersc
 - `identity-guide.svg` / `.png`: visual overview.
 - `tokens.css`: color tokens and an optional, reduced-motion-aware interaction pulse.
 
-All SVG lettering is outlined from the project's actual TT Hoves DemiBold font. It does not depend on webfont loading. The PNGs have transparent backgrounds except the filled icons and identity guide. The font itself is not included.
+All SVG lettering uses a custom heavy cut derived from the project's TT Hoves DemiBold 600 master. The expanded contours are united into filled paths, with adjusted spacing and an opened e aperture for small sizes. This is custom logo artwork, not an official TT Hoves 800 or 900 font. It does not depend on webfont loading. The PNGs have transparent backgrounds except the filled icons and identity guide. The font itself is not included.
 
 ## Palette
 
@@ -46,4 +46,4 @@ From the project root:
     python3 scripts/build-afterbeat-identity.py
     node scripts/package-afterbeat-identity.mjs
 
-The generator requires Python fonttools and Pillow. PNG and ZIP packaging also run automatically during `npm run build`, using Node and the project's existing Sharp dependency; Python is only needed to change the outlined masters. Original TT Hoves font files stay inside the project and are not included in this kit.
+The generator requires Python fonttools, Pillow and skia-pathops. PNG and ZIP packaging also run automatically during `npm run build`, using Node and the project's existing Sharp dependency; Python is only needed to change the outlined masters. Original TT Hoves font files stay inside the project and are not included in this kit.

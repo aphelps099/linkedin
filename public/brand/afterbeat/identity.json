@@ -1,15 +1,15 @@
 {
   "name": "LinkedIn Beats / Afterbeat",
-  "version": 1,
-  "font": "TT Hoves DemiBold (outlined; font not included)",
+  "version": 2,
+  "font": "TT Hoves custom heavy (expanded from DemiBold 600; outlined; font not included)",
   "colors": {
     "ink": "#111111",
     "cobalt": "#0757ec",
     "paper": "#fafaf7",
     "white": "#ffffff"
   },
-  "wordmarkViewBox": "0 0 6717.0 810",
-  "wordmarkAspect": 8.292592592592593,
+  "wordmarkViewBox": "0 0 7015.0 862",
+  "wordmarkAspect": 8.138051044083527,
   "minimumPixels": {
     "wordmark": 160,
     "stacked": 88,

@@ -35,7 +35,7 @@ export default function Program(){
     <a className="pg-skip" href="#program-main" onClick={e=>{e.preventDefault();mainRef.current?.focus();}}>Skip to the lesson</a>
     <header className="pg-topbar">
       <div className="pg-topbar-inner">
-        <a href="#" className="pg-brand" aria-label="LinkedIn Beats Academy course overview"><img className="pg-wordmark-art" src="../brand/afterbeat/wordmark-color.svg" width="224" height="27" alt="LinkedIn Beats"/><span className="pg-brand-suffix">Academy</span></a>
+        <a href="#" className="pg-brand" aria-label="LinkedIn Beats Academy course overview"><img className="pg-wordmark-art" src="../brand/afterbeat/wordmark-color.svg?v=2" width="224" height="27" alt="LinkedIn Beats"/><span className="pg-brand-suffix">Academy</span></a>
         <button type="button" className="pg-menu-toggle" aria-expanded={menuOpen} aria-controls="pg-course-nav" onClick={()=>setMenuOpen(v=>!v)}>{menuOpen ? <X size={18}/> : <ChevronDown size={18}/>}<span>Menu</span></button>
         <nav className={`pg-topnav${menuOpen ? ' is-open' : ''}`} id="pg-course-nav" aria-label="Academy" onClick={()=>setMenuOpen(false)}>
           <a href="#" aria-current={!path ? 'page' : undefined}>Course overview</a>

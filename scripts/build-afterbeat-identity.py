@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Rebuild Afterbeat SVG masters from the project's licensed TT Hoves font.
-Requires fonttools and Pillow (RAQM recommended). No font files are distributed.
+Requires fonttools, Pillow (RAQM recommended) and skia-pathops. No font files are distributed.
 Run python3 scripts/build-afterbeat-identity.py, then node scripts/package-afterbeat-identity.mjs.
 """
 from pathlib import Path
@@ -10,6 +10,7 @@ from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.pens.boundsPen import BoundsPen
 from PIL import ImageFont
 import json
+import pathops
 
 ROOT=Path(__file__).resolve().parents[1]
 OUT=ROOT/'public/brand/afterbeat'; OUT.mkdir(parents=True,exist_ok=True)
@@ -18,29 +19,48 @@ REG=ROOT/'public/home-2/fonts/tt-hoves-regular.ttf'
 INK='#111111'; BLUE='#0757ec'; PAPER='#fafaf7'; WHITE='#ffffff'
 font=TTFont(FONT); glyphs=font.getGlyphSet(); cmap=font.getBestCmap(); measure=ImageFont.truetype(str(FONT),1000)
 regfont=TTFont(REG); regglyphs=regfont.getGlyphSet(); regcmap=regfont.getBestCmap(); regmeasure=ImageFont.truetype(str(REG),1000)
+# Custom heavy artwork derived from the available 600 master, not an official
+# TT Hoves 800/900 font. Expand and union contours so all exports are filled paths.
+EXPANSION=26
+TRACKING=20
+BASELINE=738+EXPANSION
+ORIGIN_X=-37+EXPANSION
 
 def text_paths(text,regular=False,split=None,first=INK,second=BLUE):
     gs,cm,ms=(regglyphs,regcmap,regmeasure) if regular else (glyphs,cmap,measure)
     out=[]
     for i,c in enumerate(text):
         if c==' ': continue
-        x=ms.getlength(text[:i+1])-ms.getlength(c)
-        pen=SVGPathPen(gs); gs[cm[ord(c)]].draw(pen)
+        x=ms.getlength(text[:i+1])-ms.getlength(c)+(0 if regular else i*TRACKING)
+        pen=SVGPathPen(gs)
+        if regular:
+            gs[cm[ord(c)]].draw(pen)
+        else:
+            original=pathops.Path();gs[cm[ord(c)]].draw(original.getPen(gs))
+            stroke=pathops.Path(original)
+            stroke.stroke(EXPANSION*2,pathops.LineCap.BUTT_CAP,pathops.LineJoin.MITER_JOIN,2)
+            heavy=pathops.op(original,stroke,pathops.PathOp.UNION)
+            if c=='e':
+                # Keep the aperture open after expansion, especially in small nav logos.
+                notch=pathops.Path();np=notch.getPen()
+                np.moveTo((390,137));np.lineTo((620,137));np.lineTo((620,187));np.lineTo((390,187));np.closePath()
+                heavy=pathops.op(heavy,notch,pathops.PathOp.DIFFERENCE)
+            heavy.draw(pen)
         color=second if split is not None and i>=split else first
         out.append(f'<path fill="{color}" transform="translate({x:.3f} 0)" d="{pen.getCommands()}"/>')
-    return ''.join(out),ms.getlength(text)
+    return ''.join(out),ms.getlength(text)+(0 if regular else max(0,len(text)-1)*TRACKING)
 
 def make_word(text='linkedinbeats',mode='color',split=8):
     col=WHITE if mode=='white' else INK
     paths,advance=text_paths(text,split=split if mode=='color' else None,first=col,second=BLUE)
     # A custom terminal beat sits at the baseline, unlike a font underscore.
-    x=advance+56; width=x+440+32-69
+    x=advance+56; width=x+440+ORIGIN_X+32
     lowest=0
     for c in text:
         pen=BoundsPen(glyphs);glyphs[cmap[ord(c)]].draw(pen)
         if pen.bounds: lowest=min(lowest,pen.bounds[1])
-    height=max(810,738-lowest+32)
-    mark=f'<g transform="translate(-37 738) scale(1 -1)">{paths}</g><rect data-afterbeat="true" x="{x-37:.3f}" y="658" width="440" height="120" fill="{BLUE if mode=="color" else col}"/>'
+    height=max(810+EXPANSION*2,BASELINE-lowest+EXPANSION+32)
+    mark=f'<g transform="translate({ORIGIN_X} {BASELINE}) scale(1 -1)">{paths}</g><rect data-afterbeat="true" x="{x+ORIGIN_X:.3f}" y="{BASELINE-124}" width="440" height="164" fill="{BLUE if mode=="color" else col}"/>'
     return mark,(round(width,3),height)
 
 def svg(body,size,label):
@@ -61,8 +81,8 @@ for mode in ['color','black','white']:
     # Stacked lockup: plain linkedin above beats_ (only one terminal beat).
     tp,tw=text_paths('linkedin',first=WHITE if mode=='white' else INK)
     bp,bs=make_word('beats',mode=mode,split=0)
-    stack=f'<g transform="translate(-37 738) scale(1 -1)">{tp}</g>'+place(bp,bs,0,830,bs[0])
-    stacksz=(max(tw,bs[0])+32,1640)
+    stack=f'<g transform="translate({ORIGIN_X} {BASELINE}) scale(1 -1)">{tp}</g>'+place(bp,bs,0,880,bs[0])
+    stacksz=(max(tw+64,bs[0]),880+bs[1])
     save(f'stacked-{mode}',stack,stacksz,'LinkedIn Beats — stacked Afterbeat wordmark')
     mono,msz=make_word('lb',mode=mode,split=0)
     # The transparent monogram has a square canvas for seals and avatars.
@@ -107,7 +127,7 @@ for i,(color,name,code) in enumerate([(INK,'Ink','#111111'),(BLUE,'Cobalt','#075
     if i==2: board+=f'<rect x="{x-4}" y="1096" width="180" height="64" rx="7" fill="{WHITE}"/>'
     board+=f'<rect x="{x}" y="1100" width="172" height="56" rx="5" fill="{color}"/>'
     board+=label(name,x,1195,22,INK)+label(code,x,1231,18,'#666666')
-board+=label('TT HOVES DEMIBOLD',870,1072,18,'#666666')
+board+=label('TT HOVES / CUSTOM HEAVY',870,1072,18,'#666666')
 board+=label('Lowercase. Optical spacing. One terminal beat.',870,1128,24,INK)
 board+=label('Use clear space equal to the height of the lowercase b.',870,1180,21,'#555555')
 board+=label('Keep the underscore attached. Let the content do the talking.',870,1220,21,'#555555')
@@ -120,6 +140,6 @@ save('identity-guide',board,(1800,1360),'LinkedIn Beats — Afterbeat identity g
 .lb-afterbeat-motion:hover [data-afterbeat]{animation:lb-afterbeat 700ms ease-out 1;}
 @media(prefers-reduced-motion:reduce){.lb-afterbeat-motion [data-afterbeat]{animation:none!important;}}
 ''')
-manifest={'name':'LinkedIn Beats / Afterbeat','version':1,'font':'TT Hoves DemiBold (outlined; font not included)','colors':{'ink':INK,'cobalt':BLUE,'paper':PAPER,'white':WHITE},'wordmarkViewBox':f'0 0 {masters["color"][1][0]} {masters["color"][1][1]}','wordmarkAspect':masters['color'][1][0]/masters['color'][1][1],'minimumPixels':{'wordmark':160,'stacked':88,'icon':24},'clearSpace':'height of lowercase b on each side where practical; compact UI uses at least half this height','motion':'one 700ms opacity pulse on deliberate interaction; static at rest; reduced motion respected'}
+manifest={'name':'LinkedIn Beats / Afterbeat','version':2,'font':'TT Hoves custom heavy (expanded from DemiBold 600; outlined; font not included)','colors':{'ink':INK,'cobalt':BLUE,'paper':PAPER,'white':WHITE},'wordmarkViewBox':f'0 0 {masters["color"][1][0]} {masters["color"][1][1]}','wordmarkAspect':masters['color'][1][0]/masters['color'][1][1],'minimumPixels':{'wordmark':160,'stacked':88,'icon':24},'clearSpace':'height of lowercase b on each side where practical; compact UI uses at least half this height','motion':'one 700ms opacity pulse on deliberate interaction; static at rest; reduced motion respected'}
 (OUT/'identity.json').write_text(json.dumps(manifest,indent=2)+'\n')
 print(f'Built {len(list(OUT.glob("*.svg")))} outlined SVGs; primary viewBox {manifest["wordmarkViewBox"]}.')
