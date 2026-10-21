@@ -1,8 +1,10 @@
-import React, {useRef, useState} from 'react';
+import React, {useId, useRef, useState} from 'react';
 import {ArrowRight, Check, Download} from 'lucide-react';
 import {SynergyTip} from './SynergyTip.jsx';
 import {BrandArtwork} from './BrandArtwork.jsx';
-import {CertificateBorder, CertificateSeal} from './CertificateOrnaments.jsx';
+import {certificateMarkup} from './certificate-art.js';
+import wordmark from '../../../public/home-2/brand/wordmark-horizontal.svg?raw';
+import monogram from '../../../public/home-2/brand/monogram.svg?raw';
 
 export const REWARDS = [
   {name:'Certified Attention Seeker', lines:['CERTIFIED','ATTENTION','SEEKER'], color:'#0757ec', ink:'#fff', foot:'A STRONG OPENING.'},
@@ -70,32 +72,6 @@ export function LessonReward({chapter, nextTitle, final, onContinue}){
 }
 
 export function CertificateArt({name, svgRef}){
-  const nameSize=Math.min(86, 1030/Math.max([...name].length,1));
-  return <svg ref={svgRef} className="pg-certificate-art" viewBox="0 0 1200 850" role="img" aria-label={`Certificate of Professional Effort awarded to ${name}. Certified Thought Leader.`}>
-    <rect width="1200" height="850" fill="#fbf8ef"/>
-    <CertificateBorder/>
-    <rect x="78" y="67" width="1044" height="107" fill="#10182f"/>
-    <rect x="78" y="171" width="1044" height="3" fill="#b79a5d"/>
-    <BrandArtwork x={98} y={91} width={586} height={57} color="#fff"/>
-    <g fill="#10182f" fontFamily="Arial, sans-serif">
-      <text x="1096" y="112" textAnchor="end" fontSize="23" letterSpacing="5" fill="#f4df9d">ACADEMY</text>
-      <text x="1096" y="138" textAnchor="end" fontSize="11" fill="#d6dfef">PROFESSIONAL DEVELOPMENT, ALLEGEDLY.</text>
-      <text x="85" y="214" fill="#0757ec" fontSize="12" fontWeight="700" letterSpacing="2">OFFICIAL RECORD OF COMPLETION</text>
-      <g fontWeight="900" fontSize="59" letterSpacing="-2.6"><text x="81" y="277">CERTIFICATE OF</text><text x="81" y="343">PROFESSIONAL EFFORT</text></g>
-      <path d="M85 359C281 353 514 355 746 358" stroke="#ffe65c" strokeWidth="10" strokeLinecap="round"/>
-      <text x="85" y="398" fontSize="11" letterSpacing="2">AWARDED WITH APPROPRIATE ENTHUSIASM TO</text>
-      <text x="82" y="473" fontFamily="Georgia, serif" fontSize={nameSize}>{name}</text>
-      <path d="M85 491H1115" stroke="#a18443" strokeOpacity=".6"/>
-      <g fontSize="21"><text x="85" y="529">For completing five lessons in strategic self-importance,</text><text x="85" y="559">demonstrating advanced synergy, and remaining</text><text x="85" y="589">humbled throughout.</text></g>
-      <text x="85" y="628" fontSize="11" letterSpacing="2">AND NOW OFFICIALLY RECOGNIZED AS A</text>
-      <text x="83" y="666" fontSize="33" fontWeight="900" fill="#0757ec" letterSpacing="-1">CERTIFIED THOUGHT LEADER</text>
-      <text x="85" y="718" fontFamily="Georgia, serif" fontStyle="italic" fontSize="28">Synergy</text>
-      <path d="M85 729H365" stroke="#10182f"/>
-      <text x="85" y="749" fontSize="9" letterSpacing=".7">HEAD OF PROFESSIONAL DEVELOPMENT OPTIMIZATION</text>
-      <g textAnchor="middle" fontSize="10" letterSpacing="1.2"><text x="650" y="719">FIVE LESSONS. ONE MILESTONE.</text><text x="650" y="741" fill="#0757ec" fontWeight="700">CONSIDERABLE EFFORT. VERIFIED.</text></g>
-      <CertificateSeal/>
-      <path d="M85 775H830" stroke="#a18443" strokeOpacity=".6"/>
-      <g fontSize="10"><text x="85" y="795">Considerable effort. Unclear business impact.</text><text x="1115" y="795" textAnchor="end" fill="#0757ec" fontWeight="700" letterSpacing="1">LINKEDINBEATS.COM / LEARN</text></g>
-    </g>
-  </svg>;
+  const id=useId().replace(/:/g,'');
+  return <svg ref={svgRef} className="pg-certificate-art" viewBox="0 0 1200 850" role="img" aria-label={`Certificate of Professional Effort awarded to ${name}. Certified Thought Leader.`} dangerouslySetInnerHTML={{__html:certificateMarkup(name,{wordmark,monogram},id)}}/>;
 }

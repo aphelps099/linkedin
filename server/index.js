@@ -7,6 +7,7 @@ import { createNewsletter } from './newsletter.js';
 import { createPostBeatService } from './post-beat-service.js';
 import { localAnnouncer } from './local-announcer.js';
 import { beatRobot } from './beat-robot.js';
+import { createCertificateShareRouter } from './certificate-share.js';
 import { createBeatShareRouter } from './beat-share.js';
 import { createCuttingRoomRouter } from './cutting-room.js';
 
@@ -132,6 +133,7 @@ app.get(['/studio-3', '/studio-3/index.html'], (req, res) => {
   res.redirect(301, `/studio/${query}`);
 });
 
+app.use(createCertificateShareRouter());
 app.use(createBeatShareRouter({template:path.join(dist,'lessons/index.html')}));
 
 app.use(express.static(dist, {

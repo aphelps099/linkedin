@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {ArrowLeft, ArrowRight, Award, Check, ChevronDown, Clock3, Download, LockKeyhole, Music2, Printer, Share2, X} from 'lucide-react';
+import {ArrowLeft, ArrowRight, Award, Check, ChevronDown, Clock3, Download, LockKeyhole, Music2, Printer, X} from 'lucide-react';
 import {CHAPTERS, chapterById} from './chapters/index.js';
 import {StepPlayer} from './engine/StepPlayer.jsx';
 import {loadProgress, saveProgress} from './engine/progress.js';
@@ -7,6 +7,7 @@ import {CertificateArt, downloadArt, REWARDS, Sticker} from './components/Reward
 import {PostBeat} from '../post-beat/PostBeat.jsx';
 import {SynergyTip} from './components/SynergyTip.jsx';
 import {CertificateShare} from './components/CertificateShare.jsx';
+import {certificateName} from './components/certificate-art.js';
 import {GraduationConfetti} from './components/GraduationConfetti.jsx';
 import {LESSON_PRESENTATION} from './chapters/presentation.js';
 
@@ -93,17 +94,16 @@ function Achievements({progress,resume}){
 }
 
 function Certificate({progress,update}){
-  const art=useRef(null), shareButton=useRef(null), [shareOpen,setShareOpen]=useState(false), [status,setStatus]=useState(''), [name,setName]=useState(progress.userName || 'Aspiring Thought Leader');
-  const displayName=name.trim() || 'Aspiring Thought Leader';
+  const art=useRef(null), [status,setStatus]=useState(''), [name,setName]=useState(progress.userName || 'Aspiring Thought Leader');
+  const displayName=certificateName(name);
   const download=async()=>{setStatus('Preparing your certificate…');try{await downloadArt(art.current,'linkedin-beats-certificate-of-professional-effort.png');setStatus('Certificate downloaded.');}catch{setStatus('Download unavailable. Use Print / save PDF instead.');}};
-  const closeShare=()=>{setShareOpen(false);shareButton.current?.focus();};
   return <div className="pg-certificate-page">
     <GraduationConfetti/>
     <div className="pg-graduation-topline"><span><Check size={16}/>All five lessons complete</span><a href="../">Back to LinkedIn Beats<ArrowRight size={16}/></a></div>
     <div className="pg-masthead"><span className="pg-eyebrow pg-eyebrow-blue">Your effort has been noted.</span><h1 className="pg-h1">Make it official.</h1><p className="pg-lead">You came. You learned. You strategically aligned.</p></div>
-    <div className="pg-certificate-controls"><label><span className="pg-eyebrow">Name on your certificate</span><input value={name} maxLength={60} onChange={e=>setName(e.target.value)} onBlur={()=>update({userName:displayName})}/></label><div className="pg-row"><button className="pg-btn" ref={shareButton} aria-expanded={shareOpen} aria-controls="pg-certificate-sharing" onClick={()=>setShareOpen(v=>!v)}><Share2 size={16}/>Share certificate</button><button className="pg-pill" onClick={download}><Download size={16}/>Download</button><button className="pg-pill" onClick={()=>window.print()}><Printer size={16}/>Print / save PDF</button></div></div>
+    <div className="pg-certificate-controls"><label><span className="pg-eyebrow">Name on your certificate</span><input value={name} maxLength={60} onChange={e=>setName(e.target.value)} onBlur={()=>update({userName:displayName})}/></label><div className="pg-row"><CertificateShare name={displayName}/><button className="pg-pill" onClick={download}><Download size={16}/>Download</button><button className="pg-pill" onClick={()=>window.print()}><Printer size={16}/>Print / save PDF</button></div></div>
     <p className="pg-download-status" role="status">{status}</p>
-    <div id="pg-certificate-sharing">{shareOpen && <CertificateShare art={art} name={displayName} onClose={closeShare}/>}</div>
+    <p className="pg-certificate-share-note" id="pg-certificate-share-note">Your name and certificate appear in the shared link preview. Review and post on LinkedIn.</p>
     <CertificateArt name={displayName} svgRef={art}/>
     <section className="pg-collection"><div className="pg-course-heading"><h2>The complete collection</h2><span className="pg-eyebrow">5 / 5 earned</span></div><div className="pg-sticker-collection">{REWARDS.map((r,i)=><StickerDownload key={r.name} number={i+1}/>)}</div></section>
     <section className="pg-beat-unlock"><div className="pg-row"><span className="pg-reward-icon"><Music2 size={25}/></span><div><span className="pg-eyebrow pg-eyebrow-blue">Unlocked · Your optimized beat</span><h2>Consider this your graduation single.</h2></div></div><p>Your final post, ready for a bassline. Make it a beat, remix it, or release your single.</p>{progress.posts.single ? <PostBeat post={progress.posts.single} initialArtist={displayName}/> : <a className="pg-btn" href="#/single">Make your single<ArrowRight size={16}/></a>}</section>
