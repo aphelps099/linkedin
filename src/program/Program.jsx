@@ -86,8 +86,8 @@ function Achievements({progress,resume}){
   const complete=allComplete(progress);
   return <div className="pg-achievements-page">
     <a className="pg-back-link" href="#"><ArrowLeft size={16}/>All lessons</a>
-    <div className="pg-masthead"><span className="pg-eyebrow pg-eyebrow-blue">Your effort has been noted.</span><h1 className="pg-h1">The credential collection.</h1><p className="pg-lead">Actual learning. Downloadable proof. {progress.completedChapters.length} of 5 stickers earned.</p></div>
-    <div className="pg-achievement-grid">{CHAPTERS.map(c=>{const earned=progress.completedChapters.includes(c.id);return <section key={c.id} className={`pg-achievement${earned ? ' is-earned' : ''}`}><span className="pg-eyebrow">Lesson {c.number} · {c.title}</span>{earned ? <StickerDownload number={c.number}/> : <><div className="pg-locked-art"><Sticker number={c.number}/></div><span className="pg-locked-label"><LockKeyhole size={13}/>Complete lesson {c.number} to unlock</span></>}<h2>{REWARDS[c.number-1].name}</h2></section>;})}</div>
+    <div className="pg-masthead"><span className="pg-eyebrow pg-eyebrow-blue pg-effort-note"><span aria-hidden="true">👀</span>Your effort has been noted.</span><h1 className="pg-h1">The credential collection.</h1><p className="pg-lead">Actual learning. Downloadable proof. {progress.completedChapters.length} of 5 stickers earned.</p></div>
+    <div className="pg-achievement-grid">{CHAPTERS.map(c=>{const earned=progress.completedChapters.includes(c.id);return <section key={c.id} className={`pg-achievement${earned ? ' is-earned' : ''}`}><span className="pg-eyebrow">Lesson {c.number} · {c.title}</span>{earned ? <StickerDownload number={c.number}/> : <><div className="pg-locked-art"><Sticker number={c.number}/></div><span className="pg-locked-label"><LockKeyhole size={16} aria-hidden="true"/><span>Complete lesson {c.number} to unlock</span></span></>}<h2>{REWARDS[c.number-1].name}</h2></section>;})}</div>
     <section className="pg-certificate-unlock"><Award size={34}/><div><h2>Certificate of Professional Effort</h2><p>{complete ? 'Five lessons. One highly shareable qualification.' : 'Complete all five lessons to unlock your certificate and graduation single.'}</p></div><a className="pg-btn" href={complete ? '#/certified' : `#/${resume.id}`}>{complete ? 'View my certificate' : 'Keep learning'}<ArrowRight size={16}/></a></section>
   </div>;
 }
@@ -99,7 +99,7 @@ function Certificate({progress,update}){
   return <div className="pg-certificate-page">
     <GraduationConfetti/>
     <div className="pg-graduation-topline"><span><Check size={16}/>All five lessons complete</span><a href="../">Back to LinkedIn Beats<ArrowRight size={16}/></a></div>
-    <div className="pg-masthead"><span className="pg-eyebrow pg-eyebrow-blue">Your effort has been noted.</span><h1 className="pg-h1">Make it official.</h1><p className="pg-lead">You came. You learned. You strategically aligned.</p></div>
+    <div className="pg-masthead"><span className="pg-eyebrow pg-eyebrow-blue pg-effort-note"><span aria-hidden="true">👀</span>Your effort has been noted.</span><h1 className="pg-h1">Make it official.</h1><p className="pg-lead">You came. You learned. You strategically aligned.</p></div>
     <div className="pg-certificate-controls"><label><span className="pg-eyebrow">Name on your certificate</span><input value={name} maxLength={60} onChange={e=>setName(e.target.value)} onBlur={()=>update({userName:displayName})}/></label><div className="pg-row"><CertificateShare name={displayName}/><button className="pg-pill" onClick={download}><Download size={16}/>Download</button><button className="pg-pill" onClick={()=>window.print()}><Printer size={16}/>Print / save PDF</button></div></div>
     <p className="pg-download-status" role="status">{status}</p>
     <p className="pg-certificate-share-note" id="pg-certificate-share-note">Your name and certificate appear in the shared link preview. Review and post on LinkedIn.</p>
