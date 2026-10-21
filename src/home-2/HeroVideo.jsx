@@ -3,19 +3,17 @@ import {ArrowDown, Play, Volume2, VolumeX} from 'lucide-react';
 import './hero-video.css';
 
 const PLAYBACK_ID = 'jjICCaXD1dLmDApUXumm9CgiESKPGJYoEAeYb2x6wf00';
-// Enable alongside a future playback ID that contains the finished sound mix.
-const HAS_AUDIO = false;
 const STREAM = `https://stream.mux.com/${PLAYBACK_ID}.m3u8`;
 const POSTER = `https://image.mux.com/${PLAYBACK_ID}/thumbnail.webp?time=0&width=1920`;
 
-export const HeroVideo = memo(function HeroVideo({radioActive, onSoundEnable}) {
+export const HeroVideo = memo(function HeroVideo({musicPlaying=false, musicLoading=false, musicError='', onMusicToggle, headline=false}) {
   const video = useRef(null), section = useRef(null);
   const [requested, setRequested] = useState(() => !window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const [loadRequested, setLoadRequested] = useState(requested);
   const [ready, setReady] = useState(false);
-  const [muted, setMuted] = useState(true), [failed, setFailed] = useState(false);
+  const [failed, setFailed] = useState(false);
   const [inView, setInView] = useState(true), [pageVisible, setPageVisible] = useState(!document.hidden);
-  const silent = !HAS_AUDIO || muted || radioActive;
+  const musicActive = musicPlaying || musicLoading;
 
   useEffect(() => {
     const query = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -75,41 +73,35 @@ export const HeroVideo = memo(function HeroVideo({radioActive, onSoundEnable}) {
     return () => { cancelled = true; };
   }, [ready, requested, inView, pageVisible, failed]);
 
-  // Starting any radio track silences the film, including during track loading.
-  useEffect(() => { if (radioActive) setMuted(true); }, [radioActive]);
-
   const requestPlayback = () => {
     setLoadRequested(true);
     setRequested(true);
   };
-  const toggleSound = () => {
-    if (silent) {
-      onSoundEnable();
-      setMuted(false);
-      setLoadRequested(true);
-      setRequested(true);
-      // Unmute in the user gesture for mobile browsers.
-      video.current.muted = false;
-    } else setMuted(true);
-  };
 
-  return <section className="c2-film" ref={section} aria-label="The office band">
+  return <section className={`c2-film${headline?' c2-film--headline':''}`} ref={section} aria-label={headline?undefined:"The office band"} aria-labelledby={headline?"c2-film-title":undefined}>
     <img className="c2-film-poster" src={POSTER} alt="" fetchpriority="high" width="1920" height="1080"/>
     <video ref={video} className="c2-film-video" hidden={failed} poster={POSTER}
-      muted={silent} loop playsInline preload="metadata" disablePictureInPicture disableRemotePlayback
+      muted loop playsInline preload="metadata" disablePictureInPicture disableRemotePlayback
       aria-label="Office workers play drums and keyboards while a small droid delivers paperwork."
       onError={() => { setFailed(true); setRequested(false); }}/>
+    {headline&&<div className="c2-container c2-film-copy">
+      <h1 id="c2-film-title"><span>Learn to sound</span><span>like LinkedIn.</span></h1>
+      <p>Professional development for aspiring thought leaders.</p>
+    </div>}
     <div className="c2-container c2-film-bottom">
-      <a className="c2-film-next" href="#c2-title">Meet the band <ArrowDown aria-hidden="true"/></a>
-      {failed ? <span className="c2-film-status" role="status">Film unavailable</span> : (HAS_AUDIO || !requested) &&
-        <div className="c2-film-controls" role="group" aria-label="Hero video controls">
-          {HAS_AUDIO && <button type="button" className="c2-film-sound" onClick={toggleSound} aria-pressed={!silent} aria-label={silent?'Turn hero sound on':'Turn hero sound off'}>
-            {silent?<VolumeX aria-hidden="true"/>:<Volume2 aria-hidden="true"/>}<span>Sound {silent?'on':'off'}</span>
-          </button>}
-          {!requested && <button type="button" onClick={requestPlayback} aria-label="Play hero video">
-            <Play fill="currentColor" aria-hidden="true"/>
-          </button>}
-        </div>}
+      <a className="c2-film-next" href="#c2-title">{headline?'Get certified':'Meet the band'} <ArrowDown aria-hidden="true"/></a>
+      <div className="c2-film-controls" role="group" aria-label="Hero music and video controls">
+        {failed&&<span className="c2-film-status" role="status">Film unavailable</span>}
+        {onMusicToggle&&<button type="button" className="c2-film-sound" onClick={onMusicToggle}
+          aria-pressed={musicActive} aria-label={musicLoading?'Cancel music loading':musicPlaying?'Turn music off':'Turn music on'}>
+          {musicActive?<Volume2 aria-hidden="true"/>:<VolumeX aria-hidden="true"/>}
+          <span aria-hidden="true">{musicLoading?'Loading…':musicPlaying?'On':'Off'}</span>
+        </button>}
+        {!requested&&!failed&&<button type="button" onClick={requestPlayback} aria-label="Play hero video">
+          <Play fill="currentColor" aria-hidden="true"/>
+        </button>}
+        {musicError&&<span className="c2-film-audio-error" role="status">Music unavailable. Try again.</span>}
+      </div>
     </div>
   </section>;
 });
