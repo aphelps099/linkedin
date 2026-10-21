@@ -1,4 +1,5 @@
 @import '../brand/type-system.css';
+@import '../brand/category-pill.css';
 
 /* Editorial headlines and emphatic section headings have separate roles. */
 .c2-home--conversation :is(.c2-film-copy,.c2-section-head,.c2-newsletter-copy,.c2-newsletter-dialog) :is(h1,h2){

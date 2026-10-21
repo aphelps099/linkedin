@@ -1,0 +1,25 @@
+/* Compact category markers, sharing the feed carousel's blue palette. */
+:root :is(.c2-home--conversation .development-kicker, .c2-home--conversation .c2-store .c2-eyebrow, .shop-app .shop-hero-copy .shop-hero-eyebrow) {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 6px 12px 5px;
+  border: 1px solid #b7d2f299;
+  border-radius: 999px;
+  background: #c8e0ff08;
+  color: #e5effb;
+  font-family: var(--lb-font-label);
+  font-weight: var(--lb-weight-label);
+  font-size: 20px;
+  font-synthesis: none;
+  line-height: 1;
+  letter-spacing: .015em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 700px) {
+  :root :is(.c2-home--conversation .development-kicker, .c2-home--conversation .c2-store .c2-eyebrow, .shop-app .shop-hero-copy .shop-hero-eyebrow) {
+    font-size: 18px;
+    padding: 6px 11px 5px;
+  }
+}
