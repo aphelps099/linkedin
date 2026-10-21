@@ -1,0 +1,26 @@
+/* Opt-in homepage studies: ?type=editorial and ?type=founders.
+   These are the actual trial faces from the user's repository font library. */
+@font-face{font-family:LBFounders;src:url('/brand/fonts/founders-regular-trial.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:LBFounders;src:url('/brand/fonts/founders-semibold-trial.woff2') format('woff2');font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:LBFoundersMono;src:url('/brand/fonts/founders-mono-medium-trial.woff2') format('woff2');font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:LBAlpinaTw;src:url('/brand/fonts/gt-alpina-tw-light-italic-trial.woff2') format('woff2');font-weight:300;font-style:italic;font-display:swap}
+
+.c2-home.c2-type-editorial{--lb-font-headline:LBFounders,C2Hoves,Arial,sans-serif;--lb-weight-headline:600;--lb-font-section:LBFounders,C2Hoves,Arial,sans-serif;--lb-weight-section:600;--lb-font-body:LBFounders,C2Hoves,Arial,sans-serif;--preview-nav:'LB Azeret Mono',monospace;font-family:var(--lb-font-body);font-size:19px}
+.c2-home.c2-type-founders-nav{--preview-nav:LBFoundersMono,'LB Azeret Mono',monospace}
+.c2-home.c2-type-editorial .c2-film-copy h1{font-family:LBAlpinaTw,Georgia,serif;font-style:italic;font-weight:300;font-synthesis:none;font-size:clamp(48px,8.25vw,132px);letter-spacing:-.035em;line-height:1.04;text-transform:none}
+.c2-home.c2-type-editorial .c2-film-copy p{font:400 clamp(20px,1.9vw,29px)/1.2 var(--lb-font-body);margin-top:28px}
+.c2-home.c2-type-editorial .c2-header :is(.c2-header-links a,.c2-header-menu,.c2-header-directory a,.c2-header-radio){font-family:var(--preview-nav);font-weight:500;font-synthesis:none;letter-spacing:-.04em;font-size:15px}
+.c2-home.c2-type-editorial .c2-header-links{gap:clamp(20px,2.8vw,42px)}
+.c2-home.c2-type-editorial .c2-header-directory a{font-size:20px}
+.c2-home.c2-type-editorial :is(.conversation-heading,.c2-linkedinifier-copy) h2{font-family:LBFounders,C2Hoves,Arial,sans-serif;font-weight:600;text-transform:none;letter-spacing:-.045em;line-height:.95}
+.c2-home.c2-type-editorial .conversation-heading h2 .conversation-stamp{font-family:LBFounders,C2Hoves,Arial,sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:.01em;font-size:.85em;line-height:1.08}
+.c2-home.c2-type-editorial .conversation-certify{font-family:var(--preview-nav);font-size:19px;font-weight:500;letter-spacing:-.035em}
+.c2-home.c2-type-editorial :is(.c2-section-head,.c2-newsletter-copy,.c2-newsletter-dialog) :is(h1,h2){letter-spacing:-.045em;line-height:.98}
+.c2-home.c2-type-editorial :is(.c2-section-head>p,.c2-product-info h3,.c2-store-action,.c2-announcement p,.c2-newsletter-copy>p,.c2-newsletter-subscribe,.c2-footer p){font-family:var(--lb-font-body)}
+.c2-home.c2-type-editorial .dispatch-heading h2{font-family:LBFounders,C2Hoves,Arial,sans-serif;font-weight:600;font-size:clamp(36px,4.2vw,60px);letter-spacing:-.035em}
+.c2-home.c2-type-editorial .dispatch-card h3{font-family:var(--lb-font-body);font-size:clamp(19px,1.5vw,22px);font-weight:400;line-height:1.22;letter-spacing:-.01em}
+.c2-home.c2-type-editorial :is(.dispatch-dialog-copy>p:not(.dispatch-meta),.dispatch-article p){font-family:var(--lb-font-body);font-size:20px;line-height:1.45}
+/* Keep graphic sleeve typography, the logo and the original iPod lettering intact. */
+.c2-type-editorial .dispatch-art{--lb-font-section:'LB Druk',Impact,sans-serif;--lb-weight-section:800;--lb-font-headline:'LB Tobias',Georgia,serif;--lb-weight-headline:500}
+@media(max-width:1150px){.c2-home.c2-type-editorial .c2-header :is(.c2-header-links a,.c2-header-radio,.c2-header-menu){font-size:13px}}
+@media(max-width:700px){.c2-home.c2-type-editorial .c2-film-copy h1{font-size:clamp(34px,9.2vw,63px);letter-spacing:-.04em}.c2-home.c2-type-editorial .c2-film-copy p{font-size:21px;max-width:300px}.c2-home.c2-type-editorial .dispatch-heading h2{font-size:36px}.c2-home.c2-type-editorial .dispatch-card h3{font-size:20px}.c2-home.c2-type-editorial .c2-header-menu{font-size:14px}}

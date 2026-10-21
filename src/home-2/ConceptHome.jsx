@@ -23,6 +23,7 @@ import '../home-experiments/feed-scene.css';
 import '../home-experiments/profile-conversation.css';
 import '../home-experiments/development-radio.css';
 import './home-typography.css';
+import './editorial-type-preview.css';
 
 const INITIAL = {index:0, playing:false, loading:false, elapsed:0, volume:.8, text:LINES[1], word:-1, mouth:'rest', levels:null, error:''};
 const PORTRAITS = [{index:2,tone:'ice'}, {index:0,tone:'paper'}, {index:1,tone:'pink'}, {index:3,tone:'navy'}];
@@ -49,6 +50,8 @@ const Portrait = memo(function Portrait({base, index, tone, active, playing, loa
 
 export default function ConceptHome({playerFactory=createPortraitRadio, variant='portraits'}) {
   const experiment=['laptop','screenless','conversation'].includes(variant);
+  const typePreview=new URLSearchParams(window.location.search).get('type');
+  const previewClass=['editorial','founders'].includes(typePreview)?` c2-type-editorial${typePreview==='founders'?' c2-type-founders-nav':''}`:'';
   const base = window.location.pathname.replace(/home-[2345](?:\/(?:index\.html)?)?$/, '').replace(/index\.html$/, '').replace(/\/?$/, '/');
   const radio = useRef(null), previousVolume = useRef(.8), chooseRef = useRef(null);
   const [state, setState] = useState(INITIAL), [allTracks, setAllTracks] = useState(false);
@@ -104,7 +107,7 @@ export default function ConceptHome({playerFactory=createPortraitRadio, variant=
     radio.current?.[direction]();
   };
   const mute=()=>{if(state.volume){previousVolume.current=state.volume;radio.current?.volume(0);}else radio.current?.volume(previousVolume.current||.8);};
-  return <div className={`c2-home ${motion?'':'c2-still'}${experiment?` c2-home--experiment c2-home--${variant}`:''}`}>
+  return <div className={`c2-home ${motion?'':'c2-still'}${experiment?` c2-home--experiment c2-home--${variant}`:''}${previewClass}`}>
     <a className="c2-skip" href="#c2-player">Skip to music player</a>
     <ConceptHeader base={base} overlay onRadio={()=>radio.current?.toggle()} playing={state.playing} loading={state.loading}/>
     <main>

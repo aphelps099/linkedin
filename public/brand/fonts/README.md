@@ -9,3 +9,9 @@ Font roles are defined in `src/brand/type-system.css`. Replace `--lb-font-headli
 - TT Hoves continues as the body font; Futura Round remains in homepage navigation. Logos, product artwork and certificate artwork retain their original lettering.
 
 The four webfonts are WOFF2 conversions of the reviewed files with their complete glyph sets preserved.
+
+## Editorial homepage studies
+
+`/?type=editorial` uses GT Alpina TW Trial Light Italic for the hero, Founders Grotesk Trial Regular/Semibold for headings and body, and Azeret Mono for navigation. `/?type=founders` swaps navigation to Founders Grotesk Mono Trial Medium, matching the reference font-library preview. These are opt-in previews; the existing homepage type defaults remain available. The tightened company-feed carousel also uses Founders for its heading and captions.
+
+The trial files come from the user's repository font catalog: face-56 (Founders Regular), face-60 (Founders Semibold), face-66 (Founders Mono Medium), and face-78 (GT Alpina TW Light Italic). WOFF2 conversion preserves each original file's complete glyph set. Founders trial files have a limited character set; TT Hoves and Azeret provide punctuation/numeral fallbacks.

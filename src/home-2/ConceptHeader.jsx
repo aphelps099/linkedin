@@ -21,8 +21,8 @@ export const ConceptHeader = memo(function ConceptHeader({base='/', onRadio, pla
     <div className="c2-container c2-header-row">
       <a className="c2-header-brand" href={base} aria-label="LinkedIn Beats home">
         <picture>
-          {!storefront&&<source media="(max-width: 700px)" srcSet={`${base}home-2/brand/wordmark-stacked.svg?v=afterbeat-2`} width="3857.0" height="1742"/>}
-          <img src={`${base}home-2/brand/wordmark-horizontal.svg?v=afterbeat-2`} alt="LinkedIn Beats" width="7015.0" height="862" fetchpriority="high"/>
+          {!storefront&&<source media="(max-width: 700px)" srcSet={`${base}home-2/brand/wordmark-stacked-header.svg`} width="3857.0" height="1742"/>}
+          <img src={`${base}home-2/brand/wordmark-horizontal-header.svg`} alt="LinkedIn Beats" width="7015.0" height="862" fetchpriority="high"/>
         </picture>
       </a>
       <nav className="c2-header-links" aria-label="Featured navigation">
