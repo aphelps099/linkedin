@@ -139,9 +139,10 @@ body{margin:0;background:#fbf6e8}html{scroll-behavior:smooth;scroll-padding-top:
 .c2-product-info svg { width: 20px; height: 20px; stroke-width: 1.7; transition: transform .2s; }
 .c2-product:hover .c2-product-info svg, .c2-product:focus-visible .c2-product-info svg { transform: translate(2px, -2px); }
 .c2-store-action { text-align: center; margin-top: 24px; }
-.c2-store .c2-collection-link { display: inline-flex; justify-content: center; align-items: center; gap: 24px; min-height: 50px; max-width: 100%; padding: 13px 28px; background: #fbf6e8; color: #11120f; font-size: 16px; line-height: 1.35; font-weight: 600; transition: background .2s; }
-.c2-collection-link:hover { background: #c4d9ff; }
-.c2-collection-link svg { width: 20px; height: 20px; }
+.c2-store .c2-collection-link { display: inline-flex; justify-content: center; align-items: center; gap: 10px; min-height: 44px; max-width: 100%; padding: 4px 0; background: transparent; color: #fbf6e8; font-size: 16px; line-height: 1.35; font-weight: 500; transition: color .2s; }
+.c2-collection-link span { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 5px; }
+.c2-collection-link:hover { color: #a9caff; }
+.c2-collection-link svg { width: 12px; height: 12px; flex: 0 0 12px; shape-rendering: crispEdges; }
 @media (max-width: 1000px) {
   .c2-store { padding-top: 32px; }
   .c2-products { gap: 18px; }
