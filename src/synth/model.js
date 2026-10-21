@@ -1,3 +1,4 @@
+import characterSounds from './sound-library.json' with {type:'json'};
 export const KEYS = ['1','2','3','4','5','6','7','8'];
 export const SOUNDS = [
   {id:'kick',name:'Kick',kind:'DRUM'}, {id:'snare',name:'Snare',kind:'DRUM'},
@@ -5,6 +6,7 @@ export const SOUNDS = [
   {id:'bass',name:'Bass',kind:'SYNTH'}, {id:'chord',name:'Chord',kind:'SYNTH'},
   {id:'synergy',name:'Synergy',kind:'VOICE',url:'/phrases/05.wav'},
   {id:'circle',name:'Circle back',kind:'VOICE',url:'/phrases/06.wav'},
+  ...characterSounds,
 ];
 const rhythms = [
  [[0,4,8,12],[4,12],[0,2,4,6,8,10,12,14],[12],[0,6,8,14],[2,10],[0],[8]],
@@ -13,7 +15,7 @@ const rhythms = [
 ];
 export const PRESETS = ['All hands','Circle back','After hours'];
 export function patternFor(index){return rhythms[index].map(row=>Array.from({length:16},(_,i)=>row.includes(i)));}
-export function initialProject(){return {version:1,name:'Untitled alignment',bpm:112,swing:0,volume:.75,filter:18000,delay:.12,pattern:patternFor(0),slots:SOUNDS.map(s=>({sound:s.id,name:s.name,gain:s.kind==='VOICE'?.8:.7,pitch:0,start:0,end:1,reverse:false,mute:false,data:null}))};}
+export function initialProject(){return {version:1,name:'Untitled alignment',bpm:112,swing:0,volume:.75,filter:18000,delay:.12,pattern:patternFor(0),slots:SOUNDS.slice(0,8).map(s=>({sound:s.id,name:s.name,gain:s.kind==='VOICE'?.8:.7,pitch:0,start:0,end:1,reverse:false,mute:false,data:null}))};}
 const num=(v,min,max)=>typeof v==='number'&&Number.isFinite(v)&&v>=min&&v<=max;
 export function validateProject(p){
  if(!p||p.version!==1||typeof p.name!=='string'||p.name.length>60||!num(p.bpm,60,180)||!num(p.swing,0,.45)||!num(p.volume,0,1)||!num(p.filter,200,20000)||!num(p.delay,0,.6))throw Error('This is not a supported sampler project.');
