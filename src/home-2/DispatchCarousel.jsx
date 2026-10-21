@@ -1,5 +1,5 @@
 import React, {memo, useCallback, useEffect, useRef, useState} from 'react';
-import {ArrowLeft, ArrowRight, ArrowUpRight, Check, Copy, FileText, Headphones, Linkedin, LoaderCircle, Pause, Play, X} from 'lucide-react';
+import {ArrowUpRight, ExternalLink, Check, Copy, FileText, Headphones, Linkedin, LoaderCircle, Pause, Play, X} from 'lucide-react';
 import {DISPATCHES} from './dispatches.js';
 import {TRACKS, formatTime} from '../home/tracks.js';
 import './dispatch-carousel.css';
@@ -13,7 +13,7 @@ const Artwork = memo(function Artwork({item, base}) {
     <img className="dispatch-wordmark" src={`${base}brand/afterbeat/wordmark-${['session','record','turntable','certified'].includes(item.art)?'white':'black'}.svg`} alt="" loading="lazy"/>
     <span className="dispatch-art-eyebrow">{item.eyebrow}</span>
     <div className="dispatch-art-title">{item.headline.map(line=><span key={line}>{line}</span>)}</div>
-    {item.art==='session'&&<><span className="dispatch-on-air"><i/>OFFICE SESSIONS / 001</span><span className="dispatch-play-orb"><Play fill="currentColor"/></span></>}
+    {item.art==='session'&&<><span className="dispatch-on-air"><i/>OFFICE SESSIONS / 001</span></>}
     {item.art==='record'&&<><div className="dispatch-vinyl"><span>LB<br/><b>01</b></span></div><span className="dispatch-record-note">112 BPM · BOARDROOM HOUSE</span></>}
     {item.art==='announcement'&&<><div className="dispatch-loops"><i/><i/></div><span className="dispatch-partnership">US <span>×</span> ALSO US</span></>}
     {item.art==='post'&&<span className="dispatch-post-note">A career-defining right click. ↗</span>}
@@ -97,17 +97,15 @@ export function DispatchCarousel({base='/', motion=true, state, onPlayTrack, onT
   return <section ref={section} className="dispatch-section" id="c2-dispatch" aria-labelledby="dispatch-heading" aria-roledescription="carousel"
     onMouseEnter={()=>setHovered(true)} onMouseLeave={()=>setHovered(false)}
     onFocusCapture={()=>setFocused(true)} onBlurCapture={e=>{if(!e.currentTarget.contains(e.relatedTarget))setFocused(false);}}>
-    <header className="dispatch-heading"><p className="dispatch-meta">FROM THE COMPANY FEED</p><h2 id="dispatch-heading">HUMBLED TO SHARE.</h2><p>Fresh beats. Big announcements. Questionable thought leadership.</p></header>
+    <header className="dispatch-heading"><h2 id="dispatch-heading">Humbled to share.</h2></header>
     <div ref={rail} className="dispatch-rail" onScroll={updateActive} onPointerDown={()=>setPaused(true)} onWheel={()=>setPaused(true)}>
       {DISPATCHES.map((item,index)=>{const Icon=ICONS[item.type];return <article key={item.id} className={`dispatch-card dispatch-card--${item.shape}`} aria-label={`${index+1} of ${DISPATCHES.length}: ${item.label}`}>
         <button type="button" className="dispatch-art-button" onClick={()=>open(item)} aria-label={`${ACTIONS[item.type]}: ${item.title}`}><Artwork item={item} base={base}/></button>
-        <div className="dispatch-card-copy"><p className="dispatch-meta">{item.label}</p><h3><button type="button" onClick={()=>open(item)}>{item.title}</button></h3><div className="dispatch-card-actions"><button type="button" onClick={()=>open(item)} aria-label={`${ACTIONS[item.type]}: ${item.title}`}><Icon fill={item.type==='video'?'currentColor':'none'}/></button><button type="button" className="dispatch-open" onClick={()=>open(item)} aria-label={`Open ${item.label.toLowerCase()}: ${item.title}`}><ArrowUpRight/></button><span>{ACTIONS[item.type]}</span></div></div>
+        <div className="dispatch-card-copy"><h3><button type="button" onClick={()=>open(item)}>{item.title}</button></h3><div className="dispatch-card-actions"><button type="button" onClick={()=>open(item)} aria-label={`${ACTIONS[item.type]}: ${item.title}`}><Icon fill={item.type==='video'?'currentColor':'none'}/></button><button type="button" className="dispatch-open" onClick={()=>open(item)} aria-label={`Open ${item.label.toLowerCase()}: ${item.title}`}><ExternalLink/></button></div></div>
       </article>;})}
     </div>
     <div className="dispatch-controls" aria-label="Feed carousel controls">
-      <button type="button" className="dispatch-control" onClick={()=>scrollTo((active-1+DISPATCHES.length)%DISPATCHES.length)} aria-label="Previous story"><ArrowLeft/></button>
       <div className="dispatch-pagination" aria-label="Choose a story">{DISPATCHES.map((item,i)=><button type="button" key={item.id} onClick={()=>scrollTo(i)} aria-label={`Show story ${i+1}: ${item.title}`} aria-current={active===i?'true':undefined}><span/></button>)}</div>
-      <button type="button" className="dispatch-control" onClick={()=>scrollTo((active+1)%DISPATCHES.length)} aria-label="Next story"><ArrowRight/></button>
       {motion&&<button type="button" className="dispatch-control dispatch-autoplay" onClick={()=>{setPaused(value=>!value);setFocused(false);}} aria-label={paused?'Resume automatic carousel':'Pause automatic carousel'} aria-pressed={paused}>{paused?<Play fill="currentColor"/>:<Pause fill="currentColor"/>}</button>}
     </div>
     {opened&&<DispatchDialog key={opened.id} item={opened} base={base} state={state} onToggle={onToggle} onSeek={onSeek} onClose={close}/>}

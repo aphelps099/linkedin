@@ -16,5 +16,5 @@
     "icon": 24
   },
   "clearSpace": "height of lowercase b on each side where practical; compact UI uses at least half this height",
-  "motion": "one 700ms opacity pulse on deliberate interaction; static at rest; reduced motion respected"
+  "motion": "one 700ms opacity pulse on deliberate interaction; header wordmark adds four 900ms opening cursor blinks then rests solid; reduced motion respected"
 }

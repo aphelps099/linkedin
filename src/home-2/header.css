@@ -1,6 +1,6 @@
 .c2-header { position: relative; z-index: 50; background: #fbf6e8; color: #11110e; }
 .c2-header-row { position: relative; display: flex; align-items: center; gap: clamp(20px, 2.3vw, 36px); min-height: 96px; padding-block: 19px; }
-.c2-header-brand { display: block; flex: 0 0 auto; width: clamp(260px, 26.5vw, 400px); }
+.c2-header-brand { display: block; flex: 0 0 auto; width: clamp(195px, 20vw, 280px); }
 .c2-header-brand picture, .c2-header-brand img { display: block; width: 100%; height: auto; }
 .c2-header-links { position: absolute; left: 51%; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; gap: clamp(24px, 3.2vw, 48px); }
 .c2-header-links a { display: inline-flex; align-items: center; min-height: 48px; white-space: nowrap; font-size: 20px; font-weight: 600; letter-spacing: -.025em; }
@@ -39,11 +39,11 @@
 @media (max-width: 1000px) {
   .c2-header-links { display: none; }
   .c2-header-actions { margin-left: auto; }
-  .c2-header-brand { width: 340px; }
+  .c2-header-brand { width: 260px; }
 }
 @media (max-width: 700px) {
   .c2-header-row { min-height: 88px; padding-block: 16px; gap: 20px; }
-  .c2-header-brand { width: 128px; }
+  .c2-header-brand { width: 110px; }
   .c2-header-actions { gap: 18px; }
   .c2-home .c2-header-radio { min-width: 48px; min-height: 48px; padding: 12px; }
   .c2-header-radio span { display: none; }
@@ -54,7 +54,7 @@
 }
 @media (max-width: 360px) {
   .c2-header-row { gap: 10px; }
-  .c2-header-brand { width: 109px; }
+  .c2-header-brand { width: 100px; }
   .c2-header-actions { gap: 12px; }
   .c2-home .c2-header-menu { min-width: 79px; gap: 9px; font-size: 17px; }
 }
