@@ -1,13 +1,5 @@
 @import '../brand/type-system.css';
 
-@font-face {
-  font-family: 'LB Futura Round';
-  src: url('/home-2/fonts/futura-round-bold.woff2') format('woff2');
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-}
-
 /* Editorial headlines and emphatic section headings have separate roles. */
 .c2-home--conversation :is(.c2-film-copy,.c2-section-head,.c2-newsletter-copy,.c2-newsletter-dialog) :is(h1,h2){
   font-family:var(--lb-font-headline);font-weight:var(--lb-weight-headline);
@@ -27,12 +19,6 @@
   font-size:clamp(22px,2.6vw,36px);line-height:1.2;letter-spacing:.02em;text-transform:uppercase;
 }
 .c2-home--conversation .development-kicker{margin-bottom:22px;color:#fff}
-.c2-home--conversation .c2-header :is(.c2-header-links a, .c2-header-menu, .c2-header-directory a, .c2-header-radio) {
-  font-family: 'LB Futura Round', C2Hoves, Arial, sans-serif;
-  font-weight: 700;
-  font-synthesis: none;
-  letter-spacing: -.015em;
-}
 
 
 @media(max-width:700px){

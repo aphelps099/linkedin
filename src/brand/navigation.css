@@ -1,0 +1,31 @@
+/* One navigation face across public pages and their mobile directories. */
+@font-face {
+  font-family: LBFoundersMono;
+  src: url('/brand/fonts/founders-mono-medium-trial.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root { --lb-font-nav: LBFoundersMono, 'Roboto Mono', ui-monospace, monospace; }
+
+:root :is(.c2-header, .cb-header) :is(nav a, .c2-header-actions button, .c2-header-actions > a, .cb-header-actions button, .cb-header-actions > a),
+:root .pg-topbar :is(.pg-topnav a, .pg-menu-toggle),
+:root .stage2-header nav :is(a, button, summary),
+:root .lb-nav a,
+:root .pop-header nav a {
+  font-family: var(--lb-font-nav);
+  font-weight: 500;
+  font-synthesis: none;
+  letter-spacing: 0;
+}
+
+:root .c2-header .c2-header-links a,
+:root .c2-home .c2-header .c2-header-menu { font-size: 16px; }
+:root .c2-home .c2-header .c2-header-radio { font-size: 14px; }
+:root :is(.c2-header, .cb-header) :is(.c2-header-directory, .cb-header-directory) a { font-size: 20px; line-height: 1.3; }
+
+@media (max-width: 1150px) {
+  :root .c2-header .c2-header-links a,
+  :root .c2-home .c2-header .c2-header-menu { font-size: 14px; }
+}

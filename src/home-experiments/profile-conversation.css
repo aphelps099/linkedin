@@ -1,4 +1,12 @@
-.c2-home--conversation .c2-hero{background:#0b4bef;overflow:hidden}
+.c2-home--conversation{--c2-panel-radius:clamp(28px,3.2vw,52px)}
+/* The blue panel overlaps the real film above and the dark stage below. */
+.c2-home--conversation .c2-film{height:calc(78vh + var(--c2-panel-radius));height:calc(78svh + var(--c2-panel-radius));min-height:calc(520px + var(--c2-panel-radius))}
+.c2-home--conversation .c2-film-copy{bottom:calc(100px + var(--c2-panel-radius))}
+.c2-home--conversation .c2-film-bottom{bottom:calc(28px + var(--c2-panel-radius))}
+.c2-home--conversation .c2-hero{background:#0b4bef;overflow:hidden;border-radius:var(--c2-panel-radius);margin-top:calc(-1 * var(--c2-panel-radius));z-index:2}
+.c2-home--conversation .development-radio{margin-top:calc(-1 * var(--c2-panel-radius));padding-top:var(--c2-panel-radius)}
+.c2-home--conversation .development-stage{top:var(--c2-panel-radius);height:calc(100% - var(--c2-panel-radius))}
+.c2-home--conversation .development-tow{top:var(--c2-panel-radius)}
 .c2-home--conversation .c2-hero::after{display:none}
 .profile-conversation{position:relative;isolation:isolate;height:clamp(700px,57vw,950px);overflow:hidden;color:#fbf6e8}
 .conversation-canvas{position:absolute;inset:0;z-index:-1;overflow:hidden;mask-image:linear-gradient(#000 88%,transparent 100%)}
@@ -26,6 +34,8 @@
 @media(min-width:1800px){.conversation-poster,.conversation-film{object-position:center 45%}}
 @media(max-width:1050px) and (min-width:701px){.profile-conversation{height:700px}.conversation-heading{width:59%;top:35px}.conversation-heading h2{font-size:72px}.conversation-heading p{font-size:18px}.conversation-dialogue{top:60%}.conversation-phrase{font-size:33px}.conversation-enroll{bottom:38px}}
 @media(max-width:700px){
+  .c2-home--conversation .c2-film-copy{bottom:calc(105px + var(--c2-panel-radius))}
+  .c2-home--conversation .c2-film-bottom{bottom:calc(20px + var(--c2-panel-radius))}
   .profile-conversation{height:auto;display:grid;grid-template-columns:1fr;padding:38px 0 35px;overflow:visible}
   .conversation-heading{position:relative;inset:auto;transform:none;width:calc(100% - 36px);margin:auto;grid-area:1/1;z-index:1}
   .conversation-heading h2{font-size:clamp(60px,14vw,85px);line-height:1}
@@ -38,5 +48,6 @@
   .conversation-enroll p{font-size:14px;max-width:300px;margin:15px auto 0}
   .c2-home--conversation .c2-player{margin-top:10px}.c2-home--conversation .feed-compare{gap:15px;font-size:11px}
 }
+@media(max-height:560px) and (min-width:701px){.c2-home--conversation .c2-film{min-height:calc(480px + var(--c2-panel-radius))}}
 @media(prefers-reduced-motion:reduce){.conversation-film{display:none}.conversation-phrase,.conversation-line>span,.c2-home .conversation-certify{transition:none;filter:none}}
 @media(forced-colors:active){.conversation-heading,.conversation-dialogue{background:Canvas;color:CanvasText}.c2-home .conversation-certify{border:1px solid CanvasText}}

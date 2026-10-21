@@ -1,5 +1,6 @@
 import React, {memo, useEffect, useId, useRef, useState} from 'react';
 import {LoaderCircle, Pause, Play} from 'lucide-react';
+import '../brand/navigation.css';
 
 export const ConceptHeader = memo(function ConceptHeader({base='/', onRadio, playing=false, loading=false, homeSectionBase='', active, children, overlay=false, theme='light', storefront=false}) {
   const [open,setOpen]=useState(false);
