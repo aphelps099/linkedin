@@ -1,6 +1,10 @@
 # Corporate Sampler · /synth/
 
-Standalone React entry built through the existing Vite multi-page configuration. No new dependencies or server endpoints. Uses Web Audio and original procedural drum/tonal samples plus existing voice recordings in `/phrases/05.wav` and `/phrases/06.wav`.
+Standalone React entry built through the existing Vite multi-page configuration. No new dependencies or server endpoints. Uses Web Audio, original procedural drum/tonal samples and the existing character recordings and guitar.
+
+The searchable sound library contains 172 character clips (all nine speaking characters), three guitar fills and their combined take, plus the original eight sounds. Preview is separate from the project; loading a sound replaces only the selected pad, resets trim/pitch/reverse and preserves its pattern. Opening the library stops the sequencer. Audio loads on demand. Robot solo cues are sliced from existing season recordings; mixed chorus-only lines are omitted because those voices cannot be isolated. Silent characters have no vocal samples. No voices are regenerated or recast.
+
+`node scripts/build-synth-library.mjs` regenerates the checked-in catalog from the voice bank's current approved/validated human takes, clean robot cues in the season manifest and `guitar-fills.json`. Keep existing sound IDs stable for saved project compatibility. Full source recordings use a small cache; saved projects reference library IDs rather than duplicating the audio.
 
 Eight pads, 16-step live sequencer, three starter patterns, pad mute, sample selection/upload/drop, start/end trim, pitch, reverse, gain, master low-pass/delay, keyboard 1–8 and Space. Stop cancels queued notes and disconnects delay feedback. Background tabs pause deliberately. Audio begins only on interaction.
 

@@ -27,14 +27,19 @@ export function voice(ctx,bus,buffer,slot,when){
  source.connect(gain);gain.connect(bus.input);source.start(when,offset,length);source.onended=()=>{source.disconnect();gain.disconnect();};return source;
 }
 export class Sampler {
- constructor(){this.buffers=new Map();this.reversed=new WeakMap();this.sources=new Set();this.timers=new Set();this.running=false;}
+ constructor(){this.buffers=new Map();this.recordings=new Map();this.reversed=new WeakMap();this.sources=new Set();this.timers=new Set();this.running=false;}
  async init(){if(!this.ctx){this.ctx=new (window.AudioContext||window.webkitAudioContext)();}await this.ctx.resume();}
- async load(slot){const key=slot.data||slot.sound;if(this.buffers.has(key))return this.buffers.get(key);let b;
- if(slot.data||SOUNDS.find(s=>s.id===slot.sound)?.url){const response=await fetch(slot.data||SOUNDS.find(s=>s.id===slot.sound).url);if(!response.ok)throw Error(`Could not load ${slot.name}. Try again.`);b=await this.ctx.decodeAudioData(await response.arrayBuffer());if(b.duration>30)throw Error('Use a sample shorter than 30 seconds.');}
+ async load(slot){const key=slot.data||slot.sound;if(this.buffers.has(key))return this.buffers.get(key);let b;const sound=SOUNDS.find(s=>s.id===slot.sound);
+ if(slot.data||sound?.url){const url=slot.data||sound.url;let raw=this.recordings.get(url);
+ if(!raw){const response=await fetch(url);if(!response.ok)throw Error(`Could not load ${slot.name}. Try again.`);raw=await this.ctx.decodeAudioData(await response.arrayBuffer());
+ if(!slot.data){this.recordings.set(url,raw);while(this.recordings.size>3)this.recordings.delete(this.recordings.keys().next().value);}}
+ if(!slot.data&&sound.offset!==undefined){const from=Math.round(sound.offset*raw.sampleRate),length=Math.min(Math.round(sound.duration*raw.sampleRate),raw.length-from);if(length<=0)throw Error('This sample is unavailable.');b=this.ctx.createBuffer(raw.numberOfChannels,length,raw.sampleRate);for(let c=0;c<raw.numberOfChannels;c++)b.getChannelData(c).set(raw.getChannelData(c).subarray(from,from+length));}
+ else b=raw;if(b.duration>30)throw Error('Use a sample shorter than 30 seconds.');}
  else b=synthesized(this.ctx,slot.sound);this.buffers.set(key,b);return b;}
+
  buffer(slot){let b=this.buffers.get(slot.data||slot.sound);if(!b||!slot.reverse)return b;if(!this.reversed.has(b)){const reverse=this.ctx.createBuffer(b.numberOfChannels,b.length,b.sampleRate);for(let c=0;c<b.numberOfChannels;c++)reverse.getChannelData(c).set(b.getChannelData(c).slice().reverse());this.reversed.set(b,reverse);}return this.reversed.get(b);}
  async prepare(p){await this.init();await Promise.all(p.slots.map(s=>this.load(s)));if(!this.bus)this.bus=graph(this.ctx,p);this.bus.update(p);}
- hit(slot,when=this.ctx.currentTime){const b=this.buffer(slot);if(!b)return;const s=voice(this.ctx,this.bus,b,slot,when);this.sources.add(s);s.addEventListener('ended',()=>this.sources.delete(s));}
+ hit(slot,when=this.ctx.currentTime){const b=this.buffer(slot);if(!b)return;const s=voice(this.ctx,this.bus,b,slot,when);this.sources.add(s);s.addEventListener('ended',()=>this.sources.delete(s));return s;}
  start(getProject,onStep){this.stop();this.bus=graph(this.ctx,getProject());this.running=true;let step=0,time=this.ctx.currentTime+.06;
  const tick=()=>{if(!this.running)return;const p=getProject();this.bus.update(p);if(time<this.ctx.currentTime-.1)time=this.ctx.currentTime+.03;
  while(time<this.ctx.currentTime+.1){const at=step%16;p.slots.forEach((s,i)=>{if(p.pattern[i][at]&&!s.mute)this.hit(s,time);});const timer=setTimeout(()=>{this.timers.delete(timer);if(this.running)onStep(at);},Math.max(0,(time-this.ctx.currentTime)*1000));this.timers.add(timer);time+=60/p.bpm/4*(at%2?1-p.swing:1+p.swing);step++;}}
