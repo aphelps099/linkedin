@@ -21,6 +21,7 @@ import './footer.css';
 import '../home-experiments/feed-scene.css';
 import '../home-experiments/profile-conversation.css';
 import '../home-experiments/development-radio.css';
+import './home-typography.css';
 
 const INITIAL = {index:0, playing:false, loading:false, elapsed:0, volume:.8, text:LINES[1], word:-1, mouth:'rest', levels:null, error:''};
 const PORTRAITS = [{index:2,tone:'ice'}, {index:0,tone:'paper'}, {index:1,tone:'pink'}, {index:3,tone:'navy'}];
