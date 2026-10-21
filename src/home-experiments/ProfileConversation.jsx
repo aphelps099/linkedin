@@ -1,15 +1,15 @@
 import React, {memo, useEffect, useRef, useState} from 'react';
-import {ArrowUpRight, Pause, Play, SkipForward} from 'lucide-react';
-import {CONVERSATION, TURN_DURATION, VIDEO_DURATION, conversationFrame} from './conversation-timeline.js';
+import {ArrowUpRight} from 'lucide-react';
+import {CONVERSATION, VIDEO_DURATION, conversationFrame} from './conversation-timeline.js';
 
 export const ProfileConversation=memo(function ProfileConversation({base,motion}) {
   const root=useRef(null), video=useRef(null);
   const clock=useRef({loops:0,previous:0});
   const [frame,setFrame]=useState(()=>conversationFrame(0));
   const [blocked,setBlocked]=useState(false), [visible,setVisible]=useState(false);
-  const [started,setStarted]=useState(false), [failed,setFailed]=useState(false), [paused,setPaused]=useState(false);
-  const running=motion&&!paused&&!blocked&&visible&&!failed;
-  const staticText=!motion||paused||blocked||failed||!started;
+  const [started,setStarted]=useState(false), [failed,setFailed]=useState(false);
+  const running=motion&&!blocked&&visible&&!failed;
+  const staticText=!motion||blocked||failed||!started;
   const scene=CONVERSATION[frame.index];
   const poster=`${base}home-experiments/profile-conversation.webp`;
 
@@ -43,14 +43,6 @@ export const ProfileConversation=memo(function ProfileConversation({base,motion}
     return()=>{cancelled=true;cancelAnimationFrame(request);film.pause();};
   },[running]);
 
-  const choose=index=>{
-    const time=(index%2)*TURN_DURATION;
-    clock.current={loops:Math.floor(index/2),previous:time};
-    if(video.current&&!failed)video.current.currentTime=time/1000;
-    setFrame(conversationFrame(index*TURN_DURATION));
-    setBlocked(false);
-  };
-  const toggleMotion=()=>{if(blocked)setBlocked(false);else setPaused(value=>!value);};
   let wordIndex=0;
   return <div className={`profile-conversation${!motion?' is-still':''}`} ref={root}>
     <div className="conversation-canvas" aria-hidden="true">
@@ -58,23 +50,14 @@ export const ProfileConversation=memo(function ProfileConversation({base,motion}
       {!failed&&<video ref={video} className={`conversation-film${started&&motion?' is-ready':''}`} src={`${base}home-experiments/profile-conversation.mp4`} poster={poster} width="1280" height="720" muted playsInline loop preload="metadata" disablePictureInPicture onError={()=>setFailed(true)} aria-hidden="true"/>}
     </div>
     <header className="conversation-heading">
-      <p className="conversation-eyebrow">LinkedIn Beats Academy</p>
-      <h2 id="c2-title"><span>Make it</span><span>official.</span></h2>
+      <h2 id="c2-title"><span>Make it</span><span className="conversation-stamp">official</span></h2>
       <p>Five short courses.<br/>One very official-looking certificate.</p>
     </header>
     <div className="conversation-dialogue">
-      <p className="conversation-phrase-label">A little professional vocabulary</p>
       <p className={`conversation-phrase${!staticText&&frame.leaving?' is-leaving':''}`} aria-hidden="true" key={frame.index}>{scene.lines.map((line,lineIndex)=><span className="conversation-line" key={lineIndex}>{line.split(' ').map(word=>{
         const index=wordIndex++;
         return <React.Fragment key={index}><span className={staticText||index<frame.words?'is-revealed':''}>{word}</span>{' '}</React.Fragment>;
       })}</span>)}</p>
-      <div className="conversation-controls" role="group" aria-label="Vocabulary preview controls">
-        {motion&&!failed&&<button type="button" onClick={toggleMotion} aria-label={paused||blocked?'Play vocabulary preview':'Pause vocabulary preview'}>
-          {paused||blocked?<Play aria-hidden="true"/>:<Pause aria-hidden="true"/>}
-        </button>}
-        <span className="conversation-count" aria-hidden="true">{String(frame.index+1).padStart(2,'0')} / {String(CONVERSATION.length).padStart(2,'0')}</span>
-        <button type="button" onClick={()=>choose((frame.index+1)%CONVERSATION.length)} aria-label="Next vocabulary phrase"><SkipForward aria-hidden="true"/></button>
-      </div>
     </div>
     <div className="conversation-enroll">
       <a className="conversation-certify" href={`${base}learn/`}>Get certified <ArrowUpRight aria-hidden="true"/></a>
