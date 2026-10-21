@@ -80,13 +80,12 @@ export const SiteFooter = memo(function SiteFooter({base='/'}) {
   const title = useId(), fineprint = useId();
   return <footer id="c2-footer" className="lb-site-footer">
     <div className="lb-footer" id="about">
-      <section className="lb-signup" id="newsletter" aria-labelledby={title}>
-        <span className="lb-tag"><span className="lb-tag-dot"/>The occasional email</span>
-        <h2 id={title}>Let’s circle back.</h2>
-        <NewsletterForm/>
-      </section>
       <div className="lb-footer-links">
-        <p className="lb-signoff">Very professional.<br/>Deeply unserious.<small>Music for people with an email signature.</small></p>
+        <section className="lb-signup" id="newsletter" aria-labelledby={title}>
+          <span className="lb-tag"><span className="lb-tag-dot"/>The occasional email</span>
+          <h2 id={title}>Let’s circle back.</h2>
+          <NewsletterForm/>
+        </section>
         <nav className="lb-link-group" aria-label="Explore LinkedIn Beats">
           <div><a href={`${base}#c2-player`}>Beats <PixelArrow/></a><a href={`${base}store/`}>Store <PixelArrow/></a><a href={`${base}learn/`}>Get certified <PixelArrow/></a></div>
           <div><a href={`${base}lessons/`}>LinkedInifier <PixelArrow/></a><a href={`${base}#c2-dispatch`}>The feed <PixelArrow/></a></div>
