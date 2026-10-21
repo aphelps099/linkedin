@@ -27,8 +27,6 @@
 :root .lb-site-footer .lb-visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 :root .lb-site-footer .lb-pixel-arrow{display:block;width:11px;height:11px;flex:none;transition:transform .2s}
 :root .lb-site-footer .lb-footer-links{display:grid;grid-template-columns:1.3fr 1fr;gap:24px;padding:30px 14px 31px}
-:root .lb-site-footer .lb-signoff{font:400 19px/1.25 LBFooterBody,Arial,sans-serif;color:var(--lb-ice)}
-:root .lb-site-footer .lb-signoff small{display:block;margin-top:11px;color:#99a4b3;font:500 10px/1.4 var(--lb-mono)}
 :root .lb-site-footer .lb-link-group{display:flex;justify-content:space-between;gap:24px;padding:0}
 :root .lb-site-footer .lb-link-group>div{display:flex;flex-direction:column;gap:1px}
 :root .lb-site-footer .lb-link-group a{display:flex;align-items:center;justify-content:space-between;gap:17px;min-height:30px;font:500 11px/1.3 var(--lb-mono);white-space:nowrap}
@@ -53,7 +51,7 @@
 
 /* Compact integrated signup, with the approved charcoal assurance marks. */
 :root .lb-site-footer{padding:38px 24px 26px}
-:root .lb-site-footer .lb-signup{display:block;max-width:390px;min-height:0;margin:0 14px;padding:0;border-radius:0;background:transparent;scroll-margin-top:100px}
+:root .lb-site-footer .lb-signup{display:block;max-width:390px;min-height:0;margin:0;padding:0;border-radius:0;background:transparent;scroll-margin-top:100px}
 :root .lb-site-footer .lb-tag{color:#a4b1c3;font-size:11px;gap:8px}
 :root .lb-site-footer .lb-tag-dot{width:5px;height:5px;background:#719aff}
 :root .lb-site-footer .lb-signup h2{font-size:28px;line-height:1.12;letter-spacing:-.065em;margin:9px 0 14px}
@@ -64,9 +62,7 @@
 :root .lb-site-footer .lb-submit{background:var(--lb-blue);color:var(--lb-ice);min-height:42px;font-size:13px;padding:12px 16px;gap:9px}
 :root .lb-site-footer .lb-submit:hover{background:#2862f6}
 :root .lb-site-footer .lb-form-note{color:#808080;font-size:11px;margin-left:2px}
-:root .lb-site-footer .lb-footer-links{padding-top:32px;padding-bottom:29px}
-:root .lb-site-footer .lb-signoff{font-size:24px;letter-spacing:-.025em}
-:root .lb-site-footer .lb-signoff small{font-size:12px;letter-spacing:0;max-width:300px}
+:root .lb-site-footer .lb-footer-links{padding-top:0;padding-bottom:32px;align-items:center}
 :root .lb-site-footer .lb-link-group a{font-size:14px;min-height:35px}
 :root .lb-site-footer .lb-fineprint{grid-template-columns:minmax(0,1fr) 308px;gap:28px}
 :root .lb-site-footer .lb-seals{gap:4px}
@@ -89,7 +85,7 @@
 :root .lb-site-footer .lb-detail-submit:disabled{opacity:.7;cursor:wait}
 :root .lb-site-footer .lb-dialog-note,:root .lb-site-footer .lb-detail-form .lb-form-error{grid-column:1/-1;font:400 11px/1.4 LBFooterBody,Arial,sans-serif;color:#d7e3ff}
 @media(hover:hover){:root .lb-site-footer .lb-link-group a:hover{text-decoration:underline;text-underline-offset:4px}:root .lb-site-footer .lb-link-group a:hover .lb-pixel-arrow{transform:translate(2px,-2px)}}
-@container(max-width:660px){:root .lb-site-footer .lb-signup{margin-inline:8px}:root .lb-site-footer .lb-footer-links{grid-template-columns:1fr;gap:23px;padding:28px 8px}:root .lb-site-footer .lb-link-group{display:grid;grid-template-columns:1fr 1fr;gap:25px}:root .lb-site-footer .lb-link-group a{min-height:40px}:root .lb-site-footer .lb-wordmark-link{padding:0 8px}:root .lb-site-footer .lb-fineprint{grid-template-columns:1fr;gap:22px;padding:23px 8px 0}:root .lb-site-footer .lb-assurance{max-width:308px}:root .lb-site-footer .lb-bottom{align-items:flex-start;gap:14px;padding:24px 8px 0;flex-wrap:wrap}:root .lb-site-footer .lb-bottom p span{display:block}}
+@container(max-width:660px){:root .lb-site-footer .lb-footer-links{grid-template-columns:1fr;gap:23px;padding:0 8px 28px}:root .lb-site-footer .lb-link-group{display:grid;grid-template-columns:1fr 1fr;gap:25px}:root .lb-site-footer .lb-link-group a{min-height:40px}:root .lb-site-footer .lb-wordmark-link{padding:0 8px}:root .lb-site-footer .lb-fineprint{grid-template-columns:1fr;gap:22px;padding:23px 8px 0}:root .lb-site-footer .lb-assurance{max-width:308px}:root .lb-site-footer .lb-bottom{align-items:flex-start;gap:14px;padding:24px 8px 0;flex-wrap:wrap}:root .lb-site-footer .lb-bottom p span{display:block}}
 @media(max-width:600px){:root .lb-site-footer{padding:28px 14px 24px}}
 @container(max-width:340px){:root .lb-site-footer .lb-submit{font-size:12px;padding-inline:12px}:root .lb-site-footer .lb-signup h2{font-size:26px}:root .lb-site-footer .lb-seals li{width:calc((100% - 8px)/3)}}
 @media(max-width:380px){:root .lb-site-footer .lb-signup-dialog{padding:27px 22px}:root .lb-site-footer .lb-detail-form{grid-template-columns:1fr}}
