@@ -2,6 +2,7 @@ import React, {memo, useEffect, useId, useRef, useState} from 'react';
 import {Check, X} from 'lucide-react';
 import './navigation.css';
 import './site-footer.css';
+import './wordmark-shimmer.css';
 
 function PixelArrow() {
   return <svg className="lb-pixel-arrow" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><path d="M4 0h10v10h-2V4h-2v2H8v2H6v2H4v2H2v2H0v-2h2v-2h2V8h2V6h2V4h2V2H4Z"/></svg>;
@@ -90,7 +91,7 @@ export const SiteFooter = memo(function SiteFooter({base='/'}) {
           <div><a href={`${base}lessons/`}>LinkedInifier <PixelArrow/></a><a href={`${base}#c2-dispatch`}>The feed <PixelArrow/></a></div>
         </nav>
       </div>
-      <a className="lb-wordmark-link" href={base} aria-label="LinkedIn Beats home"><img className="lb-wordmark" src={`${base}brand/afterbeat/wordmark-white.svg?v=afterbeat-2`} width="7015" height="862" loading="lazy" alt="LinkedIn Beats"/></a>
+      <a className="lb-wordmark-link" href={base} aria-label="LinkedIn Beats home"><span className="lb-metal-wordmark" style={{'--lb-wordmark-mask':`url("${base}brand/afterbeat/wordmark-white.svg?v=afterbeat-2")`}}><img className="lb-wordmark" src={`${base}brand/afterbeat/wordmark-white.svg?v=afterbeat-2`} width="7015" height="862" loading="lazy" alt="LinkedIn Beats"/></span></a>
       <section className="lb-fineprint" aria-labelledby={fineprint}>
         <div className="lb-fineprint-copy"><h3 id={fineprint}>The necessary small print</h3>
           <p>LinkedIn Beats is an independent parody project. Not affiliated with, endorsed by, or sponsored by LinkedIn Corporation. All trademarks belong to their respective owners.</p>
