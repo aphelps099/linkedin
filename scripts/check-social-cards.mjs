@@ -9,11 +9,11 @@ const icon='/home-2/brand/favicon.svg?v=brand-20261022';
 const pages=[['index.html','synergy-team'],['optimizer/index.html','optimizer-printer'],['studio/index.html','synergy-team'],['synth/index.html','synth']];
 for(const [page,name] of pages){
   const html=await readFile(root+'dist/'+page,'utf8');
-  const image=`https://linkedinbeats.com/share/${name}-20261022.jpg`;
+  const image=`https://linkedinbeats.com/share/${name}-20261022-v2.jpg`;
   for(const key of ['og:image','twitter:image']){
     assert.equal(html.match(new RegExp(`<meta (?:property|name)="${key}" content="([^"]+)"`))?.[1],image);
   }
-  const file=root+`dist/share/${name}-20261022.jpg`;
+  const file=root+`dist/share/${name}-20261022-v2.jpg`;
   const info=await sharp(file).metadata();
   assert.equal(info.width,1200);assert.equal(info.height,630);
   assert((await stat(file)).size<1_000_000,'crawler image stays under 1 MB');

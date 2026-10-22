@@ -2,10 +2,11 @@
   "created": "2026-10-22",
   "generation": "Built-in image_gen",
   "exports": {
-    "size": "1200 \u00d7 630",
+    "size": "1200 × 630",
     "format": "JPEG",
     "quality": 95,
-    "chroma_subsampling": "4:4:4"
+    "chroma_subsampling": "4:4:4",
+    "version": "20261022-v2"
   },
   "cards": [
     {
@@ -23,7 +24,7 @@
         "/studio/"
       ],
       "native_size": [
-        1730,
+        1731,
         909
       ]
     },
@@ -31,10 +32,21 @@
       "name": "synth",
       "page": "/synth/",
       "native_size": [
-        1729,
+        1728,
         910
       ]
     }
   ],
-  "regenerate_exports": "node scripts/export-social-cards.mjs"
+  "regenerate_exports": "node scripts/export-social-cards.mjs",
+  "updated": "2026-10-22",
+  "wordmark": {
+    "source": "public/brand/afterbeat/wordmark-white.svg",
+    "width": 132,
+    "left": 36,
+    "top": 30,
+    "coordinates": "Pixels at 1200 × 630; proportional at native resolution",
+    "variant": "Approved white wordmark on blue and dark backgrounds"
+  },
+  "source_artwork": "Clean PNG artwork masters; export script applies the approved vector wordmark to both native PNGs and share JPEGs.",
+  "branded_masters": "output/social-share-cards-20261022-v2/"
 }
