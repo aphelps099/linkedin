@@ -1,11 +1,11 @@
-/* Brand roles. To replace Tobias, change the headline face/weight here. */
-@font-face{font-family:'LB Tobias';src:url('/brand/fonts/tobias-medium.woff2') format('woff2');font-weight:500;font-style:normal;font-display:swap}
+@import './hoves-black.css';
+/* Shared headline role uses the supplied TT Hoves Pro Black. */
 @font-face{font-family:'LB Druk';src:url('/brand/fonts/druk-heavy.woff2') format('woff2');font-weight:800;font-style:normal;font-display:swap}
 @font-face{font-family:'LB Astro';src:url('/brand/fonts/astro-nebula-light.woff2') format('woff2');font-weight:300;font-style:normal;font-display:swap}
 @font-face{font-family:'LB Azeret Mono';src:url('/brand/fonts/azeret-mono-variable.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap}
 :root{
-  --lb-font-headline:'LB Tobias',Georgia,serif;
-  --lb-weight-headline:500;
+  --lb-font-headline:'LB Hoves Black',C2Hoves,Arial,sans-serif;
+  --lb-weight-headline:900;
   --lb-font-section:'LB Druk',Impact,sans-serif;
   --lb-weight-section:800;
   --lb-font-label:'LB Astro',Arial,sans-serif;

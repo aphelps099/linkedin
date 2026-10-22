@@ -16,5 +16,5 @@
 .c2-home.c2-type-editorial .dispatch-card h3{font-family:var(--lb-font-body);font-size:clamp(19px,1.5vw,22px);font-weight:400;line-height:1.22;letter-spacing:-.01em}
 .c2-home.c2-type-editorial :is(.dispatch-dialog-copy>p:not(.dispatch-meta),.dispatch-article p){font-family:var(--lb-font-body);font-size:20px;line-height:1.45}
 /* Keep graphic sleeve typography, the logo and the original iPod lettering intact. */
-.c2-type-editorial .dispatch-art{--lb-font-section:'LB Druk',Impact,sans-serif;--lb-weight-section:800;--lb-font-headline:'LB Tobias',Georgia,serif;--lb-weight-headline:500}
+.c2-type-editorial .dispatch-art{--lb-font-section:'LB Druk',Impact,sans-serif;--lb-weight-section:800;--lb-font-headline:'LB Hoves Black',C2Hoves,Arial,sans-serif;--lb-weight-headline:900}
 @media(max-width:700px){.c2-home.c2-type-editorial .c2-film-copy h1{font-size:clamp(34px,9.2vw,63px);letter-spacing:-.04em}.c2-home.c2-type-editorial .c2-film-copy p{font-size:21px;max-width:300px}.c2-home.c2-type-editorial .dispatch-heading h2{font-size:36px}.c2-home.c2-type-editorial .dispatch-card h3{font-size:20px}}
