@@ -17,3 +17,5 @@
 
 @media(max-width:700px){.pbs-dialog{width:calc(100% - 20px);max-height:calc(100dvh - 20px);border-radius:18px}.pbs-content{padding:16px 18px 22px}.pbs-topline{margin-bottom:16px}.pbs-layout{grid-template-columns:1fr;gap:23px}.pbs-artwork{width:100%;max-width:380px;margin:auto}.pbs-titlegroup h2{font-size:36px;max-width:none}.pbs-intro{margin-bottom:16px}.pbs-format-note{min-height:0}.pbs-caption{font-size:16px!important}.pbs-media-note{font-size:10px}.pbs-editor>label>input{font-size:16px}}
 @media(prefers-reduced-motion:reduce){.pbs-dialog *, .pbs-dialog *::before{animation:none!important;transition:none!important}}
+
+.pbs-manual{margin-top:15px}.pbs-manual>summary{font-size:12px;color:#b6c1d3;cursor:pointer;text-decoration:underline;text-underline-offset:4px}.pbs-manual[hidden]{display:none}

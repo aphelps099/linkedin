@@ -11,6 +11,7 @@ import { createCertificateShareRouter } from './certificate-share.js';
 import { createBeatShareRouter } from './beat-share.js';
 import { createCuttingRoomRouter } from './cutting-room.js';
 import { createBeatVideoRouter, beatVideoStore } from './beat-video-service.js';
+import { createLinkedInRouter } from './linkedin.js';
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
@@ -22,6 +23,8 @@ app.disable('x-powered-by');
 app.set('trust proxy', 1);
 const newsletter = createNewsletter({directory:process.env.NEWSLETTER_DATA_DIR});
 const postBeat = createPostBeatService();
+const linkedin = createLinkedInRouter();
+app.use(linkedin.router);
 let beatVoicesReady=false;
 
 // The Stripe webhook must see the raw payload (its signature covers the exact
@@ -106,6 +109,7 @@ app.post('/api/voice', async (req, res)=>{
 app.get('/api/health', (_req, res)=>{
   res.json({
     ok:true,
+    linkedinConfigured:linkedin.isConfigured(),
     postBeatConfigured:beatVoicesReady&&postBeat.isConfigured(),
     newsletterConfigured:newsletter.isConfigured(),
     voiceConfigured:Boolean(
