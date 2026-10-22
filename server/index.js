@@ -10,6 +10,7 @@ import { beatRobot } from './beat-robot.js';
 import { createCertificateShareRouter } from './certificate-share.js';
 import { createBeatShareRouter } from './beat-share.js';
 import { createCuttingRoomRouter } from './cutting-room.js';
+import { createBeatVideoRouter, beatVideoStore } from './beat-video-service.js';
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
@@ -58,6 +59,7 @@ app.post('/api/store/webhook', express.raw({type:'application/json'}), async (re
 
 app.use('/api/cutting-room', createCuttingRoomRouter());
 app.use('/cutting-room', (_req,res,next)=>{res.set('X-Robots-Tag','noindex, nofollow, noarchive');next();});
+app.use(createBeatVideoRouter());
 app.use(express.json({limit:'32kb'}));
 app.use('/api/newsletter', newsletter.router);
 app.use('/api/post-beat/voices', postBeat.router);
@@ -134,7 +136,7 @@ app.get(['/studio-3', '/studio-3/index.html'], (req, res) => {
 });
 
 app.use(createCertificateShareRouter());
-app.use(createBeatShareRouter({template:path.join(dist,'lessons/index.html')}));
+app.use(createBeatShareRouter({template:path.join(dist,'lessons/index.html'),beatVideoStore}));
 
 app.use(express.static(dist, {
   extensions:['html'],
