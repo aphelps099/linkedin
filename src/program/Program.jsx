@@ -1,3 +1,4 @@
+import {SiteHeader} from '../brand/SiteHeader.jsx';
 import {SiteFooter} from '../brand/SiteFooter.jsx';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {ArrowLeft, ArrowRight, Award, Check, ChevronDown, Clock3, Download, LockKeyhole, Music2, Printer, X} from 'lucide-react';
@@ -18,11 +19,11 @@ const go = id => { window.location.hash = id ? `#/${id}` : ''; };
 const allComplete = progress => CHAPTERS.every(c => progress.completedChapters.includes(c.id));
 
 export default function Program(){
-  const [path,setPath]=useState(route), [progress,setProgress]=useState(loadProgress), [menuOpen,setMenuOpen]=useState(false);
+  const [path,setPath]=useState(route), [progress,setProgress]=useState(loadProgress);
   const mainRef=useRef(null);
   const update=useCallback(patch=>setProgress(previous=>saveProgress(typeof patch==='function' ? patch(previous) : patch, previous)),[]);
   const chapter=chapterById(path), index=CHAPTERS.findIndex(c=>c.id===path), complete=allComplete(progress);
-  useEffect(()=>{const change=()=>{setPath(route());setMenuOpen(false);window.scrollTo(0,0);mainRef.current?.focus({preventScroll:true});};window.addEventListener('hashchange',change);return()=>window.removeEventListener('hashchange',change);},[]);
+  useEffect(()=>{const change=()=>{setPath(route());window.scrollTo(0,0);mainRef.current?.focus({preventScroll:true});};window.addEventListener('hashchange',change);return()=>window.removeEventListener('hashchange',change);},[]);
   useEffect(()=>{const sync=e=>{if(e.key==='lb_program_v1' || e.key===null)setProgress(loadProgress());};window.addEventListener('storage',sync);return()=>window.removeEventListener('storage',sync);},[]);
   useEffect(()=>{if(index>=0)update({currentChapter:index});},[index,update]);
   useEffect(()=>{document.title=`${chapter?.title || (path==='certified' ? 'Your certificate' : path==='achievements' ? 'Your achievements' : 'Academy')} — LinkedIn Beats`;},[chapter,path]);
@@ -34,17 +35,8 @@ export default function Program(){
 
   return <div className="pg-app">
     <a className="pg-skip" href="#program-main" onClick={e=>{e.preventDefault();mainRef.current?.focus();}}>Skip to the lesson</a>
-    <header className="pg-topbar">
-      <div className="pg-topbar-inner">
-        <a href="#" className="pg-brand" aria-label="LinkedIn Beats Academy course overview"><img className="pg-wordmark-art" src="../brand/afterbeat/wordmark-color.svg?v=2" width="224" height="27" alt="LinkedIn Beats"/><span className="pg-brand-suffix">Academy</span></a>
-        <button type="button" className="pg-menu-toggle" aria-expanded={menuOpen} aria-controls="pg-course-nav" onClick={()=>setMenuOpen(v=>!v)}>{menuOpen ? <X size={18}/> : <ChevronDown size={18}/>}<span>Menu</span></button>
-        <nav className={`pg-topnav${menuOpen ? ' is-open' : ''}`} id="pg-course-nav" aria-label="Academy" onClick={()=>setMenuOpen(false)}>
-          <a href="#" aria-current={!path ? 'page' : undefined}>Course overview</a>
-          <a href="#/achievements" aria-current={path==='achievements' || path==='certified' ? 'page' : undefined}>Your achievements</a>
-          <a href="../" className="pg-site-link">Main site<ArrowRight size={15}/></a>
-        </nav>
-      </div>
-    </header>
+    <SiteHeader active="Learn" focus={chapter?{current:index+1,total:CHAPTERS.length,minutes:chapter.minutes}:undefined}/>
+    {!chapter&&<nav className="pg-course-directory" aria-label="Academy"><a href="#" aria-current={!path?'page':undefined}>All lessons</a><a href="#/achievements" aria-current={path==='achievements'||path==='certified'?'page':undefined}>Your achievements</a></nav>}
     <main id="program-main" className="pg-main" ref={mainRef} tabIndex={-1}>
       {chapter ? <StepPlayer key={chapter.id} chapter={chapter} userName={progress.userName} title={progress.title} onName={(userName,title)=>update({userName,title})} onPost={savePost} onFinish={finish} onComplete={next}/>
         : path==='achievements' ? <Achievements progress={progress} resume={resume}/>

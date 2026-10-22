@@ -109,7 +109,7 @@ export default function ConceptHome({playerFactory=createPortraitRadio, variant=
   const mute=()=>{if(state.volume){previousVolume.current=state.volume;radio.current?.volume(0);}else radio.current?.volume(previousVolume.current||.8);};
   return <div className={`c2-home ${motion?'':'c2-still'}${experiment?` c2-home--experiment c2-home--${variant}`:''}${previewClass}`}>
     <a className="c2-skip" href="#c2-player">Skip to music player</a>
-    <ConceptHeader base={base} overlay onRadio={()=>radio.current?.toggle()} playing={state.playing} loading={state.loading}/>
+    <ConceptHeader base={base} overlay onRadio={()=>radio.current?.toggle()} playing={state.playing} loading={state.loading} radioError={state.error}/>
     <main>
       <HeroVideo headline={variant==='conversation'} musicPlaying={state.playing} musicLoading={state.loading} musicError={state.error} onMusicToggle={()=>radio.current?.toggle()}/>
       <section className="c2-hero" aria-labelledby="c2-title">

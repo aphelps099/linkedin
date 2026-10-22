@@ -1,3 +1,4 @@
+import {onAudioFocus} from '../brand/audio-focus.js';
 import {BeatSettings} from './BeatSettings.jsx';
 import {normalizeMix} from './mix.js';
 import React,{useEffect,useMemo,useRef,useState} from 'react';
@@ -29,6 +30,7 @@ export function PostBeat({post,initialRecipe,initialCover=DEFAULT_COVER,initialA
   const changePhase=value=>{phaseRef.current=value;setPhase(value);};
   const pause=()=>{cancelAnimationFrame(frame.current);engine.current?.pause();changePhase('paused');};
   const cancel=()=>{run.current++;controller.current?.abort();cancelAnimationFrame(frame.current);engine.current?.stop();changePhase('idle');setElapsed(0);setActive({line:-1,word:-1});};
+  useEffect(()=>onAudioFocus('optimizer',()=>{if(phaseRef.current==='preparing')cancel();else if(phaseRef.current==='playing')pause();}),[]);
   useEffect(()=>{onModeChange?.(showSong);},[showSong,onModeChange]);
   useEffect(()=>{
     const visibility=()=>{if(document.hidden&&phaseRef.current==='playing')pause();};

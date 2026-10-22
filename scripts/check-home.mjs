@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {TRACKS, LINES, makeCues, lyricAt, wordTimings, siteBase} from '../src/home/tracks.js';
+import {claimAudio, onAudioFocus} from '../src/brand/audio-focus.js';
 import {createRadio} from '../src/home/radio.js';
 
 // Read the actual PCM voice bank, so cue spacing is tested against real clips.
@@ -55,12 +56,15 @@ await radio.next();assert.equal(last.index,1);assert.equal(last.elapsed,0);asser
 radio.toggle();await radio.seek(70);assert(!last.playing);assert.equal(last.elapsed,70);
 await radio.play();assert(last.playing);assert.equal(last.elapsed,70);
 radio.shuffle();const before=last.index;await radio.next();assert.notEqual(last.index,before);
+claimAudio('synth');assert(!last.playing);assert(engines.at(-1).suspended);assert.equal(tick,null);
+let stoppedTool=0;const unsubscribe=onAudioFocus('synth',()=>stoppedTool++);
+radio.toggle();assert(last.playing);assert.equal(stoppedTool,1);unsubscribe();
 radio.dispose();assert(engines.at(-1).stopped);assert.equal(tick,null);
 
 let complete;
 const slow=createRadio({phraseBase:'/',onState:s=>last=s,engineFactory,interval:fn=>{tick=fn;return 1;},clear:()=>{tick=null;},
   loadClip:()=>new Promise(resolve=>{complete=resolve;})});
-slow.play();assert(last.loading);slow.toggle();assert(!last.loading);assert(engines.at(-1).stopped);slow.dispose();
+slow.play();assert(last.loading);claimAudio('studio');assert(!last.loading);assert(engines.at(-1).stopped);slow.dispose();
 const failed=createRadio({phraseBase:'/',onState:s=>last=s,engineFactory,loadClip:async()=>null});
 await failed.play();assert(last.error);assert(!last.playing);assert(!last.loading);failed.dispose();
-console.log(`Homepage checks passed: ${TRACKS.length} arrangements, ${bank.size} real clips, word cues, pause/resume, seek, track selection, shuffle, volume, cancellation and loading failures.`);
+console.log(`Homepage checks passed: ${TRACKS.length} arrangements, ${bank.size} real clips, word cues, pause/resume, seek, track selection, shuffle, volume, cancellation, audio focus and loading failures.`);

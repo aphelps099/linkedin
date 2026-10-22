@@ -1,3 +1,4 @@
+import {claimAudio} from '../brand/audio-focus.js';
 import {normalizeMix} from './mix.js';
 import {createAudioEngine} from '../audio.js';
 import {bandAt} from '../song.js';
@@ -77,6 +78,7 @@ export function createPostBeat({engineFactory=createAudioEngine,interval=setInte
       return Promise.all(lines.map(line=>active.decode(rawCache.get(key(line)).slice(0))));
     },
     play(recipe,decoded,{offset=0,reuseGraph=false}={}){
+      claimAudio('optimizer');
       // Recreate the graph for a clean restart; decoded buffers survive it.
       clearTick();if(!reuseGraph){engine?.dispose();engine=null;}init();
       mix=normalizeMix(recipe.mix);applyMix();buffers=decoded;cues=makeTimedCues(recipe,buffers);origin=engine.now()+.08-Math.max(0,Math.min(DURATION,offset));nextStep=0;nextCue=0;playing=true;
@@ -91,7 +93,7 @@ export function createPostBeat({engineFactory=createAudioEngine,interval=setInte
     },
     setMix(value){mix=normalizeMix(value);applyMix();},
     pause(){playing=false;clearTick();engine?.suspend();},
-    resume(){engine?.unlock();playing=true;timer=interval(tick,25);tick();},
+    resume(){claimAudio('optimizer');engine?.unlock();playing=true;timer=interval(tick,25);tick();},
     elapsed,
     spectrum(){return engine?.spectrum?.();},
     stream(){return init().stream();},
