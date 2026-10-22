@@ -1,13 +1,13 @@
 import {decodeRecipe,encodeRecipe} from './composition.js';
 
 export const COVERS=[
-  {id:'paper-jam',name:'Paper Jam',title:'Paper Jam. Now printing absolute bangers.',image:'/post-beat/covers/paper-jam-v1.png',width:1820,height:864,alt:'A vintage printer turned into a sound system, with yellow headphones and LinkedIn posts spilling onto the table.'},
-  {id:'printer-overload',name:'Out of Control',title:'Thought leadership. Out of control.',image:'/post-beat/covers/printer-overload-v1.png',width:1816,height:866,alt:'A beige office printer overwhelmed by stacks of LinkedIn announcements covering a conference table.'},
-  {id:'hr-paper-storm',name:'Overprinted',title:'Humbled. Honored. Overprinted.',image:'/post-beat/covers/hr-paper-storm-v1.png',width:1733,height:908,alt:'A deadpan HR executive in yellow headphones surrounded by a printer and mountains of LinkedIn announcements.'},
+  {id:'paper-jam',name:'Paper Jam',title:'Paper Jam. Now printing absolute bangers.',image:'/share/optimizer-printer-20261022-v2.jpg',width:1200,height:630,alt:'A printer with built-in speakers prints LinkedIn images beside yellow headphones.'},
+  {id:'synergy-team',name:'Office band',title:'Let’s circle back. Synergy & the office band.',image:'/share/synergy-team-20261022-v2.jpg',video:'/post-beat/covers/office-band-performance-20261022.mp4',width:1200,height:630,alt:'Synergy and four office colleagues in headsets play guitar, keyboards, drums and bass in front of LinkedIn banners.'},
+  {id:'synth',name:'Sound business',title:'Sound business decisions.',image:'/share/synth-20261022-v2.jpg',width:1200,height:630,alt:'An ivory synthesizer with eight yellow pads, a blue waveform display and a piano keyboard.'},
 ];
 export const DEFAULT_COVER=COVERS[0].id;
 export const getCover=id=>COVERS.find(cover=>cover.id===id)||COVERS[0];
-export const SLEEVE_THEMES={'paper-jam':['#0c1222','#222838','#ffffff','#fff349'],'printer-overload':['#fff349','#e8d832','#111827','#111827'],'hr-paper-storm':['#f5f1e6','#e5e0d5','#1649e7','#1649e7']};
+export const SLEEVE_THEMES={'paper-jam':['#0c1222','#222838','#ffffff','#fff349'],'synergy-team':['#0b1017','#222838','#ffffff','#fff349'],synth:['#06132c','#133562','#ffffff','#fff349']};
 
 // Query parameters are visible to social crawlers. Old #mix links still play.
 // The URL carries the frozen recipe: no database, video export, or expiry needed.
@@ -19,7 +19,7 @@ export function shareUrl(origin,recipe,coverId=DEFAULT_COVER,artist=''){
   return url.href;
 }
 export function coverPreviewUrl(origin,recipe,coverId=DEFAULT_COVER,artist=''){
-  const url=new URL(shareUrl(origin,recipe,coverId,artist));url.pathname='/api/beat/cover.png';url.searchParams.set('art','2');return url.href;
+  const url=new URL(shareUrl(origin,recipe,coverId,artist));url.pathname='/api/beat/cover.png';url.searchParams.set('art','3');return url.href;
 }
 export function readSharedBeat(href){
   const url=new URL(href,'https://linkedinbeats.com');

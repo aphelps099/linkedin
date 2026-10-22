@@ -2,7 +2,7 @@ import express from 'express';
 import {readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import sharp from 'sharp';
-import {readSharedBeat,shareUrl,coverPreviewUrl,SLEEVE_THEMES} from '../src/post-beat/share.js';
+import {readSharedBeat,shareUrl,coverPreviewUrl} from '../src/post-beat/share.js';
 
 const escapeHtml=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 
@@ -51,19 +51,17 @@ export function renderBeatShare(html,href,origin='https://linkedinbeats.com'){
 const previewCache=new Map();
 export async function renderBeatCover({recipe,cover,artist=''}){
   const key=JSON.stringify([recipe.chorus,cover.id,artist]);if(previewCache.has(key))return previewCache.get(key);
-  const [base,stripe,ink,accent]=SLEEVE_THEMES[cover.id];
-  // Reserve the right column for a signal graphic; title and CTA never overlap.
-  const rings=Array.from({length:11},(_,i)=>`<ellipse cx="1160" cy="312" rx="${70+i*25}" ry="${85+i*34}" fill="none" stroke="${accent}" stroke-width="${i===5?5:1.5}" opacity="${i===5?.9:.35}"/>`).join('');
-  const bg=Buffer.from(`<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="s" width="48" height="48" patternUnits="userSpaceOnUse"><path d="M48 0H0V48" fill="none" stroke="${stripe}" stroke-width="1"/></pattern><clipPath id="signal"><rect x="900" y="0" width="300" height="630"/></clipPath></defs><rect width="1200" height="630" fill="${base}"/><rect width="1200" height="630" fill="url(#s)"/><g clip-path="url(#signal)">${rings}</g><rect x="56" y="520" width="325" height="58" rx="29" fill="${accent}"/><path d="M334 545h20m-8-8 8 8-8 8" stroke="${base}" stroke-width="2.5" fill="none"/></svg>`);
+  const artwork=fileURLToPath(new URL('../public'+cover.image,import.meta.url));
+  // Keep the approved card intact above a compact personalized release strip.
+  const footer=Buffer.from('<svg width="1200" height="72" xmlns="http://www.w3.org/2000/svg"><rect width="1200" height="72" fill="#080e1a"/><rect width="1200" height="3" fill="#0757ec"/></svg>');
   const text=async(value,size,color,width,height)=>sharp({text:{text:`<span foreground="${color}">${escapeHtml(value)}</span>`,font:`TT Hoves DemiBold ${size}`,fontfile:fileURLToPath(new URL('../public/home-2/fonts/tt-hoves-demibold.ttf',import.meta.url)),width,...(height?{height}:{}),rgba:true,wrap:'word-char'}}).png().toBuffer();
-  const [heading,label,byline,cta]=await Promise.all([
-    text(recipe.chorus,112,ink,800,330),
-    text('LINKEDIN BEATS  /  STUDIO RELEASE',22,accent,810),
-    text((artist||'LinkedIn Beats').slice(0,48),24,ink,450,32),
-    text('Listen to the remix',23,base,235,27),
+  const [heading,byline]=await Promise.all([
+    text(recipe.chorus,27,'#ffffff',820,42),
+    text((artist||'LinkedIn Beats').slice(0,48),20,'#fbf6e8',265,42),
   ]);
-  const png=await sharp(bg).composite([{input:label,left:58,top:48},{input:heading,left:56,top:130},{input:cta,left:80,top:536},{input:byline,left:420,top:537}]).png().toBuffer();
-  if(previewCache.size>=48)previewCache.delete(previewCache.keys().next().value);previewCache.set(key,png);return png;
+  const png=await sharp(artwork).resize(1200,630).composite([{input:footer,left:0,top:558},{input:heading,left:36,top:575},{input:byline,left:900,top:575}]).png().toBuffer();
+  // Photographic PNGs are larger than the old geometric previews.
+  if(previewCache.size>=12)previewCache.delete(previewCache.keys().next().value);previewCache.set(key,png);return png;
 }
 
 export function createBeatShareRouter({template,origin='https://linkedinbeats.com'}){
