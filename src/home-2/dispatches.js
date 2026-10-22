@@ -7,7 +7,7 @@ export const DISPATCHES = [
     artwork:{tone:'black',image:'cutting-room/posters/let-s-circle-back-synergy-corrected-d6ecf221.jpg',layout:'meeting',placement:'top',kicker:'SYNERGY & CO. / OFFICE SESSIONS',lines:['LET’S','CIRCLE BACK.'],footer:'NO AGENDA. EXCELLENT SYNERGY.'},
   },
   {
-    id:'unpack-linkedinifier', type:'feature', label:'LinkedInifier', shape:'square', href:'lessons/',
+    id:'unpack-linkedinifier', type:'feature', label:'LinkedInifier', shape:'square', href:'optimizer',
     title:'Let’s unpack that. Turn small news into a stronger post.',
     artwork:{tone:'sky',motif:'fold',layout:'unpack',placement:'top',kicker:'THE THOUGHT LEADERSHIP JOURNAL',lines:['Let’s','unpack','that.'],footer:'SMALL NEWS / BIG DEAL'},
   },

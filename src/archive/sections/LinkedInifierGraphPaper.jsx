@@ -66,7 +66,7 @@ export const Campaigns = memo(function Campaigns({base='/'}) {
           <div className="c2-linkedinifier-form">
             <label htmlFor="c2-ordinary">What actually happened?</label>
             <textarea name="ordinary" id="c2-ordinary" readOnly rows={2} value={ordinary} placeholder="I made a cup of coffee. It was pretty good."/>
-            <a className="c2-generate" href={`${base}lessons/`}>Make it LinkedIn <ArrowRight/></a>
+            <a className="c2-generate" href={`${base}optimizer`}>Make it LinkedIn <ArrowRight/></a>
             <button className="c2-another-example" type="button" onClick={tryMoment}>Try another ordinary moment</button>
           </div>
         </div>

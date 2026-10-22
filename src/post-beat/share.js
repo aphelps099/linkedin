@@ -12,7 +12,7 @@ export const SLEEVE_THEMES={'paper-jam':['#0c1222','#222838','#ffffff','#fff349'
 // Query parameters are visible to social crawlers. Old #mix links still play.
 // The URL carries the frozen recipe: no database, video export, or expiry needed.
 export function shareUrl(origin,recipe,coverId=DEFAULT_COVER,artist=''){
-  const url=new URL('/lessons/',origin);
+  const url=new URL('/optimizer',origin);
   url.searchParams.set('beat',encodeRecipe(recipe));
   url.searchParams.set('cover',getCover(coverId).id);
   if(artist.trim())url.searchParams.set('artist',artist.trim().slice(0,48));

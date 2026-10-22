@@ -88,7 +88,7 @@ export const SiteFooter = memo(function SiteFooter({base='/'}) {
         </section>
         <nav className="lb-link-group" aria-label="Explore LinkedIn Beats">
           <div><a href={`${base}#c2-player`}>Beats <PixelArrow/></a><a href={`${base}store/`}>Store <PixelArrow/></a><a href={`${base}learn/`}>Get certified <PixelArrow/></a></div>
-          <div><a href={`${base}lessons/`}>LinkedInifier <PixelArrow/></a><a href={`${base}#c2-dispatch`}>The feed <PixelArrow/></a></div>
+          <div><a href={`${base}optimizer`}>LinkedInifier <PixelArrow/></a><a href={`${base}#c2-dispatch`}>The feed <PixelArrow/></a></div>
         </nav>
       </div>
       <a className="lb-wordmark-link" href={base} aria-label="LinkedIn Beats home"><span className="lb-afterbeat-wordmark"><img className="lb-wordmark" src={`${base}brand/afterbeat/wordmark-white.svg?v=afterbeat-2`} width="7015" height="862" loading="lazy" alt="LinkedIn Beats"/></span></a>

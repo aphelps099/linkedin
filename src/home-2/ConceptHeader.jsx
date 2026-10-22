@@ -6,7 +6,7 @@ import '../brand/wordmark-shimmer.css';
 export const ConceptHeader = memo(function ConceptHeader({base='/', onRadio, playing=false, loading=false, homeSectionBase='', active, children, overlay=false, theme='light', storefront=false}) {
   const [open,setOpen]=useState(false);
   const root=useRef(null), trigger=useRef(null), directory=useRef(null), focusFirst=useRef(false), id=useId();
-  const links=[['Listen',`${homeSectionBase}#c2-player`],['LinkedInifier',`${base}lessons/`],['Learn',`${base}learn/`],['Studio',`${base}synth/`],['Shop',`${base}store/`]];
+  const links=[['Listen',`${homeSectionBase}#c2-player`],['LinkedInifier',`${base}optimizer`],['Learn',`${base}learn/`],['Studio',`${base}synth/`],['Shop',`${base}store/`]];
   useEffect(()=>{
     if(!open)return;
     if(focusFirst.current){focusFirst.current=false;directory.current?.querySelector('a')?.focus();}

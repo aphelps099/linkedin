@@ -14,6 +14,7 @@ for(const size of [16,24,32,180])await sharp(await readFile(dir+'icon-blue.svg')
 // Keep existing application URLs compatible while all consumers adopt Afterbeat.
 for(const [from,to] of [['wordmark-color.svg','wordmark-horizontal.svg'],['stacked-color.svg','wordmark-stacked.svg'],['monogram-black.svg','monogram.svg'],['icon-blue.svg','favicon.svg']])await writeFile(root+'public/home-2/brand/'+to,await readFile(dir+from));
 await writeFile(root+'public/apple-touch-icon.png',await readFile(dir+'png/icon-180.png'));
+for(const size of [16,32,192,512])await sharp(await readFile(dir+'icon-blue.svg')).resize(size,size).png().toFile(root+'public/'+(size<100?`favicon-${size}.png`:`icon-${size}.png`));
 // A small standard ZIP archive; build-time export needs only Node and Sharp.
 const crcTable=Array.from({length:256},(_,n)=>{
  for(let bit=0;bit<8;bit++)n=(n&1)?0xedb88320^(n>>>1):n>>>1;

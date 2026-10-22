@@ -8,6 +8,7 @@ import { createPostBeatService } from './post-beat-service.js';
 import { localAnnouncer } from './local-announcer.js';
 import { beatRobot } from './beat-robot.js';
 import { createCertificateShareRouter } from './certificate-share.js';
+import { createOptimizerRedirects } from './optimizer-routes.js';
 import { createBeatShareRouter } from './beat-share.js';
 import { createCuttingRoomRouter } from './cutting-room.js';
 import { createBeatVideoRouter, beatVideoStore } from './beat-video-service.js';
@@ -141,7 +142,9 @@ app.get(['/studio-3', '/studio-3/index.html'], (req, res) => {
 });
 
 app.use(createCertificateShareRouter());
-app.use(createBeatShareRouter({template:path.join(dist,'lessons/index.html'),beatVideoStore}));
+app.use(createOptimizerRedirects());
+app.use(createBeatShareRouter({template:path.join(dist,'optimizer/index.html'),beatVideoStore}));
+app.get('/optimizer', (_req,res)=>res.set('Cache-Control','no-cache').sendFile(path.join(dist,'optimizer/index.html')));
 
 app.use(createMeetingShareRouter({template:path.join(dist,'studio/index.html'),assets:dist}));
 

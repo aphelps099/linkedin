@@ -8,9 +8,6 @@
 .ll-app .c2-header a{color:inherit;text-decoration:none}
 .ll-app .c2-header button{border:0;border-radius:0;background:transparent;color:inherit}
 .ll-app .c2-header a[aria-current=page]{color:#164be0}
-.ll-app .c2-header .c2-header-radio{color:#fbf6e8}
-.ll-app .c2-header a:hover{color:#164be0}
-.ll-app .c2-header .c2-header-radio:hover{color:#fbf6e8}
 
 /* Compact performance emblem and racing livery, beneath the shared site nav. */
 .el-toolbar{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(230px,390px) minmax(0,1fr);align-items:center;gap:20px 40px;min-height:104px;padding:10px clamp(40px,8.5vw,150px);color:#fbf6e8;background:#0b1520;overflow:hidden}

@@ -4,9 +4,10 @@ import {readFile,stat} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {makeRecipe,encodeRecipe} from '../src/post-beat/composition.js';
 import {COVERS,DEFAULT_COVER,getCover,shareUrl,coverPreviewUrl,readSharedBeat,shareDestinations,suggestedCaption} from '../src/post-beat/share.js';
+import {createOptimizerRedirects} from '../server/optimizer-routes.js';
 import {renderBeatShare,createBeatShareRouter} from '../server/beat-share.js';
 
-const template=process.env.BEAT_SHARE_TEMPLATE||fileURLToPath(new URL('../lessons/index.html',import.meta.url));
+const template=process.env.BEAT_SHARE_TEMPLATE||fileURLToPath(new URL('../optimizer/index.html',import.meta.url));
 const html=await readFile(template,'utf8');
 const recipe=makeRecipe('Zoë joins the team. Welcome to the next chapter, Zoë.');
 assert.equal(DEFAULT_COVER,'paper-jam');
@@ -14,7 +15,7 @@ const urls=new Set();
 for(const cover of COVERS){
   const url=shareUrl('https://linkedinbeats.com/somewhere/?tracking=1#old',recipe,cover.id);
   const parsed=new URL(url);urls.add(url);
-  assert.equal(parsed.pathname,'/lessons/');assert.equal(parsed.hash,'');
+  assert.equal(parsed.pathname,'/optimizer');assert.equal(parsed.hash,'');
   assert.equal(parsed.searchParams.has('tracking'),false);
   assert.deepEqual(readSharedBeat(url),{recipe,cover});
   const output=renderBeatShare(html,url);
@@ -56,7 +57,7 @@ assert.equal(new URL(targets.x).searchParams.get('text'),caption);
 assert.equal(new URL(targets.x).searchParams.get('url'),share);
 assert(new URL(targets.email).searchParams.get('body').includes(share));
 
-const app=express();app.use(createBeatShareRouter({template}));
+const app=express();app.use(createOptimizerRedirects());app.use(createBeatShareRouter({template}));
 app.use((_req,res)=>res.status(204).end());
 const server=app.listen(0,'127.0.0.1');await new Promise(resolve=>server.once('listening',resolve));
 const origin=`http://127.0.0.1:${server.address().port}`;
@@ -69,8 +70,16 @@ try{
     const image=await fetch(coverPreviewUrl(origin,recipe,cover.id));assert.equal(image.status,200);assert(image.headers.get('content-type').includes('image/png'));const png=Buffer.from(await image.arrayBuffer());assert.equal(png.readUInt32BE(16),1200);assert.equal(png.readUInt32BE(20),630);
     assert.equal((await fetch(url,{method:'HEAD'})).status,200);
   }
+  for(const oldPath of ['/lessons','/lessons/','/lessons/index.html','/optimizer/','/optimizer/index.html']){
+    const query=new URL(shareUrl(origin,recipe,DEFAULT_COVER,'Jo Example')).search;
+    const response=await fetch(origin+oldPath+query,{redirect:'manual'});
+    assert.equal(response.status,301);
+    assert.equal(response.headers.get('location'),'/optimizer'+query,'redirect retains every shared recipe parameter');
+    assert.equal((await fetch(origin+oldPath+query)).status,200,'legacy beat URLs resolve to the listening page');
+  }
+  assert.equal((await fetch(origin+'/optimizer?beat=broken')).status,404);
   assert.equal((await fetch(origin+'/lessons/?beat=broken')).status,404);
-  assert.equal((await fetch(origin+'/lessons/')).status,204,'ordinary editor route must continue to static handling');
+  assert.equal((await fetch(origin+'/optimizer')).status,204,'ordinary editor route must continue to static handling');
   assert.equal((await fetch(origin+'/unrelated/?beat=broken')).status,204);
   console.log('Beat sharing passed: three cover URLs, exact recipe/legacy replay, safe server-rendered metadata, personalized PNG previews, artist names, platform links and invalid-link rejection.');
 }finally{server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}
