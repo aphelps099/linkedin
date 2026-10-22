@@ -19,7 +19,7 @@ export function shareUrl(origin,recipe,coverId=DEFAULT_COVER,artist=''){
   return url.href;
 }
 export function coverPreviewUrl(origin,recipe,coverId=DEFAULT_COVER,artist=''){
-  const url=new URL(shareUrl(origin,recipe,coverId,artist));url.pathname='/api/beat/cover.png';return url.href;
+  const url=new URL(shareUrl(origin,recipe,coverId,artist));url.pathname='/api/beat/cover.png';url.searchParams.set('art','2');return url.href;
 }
 export function readSharedBeat(href){
   const url=new URL(href,'https://linkedinbeats.com');
@@ -27,7 +27,7 @@ export function readSharedBeat(href){
   const artist=(url.searchParams.get('artist')||'').trim().slice(0,48);
   return recipe?{recipe,cover:getCover(url.searchParams.get('cover')),...(artist?{artist}:{})}:null;
 }
-export const suggestedCaption=recipe=>`I turned my LinkedIn post into a banger. HR would like a word.\n\n“${recipe.chorus}”`;
+export const suggestedCaption=recipe=>`“${recipe.chorus}”\n\nAn update from the studio.\nlinkedinbeats.com`;
 export function shareDestinations(url,caption){
   return {
     linkedin:`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,

@@ -2,6 +2,12 @@ export const LINKEDIN_HOME='https://www.linkedin.com/feed/';
 export function canShareClip(file,nav=navigator){
   try{return !!file&&typeof nav.share==='function'&&!!nav.canShare?.({files:[file]});}catch{return false;}
 }
+// Desktop Safari advertises file sharing, but its macOS sheet generally has
+// AirDrop/Mail rather than LinkedIn. Keep desktop on the explicit upload path.
+export function useNativeClipShare(file,nav=navigator){
+  const mobile=nav.userAgentData?.mobile===true||/Android|iPhone|iPad|iPod/i.test(nav.userAgent||'')||(/Macintosh/i.test(nav.userAgent||'')&&nav.maxTouchPoints>1);
+  return mobile&&canShareClip(file,nav);
+}
 export function downloadClip(file){
   const href=URL.createObjectURL(file),a=document.createElement('a');a.href=href;a.download=file.name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(href),60000);
 }
@@ -20,7 +26,7 @@ export function copyText(text,nav=navigator,timeout=2500){
 // All activation-sensitive calls happen synchronously in the posting tap.
 // The clip already exists; no rendering or fetch is allowed in this function.
 export function beginClipHandoff({file,caption,onUpdate,nav=navigator,download=downloadClip,open=openLinkedIn}){
-  const native=canShareClip(file,nav);
+  const native=useNativeClipShare(file,nav);
   const state={kind:native?'native':'desktop',caption:'pending',download:false,opened:false,sharing:native};
   onUpdate({...state});
   const copy=copyText(caption,nav);
