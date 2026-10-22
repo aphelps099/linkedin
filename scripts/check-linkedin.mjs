@@ -10,12 +10,12 @@ import {createLinkedInSessionStore} from '../server/linkedin-session-store.js';
 assert.equal(linkedInPlainText('Q4 (aligned) #growth @team'),String.raw`Q4 \(aligned\) \#growth \@team`);
 const directory=await mkdtemp(join(tmpdir(),'lb-linkedin-test-'));
 const origin='https://linkedinbeats.com';
-const env={LINKEDIN_CLIENT_ID:'test-client',LINKEDIN_CLIENT_SECRET:'test-secret',LINKEDIN_REDIRECT_URI:`${origin}/api/auth/linkedin/callback`,LINKEDIN_DATA_DIR:directory};
+const env={LINKEDIN_CLIENT_ID:'test-client\n',LINKEDIN_CLIENT_SECRET:'test-secret\n',LINKEDIN_REDIRECT_URI:`${origin}/api/auth/linkedin/callback\n`,LINKEDIN_DATA_DIR:directory};
 let exchanges=0,posts=0,initializations=0,owner='',postBody=null,uncertain=false,badUpload=false,parts=[],imageRead=false;
 const json=(data,status=200,headers={})=>new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json',...headers}});
 async function provider(url,options={}){
   const body=options.body instanceof URLSearchParams?Object.fromEntries(options.body):typeof options.body==='string'?JSON.parse(options.body):null;
-  if(url.endsWith('/oauth/v2/accessToken')){exchanges++;assert.equal(body.redirect_uri,env.LINKEDIN_REDIRECT_URI);return json({access_token:'private-provider-token',expires_in:3600,scope:'openid profile w_member_social'});}
+  if(url.endsWith('/oauth/v2/accessToken')){exchanges++;assert.equal(body.redirect_uri,env.LINKEDIN_REDIRECT_URI.trim());assert.equal(body.client_id,'test-client');assert.equal(body.client_secret,'test-secret');return json({access_token:'private-provider-token',expires_in:3600,scope:'openid profile w_member_social'});}
   if(url.endsWith('/v2/userinfo'))return json({sub:'member-123',name:'Test Member',email:'must-not-store@example.com',picture:'must-not-store'});
   if(url.includes('action=initializeUpload')){
     initializations++;owner=body.initializeUploadRequest.owner;
@@ -53,7 +53,7 @@ try{
   assert.equal(a.status.name,'Test Member');assert.equal(a.status.token,undefined);
   await call(`/api/auth/linkedin/callback?state=${a.state}&code=test`,{headers:{Cookie:a.cookie}});assert.equal(exchanges,1,'state is single-use');
   const stored=await readFile(join(directory,(await readdir(directory))[0]));assert(!stored.includes('private-provider-token'));assert(!stored.includes('Test Member'));
-  const reopened=createLinkedInSessionStore(directory,env.LINKEDIN_CLIENT_SECRET);assert.equal((await reopened.get(a.cookie.split('=')[1])).token,'private-provider-token');
+  const reopened=createLinkedInSessionStore(directory,env.LINKEDIN_CLIENT_SECRET.trim());assert.equal((await reopened.get(a.cookie.split('=')[1])).token,'private-provider-token');
   assert(!JSON.stringify(await reopened.get(a.cookie.split('=')[1])).includes('must-not-store'),'userinfo is minimized');
   const mp4=Buffer.alloc(80000);mp4.write('ftyp',4);
   assert.equal((await call('/api/linkedin/media',{method:'POST',headers:{...headers,'X-CSRF-Token':'wrong','Content-Type':'video/mp4'},body:mp4})).status,403);

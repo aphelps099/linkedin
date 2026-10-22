@@ -12,7 +12,7 @@ const DAY=86400000;
 export const linkedInPlainText=text=>text.replace(/[|{}@\[\]()<>#\\*_~]/g,char=>`\\${char}`);
 export function createLinkedInRouter({env=process.env,fetchImpl=fetch,store:providedStore}={}){
   const router=express.Router(),pending=new Map(),limits=new Map(),busy=new Set();
-  const clientId=env.LINKEDIN_CLIENT_ID,secret=env.LINKEDIN_CLIENT_SECRET,redirectUri=env.LINKEDIN_REDIRECT_URI;
+  const clientId=env.LINKEDIN_CLIENT_ID?.trim(),secret=env.LINKEDIN_CLIENT_SECRET?.trim(),redirectUri=env.LINKEDIN_REDIRECT_URI?.trim();
   let origin='';try{const u=new URL(redirectUri);if(u.protocol==='https:'&&u.pathname==='/api/auth/linkedin/callback'&&!u.search&&!u.hash)origin=u.origin;}catch{}
   const directory=env.LINKEDIN_DATA_DIR||(env.NEWSLETTER_DATA_DIR?join(dirname(env.NEWSLETTER_DATA_DIR),'linkedin-auth'):env.RENDER?'/data/linkedin-auth':null);
   const configured=Boolean(clientId&&secret&&origin&&(directory||providedStore));
