@@ -24,6 +24,11 @@ for(const cover of COVERS){
   assert(output.includes('name="robots" content="noindex"'));
   assert(output.includes('name="twitter:card" content="summary_large_image"'));
   assert(output.includes('<div id="root"></div>'));
+  const cachedVideo=renderBeatShare(html,url,'https://linkedinbeats.com',{includeVideo:true});
+  assert(!cachedVideo.includes('property="og:video"'),'temporary cached videos must not become link embeds');
+  assert(!cachedVideo.includes('name="twitter:player"'),'an MP4 is not a Twitter player iframe');
+  assert.equal((cachedVideo.match(/name="twitter:card"/g)||[]).length,1);
+  assert(new URL(coverPreviewUrl('https://linkedinbeats.com',recipe,cover.id)).searchParams.has('art'),'new artwork must bypass the old preview image cache');
   assert(/<script\b[^>]*\btype="module"/.test(output),'sharing metadata must retain the app entry point');
   const canonical=output.match(/rel="canonical" href="([^"]+)"/)[1].replaceAll('&amp;','&');
   assert.equal(canonical,url);
