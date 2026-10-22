@@ -6,7 +6,7 @@ function PixelArrow() {
 }
 export const Campaigns = memo(function Campaigns({base='/'}) {
   return <div id="c2-tools" className="lb-feature-cards"><div className="lc-pair">
-    <a className="lc-panel" href={`${base}lessons/`} aria-label="Open the LinkedInifier">
+    <a className="lc-panel" href={`${base}optimizer`} aria-label="Open the LinkedInifier">
       <span className="lc-pill">LINKEDINIFIER</span>
       <h2 id="lc-title">Small news.<br/>Big deal.</h2>
       <p className="lc-description">Turn small news into a stronger LinkedIn post. Boost your post score.</p>

@@ -27,9 +27,11 @@ export function renderBeatShare(html,href,origin='https://linkedinbeats.com'){
     'og:image:width':1200,
     'og:image:height':630,
     'og:image:alt':title,
+    'og:image:type':'image/png',
     'twitter:title':title,
     'twitter:description':description,
-    'twitter:image':image
+    'twitter:image':image,
+    'twitter:image:alt':title
   };
 
   let result=html.replace(/<title>[^<]*<\/title>/,()=>`<title>${escapeHtml(title)}</title>`)
@@ -72,11 +74,11 @@ export function createBeatShareRouter({template,origin='https://linkedinbeats.co
       res.set('Cache-Control','public, max-age=86400').type('png').send(await renderBeatCover(shared));
     }catch(error){next(error);}
   });
-  router.get(['/lessons','/lessons/','/lessons/index.html'],async(req,res,next)=>{
+  router.get(['/optimizer'],async(req,res,next)=>{
     if(!new URL(req.originalUrl,origin).searchParams.has('beat'))return next();
     const shared=readSharedBeat(req.originalUrl);
     if(!shared){
-      res.status(404).type('html').send('<!doctype html><html lang="en"><title>Beat not found</title><meta name="viewport" content="width=device-width,initial-scale=1"><body><h1>This beat link is incomplete.</h1><p>Ask the sender for a new link, or <a href="/lessons/">make your own beat</a>.</p></body></html>');
+      res.status(404).type('html').send('<!doctype html><html lang="en"><link rel="icon" type="image/svg+xml" href="/home-2/brand/favicon.svg?v=brand-20261022"><title>Beat not found</title><meta name="viewport" content="width=device-width,initial-scale=1"><body><h1>This beat link is incomplete.</h1><p>Ask the sender for a new link, or <a href="/optimizer">make your own beat</a>.</p></body></html>');
       return;
     }
     try{
@@ -97,7 +99,7 @@ export function beatSharePreview(){
     server.middlewares.use(app);
   },transformIndexHtml(html,context){
     const href=context.originalUrl;
-    if(!href||!/^\/lessons(?:\/|\?|$)/.test(href))return html;
+    if(!href||!/^\/optimizer(?:\/|\?|$)/.test(href))return html;
     return renderBeatShare(html,href)||html;
   }};
 }

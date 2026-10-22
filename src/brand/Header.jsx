@@ -3,7 +3,7 @@ import {Play, Pause, LoaderCircle} from 'lucide-react';
 import './fonts.css';
 import './header.css';
 
-const LINKS=[['Listen','#listen'],['Lessons','lessons/'],['Studio','studio/'],['Roast','roast/'],['Store','store/']];
+const LINKS=[['Listen','#listen'],['LinkedInifier','optimizer'],['Studio','studio/'],['Roast','roast/'],['Store','store/']];
 export function Header({base='/',active,onRadio,playing=false,loading=false,listenHref,hiddenLinks=[],children}){
   const [open,setOpen]=useState(false), root=useRef(null), trigger=useRef(null), id=useId();
   useEffect(()=>{

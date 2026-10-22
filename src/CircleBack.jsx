@@ -964,7 +964,7 @@ export default function CircleBack({stagePreview=false,racingPreview=false}){
       <a href="../" aria-label="LinkedIn Beats home"><img src="../home-2/brand/wordmark-horizontal.svg?v=afterbeat-2" alt="LinkedIn Beats"/></a>
       <span className="stage2-label">Studio</span>
       <nav aria-label="Studio navigation"><button onClick={()=>setAudioDrawer(true)}>Mix <Settings size={17}/></button><details onKeyDown={e=>{if(e.key==='Escape'){e.currentTarget.open=false;e.currentTarget.querySelector('summary').focus();}}}><summary>Menu <span aria-hidden="true">☰</span></summary><div>
-        <a href="../">Home</a><a href="../lessons/">LinkedInifier</a><a href="../store/">Shop</a>
+        <a href="../">Home</a><a href="../optimizer">LinkedInifier</a><a href="../store/">Shop</a>
         <button onClick={()=>{setStudio(true);setAdvanced(false);}}>Mixing desk ↗</button>
         <button onClick={()=>setRemixOpen(o=>!o)}>{remixOpen?'Close remix':'Build your remix'}</button>
       </div></details></nav>

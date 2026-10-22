@@ -102,7 +102,7 @@ export default function Lessons(){
   </div>;
   if(sharedRecipe)return <div className="ll-app ll-rows c2-home">
     <ConceptHeader base="../" homeSectionBase="../" active="LinkedInifier" theme="dark"/>
-    <main className="pb-shared"><div className="pb-shared-inner"><p className="pb-shared-eyebrow">A LITTLE PROFESSIONAL DEVELOPMENT.</p>{sharedCover&&<img className="pb-shared-cover" src={coverPreviewUrl(window.location.origin,sharedRecipe,sharedCover.id,readSharedBeat(window.location.href)?.artist)} width={1200} height={630} alt={sharedRecipe.chorus}/>}<h1 className="pb-shared-title">{sharedRecipe.chorus}</h1><p className="pb-shared-chorus">“{sharedRecipe.chorus}”</p><PostBeat key={JSON.stringify(sharedRecipe)} post="" initialRecipe={sharedRecipe} initialCover={sharedCover?.id} initialArtist={readSharedBeat(window.location.href)?.artist}/><a className="pb-make-own" href="/lessons/">Make your own beat ↗</a></div></main>
+    <main className="pb-shared"><div className="pb-shared-inner"><p className="pb-shared-eyebrow">A LITTLE PROFESSIONAL DEVELOPMENT.</p>{sharedCover&&<img className="pb-shared-cover" src={coverPreviewUrl(window.location.origin,sharedRecipe,sharedCover.id,readSharedBeat(window.location.href)?.artist)} width={1200} height={630} alt={sharedRecipe.chorus}/>}<h1 className="pb-shared-title">{sharedRecipe.chorus}</h1><p className="pb-shared-chorus">“{sharedRecipe.chorus}”</p><PostBeat key={JSON.stringify(sharedRecipe)} post="" initialRecipe={sharedRecipe} initialCover={sharedCover?.id} initialArtist={readSharedBeat(window.location.href)?.artist}/><a className="pb-make-own" href="/optimizer">Make your own beat ↗</a></div></main>
     <ConceptFooter base="../"/>
   </div>;
   return <div className="ll-app ll-rows c2-home">

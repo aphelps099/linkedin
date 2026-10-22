@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { postBeatApi } from './server/post-beat-dev.js';
 import { certificateSharePreview } from './server/certificate-share.js';
+import { optimizerPreview } from './server/optimizer-routes.js';
 import { beatSharePreview } from './server/beat-share.js';
 import { fileURLToPath } from 'node:url';
 import { generateVoiceClips } from './server/voice-service.js';
@@ -86,7 +87,7 @@ function localCheckoutApi(){
 
 export default defineConfig({
   server: {allowedHosts:['terminal.local'], proxy:{'/api/cutting-room/media':{target:'https://linkedinbeats.com',changeOrigin:true,followRedirects:true}}},
-  plugins: [react(), localVoiceApi(), localCheckoutApi(), postBeatApi(), beatSharePreview(), certificateSharePreview()],
+  plugins: [react(), optimizerPreview(), localVoiceApi(), localCheckoutApi(), postBeatApi(), beatSharePreview(), certificateSharePreview()],
   // Relative base so the built index.html works when served from a
   // GitHub Pages project path (https://<user>.github.io/linkedin/).
   base: './',
@@ -106,7 +107,8 @@ export default defineConfig({
         studio: fileURLToPath(new URL('./studio/index.html', import.meta.url)),
         studio2: fileURLToPath(new URL('./studio-2/index.html', import.meta.url)),
         studio3: fileURLToPath(new URL('./studio-3/index.html', import.meta.url)),
-        // LinkedIn Lessons — the guided post generator, served at /lessons/
+        // LinkedInifier lives at /optimizer; /lessons/ remains a bookmark redirect.
+        optimizer: fileURLToPath(new URL('./optimizer/index.html', import.meta.url)),
         lessons: fileURLToPath(new URL('./lessons/index.html', import.meta.url)),
         // Learn is the main course entry; retain /program/ for existing bookmarks.
         learn: fileURLToPath(new URL('./learn/index.html', import.meta.url)),

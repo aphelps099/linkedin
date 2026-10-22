@@ -1,0 +1,40 @@
+{
+  "created": "2026-10-22",
+  "generation": "Built-in image_gen",
+  "exports": {
+    "size": "1200 \u00d7 630",
+    "format": "JPEG",
+    "quality": 95,
+    "chroma_subsampling": "4:4:4"
+  },
+  "cards": [
+    {
+      "name": "optimizer-printer",
+      "page": "/optimizer",
+      "native_size": [
+        1729,
+        910
+      ]
+    },
+    {
+      "name": "synergy-team",
+      "pages": [
+        "/",
+        "/studio/"
+      ],
+      "native_size": [
+        1730,
+        909
+      ]
+    },
+    {
+      "name": "synth",
+      "page": "/synth/",
+      "native_size": [
+        1729,
+        910
+      ]
+    }
+  ],
+  "regenerate_exports": "node scripts/export-social-cards.mjs"
+}
