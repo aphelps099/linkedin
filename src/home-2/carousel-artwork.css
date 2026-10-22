@@ -1,3 +1,4 @@
+@import '../brand/boldonse.css';
 /* No selectors for the rail, cards, captions, pagination, or player. */
 .dispatch-art--editorial::after{display:none}
 .lb-editorial-art{position:absolute;inset:0;overflow:hidden;isolation:isolate;container-type:inline-size;background:var(--lb-art-cobalt);color:var(--lb-art-paper);font-family:LBFounders,C2Hoves,Arial,sans-serif}
@@ -79,3 +80,7 @@
 @keyframes lb-editorial-star-spin{to{transform:rotate(360deg)}}
 .dispatch-section[data-motion=false] .lb-editorial-art__star{animation:none}
 @media(prefers-reduced-motion:reduce){.lb-editorial-art__star{animation:none}}
+
+/* Two music sleeves share the sampler's display face. */
+.lb-editorial-art--vinyl .lb-editorial-art__title{font-family:'LB Boldonse',sans-serif;font-weight:400;font-size:8cqw;line-height:1.5;letter-spacing:-.025em}
+.lb-editorial-art--layout-loop .lb-editorial-art__title{font-family:'LB Boldonse',sans-serif;font-weight:400;font-size:11.2cqw;line-height:1.35;letter-spacing:-.025em}
