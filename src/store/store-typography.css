@@ -1,5 +1,6 @@
 @import '../brand/type-system.css';
 @import '../brand/category-pill.css';
+@import '../brand/hoves-black.css';
 
 .shop-app{--shop-display:var(--lb-font-section)}
 .shop-app .shop-hero-copy h1,.shop-app .shop-detail-info h2{
@@ -21,7 +22,11 @@
 }
 .shop-app .shop-card-caption .shop-card-price.is-preview{font-family:var(--lb-font-meta);font-size:12px}
 .shop-app .shop-detail-price>span{display:inline-block}
+.shop-app :is(.shop-hero-copy h1,.shop-collection-heading h2,.shop-card-caption h3,.shop-detail-info h2){
+  font-family:'LB Hoves Black',C2Hoves,Arial,sans-serif;font-weight:900;font-synthesis:none;
+}
+.shop-app .shop-collection-heading h2{font-size:clamp(30px,3.4vw,50px);letter-spacing:-.035em}
 @media(max-width:760px){
-  .shop-app .shop-collection-heading h2{font-size:clamp(36px,9vw,46px)}
+  .shop-app .shop-collection-heading h2{font-size:clamp(22px,6.2vw,42px)}
   .shop-app .shop-hero-copy h1{font-size:clamp(40px,9.7vw,70px)}
 }
