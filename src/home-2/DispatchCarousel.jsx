@@ -5,8 +5,8 @@ import {TRACKS, formatTime} from '../home/tracks.js';
 import {CarouselArtwork} from './CarouselArtwork.jsx';
 import './dispatch-carousel.css';
 
-const ICONS = {video:Play, song:Headphones, post:Linkedin, press:FileText, blog:FileText};
-const ACTIONS = {video:'Watch film', song:'Listen now', post:'Read post', press:'Read release', blog:'Read story'};
+const ICONS = {video:Play, song:Headphones, post:Linkedin, press:FileText, blog:FileText, feature:ArrowUpRight};
+const ACTIONS = {video:'Watch film', song:'Listen now', post:'Read post', press:'Read release', blog:'Read story', feature:'Explore'};
 
 const Artwork = memo(function Artwork({item, base}) {
   return <div className="dispatch-art dispatch-art--editorial" aria-hidden="true"><CarouselArtwork artwork={item.artwork} base={base}/></div>;
@@ -83,14 +83,14 @@ export function DispatchCarousel({base='/', motion=true, state, onPlayTrack, onT
   };
   const open=item=>{setPaused(true);onPause();setOpened(item);if(item.type==='song')onPlayTrack(item.track);};
   const close=()=>{if(opened?.type==='song')onPause();setOpened(null);};
-  return <section ref={section} className="dispatch-section" id="c2-dispatch" aria-labelledby="dispatch-heading" aria-roledescription="carousel"
+  return <section ref={section} className="dispatch-section" id="c2-dispatch" aria-labelledby="dispatch-heading" aria-roledescription="carousel" data-motion={motion}
     onMouseEnter={()=>setHovered(true)} onMouseLeave={()=>setHovered(false)}
     onFocusCapture={()=>setFocused(true)} onBlurCapture={e=>{if(!e.currentTarget.contains(e.relatedTarget))setFocused(false);}}>
     <header className="dispatch-heading"><h2 id="dispatch-heading">Humbled to share.</h2></header>
     <div ref={rail} className="dispatch-rail" onScroll={updateActive} onPointerDown={()=>setPaused(true)} onWheel={()=>setPaused(true)}>
-      {DISPATCHES.map((item,index)=>{const Icon=ICONS[item.type];return <article key={item.id} className={`dispatch-card dispatch-card--${item.shape}`} aria-label={`${index+1} of ${DISPATCHES.length}: ${item.label}`}>
-        <button type="button" className="dispatch-art-button" onClick={()=>open(item)} aria-label={`${ACTIONS[item.type]}: ${item.title}`}><Artwork item={item} base={base}/></button>
-        <div className="dispatch-card-copy"><h3><button type="button" onClick={()=>open(item)}>{item.title}</button></h3><div className="dispatch-card-actions"><button type="button" onClick={()=>open(item)} aria-label={`${ACTIONS[item.type]}: ${item.title}`}><Icon fill={item.type==='video'?'currentColor':'none'}/></button><button type="button" className="dispatch-open" onClick={()=>open(item)} aria-label={`Open ${item.label.toLowerCase()}: ${item.title}`}><ExternalLink/></button></div></div>
+      {DISPATCHES.map((item,index)=>{const Icon=ICONS[item.type], Target=item.href?'a':'button', targetProps=item.href?{href:`${base}${item.href}`}:{type:'button',onClick:()=>open(item)};return <article key={item.id} className={`dispatch-card dispatch-card--${item.shape}`} aria-label={`${index+1} of ${DISPATCHES.length}: ${item.label}`}>
+        <Target {...targetProps} className="dispatch-art-button" aria-label={`${ACTIONS[item.type]}: ${item.title}`}><Artwork item={item} base={base}/></Target>
+        <div className="dispatch-card-copy"><h3><Target {...targetProps}>{item.title}</Target></h3><div className="dispatch-card-actions"><Target {...targetProps} aria-label={`${ACTIONS[item.type]}: ${item.title}`}><Icon fill={item.type==='video'?'currentColor':'none'}/></Target><Target {...targetProps} className="dispatch-open" aria-label={`Open ${item.label.toLowerCase()}: ${item.title}`}><ExternalLink/></Target></div></div>
       </article>;})}
     </div>
     <div className="dispatch-controls" aria-label="Feed carousel controls">

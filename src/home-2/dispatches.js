@@ -2,6 +2,16 @@
 // Media points to the existing band library; songs use the main radio transport.
 export const DISPATCHES = [
   {
+    id:'meeting-studio', type:'feature', label:'The studio', shape:'wide', href:'synth/',
+    title:'This meeting has a beat. Make yours in the studio.',
+    artwork:{tone:'black',image:'cutting-room/posters/let-s-circle-back-synergy-corrected-d6ecf221.jpg',layout:'meeting',placement:'top',kicker:'SYNERGY & CO. / OFFICE SESSIONS',lines:['LET’S','CIRCLE BACK.'],footer:'NO AGENDA. EXCELLENT SYNERGY.'},
+  },
+  {
+    id:'unpack-linkedinifier', type:'feature', label:'LinkedInifier', shape:'square', href:'lessons/',
+    title:'Let’s unpack that. Turn small news into a stronger post.',
+    artwork:{tone:'sky',motif:'star',layout:'unpack',placement:'top',kicker:'THE THOUGHT LEADERSHIP JOURNAL',lines:['Let’s','unpack','that.'],footer:'SMALL NEWS / BIG DEAL'},
+  },
+  {
     id:'office-band', type:'video', label:'Office sessions', shape:'wide', art:'session',
     title:'The office has a band. Productivity has left the building.',
     image:'cutting-room/posters/office-band-loop-concept-6747aa0e.jpg',
