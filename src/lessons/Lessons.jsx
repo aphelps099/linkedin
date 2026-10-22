@@ -40,6 +40,11 @@ export default function Lessons(){
   const [seed,setSeed]=useState(newSeed);
   const [isSupercharged,setIsSupercharged]=useState(false),[turboSeed,setTurboSeed]=useState(null);
   const [contextOpen,setContextOpen]=useState(false);
+  const [synergyNote,setSynergyNote]=useState('Ready when you are.');
+  const [hasEdited,setHasEdited]=useState(false);
+  const synergyTimer=useRef(null);
+  const acknowledge=(note)=>{clearTimeout(synergyTimer.current);synergyTimer.current=setTimeout(()=>setSynergyNote(note),650);};
+  useEffect(()=>()=>clearTimeout(synergyTimer.current),[]);
   const [copyStatus,setCopyStatus]=useState(''),[status,setStatus]=useState('');
   const [isCharging,setIsCharging]=useState(false),[boostCount,setBoostCount]=useState(0);
   const copied=copyStatus==='Copied ✓';
@@ -59,16 +64,19 @@ export default function Lessons(){
   const resetStage=()=>{setSharedRecipe(null);if(window.location.hash.startsWith('#mix='))history.replaceState(null,'',window.location.pathname+window.location.search);clearTimeout(chargeTimer.current);setIsCharging(false);setIsSupercharged(false);setTurboSeed(null);setBoostCount(0);};
   const update=(key,value)=>{
     resetStage();
+    setHasEdited(true);
+    acknowledge(value.trim()?'Noted.':'Ready when you are.');
     if(catId==='announce'&&key==='kind'&&value!==answers.kind){
       variants.current[answers.kind]={...answers};
       setDrafts(d=>({...d,announce:variants.current[value]||{kind:value,company:answers.company||''}}));
     }else setDrafts(d=>({...d,[catId]:{...d[catId],[key]:value}}));
     setStatus('');
   };
-  const pick=id=>{resetStage();setCatId(id);setContextOpen(false);setStatus('');};
-  const example=()=>{resetStage();setDrafts(d=>({...d,[catId]:{...(catId==='announce'?ANNOUNCEMENT_EXAMPLES[answers.kind]:EXAMPLES[catId])}}));setStatus('Example loaded. Edit the blue words to make it yours.');};
-  const regenerate=()=>{setSharedRecipe(null);clearTimeout(chargeTimer.current);setIsCharging(false);setBoostCount(0);if(isSupercharged)setTurboSeed(newSeed());else setSeed(newSeed());setStatus(isSupercharged?'A fresh supercharged version is ready.':'A fresh LinkedIn version is ready.');};
+  const pick=id=>{acknowledge('New brief. Understood.');resetStage();setCatId(id);setContextOpen(false);setStatus('');};
+  const example=()=>{setHasEdited(true);acknowledge('Strong opening.');resetStage();setDrafts(d=>({...d,[catId]:{...(catId==='announce'?ANNOUNCEMENT_EXAMPLES[answers.kind]:EXAMPLES[catId])}}));setStatus('Example loaded. Edit the blue words to make it yours.');};
+  const regenerate=()=>{acknowledge('Another perspective.');setSharedRecipe(null);clearTimeout(chargeTimer.current);setIsCharging(false);setBoostCount(0);if(isSupercharged)setTurboSeed(newSeed());else setSeed(newSeed());setStatus(isSupercharged?'A fresh supercharged version is ready.':'A fresh LinkedIn version is ready.');};
   const supercharge=()=>{
+    acknowledge('Consider it elevated.');
     restoreBoostFocus.current=document.activeElement===boostButton.current;
     setSharedRecipe(null);
     const completesCharge=boostCount+1>=MAX_SUPERCHARGES;
@@ -82,7 +90,7 @@ export default function Lessons(){
       if(!completesCharge&&window.innerWidth<800){outputRef.current?.focus({preventScroll:true});outputRef.current?.scrollIntoView({behavior:reducedMotion?'instant':'smooth',block:'start'});}
     },reducedMotion?0:1100);
   };
-  const copy=async()=>{try{await copyText(text);setCopyStatus('Copied ✓');clearTimeout(copyTimer.current);copyTimer.current=setTimeout(()=>setCopyStatus(''),1800);}catch{setCopyStatus('Copy unavailable. Select the post text to copy it.');}};
+  const copy=async()=>{try{await copyText(text);acknowledge('Ready to circulate.');setCopyStatus('Copied ✓');clearTimeout(copyTimer.current);copyTimer.current=setTimeout(()=>setCopyStatus(''),1800);}catch{setCopyStatus('Copy unavailable. Select the post text to copy it.');}};
   const boostControl=<div className="el-boost-control">
     <button ref={boostButton} type="button" className="el-supercharge" onClick={fullyCharged?copy:supercharge} disabled={isCharging} aria-busy={isCharging} aria-describedby={fullyCharged?'charge-handoff':undefined} title={fullyCharged?'Copy your post to the clipboard':isSupercharged?'Generate another supercharged version':'Give this post the full LinkedIn treatment'}>
       <span key={boostCount} className={`el-boost-face${isCharging?' is-fired':''}`}>
@@ -93,13 +101,13 @@ export default function Lessons(){
     </button>
   </div>;
   if(sharedRecipe)return <div className="ll-app ll-rows c2-home">
-    <ConceptHeader base="../" homeSectionBase="../" active="LinkedInifier"/>
+    <ConceptHeader base="../" homeSectionBase="../" active="LinkedInifier" theme="dark"/>
     <main className="pb-shared"><div className="pb-shared-inner"><p className="pb-shared-eyebrow">A LITTLE PROFESSIONAL DEVELOPMENT.</p>{sharedCover&&<img className="pb-shared-cover" src={coverPreviewUrl(window.location.origin,sharedRecipe,sharedCover.id,readSharedBeat(window.location.href)?.artist)} width={1200} height={630} alt={sharedRecipe.chorus}/>}<h1 className="pb-shared-title">{sharedRecipe.chorus}</h1><p className="pb-shared-chorus">“{sharedRecipe.chorus}”</p><PostBeat key={JSON.stringify(sharedRecipe)} post="" initialRecipe={sharedRecipe} initialCover={sharedCover?.id} initialArtist={readSharedBeat(window.location.href)?.artist}/><a className="pb-make-own" href="/lessons/">Make your own beat ↗</a></div></main>
     <ConceptFooter base="../"/>
   </div>;
   return <div className="ll-app ll-rows c2-home">
     <a className="ll-skip" href="#lessons-main">Skip to the editor</a>
-    <ConceptHeader base="../" homeSectionBase="../" active="LinkedInifier"/>
+    <ConceptHeader base="../" homeSectionBase="../" active="LinkedInifier" theme="dark"/>
     <main id="lessons-main">
       <div className="el-toolbar">
         <h1 className="el-emblem"><span className="el-sr">Get LinkedInified</span><img src="../lessons/get-linkedinified.svg" width="500" height="112" alt="" aria-hidden="true"/></h1>
@@ -107,16 +115,19 @@ export default function Lessons(){
       </div>
       <div className="el-workspace">
         <section className={`el-facts${isCharging?' is-feeding':''}`} aria-labelledby="facts-title">
-          <div className="el-row-heading"><div><span className="el-step-label">01 / THE FACTS</span><h2 id="facts-title">What actually happened?</h2></div><p>Start small. We’ll make it sound significant.</p></div>
+          <div className="el-row-heading"><div><h2 id="facts-title">What actually happened?</h2></div><p>Turn the everyday into your next update.</p></div>
           {choices.length>0&&<div className="el-choices">{choices.map(s=><fieldset key={`${catId}-${s.key}`}>
             <legend className={choices.length===1?'el-sr':''}>{s.key==='source'?'Inspired by':s.key==='topic'?'Related to':s.ask}</legend>
             <div className="el-choice-pills">{s.options.map(o=><button type="button" key={o} aria-pressed={(answers[s.key]||s.options[0])===o} onClick={()=>update(s.key,o)}>{o}</button>)}</div>
           </fieldset>)}</div>}
-          <div className="el-receipt">
+          <div className={`el-receipt${hasEdited?' has-edited':''}`}>
           <Sentence catId={catId} answers={answers} steps={steps} onChange={update}/>
-          <div className="el-fact-actions">{extra.length>0?<button aria-expanded={contextOpen} aria-controls="extra-context" onClick={()=>setContextOpen(!contextOpen)}>{contextOpen?<Minus aria-hidden="true"/>:<MessageSquarePlus aria-hidden="true"/>}<span>{contextOpen?'Less context':'Add context'}</span></button>:<span/>}<button onClick={example}><span>Try an example</span></button></div>
           {extra.length>0&&contextOpen&&<div className="el-context" id="extra-context">{extra.map(s=><label key={s.key} htmlFor={`context-${s.key}`}>{s.ask}<input id={`context-${s.key}`} name={s.key} value={answers[s.key]||''} placeholder={s.placeholder} maxLength={300} onChange={e=>update(s.key,e.target.value)}/></label>)}</div>}
+          <div className="el-receipt-tools">
+          <div className="el-fact-actions">{extra.length>0?<button aria-expanded={contextOpen} aria-controls="extra-context" onClick={()=>setContextOpen(!contextOpen)}>{contextOpen?<Minus aria-hidden="true"/>:<MessageSquarePlus aria-hidden="true"/>}<span>{contextOpen?'Less context':'Add context'}</span></button>:<span/>}<button onClick={example}><span>Try an example</span></button></div>
           <div className="el-input-bottom"><p className="el-hint">Edit the blue fields. Your post updates as you type.</p><a className="el-preview-link" href="#post-preview">See your post<ArrowDown size={16} aria-hidden="true"/></a></div>
+          <aside className="el-synergy" aria-label="Synergy"><span className="el-synergy-note" role="status" aria-live="polite">{synergyNote}</span><img src="../lessons/synergy-assistant.webp" width="512" height="512" alt="Synergy, wearing his headset and holding a coffee" decoding="async"/></aside>
+          </div>
           </div>
           <p className="el-sr" role="status">{status}</p>
         </section>
@@ -125,8 +136,8 @@ export default function Lessons(){
             ticketControls={boostControl}
             ticketScore={<ScoreReadout key={`score-${boostCount}`} score={score} label="LinkedInifier score" scaleLabel="/ 100" charging={isCharging} supercharged={isSupercharged} baseline={firstVersion.score.index}/>}
             ticketNotice={<p id="charge-handoff" className={fullyCharged?'el-charge-complete':'el-sr'} role="status">{fullyCharged&&<><strong>You’re all charged up.</strong><span>{copied?'Copied. Paste it into LinkedIn.':copyStatus.startsWith('Copy unavailable')?copyStatus:'Copy your post, then paste it into LinkedIn.'}</span></>}</p>}
-            heading={<div className="el-row-heading"><div><span className="el-step-label">02 / THE POST</span><h2 id="output-title">{isSupercharged?'Now that’s thought leadership.':'Ready for the feed.'}</h2></div><p>Your facts. A little more main-character energy.</p></div>}
-            postHeader={<header className="el-post-profile"><span className="el-post-avatar" aria-hidden="true"><UserRound/></span><div><strong>You <span>· 1st</span></strong><p>Aspiring thought leader. Open to synergy.</p><small>Just now · <Globe size={12} aria-label="Public post preview"/></small></div><span className="el-preview-tag">POST PREVIEW</span></header>}
+            heading={<div className="el-row-heading"><div><h2 id="output-title">Your next post.</h2></div></div>}
+            postHeader={<header className="el-post-profile"><span className="el-post-avatar" aria-hidden="true"><UserRound/></span><div><strong>You <span>· 1st</span></strong><p>Your professional update</p><small>Just now · <Globe size={12} aria-label="Public post preview"/></small></div><span className="el-preview-tag">POST PREVIEW</span></header>}
             postActions={<div className="el-output-actions"><button className={`el-copy${copied?' is-copied':''}`} onClick={copy}>{copied?<Check aria-hidden="true"/>:<Copy aria-hidden="true"/>}<span>{copied?'Copied':'Copy post'}</span></button><button onClick={regenerate}>Try another</button>{isSupercharged&&<button onClick={()=>{resetStage();setStatus('Showing the first LinkedIn version.');}}>First version</button>}</div>}>
           <PostPreview text={text} supercharged={isSupercharged}/>
           </PostBeat>

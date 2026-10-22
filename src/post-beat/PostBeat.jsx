@@ -92,12 +92,6 @@ export function PostBeat({post,initialRecipe,initialCover=DEFAULT_COVER,initialA
   return <div className={`pb-inline${postView?' pb-post-view':ticketControls?' pb-has-ticket':''}`}>
     {postView?<>
       {heading}
-      <section className="el-amplify el-controls" aria-label="Improve your post score">
-        {ticketScore}
-        <div className="el-amplify-action"><p>A little more thought leadership?</p>{ticketControls}</div>
-      </section>
-      <p className="el-score-note">Our very unofficial thought-leadership score. Not a LinkedIn ranking.</p>
-      {ticketNotice}
       <article className="el-social-post" aria-label="LinkedIn-style post preview">
         {postHeader}
         {children}
@@ -109,6 +103,12 @@ export function PostBeat({post,initialRecipe,initialCover=DEFAULT_COVER,initialA
         </div>
         <div className="el-post-footer">{postActions}<button className="el-share-remix" type="button" onClick={share} aria-haspopup="dialog"><Share2 size={17} aria-hidden="true"/>Share the remix</button></div>
       </article>
+      <section className="el-amplify el-controls" aria-label="Improve your post score">
+        {ticketScore}
+        <div className="el-amplify-action"><p>A little more thought leadership?</p>{ticketControls}</div>
+      </section>
+      <p className="el-score-note">Our very unofficial thought-leadership score. Not a LinkedIn ranking.</p>
+      {ticketNotice}
     </>:<>
       {ticketControls?<section className="pb-ticket el-controls" aria-label="Supercharge and play your post"><div className="pb-ticket-main">{ticketControls}{player}</div>{ticketScore}</section>:player}
       {ticketControls&&<div className="pb-share-below"><button type="button" onClick={share} aria-haspopup="dialog"><Share2 size={24} aria-hidden="true"/><span>Release your single</span></button></div>}
