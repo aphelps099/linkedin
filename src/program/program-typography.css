@@ -1,10 +1,11 @@
 @import '../brand/type-system.css';
+@import '../brand/hoves-black.css';
 
 .pg-app :is(.pg-display,.pg-h1,.pg-row-title){
   font-family:var(--lb-font-headline);font-weight:var(--lb-weight-headline);
   font-synthesis:none;letter-spacing:-.025em;
 }
-.pg-app .pg-display{font-size:clamp(40px,4.5vw,56px);line-height:1.05}
+.pg-app .pg-display{font-family:'LB Hoves Black',C2Hoves,Arial,sans-serif;font-weight:900;font-size:clamp(40px,4.5vw,56px);line-height:1.05;text-wrap:balance}
 .pg-app .pg-h1{line-height:1.12}
 .pg-app .pg-row-title{font-size:24px;line-height:1.2}
 .pg-app :is(.pg-course-heading h2,.pg-certificate-unlock h2,.pg-beat-unlock h2){
