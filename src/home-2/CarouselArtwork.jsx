@@ -22,7 +22,7 @@ export function CarouselArtwork({artwork, base = '/'}) {
     {motif === 'wave' && <div className="lb-editorial-art__wave" aria-hidden="true">{Array.from({length: 58}, (_, i) => <i key={i} style={{height: `${8 + (Math.sin(i * 1.31) ** 2) * (20 + 68 * Math.sin(i / 57 * Math.PI) ** 4)}%`}}/>)}</div>}
     {motif === 'vinyl' && <div className="lb-editorial-art__vinyl" aria-hidden="true"><i/></div>}
     {motif === 'steps' && <div className="lb-editorial-art__steps" aria-hidden="true"><i/><i/><i/><i/></div>}
-    {motif === 'star' && <div className="lb-editorial-art__star" aria-hidden="true">{Array.from({length:8},(_,i)=><i key={i} style={{'--angle':`${i*45}deg`}}/>)}</div>}
+    {motif === 'fold' && <img className="lb-editorial-art__fold" src={`${base}home-2/artwork/unpack-fold.svg`} alt="" aria-hidden="true" loading="lazy" decoding="async"/>}
     <div className="lb-editorial-art__copy">
       {kicker && <span className="lb-editorial-art__kicker">{kicker}</span>}
       <div className="lb-editorial-art__title">{lines.map((line, i) => <React.Fragment key={`${i}-${line}`}><span>{highlight ? <span className="lb-editorial-art__highlight-text">{line}</span> : line}</span>{i < lines.length - 1 && <br/>}</React.Fragment>)}</div>

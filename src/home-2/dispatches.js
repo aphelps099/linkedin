@@ -9,7 +9,7 @@ export const DISPATCHES = [
   {
     id:'unpack-linkedinifier', type:'feature', label:'LinkedInifier', shape:'square', href:'lessons/',
     title:'Let’s unpack that. Turn small news into a stronger post.',
-    artwork:{tone:'sky',motif:'star',layout:'unpack',placement:'top',kicker:'THE THOUGHT LEADERSHIP JOURNAL',lines:['Let’s','unpack','that.'],footer:'SMALL NEWS / BIG DEAL'},
+    artwork:{tone:'sky',motif:'fold',layout:'unpack',placement:'top',kicker:'THE THOUGHT LEADERSHIP JOURNAL',lines:['Let’s','unpack','that.'],footer:'SMALL NEWS / BIG DEAL'},
   },
   {
     id:'office-band', type:'video', label:'Office sessions', shape:'wide', art:'session',
