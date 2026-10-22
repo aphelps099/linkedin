@@ -1,0 +1,30 @@
+{
+  "mode": "Built-in image_gen editing",
+  "purpose": "Remove generated wordmarks before applying the exact approved white vector logo during export.",
+  "edits": [
+    {
+      "name": "optimizer-printer",
+      "prompt": "Use case: precise-object-edit. Edit target: the supplied finished social share card. Remove ONLY the small 'linkedin beats_' wordmark in the upper-left corner, seamlessly restoring the background behind those letters. Leave this little top-left zone blank so the approved vector logo can be placed there in the website asset pipeline. Preserve absolutely everything else: all headline and tagline text, its spelling, fonts, position, size and color; every photographic object, person, instrument, lighting detail, shadows, texture, palette, sharpness, and full original composition. Do not repaint or redesign the rest of this approved artwork. Keep the exact original landscape dimensions and crop. No new lettering, symbols, frames, watermarks or marks. The only edit is erasing that small upper-left wordmark.",
+      "referenced_image_paths": [
+        "/Users/ap457/Documents/GitHub/linkedin/assets/social-share/2026-10/optimizer-printer-master.png"
+      ],
+      "transparent_background": false
+    },
+    {
+      "name": "synergy-team",
+      "prompt": "Use case: precise-object-edit. Edit target: the supplied finished social share card. Remove ONLY the small 'linkedin beats_' wordmark in the upper-left corner, seamlessly restoring the background behind those letters. Leave this little top-left zone blank so the approved vector logo can be placed there in the website asset pipeline. Preserve absolutely everything else: all headline and tagline text, its spelling, fonts, position, size and color; every photographic object, person, instrument, lighting detail, shadows, texture, palette, sharpness, and full original composition. Do not repaint or redesign the rest of this approved artwork. Keep the exact original landscape dimensions and crop. No new lettering, symbols, frames, watermarks or marks. The only edit is erasing that small upper-left wordmark.",
+      "referenced_image_paths": [
+        "/Users/ap457/Documents/GitHub/linkedin/assets/social-share/2026-10/synergy-team-master.png"
+      ],
+      "transparent_background": false
+    },
+    {
+      "name": "synth",
+      "prompt": "Use case: precise-object-edit. Edit target: the supplied finished social share card. Remove ONLY the small 'linkedin beats_' wordmark in the upper-left corner, seamlessly restoring the background behind those letters. Leave this little top-left zone blank so the approved vector logo can be placed there in the website asset pipeline. Preserve absolutely everything else: all headline and tagline text, its spelling, fonts, position, size and color; every photographic object, person, instrument, lighting detail, shadows, texture, palette, sharpness, and full original composition. Do not repaint or redesign the rest of this approved artwork. Keep the exact original landscape dimensions and crop. No new lettering, symbols, frames, watermarks or marks. The only edit is erasing that small upper-left wordmark.",
+      "referenced_image_paths": [
+        "/Users/ap457/Documents/GitHub/linkedin/assets/social-share/2026-10/synth-master.png"
+      ],
+      "transparent_background": false
+    }
+  ]
+}
