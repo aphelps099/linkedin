@@ -5,6 +5,7 @@ import {COVERS,getCover,shareUrl,shareDestinations,coverPreviewUrl} from './shar
 import {drawShareArtwork,startShareClip} from './clip.js';
 import {beginClipHandoff,downloadClip,copyText,useNativeClipShare,LINKEDIN_HOME} from './handoff.js';
 import './share-beat.css';
+import {LinkedInPublish} from '../sharing/LinkedInPublish.jsx';
 const clock=t=>`0:${String(Math.floor(t||0)).padStart(2,'0')}`;
 function Sleeve({recipe,cover}){
   const canvas=useRef(null);
@@ -14,6 +15,7 @@ function Sleeve({recipe,cover}){
 export function ShareBeat({initialJob,recipe,coverId,onCoverChange,artist,onArtistChange,caption,onCaptionChange,onClose}){
   const dialog=useRef(null),video=useRef(null),job=useRef(null),alive=useRef(true),unsubscribe=useRef(null),posting=useRef(false);
   const [mode,setMode]=useState('video'),[renderError,setRenderError]=useState(''),[imageError,setImageError]=useState(false);
+  const [publishing,setPublishing]=useState(false);
   useEffect(()=>setImageError(false),[coverId,artist]);
   const [clip,setClip]=useState(null),[clipUrl,setClipUrl]=useState(''),[making,setMaking]=useState(true),[progress,setProgress]=useState(0),[error,setError]=useState(''),[notice,setNotice]=useState('');
   const [playing,setPlaying]=useState(false),[elapsed,setElapsed]=useState(0),[duration,setDuration]=useState(10),[handoff,setHandoff]=useState(null),[editing,setEditing]=useState(false),[draftCover,setDraftCover]=useState(coverId),[draftArtist,setDraftArtist]=useState(artist||'');
@@ -42,9 +44,9 @@ export function ShareBeat({initialJob,recipe,coverId,onCoverChange,artist,onArti
   const desktop=handoff?.kind==='desktop';
   const compatible=clip?.type==='video/mp4',nativeAvailable=useNativeClipShare(clip);
   const chooseMode=value=>{video.current?.pause();setMode(value);setHandoff(null);setNotice('');};
-  return createPortal(<dialog className="pbs-dialog" ref={dialog} aria-labelledby="pbs-title" onCancel={onClose} onClick={e=>{if(e.target===dialog.current)onClose();}}>
+  return createPortal(<dialog className="pbs-dialog" ref={dialog} aria-labelledby="pbs-title" onCancel={e=>{if(publishing)e.preventDefault();else onClose();}} onClick={e=>{if(!publishing&&e.target===dialog.current)onClose();}}>
     <div className="pbs-content">
-      <header className="pbs-topline"><p>LinkedIn Beats <span> / CBR-{releaseCode}</span></p><button className="pbs-close" type="button" onClick={onClose} aria-label="Close share preview"><X size={21}/></button></header>
+      <header className="pbs-topline"><p>LinkedIn Beats <span> / CBR-{releaseCode}</span></p><button className="pbs-close" type="button" disabled={publishing} onClick={onClose} aria-label="Close share preview"><X size={21}/></button></header>
       <div className="pbs-layout">
         <div className="pbs-artwork">
           <div className={`pbs-media ${mode==='link'?'pbs-media--link':''}`}>
@@ -60,23 +62,24 @@ export function ShareBeat({initialJob,recipe,coverId,onCoverChange,artist,onArti
         </div>
         <div className="pbs-options">
           <div className="pbs-titlegroup"><h2 id="pbs-title" tabIndex={-1}>{handoff?'Make it official.':'Ready for the feed.'}</h2><p className="pbs-intro">Your words. Set to music.</p></div>
-          <div className="pbs-modes" role="group" aria-label="Share format"><button type="button" aria-pressed={mode==='video'} onClick={()=>chooseMode('video')}>Share video</button><button type="button" aria-pressed={mode==='link'} onClick={()=>chooseMode('link')}>Listening link</button></div>
-          <p className="pbs-format-note">{mode==='link'?'Share an artwork preview that opens the full beat on LinkedIn Beats.':nativeAvailable?'Share the video file to LinkedIn from your device’s share sheet.':'Download the video, then attach it to your LinkedIn post. It will play in the feed.'}</p>
+          <div className="pbs-modes" role="group" aria-label="Share format"><button type="button" disabled={publishing} aria-pressed={mode==='video'} onClick={()=>chooseMode('video')}>Share video</button><button type="button" disabled={publishing} aria-pressed={mode==='link'} onClick={()=>chooseMode('link')}>Listening link</button></div>
+          <p className="pbs-format-note">{mode==='link'?'Share an artwork preview that opens the full beat on LinkedIn Beats.':'Your video and caption. Together in the LinkedIn feed.'}</p>
           <div className="pbs-caption-label"><label htmlFor="pbs-caption">Your caption</label><button type="button" onClick={()=>copy(caption,'Caption copied.')}>Copy <Copy size={13}/></button></div>
-          <textarea className="pbs-caption" id="pbs-caption" rows={3} maxLength={240} value={caption} onChange={e=>onCaptionChange(e.target.value)}/>
+          <textarea className="pbs-caption" id="pbs-caption" rows={3} maxLength={3000} disabled={publishing} value={caption} onChange={e=>onCaptionChange(e.target.value)}/>
+          {mode==='video'&&<LinkedInPublish file={clip} title={recipe.chorus.slice(0,200)} caption={caption} disabled={making||!compatible} onBusyChange={setPublishing}/>}
           {handoff&&<div className="pbs-handoff" role="status">
             {desktop&&<p>{handoff.download?<Check size={17}/>:<Download size={17}/>} {handoff.download?'Download started':'Save the clip below to try again'}</p>}
             <p>{handoff.caption==='copied'?<Check size={17}/>:<Copy size={16}/>} {handoff.caption==='copied'?'Caption copied':handoff.caption==='pending'?'Copying caption…':'Select and copy your caption above'}</p>
             <p className="pbs-handoff-detail">{desktop?'In LinkedIn, choose Video, attach the clip from Downloads, and paste your caption. You choose when to post.':'Choose LinkedIn in the share sheet. If it isn’t listed, save the clip and attach it in the LinkedIn app.'}</p>
             {handoff.error&&<p className="pbs-error" role="alert">{handoff.error}</p>}
           </div>}
-          <div className="pbs-action-area">
+          <details className="pbs-manual" hidden={publishing}><summary>{mode==='video'?'Other ways to share':'Share listening link'}</summary><div className="pbs-action-area">
             {mode==='link'?<a className="pbs-post" href={targets.linkedin} target="_blank" rel="noopener noreferrer" onClick={()=>{video.current?.pause();copy(caption,'Caption copied. Paste it in LinkedIn.');}}>Continue to LinkedIn<Linkedin size={21}/></a>:desktop?<a className="pbs-post" href={LINKEDIN_HOME} target="_blank" rel="noopener noreferrer">Open LinkedIn<Linkedin size={21}/></a>:<button className="pbs-post" type="button" disabled={making||!!clip&&!compatible||handoff?.sharing} onClick={clip?post:retry}>{making?`Preparing video · ${Math.round(progress*100)}%`:clip?compatible?'Continue to LinkedIn':'MP4 unavailable here':'Prepare video again'}{making?<LoaderCircle className="pbs-spinner" size={21}/>:<Linkedin size={21}/>}</button>}
             {mode==='video'&&clip&&!compatible&&<p className="pbs-error">This browser exported WebM. Use the listening link, or try Chrome or Safari for an MP4.</p>}
             {mode==='video'&&!handoff&&<p className="pbs-action-note">{nativeAvailable?'Opens your share sheet and copies your caption.':'Opens LinkedIn, starts the download, and copies your caption.'}</p>}
-          </div>
-          <nav className="pbs-utilities" aria-label="Share options"><button type="button" onClick={()=>copy(url,'Listening link copied.')}>Copy link</button>{mode==='video'&&<button type="button" disabled={!clip} onClick={save}>Save video</button>}<button type="button" aria-expanded={editing} onClick={()=>setEditing(!editing)}>{editing?'Close cover options':'Change cover'}</button></nav>
-          {editing&&<div className="pbs-editor">
+          </div></details>
+          <nav className="pbs-utilities" aria-label="Share options"><button type="button" onClick={()=>copy(url,'Listening link copied.')}>Copy link</button>{mode==='video'&&<button type="button" disabled={!clip} onClick={save}>Save video</button>}<button type="button" disabled={publishing} aria-expanded={editing} onClick={()=>setEditing(!editing)}>{editing?'Close cover options':'Change cover'}</button></nav>
+          {editing&&!publishing&&<div className="pbs-editor">
             <fieldset><legend>Cover</legend>{COVERS.map(item=><label key={item.id}><input type="radio" name="release-cover" checked={draftCover===item.id} onChange={()=>setDraftCover(item.id)}/><span className={`pbs-swatch pbs-swatch-${item.id}`}/>{item.name}</label>)}</fieldset>
             <label>Artist name<input value={draftArtist} maxLength={48} placeholder="LinkedIn Beats" onChange={e=>setDraftArtist(e.target.value)}/></label>
             <button type="button" onClick={apply}>Apply cover</button>
