@@ -1,3 +1,4 @@
+import {claimAudio} from '../brand/audio-focus.js';
 import React, {useEffect, useRef, useState} from 'react';
 import {Check, Headphones, Play, Search, Square, X} from 'lucide-react';
 import {SOUNDS, initialProject} from './model.js';
@@ -29,6 +30,7 @@ export default function SoundLibrary({pad, currentSound, onLoad, onClose}) {
    await audition.current.prepare({...initialProject(),slots:[slot],delay:0,filter:20000});
    if(!alive.current){audition.current.stop();return;}
    setPreview(sound.id);
+   claimAudio('synth');
    const source=audition.current.hit(slot);
    source.addEventListener('ended',()=>{if(alive.current)setPreview(id=>id===sound.id?null:id);});
   } catch(e) {if(alive.current)setError(e.message || 'Could not preview this sound. Try again.');}

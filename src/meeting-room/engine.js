@@ -1,3 +1,4 @@
+import {claimAudio, onAudioFocus} from '../brand/audio-focus.js';
 // A single Web Audio clock owns music, vocals, captions and performance cues.
 // No microphone, camera permission or live generation service is required.
 export function createMeetingEngine({onChange=()=>{},contextFactory=()=>new (window.AudioContext||window.webkitAudioContext)(),fetcher=fetch,random=Math.random}={}){
@@ -62,6 +63,7 @@ export function createMeetingEngine({onChange=()=>{},contextFactory=()=>new (win
   }
   async function play(){
     if(disposed||!meeting||playing||loading)return;
+    claimAudio('studio');
     const request=++generation;loading=true;error='';emit();
     try{
       setup();await context.resume();
@@ -84,5 +86,6 @@ export function createMeetingEngine({onChange=()=>{},contextFactory=()=>new (win
     if(context){master.gain.setTargetAtTime(muted?0:.88,context.currentTime,.02);voiceGain.gain.setTargetAtTime(voices,context.currentTime,.02);if(playing)scheduleMusic();else musicGain.gain.value=music;}
     emit();
   }
-  return {setMeeting,play,pause,seek,setMix,snapshot,elapsed,dispose(){disposed=true;generation++;controller?.abort();stop();cache.clear();if(context){context.onstatechange=null;context.close();}}};
+  const releaseFocus=onAudioFocus('studio',()=>{if(playing||loading)pause();});
+  return {setMeeting,play,pause,seek,setMix,snapshot,elapsed,dispose(){releaseFocus();disposed=true;generation++;controller?.abort();stop();cache.clear();if(context){context.onstatechange=null;context.close();}}};
 }

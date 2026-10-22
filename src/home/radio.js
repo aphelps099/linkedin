@@ -1,3 +1,4 @@
+import {claimAudio, onAudioFocus} from '../brand/audio-focus.js';
 import {createAudioEngine} from '../audio.js';
 import {bandAt} from '../song.js';
 import {ensureClip} from '../v2/lesson.js';
@@ -41,6 +42,7 @@ export function createRadio({phraseBase, onState, engineFactory=createAudioEngin
   }
 
   async function start(index=state.index, offset=0, play=true) {
+    if(play)claimAudio('radio');
     const mine=++generation;
     destroy();
     const track=TRACKS[index];
@@ -68,14 +70,17 @@ export function createRadio({phraseBase, onState, engineFactory=createAudioEngin
     }
   }
 
+  function pause() {
+    if(state.loading){generation++;destroy();emit({loading:false,playing:false});return;}
+    if(state.playing){const elapsed=now();clearTick();engine.suspend();emit({playing:false,elapsed});}
+  }
+  const releaseFocus = onAudioFocus('radio', pause);
   return {
     getState:()=>({...state}),
     play:(index=state.index)=>start(index,index===state.index?state.elapsed:0),
     toggle(){
-      if(state.loading){generation++;destroy();emit({loading:false,playing:false});return;}
-      if(state.playing){
-        const elapsed=now();clearTick();engine.suspend();emit({playing:false,elapsed});return;
-      }
+      if(state.loading||state.playing){pause();return;}
+      claimAudio('radio');
       if(engine && state.elapsed<TRACKS[state.index].seconds){
         engine.unlock();emit({playing:true,error:''});timer=interval(tick,25);tick();
       }else start(state.index,state.elapsed>=TRACKS[state.index].seconds?0:state.elapsed);
@@ -85,6 +90,6 @@ export function createRadio({phraseBase, onState, engineFactory=createAudioEngin
     seek:seconds=>start(state.index,Number(seconds),state.playing||state.loading),
     volume(value){const volume=Math.max(0,Math.min(1,Number(value)));engine?.setVolume(volume);emit({volume});},
     shuffle(){emit({shuffle:!state.shuffle});},
-    dispose(){disposed=true;generation++;destroy();},
+    dispose(){releaseFocus();disposed=true;generation++;destroy();},
   };
 }

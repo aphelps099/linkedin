@@ -310,7 +310,6 @@ export function StepPlayer({chapter, userName, title, onName, onComplete, onFini
 
   return <div className="pg-scroll" ref={scrollRef}>
     <div className="pg-lesson">
-      <div className="pg-strip pg-lesson-breadcrumb"><a href="#"><ArrowLeft size={16}/>All lessons</a><span>Lesson {chapter.number} of 5 · {chapter.minutes} min</span></div>
       <header className="pg-lesson-heading">
         <img className="pg-lesson-art" src={LESSON_PRESENTATION[chapter.id].image} alt="" width="112" height="112" fetchpriority="high"/>
         <div><h1 className="pg-h1">{LESSON_PRESENTATION[chapter.id].heading}</h1><p className="pg-sub">{chapter.title}</p></div>
