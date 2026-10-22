@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" fill="none">
+  <defs>
+    <linearGradient id="top" x1="170" y1="30" x2="580" y2="270" gradientUnits="userSpaceOnUse"><stop stop-color="#0875ff"/><stop offset=".48" stop-color="#064bff"/><stop offset="1" stop-color="#0028bb"/></linearGradient>
+    <linearGradient id="inside" x1="130" y1="160" x2="355" y2="435" gradientUnits="userSpaceOnUse"><stop stop-color="#052887"/><stop offset=".55" stop-color="#063aca"/><stop offset="1" stop-color="#0755ff"/></linearGradient>
+    <linearGradient id="paper" x1="25" y1="280" x2="335" y2="580" gradientUnits="userSpaceOnUse"><stop stop-color="#d8efff"/><stop offset=".55" stop-color="#b9dfff"/><stop offset="1" stop-color="#7cbaff"/></linearGradient>
+    <linearGradient id="yellow" x1="300" y1="420" x2="375" y2="670" gradientUnits="userSpaceOnUse"><stop stop-color="#ffe16b"/><stop offset=".6" stop-color="#ffed87"/><stop offset="1" stop-color="#fff4b0"/></linearGradient>
+    <linearGradient id="bottom" x1="80" y1="700" x2="495" y2="635" gradientUnits="userSpaceOnUse"><stop stop-color="#064bff"/><stop offset=".55" stop-color="#076aff"/><stop offset="1" stop-color="#002cbd"/></linearGradient>
+    <linearGradient id="return" x1="560" y1="450" x2="365" y2="690" gradientUnits="userSpaceOnUse"><stop stop-color="#0876ff"/><stop offset=".55" stop-color="#064bff"/><stop offset="1" stop-color="#002594"/></linearGradient>
+  </defs>
+  <!-- Broad continuous folds: gradients describe the turns, without shadows. -->
+  <path d="M110 176 279 60Q304 42 330 52L600 146V349L160 209Q123 198 110 176Z" fill="url(#top)"/>
+  <path d="M110 176Q68 198 68 246V449L340 552V285L160 209Q129 198 110 176Z" fill="url(#inside)"/>
+  <path d="M600 349V588L426 719Q394 740 365 712L315 656V529Z" fill="url(#return)"/>
+  <path d="M340 449Q365 470 365 507V633Q364 686 401 713L185 568Z" fill="url(#yellow)"/>
+  <path d="M24 280Q0 294 0 335V620Q0 651 27 674L340 449Q348 438 331 429L63 279Q43 268 24 280Z" fill="url(#paper)"/>
+  <path d="M27 674Q8 689 29 707L202 800H600V760L401 713 185 568Z" fill="url(#bottom)"/>
+</svg>
