@@ -91,7 +91,7 @@ export const SiteFooter = memo(function SiteFooter({base='/'}) {
           <div><a href={`${base}lessons/`}>LinkedInifier <PixelArrow/></a><a href={`${base}#c2-dispatch`}>The feed <PixelArrow/></a></div>
         </nav>
       </div>
-      <a className="lb-wordmark-link" href={base} aria-label="LinkedIn Beats home"><span className="lb-metal-wordmark" style={{'--lb-wordmark-mask':`url("${base}brand/afterbeat/wordmark-white.svg?v=afterbeat-2")`}}><img className="lb-wordmark" src={`${base}brand/afterbeat/wordmark-white.svg?v=afterbeat-2`} width="7015" height="862" loading="lazy" alt="LinkedIn Beats"/></span></a>
+      <a className="lb-wordmark-link" href={base} aria-label="LinkedIn Beats home"><span className="lb-afterbeat-wordmark"><img className="lb-wordmark" src={`${base}brand/afterbeat/wordmark-white.svg?v=afterbeat-2`} width="7015" height="862" loading="lazy" alt="LinkedIn Beats"/></span></a>
       <section className="lb-fineprint" aria-labelledby={fineprint}>
         <div className="lb-fineprint-copy"><h3 id={fineprint}>The necessary small print</h3>
           <p>LinkedIn Beats is an independent parody project. Not affiliated with, endorsed by, or sponsored by LinkedIn Corporation. All trademarks belong to their respective owners.</p>
