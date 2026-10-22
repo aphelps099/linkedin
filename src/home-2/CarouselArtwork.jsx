@@ -24,7 +24,7 @@ export function CarouselArtwork({artwork, base = '/'}) {
     {motif === 'steps' && <div className="lb-editorial-art__steps" aria-hidden="true"><i/><i/><i/><i/></div>}
     <div className="lb-editorial-art__copy">
       {kicker && <span className="lb-editorial-art__kicker">{kicker}</span>}
-      <div className="lb-editorial-art__title">{lines.map((line, i) => <React.Fragment key={`${i}-${line}`}><span>{line}</span>{i < lines.length - 1 && <br/>}</React.Fragment>)}</div>
+      <div className="lb-editorial-art__title">{lines.map((line, i) => <React.Fragment key={`${i}-${line}`}><span>{highlight ? <span className="lb-editorial-art__highlight-text">{line}</span> : line}</span>{i < lines.length - 1 && <br/>}</React.Fragment>)}</div>
     </div>
     {footer && <span className="lb-editorial-art__footer">{footer}</span>}
   </div>;
