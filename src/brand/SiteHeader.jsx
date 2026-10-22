@@ -19,6 +19,7 @@ export function SiteHeader({base='/', active, overlay=false, theme='light', chil
   const current = active === 'LinkedInifier' ? 'Optimize' : active === 'Store' ? 'Shop' : active;
   const dark = overlay || theme === 'dark';
   useEffect(() => {
+    setRadioState(idle);
     if(onRadio || focus) return;
     const radio = createRadio({phraseBase:`${base}phrases/`, onState:setRadioState});
     player.current = radio;
