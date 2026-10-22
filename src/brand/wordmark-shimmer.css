@@ -1,0 +1,50 @@
+/* Reflective finish clipped to the original artwork; no duplicate lettering. */
+.lb-metal-wordmark {
+  position: relative;
+  display: block;
+  isolation: isolate;
+}
+.lb-metal-wordmark::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background-image:
+    linear-gradient(110deg, transparent 39%, #e1edff55 44%, #fff 49%, #fff 50%, #c4d7ed66 54%, transparent 60%),
+    linear-gradient(178deg, #f8fafc 0%, #c7ced7 24%, #f3f6fa 43%, #8795a6 49%, #b5beca 55%, #f7f9fc 74%, #b9c4d2 100%);
+  background-size: 300% 100%, 100% 100%;
+  background-position: 100% 0, 0 0;
+  background-repeat: no-repeat;
+  -webkit-mask: var(--lb-wordmark-mask) center / 100% 100% no-repeat;
+  mask: var(--lb-wordmark-mask) center / 100% 100% no-repeat;
+  transition: opacity 180ms ease-out;
+}
+@supports (mask-image: url('')) or (-webkit-mask-image: url('')) {
+  a:focus-visible > .lb-metal-wordmark::after {
+    opacity: 1;
+    animation: lb-wordmark-gloss 1.45s cubic-bezier(.22,.61,.36,1) both;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    a:hover > .lb-metal-wordmark::after {
+      opacity: 1;
+      animation: lb-wordmark-gloss 1.45s cubic-bezier(.22,.61,.36,1) both;
+    }
+  }
+}
+@keyframes lb-wordmark-gloss {
+  from { background-position: 100% 0, 0 0; }
+  to { background-position: 0% 0, 0 0; }
+}
+@media (max-width: 700px) {
+  .lb-metal-wordmark--responsive {
+    --lb-wordmark-mask: var(--lb-wordmark-mobile-mask) !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lb-metal-wordmark::after {
+    animation: none !important;
+    transition: none;
+    background-position: 0% 0, 0 0;
+  }
+}

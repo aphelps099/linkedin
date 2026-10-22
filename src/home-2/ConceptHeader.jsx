@@ -1,6 +1,7 @@
 import React, {memo, useEffect, useId, useRef, useState} from 'react';
 import {LoaderCircle, Pause, Play} from 'lucide-react';
 import '../brand/navigation.css';
+import '../brand/wordmark-shimmer.css';
 
 export const ConceptHeader = memo(function ConceptHeader({base='/', onRadio, playing=false, loading=false, homeSectionBase='', active, children, overlay=false, theme='light', storefront=false}) {
   const [open,setOpen]=useState(false);
@@ -21,7 +22,7 @@ export const ConceptHeader = memo(function ConceptHeader({base='/', onRadio, pla
   return <header className={`c2-header${overlay?' c2-header--overlay':''}${theme==='dark'?' c2-header--dark':''}`} ref={root} onBlurCapture={e=>{if(!e.currentTarget.contains(e.relatedTarget))setOpen(false);}}>
     <div className="c2-container c2-header-row">
       <a className="c2-header-brand" href={base} aria-label="LinkedIn Beats home">
-        <picture>
+        <picture className={overlay?`lb-metal-wordmark${!storefront?' lb-metal-wordmark--responsive':''}`:undefined} style={overlay?{'--lb-wordmark-mask':`url("${base}home-2/brand/wordmark-horizontal-header.svg")`,'--lb-wordmark-mobile-mask':`url("${base}home-2/brand/wordmark-stacked-header.svg")`}:undefined}>
           {!storefront&&<source media="(max-width: 700px)" srcSet={`${base}home-2/brand/wordmark-stacked-header.svg`} width="3857.0" height="1742"/>}
           <img src={`${base}home-2/brand/wordmark-horizontal-header.svg`} alt="LinkedIn Beats" width="7015.0" height="862" fetchpriority="high"/>
         </picture>
