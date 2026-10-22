@@ -13,9 +13,12 @@
 .lb-editorial-art__copy{position:absolute;left:7%;right:7%;top:50%;transform:translateY(-50%);z-index:2}
 .lb-editorial-art__title{margin:0;font-weight:600;font-size:12cqw;line-height:1.02;letter-spacing:-.035em;text-transform:none;user-select:text}
 .lb-editorial-art__title>span{box-decoration-break:clone;-webkit-box-decoration-break:clone}
-.lb-editorial-art--highlight-yellow .lb-editorial-art__title>span{background:var(--lb-art-yellow);color:var(--lb-art-ink);padding:.035em .13em .065em}
-.lb-editorial-art--highlight-cobalt .lb-editorial-art__title>span{background:var(--lb-art-cobalt);color:var(--lb-art-paper);padding:.035em .13em .065em}
-.lb-editorial-art--highlight-yellow .lb-editorial-art__title>span,.lb-editorial-art--highlight-cobalt .lb-editorial-art__title>span{display:table;line-height:1.02;padding:.02em .13em .1em}
+.lb-editorial-art--highlight-yellow .lb-editorial-art__title>span{background:var(--lb-art-yellow);color:var(--lb-art-ink)}
+.lb-editorial-art--highlight-cobalt .lb-editorial-art__title>span{background:var(--lb-art-cobalt);color:var(--lb-art-paper)}
+/* Founders has a deep descender area. Center the visible letters in each strip
+   independently of that font box, keeping equal optical top/bottom padding. */
+.lb-editorial-art--highlight-yellow .lb-editorial-art__title>span,.lb-editorial-art--highlight-cobalt .lb-editorial-art__title>span{display:table;line-height:.78;padding:.08em .13em;white-space:nowrap}
+.lb-editorial-art__highlight-text{display:block;transform:translateY(.155em)}
 .lb-editorial-art--highlight-yellow .lb-editorial-art__title>br,.lb-editorial-art--highlight-cobalt .lb-editorial-art__title>br{display:none}
 .lb-editorial-art--center .lb-editorial-art__title>span{margin-inline:auto}
 .lb-editorial-art--center .lb-editorial-art__copy{text-align:center}

@@ -46,7 +46,7 @@ export const DISPATCHES = [
     id:'unpack-that', type:'blog', label:'Field notes', shape:'square', art:'unpack',
     title:'“Let’s unpack that.” A practical guide to leaving it packed.',
     eyebrow:'THE THOUGHT LEADERSHIP JOURNAL', headline:['Let’s','unpack','that.'],
-    artwork:{tone:'paper',texture:'grid',highlight:'cobalt',motif:'wave',lines:['Let’s','unpack','that.'],footer:'FIELD NOTES / NO. 001'},
+    artwork:{tone:'paper',texture:'grid',highlight:'cobalt',motif:'wave',lines:['Let’s unpack','that.'],footer:'FIELD NOTES / NO. 001'},
     body:[
       'Some ideas need room to breathe. Others need a 45-minute calendar hold with six optional attendees. Knowing the difference is a skill we are not offering to teach.',
       'First, acknowledge the complexity. A thoughtful nod will do. If remote, unmute, say “there’s a lot here,” and mute again. You have now contributed.',
