@@ -36,7 +36,8 @@ export async function encodeOfflineClip({canvas,audio,draw,signal,onProgress}){
         let peak=0;for(let n=0;n<24;n++)peak=Math.max(peak,Math.abs(channels[0][Math.max(0,Math.min(audio.length-1,sample-1536+bin*24+n))]));
         wave[bin]=Math.min(255,peak*600);
       }
-      draw(time,wave);
+      // Motion covers seek to this exact timestamp before the frame is encoded.
+      await draw(time,wave);
       const frame=new VideoFrame(canvas,{timestamp:Math.round(i/FPS*1e6),duration:Math.round((i+1)/FPS*1e6)-Math.round(i/FPS*1e6)});
       v.encode(frame,{keyFrame:i%(FPS*2)===0});frame.close();
       if(v.encodeQueueSize>=4)await v.flush();

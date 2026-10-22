@@ -3,13 +3,14 @@ import {createPortal} from 'react-dom';
 import {Check,Copy,Download,Linkedin,LoaderCircle,Pause,Play,X} from 'lucide-react';
 import {COVERS,getCover,shareUrl,shareDestinations,coverPreviewUrl} from './share.js';
 import {drawShareArtwork,startShareClip} from './clip.js';
+import {loadCoverImage} from './artwork.js';
 import {beginClipHandoff,downloadClip,copyText,useNativeClipShare,LINKEDIN_HOME} from './handoff.js';
 import './share-beat.css';
 import {LinkedInPublish} from '../sharing/LinkedInPublish.jsx';
 const clock=t=>`0:${String(Math.floor(t||0)).padStart(2,'0')}`;
 function Sleeve({recipe,cover}){
   const canvas=useRef(null);
-  useEffect(()=>{let active=true;document.fonts.ready.then(()=>{if(active&&canvas.current)drawShareArtwork(canvas.current,null,recipe,0,null,cover);});return()=>{active=false;};},[recipe,cover.id,cover.artist]);
+  useEffect(()=>{const controller=new AbortController();Promise.all([document.fonts.ready,loadCoverImage(cover,controller.signal)]).then(([,image])=>{if(!controller.signal.aborted&&canvas.current)drawShareArtwork(canvas.current,image,recipe,0,null,cover);}).catch(()=>{if(!controller.signal.aborted&&canvas.current)drawShareArtwork(canvas.current,null,recipe,0,null,cover);});return()=>controller.abort();},[recipe,cover.id,cover.artist]);
   return <canvas ref={canvas} className="pbs-sleeve" width={1080} height={1080} role="img" aria-label={`${recipe.chorus}. ${cover.artist||'LinkedIn Beats'}. ${cover.name} sleeve.`}/>;
 }
 export function ShareBeat({initialJob,recipe,coverId,onCoverChange,artist,onArtistChange,caption,onCaptionChange,onClose}){
@@ -63,7 +64,7 @@ export function ShareBeat({initialJob,recipe,coverId,onCoverChange,artist,onArti
         <div className="pbs-options">
           <div className="pbs-titlegroup"><h2 id="pbs-title" tabIndex={-1}>{handoff?'Make it official.':'Ready for the feed.'}</h2><p className="pbs-intro">Your words. Set to music.</p></div>
           <div className="pbs-modes" role="group" aria-label="Share format"><button type="button" disabled={publishing} aria-pressed={mode==='video'} onClick={()=>chooseMode('video')}>Share video</button><button type="button" disabled={publishing} aria-pressed={mode==='link'} onClick={()=>chooseMode('link')}>Listening link</button></div>
-          <p className="pbs-format-note">{mode==='link'?'Share an artwork preview that opens the full beat on LinkedIn Beats.':'Your video and caption. Together in the LinkedIn feed.'}</p>
+          <p className="pbs-format-note">{mode==='link'?'Share an artwork preview that opens the full beat on LinkedIn Beats.':cover.video?'The office band performs with your beat. Ready for the LinkedIn feed.':'Your artwork, beat and caption. Together in the LinkedIn feed.'}</p>
           <div className="pbs-caption-label"><label htmlFor="pbs-caption">Your caption</label><button type="button" onClick={()=>copy(caption,'Caption copied.')}>Copy <Copy size={13}/></button></div>
           <textarea className="pbs-caption" id="pbs-caption" rows={3} maxLength={3000} disabled={publishing} value={caption} onChange={e=>onCaptionChange(e.target.value)}/>
           {mode==='video'&&<LinkedInPublish file={clip} title={recipe.chorus.slice(0,200)} caption={caption} disabled={making||!compatible} onBusyChange={setPublishing}/>}
@@ -80,7 +81,7 @@ export function ShareBeat({initialJob,recipe,coverId,onCoverChange,artist,onArti
           </div></details>
           <nav className="pbs-utilities" aria-label="Share options"><button type="button" onClick={()=>copy(url,'Listening link copied.')}>Copy link</button>{mode==='video'&&<button type="button" disabled={!clip} onClick={save}>Save video</button>}<button type="button" disabled={publishing} aria-expanded={editing} onClick={()=>setEditing(!editing)}>{editing?'Close cover options':'Change cover'}</button></nav>
           {editing&&!publishing&&<div className="pbs-editor">
-            <fieldset><legend>Cover</legend>{COVERS.map(item=><label key={item.id}><input type="radio" name="release-cover" checked={draftCover===item.id} onChange={()=>setDraftCover(item.id)}/><span className={`pbs-swatch pbs-swatch-${item.id}`}/>{item.name}</label>)}</fieldset>
+            <fieldset><legend>Artwork & video</legend>{COVERS.map(item=><label className="pbs-cover-choice" key={item.id}><input type="radio" name="release-cover" checked={draftCover===item.id} onChange={()=>setDraftCover(item.id)}/><img src={item.image} width={item.width} height={item.height} alt=""/><span>{item.name}</span><small>{item.video?'10s band video':'Artwork + your beat'}</small></label>)}</fieldset>
             <label>Artist name<input value={draftArtist} maxLength={48} placeholder="LinkedIn Beats" onChange={e=>setDraftArtist(e.target.value)}/></label>
             <button type="button" onClick={apply}>Apply cover</button>
             {error&&<label>Listening link<input readOnly value={url} onFocus={e=>e.target.select()}/></label>}

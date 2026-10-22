@@ -1,0 +1,23 @@
+{
+  "created": "2026-10-22",
+  "task_id": "709a1224-160c-47db-9095-7c9390c36c9c",
+  "provider": "Runway",
+  "source_image": "https://linkedinbeats.com/share/synergy-team-20261022-v2.jpg",
+  "duration_seconds": 10,
+  "resolution": "1080p",
+  "audio": "Silent performance. The optimizer export supplies the user's personalized beat.",
+  "public_path": "/post-beat/covers/office-band-performance-20261022.mp4",
+  "prompt": "Animate this approved LinkedIn Beats social share card as a premium 10-second music performance. Preserve the identities, clothes, call-center boom-microphone headsets, instruments, office setting, blue LinkedIn banners and exact layout of the supplied image. The four office colleagues and the ivory angular robot named Synergy play a tight relaxed funk groove together: the woman in the cream blouse strums her yellow electric guitar with realistic small wrist motions, the woman in navy presses the keyboard naturally, the bald drummer plays measured alternating hi-hat and snare hits, the man at right plucks his bass, and Synergy strums the blue guitar. Gentle rhythmic head nods and restrained swaying, occasional natural eye contact and tiny smiles. Keep all headsets visibly on. Photoreal skin, stable faces, correct anatomy, believable instrument handling. Locked tripod camera, no zoom, no cuts, no transition, no change in composition. Treat the large left-side headline, tagline and tiny upper-left wordmark as an absolutely static printed graphic overlay: letters remain perfectly unchanged and anchored. The motion is only in the band performance on the right. Preserve the cinematic cobalt, ivory and warm studio lighting. No additional text, no new logos, no subtitles, no speaking or singing. A polished understated corporate-office band with musical confidence. Finish in a natural pose close to the opening for looping. Silent visual performance; the app will add the user's original beat.",
+  "delivery": {
+    "width": 1988,
+    "height": 1080,
+    "duration_seconds": 10,
+    "fps": 24,
+    "codec": "H.264",
+    "pixel_format": "yuv420p",
+    "fast_start": true,
+    "keyframe_interval": 24,
+    "bytes": 9239622
+  },
+  "framing": "Restore the clipped left margin using 68px of the approved still, scaled to 2058×1080. Overlay the complete unscaled performance at x=68 and keep the original 340×120 top-left brand area static. The moving subjects remain unscaled and fill the right edge."
+}
