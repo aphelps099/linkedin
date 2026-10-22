@@ -1,9 +1,11 @@
 import React,{useEffect,useRef,useState} from 'react';
-import {Play,Pause,SkipForward,Video,VideoOff,Volume2,VolumeX,Captions,SlidersHorizontal,Users,Grid2X2,Maximize2,Minimize2,LoaderCircle,RotateCcw,ChevronRight,ChevronDown, X} from 'lucide-react';
+import {Play,Pause,SkipForward,Video,VideoOff,Volume2,VolumeX,Captions,SlidersHorizontal,Users,Grid2X2,Maximize2,Minimize2,LoaderCircle,RotateCcw,ChevronRight,ChevronDown, UserPlus, X} from 'lucide-react';
 import {ConceptHeader} from '../home-2/ConceptHeader.jsx';
 import {ConceptFooter} from '../home-2/ConceptFooter.jsx';
-import {agendas,agendaDescriptions,cast,meetings,meetingSequence,meetingFromSearch,nextMeeting,timeLabel,cueAt} from './catalog.js';
+import {agendas,cast,meetings,meetingSequence,meetingFromSearch,nextMeeting,timeLabel,cueAt} from './catalog.js';
 import {createMeetingEngine} from './engine.js';
+import {MeetingInvite} from './MeetingInvite.jsx';
+import {meetingPortraits} from './invitation.js';
 import {Participant} from './Participant.jsx';
 
 const initial={playing:false,loading:false,error:'',muted:false,music:.42,voices:1,elapsed:0};
@@ -11,6 +13,7 @@ export default function MeetingRoom(){
   const [meeting,setMeeting]=useState(()=>meetingFromSearch(typeof window==='undefined'?'':window.location.search)),[state,setState]=useState(initial),[time,setTime]=useState(0);
   const initialMeeting=useRef(meeting);
   const [captions,setCaptions]=useState(true),[videoOn,setVideoOn]=useState(true),[reactions,setReactions]=useState(true),[mixOpen,setMixOpen]=useState(false);
+  const [invitation,setInvitation]=useState(null),[agendaFilter,setAgendaFilter]=useState('all');
   const [follow,setFollow]=useState(false);
   const [pin,setPin]=useState(null),[left,setLeft]=useState(false),[reduced,setReduced]=useState(false),[full,setFull]=useState(false);
   const engine=useRef(null),room=useRef(null),playButton=useRef(null),mixButton=useRef(null),mixPanel=useRef(null);
@@ -30,6 +33,8 @@ export default function MeetingRoom(){
   function selectMeeting(next){engine.current?.setMeeting(next);setMeeting(next);setTime(0);setPin(null);setFollow(false);setLeft(false);
     const url=new URL(window.location.href);url.searchParams.set('meeting',next.id);window.history.replaceState(null,'',url);
   }
+  function playFromAgenda(next){selectMeeting(next);engine.current?.play();room.current?.scrollIntoView({behavior:reduced?'instant':'smooth',block:'start'});playButton.current?.focus({preventScroll:true});}
+  function inviteToMeeting(next){engine.current?.pause();setInvitation(next);}
   function advanceMeeting(){selectMeeting(nextMeeting(meeting.id));}
   function togglePlay(){if(left)setLeft(false);if(state.playing||state.loading)engine.current?.pause();else engine.current?.play();}
   function seekKey(e){
@@ -64,23 +69,27 @@ export default function MeetingRoom(){
         {state.error&&<p className="mr-error" role="alert">{state.error} <button onClick={()=>engine.current?.play()}>Retry audio</button></p>}
         <div className="mr-toolbar">
           <div className="mr-playback"><button className="mr-play" ref={playButton} onClick={togglePlay} aria-label={state.loading?'Cancel audio loading':state.playing?'Pause meeting':finished?'Replay meeting':'Play meeting'}>{state.loading?<LoaderCircle className="mr-spin" aria-hidden="true"/>:state.playing?<Pause fill="currentColor" aria-hidden="true"/>:finished?<RotateCcw aria-hidden="true"/>:<Play fill="currentColor" aria-hidden="true"/>}<span>{state.loading?'Connecting':state.playing?'Pause':finished?'Replay':'Play meeting'}</span></button><button className="mr-tool" onClick={()=>engine.current?.setMix({muted:!state.muted})} aria-pressed={state.muted}>{state.muted?<VolumeX aria-hidden="true"/>:<Volume2 aria-hidden="true"/>}<span>{state.muted?'Unmute':'Sound'}</span></button></div>
-          <div className="mr-toolbar-middle"><button className="mr-tool" onClick={()=>setVideoOn(!videoOn)} aria-pressed={videoOn}>{videoOn?<Video aria-hidden="true"/>:<VideoOff aria-hidden="true"/>}<span>{videoOn?'Stop video':'Start video'}</span></button><button className="mr-tool" onClick={()=>setCaptions(!captions)} aria-pressed={captions}><Captions aria-hidden="true"/><span>Captions</span></button><button className="mr-tool" ref={mixButton} onClick={()=>setMixOpen(!mixOpen)} aria-expanded={mixOpen} aria-controls="mr-mix"><SlidersHorizontal aria-hidden="true"/><span>Mix</span></button><button className="mr-tool mr-fullscreen" onClick={fullscreen} aria-label={full?'Exit fullscreen':'Enter fullscreen'}>{full?<Minimize2 aria-hidden="true"/>:<Maximize2 aria-hidden="true"/>}<span>Full screen</span></button></div>
+          <div className="mr-toolbar-middle"><button className="mr-tool" onClick={()=>inviteToMeeting(meeting)}><UserPlus aria-hidden="true"/><span>Invite someone</span></button><button className="mr-tool" onClick={()=>setVideoOn(!videoOn)} aria-pressed={videoOn}>{videoOn?<Video aria-hidden="true"/>:<VideoOff aria-hidden="true"/>}<span>{videoOn?'Stop video':'Start video'}</span></button><button className="mr-tool" onClick={()=>setCaptions(!captions)} aria-pressed={captions}><Captions aria-hidden="true"/><span>Captions</span></button><button className="mr-tool" ref={mixButton} onClick={()=>setMixOpen(!mixOpen)} aria-expanded={mixOpen} aria-controls="mr-mix"><SlidersHorizontal aria-hidden="true"/><span>Mix</span></button><button className="mr-tool mr-fullscreen" onClick={fullscreen} aria-label={full?'Exit fullscreen':'Enter fullscreen'}>{full?<Minimize2 aria-hidden="true"/>:<Maximize2 aria-hidden="true"/>}<span>Full screen</span></button></div>
           <div className="mr-meeting-actions"><button className="mr-new" onClick={advanceMeeting}><SkipForward aria-hidden="true"/><span>Next meeting</span></button><button className="mr-leave" onClick={()=>{engine.current?.pause();setLeft(true);}}>Leave</button></div>
         </div>
         {mixOpen&&<div className="mr-mix" id="mr-mix" ref={mixPanel} aria-label="Meeting mix"><div><strong>Your meeting. Your mix.</strong><button aria-label="Close mix" onClick={()=>{setMixOpen(false);mixButton.current?.focus();}}><X aria-hidden="true"/></button></div><label>Voices<input type="range" min="0" max="1" step=".01" value={state.voices} onChange={e=>engine.current?.setMix({voices:+e.target.value})}/></label><label>The beat<input type="range" min="0" max="1" step=".01" value={state.music} onChange={e=>engine.current?.setMix({music:+e.target.value})}/></label><label className="mr-check"><input type="checkbox" checked={reactions} onChange={e=>setReactions(e.target.checked)}/>Excessive encouragement</label></div>}
         <div className="mr-room-foot"><span>MEETING {String(number).padStart(2,'0')} OF {meetingSequence.length} <i>/</i> HOSTED BY SYNERGY</span><span>This could have been a beat.</span></div>
       </section>
       <section className="mr-agendas" aria-label="Meeting playlists">
-        <details className="mr-agenda-disclosure">
+        <details className="mr-agenda-disclosure" open>
           <summary><span>The agenda</span><span className="mr-agenda-count">7 playlists · 14 meetings</span><ChevronDown aria-hidden="true"/></summary>
-          <div className="mr-playlists">{agendas.map(([id,label],i)=><article key={id} className={`mr-playlist${meeting.agenda===id?' is-current':''}`}>
-            <div className="mr-playlist-heading"><span>{String(i+1).padStart(2,'0')}</span><h2>{label}</h2><span>{meetings[id][0].bpm} BPM</span></div>
-            <p>{agendaDescriptions[id]}</p><span className="mr-playlist-sound">{meetings[id][0].groove}</span>
-            <div className="mr-playlist-takes">{meetings[id].map((take,index)=><button key={take.id} aria-current={meeting.id===take.id?'true':undefined} onClick={()=>{selectMeeting(take);room.current?.scrollIntoView({behavior:reduced?'instant':'smooth',block:'start'});playButton.current?.focus({preventScroll:true});}}><span><small>Meeting {index+1} · {timeLabel(take.duration)}</small>{take.title}</span><ChevronRight aria-hidden="true"/></button>)}</div>
+          <div className="mr-agenda-filters" role="group" aria-label="Filter meeting playlists"><button aria-pressed={agendaFilter==='all'} onClick={()=>setAgendaFilter('all')}>All meetings</button>{agendas.map(([id,label])=><button key={id} aria-pressed={agendaFilter===id} onClick={()=>setAgendaFilter(id)}>{label}</button>)}</div>
+          <div className="mr-meeting-cards">{agendas.flatMap(([id,label])=>meetings[id].map(take=>({take,label}))).filter(({take})=>agendaFilter==='all'||take.agenda===agendaFilter).map(({take,label})=><article key={take.id} className={`mr-meeting-card${meeting.id===take.id?' is-current':''}`}>
+            <button className="mr-meeting-thumb" aria-label={`Play ${take.title}`} aria-current={meeting.id===take.id?'true':undefined} onClick={()=>playFromAgenda(take)}>
+              <span className="mr-thumb-cast" aria-hidden="true">{meetingPortraits(take).map(person=><img key={person.id} src={person.url} alt="" loading="lazy"/>)}</span>
+              <span className="mr-thumb-label">{label} / 0{take.variant+1}</span><span className="mr-thumb-play"><Play size={20} fill="currentColor"/></span><span className="mr-thumb-duration">{timeLabel(take.duration)}</span>
+            </button>
+            <div className="mr-card-copy"><span>{take.bpm} BPM · {take.groove}</span><h2><button onClick={()=>playFromAgenda(take)}>{take.title}</button></h2><div><span>{meeting.id===take.id?'IN THE ROOM':'HOSTED BY SYNERGY'}</span><button className="mr-card-invite" aria-label={`Invite someone to ${take.title}`} onClick={()=>inviteToMeeting(take)}><UserPlus size={14}/> Invite someone</button></div></div>
           </article>)}</div>
         </details>
       </section>
     </main>
+    {invitation&&<MeetingInvite key={invitation.id} meeting={invitation} onClose={()=>setInvitation(null)}/>}
     <ConceptFooter variant="dark"/>
   </div>;
 }

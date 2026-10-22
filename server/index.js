@@ -11,6 +11,7 @@ import { createCertificateShareRouter } from './certificate-share.js';
 import { createBeatShareRouter } from './beat-share.js';
 import { createCuttingRoomRouter } from './cutting-room.js';
 import { createBeatVideoRouter, beatVideoStore } from './beat-video-service.js';
+import { createMeetingShareRouter } from './meeting-share.js';
 import { createLinkedInRouter } from './linkedin.js';
 
 const app = express();
@@ -141,6 +142,8 @@ app.get(['/studio-3', '/studio-3/index.html'], (req, res) => {
 
 app.use(createCertificateShareRouter());
 app.use(createBeatShareRouter({template:path.join(dist,'lessons/index.html'),beatVideoStore}));
+
+app.use(createMeetingShareRouter({template:path.join(dist,'studio/index.html'),assets:dist}));
 
 app.use(express.static(dist, {
   extensions:['html'],
