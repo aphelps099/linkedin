@@ -51,3 +51,15 @@
 @media(max-width:600px){.c2-home .c2-store>.c2-container{width:calc(100% - 20px)}.c2-home .lb-feature-cards{padding:0 10px 14px}.c2-home .lb-feature-cards :is(.lc-panel,.lp-studio){padding:20px}.c2-home .lb-feature-cards h2{font-size:30px}.c2-home .lb-feature-cards .lc-paper{padding:17px 19px 19px}.c2-home .lb-feature-cards .lc-post{font-size:21px}.c2-home .lb-feature-cards .lc-stamp{width:96px}.c2-home .lb-feature-cards .lc-action{padding-inline:12px}.c2-home .lb-feature-cards .lc-example{padding-inline:10px}.c2-home .lb-feature-cards .lp-room{width:calc(100% + 54px);margin-left:8px}}
 @media(prefers-reduced-motion:reduce){.c2-home .lb-feature-cards *{transition:none!important}}
 @container(max-width:1000px){.c2-home .lb-feature-cards .lc-description{margin-right:0;max-width:34ch}.c2-home .lb-feature-cards .lc-scene{margin-top:76px}}
+
+/* Synth campaign: a printed signal field around the cobalt instrument. */
+.c2-home .lb-feature-cards .lp-studio{background:#080f1d url('/home-2/synth-signal-field.svg') center/cover no-repeat;color:#edf3ff}
+.c2-home .lb-feature-cards .lp-pill{color:#bbd1ff;border-color:#849bc580}
+.c2-home .lb-feature-cards .lp-enter{color:#edf3ff}
+.c2-home .lb-feature-cards .lp-caption{color:#a4b6d0}
+.c2-home .lp-studio .sp-preview-controls button{color:#a4b6d0}
+.c2-home .lp-studio .sp-preview-controls .sp-audition{color:#e4efff}
+.c2-home .lp-studio .sp-preview-controls button:focus-visible,
+.c2-home .lp-studio .sp-art-link:focus-visible,
+.c2-home .lp-studio .lp-enter:focus-visible{outline:2px solid #b5f3db;outline-offset:4px}
+.c2-home .lp-studio .sp-error{color:#ffb3a7}
