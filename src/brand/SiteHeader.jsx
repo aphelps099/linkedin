@@ -7,7 +7,7 @@ import './site-header.css';
 
 export const SITE_LINKS = [
   ['Optimize', 'optimizer'], ['Learn', 'learn/'], ['Studio', 'studio/'],
-  ['Synth', 'synth/'], ['Shop', 'store/'],
+  ['Synth', 'synth/'],
 ];
 const idle = {playing:false, loading:false, error:''};
 
