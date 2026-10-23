@@ -15,8 +15,8 @@
 .home-test .test-tools .lc-pair{grid-template-columns:minmax(0,7fr) minmax(0,5fr);align-items:stretch}
 .home-test .test-tools .test-post-panel,.home-test .test-tools .test-radio-card{min-height:0;height:610px;padding:26px;border-radius:20px}
 .home-test .test-tools .test-radio-card h2{font-size:clamp(34px,3.2vw,48px);line-height:1.02;margin-top:16px}
-.home-test .test-tools .test-radio-card .development-art{position:absolute;inset:100px 0 68px;height:auto;width:100%;margin:0;--device-width:clamp(330px,28.6vw,396px)}
-.home-test .test-tools .test-radio-card .development-device{top:0;margin-left:calc(var(--device-width) * -.35)}
+.home-test .test-tools .test-radio-card .development-art{position:absolute;inset:112px 0 24px;height:auto;width:100%;margin:0;--device-width:clamp(363px,31.5vw,436px)}
+.home-test .test-tools .test-radio-card .development-device{top:0;margin-left:calc(var(--device-width) * -.30)}
 .home-test .test-tools .test-radio-footer{margin-top:auto;padding-top:12px;gap:10px}
 .home-test .test-tools .test-radio-footer p{display:none}
 .home-test .test-post-panel{position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;min-width:0;color:#f7f9ff;background:#0b4bef}
@@ -68,14 +68,14 @@
  .home-test .test-tools .test-post-panel,.home-test .test-tools .test-radio-card{padding:22px;height:620px}
  .home-test .test-post-footer{flex-wrap:wrap;gap:8px}
  .home-test .test-post-status{font-size:10px}
- .home-test .test-tools .test-radio-card .development-art{inset:122px 0 84px;--device-width:352px}
+ .home-test .test-tools .test-radio-card .development-art{inset:134px 0 24px;--device-width:384px}
  .home-test .test-tools .test-radio-footer{flex-direction:column;align-items:flex-start}
 }
 @media(max-width:800px){
  .home-test .test-tools .lc-pair{grid-template-columns:1fr;max-width:600px}
  .home-test .test-tools .test-post-panel{height:auto;min-height:580px;padding:24px}
  .home-test .test-tools .test-radio-card{height:580px;padding:24px}
- .home-test .test-tools .test-radio-card .development-art{inset:104px 0 62px;--device-width:360px}
+ .home-test .test-tools .test-radio-card .development-art{inset:116px 0 24px;--device-width:min(378px,108%)}
  .home-test .test-tools .test-radio-card h2{font-size:38px}
  .home-test .test-post-panel h2{font-size:36px}
  .home-test .test-post-deck{font-size:15px;max-width:27ch}
