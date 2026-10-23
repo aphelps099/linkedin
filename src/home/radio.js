@@ -2,24 +2,26 @@ import {claimAudio, onAudioFocus} from '../brand/audio-focus.js';
 import {createAudioEngine} from '../audio.js';
 import {bandAt} from '../song.js';
 import {ensureClip} from '../v2/lesson.js';
-import {TRACKS, arrangement, makeCues, lyricAt, LINES} from './tracks.js';
+import {TRACKS, PLAYLIST_ORDER, arrangement, makeCues, lyricAt, LINES} from './tracks.js';
 
-export function createRadio({phraseBase, onState, engineFactory=createAudioEngine, loadClip=ensureClip, interval=setInterval, clear=clearInterval}) {
-  const voice={bank:new Map()};
+export function createRadio({phraseBase, onState, engineFactory=createAudioEngine, loadClip=ensureClip, interval=setInterval, clear=clearInterval, initialIndex=0, fetchAudio=fetch}) {
+  const voice={bank:new Map()}, recordings=new Map();
+  let controller=null;
   let engine=null, timer=null, generation=0, origin=0, positionFloor=0, nextStep=0, nextCue=0, cues=[], song=null, disposed=false;
-  let state={index:0,playing:false,loading:false,elapsed:0,volume:.8,shuffle:false,text:LINES[1],word:-1,error:''};
+  let state={index:initialIndex,playing:false,loading:false,elapsed:0,volume:.8,shuffle:false,text:TRACKS[initialIndex].src?TRACKS[initialIndex].title:LINES[1],word:-1,error:''};
   const emit=next=>{state={...state,...next}; if(!disposed) onState({...state});};
   const clearTick=()=>{if(timer!==null) clear(timer);timer=null;};
-  const destroy=()=>{clearTick();engine?.dispose();engine=null;};
+  const destroy=()=>{controller?.abort();controller=null;clearTick();engine?.dispose();engine=null;};
   const now=()=>engine?Math.max(positionFloor,Math.min(TRACKS[state.index].seconds,engine.now()-origin)):state.elapsed;
   const nextIndex=direction=>state.shuffle
     ? (state.index+1+Math.floor(Math.random()*(TRACKS.length-1)))%TRACKS.length
-    : (state.index+direction+TRACKS.length)%TRACKS.length;
+    : PLAYLIST_ORDER[(PLAYLIST_ORDER.indexOf(state.index)+direction+TRACKS.length)%TRACKS.length];
 
   function tick() {
     if(!engine || !state.playing) return;
     const track=TRACKS[state.index], elapsed=now(), stepSec=60/track.bpm/4;
     if(elapsed>=track.seconds){ start(nextIndex(1),0); return; }
+    if(track.src){emit({elapsed,text:track.title,word:-1});return;}
     // Recover after a throttled background tab without replaying a backlog.
     nextStep=Math.max(nextStep,Math.ceil((elapsed-.03)/stepSec));
     while(nextStep*stepSec<Math.min(track.seconds,elapsed+.12)){
@@ -47,12 +49,20 @@ export function createRadio({phraseBase, onState, engineFactory=createAudioEngin
     destroy();
     const track=TRACKS[index];
     offset=Math.max(0,Math.min(offset,track.seconds));
-    emit({index,elapsed:offset,playing:false,loading:play,error:'',text:LINES[track.phrases[0]],word:-1});
+    emit({index,elapsed:offset,playing:false,loading:play,error:'',text:track.src?track.title:LINES[track.phrases[0]],word:-1});
     if(!play) return;
     try{
       const active=engineFactory(); engine=active;
       // Unlock synchronously in the click/keyboard call stack, before fetching.
       active.unlock(); active.setVolume(state.volume);
+      if(track.src){
+        let buffer=recordings.get(track.src);
+        if(!buffer){controller=new AbortController();const response=await fetchAudio(track.src,{signal:controller.signal});if(!response.ok)throw Error('This recording could not load. Please try again.');buffer=await active.decode(await response.arrayBuffer());if(mine!==generation||disposed)return;recordings.set(track.src,buffer);while(recordings.size>2)recordings.delete(recordings.keys().next().value);}
+        if(mine!==generation||disposed)return;
+        positionFloor=offset;origin=active.now()+.08-offset;
+        if(offset<buffer.duration)active.playBuffer(buffer,{when:active.now()+.08,offset,bus:'samples',vel:1});
+        emit({playing:true,loading:false});timer=interval(tick,25);tick();return;
+      }
       const loaded=await Promise.all([...new Set(track.phrases)].map(bank=>loadClip(active,voice,phraseBase,bank)));
       if(mine!==generation || disposed) return;
       if(loaded.some(b=>!b)) throw new Error('A voice clip could not load. Please try play again.');

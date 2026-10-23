@@ -1,4 +1,5 @@
 import {SOUNDS, stepTime, wavBytes} from './model.js';
+import {createMobileAudio} from './mobile-audio.js';
 function synthesized(ctx,id){
  const rate=ctx.sampleRate,duration={kick:.6,snare:.25,hat:.09,clap:.24,bass:.65,chord:1.3}[id];
  const b=ctx.createBuffer(1,Math.ceil(rate*duration),rate),d=b.getChannelData(0);let phase=0,seed=17;
@@ -28,7 +29,7 @@ export function voice(ctx,bus,buffer,slot,when){
 }
 export class Sampler {
  constructor(){this.buffers=new Map();this.recordings=new Map();this.reversed=new WeakMap();this.sources=new Set();this.timers=new Set();this.running=false;}
- async init(){if(!this.ctx){this.ctx=new (window.AudioContext||window.webkitAudioContext)();}await this.ctx.resume();}
+ async init(){if(!this.ctx){const AudioContext=window.AudioContext||window.webkitAudioContext;if(!AudioContext)throw Error('This browser cannot play the sampler. Open it in Safari or Chrome.');this.ctx=new AudioContext();this.mobileAudio=createMobileAudio(this.ctx);}await this.mobileAudio.resume();}
  async load(slot){const key=slot.data||slot.sound;if(this.buffers.has(key))return this.buffers.get(key);let b;const sound=SOUNDS.find(s=>s.id===slot.sound);
  if(slot.data||sound?.url){const url=slot.data||sound.url;let raw=this.recordings.get(url);
  if(!raw){const response=await fetch(url);if(!response.ok)throw Error(`Could not load ${slot.name}. Try again.`);raw=await this.ctx.decodeAudioData(await response.arrayBuffer());
@@ -38,14 +39,14 @@ export class Sampler {
  else b=synthesized(this.ctx,slot.sound);this.buffers.set(key,b);return b;}
 
  buffer(slot){let b=this.buffers.get(slot.data||slot.sound);if(!b||!slot.reverse)return b;if(!this.reversed.has(b)){const reverse=this.ctx.createBuffer(b.numberOfChannels,b.length,b.sampleRate);for(let c=0;c<b.numberOfChannels;c++)reverse.getChannelData(c).set(b.getChannelData(c).slice().reverse());this.reversed.set(b,reverse);}return this.reversed.get(b);}
- async prepare(p){await this.init();await Promise.all(p.slots.map(s=>this.load(s)));if(!this.bus)this.bus=graph(this.ctx,p);this.bus.update(p);}
+ async prepare(p,slots=p.slots){await this.init();await Promise.all(slots.map(s=>this.load(s)));if(!this.bus)this.bus=graph(this.ctx,p);this.bus.update(p);}
  hit(slot,when=this.ctx.currentTime){const b=this.buffer(slot);if(!b)return;const s=voice(this.ctx,this.bus,b,slot,when);this.sources.add(s);s.addEventListener('ended',()=>this.sources.delete(s));return s;}
- start(getProject,onStep){this.stop();this.bus=graph(this.ctx,getProject());this.running=true;let step=0,time=this.ctx.currentTime+.06;
+ start(getProject,onStep){this.stop({keepSession:true});this.bus=graph(this.ctx,getProject());this.running=true;let step=0,time=this.ctx.currentTime+.06;
  const tick=()=>{if(!this.running)return;const p=getProject();this.bus.update(p);if(time<this.ctx.currentTime-.1)time=this.ctx.currentTime+.03;
- while(time<this.ctx.currentTime+.1){const at=step%16;p.slots.forEach((s,i)=>{if(p.pattern[i][at]&&!s.mute)this.hit(s,time);});const timer=setTimeout(()=>{this.timers.delete(timer);if(this.running)onStep(at);},Math.max(0,(time-this.ctx.currentTime)*1000));this.timers.add(timer);time+=60/p.bpm/4*(at%2?1-p.swing:1+p.swing);step++;}}
+ while(time<this.ctx.currentTime+.1){const at=step%p.pattern[0].length;p.slots.forEach((s,i)=>{if(p.pattern[i][at]&&!s.mute)this.hit(s,time);});const timer=setTimeout(()=>{this.timers.delete(timer);if(this.running)onStep(at);},Math.max(0,(time-this.ctx.currentTime)*1000));this.timers.add(timer);time+=60/p.bpm/4*(at%2?1-p.swing:1+p.swing);step++;}}
  tick();this.interval=setInterval(tick,25);}
- stop(){this.running=false;clearInterval(this.interval);for(const t of this.timers)clearTimeout(t);this.timers.clear();for(const s of this.sources){try{s.stop();}catch{}}this.sources.clear();if(this.bus){this.bus.disconnect();this.bus=null;}}
+ stop({keepSession=false}={}){this.running=false;if(!keepSession)this.mobileAudio?.pause();clearInterval(this.interval);for(const t of this.timers)clearTimeout(t);this.timers.clear();for(const s of this.sources){try{s.stop();}catch{}}this.sources.clear();if(this.bus){this.bus.disconnect();this.bus=null;}}
  async export(p){await this.prepare(p);const duration=16*60/p.bpm;const tail=Math.max(4,...p.slots.filter(s=>!s.mute).map(s=>(s.end-s.start)*this.buffer(s).duration/2**(s.pitch/12)+1.5));const ctx=new OfflineAudioContext(2,Math.ceil((duration+tail)*44100),44100),bus=graph(ctx,p);
- for(let step=0;step<64;step++)p.slots.forEach((s,i)=>{if(p.pattern[i][step%16]&&!s.mute)voice(ctx,bus,this.buffer(s),s,stepTime(step,p.bpm,p.swing));});return new Blob([wavBytes(await ctx.startRendering())],{type:'audio/wav'});}
- close(){this.stop();this.ctx?.close();}
+ for(let step=0;step<64;step++)p.slots.forEach((s,i)=>{if(p.pattern[i][step%p.pattern[0].length]&&!s.mute)voice(ctx,bus,this.buffer(s),s,stepTime(step,p.bpm,p.swing));});return new Blob([wavBytes(await ctx.startRendering())],{type:'audio/wav'});}
+ close(){this.stop();this.mobileAudio?.dispose();this.ctx?.close();}
 }

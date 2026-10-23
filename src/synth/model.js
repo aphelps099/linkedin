@@ -1,3 +1,4 @@
+import {RECORDINGS} from '../home/recordings.js';
 import characterSounds from './sound-library.json' with {type:'json'};
 export const KEYS = ['1','2','3','4','5','6','7','8'];
 export const SOUNDS = [
@@ -7,6 +8,7 @@ export const SOUNDS = [
   {id:'synergy',name:'Synergy',kind:'VOICE',url:'/phrases/05.wav'},
   {id:'circle',name:'Circle back',kind:'VOICE',url:'/phrases/06.wav'},
   ...characterSounds,
+  ...RECORDINGS.filter(track=>track.seconds<30).map(track=>({id:track.id,name:track.title,kind:'LOOP',group:'Session recordings',duration:track.seconds,url:track.src})),
 ];
 const rhythms = [
  [[0,4,8,12],[4,12],[0,2,4,6,8,10,12,14],[12],[0,6,8,14],[2,10],[0],[8]],
@@ -19,7 +21,7 @@ export function initialProject(){return {version:1,name:'Untitled alignment',bpm
 const num=(v,min,max)=>typeof v==='number'&&Number.isFinite(v)&&v>=min&&v<=max;
 export function validateProject(p){
  if(!p||p.version!==1||typeof p.name!=='string'||p.name.length>60||!num(p.bpm,60,180)||!num(p.swing,0,.45)||!num(p.volume,0,1)||!num(p.filter,200,20000)||!num(p.delay,0,.6))throw Error('This is not a supported sampler project.');
- if(!Array.isArray(p.pattern)||p.pattern.length!==8||p.pattern.some(r=>!Array.isArray(r)||r.length!==16||r.some(v=>typeof v!=='boolean')))throw Error('The project pattern is invalid.');
+ if(!Array.isArray(p.pattern)||p.pattern.length!==8||p.pattern.some(r=>!Array.isArray(r)||![16,64].includes(r.length)||r.length!==p.pattern[0].length||r.some(v=>typeof v!=='boolean')))throw Error('The project pattern is invalid.');
  if(!Array.isArray(p.slots)||p.slots.length!==8)throw Error('The project needs eight pads.');
  for(const s of p.slots){if(!SOUNDS.some(x=>x.id===s.sound)||typeof s.name!=='string'||s.name.length>60||!num(s.gain,0,1)||!num(s.pitch,-24,24)||!num(s.start,0,.99)||!num(s.end,.01,1)||s.end-s.start<.009||typeof s.reverse!=='boolean'||typeof s.mute!=='boolean'||(s.data!==null&&(typeof s.data!=='string'||s.data.length>12e6||!/^data:audio\/[a-zA-Z0-9.+-]+;base64,[A-Za-z0-9+/=]+$/.test(s.data))))throw Error('A pad contains invalid sample settings.');}
  return p;

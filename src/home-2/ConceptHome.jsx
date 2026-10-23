@@ -1,6 +1,6 @@
 import React, {memo, useEffect, useRef, useState} from 'react';
 import {ArrowUpRight, ChevronDown, LoaderCircle, Pause, Play, SkipBack, SkipForward, Volume2, VolumeX} from 'lucide-react';
-import {TRACKS, LINES, formatTime} from '../home/tracks.js';
+import {TRACKS, FEATURED_TRACK, PLAYLIST_ORDER, LINES, formatTime} from '../home/tracks.js';
 import {PRODUCTS} from '../store/products.js';
 import {ConceptHeader} from './ConceptHeader.jsx';
 import {HeroVideo} from './HeroVideo.jsx';
@@ -25,7 +25,7 @@ import './home-typography.css';
 import './editorial-type-preview.css';
 import './azeret-headings.css';
 
-const INITIAL = {index:0, playing:false, loading:false, elapsed:0, volume:.8, text:LINES[1], word:-1, mouth:'rest', levels:null, error:''};
+const INITIAL = {index:FEATURED_TRACK, playing:false, loading:false, elapsed:0, volume:.8, text:TRACKS[FEATURED_TRACK].title, word:-1, mouth:'rest', levels:null, error:''};
 const PORTRAITS = [{index:2,tone:'ice'}, {index:0,tone:'paper'}, {index:1,tone:'pink'}, {index:3,tone:'navy'}];
 const FEATURED = ['CS-106','CS-203','CS-501'].map(sku => PRODUCTS.find(p => p.sku === sku));
 // Singing frames replace only the feathered lip area. A separate, brief
@@ -78,7 +78,7 @@ export default function ConceptHome({playerFactory=createPortraitRadio, variant=
     return () => window.removeEventListener('hashchange',onHashChange);
   }, []);
   useEffect(() => {
-    const player = playerFactory({phraseBase:`${base}phrases/`, onState:setState});
+    const player = playerFactory({initialIndex:FEATURED_TRACK,phraseBase:`${base}phrases/`, onState:setState});
     radio.current = player;
     const key = e => {
       if (e.code !== 'Space' || e.repeat || e.metaKey || e.ctrlKey || e.altKey || e.target.closest('input,textarea,button,a,select,dialog,video,audio,[contenteditable="true"]')) return;
@@ -143,7 +143,7 @@ export default function ConceptHome({playerFactory=createPortraitRadio, variant=
           <button type="button" className="c2-key c2-all-tracks" aria-expanded={allTracks} aria-controls="c2-track-list" onClick={()=>setAllTracks(!allTracks)}>Playlist <ChevronDown className={allTracks?'is-open':''}/></button>
         </div>
         {state.error&&<p className="c2-audio-error c2-container" role="alert">{state.error}</p>}
-        <div className="c2-container" id="c2-track-list" hidden={!allTracks}><ol className="c2-track-list">{TRACKS.map((item,index)=><li key={item.title}><button aria-label={`${index===state.index&&state.playing?'Pause':'Play'} ${item.title}`} aria-current={index===state.index?'true':undefined} onClick={()=>choose(index)}><span>{index===state.index&&state.playing?<Pause size={17}/>:<Play size={17}/>}</span><strong>{item.title}</strong><span className="c2-track-genre">{item.genre}</span><time>{formatTime(item.seconds)}</time></button></li>)}</ol><button className="c2-motion-toggle" aria-pressed={motion} onClick={()=>setMotion(!motion)}>Animate {variant==='conversation'?'conversation':experiment?'feed':'portraits'} <span>{motion?'On':'Off'}</span></button></div>
+        <div className="c2-container" id="c2-track-list" hidden={!allTracks}><ol className="c2-track-list">{PLAYLIST_ORDER.map(index=>{const item=TRACKS[index];return <li key={item.title}><button aria-label={`${index===state.index&&state.playing?'Pause':'Play'} ${item.title}`} aria-current={index===state.index?'true':undefined} onClick={()=>choose(index)}><span>{index===state.index&&state.playing?<Pause size={17}/>:<Play size={17}/>}</span><strong>{item.title}</strong><span className="c2-track-genre">{item.genre}</span><time>{formatTime(item.seconds)}</time></button></li>})}</ol><button className="c2-motion-toggle" aria-pressed={motion} onClick={()=>setMotion(!motion)}>Animate {variant==='conversation'?'conversation':experiment?'feed':'portraits'} <span>{motion?'On':'Off'}</span></button></div>
       </section>}
       {experiment&&variant!=='conversation'&&<ExperimentLinks variant={variant} base={base}/>}
       </section>
