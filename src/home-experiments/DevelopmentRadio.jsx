@@ -5,7 +5,7 @@ import './player-digits.css';
 
 const EQUALIZER_HEIGHTS=[.32,.56,.82,.48,.95,.67,.41,.76,.58,1,.72,.45,.88,.61,.38,.54];
 
-const PocketPlayer=memo(function PocketPlayer({motion,base,state,track,seconds,onToggle,onSkip,onSeek,onSelect}){
+export const PocketPlayer=memo(function PocketPlayer({motion,base,state,track,seconds,onToggle,onSkip,onSeek,onSelect}){
   const screenId=useId(), playlistId=useId();
   const art=useRef(null),device=useRef(null),menu=useRef(null),playlist=useRef(null);
   const [menuOpen,setMenuOpen]=useState(false),[scrub,setScrub]=useState(null);

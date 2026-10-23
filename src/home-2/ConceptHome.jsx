@@ -48,11 +48,11 @@ const Portrait = memo(function Portrait({base, index, tone, active, playing, loa
   </button>;
 });
 
-export default function ConceptHome({playerFactory=createPortraitRadio, variant='portraits'}) {
+export default function ConceptHome({playerFactory=createPortraitRadio, variant='portraits', assetBase, BeatsComponent=DevelopmentRadio, CampaignsComponent=Campaigns}) {
   const experiment=['laptop','screenless','conversation'].includes(variant);
   const typePreview=new URLSearchParams(window.location.search).get('type');
   const previewClass=['editorial','founders'].includes(typePreview)?` c2-type-editorial${typePreview==='founders'?' c2-type-founders-nav':''}`:'';
-  const base = window.location.pathname.replace(/home-[2345](?:\/(?:index\.html)?)?$/, '').replace(/index\.html$/, '').replace(/\/?$/, '/');
+  const base = assetBase ?? window.location.pathname.replace(/home-[2345](?:\/(?:index\.html)?)?$/, '').replace(/index\.html$/, '').replace(/\/?$/, '/');
   const radio = useRef(null), previousVolume = useRef(.8), chooseRef = useRef(null);
   const [state, setState] = useState(INITIAL), [allTracks, setAllTracks] = useState(false);
   const [motion, setMotion] = useState(() => !window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -148,7 +148,7 @@ export default function ConceptHome({playerFactory=createPortraitRadio, variant=
       {experiment&&variant!=='conversation'&&<ExperimentLinks variant={variant} base={base}/>}
       </section>
       {variant==='conversation'&&<>
-        <DevelopmentRadio base={base} state={state} track={track} seconds={seconds} motion={motion} onToggle={()=>radio.current?.toggle()} onSkip={skip} onSeek={seek} onSelect={stableChoose}/>
+        <BeatsComponent base={base} state={state} track={track} seconds={seconds} motion={motion} onToggle={()=>radio.current?.toggle()} onSkip={skip} onSeek={seek} onSelect={stableChoose}/>
       </>}
       <section id="c2-store" className="c2-store" aria-labelledby="c2-store-title">
         <div className="c2-container">
@@ -166,7 +166,7 @@ export default function ConceptHome({playerFactory=createPortraitRadio, variant=
           </div>
         </div>
       </section>
-      <Campaigns base={base}/>
+      <CampaignsComponent base={base} state={state} track={track} seconds={seconds} motion={motion} onToggle={()=>radio.current?.toggle()} onSkip={skip} onSeek={seek} onSelect={stableChoose}/>
       <DispatchCarousel base={base} motion={motion} state={state} onPlayTrack={index=>radio.current?.play(index)} onToggle={()=>radio.current?.toggle()} onSeek={seek} onPause={()=>{const current=radio.current?.getState();if(current?.playing||current?.loading)radio.current.toggle();}}/>
     </main>
     <ConceptFooter base={base}/>
