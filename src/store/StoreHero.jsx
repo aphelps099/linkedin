@@ -19,8 +19,8 @@ export function StoreHero(){
   return <section className="shop-hero" aria-labelledby="shop-title">
     <div className="shop-hero-art" ref={hero}>
       <picture>
-        <source media="(max-width: 760px)" srcSet="../store/look-serious-circle-back-mobile.webp" width="1254" height="1254"/>
-        <img className="shop-hero-photo" style={{animationPlayState:paused||!visible?'paused':'running'}} src="../store/look-serious-circle-back-hero.webp" width="1650" height="953" fetchPriority="high" alt="Five models in a sunlit parking garage wearing the LinkedIn Beats Look Serious collection: SERIOUS. tees, stacked CIRCLE BACK on the kneeling model’s navy shirt, and stacked OUT OF OFFICE on blue and pink tops."/>
+        <source media="(max-width: 760px)" srcSet="../store/office-cast-mobile.webp" width="1254" height="1254"/>
+        <img className="shop-hero-photo" style={{animationPlayState:paused||!visible?'paused':'running'}} src="../store/office-cast-hero.webp" width="1672" height="941" fetchPriority="high" alt="Operations and Strategy wear SERIOUS. and CIRCLE BACK tees in a sunlit office beside Synergy the robot, a Circle Back cap, and the team’s printer and Email mug."/>
       </picture>
       <div className="shop-hero-copy"><p className="shop-hero-eyebrow">Store</p><h1 id="shop-title"><span>Wear your</span><span>boundaries.</span></h1></div>
       <a className="shop-hero-go" href="#collection" aria-label="Shop the collection"><ArrowDownRight size={28} aria-hidden="true"/></a>
