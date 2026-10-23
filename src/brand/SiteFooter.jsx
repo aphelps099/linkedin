@@ -93,10 +93,15 @@ export const SiteFooter = memo(function SiteFooter({base='/'}) {
       </div>
       <a className="lb-wordmark-link" href={base} aria-label="LinkedIn Beats home"><span className="lb-afterbeat-wordmark"><img className="lb-wordmark" src={`${base}brand/afterbeat/wordmark-white.svg?v=afterbeat-2`} width="7015" height="862" loading="lazy" alt="LinkedIn Beats"/></span></a>
       <section className="lb-fineprint" aria-labelledby={fineprint}>
-        <div className="lb-fineprint-copy"><h3 id={fineprint}>The necessary small print</h3>
+        <div className="lb-fineprint-copy">
+          <details className="lb-fineprint-details">
+            <summary id={fineprint}>Read fine print <span className="lb-fineprint-toggle" aria-hidden="true">+</span></summary>
+            <div className="lb-fineprint-body">
           <p>LinkedIn Beats is an independent parody project. Not affiliated with, endorsed by, or sponsored by LinkedIn Corporation. All trademarks belong to their respective owners.</p>
           <p>For recreational professional development only. No guarantee of promotion, strategic alignment, or stakeholder buy-in. Any resemblance to your Monday meeting is entirely plausible. Use headphones. Exercise judgment. Circle back responsibly.</p>
-          <p><a href={`${base}privacy/`}>Privacy policy ↗</a></p>
+            </div>
+          </details>
+          <p className="lb-privacy-link"><a href={`${base}privacy/`}>Privacy policy ↗</a></p>
         </div>
         <aside className="lb-assurance" aria-label="Fictional corporate assurance marks">
           <ul className="lb-seals">{SEALS.map((label,index)=><li key={label} aria-label={`Certified ${label.toLowerCase()} — fictional corporate assurance mark`}><img className="lb-seal-art" src={`${base}brand/seals/assurance-${index+1}.svg`} width="100" height="100" alt="" loading="lazy"/></li>)}</ul>
