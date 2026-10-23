@@ -14,8 +14,8 @@ Projects autosave to IndexedDB in the current browser. Download/open JSON includ
 
 This is an original sampler, not M-VAVE firmware or an FM-1 emulator. No firmware flashing, hardware MIDI, microphone recording or cloud project account is included.
 
-Three complete demo sessions can be previewed without replacing or autosaving over the current project, then explicitly loaded (Undo restores the prior session). Demos use four bars / 64 steps, original-pitch character takes, procedural drums and synth tones, and the existing master delay. Bar selectors edit all four bars; older 16-step projects remain valid. WAV export renders all four bars once for demo projects, or four repeats for older one-bar patterns. No new recordings or external sample licensing are required.
+The four uploaded recordings and three demo sessions appear in one compact preview strip: names and play/stop icons only. The strip scrolls horizontally on mobile. Previewing stops other synth playback and never replaces or autosaves over the current project. Demo sessions retain original-pitch vocals and four-bar patterns; existing saved one- and four-bar projects remain compatible.
 
-Uploaded Untitled Alignment (12.97s) is featured above the demos as an intact recording. Loading it onto a pad preserves original pitch and clears that pad’s steps to prevent overlapping full-track repeats. MILO Session A (3.75s) is also available in the sound library. The homepage playlist includes all four supplied recordings and defaults to Untitled Alignment.
+Untitled Alignment and MILO Session A remain available in the sound library. All four supplied recordings remain in the homepage playlist, with Untitled Alignment first.
 
 Mobile playback unlocks Web Audio and a silent inline media session directly in the tap before fetching samples; subsequent taps resume interrupted contexts. Pad audition loads only that pad. Narrow screens stack the transport and use 44px sequencer steps inside a horizontally scrollable grid. `node scripts/check-synth-mobile.mjs` checks gesture ordering, interruption recovery, media focus and cleanup; actual iOS hardware playback still needs a device check.
