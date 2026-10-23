@@ -13,7 +13,7 @@ function PlaybackIcon({state}) {
 
 function SamplerBeats({base, state, track, onToggle}) {
   return <section className="test-beats" id="c2-player" aria-labelledby="test-beats-title">
-    <img className="test-stage" src={`${base}home-experiments/music-stage.webp`} alt="" width="1774" height="887" loading="lazy"/>
+    <img className="test-stage" src={`${base}home-test/beats-signal-field.svg`} alt="" width="1600" height="600" loading="lazy"/>
     <div className="test-beats-inner">
       <div className="test-beats-copy">
         <p className="test-eyebrow">The corporate sampler</p>
