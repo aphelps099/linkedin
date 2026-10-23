@@ -10,19 +10,18 @@
 .home-test .test-outline-button{display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:48px;padding:12px 21px;border:1px solid #e5f1ffb8;border-radius:40px;background:#102a441c;color:#fff;text-decoration:none;font:600 16px/1.2 C2Hoves,Arial,sans-serif;cursor:pointer;transition:background .2s,border-color .2s}
 .home-test .test-outline-button svg{width:18px;height:18px;flex-shrink:0}
 .home-test .test-outline-button:hover{background:#e4f1ff14;border-color:#fff;opacity:1}
-.home-test .test-beats-footnote{font:400 11px/1.5 C2Mono,monospace;letter-spacing:.035em;color:#adc5df;margin:22px 0 0}
 .home-test .test-sampler-stage{position:relative;min-width:0;padding-top:0}
-.home-test .test-sampler-link{display:block;width:110%;max-width:none;margin:-4% 0 -2% -1%;transform:rotate(-1deg);transition:transform .45s cubic-bezier(.2,.7,.2,1);filter:drop-shadow(0 25px 20px #0007)}
+.home-test .test-sampler-link{position:relative;display:block;width:119%;max-width:none;margin:-4% 0 -2% -1%;transform:rotate(-1deg);transition:transform .45s cubic-bezier(.2,.7,.2,1);filter:drop-shadow(0 25px 20px #0007)}
 .home-test .test-sampler-link img{display:block;width:100%;max-width:none;height:auto}
 .home-test .test-sampler-link:hover{opacity:1;transform:translateY(-4px) rotate(-1deg)}
-.home-test .test-preview-controls{position:relative;z-index:3;display:flex;align-items:center;justify-content:center;gap:18px;margin:12px 8% 0 0;min-height:48px;color:#c2d7ee}
-.home-test .test-preview-controls button{display:inline-flex;align-items:center;gap:10px;min-height:44px;padding:0 4px;background:transparent;color:#e4efff;cursor:pointer;font:400 12px/1.4 C2Mono,monospace;white-space:nowrap}
+.home-test .test-preview-controls{position:relative;z-index:3;display:flex;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:8px 16px;margin:20px 0 0;min-height:48px;color:#c2d7ee}
+.home-test .test-preview-controls button{display:inline-flex;align-items:center;gap:10px;min-height:44px;padding:0 4px;background:transparent;color:#e4efff;cursor:pointer;font:400 13px/1.4 C2Mono,monospace;white-space:nowrap}
 .home-test .test-play-ring{display:grid;place-items:center;width:34px;height:34px;border:1px solid #adc8e0;border-radius:50%;background:linear-gradient(135deg,#fff1,#fff0)}
 .home-test .test-play-ring svg{width:13px;height:13px}
-.home-test .test-preview-track{font:400 11px/1.4 C2Mono,monospace;border-left:1px solid #8cacc250;padding-left:18px;color:#91aecb;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.home-test .test-audio-error{font:400 13px/1.4 C2Hoves,sans-serif;color:#ffd2bf;margin:10px 30px}
+.home-test .test-preview-track{font:400 11px/1.4 C2Mono,monospace;border-left:1px solid #8cacc250;padding-left:18px;color:#91aecb;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.home-test .test-audio-error{font:400 13px/1.4 C2Hoves,sans-serif;color:#ffd2bf;margin:10px 0}
 .home-test .test-beats :is(a,button):focus-visible,.home-test .test-radio-card button:focus-visible{outline:2px solid #b4ddff;outline-offset:5px}
-.home-test .c2-home .test-radio-card{padding:28px 28px 24px;min-height:640px;background:#08172a url('/home-2/synth-signal-field.svg') center/cover no-repeat}
+.home-test .c2-home .test-radio-card{padding:28px 28px 24px;min-height:640px;background:#03152b url('/home-experiments/music-stage.webp') 66% bottom/auto 100% no-repeat}
 .home-test .c2-home .test-radio-card h2{font:900 clamp(38px,4.1vw,66px)/1.02 'LB Hoves Black',C2Hoves,sans-serif;letter-spacing:-.045em;margin:18px 0 0;max-width:8em;z-index:2}
 .home-test .test-radio-card .lp-pill{text-transform:uppercase}
 .home-test .test-radio-card .development-art{--device-width:clamp(300px,30vw,470px);position:relative;inset:auto;width:100%;height:calc(var(--device-width) * 1.17);flex:none;margin:8px auto 0;max-width:none}
@@ -33,7 +32,7 @@
 .home-test .test-radio-footer{position:relative;z-index:4;display:flex;align-items:center;gap:16px;margin-top:auto;padding-top:20px;flex-wrap:wrap}
 .home-test .test-radio-footer p{font:400 12px/1.4 C2Hoves,sans-serif;color:#adc1d9;margin:0}
 .home-test .test-radio-footer .test-outline-button{font-size:14px;min-height:44px;padding:10px 18px}
-@media(min-width:1800px){.home-test .test-sampler-link{width:calc(110% + (100vw - 1800px) / 2);max-width:1400px}}
+@media(min-width:1800px){.home-test .test-sampler-link{width:calc(119% + (100vw - 1800px) / 2);max-width:1400px}}
 @media(max-width:1050px){
  .home-test .test-beats-inner{grid-template-columns:40% 60%;padding-left:32px;min-height:400px}
  .home-test .test-beats-intro{font-size:18px}
@@ -47,7 +46,6 @@
  .home-test .test-eyebrow{font-size:11px;margin-bottom:14px}
  .home-test .test-beats h2{font-size:28cqw;margin-bottom:18px}
  .home-test .test-beats-intro{font-size:18px;margin-bottom:24px}
- .home-test .test-beats-footnote{margin-top:16px}
  .home-test .test-sampler-stage{padding-top:14px}
  .home-test .test-sampler-link{width:100%;margin:0;transform:none}
  .home-test .test-sampler-link:hover{transform:none}
@@ -59,3 +57,18 @@
  .home-test .test-radio-footer{gap:12px;padding-top:12px}
 }
 @media(prefers-reduced-motion:reduce){.home-test :is(.test-sampler-link,.test-outline-button,.test-radio-card .development-device){transition:none;transform:none}}
+
+/* Original homepage racing stripes, scaled to the smaller listening card. */
+.home-test .test-radio-card::before{content:'';position:absolute;inset:0 auto 0 0;width:clamp(85px,10vw,150px);z-index:-1;pointer-events:none;background:linear-gradient(120deg,transparent 26%,#0757ec 26% 48%,transparent 48% 54%,#fbf6e8 54% 57%,transparent 57%);mask-image:linear-gradient(#000 60%,transparent);opacity:.92}
+.home-test .test-radio-card::after{content:'';position:absolute;inset:0;z-index:-2;pointer-events:none;background:linear-gradient(180deg,#02132633,transparent 35%,#02132677)}
+/* Light overlays stay registered to the photographed instrument as it scales. */
+.home-test .c2-home .test-sampler-lights{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.test-sampler-lights .test-screen-meter rect{fill:#66edff;opacity:.7;transform-box:fill-box;transform-origin:center bottom;animation:test-meter var(--speed) var(--delay) ease-in-out infinite alternate;filter:drop-shadow(0 0 4px #09bfff)}
+.test-pad-lights path{opacity:.08;animation:test-pad 3.2s var(--delay) ease-in-out infinite;filter:drop-shadow(0 0 8px #008cff)}
+.test-step-lights rect{opacity:.05;animation:test-step 3.2s var(--delay) ease-in-out infinite;filter:drop-shadow(0 0 7px #16bfff)}
+.test-sampler-lights[data-visible=false] :is(rect,path){animation-play-state:paused}
+.test-sampler-lights[data-playing=true] .test-screen-meter{filter:drop-shadow(0 0 5px #29c7ff)}
+@keyframes test-meter{0%{transform:scaleY(.2);opacity:.4}45%{transform:scaleY(.9);opacity:.9}100%{transform:scaleY(.45);opacity:.65}}
+@keyframes test-pad{0%,55%,100%{opacity:.05}15%,30%{opacity:.8}}
+@keyframes test-step{0%,22%,100%{opacity:.04}8%,14%{opacity:.95}}
+@media(prefers-reduced-motion:reduce){.test-sampler-lights :is(rect,path){animation:none!important}.test-sampler-lights .test-screen-meter rect{opacity:.5}}
