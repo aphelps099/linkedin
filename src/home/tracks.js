@@ -1,3 +1,4 @@
+import {RECORDINGS} from './recordings.js';
 // Finite arrangements of the same recorded phrase bank and house band as the studio.
 // Titles are from the original /v2 design; durations now describe real transports.
 export const LINES = {
@@ -15,7 +16,10 @@ export const TRACKS = [
   {title:'Per My Last Email', seconds:178, bpm:104, root:36, phrases:[5,6,7,5,12,14], genre:'Passive-aggressive disco', color:'red'},
   {title:'Thrilled to Announce', seconds:151, bpm:124, root:38, phrases:[0,1,40,26,28,0], genre:'Promotion pop', color:'yellow'},
   {title:'We Are a Family (Live)', seconds:244, bpm:96, root:33, phrases:[27,46,53,33,26,28], genre:'All-hands afterparty', color:'blue'},
+  ...RECORDINGS,
 ];
+export const FEATURED_TRACK=TRACKS.findIndex(track=>track.id==='untitled-alignment');
+export const PLAYLIST_ORDER=[...TRACKS.keys()].sort((a,b)=>Number(!!TRACKS[b].src)-Number(!!TRACKS[a].src));
 
 export function arrangement(track, index = 0) {
   const steps = index === 3 ? [[0,0],[9,1],[5,0],[7,0]] : [[0,1],[8,0],[3,0],[10,0]];
@@ -55,6 +59,7 @@ export function wordTimings(text, start, end) {
 }
 
 export function makeCues(track, buffers) {
+  if(track.src)return [];
   const bar=240/track.bpm, cues=[];
   let at=0, ix=0;
   while(at<track.seconds){

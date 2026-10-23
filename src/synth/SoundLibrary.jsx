@@ -1,4 +1,4 @@
-import {claimAudio} from '../brand/audio-focus.js';
+import {claimAudio,onAudioFocus} from '../brand/audio-focus.js';
 import React, {useEffect, useRef, useState} from 'react';
 import {Check, Headphones, Play, Search, Square, X} from 'lucide-react';
 import {SOUNDS, initialProject} from './model.js';
@@ -18,6 +18,7 @@ export default function SoundLibrary({pad, currentSound, onLoad, onClose}) {
   node.showModal();
   return () => {alive.current=false;audition.current.close();node.close();document.body.style.overflow=previousOverflow;};
  }, []);
+ useEffect(()=>onAudioFocus('synth',()=>{audition.current.stop();setPreview(null);}),[]);
  const results = SOUNDS.filter(sound => (group === 'All sounds' || groupFor(sound) === group) &&
   `${sound.name} ${sound.text || ''} ${groupFor(sound)}`.toLowerCase().includes(query.toLowerCase().trim()));
  async function hear(sound) {
@@ -27,10 +28,10 @@ export default function SoundLibrary({pad, currentSound, onLoad, onClose}) {
   setPreview(null);setLoading(sound.id);
   try {
    const slot=asSlot(sound);
+   claimAudio('synth');
    await audition.current.prepare({...initialProject(),slots:[slot],delay:0,filter:20000});
    if(!alive.current){audition.current.stop();return;}
    setPreview(sound.id);
-   claimAudio('synth');
    const source=audition.current.hit(slot);
    source.addEventListener('ended',()=>{if(alive.current)setPreview(id=>id===sound.id?null:id);});
   } catch(e) {if(alive.current)setError(e.message || 'Could not preview this sound. Try again.');}

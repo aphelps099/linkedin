@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import {existsSync} from 'node:fs';
 import {SOUNDS,initialProject,validateProject,stepTime,wavBytes,patternFor} from '../src/synth/model.js';
+import {DEMOS,demoProject} from '../src/synth/demos.js';
+for(const demo of DEMOS){const p=demoProject(demo.id);assert.equal(p.pattern[0].length,64);assert.deepEqual(validateProject(JSON.parse(JSON.stringify(p))),p);assert.equal(p.slots[6].pitch,0);assert.equal(p.slots[7].pitch,0);const q=demoProject(demo.id);p.pattern[0][0]=!p.pattern[0][0];assert.notDeepEqual(q.pattern,p.pattern);for(const pad of [6,7]){const sample=SOUNDS.find(s=>s.id===p.slots[pad].sound);assert(sample.duration<8*60/p.bpm,'Voice must finish before the next phrase');}}
+const mixed=demoProject(DEMOS[0].id);mixed.pattern[0]=mixed.pattern[0].slice(0,16);assert.throws(()=>validateProject(mixed));
 const p=initialProject();assert.deepEqual(validateProject(JSON.parse(JSON.stringify(p))),p);
 assert.equal(p.slots.length,8);assert.deepEqual(p.slots.map(s=>s.sound),['kick','snare','hat','clap','bass','chord','synergy','circle']);
 assert.equal(new Set(SOUNDS.map(s=>s.id)).size,SOUNDS.length,'Sound identifiers must remain unique for saved projects');

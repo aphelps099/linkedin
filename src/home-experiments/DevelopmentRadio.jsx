@@ -1,6 +1,6 @@
 import React, {memo, useEffect, useId, useLayoutEffect, useRef, useState} from 'react';
 import {ArrowUpRight, LoaderCircle, Pause, Play, SkipBack, SkipForward} from 'lucide-react';
-import {TRACKS, formatTime} from '../home/tracks.js';
+import {TRACKS, PLAYLIST_ORDER, formatTime} from '../home/tracks.js';
 import './player-digits.css';
 
 const EQUALIZER_HEIGHTS=[.32,.56,.82,.48,.95,.67,.41,.76,.58,1,.72,.45,.88,.61,.38,.54];
@@ -93,7 +93,7 @@ const PocketPlayer=memo(function PocketPlayer({motion,base,state,track,seconds,o
             onBlur={event=>{if(scrub!==null)commitSeek(event.currentTarget.value);}} onPointerCancel={()=>setScrub(null)}/>
         </div>
         <div className="development-lcd-playlist" id={playlistId} ref={playlist} hidden={!menuOpen} role="group" aria-label="Choose a beat">
-          {TRACKS.map((item,index)=><button type="button" key={item.title} aria-current={index===state.index?'true':undefined} onClick={()=>select(index)}><span>{item.title}</span><span aria-hidden="true">›</span></button>)}
+          {PLAYLIST_ORDER.map(index=>{const item=TRACKS[index];return <button type="button" key={item.title} aria-current={index===state.index?'true':undefined} onClick={()=>select(index)}><span>{item.title}</span><span aria-hidden="true">›</span></button>})}
         </div>
       </div>
       <button ref={menu} type="button" className="development-wheel-button development-wheel-menu" aria-label={menuOpen?'Back to now playing':'Open playlist'} aria-expanded={menuOpen} aria-controls={playlistId} onClick={()=>setMenuOpen(value=>!value)}><span className="development-wheel-menu-label" aria-hidden="true">MENU</span></button>

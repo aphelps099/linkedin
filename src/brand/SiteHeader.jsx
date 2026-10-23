@@ -28,7 +28,7 @@ export function SiteHeader({base='/', active, overlay=false, theme='light', chil
   useEffect(() => {
     const media = event => {
       const el = event.target;
-      if(el?.matches?.('audio,video') && !el.muted && !el.hasAttribute('data-cb-unlock')) claimAudio('media');
+      if(el?.matches?.('audio,video') && !el.muted && !el.hasAttribute('data-cb-unlock')) claimAudio(el.dataset.audioOwner || 'media', {media:el});
     };
     document.addEventListener('play', media, true);
     return () => document.removeEventListener('play', media, true);

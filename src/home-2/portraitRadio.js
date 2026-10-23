@@ -66,7 +66,7 @@ export function createPortraitRadio({onState, loadClip = ensureClip, engineFacto
     },
     onState:state => {
       const track = TRACKS[state.index];
-      if (!timelines.has(state.index) && track.phrases.every(bank => buffers.has(bank)))
+      if (!track.src && !timelines.has(state.index) && track.phrases.every(bank => buffers.has(bank)))
         timelines.set(state.index, makeCues(track, buffers));
       const spectrum = state.playing ? engine?.spectrum?.() : null;
       const levels = spectrum ? Array.from({length:48}, (_, i) => {

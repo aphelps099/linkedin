@@ -13,3 +13,9 @@ Projects autosave to IndexedDB in the current browser. Download/open JSON includ
 `node scripts/check-synth.mjs` checks project validation, rhythm timing, presets and WAV encoding. `npm run build` includes `dist/synth/index.html`; existing Express static routing serves `/synth/` and redirects `/synth` to it. Mobile keeps the instrument within the viewport and scrolls only the sequencer grid.
 
 This is an original sampler, not M-VAVE firmware or an FM-1 emulator. No firmware flashing, hardware MIDI, microphone recording or cloud project account is included.
+
+Three complete demo sessions can be previewed without replacing or autosaving over the current project, then explicitly loaded (Undo restores the prior session). Demos use four bars / 64 steps, original-pitch character takes, procedural drums and synth tones, and the existing master delay. Bar selectors edit all four bars; older 16-step projects remain valid. WAV export renders all four bars once for demo projects, or four repeats for older one-bar patterns. No new recordings or external sample licensing are required.
+
+Uploaded Untitled Alignment (12.97s) is featured above the demos as an intact recording. Loading it onto a pad preserves original pitch and clears that pad’s steps to prevent overlapping full-track repeats. MILO Session A (3.75s) is also available in the sound library. The homepage playlist includes all four supplied recordings and defaults to Untitled Alignment.
+
+Mobile playback unlocks Web Audio and a silent inline media session directly in the tap before fetching samples; subsequent taps resume interrupted contexts. Pad audition loads only that pad. Narrow screens stack the transport and use 44px sequencer steps inside a horizontally scrollable grid. `node scripts/check-synth-mobile.mjs` checks gesture ordering, interruption recovery, media focus and cleanup; actual iOS hardware playback still needs a device check.
