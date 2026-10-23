@@ -11,7 +11,7 @@ export function meetingRecord(id){
  return {...library[match[1]][+match[2]],id,agenda:match[1],variant:+match[2]};
 }
 export function invitationHTML(html,meeting){
- const invite=meetingInvitation(meeting),title=escape(invite.title),description=escape(`Hosted by Synergy. ${Math.round(meeting.duration)} seconds. Your attendance has been anticipated.`),url=escape(invite.url),image=`${MEETING_ORIGIN}/api/meeting/cover/${meeting.id}.png`;
+ const invite=meetingInvitation(meeting),title=escape(invite.title),description=escape(invite.description),url=escape(invite.url),image=`${MEETING_ORIGIN}/api/meeting/cover/${meeting.id}.png`;
  return html.replace(/<title>[\s\S]*?<\/title>/i,`<title>${title} — LinkedIn Beats</title>`)
  .replace(/<meta\s+(?:property|name)="(?:og:[^"]+|twitter:[^"]+|description)"[^>]*>/gi,'')
  .replace(/<link\s+rel="canonical"[^>]*>/gi,'')

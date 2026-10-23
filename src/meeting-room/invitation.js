@@ -9,5 +9,6 @@ export function meetingPortraits(meeting){
 }
 export function meetingInvitation(meeting){
  const url=`${MEETING_ORIGIN}/studio/?meeting=${encodeURIComponent(meeting.id)}`;
- return {url,title:`You're invited: ${meeting.title}`,text:`You're invited to “${meeting.title}”.\n\nHosted by Synergy. ${Math.round(meeting.duration)} seconds. Your attendance has been anticipated.\n\nJoin the meeting: ${url}`};
+ const description=`Hosted by Synergy. ${Math.round(meeting.duration)} seconds. Please join using the link below.`;
+ return {url,title:`You're invited: ${meeting.title}`,description,text:`You're invited to “${meeting.title}”.\n\n${description}\n\nJoin the meeting: ${url}`};
 }
