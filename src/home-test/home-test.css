@@ -1,4 +1,5 @@
-/* Isolated homepage study. The production homepage keeps its original sections. */
+/* Shared styling for the approved homepage and its study route. */
+.home-test .dispatch-section{border-radius:var(--c2-panel-radius,24px)}
 .home-test .test-beats{position:relative;isolation:isolate;overflow:hidden;background:#03152b;color:#fff;border-radius:var(--c2-panel-radius,24px)}
 .home-test .test-stage{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:1;z-index:-2;pointer-events:none}
 .home-test .test-beats::after{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#080f1d55,transparent 60%);pointer-events:none}
