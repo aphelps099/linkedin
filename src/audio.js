@@ -1,3 +1,4 @@
+import {createMobileAudio} from './audio-session.js';
 // CBAudio — drum synth ported from reference/transient-16.html (WebAudio, no samples)
 // Extended for the sampler + clip export: buffer decode/playback and a MediaStream
 // tap on the master bus so everything (drums, exhibits, vox bank) can be recorded.
@@ -93,43 +94,13 @@ export function createAudioEngine({context}={}) {
   }
   const rs = ()=> !context && ctx && ctx.state==='suspended' && ctx.resume();
 
-  // Mobile audio unlock. Must be called synchronously from inside a real user
-  // gesture handler (tap/click/keydown):
-  // - iOS/Android only honor AudioContext.resume() during a gesture;
-  // - a one-sample buffer through the graph seals the deal on older WebKit;
-  // - a looping (silent) <audio> element flips iOS into the "playback" audio
-  //   session so the ringer/silent switch stops muting WebAudio.
-  let unlocked = false, silentEl;
-  function silentWavUrl(){
-    const sr = 8000, n = 400; // 50ms of digital silence
-    const buf = new ArrayBuffer(44 + n*2), v = new DataView(buf);
-    const w = (o, s)=>{ for(let i=0;i<s.length;i++) v.setUint8(o+i, s.charCodeAt(i)); };
-    w(0,'RIFF'); v.setUint32(4, 36 + n*2, true); w(8,'WAVE'); w(12,'fmt ');
-    v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
-    v.setUint32(24,sr,true); v.setUint32(28,sr*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true);
-    w(36,'data'); v.setUint32(40, n*2, true);
-    return URL.createObjectURL(new Blob([buf], {type:'audio/wav'}));
-  }
+  // Share the gesture-based mobile session with the sampler and meetings.
+  let mobileAudio;
   function unlock(){
     init();
-    if(context) return;
-    try{ if(ctx.state === 'suspended') ctx.resume(); }catch(e){}
-    if(unlocked) return;
-    unlocked = true;
-    try{
-      const b = ctx.createBuffer(1, 1, 22050);
-      const s = ctx.createBufferSource(); s.buffer = b;
-      s.connect(ctx.destination); s.start(0);
-    }catch(e){}
-    try{
-      silentEl = document.createElement('audio');
-      silentEl.setAttribute('playsinline',''); silentEl.setAttribute('data-cb-unlock','');
-      silentEl.loop = true;
-      silentEl.src = silentWavUrl();
-      document.body.appendChild(silentEl);
-      const p = silentEl.play();
-      if(p && p.catch) p.catch(()=>{ unlocked = false; try{ silentEl.remove(); }catch(e){} });
-    }catch(e){}
+    if(context)return;
+    mobileAudio ||= createMobileAudio(ctx);
+    return mobileAudio.resume().catch(()=>{});
   }
   function noise(t,dur){ const s = ctx.createBufferSource(); s.buffer = noiseBuf;
     s.playbackRate.value = .8+Math.random()*.4; s.start(t, Math.random()*1.5, dur+.02); return s; }
@@ -334,16 +305,12 @@ export function createAudioEngine({context}={}) {
     sampleRate: ()=>{ init(); return ctx.sampleRate; },
     spectrum: ()=>{ if(!analyser) return null; analyser.getByteFrequencyData(specArr); return specArr; },
     state: ()=> ctx ? ctx.state : 'uninitialized',
-    suspend: ()=> ctx?.suspend(),
+    suspend: ()=> {mobileAudio?.pause();return ctx?.suspend();},
     setChannelGain(name,value){init();if(channels[name] && Number.isFinite(value))channels[name].gain.setTargetAtTime(Math.max(0,Math.min(1,value)),ctx.currentTime,.015);},
     setMonitor(enabled){ init(); monitor.gain.setValueAtTime(enabled ? 1 : 0, ctx.currentTime); },
     setVolume(value){ init(); master.gain.setTargetAtTime(Math.max(0, Math.min(1, value)) * .85, ctx.currentTime, .015); },
     dispose(){
-      if(silentEl){
-        silentEl.pause();
-        URL.revokeObjectURL(silentEl.src);
-        silentEl.remove();
-      }
+      mobileAudio?.dispose();
       if(ctx?.close && ctx.state !== 'closed') ctx.close().catch(()=>{});
     },
   };
