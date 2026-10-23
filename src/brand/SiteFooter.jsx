@@ -2,7 +2,6 @@ import React, {memo, useEffect, useId, useRef, useState} from 'react';
 import {Check, X} from 'lucide-react';
 import './navigation.css';
 import './site-footer.css';
-import './wordmark-shimmer.css';
 
 function PixelArrow() {
   return <svg className="lb-pixel-arrow" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><path d="M4 0h10v10h-2V4h-2v2H8v2H6v2H4v2H2v2H0v-2h2v-2h2V8h2V6h2V4h2V2H4Z"/></svg>;
@@ -119,7 +118,7 @@ export const SiteFooter = memo(function SiteFooter({base='/'}) {
           <p className="lb-assurance-note">Internal standards. Entirely made up.</p>
         </aside>
       </section>
-      <a className="lb-wordmark-link" href={base} aria-label="LinkedIn Beats home"><span className="lb-afterbeat-wordmark"><img className="lb-wordmark" src={`${base}brand/afterbeat/wordmark-white.svg?v=afterbeat-2`} width="7015" height="862" loading="lazy" alt="LinkedIn Beats"/></span></a>
+      <div className="lb-footer-watermark" aria-hidden="true"><img src={`${base}brand/afterbeat/wordmark-white.svg?v=afterbeat-2`} width="7015" height="862" loading="lazy" alt=""/></div>
       <div className="lb-bottom"><p>© {new Date().getFullYear()} LinkedIn Beats. <span>All expectations managed.</span></p><a href="https://look-serious.com/">Built by <strong>Look Serious</strong></a></div>
     </div>
   </footer>;
