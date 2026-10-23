@@ -2,7 +2,7 @@ import React, {memo, useEffect, useRef, useState} from 'react';
 import {ArrowUpRight} from 'lucide-react';
 import {CONVERSATION, VIDEO_DURATION, conversationFrame} from './conversation-timeline.js';
 
-export const ProfileConversation=memo(function ProfileConversation({base,motion}) {
+export const ProfileConversation=memo(function ProfileConversation({base,motion,certificateFan}) {
   const root=useRef(null), video=useRef(null);
   const clock=useRef({loops:0,previous:0});
   const [frame,setFrame]=useState(()=>conversationFrame(0));
@@ -60,6 +60,7 @@ export const ProfileConversation=memo(function ProfileConversation({base,motion}
       })}</span>)}</p>
     </div>
     <div className="conversation-enroll">
+      {certificateFan}
       <a className="conversation-certify" href={`${base}learn/`}>Get certified <ArrowUpRight aria-hidden="true"/></a>
       <p>Professional development for aspiring thought leaders.</p>
     </div>

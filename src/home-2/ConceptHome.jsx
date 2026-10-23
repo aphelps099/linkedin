@@ -48,7 +48,7 @@ const Portrait = memo(function Portrait({base, index, tone, active, playing, loa
   </button>;
 });
 
-export default function ConceptHome({playerFactory=createPortraitRadio, variant='portraits', assetBase, BeatsComponent=DevelopmentRadio, CampaignsComponent=Campaigns}) {
+export default function ConceptHome({playerFactory=createPortraitRadio, variant='portraits', assetBase, BeatsComponent=DevelopmentRadio, CampaignsComponent=Campaigns, certificateFan}) {
   const experiment=['laptop','screenless','conversation'].includes(variant);
   const typePreview=new URLSearchParams(window.location.search).get('type');
   const previewClass=['editorial','founders'].includes(typePreview)?` c2-type-editorial${typePreview==='founders'?' c2-type-founders-nav':''}`:'';
@@ -113,7 +113,7 @@ export default function ConceptHome({playerFactory=createPortraitRadio, variant=
     <main>
       <HeroVideo headline={variant==='conversation'} musicPlaying={state.playing} musicLoading={state.loading} musicError={state.error} onMusicToggle={()=>radio.current?.toggle()}/>
       <section className="c2-hero" aria-labelledby="c2-title">
-        {variant==='conversation'?<ProfileConversation motion={motion} base={base}/>:experiment?<FeedScene variant={variant} motion={motion} base={base}/>:<div className="c2-container c2-hero-inner">
+        {variant==='conversation'?<ProfileConversation motion={motion} base={base} certificateFan={certificateFan}/>:experiment?<FeedScene variant={variant} motion={motion} base={base}/>:<div className="c2-container c2-hero-inner">
           <div className="c2-hero-copy">
             <h1 id="c2-title"><span>Humbled.</span><span>Honored.</span><span className="c2-repeat">On repeat.</span></h1>
             <p>The soundtrack of<br className="c2-copy-break"/> professional nonsense.</p>
