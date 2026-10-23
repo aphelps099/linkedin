@@ -28,7 +28,7 @@
 .home-test .test-tools .test-post-panel h2{font:900 clamp(30px,3.2vw,48px)/1.05 'LB Hoves Black',C2Hoves,sans-serif;letter-spacing:-.04em;margin:16px 0 0}
 .home-test .test-post-deck{font:400 16px/1.4 C2Hoves,Arial,sans-serif;color:#e0e9ff;margin:9px 0 0}
 .home-test .test-post-scene{position:relative;margin:40px 0 12px}
-.home-test .test-post-robot{position:absolute;z-index:3;right:10px;top:-89px;width:190px;height:auto;pointer-events:none;scale:-1 1;transform-origin:50% 95%}
+.home-test .test-post-robot{position:absolute;z-index:3;right:10px;top:-84px;width:190px;height:auto;pointer-events:none;scale:-1 1;transform-origin:50% 95%}
 .home-test .test-feed-post{position:relative;background:#fff;color:#202124;border:1px solid #dfe3e8;border-radius:10px;box-shadow:0 12px 35px #002b9626;overflow:hidden}
 .home-test .test-feed-profile{display:flex;align-items:center;gap:10px;padding:12px 134px 8px 17px;font-family:C2Hoves,Arial,sans-serif}
 .home-test .test-feed-avatar{display:grid;place-items:center;flex:none;width:40px;height:40px;border-radius:50%;background:linear-gradient(145deg,#c8dfed,#819cac);color:#fff;font:600 22px/1 C2Hoves,Arial,sans-serif}

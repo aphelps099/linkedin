@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import Homepage from './home-2/ConceptHome.jsx';
+import Homepage from './home-test/Homepage.jsx';
 
 // Preserve links shared before the homepage moved the mixer to /studio/.
 if (location.hash.startsWith('#beat=')) {
@@ -8,5 +8,5 @@ if (location.hash.startsWith('#beat=')) {
 } else if (location.hash === '#roast') {
   location.replace(`./roast/${location.search}`);
 } else {
-  ReactDOM.createRoot(document.getElementById('root')).render(<Homepage variant="conversation" />);
+  ReactDOM.createRoot(document.getElementById('root')).render(<Homepage />);
 }
