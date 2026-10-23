@@ -86,7 +86,7 @@ export function DispatchCarousel({base='/', motion=true, state, onPlayTrack, onT
   return <section ref={section} className="dispatch-section" id="c2-dispatch" aria-labelledby="dispatch-heading" aria-roledescription="carousel" data-motion={motion}
     onMouseEnter={()=>setHovered(true)} onMouseLeave={()=>setHovered(false)}
     onFocusCapture={()=>setFocused(true)} onBlurCapture={e=>{if(!e.currentTarget.contains(e.relatedTarget))setFocused(false);}}>
-    <header className="dispatch-heading"><h2 id="dispatch-heading">Humbled to share.</h2></header>
+    <header className="dispatch-heading"><h2 id="dispatch-heading">Humbled to share.</h2><p>Office sessions, new tracks, and big announcements about very small things.</p></header>
     <div ref={rail} className="dispatch-rail" onScroll={updateActive} onPointerDown={()=>setPaused(true)} onWheel={()=>setPaused(true)}>
       {DISPATCHES.map((item,index)=>{const Icon=ICONS[item.type], Target=item.href?'a':'button', targetProps=item.href?{href:`${base}${item.href}`}:{type:'button',onClick:()=>open(item)};return <article key={item.id} className={`dispatch-card dispatch-card--${item.shape}`} aria-label={`${index+1} of ${DISPATCHES.length}: ${item.label}`}>
         <Target {...targetProps} className="dispatch-art-button" aria-label={`${ACTIONS[item.type]}: ${item.title}`}><Artwork item={item} base={base}/></Target>
