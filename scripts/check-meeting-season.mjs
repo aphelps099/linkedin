@@ -4,7 +4,8 @@ import {build} from 'esbuild';
 import {pathToFileURL} from 'node:url';
 import React from 'react';
 import {renderToString} from 'react-dom/server';
-import {createMeetingEngine} from '../src/meeting-room/engine.js';
+import {createMeetingEngine as createBrowserMeetingEngine} from '../src/meeting-room/engine.js';
+const createMeetingEngine=options=>createBrowserMeetingEngine({audioSessionFactory:context=>({resume:()=>context.resume(),pause(){},dispose(){}}),...options});
 import {PRINT_CYCLE,printerPhase,paperRow} from '../src/meeting-room/printer-paper.js';
 import {exactPerformance,performanceForTime,performanceTime,syncPerformanceVideo} from '../src/meeting-room/performances.js';
 

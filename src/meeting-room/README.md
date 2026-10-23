@@ -105,3 +105,7 @@ face overlay against the actual footage before shipping. Never reuse tracking
 coordinates for a different video.
 
 The agenda now opens as a thumbnail library with one card per meeting and playlist filters. Cards play the selected meeting immediately. Invite someone in the player or on a card opens a review dialog with editable invitation, copy, email/native sharing, and the existing opt-in LinkedIn publisher. Every invitation targets `/studio/?meeting=<id>` and gets server-rendered meeting-specific Open Graph metadata and a 1200×630 cast image. Opening a received link selects the meeting without autoplay; no login is required to watch. These are recorded-meeting invitations, not calendar events or live calls. No invitations are sent automatically.
+
+Mobile audio uses the shared `src/audio-session.js` session: native inline playback and Web Audio are primed synchronously during Play or a thumbnail tap, before downloads. Pause/end/disposal release the native session. A suspended context after decoding produces a visible retry instead of a silently advancing timeline; retry reuses decoded voice/music buffers. Downloads have a 25-second deadline. The homepage music engine and Synth share the same session helper.
+
+`node scripts/check-meeting-mobile.mjs` verifies gesture ordering, voice/music synchronization, interrupted playback, cached retry, audio focus, cancellation, deadlines and cleanup. Real iOS speaker output still requires a physical-device check.
