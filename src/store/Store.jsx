@@ -153,6 +153,7 @@ export default function Store(){
     {notice&&<div className="shop-notice" role="status"><span>{notice==='filed'?'Order filed. Thank you for your contribution to corporate culture.':'Checkout paused. Your bag is right where you left it.'}</span><button onClick={()=>setNotice(null)} aria-label="Dismiss notice"><X size={18}/></button></div>}
     <main>
       <StoreHero/>
+      <div className="shop-catalog-surface">
       <section className="shop-collection" id="collection" aria-labelledby="collection-title">
         <header className="shop-collection-heading"><h2 id="collection-title" tabIndex="-1">Shop <a href={collectionHref('Wears')} aria-current={filter==='Wears'?'true':undefined} onClick={event=>followCollection(event,'Wears')}>wears</a> <span className="shop-collection-slash" aria-hidden="true">/</span> <a href={collectionHref('Wares')} aria-current={filter==='Wares'?'true':undefined} onClick={event=>followCollection(event,'Wares')}>wares</a></h2></header>
         <button className="shop-mobile-filter-toggle" aria-expanded={filtersOpen} aria-controls="shop-filter-options" onClick={()=>setFiltersOpen(open=>!open)}><span>Filter & sort</span><span aria-hidden="true">{filtersOpen?'−':'+'}</span></button>
@@ -163,6 +164,7 @@ export default function Store(){
         </article>)}</div>
         <p className="shop-collection-note">Items marked Coming soon are design previews. Pricing and availability to come.</p>
       </section>
+      </div>
     </main>
     <StoreMarquee/>
     <FirstInLine hidden={Boolean(d || drawer)}/>
