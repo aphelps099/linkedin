@@ -53,7 +53,7 @@ function NewsletterForm() {
       <label className="lb-visually-hidden" htmlFor={`${id}-email`}>Your email address</label>
       <div className="lb-input-row">
         <input ref={opener} id={`${id}-email`} name="email" type="email" inputMode="email" autoComplete="email" placeholder="Your email" required maxLength={254} value={email} onChange={e=>setEmail(e.target.value)} readOnly={status==='success'} aria-describedby={`${id}-note`}/>
-        <button className="lb-submit" type="submit" disabled={status==='success'}>{status==='success'?<>You’re in <Check aria-hidden="true"/></>:<>Loop me in <PixelArrow/></>}</button>
+        <button className="lb-submit" type="submit" disabled={status==='success'}>{status==='success'?<>You’re in <Check aria-hidden="true"/></>:<>Loop me in</>}</button>
       </div>
       <p className="lb-form-note" id={`${id}-note`} role="status">{status==='success'?'You’re in the loop. Watch your inbox.':'Monthly. No action items.'}</p>
     </form>
@@ -87,11 +87,22 @@ export const SiteFooter = memo(function SiteFooter({base='/'}) {
           <NewsletterForm/>
         </section>
         <nav className="lb-link-group" aria-label="Explore LinkedIn Beats">
-          <div><a href={`${base}#c2-player`}>Beats <PixelArrow/></a><a href={`${base}store/`}>Store <PixelArrow/></a><a href={`${base}learn/`}>Get certified <PixelArrow/></a></div>
-          <div><a href={`${base}optimizer`}>LinkedInifier <PixelArrow/></a><a href={`${base}#c2-dispatch`}>The feed <PixelArrow/></a></div>
+          <h3 className="lb-footer-label">Explore</h3>
+          <a href={`${base}#c2-player`}>Beats</a>
+          <a href={`${base}synth/`}>Synth</a>
+          <a href={`${base}optimizer`}>LinkedInifier</a>
+          <a href={`${base}learn/`}>Get certified</a>
+          <a href={`${base}#c2-dispatch`}>The feed</a>
         </nav>
+        <section className="lb-social" aria-label="Follow LinkedIn Beats">
+          <h3 className="lb-footer-label">Follow along</h3>
+          <a className="lb-linkedin" href="https://www.linkedin.com/company/linked-beats/" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.049c.476-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 1 1 0-4.124 2.062 2.062 0 0 1 0 4.124zM7.119 20.452H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0z"/></svg>
+            <span>LinkedIn</span>
+          </a>
+          <p>Professional nonsense.<br/>Now in your feed.</p>
+        </section>
       </div>
-      <a className="lb-wordmark-link" href={base} aria-label="LinkedIn Beats home"><span className="lb-afterbeat-wordmark"><img className="lb-wordmark" src={`${base}brand/afterbeat/wordmark-white.svg?v=afterbeat-2`} width="7015" height="862" loading="lazy" alt="LinkedIn Beats"/></span></a>
       <section className="lb-fineprint" aria-labelledby={fineprint}>
         <div className="lb-fineprint-copy">
           <details className="lb-fineprint-details">
@@ -101,13 +112,14 @@ export const SiteFooter = memo(function SiteFooter({base='/'}) {
           <p>For recreational professional development only. No guarantee of promotion, strategic alignment, or stakeholder buy-in. Any resemblance to your Monday meeting is entirely plausible. Use headphones. Exercise judgment. Circle back responsibly.</p>
             </div>
           </details>
-          <p className="lb-privacy-link"><a href={`${base}privacy/`}>Privacy policy ↗</a></p>
+          <p className="lb-privacy-link"><a href={`${base}privacy/`}>Privacy</a></p>
         </div>
         <aside className="lb-assurance" aria-label="Fictional corporate assurance marks">
           <ul className="lb-seals">{SEALS.map((label,index)=><li key={label} aria-label={`Certified ${label.toLowerCase()} — fictional corporate assurance mark`}><img className="lb-seal-art" src={`${base}brand/seals/assurance-${index+1}.svg`} width="100" height="100" alt="" loading="lazy"/></li>)}</ul>
           <p className="lb-assurance-note">Internal standards. Entirely made up.</p>
         </aside>
       </section>
+      <a className="lb-wordmark-link" href={base} aria-label="LinkedIn Beats home"><span className="lb-afterbeat-wordmark"><img className="lb-wordmark" src={`${base}brand/afterbeat/wordmark-white.svg?v=afterbeat-2`} width="7015" height="862" loading="lazy" alt="LinkedIn Beats"/></span></a>
       <div className="lb-bottom"><p>© {new Date().getFullYear()} LinkedIn Beats. <span>All expectations managed.</span></p><a href="https://look-serious.com/">Built by <strong>Look Serious</strong></a></div>
     </div>
   </footer>;
