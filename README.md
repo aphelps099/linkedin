@@ -624,3 +624,23 @@ the existing Sharp dependency. Font files stay in the project.
 The shared headers, footer, Academy rewards and certificate exports consume the
 same artwork. Certificate shares use v4 URLs to refresh social image caches;
 existing v2/v3 certificate links continue to work.
+
+
+### Restored roast workspace
+
+`/roast/` uses the optimizer’s current rounded sage input and pale-blue output
+sections, shared header/footer, compact controls, TT Hoves type, and Synergy
+assistant. Roast is restored to desktop/mobile navigation and the footer; the
+optimizer’s “Roast this post” action transfers its generated text in the URL
+fragment, which the roast clears on intake.
+
+The original browser-local engine, four reviewers, four heat levels, annotations,
+and editable cleanup remain. Results expose the satirical writing score and
+Download receipt / Share receipt / Copy verdict actions. The 1080px PNG contains
+reviewer notes and score, never the submitted text. Native file sharing is used
+where supported; otherwise Share downloads the PNG. No automatic LinkedIn
+posting, remote post fetching, screenshot OCR, or public community gallery is
+implemented in this restoration. Text is kept in component memory only.
+
+Validation: `npm run check:roast`, production build, browser generation/copy/PNG
+export checks and responsive viewport inspection.

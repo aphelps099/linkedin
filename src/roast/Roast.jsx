@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowUpRight, ArrowRight, Copy, Check, Pencil, ChevronDown, Download } from 'lucide-react';
+import { ArrowUpRight, ArrowRight, Copy, Check, Pencil, ChevronDown, Download, Flame, Share2, FileCheck2 } from 'lucide-react';
 import { Header } from '../brand/Header.jsx';
 import { Footer } from '../brand/Footer.jsx';
 import { KINDS, roastIt } from './roastEngine.js';
@@ -7,7 +7,9 @@ import { PERSONAS, INTENSITIES } from './personas.js';
 import { drawRoastCard, downloadCanvas } from './card.js';
 import { newSeed } from '../lessons/generator.js';
 import { MarkedDocument } from './MarkedDocument.jsx';
-import { EDITORIAL_NOTES, evidenceFor, verdictFor } from './editorial.js';
+import { EDITORIAL_NOTES, verdictFor } from './editorial.js';
+import '../lessons/lessons.css';
+import '../lessons/rows.css';
 import './roast.css';
 
 const MAX_LENGTH = 20000;
@@ -58,6 +60,7 @@ export default function Roast() {
   const [copied, setCopied] = React.useState(false);
   const [copyError, setCopyError] = React.useState(false);
   const [notice, setNotice] = React.useState('');
+  const [exporting, setExporting] = React.useState(false);
   const resultRef = React.useRef(null);
   const copyTimer = React.useRef(null);
   const result = !editing ? review?.result : null;
@@ -133,118 +136,116 @@ export default function Roast() {
     if (!ok) document.getElementById('roast-rewrite')?.select();
     copyTimer.current = window.setTimeout(() => setCopied(false), 2000);
   };
+  const makeCard = async () => {
+    await document.fonts?.ready;
+    const canvas = document.createElement('canvas');
+    drawRoastCard(canvas, {
+      personaName: PERSONAS.find(p => p.id === personaId).name,
+      intensityName: INTENSITIES[intensity - 1].name,
+      score: result.score,
+      lines: result.lines,
+    });
+    return canvas;
+  };
   const download = async () => {
+    setExporting(true);
     try {
-      await document.fonts?.ready;
-      const canvas = document.createElement('canvas');
-      drawRoastCard(canvas, {
-        personaName: PERSONAS.find(p => p.id === personaId).name,
-        intensityName: INTENSITIES[intensity - 1].name,
-        score: result.score,
-        lines: result.lines,
-      });
-      downloadCanvas(canvas, 'linkedin-beats-roast.png');
-      setNotice('Your roast card is ready to download.');
-    } catch {
-      setNotice('The card could not be created. You can still copy your cleanup.');
-    }
+      await downloadCanvas(await makeCard(), 'linkedin-beats-roast.png');
+      setNotice('Your roast receipt has been downloaded.');
+    } catch { setNotice('The receipt could not be created. Try copying the verdict instead.'); }
+    finally { setExporting(false); }
+  };
+  const share = async () => {
+    setExporting(true);
+    try {
+      const canvas = await makeCard();
+      const blob = await new Promise((resolve, reject) => canvas.toBlob(b => b ? resolve(b) : reject(new Error('Image unavailable')), 'image/png'));
+      const file = new File([blob], 'linkedin-beats-roast.png', { type: 'image/png' });
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'My professional presence is under review.' });
+        setNotice('Receipt handed to your share sheet.');
+      } else {
+        await downloadCanvas(canvas, 'linkedin-beats-roast.png');
+        setNotice('Receipt downloaded. Attach it to your next post or message.');
+      }
+    } catch (error) {
+      if (error.name !== 'AbortError') setNotice('Sharing is unavailable here. Use Download receipt instead.');
+    } finally { setExporting(false); }
+  };
+  const copyVerdict = async () => {
+    const text = `Professional presence: under review.\n${result.score.index}/100 on the satirical Thought Leadership Index.\n\n${result.lines.slice(0, 2).join('\n\n')}\n\nReviewed by ${PERSONAS.find(p => p.id === personaId).name}.\nGet your verdict: https://linkedinbeats.com/roast/`;
+    const ok = await copyText(text);
+    setNotice(ok ? 'Verdict copied. Paste it into your own post or message.' : 'Copy unavailable. Download the receipt instead.');
+  };
+  const reset = () => {
+    setDraft(''); setReview(null); setEditing(true); setRewrite('');
+    setNotice('Ready for another post.');
+    window.requestAnimationFrame(() => document.getElementById('roast-draft')?.focus());
   };
 
-  return <div className="rp-page">
-    <Header base="../" active="Roast" />
-    <main className="rp-main" id="main">
-      <div className="rp-workspace">
-        <section className="rp-document-pane" aria-labelledby="roast-title">
-          <p className="rp-eyebrow">ROAST MY POST</p>
-          <h1 id="roast-title">YOUR POST.<br />WITH NOTES.</h1>
-          <div className="rp-editor-bar">
-            <div className="rp-kinds" role="group" aria-label="What are we roasting?">
-              {KINDS.map(item => <button key={item.id} type="button" aria-pressed={kind === item.id} onClick={() => {
-                if (kind === item.id) return;
-                setKind(item.id); setReview(null); setEditing(true); setRewrite(''); setCopied(false); setNotice('');
-              }}>{KIND_LABELS[item.id]}</button>)}
-            </div>
-            {result && <button className="rp-text-button" type="button" onClick={editPost}>Edit original <Pencil size={18} aria-hidden="true" /></button>}
-          </div>
-
-          {editing ? <div className="rp-intake">
-            <label className="rp-sr-only" htmlFor="roast-draft">Your {KIND_LABELS[kind].toLowerCase()} to roast</label>
-            <textarea id="roast-draft" data-testid="input-roast-draft" className="rp-input" value={draft} maxLength={MAX_LENGTH} rows={7}
-              placeholder={kind === 'post' ? 'Paste your post here.\n\nYes, the one about your journey.' : KINDS.find(item => item.id === kind).hint}
-              onChange={event => { setDraft(event.target.value); setNotice(''); }}
-              onKeyDown={event => { if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') { event.preventDefault(); runRoast({ focus: true }); } }} />
-            <div className="rp-intake-actions">
-              <button type="button" className="rp-text-button" onClick={() => runRoast({ text: EXAMPLES[kind], focus: true })}>Try an example <ArrowUpRight size={20} aria-hidden="true" /></button>
-              {review ? <button type="button" className="rp-text-button" onClick={() => { setDraft(review.text); setEditing(false); setNotice('Back to your last roast.'); }}>Back to notes</button>
-                : <span>Your words stay in this browser.</span>}
-            </div>
-            {draft.length > MAX_LENGTH && <p role="alert">Please shorten your draft to {MAX_LENGTH.toLocaleString()} characters.</p>}
-          </div> : <div className={`rp-markup ${result.findings.length ? '' : 'is-clean'}`}>
-            <MarkedDocument text={review.text} findings={result.findings} activeFinding={activeFinding} onSelect={selectFinding} />
-            {result.findings.length > 0 && <aside className="rp-notes" aria-label="Red pen editing notes">
-              {result.findings.map((finding, index) => {
-                const [title, advice] = EDITORIAL_NOTES[finding.key] || ['A small edit.', 'Make the claim specific.'];
-                const evidence = evidenceFor(review.text, finding);
-                return <section className={`rp-note ${activeFinding === index ? 'is-active' : ''}`} key={finding.key} id={`roast-note-${index}`} hidden={!showAll && index >= 3}>
-                  <button type="button" className="rp-note-title" onClick={() => selectFinding(index)} aria-expanded={activeFinding === index} aria-controls={`roast-advice-${index}`}>
-                    <span aria-hidden="true">↙</span> {title}
-                  </button>
-                  <div className="rp-note-detail" id={`roast-advice-${index}`} hidden={activeFinding !== index}>
-                    <p className="rp-note-roast">{result.lines[index]}</p>
-                    <p className="rp-advice"><strong>Try this</strong>{advice}</p>
-                    {!evidence && <span className="rp-whole-post">A note on the whole {KIND_LABELS[kind].toLowerCase()}.</span>}
-                  </div>
-                </section>;
-              })}
-              {result.findings.length > 3 && <button className="rp-more-notes" type="button" aria-expanded={showAll} onClick={() => { setShowAll(!showAll); if (showAll && activeFinding >= 3) setActiveFinding(0); }}>
-                {showAll ? 'Fewer notes' : `All ${result.findings.length} notes`} <ChevronDown size={18} aria-hidden="true" />
-              </button>}
-            </aside>}
-            {!result.findings.length && <p className="rp-clean-note">No red ink needed.<br />We’re as surprised as you are.</p>}
-          </div>}
-        </section>
-
-        <aside className={`rp-result ${result ? 'has-result' : ''}`} aria-label="Your roast and cleanup">
-          {result ? <>
-            <p className="rp-eyebrow">THE VERDICT</p>
-            <h2 ref={resultRef} tabIndex={-1}>{verdict[0]}</h2>
-            <p className="rp-verdict-line">{verdict[1]}</p>
-            <div className="rp-rewrite">
-              <label className="rp-eyebrow" htmlFor="roast-rewrite">THE CLEANUP</label>
-              <AutoTextarea id="roast-rewrite" data-testid="text-clean-rewrite" className="rp-cleanup-input" value={rewrite} onChange={event => { setRewrite(event.target.value); setCopied(false); setCopyError(false); }} aria-describedby="roast-cleanup-hint" />
-              <p className="rp-hint" id="roast-cleanup-hint">{result.useful === review.text.trim() ? 'Already fairly plain. Use the notes to make your next edit.' : 'A first pass. Edit it to sound like you.'}</p>
-              <button className="rp-copy" type="button" disabled={!rewrite.trim()} data-testid="button-copy-rewrite" onClick={copy}>
-                {copied ? <Check size={22} aria-hidden="true" /> : <Copy size={22} aria-hidden="true" />}{copied ? 'Copied' : 'Copy cleanup'}<ArrowRight size={23} aria-hidden="true" />
-              </button>
-              {copyError && <p className="rp-hint">Your text is selected. Press ⌘C or Ctrl+C to copy it.</p>}
-            </div>
-            <details className="rp-extras"><summary>Keep the evidence <ChevronDown size={18} aria-hidden="true" /></summary><div>
-              <button type="button" className="rp-text-button" onClick={download}><Download size={18} aria-hidden="true" /> Download roast card</button>
-              {kind === 'post' && <a className="rp-text-button" href={`../studio/#beat=${encodeURIComponent(review.text)}`}>Turn it into a beat <ArrowUpRight size={18} aria-hidden="true" /></a>}
-              <button type="button" className="rp-text-button" onClick={() => { setDraft(''); setReview(null); setEditing(true); setRewrite(''); setNotice('Ready for another post.'); window.requestAnimationFrame(() => document.getElementById('roast-draft')?.focus()); }}>Start fresh <ArrowRight size={18} aria-hidden="true" /></button>
-            </div></details>
-          </> : <div className="rp-awaiting">
-            <p className="rp-eyebrow">CONSTRUCTIVE. MOSTLY.</p>
-            <div className="rp-pen-message" aria-hidden="true">Let’s take the<br /><span>“thought leader”</span><br />out of this.</div>
-            <svg className="rp-pen-arrow" viewBox="0 0 220 150" aria-hidden="true"><path d="M185 10c45 78-13 108-150 91m21-22-26 21 28 19" /></svg>
-            <p className="rp-awaiting-copy">Your words. A little red ink.<br />Something better to post.</p>
-          </div>}
-        </aside>
-
-        <div className="rp-controls">
-          <fieldset className="rp-heat"><legend>How honest?</legend><div>
-            {HEAT.map((label, index) => <button key={label} type="button" aria-pressed={intensity === index + 1} onClick={() => changeHeat(index + 1)}>{label}</button>)}
-          </div></fieldset>
-          <button type="button" className="rp-roast-button" data-testid="button-roast" disabled={!valid} onClick={() => result ? editPost() : runRoast({ focus: true })}>
-            {result ? 'Edit my original' : `Roast my ${kind === 'about' ? 'bio' : kind}`} <ArrowUpRight size={25} aria-hidden="true" />
-          </button>
-          <details className="rp-voice"><summary>Choose an inspector <ChevronDown size={18} aria-hidden="true" /></summary><label>
-            <span className="rp-sr-only">Inspector</span><select value={personaId} onChange={event => changeVoice(event.target.value)}>{PERSONAS.map(persona => <option value={persona.id} key={persona.id}>{persona.name}</option>)}</select>
-          </label></details>
+  return <div className="ll-app ll-rows rp-page">
+    <a className="ll-skip" href="#main">Skip to the roast</a>
+    <Header base="../" active="Roast" theme="dark" />
+    <main id="main">
+      <div className="el-toolbar rp-toolbar">
+        <div className="rp-brand"><Flame aria-hidden="true"/><div><span>FORM RM-01</span><h1>Roast my post.</h1></div></div>
+        <div className="el-categories" role="group" aria-label="What are we roasting?">
+          {KINDS.map(k => <button type="button" key={k.id} aria-pressed={kind === k.id} onClick={() => { setKind(k.id); setReview(null); setEditing(true); setRewrite(''); setNotice('Choose an example or paste your text.'); }}>{KIND_LABELS[k.id]}</button>)}
         </div>
       </div>
-      <p className="rp-sr-only" role="status" aria-live="polite">{notice}</p>
+      <div className="el-workspace">
+        <section className="el-facts" aria-labelledby="roast-title">
+          <div className="el-row-heading"><h2 id="roast-title">Submit for review.</h2><p>Your words. Our unsolicited professional opinion.</p></div>
+          <div className="el-receipt rp-editor">
+            <div className="rp-editor-bar"><label htmlFor={editing ? 'roast-draft' : undefined}>Your {KIND_LABELS[kind].toLowerCase()}</label>
+              <button type="button" className="rp-text-button" onClick={() => { setDraft(EXAMPLES[kind]); setEditing(true); setNotice('Example loaded. Choose your reviewer and roast it.'); }}>Try an example</button>
+              {!editing && <button type="button" className="rp-text-button" onClick={editPost}><Pencil size={16} aria-hidden="true"/>Edit original</button>}
+            </div>
+            {editing ? <>
+              <textarea id="roast-draft" data-testid="input-roast-draft" className="rp-input" value={draft} maxLength={MAX_LENGTH} rows={5}
+                placeholder="Humbled and honored to announce that I have successfully completed another Monday…"
+                aria-describedby="roast-input-hint" onChange={e => setDraft(e.target.value)} />
+              {draft.length > MAX_LENGTH && <p role="alert">Please shorten your draft to {MAX_LENGTH.toLocaleString()} characters.</p>}
+            </> : <MarkedDocument text={review.text} findings={result.findings} activeFinding={activeFinding} onSelect={selectFinding} />}
+            <div className="el-receipt-tools">
+              <div className="el-fact-actions">{editing && review && <button type="button" onClick={() => { setDraft(review.text); setEditing(false); setNotice('Back to your last roast.'); }}>Back to verdict</button>}{draft && <button type="button" onClick={reset}>Start fresh</button>}</div>
+              <div className="el-input-bottom"><p className="el-hint" id="roast-input-hint">Paste the text, not a link. It stays in your browser.</p><span className="rp-count">{draft.length.toLocaleString()} / 20,000</span></div>
+              <aside className="el-synergy" aria-label="Synergy"><span className="el-synergy-note">{result ? 'Feedback is a gift.' : 'We need to talk.'}</span><img src="../lessons/synergy-assistant.webp" width="512" height="512" alt="Synergy holding his coffee" /></aside>
+            </div>
+          </div>
+          <div className="rp-controls">
+            <fieldset className="rp-heat"><legend>How honest?</legend><div className="el-choice-pills">{HEAT.map((label, index) => <button key={label} type="button" aria-pressed={intensity === index + 1} onClick={() => changeHeat(index + 1)}>{label}</button>)}</div></fieldset>
+            <label className="rp-voice" htmlFor="roast-inspector">Your reviewer<select id="roast-inspector" value={personaId} onChange={e => changeVoice(e.target.value)}>{PERSONAS.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></label>
+            <button type="button" className="rp-primary" data-testid="button-roast" disabled={!valid} onClick={() => runRoast({ focus: true, keepRewrite: Boolean(result) })}><Flame size={20} aria-hidden="true"/>{result ? 'Roast again' : 'Roast my ' + (kind === 'about' ? 'bio' : kind)}</button>
+          </div>
+        </section>
+        <section className="el-output rp-result" aria-labelledby="roast-result-title">
+          <div className="el-row-heading"><h2 id="roast-result-title" ref={resultRef} tabIndex={-1}>Your professional diagnosis.</h2><p>Constructive. Mostly.</p></div>
+          {result ? <>
+            <div className="rp-diagnosis">
+              <div className="rp-score"><span>Thought Leadership Index</span><div><strong>{result.score.index}</strong><span>/ 100</span></div><b>{result.score.rank}</b><small>A satirical writing score.</small></div>
+              <div className="rp-verdict"><span className="rp-eyebrow">REVIEW COMPLETE</span><h3>{verdict[0]}</h3><p>{verdict[1]}</p><span className="rp-inspector">{PERSONAS.find(p => p.id === personaId).name}</span></div>
+            </div>
+            <div className="rp-share-actions"><button type="button" className="rp-primary" disabled={exporting} onClick={download}><Download size={17} aria-hidden="true"/>{exporting ? 'Preparing receipt…' : 'Download receipt'}</button><button type="button" className="rp-secondary" disabled={exporting} onClick={share}><Share2 size={17} aria-hidden="true"/>Share receipt</button><button type="button" className="rp-text-button" onClick={copyVerdict}><Copy size={16} aria-hidden="true"/>Copy verdict</button></div>
+            <p className="rp-hint">The receipt includes the score and reviewer’s notes, not your original text. Nothing is published automatically.</p>
+            <div className="rp-feedback-grid">
+              <div className="rp-notes"><h3>Notes from your reviewer.</h3>
+                {result.findings.length ? result.findings.map((finding, index) => {
+                  const [title, advice] = EDITORIAL_NOTES[finding.key] || ['A small edit.', 'Make the claim specific.'];
+                  return <section className={`rp-note ${activeFinding === index ? 'is-active' : ''}`} key={finding.key} id={`roast-note-${index}`} hidden={!showAll && index >= 3}>
+                    <button type="button" className="rp-note-title" onClick={() => selectFinding(index)} aria-expanded={activeFinding === index} aria-controls={`roast-advice-${index}`}><span>{String(index + 1).padStart(2, '0')}</span>{title}<ChevronDown size={17} aria-hidden="true"/></button>
+                    <div className="rp-note-detail" id={`roast-advice-${index}`} hidden={activeFinding !== index}><p>{result.lines[index]}</p><p className="rp-advice"><strong>Try this</strong>{advice}</p></div>
+                  </section>;
+                }) : <p>{result.lines[0]}</p>}
+                {result.findings.length > 3 && <button type="button" className="rp-text-button" aria-expanded={showAll} onClick={() => { setShowAll(!showAll); if (showAll && activeFinding >= 3) setActiveFinding(0); }}>{showAll ? 'Fewer notes' : `All ${result.findings.length} notes`}<ChevronDown size={16} aria-hidden="true"/></button>}
+              </div>
+              <div className="rp-cleanup"><label htmlFor="roast-rewrite">A little less LinkedIn.</label><AutoTextarea id="roast-rewrite" data-testid="text-clean-rewrite" className="rp-cleanup-input" value={rewrite} onChange={e => { setRewrite(e.target.value); setCopied(false); setCopyError(false); }} aria-describedby="roast-cleanup-hint"/><p className="rp-hint" id="roast-cleanup-hint">A first pass. Edit it to sound like you.</p><button className="rp-secondary" type="button" disabled={!rewrite.trim()} data-testid="button-copy-rewrite" onClick={copy}>{copied ? <Check size={17} aria-hidden="true"/> : <Copy size={17} aria-hidden="true"/>}{copied ? 'Copied' : 'Copy cleanup'}</button>{copyError && <p className="rp-hint">Your text is selected. Press ⌘C or Ctrl+C to copy it.</p>}<a className="rp-text-button" href="../optimizer">Give it the full LinkedIn treatment <ArrowUpRight size={16} aria-hidden="true"/></a></div>
+            </div>
+          </> : <div className="rp-empty"><FileCheck2 aria-hidden="true"/><div><h3>{editing && review ? 'An amendment to the record.' : 'No findings. Yet.'}</h3><p>{editing && review ? 'Finish editing, then roast it again for an updated verdict.' : 'Submit your post above. We’ll return a score, annotated feedback, and a receipt worth circulating.'}</p></div><span>AWAITING SUBMISSION</span></div>}
+        </section>
+      </div>
+      <p className="rp-notice" role="status" aria-live="polite">{notice}</p>
     </main>
-    <Footer />
+    <Footer base="../" />
   </div>;
 }
