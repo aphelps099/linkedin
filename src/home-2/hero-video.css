@@ -31,7 +31,7 @@
 @media(max-width:700px){
   .c2-film-copy{inset:105px 0 105px}
   .c2-film-copy h1{font-size:clamp(41px,10.2vw,70px);line-height:1.03}
-  .c2-home .c2-film-copy p{font-size:18px;max-width:340px;margin-top:22px}
+  .c2-home .c2-film-copy p{font-size:20px;max-width:340px;margin-top:22px}
 }
 @media(max-height:560px) and (min-width:701px){.c2-film--headline{min-height:480px}.c2-film-copy h1{font-size:80px}}
 .c2-film-controls{flex-wrap:wrap;justify-content:flex-end}
