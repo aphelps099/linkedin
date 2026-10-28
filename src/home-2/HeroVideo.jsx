@@ -1,12 +1,12 @@
 import React, {memo, useEffect, useRef, useState} from 'react';
-import {ArrowDown, Play, Volume2, VolumeX} from 'lucide-react';
+import {ArrowDown, ArrowUpRight, AudioLines, Play, Volume2, VolumeX} from 'lucide-react';
 import './hero-video.css';
 
 const PLAYBACK_ID = 'jjICCaXD1dLmDApUXumm9CgiESKPGJYoEAeYb2x6wf00';
 const STREAM = `https://stream.mux.com/${PLAYBACK_ID}.m3u8`;
 const POSTER = `https://image.mux.com/${PLAYBACK_ID}/thumbnail.webp?time=0&width=1920`;
 
-export const HeroVideo = memo(function HeroVideo({musicPlaying=false, musicLoading=false, musicError='', onMusicToggle, headline=false}) {
+export const HeroVideo = memo(function HeroVideo({base='/', musicPlaying=false, musicLoading=false, musicError='', onMusicToggle, headline=false}) {
   const video = useRef(null), section = useRef(null);
   const [requested, setRequested] = useState(() => !window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const [loadRequested, setLoadRequested] = useState(requested);
@@ -87,6 +87,7 @@ export const HeroVideo = memo(function HeroVideo({musicPlaying=false, musicLoadi
     {headline&&<div className="c2-container c2-film-copy">
       <h1 id="c2-film-title"><span>Learn to sound</span><span>like LinkedIn.</span></h1>
       <p>Professional development for aspiring thought leaders.</p>
+      <a className="c2-film-make" href={`${base}synth/`}><AudioLines aria-hidden="true"/><span>MAKE BEATS</span><ArrowUpRight aria-hidden="true"/></a>
     </div>}
     <div className="c2-container c2-film-bottom">
       <a className="c2-film-next" href="#c2-title">{headline?'Get certified':'Meet the band'} <ArrowDown aria-hidden="true"/></a>

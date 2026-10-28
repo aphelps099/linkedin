@@ -86,5 +86,5 @@ function TestCampaigns(props) {
 }
 
 export default function Homepage({assetBase='/'}) {
-  return <div className="home-test"><ConceptHome variant="conversation" assetBase={assetBase} BeatsComponent={SamplerBeats} CampaignsComponent={TestCampaigns} certificateFan={<CertificateFan/>}/></div>;
+  return <div className="home-test"><ConceptHome variant="conversation" assetBase={assetBase} showStore={false} BeatsComponent={SamplerBeats} CampaignsComponent={TestCampaigns} certificateFan={<CertificateFan/>}/></div>;
 }
