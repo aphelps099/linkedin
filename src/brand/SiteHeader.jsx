@@ -1,15 +1,15 @@
 import React, {useEffect, useId, useRef, useState} from 'react';
-import {AudioLines, Flame, GraduationCap, LoaderCircle, Pause, Play, SlidersHorizontal, Sparkles} from 'lucide-react';
+import {AudioLines, Flame, GraduationCap, LoaderCircle, Pause, Play, Video, Sparkles} from 'lucide-react';
 import {createRadio} from '../home/radio.js';
 import {claimAudio} from './audio-focus.js';
 import './navigation.css';
 import './site-header.css';
 
 export const SITE_LINKS = [
-  ['Optimize', 'optimizer'], ['Roast', 'roast/'], ['Learn', 'learn/'], ['Studio', 'studio/'],
+  ['Optimize', 'optimizer'], ['Roast', 'roast/'], ['Learn', 'learn/'], ['Studio', 'studio/#meetings'],
   ['Synth', 'synth/'],
 ];
-const NAV_ICONS = {Optimize:Sparkles, Roast:Flame, Learn:GraduationCap, Studio:SlidersHorizontal, Synth:AudioLines};
+const NAV_ICONS = {Optimize:Sparkles, Roast:Flame, Learn:GraduationCap, Studio:Video, Synth:AudioLines};
 const idle = {playing:false, loading:false, error:''};
 
 export function SiteHeader({base='/', active, overlay=false, theme='light', children,
@@ -49,7 +49,7 @@ export function SiteHeader({base='/', active, overlay=false, theme='light', chil
     const Icon = NAV_ICONS[name];
     return <a key={name} href={`${base}${path}`} aria-current={current===name?'page':undefined} onClick={()=>setOpen(false)}>
       <Icon className="lb-nav-icon" aria-hidden="true"/>
-      <span className="lb-nav-label">{name==='Synth'?'Make beats':name}
+      <span className="lb-nav-label">{name==='Synth'?'Make beats':name==='Studio'?'Meetings':name}
         <svg className="lb-nav-oval" viewBox="0 0 120 44" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M105 9C83 0 31 2 12 13C-7 25 10 40 51 39C88 39 119 31 115 19C111 7 72 1 36 7"/></svg>
       </span>
     </a>;

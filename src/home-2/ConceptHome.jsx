@@ -6,7 +6,7 @@ import {ConceptHeader} from './ConceptHeader.jsx';
 import {HeroVideo} from './HeroVideo.jsx';
 import {Campaigns} from './Campaigns.jsx';
 import {ConceptFooter} from './ConceptFooter.jsx';
-import {DispatchCarousel} from './DispatchCarousel.jsx';
+import {MeetingShowcase} from './MeetingShowcase.jsx';
 import {createPortraitRadio} from './portraitRadio.js';
 import {PixelSpectrum} from './PixelSpectrum.jsx';
 import {FeedScene, ExperimentLinks} from '../home-experiments/FeedScene.jsx';
@@ -167,7 +167,7 @@ export default function ConceptHome({playerFactory=createPortraitRadio, variant=
         </div>
       </section>}
       <CampaignsComponent base={base} state={state} track={track} seconds={seconds} motion={motion} onToggle={()=>radio.current?.toggle()} onSkip={skip} onSeek={seek} onSelect={stableChoose}/>
-      <DispatchCarousel base={base} motion={motion} state={state} onPlayTrack={index=>radio.current?.play(index)} onToggle={()=>radio.current?.toggle()} onSeek={seek} onPause={()=>{const current=radio.current?.getState();if(current?.playing||current?.loading)radio.current.toggle();}}/>
+      <MeetingShowcase base={base} motion={motion}/>
     </main>
     <ConceptFooter base={base}/>
   </div>;
