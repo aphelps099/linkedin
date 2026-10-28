@@ -94,9 +94,10 @@ export const HeroVideo = memo(function HeroVideo({base='/', musicPlaying=false, 
       <div className="c2-film-controls" role="group" aria-label="Hero music and video controls">
         {failed&&<span className="c2-film-status" role="status">Film unavailable</span>}
         {onMusicToggle&&<button type="button" className="c2-film-sound" onClick={onMusicToggle}
-          aria-pressed={musicActive} aria-label={musicLoading?'Cancel music loading':musicPlaying?'Turn music off':'Turn music on'}>
-          {musicActive?<Volume2 aria-hidden="true"/>:<VolumeX aria-hidden="true"/>}
-          <span aria-hidden="true">{musicLoading?'Loading…':musicPlaying?'On':'Off'}</span>
+          aria-pressed={musicActive} data-playing={musicPlaying} data-loading={musicLoading} aria-label={musicLoading?'Cancel music loading':musicPlaying?'Turn music off':'Turn music on'}>
+          <span className="c2-sound-badge" aria-hidden="true">{musicActive?<Volume2/>:<VolumeX/>}</span>
+          <span aria-hidden="true">{musicLoading?'TUNING IN':musicPlaying?'SOUND ON!':musicError?'TRY AGAIN':'SOUND ON?'}</span>
+          <span className="c2-sound-meter" aria-hidden="true"><i/><i/><i/><i/></span>
         </button>}
         {!requested&&!failed&&<button type="button" onClick={requestPlayback} aria-label="Play hero video">
           <Play fill="currentColor" aria-hidden="true"/>
