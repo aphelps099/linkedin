@@ -48,7 +48,7 @@ Once I’ve recharged.
 Local project: `/Users/ap457/Projects/linkedinbeats-meeting-art/optimizing/paper-droid-song/`.
 Review: `http://127.0.0.1:8852/paper-droid-song/`.
 Current master: `output/moving-things-forward-refined.mp4`. Earlier beep mix: `output/moving-things-forward-beeps.mp4`. Earlier no-beep mix preserved as `output/moving-things-forward.mp4`.
-The approved printer film and its sound comparison remain unchanged. This corrected new film is a local review, not a public deployment.
+The approved printer film and its sound comparison remain unchanged. The refined master is included in the October 28 Cutting Room release as `moving-things-forward-7fdb2147`.
 
 ## Shot review
 
