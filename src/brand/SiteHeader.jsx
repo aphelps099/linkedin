@@ -61,8 +61,9 @@ export function SiteHeader({base='/', active, overlay=false, theme='light', chil
         <nav className="lb-header-links" aria-label="Main navigation">{links()}</nav>
         <div className="lb-header-actions">
           {children}
-          <button type="button" className="lb-header-radio" onClick={onRadio || (()=>player.current?.toggle())} aria-label={label} aria-pressed={state.playing} title={label}>
+          <button type="button" className="lb-header-radio" onClick={onRadio || (()=>player.current?.toggle())} aria-label={label} aria-pressed={state.playing} data-loading={state.loading}>
             <span className="lb-header-disc">{state.loading?<LoaderCircle className="lb-header-spinner" aria-hidden="true"/>:state.playing?<Pause fill="currentColor" aria-hidden="true"/>:<Play fill="currentColor" aria-hidden="true"/>}</span>
+            <span className="lb-radio-caption" aria-hidden="true">{state.loading?'TUNING IN':state.playing?'ON AIR':state.error?'TRY AGAIN':'PRESS PLAY'}</span>
           </button>
           <button type="button" className="lb-header-menu" ref={trigger} aria-label={open?'Close navigation':'Open navigation'} aria-expanded={open} aria-controls={id} onClick={()=>setOpen(v=>!v)} onKeyDown={e=>{if(e.key==='ArrowDown'){e.preventDefault();if(open)directory.current?.querySelector('a')?.focus();else{focusFirst.current=true;setOpen(true);}}}}><span className={`lb-header-burger${open?' is-open':''}`} aria-hidden="true"><i/><i/></span></button>
         </div>
