@@ -1,0 +1,12 @@
+.rp-fire{position:absolute;inset:auto 0 0;height:115px;pointer-events:none;overflow:hidden;isolation:isolate;animation:rp-ignite .7s ease-out both}
+.rp-fire[data-heat="1"]{height:80px}.rp-fire[data-heat="3"]{height:135px}.rp-fire[data-heat="4"]{height:155px}
+.rp-fire-glow{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 110%,#ffb24c88,transparent 70%)}
+.rp-fire-tongues{display:block;position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.rp-flame{transform-box:fill-box;transform-origin:50% 100%;animation:rp-flicker var(--flame-speed) ease-in-out var(--flame-delay) infinite alternate}
+.rp-fire[data-heat="4"] .rp-flame{animation-duration:1.1s}.rp-fire[data-heat="1"] .rp-flame{animation-duration:2.5s}
+.rp-ember{position:absolute;bottom:22px;left:25%;width:3px;height:5px;border-radius:50%;background:#ffd97b;animation:rp-ember-rise 2.7s ease-out infinite}.rp-ember:nth-last-child(2){left:58%;animation-delay:-1.5s}.rp-ember:last-child{left:80%;animation-delay:-.7s}
+.rp-fire[data-heat="1"] .rp-ember{display:none}.rp-fire[data-animate="false"]{animation:none}.rp-fire[data-animate="false"] *{animation-play-state:paused}.rp-fire[data-animate="false"] .rp-ember{display:none}
+@keyframes rp-flicker{0%{transform:scaleX(.92) scaleY(var(--flame-scale)) skewX(-3deg)}50%{transform:scaleX(1.03) scaleY(.96) skewX(2deg)}100%{transform:scaleX(.98) scaleY(.8) skewX(-1deg)}}
+@keyframes rp-ember-rise{0%{transform:translate(0,0);opacity:0}20%{opacity:.8}100%{transform:translate(12px,-115px);opacity:0}}
+@keyframes rp-ignite{from{transform:translateY(45%);opacity:.15}to{transform:translateY(0);opacity:1}}
+@media(prefers-reduced-motion:reduce){.rp-fire,.rp-fire *{animation:none!important}.rp-fire .rp-ember{display:none}}
