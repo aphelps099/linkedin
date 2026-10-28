@@ -31,6 +31,8 @@
 @media(prefers-reduced-motion:reduce){.meeting-showcase *{transition:none!important;scroll-behavior:auto!important}}
 
 .meeting-title-link{min-width:0;flex:1}
-.meeting-card-actions{display:flex;flex-direction:column;align-items:flex-end;gap:7px;flex-shrink:0}
-.c2-home .meeting-share-button{display:inline-flex;align-items:center;gap:5px;min-height:36px;padding:7px 9px;border:1px solid #092d4820;border-radius:99px;background:#f5f6f5;color:#31516a;font:400 13px/1 C2Hoves,sans-serif;cursor:pointer}
-.meeting-share-button svg{width:14px;height:14px}.c2-home .meeting-share-button:hover{background:#e9eff7;color:#0757ec;border-color:#0757ec60}
+.meeting-film-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.meeting-film-player .meeting-film-share{display:inline-flex;gap:7px;width:auto;padding:0 14px;border-radius:99px;font:500 14px/1 C2Hoves,sans-serif}
+.meeting-film-share svg{width:17px;height:17px}
+.meeting-film-share:hover{background:#e9eff7}
+@media(max-width:480px){.meeting-film-player header{gap:10px;padding:12px}.meeting-film-player h2{font-size:16px}.meeting-film-player .meeting-film-share{padding:0 10px}}

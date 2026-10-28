@@ -173,3 +173,7 @@ Production build passed. Browser review confirmed the approved composition and H
 ## Sharing controls — 28 October 2026
 
 Each carousel card has a small Share pill in its white caption area. Keep sharing controls out of the artwork. The chooser offers text message, email, Facebook, X/Twitter, copy link, and the native device share sheet when supported. Meeting links address their Studio episode. Film links use a stable homepage `film` query parameter, open the corresponding inline player, and receive film-specific server-rendered social metadata. Do not share an expiring media-storage URL or the unlisted production-library URL.
+
+### Player sharing placement — October 28, 2026
+
+Share belongs in the actual media player, not on the homepage carousel cards. Keep the approved art and white caption cards clean. Film modals have a small Share pill beside Close; the meeting player has Share in its playback toolbar. Both offer text message, email, Facebook, X, copy link and native sharing when available. Opening sharing pauses playback; closing sharing returns focus to the player without automatically resuming it. Shared links must open the specific film or meeting.
