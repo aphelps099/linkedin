@@ -5,21 +5,24 @@ import {SOUNDS, initialProject} from './model.js';
 import {Sampler} from './engine.js';
 
 const groupFor = sound => sound.group || (sound.kind === 'VOICE' ? 'Original phrases' : 'Drums & synth');
-const groups = ['All sounds', ...new Set(SOUNDS.map(groupFor))];
+const categories=[['All','All sounds'],['DRUM','Drums'],['SYNTH','Synths'],['VOICE','Voices'],['GUITAR','Guitar'],['LOOP','Loops']];
 const asSlot = sound => ({...initialProject().slots[0], sound:sound.id, name:sound.name, gain:.7});
 
-export default function SoundLibrary({pad, currentSound, onLoad, onClose}) {
- const dialog = useRef(), audition = useRef(new Sampler()), alive = useRef(true);
+export default function SoundLibrary({pad, padNames, onPadChange, currentSound, onLoad, onClose}) {
+ const dialog = useRef(), audition = useRef(new Sampler()), alive = useRef(true), startedOutside=useRef(false);
+ const [category,setCategory]=useState(SOUNDS.find(sound=>sound.id===currentSound)?.kind||'All');
  const [query,setQuery] = useState(''), [group,setGroup] = useState('All sounds');
  const [preview,setPreview] = useState(null), [loading,setLoading] = useState(null), [error,setError] = useState('');
  useEffect(() => {
-  const node = dialog.current, previousOverflow = document.body.style.overflow;
+  const node = dialog.current, opener=document.activeElement, previousOverflow = document.body.style.overflow;
+  alive.current=true;
   document.body.style.overflow = 'hidden';
   node.showModal();
-  return () => {alive.current=false;audition.current.close();node.close();document.body.style.overflow=previousOverflow;};
+  return () => {alive.current=false;audition.current.close();node.close();document.body.style.overflow=previousOverflow;opener?.focus();};
  }, []);
  useEffect(()=>onAudioFocus('synth',()=>{audition.current.stop();setPreview(null);}),[]);
- const results = SOUNDS.filter(sound => (group === 'All sounds' || groupFor(sound) === group) &&
+ const groups=['All sounds',...new Set(SOUNDS.filter(sound=>category==='All'||sound.kind===category).map(groupFor))];
+ const results = SOUNDS.filter(sound => (category==='All'||sound.kind===category) && (group === 'All sounds' || groupFor(sound) === group) &&
   `${sound.name} ${sound.text || ''} ${groupFor(sound)}`.toLowerCase().includes(query.toLowerCase().trim()));
  async function hear(sound) {
   if(loading) return;
@@ -43,9 +46,11 @@ export default function SoundLibrary({pad, currentSound, onLoad, onClose}) {
   try {await onLoad(sound);onClose();}
   catch(e){if(alive.current){setError(e.message || 'Could not load this sound. Try again.');setLoading(null);}}
  }
- return <dialog ref={dialog} className="syn-library" aria-labelledby="syn-library-title" onClose={onClose}>
-  <div className="syn-library-heading"><div><span className="syn-eyebrow">THE COMPANY SOUND LIBRARY</span><h2 id="syn-library-title">Bring the whole team.</h2><p>Every character. Guitar fills. A little more synergy.</p></div><button className="syn-library-close" aria-label="Close sound library" onClick={onClose}><X size={19}/></button></div>
-  <div className="syn-library-tools"><label className="syn-library-search"><Search size={17}/><input autoFocus type="search" aria-label="Search sounds" placeholder="Search a phrase or character…" value={query} onChange={e=>setQuery(e.target.value)}/></label><select aria-label="Filter sounds by character or instrument" value={group} onChange={e=>setGroup(e.target.value)}>{groups.map(name=><option key={name}>{name}</option>)}</select></div>
+ return <dialog ref={dialog} className="syn-library" aria-labelledby="syn-library-title" onClose={onClose} onCancel={e=>{if(loading)e.preventDefault();}} onPointerDown={e=>{const r=e.currentTarget.getBoundingClientRect();startedOutside.current=e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom;}} onClick={e=>{const r=e.currentTarget.getBoundingClientRect();if(!loading&&startedOutside.current&&(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom))onClose();startedOutside.current=false;}}>
+  <div className="syn-library-heading"><div><span className="syn-eyebrow">THE COMPANY SOUND LIBRARY</span><h2 id="syn-library-title">Find your next sound.</h2><p>Replacing <b>{padNames[pad]}</b>. Your pattern stays put.</p></div><button className="syn-library-close" aria-label="Close sound library" disabled={!!loading} onClick={onClose}><X size={19}/></button></div>
+  <div className="syn-library-pads" role="group" aria-label="Choose a pad to replace"><span>PAD</span>{padNames.map((name,index)=><button key={index} aria-label={`Choose pad ${index+1}: ${name}`} aria-pressed={pad===index} disabled={!!loading} onClick={()=>onPadChange(index)}>{String(index+1).padStart(2,'0')}</button>)}</div>
+  <div className="syn-library-categories" role="group" aria-label="Sound categories">{categories.map(([id,label])=><button key={id} aria-pressed={category===id} onClick={()=>{setCategory(id);setGroup('All sounds');}}>{label}</button>)}</div>
+  <div className="syn-library-tools"><label className="syn-library-search"><Search size={17}/><input autoFocus type="search" aria-label="Search sounds" placeholder="Search sounds, phrases, characters…" value={query} onChange={e=>setQuery(e.target.value)}/></label>{(category==='VOICE'||category==='All')&&<select aria-label="Filter sounds by character or instrument" value={group} onChange={e=>setGroup(e.target.value)}>{groups.map(name=><option key={name}>{name}</option>)}</select>}</div>
   <div className="syn-library-info"><span>{results.length} {results.length===1?'SOUND':'SOUNDS'}</span><span>LOAD INTO PAD {String(pad+1).padStart(2,'0')}</span></div>
   <div className="syn-library-results">
    {results.map(sound=><div className={'syn-library-row '+(preview===sound.id?'is-previewing':'')} key={sound.id}>
@@ -53,7 +58,7 @@ export default function SoundLibrary({pad, currentSound, onLoad, onClose}) {
     <div className="syn-library-copy"><span>{groupFor(sound)}{sound.duration && <> · {sound.duration.toFixed(1)}s</>}{sound.bpm && <> · {sound.bpm} BPM · {sound.key}</>}</span><p>{sound.text || sound.name}</p></div>
     <button className="syn-library-load" aria-label={`Load ${sound.name} into pad ${pad+1}`} disabled={!!loading} onClick={()=>choose(sound)}>{loading===sound.id?'Loading…':currentSound===sound.id?<><Check size={13}/> Loaded</>:'Load'}{loading!==sound.id&&currentSound!==sound.id&&<span aria-hidden="true">↗</span>}</button>
    </div>)}
-   {!results.length&&<p className="syn-library-empty">No matching sounds. Try another phrase or choose All sounds.</p>}
+   {!results.length&&<p className="syn-library-empty">No matching sounds. Try another search or choose All sounds.</p>}
   </div>
   <div className="syn-library-footer" role="status"><Headphones size={15}/><span>{error || (loading?'Loading audio…':'Preview first. Load any sound into any pad.')}</span></div>
  </dialog>;
