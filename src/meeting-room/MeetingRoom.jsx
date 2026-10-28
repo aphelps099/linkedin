@@ -1,5 +1,5 @@
 import React,{useEffect,useRef,useState} from 'react';
-import {Play,Pause,SkipForward,Video,VideoOff,Volume2,VolumeX,Captions,SlidersHorizontal,Users,Grid2X2,Maximize2,Minimize2,LoaderCircle,RotateCcw,ChevronRight,ChevronDown, UserPlus, Mail, X} from 'lucide-react';
+import {Play,Pause,SkipForward,Video,VideoOff,Volume2,VolumeX,Captions,SlidersHorizontal,Users,Grid2X2,Maximize2,Minimize2,LoaderCircle,RotateCcw,ChevronRight,ChevronDown, UserPlus, X} from 'lucide-react';
 import {ConceptHeader} from '../home-2/ConceptHeader.jsx';
 import {ConceptFooter} from '../home-2/ConceptFooter.jsx';
 import {agendas,cast,meetings,meetingSequence,meetingFromSearch,nextMeeting,timeLabel,cueAt} from './catalog.js';
@@ -57,12 +57,12 @@ export default function MeetingRoom(){
   const number=meetingSequence.findIndex(item=>item.id===meeting.id)+1;
   return <div className="c2-home mr-page">
     <ConceptHeader active="Studio" homeSectionBase="/" theme="dark"/>
-    <button type="button" className="mr-invite-float" onClick={()=>inviteToMeeting(meeting)} aria-label="Invite a plus one — share this meeting" aria-haspopup="dialog"><span><Mail aria-hidden="true"/></span><span><strong className="mr-invite-label">INVITE A +1<InviteOval/></strong><small>Share this meeting</small></span></button>
+
     <main>
       <section className={`mr-room${state.playing?' is-playing':''}`} ref={room} aria-label="LinkedIn Beats meeting studio">
         <div className="mr-windowbar"><span className="mr-window-brand"><Video aria-hidden="true"/>LinkedIn Beats Meeting</span><h1>{meeting.title}</h1><span className="mr-window-status"><span className={`mr-dot${state.playing?' is-live':''}`} aria-hidden="true"/>{left?'Meeting adjourned':state.loading?'Connecting…':state.playing?'In progress':finished?'Meeting complete':'Hosted by Synergy'}</span></div>
         <div className="mr-stage">
-          <div className="mr-gallery-tools"><span><Users aria-hidden="true"/>{String(meeting.roster.length).padStart(2,'0')} in the room</span><button onClick={()=>{setPin(null);setFollow(!(follow||pin));}} aria-pressed={!!spotlight}><Grid2X2 aria-hidden="true"/>{spotlight?'Gallery view':'Speaker view'}</button></div>
+          <div className="mr-gallery-tools"><span><Users aria-hidden="true"/>{String(meeting.roster.length).padStart(2,'0')} in the room</span><button type="button" className="mr-invite-mascot" onClick={()=>inviteToMeeting(meeting)} aria-label="Invite a plus one — share this meeting" aria-haspopup="dialog"><span className="mr-invite-bubble"><span className="mr-invite-label">Invite<InviteOval/></span></span><img src="/lessons/synergy-assistant.webp" width="48" height="48" alt=""/></button><button onClick={()=>{setPin(null);setFollow(!(follow||pin));}} aria-pressed={!!spotlight}><Grid2X2 aria-hidden="true"/>{spotlight?'Gallery view':'Speaker view'}</button></div>
           <div className={`mr-gallery${spotlight?' has-spotlight':''}`} data-size={meeting.roster.length} data-agenda={meeting.agenda}>
             {meeting.roster.map(id=><Participant key={`${meeting.id}-${id}`} id={id} meeting={meeting} frame={frame} playing={state.playing} audible={!state.muted&&state.voices>0} musicOn={!state.muted&&state.music>0} videoOn={videoOn} reduced={reduced} pinned={spotlight===id} onPin={id=>{setFollow(false);setPin(spotlight===id?null:id);}} reactions={reactions}/>)}
           </div>

@@ -207,3 +207,9 @@ body.studio-meeting{margin:0;background:#090a0c}
 @media(prefers-reduced-motion:reduce){.mr-thumb-cast img{transition:none}.mr-meeting-thumb:hover .mr-thumb-cast img{transform:none}}
 
 .mr-invite .lip-button{background:#1855f4;color:white;border-radius:26px;padding:13px 18px}.mr-invite .lip-button:hover{background:#346dfb}.mr-invite .lip-button:disabled{background:#283b63;color:#bac7dc}
+/* Playback is the primary action; skipping is secondary. */
+.mr-page .mr-play{background:#2872ff;border-color:#669aff;color:white;font-weight:600;box-shadow:inset 0 1px 0 #ffffff20}
+.mr-page .mr-play:hover{background:#4585ff;border-color:#a2c4ff}
+.mr-page .mr-meeting-actions .mr-new{background:#2a2d34;color:#d4d8e0;border:1px solid #4b505d;box-shadow:none}
+.mr-page .mr-meeting-actions .mr-new:hover{background:#3a3f49;color:#fff;border-color:#7a8395}
+@media(max-width:390px){.mr-page .mr-play{padding:11px 10px;gap:6px}.mr-play>span{display:inline;font-size:11px}.mr-play>svg{width:16px;height:16px}}
