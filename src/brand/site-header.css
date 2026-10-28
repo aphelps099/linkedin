@@ -18,19 +18,14 @@
 :root .lb-header a:hover{color:var(--nav-accent)}
 :root .lb-header-actions{display:flex;align-items:center;gap:8px;flex:none}
 :root .lb-header .lb-header-radio,:root .lb-header .lb-header-menu{display:grid;place-items:center;flex:none;min-width:44px;width:44px;height:44px;min-height:44px;padding:6px}
-/* A tiny record player: the groove spins, the play/pause symbol stays legible. */
-:root .lb-header .lb-header-radio{position:relative;width:52px;min-width:52px;height:52px;padding:4px;border-radius:50%}
-:root .lb-header-disc{position:relative;isolation:isolate;width:42px;height:42px;border:2px solid #11110e;border-radius:50%;display:grid;place-items:center;background:#fff36a;color:#11110e;box-shadow:2px 3px 0 #11110e;transition:transform .2s,box-shadow .2s,background .2s}
-:root .lb-header-disc::before{content:'';position:absolute;inset:4px;border:1px solid currentColor;border-right-color:transparent;border-radius:50%;opacity:.4;animation:lb-header-spin 2s linear infinite;animation-play-state:paused}
-:root .lb-header-disc::after{content:'';position:absolute;inset:-7px;border:2px solid var(--nav-accent);border-radius:48% 52% 45% 55%;transform:rotate(-18deg) scale(.85);opacity:0;transition:transform .2s,opacity .2s;pointer-events:none}
-:root .lb-header-radio:is(:hover,:focus-visible) .lb-header-disc{transform:translateY(-2px) rotate(-10deg);box-shadow:3px 5px 0 #11110e}
-:root .lb-header-radio:is(:hover,:focus-visible) .lb-header-disc::after{opacity:1;transform:rotate(-18deg) scale(1)}
-:root .lb-header-radio:active .lb-header-disc{transform:translate(1px,2px);box-shadow:0 1px 0 #11110e}
-:root .lb-header-radio[aria-pressed=true] .lb-header-disc{background:#ffb8dc}
-:root .lb-header-radio[aria-pressed=true] .lb-header-disc::before{animation-play-state:running}
-:root .lb-header-radio svg{position:relative;width:17px;height:17px;stroke-width:2}
-:root .lb-radio-caption{position:absolute;top:calc(100% + 6px);right:0;white-space:nowrap;padding:7px 10px;border:1px solid #11110e;border-radius:4px;background:#fff36a;color:#11110e;box-shadow:2px 2px 0 #11110e;font:500 10px/1.2 var(--lb-font-nav),monospace;letter-spacing:.04em;opacity:0;transform:translateY(-4px) rotate(-4deg);transition:opacity .15s,transform .2s;pointer-events:none}
-:root .lb-header-radio:is(:hover,:focus-visible) .lb-radio-caption{opacity:1;transform:translateY(0) rotate(-4deg)}
+/* Quiet at rest; color is reserved for interaction. */
+:root .lb-header .lb-header-radio{position:relative;width:48px;min-width:48px;height:48px;padding:4px;border-radius:50%}
+:root .lb-header-disc{width:38px;height:38px;border:1px solid currentColor;border-radius:50%;display:grid;place-items:center;background:transparent;color:var(--nav-ink);transition:transform .2s,background .2s,color .2s,border-color .2s}
+:root .lb-header--overlay .lb-header-disc{background:#11110e26;border-color:#ffffff80;color:#fff}
+:root .lb-header-radio:focus-visible .lb-header-disc{background:#fff36a;border-color:#fff36a;color:#11110e;transform:translateY(-1px)}
+@media(hover:hover){:root .lb-header-radio:hover .lb-header-disc{background:#fff36a;border-color:#fff36a;color:#11110e;transform:translateY(-1px)}}
+:root .lb-header-radio:active .lb-header-disc{transform:scale(.95)}
+:root .lb-header-radio svg{width:16px;height:16px;stroke-width:2}
 :root .lb-header .lb-header-menu{display:none}
 :root .lb-header-burger{display:block;position:relative;width:20px;height:20px}
 :root .lb-header-burger i{position:absolute;left:0;top:6px;height:2px;width:20px;background:currentColor;transition:transform .15s,top .15s}
