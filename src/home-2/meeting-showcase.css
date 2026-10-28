@@ -6,13 +6,13 @@
 .c2-home .meeting-all{display:inline-flex;align-items:center;gap:16px;flex:none;min-height:48px;padding:12px 18px;border:1px solid #092d4850;border-radius:99px;font-size:14px}
 .meeting-rail{display:flex;align-items:flex-start;gap:20px;overflow:auto;scroll-snap-type:x mandatory;scroll-padding-inline:max(24px,5vw);padding:6px max(24px,5vw) 16px;scrollbar-width:thin;scrollbar-color:#8aa6bb transparent}
 .meeting-preview{flex:0 0 clamp(300px,28vw,380px);min-width:0;scroll-snap-align:start;background:white;border-radius:28px;overflow:hidden}
-.meeting-preview>a{display:block;color:inherit!important;text-decoration:none}
+.meeting-art-link,.meeting-title-link{display:block;color:inherit!important;text-decoration:none}
 .meeting-preview-copy{padding:19px 20px 21px;min-height:90px;display:flex;align-items:center;justify-content:space-between;gap:14px}
 .c2-home .meeting-preview h3{font:600 19px/1.2 C2Hoves,sans-serif;letter-spacing:-.025em;margin:0}
 .meeting-preview-copy>svg{width:20px;height:20px;flex-shrink:0}
 .meeting-watch{display:block;margin-top:9px;font-size:14px;color:#4d6573}
 .meeting-duration{font-size:14px;color:#536c7c;white-space:nowrap;font-variant-numeric:tabular-nums}
-.meeting-preview>a:is(:hover,:focus-visible) h3{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
+.meeting-title-link:is(:hover,:focus-visible) h3{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
 .meeting-showcase-bottom{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:20px max(24px,5vw) 0;font-size:13px;color:#476278}
 .meeting-showcase-bottom>a>span{display:flex;align-items:center;gap:10px;margin-top:6px;color:#092d48;font-weight:600}
 .meeting-showcase-bottom>div{display:flex;gap:8px}
@@ -29,3 +29,8 @@
 .meeting-film-player :is(a,button,video):focus-visible{outline:3px solid #0757ec;outline-offset:-3px}
 @media(max-width:700px){.meeting-showcase{padding-top:30px}.meeting-showcase-heading{align-items:flex-start;flex-direction:column;gap:20px}.meeting-showcase-heading p:last-child{font-size:16px}.meeting-preview{flex-basis:82vw;max-width:380px}.meeting-showcase-bottom{align-items:flex-end}.meeting-showcase-bottom>a{max-width:210px}.meeting-preview-copy{padding:18px}.meeting-rail{gap:14px}}
 @media(prefers-reduced-motion:reduce){.meeting-showcase *{transition:none!important;scroll-behavior:auto!important}}
+
+.meeting-title-link{min-width:0;flex:1}
+.meeting-card-actions{display:flex;flex-direction:column;align-items:flex-end;gap:7px;flex-shrink:0}
+.c2-home .meeting-share-button{display:inline-flex;align-items:center;gap:5px;min-height:36px;padding:7px 9px;border:1px solid #092d4820;border-radius:99px;background:#f5f6f5;color:#31516a;font:400 13px/1 C2Hoves,sans-serif;cursor:pointer}
+.meeting-share-button svg{width:14px;height:14px}.c2-home .meeting-share-button:hover{background:#e9eff7;color:#0757ec;border-color:#0757ec60}
