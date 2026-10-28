@@ -10,6 +10,11 @@ import {Participant} from './Participant.jsx';
 
 const initial={playing:false,loading:false,error:'',muted:false,music:.42,voices:1,elapsed:0};
 export default function MeetingRoom(){
+  useEffect(()=>{
+    if(window.location.hash!=='#meetings')return;
+    const frame=requestAnimationFrame(()=>document.getElementById('meetings')?.scrollIntoView({block:'start'}));
+    return()=>cancelAnimationFrame(frame);
+  },[]);
   const [meeting,setMeeting]=useState(()=>meetingFromSearch(typeof window==='undefined'?'':window.location.search)),[state,setState]=useState(initial),[time,setTime]=useState(0);
   const initialMeeting=useRef(meeting);
   const [captions,setCaptions]=useState(true),[videoOn,setVideoOn]=useState(true),[reactions,setReactions]=useState(true),[mixOpen,setMixOpen]=useState(false);
@@ -75,7 +80,7 @@ export default function MeetingRoom(){
         {mixOpen&&<div className="mr-mix" id="mr-mix" ref={mixPanel} aria-label="Meeting mix"><div><strong>Your meeting. Your mix.</strong><button aria-label="Close mix" onClick={()=>{setMixOpen(false);mixButton.current?.focus();}}><X aria-hidden="true"/></button></div><label>Voices<input type="range" min="0" max="1" step=".01" value={state.voices} onChange={e=>engine.current?.setMix({voices:+e.target.value})}/></label><label>The beat<input type="range" min="0" max="1" step=".01" value={state.music} onChange={e=>engine.current?.setMix({music:+e.target.value})}/></label><label className="mr-check"><input type="checkbox" checked={reactions} onChange={e=>setReactions(e.target.checked)}/>Excessive encouragement</label></div>}
         <div className="mr-room-foot"><span>MEETING {String(number).padStart(2,'0')} OF {meetingSequence.length} <i>/</i> HOSTED BY SYNERGY</span><span>This could have been a beat.</span></div>
       </section>
-      <section className="mr-agendas" aria-label="Meeting playlists">
+      <section id="meetings" className="mr-agendas" aria-label="Meeting playlists">
         <details className="mr-agenda-disclosure" open>
           <summary><span>The agenda</span><span className="mr-agenda-count">7 playlists · 14 meetings</span><ChevronDown aria-hidden="true"/></summary>
           <div className="mr-agenda-filters" role="group" aria-label="Filter meeting playlists"><button aria-pressed={agendaFilter==='all'} onClick={()=>setAgendaFilter('all')}>All meetings</button>{agendas.map(([id,label])=><button key={id} aria-pressed={agendaFilter===id} onClick={()=>setAgendaFilter(id)}>{label}</button>)}</div>

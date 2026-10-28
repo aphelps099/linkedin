@@ -286,7 +286,7 @@ try{
   assert(!html.includes('mr-racing')&&!html.includes('mr-room-head'),'No extra title or racing strip');
   assert(/mr-windowbar[\s\S]*?<h1>/.test(html),'Title belongs in the meeting window');
   assert(/mr-meeting-actions[\s\S]*?Next meeting[\s\S]*?Leave/.test(html),'Next meeting sits beside Leave');
-  for(const text of ['The agenda','Next meeting','Play meeting','Captions','Seek meeting','Stop video','Leave','lb-header--dark','The necessary small print','mr-printer-display'])assert(html.includes(text),`Missing UI: ${text}`);
+  for(const text of ['The agenda','Next meeting','Play meeting','Captions','Seek meeting','Stop video','Leave','lb-header--dark','Read fine print','mr-printer-display','id="meetings"'])assert(html.includes(text),`Missing UI: ${text}`);
   assert(!/<video[^>]*\ssrc=/.test(html),'Video downloads wait for play');assert(!/autoPlay/.test(html));
   assert(!html.includes('getUserMedia'));
   const rects=[];const drawing={clearRect(){},save(){},restore(){},translate(){},rotate(){},scale(){},fillRect:(...args)=>rects.push(args)};

@@ -92,7 +92,8 @@ export const SiteFooter = memo(function SiteFooter({base='/'}) {
           <a href={`${base}optimizer`}>LinkedInifier</a>
           <a href={`${base}roast/`}>Roast my post</a>
           <a href={`${base}learn/`}>Get certified</a>
-          <a href={`${base}#c2-dispatch`}>The feed</a>
+          <a href={`${base}studio/#meetings`}>Meetings</a>
+          <a href={`${base}archives/`}>Archives</a>
         </nav>
         <section className="lb-social" aria-label="Follow LinkedIn Beats">
           <h3 className="lb-footer-label">Follow along</h3>

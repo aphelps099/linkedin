@@ -1,9 +1,9 @@
-// Fictional editorial content for the LinkedIn Beats homepage.
+// Fictional editorial content for the LinkedIn Beats archives.
 // Media points to the existing band library; songs use the main radio transport.
 export const DISPATCHES = [
   {
-    id:'meeting-studio', type:'feature', label:'The studio', shape:'wide', href:'synth/',
-    title:'This meeting has a beat. Make yours in the studio.',
+    id:'meeting-studio', type:'feature', label:'The studio', shape:'wide', href:'studio/#meetings',
+    title:'This meeting has a beat. Watch the office sessions.',
     artwork:{tone:'black',image:'cutting-room/posters/let-s-circle-back-synergy-corrected-d6ecf221.jpg',layout:'meeting',placement:'top',kicker:'SYNERGY & CO. / OFFICE SESSIONS',lines:['LET’S','CIRCLE BACK.'],footer:'NO AGENDA. EXCELLENT SYNERGY.'},
   },
   {
