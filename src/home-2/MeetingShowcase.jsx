@@ -1,7 +1,7 @@
 import React, {useRef} from 'react';
-import {ArrowLeft, ArrowRight, ArrowUpRight, Play} from 'lucide-react';
-import {agendas, meetingSequence, timeLabel} from '../meeting-room/catalog.js';
-import {meetingPortraits} from '../meeting-room/invitation.js';
+import {ArrowLeft, ArrowRight, ArrowUpRight} from 'lucide-react';
+import {agendas, meetingSequence} from '../meeting-room/catalog.js';
+import {MeetingPoster} from '../meeting-room/MeetingPoster.jsx';
 import './meeting-showcase.css';
 
 const labels=Object.fromEntries(agendas);
@@ -16,12 +16,8 @@ export function MeetingShowcase({base='/',motion=true}){
     <div className="meeting-rail" ref={rail} tabIndex={0} role="region" aria-label="Browse all recorded meetings">
       {meetingSequence.map(meeting=><article className="meeting-preview" key={meeting.id}>
         <a href={`${base}studio/?meeting=${meeting.id}`} aria-label={`Watch ${meeting.title}`}>
-          <div className="meeting-preview-art">
-            <span className="meeting-preview-cast" aria-hidden="true">{meetingPortraits(meeting).map(person=><img src={`${base}${person.url.slice(1)}`} key={person.id} alt="" loading="lazy" decoding="async"/>)}</span>
-            <span className="meeting-preview-play"><Play fill="currentColor" aria-hidden="true"/></span>
-            <span className="meeting-preview-time">{timeLabel(meeting.duration)}</span>
-          </div>
-          <div className="meeting-preview-copy"><p>{labels[meeting.agenda]} / Take {meeting.variant+1}</p><h3>{meeting.title}</h3><span>Watch meeting <ArrowUpRight aria-hidden="true"/></span></div>
+          <MeetingPoster meeting={meeting} base={base}/>
+          <div className="meeting-preview-copy"><p>{labels[meeting.agenda]} / Take {meeting.variant+1}</p><h3>{meeting.title}</h3></div>
         </a>
       </article>)}
     </div>
