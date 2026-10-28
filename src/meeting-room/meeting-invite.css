@@ -9,3 +9,21 @@
 @media(prefers-reduced-motion:reduce){.mr-page .mr-invite-float{transition:none}}
 
 @media(max-width:700px){.mr-page .mr-invite-float{position:sticky;top:12px;bottom:auto;right:auto;width:max-content;margin:8px 16px 16px auto}}
+/* A single hand-drawn circle keeps sharing playful without changing the controls. */
+.mr-invite-label,.mr-invite .lip-button-label{position:relative;display:inline-block;isolation:isolate}
+.mr-page .invite-oval{position:absolute;left:-10%;top:-35%;width:120%;height:170%;fill:none;stroke:currentColor;stroke-width:1.7;pointer-events:none;overflow:visible}
+.invite-oval path{stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset .4s ease}
+.mr-page :is(.mr-tool-invite,.mr-invite-float,.lip-button):is(:hover,:focus-visible) .invite-oval path{stroke-dashoffset:0}
+.mr-page .mr-tool-invite{font-weight:600;padding-inline:14px;transition:color .2s,background .2s}
+.mr-page .mr-tool-invite:is(:hover,:focus-visible){color:#fff16b;background:#fff16b0b}
+.mr-invite .lip-button-label{padding-inline:5px}.mr-invite .lip-button .invite-oval{stroke:#fff16b;stroke-width:1.5;opacity:.9}
+.mr-invite-channel{font:9px/1.5 C2Mono,monospace;letter-spacing:.05em;color:#53616b;margin:0 0 12px}
+.mr-invite.mr-invite--ticket .mr-invite-cover{border-radius:8px;margin:0 0 12px}
+.mr-invite-caption summary{font-size:12px;cursor:pointer;padding:8px 0}.mr-invite-caption label{margin-top:8px}
+.mr-invite-linkedin .lip{margin:12px 0 0}
+.mr-invite-other{border-top:1px solid #172c3b25;margin:24px 0 14px;padding-top:20px;font-size:13px;color:#51616e}
+.mr-invite.mr-invite--ticket .lip-audience select{background:#fff;color:#172c3b;border:1px solid #b8c1c7;color-scheme:light}
+.mr-invite.mr-invite--ticket .lip-audience option{background:white;color:#172c3b}
+.mr-invite.mr-invite--ticket :is(.lip-cancel,.lip-account button){color:#51616e}
+.mr-invite.mr-invite--ticket .lip-error{color:#9b3325}.mr-invite.mr-invite--ticket .lip-success{color:#176345}
+@media(prefers-reduced-motion:reduce){.invite-oval path,.mr-page .mr-tool-invite{transition:none}}

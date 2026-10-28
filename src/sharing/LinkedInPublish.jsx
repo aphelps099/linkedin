@@ -1,6 +1,7 @@
 import React,{useEffect,useRef,useState} from 'react';
 import {Linkedin,LoaderCircle,ExternalLink} from 'lucide-react';
 import './linkedin-publish.css';
+import {InviteOval} from '../brand/InviteOval.jsx';
 
 async function request(path,options={}){
   const response=await fetch(path,{credentials:'same-origin',signal:AbortSignal.timeout(120000),...options});
@@ -9,7 +10,7 @@ async function request(path,options={}){
   return data;
 }
 const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-export function LinkedInPublish({file,getFile,mediaKey,title,caption,disabled=false,onBusyChange}){
+export function LinkedInPublish({file,getFile,mediaKey,title,caption,disabled=false,onBusyChange,playful=false}){
   const [account,setAccount]=useState(null),[busy,setBusy]=useState(false),[stage,setStage]=useState(''),[error,setError]=useState(''),[result,setResult]=useState(null),[visibility,setVisibility]=useState('PUBLIC');
   const alive=useRef(true),running=useRef(false),popup=useRef(null),prepared=useRef(null),cancelConnection=useRef(false);
   const refresh=async()=>{const value=await request('/api/auth/linkedin/status');if(alive.current)setAccount(value);return value;};
@@ -81,7 +82,7 @@ export function LinkedInPublish({file,getFile,mediaKey,title,caption,disabled=fa
     {result?<><p className="lip-success" role="status">Your post is live. Considerable visibility.</p><a className="lip-button" href={result.url} target="_blank" rel="noopener noreferrer">View your post <ExternalLink size={18}/></a></>:<>
       {account?.connected?<div className="lip-account"><span>Posting as <strong>{account.name}</strong></span><button type="button" disabled={busy} onClick={disconnect}>Disconnect</button></div>:<p className="lip-note">Connect once. Publish your media and caption here. Nothing posts until you choose Publish.</p>}
       {account?.connected&&<label className="lip-audience">Audience<select value={visibility} disabled={busy} onChange={e=>setVisibility(e.target.value)}><option value="PUBLIC">Anyone on LinkedIn</option><option value="CONNECTIONS">Connections only</option></select></label>}
-      <button className="lip-button" type="button" onClick={account?.connected?publish:account?connect:()=>refresh().catch(e=>setError(e.message))} disabled={busy||account?.connected&&(disabled||!caption.trim())}>{busy?stage:account?.connected?'Publish to LinkedIn':account?'Connect LinkedIn':'Check LinkedIn connection'}{busy?<LoaderCircle className="lip-spinner" size={19}/>:<Linkedin size={19}/>}</button>
+      <button className="lip-button" type="button" onClick={account?.connected?publish:account?connect:()=>refresh().catch(e=>setError(e.message))} disabled={busy||account?.connected&&(disabled||!caption.trim())}><span className={playful?'lip-button-label':undefined}>{busy?stage:account?.connected?'Publish to LinkedIn':account?'Connect LinkedIn':'Check LinkedIn connection'}{playful&&!busy&&<InviteOval/>}</span>{busy?<LoaderCircle className="lip-spinner" size={19}/>:<Linkedin size={19}/>}</button>
       <p className="lip-note lip-small">{account?.connected?'Publishes the media shown above and your caption to your personal feed.':'Uses your profile name and posting permission. No email access requested.'} <a href="/privacy/" target="_blank" rel="noopener noreferrer">Privacy</a></p>
     </>}
     {busy&&stage==='Connecting…'&&<button className="lip-cancel" type="button" onClick={()=>{cancelConnection.current=true;popup.current?.close();}}>Cancel connection</button>}
