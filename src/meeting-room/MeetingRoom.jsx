@@ -1,5 +1,5 @@
 import React,{useEffect,useRef,useState} from 'react';
-import {Play,Pause,SkipForward,Video,VideoOff,Volume2,VolumeX,Captions,SlidersHorizontal,Users,Grid2X2,Maximize2,Minimize2,LoaderCircle,RotateCcw,ChevronRight,ChevronDown, UserPlus, X} from 'lucide-react';
+import {Play,Pause,SkipForward,Video,VideoOff,Volume2,VolumeX,Captions,SlidersHorizontal,Users,Grid2X2,Maximize2,Minimize2,LoaderCircle,RotateCcw,ChevronRight,ChevronDown, UserPlus, Mail, X} from 'lucide-react';
 import {ConceptHeader} from '../home-2/ConceptHeader.jsx';
 import {ConceptFooter} from '../home-2/ConceptFooter.jsx';
 import {agendas,cast,meetings,meetingSequence,meetingFromSearch,nextMeeting,timeLabel,cueAt} from './catalog.js';
@@ -56,6 +56,7 @@ export default function MeetingRoom(){
   const number=meetingSequence.findIndex(item=>item.id===meeting.id)+1;
   return <div className="c2-home mr-page">
     <ConceptHeader active="Studio" homeSectionBase="/" theme="dark"/>
+    <button type="button" className="mr-invite-float" onClick={()=>inviteToMeeting(meeting)} aria-label="Invite a plus one — share this meeting" aria-haspopup="dialog"><span><Mail aria-hidden="true"/></span><span><strong>INVITE A +1</strong><small>Share this meeting</small></span></button>
     <main>
       <section className={`mr-room${state.playing?' is-playing':''}`} ref={room} aria-label="LinkedIn Beats meeting studio">
         <div className="mr-windowbar"><span className="mr-window-brand"><Video aria-hidden="true"/>LinkedIn Beats Meeting</span><h1>{meeting.title}</h1><span className="mr-window-status"><span className={`mr-dot${state.playing?' is-live':''}`} aria-hidden="true"/>{left?'Meeting adjourned':state.loading?'Connecting…':state.playing?'In progress':finished?'Meeting complete':'Hosted by Synergy'}</span></div>
@@ -94,6 +95,7 @@ export default function MeetingRoom(){
         </details>
       </section>
     </main>
+
     {invitation&&<MeetingInvite key={invitation.id} meeting={invitation} onClose={()=>setInvitation(null)}/>}
     <ConceptFooter variant="dark"/>
   </div>;

@@ -1,4 +1,6 @@
 import { defineConfig } from 'vite';
+import express from 'express';
+import {createMeetingShareRouter} from './server/meeting-share.js';
 import react from '@vitejs/plugin-react';
 import { postBeatApi } from './server/post-beat-dev.js';
 import { certificateSharePreview } from './server/certificate-share.js';
@@ -87,7 +89,7 @@ function localCheckoutApi(){
 
 export default defineConfig({
   server: {allowedHosts:['terminal.local'], proxy:{'/api/cutting-room/media':{target:'https://linkedinbeats.com',changeOrigin:true,followRedirects:true}}},
-  plugins: [react(), optimizerPreview(), localVoiceApi(), localCheckoutApi(), postBeatApi(), beatSharePreview(), certificateSharePreview()],
+  plugins: [react(), {name:'meeting-cover-preview',configureServer(server){const app=express();app.use(createMeetingShareRouter({template:'studio/index.html',assets:'public'}));server.middlewares.use((req,res,next)=>req.url?.startsWith('/api/meeting/cover/')?app(req,res,next):next());}}, optimizerPreview(), localVoiceApi(), localCheckoutApi(), postBeatApi(), beatSharePreview(), certificateSharePreview()],
   // Relative base so the built index.html works when served from a
   // GitHub Pages project path (https://<user>.github.io/linkedin/).
   base: './',
