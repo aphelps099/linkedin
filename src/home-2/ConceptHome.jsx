@@ -48,7 +48,7 @@ const Portrait = memo(function Portrait({base, index, tone, active, playing, loa
   </button>;
 });
 
-export default function ConceptHome({playerFactory=createPortraitRadio, variant='portraits', assetBase, BeatsComponent=DevelopmentRadio, CampaignsComponent=Campaigns, certificateFan}) {
+export default function ConceptHome({playerFactory=createPortraitRadio, variant='portraits', assetBase, showStore=true, BeatsComponent=DevelopmentRadio, CampaignsComponent=Campaigns, certificateFan}) {
   const experiment=['laptop','screenless','conversation'].includes(variant);
   const typePreview=new URLSearchParams(window.location.search).get('type');
   const previewClass=['editorial','founders'].includes(typePreview)?` c2-type-editorial${typePreview==='founders'?' c2-type-founders-nav':''}`:'';
@@ -64,7 +64,7 @@ export default function ConceptHome({playerFactory=createPortraitRadio, variant=
   const activeTone = visiblePortraits.find(p=>p.index===state.index)?.tone || 'paper';
   useEffect(() => {
     // Keep earlier homepage section links useful after promoting this design.
-    const anchors = {'#listen':'c2-player', '#store':'c2-store', '#about':'c2-footer'};
+    const anchors = {'#listen':'c2-player', ...(showStore?{'#store':'c2-store'}:{}), '#about':'c2-footer'};
     const followAnchor = (initial=false) => {
       const hash = window.location.hash;
       const target = anchors[hash] || (initial && ['#c2-title','#c2-player','#c2-store','#c2-tools','#c2-footer','#newsletter','#c2-dispatch'].includes(hash) ? hash.slice(1) : null);
@@ -76,7 +76,7 @@ export default function ConceptHome({playerFactory=createPortraitRadio, variant=
     const onHashChange = () => followAnchor();
     window.addEventListener('hashchange',onHashChange);
     return () => window.removeEventListener('hashchange',onHashChange);
-  }, []);
+  }, [showStore]);
   useEffect(() => {
     const player = playerFactory({initialIndex:FEATURED_TRACK,phraseBase:`${base}phrases/`, onState:setState});
     radio.current = player;
@@ -111,7 +111,7 @@ export default function ConceptHome({playerFactory=createPortraitRadio, variant=
     <a className="c2-skip" href="#c2-player">Skip to music player</a>
     <ConceptHeader base={base} overlay onRadio={()=>radio.current?.toggle()} playing={state.playing} loading={state.loading} radioError={state.error}/>
     <main>
-      <HeroVideo headline={variant==='conversation'} musicPlaying={state.playing} musicLoading={state.loading} musicError={state.error} onMusicToggle={()=>radio.current?.toggle()}/>
+      <HeroVideo base={base} headline={variant==='conversation'} musicPlaying={state.playing} musicLoading={state.loading} musicError={state.error} onMusicToggle={()=>radio.current?.toggle()}/>
       <section className="c2-hero" aria-labelledby="c2-title">
         {variant==='conversation'?<ProfileConversation motion={motion} base={base} certificateFan={certificateFan}/>:experiment?<FeedScene variant={variant} motion={motion} base={base}/>:<div className="c2-container c2-hero-inner">
           <div className="c2-hero-copy">
@@ -150,7 +150,7 @@ export default function ConceptHome({playerFactory=createPortraitRadio, variant=
       {variant==='conversation'&&<>
         <BeatsComponent base={base} state={state} track={track} seconds={seconds} motion={motion} onToggle={()=>radio.current?.toggle()} onSkip={skip} onSeek={seek} onSelect={stableChoose}/>
       </>}
-      <section id="c2-store" className="c2-store" aria-labelledby="c2-store-title">
+      {showStore&&<section id="c2-store" className="c2-store" aria-labelledby="c2-store-title">
         <div className="c2-container">
           <div className="c2-section-head">
             <p className="c2-eyebrow">Store</p>
@@ -165,7 +165,7 @@ export default function ConceptHome({playerFactory=createPortraitRadio, variant=
             <a className="c2-collection-link" href={`${base}store/`}><span>Explore the collection</span><svg aria-hidden="true" viewBox="0 0 14 14" fill="currentColor"><path d="M4 0h10v10h-2V4h-2v2H8v2H6v2H4v2H2v2H0v-2h2v-2h2V8h2V6h2V4h2V2H4Z"/></svg></a>
           </div>
         </div>
-      </section>
+      </section>}
       <CampaignsComponent base={base} state={state} track={track} seconds={seconds} motion={motion} onToggle={()=>radio.current?.toggle()} onSkip={skip} onSeek={seek} onSelect={stableChoose}/>
       <DispatchCarousel base={base} motion={motion} state={state} onPlayTrack={index=>radio.current?.play(index)} onToggle={()=>radio.current?.toggle()} onSeek={seek} onPause={()=>{const current=radio.current?.getState();if(current?.playing||current?.loading)radio.current.toggle();}}/>
     </main>
