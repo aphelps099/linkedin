@@ -1,8 +1,10 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {createPortal} from 'react-dom';
-import {ArrowLeft, ArrowRight, ArrowUpRight, X} from 'lucide-react';
+import {ArrowLeft, ArrowRight, ArrowUpRight, Share2, X} from 'lucide-react';
 import {ShowcaseArtwork} from './ShowcaseArtwork.jsx';
 import {showcaseSelection, filmSource} from './showcase-selection.js';
+import {ShareShowcase} from './ShareShowcase.jsx';
+import {sharedFilm} from './showcase-sharing.js';
 import './meeting-showcase.css';
 
 function FilmPlayer({item,onClose}){
@@ -26,7 +28,13 @@ function FilmPlayer({item,onClose}){
 }
 export function MeetingShowcase({base='/',motion=true}){
   const rail=useRef(null);
-  const [film,setFilm]=useState(null);
+  const [film,setFilm]=useState(()=>typeof window==='undefined'?null:sharedFilm(window.location.search));
+  const [sharing,setSharing]=useState(null);
+  const closeFilm=()=>{
+    setFilm(null);
+    if(sharedFilm(window.location.search)){const url=new URL(window.location.href);url.searchParams.delete('film');window.history.replaceState(null,'',`${url.pathname}${url.search}${url.hash}`);}
+  };
+  const watch=(event,item)=>{if(item.film&&!event.metaKey&&!event.ctrlKey&&!event.shiftKey&&!event.altKey&&event.button===0){event.preventDefault();setFilm(item);}};
   const move=direction=>rail.current?.scrollBy({left:direction*rail.current.clientWidth*.8,behavior:motion?'smooth':'instant'});
   return <section className="meeting-showcase" id="c2-dispatch" aria-labelledby="meetings-heading">
     <header className="meeting-showcase-heading">
@@ -35,13 +43,17 @@ export function MeetingShowcase({base='/',motion=true}){
     </header>
     <div className="meeting-rail" ref={rail} tabIndex={0} role="region" aria-label="Browse meetings and films">
       {showcaseSelection.map(item=><article className="meeting-preview" key={item.id}>
-        <a href={item.film?filmSource(item.film):`${base}studio/?meeting=${item.meeting}`} aria-label={`Watch ${item.title}${item.duration?`, ${item.duration}`:''}`} onClick={event=>{if(item.film&&!event.metaKey&&!event.ctrlKey&&!event.shiftKey&&!event.altKey&&event.button===0){event.preventDefault();setFilm(item);}}}>
+        <a className="meeting-art-link" href={item.film?filmSource(item.film):`${base}studio/?meeting=${item.meeting}`} aria-label={`Watch ${item.title}${item.duration?`, ${item.duration}`:''}`} onClick={event=>watch(event,item)}>
           <ShowcaseArtwork item={item} base={base}/>
-          <div className="meeting-preview-copy"><div><h3>{item.title}</h3>{item.film&&<span className="meeting-watch">Watch film</span>}</div>{item.duration?<span className="meeting-duration">{item.duration}</span>:<ArrowUpRight aria-hidden="true"/>}</div>
         </a>
+        <div className="meeting-preview-copy">
+          <a className="meeting-title-link" href={item.film?filmSource(item.film):`${base}studio/?meeting=${item.meeting}`} onClick={event=>watch(event,item)}><h3>{item.title}</h3>{item.film&&<span className="meeting-watch">Watch film</span>}</a>
+          <div className="meeting-card-actions">{item.duration&&<span className="meeting-duration">{item.duration}</span>}<button className="meeting-share-button" type="button" aria-label={`Share ${item.title}`} aria-haspopup="dialog" onClick={()=>setSharing(item)}><Share2 aria-hidden="true"/><span>Share</span></button></div>
+        </div>
       </article>)}
     </div>
     <div className="meeting-showcase-bottom"><a href={`${base}archives/`}>Press, posts & other humble announcements <span>Visit the archives <ArrowUpRight aria-hidden="true"/></span></a><div aria-label="Carousel controls"><button type="button" onClick={()=>move(-1)} aria-label="Previous cards"><ArrowLeft aria-hidden="true"/></button><button type="button" onClick={()=>move(1)} aria-label="Next cards"><ArrowRight aria-hidden="true"/></button></div></div>
-    {film&&<FilmPlayer key={film.id} item={film} onClose={()=>setFilm(null)}/>}
+    {sharing&&<ShareShowcase key={sharing.id} item={sharing} onClose={()=>setSharing(null)}/>}
+    {film&&<FilmPlayer key={film.id} item={film} onClose={closeFilm}/>}
   </section>;
 }

@@ -13,6 +13,7 @@ import { createBeatShareRouter } from './beat-share.js';
 import { createCuttingRoomRouter } from './cutting-room.js';
 import { createBeatVideoRouter, beatVideoStore } from './beat-video-service.js';
 import { createMeetingShareRouter } from './meeting-share.js';
+import { createShowcaseShareRouter } from './showcase-share.js';
 import { createLinkedInRouter } from './linkedin.js';
 
 const app = express();
@@ -147,6 +148,7 @@ app.use(createBeatShareRouter({template:path.join(dist,'optimizer/index.html'),b
 app.get('/optimizer', (_req,res)=>res.set('Cache-Control','no-cache').sendFile(path.join(dist,'optimizer/index.html')));
 
 app.use(createMeetingShareRouter({template:path.join(dist,'studio/index.html'),assets:dist}));
+app.use(createShowcaseShareRouter({template:path.join(dist,'index.html')}));
 
 app.use(express.static(dist, {
   extensions:['html'],

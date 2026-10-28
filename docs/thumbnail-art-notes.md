@@ -169,3 +169,7 @@ The approved Authenticity thumbnail links to the existing 90-second cut. This re
 ### Release checks
 
 Production build passed. Browser review confirmed the approved composition and Hoves at desktop and 390px mobile widths, no page overflow, working carousel movement, uniform measured frames (11.4685px on every edge at 358.4px art width; 10.2335px on every edge at 319.8px), real film loading/playback, and Escape closing with focus returned to the originating card. No microcopy was added to artwork.
+
+## Sharing controls — 28 October 2026
+
+Each carousel card has a small Share pill in its white caption area. Keep sharing controls out of the artwork. The chooser offers text message, email, Facebook, X/Twitter, copy link, and the native device share sheet when supported. Meeting links address their Studio episode. Film links use a stable homepage `film` query parameter, open the corresponding inline player, and receive film-specific server-rendered social metadata. Do not share an expiring media-storage URL or the unlisted production-library URL.
