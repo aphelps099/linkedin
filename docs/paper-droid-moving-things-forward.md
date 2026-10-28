@@ -47,7 +47,7 @@ Once I’ve recharged.
 
 Local project: `/Users/ap457/Projects/linkedinbeats-meeting-art/optimizing/paper-droid-song/`.
 Review: `http://127.0.0.1:8852/paper-droid-song/`.
-Master: `output/moving-things-forward.mp4`.
+Current master: `output/moving-things-forward-beeps.mp4`. Earlier no-beep mix preserved as `output/moving-things-forward.mp4`.
 The approved printer film and its sound comparison remain unchanged. This corrected new film is a local review, not a public deployment.
 
 ## Shot review
@@ -59,3 +59,7 @@ The first generated arrival shot stretched the tow bar as the droid and trolley 
 The corrected master is 60.00 seconds at 1280×720 / 24 fps, with seven cuts and no repeated or reversed source intervals. Full file decode succeeded. Measured decoded audio is −15.72 LUFS and −1.46 dBTP. Browser playback, refrain seeking, duration and media readiness were checked. This is technical verification, not a subjective listening review. All spoken lines fit their assigned bars without overlap.
 
 Video tasks: original-reference pass `c144debf-1d53-4b46-aff4-9b485f226506`; low tracking view `d9568a22-04e3-4a66-a1b1-6596a9e3c5c1`; hitch `c4fabd2b-84e2-464c-89dc-be03c5b67ef4`; rejected arrival `2bcfd778-6735-4b88-8975-16dd16df6abd`; replacement parked ending `ffaeb00f-3497-4208-951e-42fb7ce0e270`. Runway reported 730 credits used for these five generations. The prior original score was reused; no additional music generation was needed.
+
+## Robotic beep revision
+
+User requested robotic beeps in the song. Added 21 short, original synthesized FM tones arranged as machine acknowledgements: introduction, selected gaps between spoken lines, paired responses to “Moving things forward,” and a final low pair after “Once I’ve recharged.” Tones use 5 ms attacks and 18 ms releases to avoid clicks, modest metallic harmonics, near-center placement and no long cartoon glissandos. Every tone is outside the spoken voice envelopes with at least 60 ms separation. The separate beep stem is `output/beeps-60s.wav`; the revised audio is `output/mix-beeps-60s.wav`. `add_beeps.py` reproducibly builds the revision from the existing voice and score stems. The video stream is copied unchanged and hash-verified. No new Runway generation was needed.
