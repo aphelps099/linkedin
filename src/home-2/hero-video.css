@@ -38,17 +38,22 @@
 @media(max-height:560px) and (min-width:701px){.c2-film--headline{min-height:480px}.c2-film-copy h1{font-size:80px}}
 @media(max-width:700px){.c2-home .c2-film-make{margin-top:24px;min-height:52px;padding:15px 21px;font-size:14px}}
 @media(prefers-reduced-motion:reduce){.c2-home .c2-film-make{transition:none;transform:none}}
-.c2-film-controls{flex-wrap:wrap;justify-content:flex-end}
+.c2-film-controls{flex-wrap:wrap;justify-content:flex-end;min-width:0}
 .c2-film-audio-error{font-size:13px;flex-basis:100%;text-align:right}
 
-/* A sound sticker with a real playback meter, shared with the radio state. */
-.c2-home .c2-film-controls .c2-film-sound{gap:10px;min-height:52px;padding:8px 16px 8px 8px;border:2px solid #11110e;border-radius:999px;background:#ffb8dc;color:#11110e;box-shadow:3px 4px 0 #11110e;backdrop-filter:none;font:500 12px/1.2 var(--lb-font-nav),monospace;letter-spacing:.025em;transform:rotate(-3deg);transition:transform .2s,box-shadow .2s,background .2s}
-.c2-home .c2-film-controls .c2-film-sound:is(:hover,:focus-visible){background:#ffcee7;transform:translateY(-3px) rotate(2deg);box-shadow:4px 7px 0 #11110e}
-.c2-home .c2-film-controls .c2-film-sound:active{transform:translate(2px,3px) rotate(0);box-shadow:1px 1px 0 #11110e}
-.c2-home .c2-film-controls .c2-film-sound[aria-pressed=true]{background:#fff36a}
-.c2-sound-badge{display:grid;place-items:center;width:32px;height:32px;flex:none;background:#11110e;color:#ffb8dc;border-radius:50%}
-.c2-home .c2-sound-badge svg{width:17px;height:17px;filter:none}
-.c2-film-sound[aria-pressed=true] .c2-sound-badge{color:#fff36a}
+/* A compact sound icon expands leftward without moving its hit target. */
+.c2-home .c2-film-controls .c2-film-sound{flex-direction:row-reverse;gap:0;width:44px;height:44px;min-height:44px;padding:11px;border:1px solid #ffffff80;border-radius:999px;background:#11110e26;color:#fff;box-shadow:none;backdrop-filter:blur(12px);font:500 12px/1.2 var(--lb-font-nav),monospace;letter-spacing:.025em;transform:none;transition:width .24s ease,gap .24s ease,background .2s,color .2s,border-color .2s}
+.c2-sound-badge{display:grid;place-items:center;width:20px;height:20px;flex:none;color:inherit}
+.c2-home .c2-sound-badge svg{width:20px;height:20px;filter:none}
+.c2-sound-details{display:inline-flex;align-items:center;justify-content:flex-start;gap:10px;max-width:0;opacity:0;overflow:hidden;white-space:nowrap;transition:max-width .24s ease,opacity .16s}
+.c2-home .c2-film-controls .c2-film-sound:focus-visible{width:176px;gap:10px;background:#ffb8dc;color:#11110e;border-color:#ffb8dc}
+.c2-film-sound:focus-visible .c2-sound-details{max-width:120px;opacity:1}
+.c2-home .c2-film-controls .c2-film-sound[aria-pressed=true]:focus-visible{background:#fff36a;border-color:#fff36a}
+@media(hover:hover){
+  .c2-home .c2-film-controls .c2-film-sound:hover{width:176px;gap:10px;background:#ffb8dc;color:#11110e;border-color:#ffb8dc}
+  .c2-film-sound:hover .c2-sound-details{max-width:120px;opacity:1}
+  .c2-home .c2-film-controls .c2-film-sound[aria-pressed=true]:hover{background:#fff36a;border-color:#fff36a}
+}
 .c2-sound-meter{display:flex;align-items:center;gap:3px;width:21px;height:21px}
 .c2-sound-meter i{display:block;width:3px;height:5px;border-radius:2px;background:currentColor;transition:height .2s}
 .c2-film-sound[data-playing=true] .c2-sound-meter i{height:18px;animation:c2-sound-bounce .65s ease-in-out infinite alternate}
@@ -58,5 +63,5 @@
 .c2-film-sound[data-loading=true] .c2-sound-meter{animation:c2-sound-loading .7s ease-in-out infinite alternate}
 @keyframes c2-sound-bounce{from{transform:scaleY(.25)}to{transform:scaleY(1)}}
 @keyframes c2-sound-loading{to{opacity:.3}}
-@media(max-width:400px){.c2-home .c2-film-controls .c2-film-sound{gap:7px;padding-right:11px;font-size:11px}.c2-film-bottom{gap:10px}}
-@media(prefers-reduced-motion:reduce){.c2-home .c2-film-controls .c2-film-sound{transition:none;transform:none}.c2-sound-meter,.c2-sound-meter i{animation:none!important;transition:none}}
+@media(max-width:400px){.c2-home .c2-film-controls .c2-film-sound{font-size:11px}.c2-film-bottom{gap:8px}.c2-film-next{flex-shrink:0}}
+@media(prefers-reduced-motion:reduce){.c2-home .c2-film-controls .c2-film-sound{transition:none;transform:none}.c2-sound-details,.c2-sound-meter,.c2-sound-meter i{animation:none!important;transition:none}}
