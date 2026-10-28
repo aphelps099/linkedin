@@ -1,11 +1,12 @@
 import React from 'react';
-import { ArrowUpRight, ArrowRight, Copy, Check, Pencil, ChevronDown, Download, Flame, Share2, FileCheck2 } from 'lucide-react';
+import { ArrowUpRight, ArrowRight, Copy, Check, Pencil, ChevronDown, Download, Flame, Share2, Pause, Play } from 'lucide-react';
 import { Header } from '../brand/Header.jsx';
 import { Footer } from '../brand/Footer.jsx';
 import { KINDS, roastIt } from './roastEngine.js';
 import { PERSONAS, INTENSITIES } from './personas.js';
 import { drawRoastCard, downloadCanvas } from './card.js';
 import { newSeed } from '../lessons/generator.js';
+import { RoastFlames } from './RoastFlames.jsx';
 import { MarkedDocument } from './MarkedDocument.jsx';
 import { EDITORIAL_NOTES, verdictFor } from './editorial.js';
 import '../lessons/lessons.css';
@@ -14,6 +15,7 @@ import './roast.css';
 
 const MAX_LENGTH = 20000;
 const HEAT = ['Gentle', 'Honest', 'Brutal', 'HR violation'];
+const HEAT_NOTES = ['Lightly toasted.', 'A little hard to swallow.', 'Well done. Emotionally rare.', 'HR has left the chat.'];
 const EXAMPLES = {
   post: 'Humbled and honored to announce that I have successfully completed another Monday.\n\nThis journey has taught me that leadership isn’t a title. It’s a mindset.\n\nAgree?',
   headline: 'Visionary | Top Voice | ex-Google | Product designer | Speaker | Helping teams build better tools',
@@ -61,6 +63,9 @@ export default function Roast() {
   const [copyError, setCopyError] = React.useState(false);
   const [notice, setNotice] = React.useState('');
   const [exporting, setExporting] = React.useState(false);
+  const [flames, setFlames] = React.useState(true);
+  const [roastCount, setRoastCount] = React.useState(0);
+  const [reducedMotion, setReducedMotion] = React.useState(false);
   const resultRef = React.useRef(null);
   const copyTimer = React.useRef(null);
   const result = !editing ? review?.result : null;
@@ -81,11 +86,19 @@ export default function Roast() {
   }, []);
   React.useEffect(() => () => window.clearTimeout(copyTimer.current), []);
 
+  React.useEffect(() => {
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => setReducedMotion(media.matches);
+    update(); media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, []);
+
   const runRoast = ({ text = draft, nextKind = kind, voice = personaId, heat = intensity, keepRewrite = false, focus = false } = {}) => {
     if (!text.trim() || text.length > MAX_LENGTH) return;
     const next = roastIt({ kind: nextKind, text, personaId: voice, intensity: heat, seed: newSeed() });
     setDraft(text);
     setReview({ text, kind: nextKind, result: next });
+    setRoastCount(count => count + 1);
     setEditing(false);
     if (!keepRewrite) setRewrite(next.useful);
     setActiveFinding(0);
@@ -188,7 +201,7 @@ export default function Roast() {
     <Header base="../" active="Roast" theme="dark" />
     <main id="main">
       <div className="el-toolbar rp-toolbar">
-        <div className="rp-brand"><Flame aria-hidden="true"/><div><span>FORM RM-01</span><h1>Roast my post.</h1></div></div>
+        <div className="rp-brand"><Flame aria-hidden="true"/><div><span>THE ROAST ROOM / RM-01</span><h1>Roast my post.</h1></div></div>
         <div className="el-categories" role="group" aria-label="What are we roasting?">
           {KINDS.map(k => <button type="button" key={k.id} aria-pressed={kind === k.id} onClick={() => { setKind(k.id); setReview(null); setEditing(true); setRewrite(''); setNotice('Choose an example or paste your text.'); }}>{KIND_LABELS[k.id]}</button>)}
         </div>
@@ -214,16 +227,16 @@ export default function Roast() {
             </div>
           </div>
           <div className="rp-controls">
-            <fieldset className="rp-heat"><legend>How honest?</legend><div className="el-choice-pills">{HEAT.map((label, index) => <button key={label} type="button" aria-pressed={intensity === index + 1} onClick={() => changeHeat(index + 1)}>{label}</button>)}</div></fieldset>
+            <fieldset className="rp-heat"><legend>Turn up the heat.</legend><div className="el-choice-pills">{HEAT.map((label, index) => <button key={label} type="button" aria-pressed={intensity === index + 1} onClick={() => changeHeat(index + 1)}><Flame size={14} aria-hidden="true"/>{label}</button>)}</div></fieldset>
             <label className="rp-voice" htmlFor="roast-inspector">Your reviewer<select id="roast-inspector" value={personaId} onChange={e => changeVoice(e.target.value)}>{PERSONAS.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></label>
-            <button type="button" className="rp-primary" data-testid="button-roast" disabled={!valid} onClick={() => runRoast({ focus: true, keepRewrite: Boolean(result) })}><Flame size={20} aria-hidden="true"/>{result ? 'Roast again' : 'Roast my ' + (kind === 'about' ? 'bio' : kind)}</button>
+            <button type="button" className="rp-primary rp-ignite-button" data-testid="button-roast" disabled={!valid} onClick={() => runRoast({ focus: true, keepRewrite: Boolean(result) })}><Flame size={20} aria-hidden="true"/>{result ? 'Roast again' : 'Roast my ' + (kind === 'about' ? 'bio' : kind)}</button>
           </div>
         </section>
         <section className="el-output rp-result" aria-labelledby="roast-result-title">
-          <div className="el-row-heading"><h2 id="roast-result-title" ref={resultRef} tabIndex={-1}>Your professional diagnosis.</h2><p>Constructive. Mostly.</p></div>
+          <div className="el-row-heading rp-result-heading"><div><h2 id="roast-result-title" ref={resultRef} tabIndex={-1}>{result ? 'Freshly roasted.' : 'Your professional diagnosis.'}</h2><p>{result ? HEAT_NOTES[intensity - 1] : 'Constructive. Mostly.'}</p></div>{result && !reducedMotion && <button type="button" className="rp-flame-toggle" aria-pressed={flames} onClick={()=>setFlames(value=>!value)} aria-label={flames?'Pause flame animation':'Play flame animation'}>{flames?<Pause size={15} aria-hidden="true"/>:<Play size={15} aria-hidden="true"/>}{flames?'Flames on':'Flames paused'}</button>}</div>
           {result ? <>
             <div className="rp-diagnosis">
-              <div className="rp-score"><span>Thought Leadership Index</span><div><strong>{result.score.index}</strong><span>/ 100</span></div><b>{result.score.rank}</b><small>A satirical writing score.</small></div>
+              <div className="rp-score"><span>Thought Leadership Index</span><div><strong>{result.score.index}</strong><span>/ 100</span></div><b>{result.score.rank}</b><small>A satirical writing score.</small><RoastFlames key={roastCount} heat={intensity} animate={flames&&!reducedMotion}/><span className="rp-heat-stamp">{HEAT[intensity-1]} / SERVED HOT</span></div>
               <div className="rp-verdict"><span className="rp-eyebrow">REVIEW COMPLETE</span><h3>{verdict[0]}</h3><p>{verdict[1]}</p><span className="rp-inspector">{PERSONAS.find(p => p.id === personaId).name}</span></div>
             </div>
             <div className="rp-share-actions"><button type="button" className="rp-primary" disabled={exporting} onClick={download}><Download size={17} aria-hidden="true"/>{exporting ? 'Preparing receipt…' : 'Download receipt'}</button><button type="button" className="rp-secondary" disabled={exporting} onClick={share}><Share2 size={17} aria-hidden="true"/>Share receipt</button><button type="button" className="rp-text-button" onClick={copyVerdict}><Copy size={16} aria-hidden="true"/>Copy verdict</button></div>
@@ -241,7 +254,7 @@ export default function Roast() {
               </div>
               <div className="rp-cleanup"><label htmlFor="roast-rewrite">A little less LinkedIn.</label><AutoTextarea id="roast-rewrite" data-testid="text-clean-rewrite" className="rp-cleanup-input" value={rewrite} onChange={e => { setRewrite(e.target.value); setCopied(false); setCopyError(false); }} aria-describedby="roast-cleanup-hint"/><p className="rp-hint" id="roast-cleanup-hint">A first pass. Edit it to sound like you.</p><button className="rp-secondary" type="button" disabled={!rewrite.trim()} data-testid="button-copy-rewrite" onClick={copy}>{copied ? <Check size={17} aria-hidden="true"/> : <Copy size={17} aria-hidden="true"/>}{copied ? 'Copied' : 'Copy cleanup'}</button>{copyError && <p className="rp-hint">Your text is selected. Press ⌘C or Ctrl+C to copy it.</p>}<a className="rp-text-button" href="../optimizer">Give it the full LinkedIn treatment <ArrowUpRight size={16} aria-hidden="true"/></a></div>
             </div>
-          </> : <div className="rp-empty"><FileCheck2 aria-hidden="true"/><div><h3>{editing && review ? 'An amendment to the record.' : 'No findings. Yet.'}</h3><p>{editing && review ? 'Finish editing, then roast it again for an updated verdict.' : 'Submit your post above. We’ll return a score, annotated feedback, and a receipt worth circulating.'}</p></div><span>AWAITING SUBMISSION</span></div>}
+          </> : <div className="rp-empty"><Flame aria-hidden="true"/><div><h3>{editing && review ? 'An amendment to the record.' : 'Awaiting ignition.'}</h3><p>{editing && review ? 'Finish editing, then roast it again for an updated verdict.' : 'Submit your post above. We’ll return a score, annotated feedback, and a receipt worth circulating.'}</p></div><span>INSERT PERSONAL BRAND HERE</span></div>}
         </section>
       </div>
       <p className="rp-notice" role="status" aria-live="polite">{notice}</p>
