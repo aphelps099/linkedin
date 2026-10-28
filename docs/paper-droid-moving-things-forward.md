@@ -47,7 +47,7 @@ Once I’ve recharged.
 
 Local project: `/Users/ap457/Projects/linkedinbeats-meeting-art/optimizing/paper-droid-song/`.
 Review: `http://127.0.0.1:8852/paper-droid-song/`.
-Current master: `output/moving-things-forward-beeps.mp4`. Earlier no-beep mix preserved as `output/moving-things-forward.mp4`.
+Current master: `output/moving-things-forward-refined.mp4`. Earlier beep mix: `output/moving-things-forward-beeps.mp4`. Earlier no-beep mix preserved as `output/moving-things-forward.mp4`.
 The approved printer film and its sound comparison remain unchanged. This corrected new film is a local review, not a public deployment.
 
 ## Shot review
@@ -63,3 +63,13 @@ Video tasks: original-reference pass `c144debf-1d53-4b46-aff4-9b485f226506`; low
 ## Robotic beep revision
 
 User requested robotic beeps in the song. Added 21 short, original synthesized FM tones arranged as machine acknowledgements: introduction, selected gaps between spoken lines, paired responses to “Moving things forward,” and a final low pair after “Once I’ve recharged.” Tones use 5 ms attacks and 18 ms releases to avoid clicks, modest metallic harmonics, near-center placement and no long cartoon glissandos. Every tone is outside the spoken voice envelopes with at least 60 ms separation. The separate beep stem is `output/beeps-60s.wav`; the revised audio is `output/mix-beeps-60s.wav`. `add_beeps.py` reproducibly builds the revision from the existing voice and score stems. The video stream is copied unchanged and hash-verified. No new Runway generation was needed.
+
+## Requested polish: vocal clarity and undercarriage cleanup
+
+The user approved the concept, lyrics and video, requesting only 5–10% clearer voice and removal of the rotating white cloth/pad visible under the droid at 3–4 seconds. The robotic voice had no added echo or reverb in the existing mix; its hollow coloration was reduced with −2.2 dB at 480 Hz (Q 0.85) and +1.5 dB at 2.4 kHz (Q 0.8). Vocal stem RMS was then set to exactly 1.08 times the original. The original voice performance, wording and timing are retained. Score and beep stems are unchanged. Revised stem and mix: `output/robot-clear-60s.wav`, `output/mix-clear-beeps-60s.wav`; reproducible script: `clarify_voice.py`.
+
+The affected original ten-second source shot appears at 0–10 seconds and 25–30 seconds in the edit. The pad-removal repair is applied to both uses, with the same trims and speeds. The first repair darkened the pad instead of removing its geometry and was rejected (`cleanup/rejected-dark-disc.mp4`). The second keyframe removes the pad entirely, restoring carpet and normal small wheels. Repair tasks: rejected `ae4db943-c37c-406f-966f-778f3d5f2c07`; corrected `9faf466c-7c65-4e67-bb31-29a34df9161c`. The rest of the shot sequence is retained; previous masters remain available.
+
+Final compositing method: the second generated video removed too much of the droid, so it was used only as a clean carpet plate. `cleanup/composite_undercarriage.py` tracks the original blue belt and warm shell boundary frame by frame, and blends the clean carpet only inside a feathered underside matte with a soft contact shadow. The original droid, small casters, tow bar, trolley, people and background remain the base image. Neither full generative removal pass is used as the final shot. The revised sequence is assembled by `render_refined.py`; it retains the original cut list and uses the clearer voice mix with the same music and beeps.
+
+Refined master verification: full decode passes at 60.00 seconds, 1280×720 / 24 fps. Measured decoded audio is −15.76 LUFS and −1.39 dBTP. Original and refined edit-decision lists match exactly. Inspected repaired frames at 3.0, 3.5, 4.0 and 28.0 seconds, plus the tracked source sequence. Browser playback and seeking verified against `moving-things-forward-refined.mp4`. Voice-clarity measurements are in `output/voice-clarity.json`; export checks are in `output/verification-refined.json`. Earlier masters are preserved.
