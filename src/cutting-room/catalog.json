@@ -1,5 +1,5 @@
 {
-  "updated": "October 20, 2026",
+  "updated": "October 28, 2026",
   "coverage": "Recovered finished edits, repo media, and recent Runway source takes. Older unreferenced generations may still require recovery.",
   "cast": [
     "Arjun",
@@ -16,6 +16,65 @@
     "Synthia"
   ],
   "assets": [
+    {
+      "id": "moving-things-forward-7fdb2147",
+      "title": "Moving Things Forward",
+      "duration": 60.0,
+      "width": 1280,
+      "height": 720,
+      "cast": [
+        "Paper droid"
+      ],
+      "description": "A routine paper delivery. A considerable professional journey.",
+      "notes": "Refined final: clearer robotic vocal, robotic beeps, and corrected undercarriage. Same approved lyrics, music and edit.",
+      "tags": [
+        "paper droid",
+        "song",
+        "robotic beeps",
+        "paper delivery",
+        "hip hop",
+        "corporate anthem"
+      ],
+      "transcript": "Humbled to share an important delivery.\nToday, I delivered the team\u2019s printed materials.\nFrom one part of the office to another.\n\nWhat looked like a simple request\nbecame an opportunity to connect our teams.\nDifferent functions. Shared direction. One trolley.\nThere were obstacles. Mostly chairs.\nBut we kept moving.\n\nMoving things forward.\nMoving things forward.\n\nGrateful to everyone who cleared a path.\nEspecially the colleague who moved the bin.\nWe challenged how things had always been carried.\nWe took a wider view of the corridor.\n\nAt nine oh three, the paper arrived.\nExactly where the paper needed to be.\nProud of the delivery. Prouder of the journey.\nThe next chapter is already in the tray.\n\nMoving things forward.\nMoving things forward.\n\nLooking forward to taking this further.\nOnce I\u2019ve recharged.\n",
+      "category": "Finished films",
+      "status": "Current edit",
+      "sha256": "7fdb21478a59d24279f0278563255bd6e02f9b466fb04a7f57bbf8ba1165592a",
+      "src": "/cutting-room/films/moving-things-forward-7fdb2147.mp4",
+      "download": "/cutting-room/films/moving-things-forward-7fdb2147.mp4",
+      "audio": true,
+      "bytes": 15436267,
+      "poster": "/cutting-room/posters/moving-things-forward-7fdb2147.jpg"
+    },
+    {
+      "id": "optimizing-pocket-mix-bd5cea53",
+      "title": "Optimizing \u2014 pocket mix",
+      "duration": 40.0,
+      "width": 1920,
+      "height": 1080,
+      "cast": [
+        "Printer",
+        "Synergy"
+      ],
+      "description": "Forty seconds of operational excellence. The printer remains busy.",
+      "notes": "Latest soundtrack alternate: 84 BPM pocket beat with the approved robotic voice. Approved mechanical picture retained, including corrected paper scale and outward feed.",
+      "tags": [
+        "optimizing",
+        "printer",
+        "corporate vocabulary",
+        "robotic voice",
+        "hip hop",
+        "surveillance"
+      ],
+      "transcript": "Optimizing. Meaningful connections. Operational excellence. Thought leadership. Increased visibility. Shared ownership. A culture of accountability. Optimizing. Personal growth. Humbled and honored. Strategic alignment. Additional capacity. Continued momentum. Let\u2019s circle back.",
+      "category": "Finished films",
+      "status": "Current edit",
+      "sha256": "bd5cea53e5feeb7c1e2c595902c2a97b3bd08a0f4a5ecde76cfda81d00432685",
+      "src": "/cutting-room/films/optimizing-pocket-mix-bd5cea53.mp4",
+      "download": "/cutting-room/films/optimizing-pocket-mix-bd5cea53.mp4",
+      "audio": true,
+      "bytes": 12625338,
+      "poster": "/cutting-room/posters/optimizing-pocket-mix-bd5cea53.jpg"
+    },
     {
       "id": "learn-to-speak-linkedin-synergy-recut-e95adb5d",
       "title": "Learn to Speak LinkedIn \u2014 Synergy recut",
