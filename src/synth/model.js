@@ -17,14 +17,26 @@ const rhythms = [
 ];
 export const PRESETS = ['All hands','Circle back','After hours'];
 export function patternFor(index){return rhythms[index].map(row=>Array.from({length:16},(_,i)=>row.includes(i)));}
-export function initialProject(){return {version:1,name:'Untitled alignment',bpm:112,swing:0,volume:.75,filter:18000,delay:.12,pattern:patternFor(0),slots:SOUNDS.slice(0,8).map(s=>({sound:s.id,name:s.name,gain:s.kind==='VOICE'?.8:.7,pitch:0,start:0,end:1,reverse:false,mute:false,data:null}))};}
+export function initialProject(){return {version:1,name:'Untitled alignment',bpm:112,swing:0,volume:.75,filter:18000,delay:.12,vocalDub:true,dubAmount:.42,dubSeed:7,pattern:patternFor(0),slots:SOUNDS.slice(0,8).map(s=>({sound:s.id,name:s.name,gain:s.kind==='VOICE'?.8:.7,pitch:0,start:0,end:1,reverse:false,mute:false,data:null}))};}
 const num=(v,min,max)=>typeof v==='number'&&Number.isFinite(v)&&v>=min&&v<=max;
 export function validateProject(p){
+ if(p)p={...p,vocalDub:p.vocalDub??true,dubAmount:p.dubAmount??.42,dubSeed:p.dubSeed??7};
  if(!p||p.version!==1||typeof p.name!=='string'||p.name.length>60||!num(p.bpm,60,180)||!num(p.swing,0,.45)||!num(p.volume,0,1)||!num(p.filter,200,20000)||!num(p.delay,0,.6))throw Error('This is not a supported sampler project.');
+ if(typeof p.vocalDub!=='boolean'||!num(p.dubAmount,0,.65)||!Number.isInteger(p.dubSeed)||!num(p.dubSeed,0,4294967295))throw Error('The vocal dub settings are invalid.');
  if(!Array.isArray(p.pattern)||p.pattern.length!==8||p.pattern.some(r=>!Array.isArray(r)||![16,64].includes(r.length)||r.length!==p.pattern[0].length||r.some(v=>typeof v!=='boolean')))throw Error('The project pattern is invalid.');
  if(!Array.isArray(p.slots)||p.slots.length!==8)throw Error('The project needs eight pads.');
- for(const s of p.slots){if(!SOUNDS.some(x=>x.id===s.sound)||typeof s.name!=='string'||s.name.length>60||!num(s.gain,0,1)||!num(s.pitch,-24,24)||!num(s.start,0,.99)||!num(s.end,.01,1)||s.end-s.start<.009||typeof s.reverse!=='boolean'||typeof s.mute!=='boolean'||(s.data!==null&&(typeof s.data!=='string'||s.data.length>12e6||!/^data:audio\/[a-zA-Z0-9.+-]+;base64,[A-Za-z0-9+/=]+$/.test(s.data))))throw Error('A pad contains invalid sample settings.');}
+ for(const s of p.slots){if(!SOUNDS.some(x=>x.id===s.sound)||typeof s.name!=='string'||s.name.length>60||!num(s.gain,0,1)||!num(s.pitch,-24,24)||!num(s.start,0,.99)||!num(s.end,.01,1)||s.end-s.start<.009||typeof s.reverse!=='boolean'||typeof s.mute!=='boolean'||s.data!=null)throw Error('A pad contains invalid sample settings.');}
  return p;
+}
+// Retire legacy local uploads without discarding the user's beat. The original
+// catalog sound ID remains on those pads; restore that sound and clear its trim.
+export function restoreProject(saved){
+ if(!saved||!Array.isArray(saved.slots))return validateProject(saved);
+ return validateProject({...saved,slots:saved.slots.map(slot=>{
+  if(slot.data==null)return slot;
+  const sound=SOUNDS.find(item=>item.id===slot.sound);
+  return {...slot,sound:sound?.id,name:sound?.name,data:null,start:0,end:1,pitch:0,reverse:false};
+ })});
 }
 export const stepTime=(step,bpm,swing)=>step*60/bpm/4+(step%2?swing*60/bpm/4:0);
 export function wavBytes(buffer){

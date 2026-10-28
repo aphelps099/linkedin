@@ -32,7 +32,7 @@ export default function SoundLibrary({pad, padNames, onPadChange, currentSound, 
   try {
    const slot=asSlot(sound);
    claimAudio('synth');
-   await audition.current.prepare({...initialProject(),slots:[slot],delay:0,filter:20000});
+   await audition.current.prepare({...initialProject(),slots:[slot],vocalDub:false,delay:0,filter:20000});
    if(!alive.current){audition.current.stop();return;}
    setPreview(sound.id);
    const source=audition.current.hit(slot);
