@@ -25,7 +25,7 @@ export function ShareShowcase({item,onClose}){
     catch(error){if(alive.current&&error.name!=='AbortError')setNotice('Choose an option below, or copy the link.');}
     finally{if(alive.current)setBusy(false);}
   }
-  return createPortal(<dialog className="showcase-share" ref={dialog} aria-labelledby="showcase-share-title" onCancel={event=>{event.preventDefault();onClose();}} onClick={event=>{if(event.target===dialog.current){const box=dialog.current.getBoundingClientRect();if(event.clientX<box.left||event.clientX>box.right||event.clientY<box.top||event.clientY>box.bottom)onClose();}}}>
+  return createPortal(<dialog className="showcase-share" ref={dialog} aria-labelledby="showcase-share-title" onCancel={event=>{event.preventDefault();event.stopPropagation();onClose();}} onClick={event=>{if(event.target===dialog.current){const box=dialog.current.getBoundingClientRect();if(event.clientX<box.left||event.clientX>box.right||event.clientY<box.top||event.clientY>box.bottom)onClose();}}}>
     <header><h2 id="showcase-share-title">Share this {item.film?'film':'meeting'}</h2><button type="button" className="showcase-share-close" onClick={onClose} aria-label="Close share options"><X aria-hidden="true"/></button></header>
     <p className="showcase-share-name">{item.title}</p>
     <div className="showcase-share-options">

@@ -1,11 +1,12 @@
 import React,{useEffect,useRef,useState} from 'react';
-import {Play,Pause,SkipForward,Video,VideoOff,Volume2,VolumeX,Captions,SlidersHorizontal,Users,Grid2X2,Maximize2,Minimize2,LoaderCircle,RotateCcw,ChevronRight,ChevronDown, UserPlus, X} from 'lucide-react';
+import {Play,Pause,SkipForward,Video,VideoOff,Volume2,VolumeX,Captions,SlidersHorizontal,Users,Grid2X2,Maximize2,Minimize2,LoaderCircle,RotateCcw,ChevronRight,ChevronDown, UserPlus, Share2, X} from 'lucide-react';
 import {ConceptHeader} from '../home-2/ConceptHeader.jsx';
 import {ConceptFooter} from '../home-2/ConceptFooter.jsx';
 import {agendas,cast,meetings,meetingSequence,meetingFromSearch,nextMeeting,timeLabel,cueAt} from './catalog.js';
 import {createMeetingEngine} from './engine.js';
 import {InviteOval} from '../brand/InviteOval.jsx';
 import {MeetingInvite} from './MeetingInvite.jsx';
+import {ShareShowcase} from '../home-2/ShareShowcase.jsx';
 import {meetingPortraits} from './invitation.js';
 import {Participant} from './Participant.jsx';
 
@@ -21,6 +22,7 @@ export default function MeetingRoom(){
   const [captions,setCaptions]=useState(true),[videoOn,setVideoOn]=useState(true),[reactions,setReactions]=useState(true),[mixOpen,setMixOpen]=useState(false);
   const [invitation,setInvitation]=useState(null),[agendaFilter,setAgendaFilter]=useState('all');
   const [follow,setFollow]=useState(false);
+  const [sharing,setSharing]=useState(false);
   const [pin,setPin]=useState(null),[left,setLeft]=useState(false),[reduced,setReduced]=useState(false),[full,setFull]=useState(false);
   const engine=useRef(null),room=useRef(null),playButton=useRef(null),mixButton=useRef(null),mixPanel=useRef(null);
   useEffect(()=>{
@@ -76,7 +78,7 @@ export default function MeetingRoom(){
         {state.error&&<p className="mr-error" role="alert">{state.error} <button onClick={()=>engine.current?.play()}>Retry audio</button></p>}
         <div className="mr-toolbar">
           <div className="mr-playback"><button className="mr-play" ref={playButton} onClick={togglePlay} aria-label={state.loading?'Cancel audio loading':state.playing?'Pause meeting':finished?'Replay meeting':'Play meeting'}>{state.loading?<LoaderCircle className="mr-spin" aria-hidden="true"/>:state.playing?<Pause fill="currentColor" aria-hidden="true"/>:finished?<RotateCcw aria-hidden="true"/>:<Play fill="currentColor" aria-hidden="true"/>}<span>{state.loading?'Connecting':state.playing?'Pause':finished?'Replay':'Play meeting'}</span></button><button className="mr-tool" onClick={()=>engine.current?.setMix({muted:!state.muted})} aria-pressed={state.muted}>{state.muted?<VolumeX aria-hidden="true"/>:<Volume2 aria-hidden="true"/>}<span>{state.muted?'Unmute':'Sound'}</span></button></div>
-          <div className="mr-toolbar-middle"><button className="mr-tool mr-tool-invite" onClick={()=>inviteToMeeting(meeting)} aria-haspopup="dialog"><UserPlus aria-hidden="true"/><span className="mr-invite-label">Invite a +1<InviteOval/></span></button><button className="mr-tool" onClick={()=>setVideoOn(!videoOn)} aria-pressed={videoOn}>{videoOn?<Video aria-hidden="true"/>:<VideoOff aria-hidden="true"/>}<span>{videoOn?'Stop video':'Start video'}</span></button><button className="mr-tool" onClick={()=>setCaptions(!captions)} aria-pressed={captions}><Captions aria-hidden="true"/><span>Captions</span></button><button className="mr-tool" ref={mixButton} onClick={()=>setMixOpen(!mixOpen)} aria-expanded={mixOpen} aria-controls="mr-mix"><SlidersHorizontal aria-hidden="true"/><span>Mix</span></button><button className="mr-tool mr-fullscreen" onClick={fullscreen} aria-label={full?'Exit fullscreen':'Enter fullscreen'}>{full?<Minimize2 aria-hidden="true"/>:<Maximize2 aria-hidden="true"/>}<span>Full screen</span></button></div>
+          <div className="mr-toolbar-middle"><button className="mr-tool" onClick={()=>{engine.current?.pause();setSharing(true);}} aria-haspopup="dialog"><Share2 aria-hidden="true"/><span>Share</span></button><button className="mr-tool" onClick={()=>setVideoOn(!videoOn)} aria-pressed={videoOn}>{videoOn?<Video aria-hidden="true"/>:<VideoOff aria-hidden="true"/>}<span>{videoOn?'Stop video':'Start video'}</span></button><button className="mr-tool" onClick={()=>setCaptions(!captions)} aria-pressed={captions}><Captions aria-hidden="true"/><span>Captions</span></button><button className="mr-tool" ref={mixButton} onClick={()=>setMixOpen(!mixOpen)} aria-expanded={mixOpen} aria-controls="mr-mix"><SlidersHorizontal aria-hidden="true"/><span>Mix</span></button><button className="mr-tool mr-fullscreen" onClick={fullscreen} aria-label={full?'Exit fullscreen':'Enter fullscreen'}>{full?<Minimize2 aria-hidden="true"/>:<Maximize2 aria-hidden="true"/>}<span>Full screen</span></button></div>
           <div className="mr-meeting-actions"><button className="mr-new" onClick={advanceMeeting}><SkipForward aria-hidden="true"/><span>Next meeting</span></button><button className="mr-leave" onClick={()=>{engine.current?.pause();setLeft(true);}}>Leave</button></div>
         </div>
         {mixOpen&&<div className="mr-mix" id="mr-mix" ref={mixPanel} aria-label="Meeting mix"><div><strong>Your meeting. Your mix.</strong><button aria-label="Close mix" onClick={()=>{setMixOpen(false);mixButton.current?.focus();}}><X aria-hidden="true"/></button></div><label>Voices<input type="range" min="0" max="1" step=".01" value={state.voices} onChange={e=>engine.current?.setMix({voices:+e.target.value})}/></label><label>The beat<input type="range" min="0" max="1" step=".01" value={state.music} onChange={e=>engine.current?.setMix({music:+e.target.value})}/></label><label className="mr-check"><input type="checkbox" checked={reactions} onChange={e=>setReactions(e.target.checked)}/>Excessive encouragement</label></div>}
@@ -98,6 +100,7 @@ export default function MeetingRoom(){
     </main>
 
     {invitation&&<MeetingInvite key={invitation.id} meeting={invitation} onClose={()=>setInvitation(null)}/>}
+    {sharing&&<ShareShowcase item={{id:meeting.id,meeting:meeting.id,title:meeting.title}} onClose={()=>setSharing(false)}/>}
     <ConceptFooter variant="dark"/>
   </div>;
 }

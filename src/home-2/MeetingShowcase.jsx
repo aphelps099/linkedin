@@ -11,6 +11,7 @@ function FilmPlayer({item,onClose}){
   const dialog=useRef(null);
   const video=useRef(null);
   const [failed,setFailed]=useState(false);
+  const [sharing,setSharing]=useState(false);
   useEffect(()=>{
     const element=dialog.current;
     const media=video.current;
@@ -21,15 +22,15 @@ function FilmPlayer({item,onClose}){
     return ()=>{media?.pause();element.close();document.body.style.overflow=previousOverflow;previousFocus?.focus();};
   },[]);
   return createPortal(<dialog className="meeting-film-player" ref={dialog} aria-labelledby="meeting-film-title" onCancel={event=>{event.preventDefault();onClose();}} onClick={event=>{if(event.target===dialog.current){const bounds=dialog.current.getBoundingClientRect();if(event.clientX<bounds.left||event.clientX>bounds.right||event.clientY<bounds.top||event.clientY>bounds.bottom)onClose();}}}>
-    <header><h2 id="meeting-film-title">{item.title}</h2><button type="button" onClick={onClose} aria-label="Close film"><X aria-hidden="true"/></button></header>
+    <header><h2 id="meeting-film-title">{item.title}</h2><div className="meeting-film-actions"><button className="meeting-film-share" type="button" onClick={()=>{video.current?.pause();setSharing(true);}} aria-haspopup="dialog"><Share2 aria-hidden="true"/><span>Share</span></button><button type="button" onClick={onClose} aria-label="Close film"><X aria-hidden="true"/></button></div></header>
     <video ref={video} data-audio-owner="showcase-film" controls playsInline preload="metadata" src={filmSource(item.film)} aria-label={item.title} onError={()=>setFailed(true)}/>
     {failed&&<p role="status">This film couldn’t load. <a href={filmSource(item.film)}>Open the video directly</a> or try again shortly.</p>}
+    {sharing&&<ShareShowcase item={item} onClose={()=>setSharing(false)}/>}
   </dialog>,document.body);
 }
 export function MeetingShowcase({base='/',motion=true}){
   const rail=useRef(null);
   const [film,setFilm]=useState(()=>typeof window==='undefined'?null:sharedFilm(window.location.search));
-  const [sharing,setSharing]=useState(null);
   const closeFilm=()=>{
     setFilm(null);
     if(sharedFilm(window.location.search)){const url=new URL(window.location.href);url.searchParams.delete('film');window.history.replaceState(null,'',`${url.pathname}${url.search}${url.hash}`);}
@@ -48,12 +49,11 @@ export function MeetingShowcase({base='/',motion=true}){
         </a>
         <div className="meeting-preview-copy">
           <a className="meeting-title-link" href={item.film?filmSource(item.film):`${base}studio/?meeting=${item.meeting}`} onClick={event=>watch(event,item)}><h3>{item.title}</h3>{item.film&&<span className="meeting-watch">Watch film</span>}</a>
-          <div className="meeting-card-actions">{item.duration&&<span className="meeting-duration">{item.duration}</span>}<button className="meeting-share-button" type="button" aria-label={`Share ${item.title}`} aria-haspopup="dialog" onClick={()=>setSharing(item)}><Share2 aria-hidden="true"/><span>Share</span></button></div>
+          {item.duration?<span className="meeting-duration">{item.duration}</span>:<ArrowUpRight aria-hidden="true"/>}
         </div>
       </article>)}
     </div>
     <div className="meeting-showcase-bottom"><a href={`${base}archives/`}>Press, posts & other humble announcements <span>Visit the archives <ArrowUpRight aria-hidden="true"/></span></a><div aria-label="Carousel controls"><button type="button" onClick={()=>move(-1)} aria-label="Previous cards"><ArrowLeft aria-hidden="true"/></button><button type="button" onClick={()=>move(1)} aria-label="Next cards"><ArrowRight aria-hidden="true"/></button></div></div>
-    {sharing&&<ShareShowcase key={sharing.id} item={sharing} onClose={()=>setSharing(null)}/>}
     {film&&<FilmPlayer key={film.id} item={film} onClose={closeFilm}/>}
   </section>;
 }
