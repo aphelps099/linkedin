@@ -1,5 +1,7 @@
 # Synergy — The Report Is Attached
 
+**Superseded character interpretation:** The user meant the paper-towing floor droid. See `paper-droid-moving-things-forward.md` for the corrected film. This Synergy version is retained as a separate draft.
+
 Production draft, October 28, 2026. The user approved the finished printer film, replenished Runway credits, requested a new beat informed by Fresh Prince / Jazzy Jeff, Timbaland and J Dilla, and a separate droid clip whose lyrics are a long-winded LinkedIn post. The unfinished subject “delivered his…” is interpreted here as Synergy delivering his first quarterly report. This interpretation was stated to the user and remains editable.
 
 ## Sound research and direction
