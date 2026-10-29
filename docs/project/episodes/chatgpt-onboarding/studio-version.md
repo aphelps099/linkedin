@@ -1,11 +1,17 @@
-# Studio edit — version 5
+# Studio edit — version 6
 
 Aaron requested the original Synergy voice, higher-quality source media, calmer camera coverage, stronger consistency with the site's meeting interface, a subtle after-meeting ChatGPT/LinkedIn action, and a more energetic early-1990s paper-collage opening/closing.
+
+## Approved branding and latest refinement
+
+Aaron loves the version 5 intro and outro. Version 6 preserves both compositions and adds three moving photographic scraps to the opening: hands playing keys at 0.625 seconds, Kevin playing guitar at 1.25, and Operations playing drums at 1.875. Each arrives on a successive 96 BPM beat, then settles. Performance plays at normal speed in ivory paper borders with tape, without covering the episode title. The rest of the edit, all voices, the score and hashtag outro are unchanged.
+
+The [story engine](../../story-engine.md) records the approved recurring character tension and a development slate. Next-episode beats are writing proposals, not additional finished footage.
 
 ## Review
 
 - http://127.0.0.1:8852/paper-meeting-chatgpt/studio/
-- Master: `/Users/ap457/Projects/linkedinbeats-meeting-art/optimizing/paper-meeting-chatgpt/studio/output/chatgpt-meeting-studio-v5.mp4`
+- Master: `/Users/ap457/Projects/linkedinbeats-meeting-art/optimizing/paper-meeting-chatgpt/studio/output/chatgpt-meeting-studio-v6.mp4`
 - 96 seconds, 1920 × 1080, 24 fps. Local review only.
 
 ## Edit
@@ -38,8 +44,9 @@ Sources reside under the local review's `assets/` directory: the three enhanced 
 
 ```sh
 python docs/project/episodes/chatgpt-onboarding/prepare-studio-edit.py /path/to/paper-meeting-chatgpt/studio
+python docs/project/episodes/chatgpt-onboarding/prepare-intro-instruments.py /path/to/paper-meeting-chatgpt/studio
 node docs/project/episodes/chatgpt-onboarding/render-studio-video.mjs /path/to/paper-meeting-chatgpt/studio
 python docs/project/episodes/chatgpt-onboarding/build-studio-review.py /path/to/paper-meeting-chatgpt/studio
 ```
 
-Use `--stills` on the renderer for visual review without a full export. Source-frame motion plays at 24 fps. All expensive enhancements are cached; rendering and compositing are local. See `verification-studio-v5.json` for export, speech-removal, tracking and browser checks. Creative review is still pending.
+Use `--stills` on the renderer for visual review without a full export. Source-frame motion plays at 24 fps. All expensive enhancements are cached; rendering and compositing are local. See `verification-studio-v5.json` for export, speech-removal, tracking and browser checks. Version 5 branding is approved; the new instrument inserts are ready for review.

@@ -1,0 +1,20 @@
+{
+  "duration": 96.0,
+  "size": [
+    1920,
+    1080
+  ],
+  "fps": 24.0,
+  "full_decode": "passed",
+  "audio_bit_identical_to_v5": true,
+  "aac_sha256": "06f49cac765f706bca9d7641d45ff24fd79236fe8b10ef614ceca09057cbb1ce",
+  "creative_change": "Instrument performance scraps at .625 / 1.25 / 1.875 seconds; original title and outro preserved",
+  "new_generated_media": false,
+  "browser": {
+    "playback": "passed",
+    "hashtag_chapter_seek": "passed",
+    "mobile_width": 390,
+    "horizontal_overflow": false,
+    "page_errors": []
+  }
+}

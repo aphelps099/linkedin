@@ -2,7 +2,7 @@
 
 **Latest voice decision:** retain Synergy's current eSpeak voice. Aaron explicitly rejected the ElevenLabs auditions and instructed that ElevenLabs not be used for his robot voice. The auditions are archived only as rejected history; they are removed from active review. Do not continue that provider's voice exploration without a new user instruction.
 
-**Current pilot direction, October 29:** Aaron prefers the original-photo cast. Use real listening/blink footage and instrument views where those roles already exist, with paper/collage title branding. The [photo performance kit](episodes/chatgpt-onboarding/photo-plus-version.md) retains all seven human identities, archives six unique supplied Synergy coffee clips, and presents two new robot-voice auditions. Synergy's existing voice remains canonical until a replacement is selected. The expressive digital face in the photo pilot is a deliberate exception to the older fixed-row screen treatment documented below; the live meeting engine is unchanged.
+**Current pilot direction, October 29:** Aaron prefers the original-photo cast. Use real listening/blink footage and instrument views where those roles already exist, with paper/collage title branding. The [photo performance kit](episodes/chatgpt-onboarding/photo-plus-version.md) retains all seven human identities, archives six unique supplied Synergy coffee clips, and archives two rejected robot-voice auditions. Synergy's existing eSpeak voice remains canonical. The expressive digital face in the photo pilot is a deliberate exception to the older fixed-row screen treatment documented below; the live meeting engine is unchanged.
 
 The cast is an office with an internal band. Musical duties follow existing performances where those exist. A character need not hold an instrument to have a useful sonic role. Existing names and voice identities stay stable; proposed motivations develop the characters rather than recasting them.
 
@@ -24,6 +24,10 @@ The cast is an office with an internal band. Musical duties follow existing perf
 | `pat` | Thought leadership | Silent, camera off | Publicly very present; absent when a practical answer is needed |
 
 Do not assign bass guitar, singing or new voices to established people as if these were already approved. Proposed sonic motifs: Synergy supplies clipped calls; Synthia supplies the answering phrase; paper feed becomes percussion; the floor droid contributes short electronic acknowledgements. Bass remains a score part until a performer is deliberately cast.
+
+## Current dramatic center
+
+Use [the recurring story engine](story-engine.md): Synergy wants a real improvement to become shared purpose; Operations wants useful work completed; People & Culture checks whether the actual person benefits. All three can be right. Synergy is earnest, not a con artist; Operations is competent, not an automatic skeptic; People & Culture is observant, not a permanent punchline. Let alliances change with the problem.
 
 ## Relationships that create scenes
 

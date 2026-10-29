@@ -1,5 +1,9 @@
 # Office-paper miniseries
 
+## Series engine — approved development direction
+
+Aaron approved developing recurring tension around Synergy sincerely believing he is improving efficiency and unifying the company culture. See [the story engine and episode slate](story-engine.md). The current intro and outro are approved; add actual instrument performances to the intro without replacing its paper, typography or timing.
+
 ## Refinement — site-consistent meetings and quieter endings
 
 The current [studio cut](episodes/chatgpt-onboarding/studio-version.md) uses the site's actual meeting UI vocabulary: charcoal stage, small-radius tiles, dark name bars, a green active-speaker outline and familiar controls. Hold a steady gallery or speaker composition; avoid diagonal reaction splits, extreme eye crops, alternating pans and repeated push/pull moves. Source resolution and conservative framing must support clean delivery. The three principal camera sources have been enhanced for a 1080p master; this is enhancement of existing footage, not newly captured detail.
@@ -14,7 +18,7 @@ Synergy's original voice is retained. ElevenLabs auditions were rejected; do not
 
 October 29, after reviewing the paper, cel and original-photo pilots, Aaron selected **the actual cast photographs and filmed performances** as the more convincing direction. This supersedes the illustration-only selection below for the current pilot. Keep office paper as the graphic language for the branded intro, titles, transitions and credits. Human performances stay sincere and restrained; Synergy's digital screen is the most expressive face. Use awkward close-ups, real blinks, listening reactions, wider instrument views and occasional corporate virtual backgrounds.
 
-The [version 4 review and performance kit](episodes/chatgpt-onboarding/photo-plus-version.md) implements a 2.5-second blue/graph-paper collage opening, fast connecting tiles, human reaction inserts, a supplied coffee performance, and five seconds of end credits. Dialogue and music remain unchanged. Two clearer Synergy voice auditions are presented separately; no new canonical voice has been selected.
+The [version 4 review and performance kit](episodes/chatgpt-onboarding/photo-plus-version.md) implements a 2.5-second blue/graph-paper collage opening, fast connecting tiles, human reaction inserts, a supplied coffee performance, and five seconds of end credits. Dialogue and music remain unchanged. The two robot voice auditions were subsequently rejected. The original eSpeak voice remains canonical.
 
 Required credit copy: “linkedinbeats.com”, “Not affiliated with LinkedIn.” and “A project by Aaron Phelps at Look-Serious.com”. Use readable TT Hoves and avoid tiny labels. Coffee, loading moments and reaction shots should punctuate genuine pauses rather than turn every line into a visual gag.
 

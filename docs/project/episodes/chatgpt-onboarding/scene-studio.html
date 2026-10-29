@@ -3,7 +3,7 @@ const input=__INPUT__,canvas=document.querySelector('canvas'),ctx=canvas.getCont
 const W=1280,H=720,clamp=x=>Math.max(0,Math.min(1,x)),smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
 const load=src=>new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=reject;im.src=src});
 const buffer=(scale=1)=>{const c=document.createElement('canvas');c.width=W*scale;c.height=H*scale;return c};
-let photos,mark,whiteMark,paper,now=0,live=null;const plates={};
+let photos,mark,whiteMark,paper,now=0,live=null;const instruments={};const plates={};
 const printerFeed=(()=>{__PRINTER__;return drawPrinterPaper;})();
 function bg(c,blue=false){c.fillStyle=blue?'#335b8b':'#efeadd';c.fillRect(0,0,W,H);c.save();c.globalAlpha=blue?.13:.08;c.globalCompositeOperation=blue?'screen':'multiply';c.drawImage(paper,0,0);c.restore()}
 function rect(c,x,y,w,h,r){c.beginPath();c.roundRect(x,y,w,h,r)}
@@ -81,12 +81,24 @@ function pattern(c,t){bg(c,true);c.fillStyle='#0954ed';c.fillRect(0,0,W,H);c.sav
  c.strokeStyle='#132d47';c.lineWidth=6;for(let i=0;i<6;i++){c.beginPath();c.moveTo(1060+i*27,450);c.lineTo(1044+i*27,480);c.lineTo(1060+i*27,510);c.lineTo(1044+i*27,540);c.stroke()}
  c.fillStyle='#102b45';for(let y=0;y<5;y++)for(let x=0;x<6;x++){c.beginPath();c.arc(73+x*24,80+y*24,3,0,Math.PI*2);c.fill()}
 }
+// Existing performances arrive on the 96 BPM beats; camera and paper settle.
+function instrumentScrap(c,key,x,y,w,h,angle,t,start,region){
+ const im=instruments[key],q=smooth((t-start)/.12);if(!im||!q)return;
+ c.save();c.globalAlpha=q;c.translate(x,y+(1-q)*44);c.rotate(angle);
+ scrap(c,-7,-7,w+14,h+14,'#fffaf0');
+ c.save();c.beginPath();c.moveTo(0,2);c.lineTo(w*.48,0);c.lineTo(w,3);c.lineTo(w-1,h);c.lineTo(w*.3,h-2);c.lineTo(0,h);c.closePath();c.clip();
+ cover(c,im,region,0,0,w,h);c.restore();
+ c.globalAlpha=q*.65;c.fillStyle='#f6edce';c.fillRect(w*.43,-15,w*.22,20);c.restore();
+}
 function intro(c,t){pattern(c,t);const q=smooth(t/.25);c.save();c.translate(116,65+(1-q)*400);c.rotate(-.025);scrap(c,0,0,1038,578,'#f8f3e5');graph(c,0,0,1038,578);c.restore();
  scrap(c,141,92,453,78,'#f6ff78',.014);brand(c,160,105,410);
  tileWord(c,'A more',170,276,70,'#13314c','#fffaf0',-.025,t,.18);
  tileWord(c,'intentional',470,276,70,'#13314c','#b9e6e9',.018,t,.28);
  tileWord(c,'first day.',170,378,104,'#13314c','#ffb8d2',-.018,t,.39);
  c.save();c.globalAlpha=smooth((t-.7)/.15);c.strokeStyle='#183249';c.lineWidth=7;c.beginPath();c.moveTo(175,510);c.lineTo(592,504);c.stroke();c.restore();
+ instrumentScrap(c,'keys',166,557,425,103,-.025,t,.625,[0,0,1060,256]);
+ instrumentScrap(c,'guitar',873,427,327,216,.055,t,1.25,[90,35,1090,600]);
+ instrumentScrap(c,'drums',1009,190,211,198,-.055,t,1.875,[135,0,1010,668]);
 }
 function mic(c,x,y,muted=false){c.save();c.translate(x,y);c.strokeStyle=muted?'#9d9fa8':'#dce2e9';c.lineWidth=1.7;c.beginPath();c.roundRect(-4,-10,8,14,4);c.stroke();c.beginPath();c.arc(0,0,8,0,Math.PI);c.moveTo(0,8);c.lineTo(0,12);c.moveTo(-5,12);c.lineTo(5,12);c.stroke();if(muted){c.strokeStyle='#ed8e97';c.beginPath();c.moveTo(-10,-10);c.lineTo(10,12);c.stroke()}c.restore()}
 function tile(c,who,x,y,w,h,t,active){
@@ -133,6 +145,7 @@ window.ready=(async()=>{
  const regular=new FontFace('Hoves',`url(${input.regular})`,{weight:'400'}),bold=new FontFace('Hoves',`url(${input.bold})`,{weight:'600'});await Promise.all([regular.load(),bold.load()]);document.fonts.add(regular);document.fonts.add(bold);
  photos={};for(const who of Object.keys(input.photos)){photos[who]=await load(input.photos[who]);plates[who]=buffer(2)}[mark,whiteMark]=await Promise.all([load(input.mark),load(input.whiteMark)]);
  paper=buffer();const pc=paper.getContext('2d');pc.fillStyle='#d8d3c9';pc.fillRect(0,0,W,H);let seed=17;const rand=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};for(let i=0;i<110000;i++){let v=Math.floor(rand()*180);pc.fillStyle=`rgba(${v},${v},${v},.17)`;pc.fillRect(rand()*W,rand()*H,rand()*2+.3,.6)}
+ window.setInstruments=async assets=>{for(const [key,src] of Object.entries(assets))instruments[key]=await load(src)};
  window.setMotion=async asset=>{live=asset?{...asset,image:await load(asset.image),holdout:asset.holdout?await load(asset.holdout):null}:null};
  window.draw=t=>{ctx.clearRect(0,0,W,H);if(t<2.5)intro(ctx,t);else if(t<76.5){updatePlates(t);meeting(ctx,t)}else if(t<86.5)laptop(ctx,t);else if(t<90.5)postClose(ctx,t);else outro(ctx,t)};
  window.draw(0);return true;
