@@ -4,6 +4,10 @@ First office-paper meeting scene, October 29, 2026. **90 seconds, 1280 × 720, 2
 
 Synergy used ChatGPT to improve the onboarding checklist. People & Culture checks its claims against the new starter's actual first day; Operations fixes access and plans to ask what was missing. A useful improvement becomes the subject of Synergy's professional reflection.
 
+## Original-photo performance
+
+The [third cut](photo-version.md) returns to the actual cast imagery, with speech-driven attached jaw animation, a more expressive Synergy screen, awkward close-ups and the existing LinkedIn-page printer feed. Its original audio is retained. It is an experimental photo-animation review, not naturalistic lip sync or a live-site release.
+
 ## Alternate cel edit
 
 The [second cut](cel-version.md) explores the requested Flying House-style drawing, stronger Ken Burns camera moves, watercolor/marker transitions and deadpan close-ups. Its original audio is retained. Both versions remain available for comparison.
