@@ -1,0 +1,179 @@
+{
+  "version": 1,
+  "page": "https://www.linkedin.com/company/linked-beats/",
+  "timezone": "America/Los_Angeles",
+  "slots": ["08:15", "12:10"],
+  "notes": "Nothing posts until a person sets status to approved. See docs/linkedin/playbook.md section 10. page_reply is the in-character first comment, posted by hand within the hour.",
+  "items": [
+    {
+      "id": "2026-11-02-synergy-launch",
+      "status": "draft",
+      "scheduled_at": "2026-11-02T08:15:00-08:00",
+      "format": "achievement",
+      "genre": "announcement",
+      "topic": "general",
+      "character": "synergy",
+      "text": "Linked Beats is now on LinkedIn.\n\nWe have spent the last several quarters aligning on whether to have a page. Today we are pleased to share that alignment has been reached.\n\nYou can expect regular updates on our work, our people, and our commitment to the kind of work our people do.\n\nGrateful.\n\nSynergy, Host\nLinked Beats",
+      "page_reply": "Strategy: Excited to see where this narrative takes us. Or framework. We've agreed it's both."
+    },
+    {
+      "id": "2026-11-03-operations-drive",
+      "status": "draft",
+      "scheduled_at": "2026-11-03T12:10:00-08:00",
+      "format": "achievement",
+      "genre": "announcement",
+      "topic": "drive-sharing",
+      "character": "operations",
+      "text": "Reflecting on a week of making knowledge more accessible across the organization.\n\nOn Tuesday I corrected the sharing permissions on our onboarding folder. Eleven people now have the link. Four of them have opened it.\n\nA small change. But a reminder that access is not a destination. It is a setting.\n\nOperations, Linked Beats",
+      "page_reply": "Arjun: Which four?"
+    },
+    {
+      "id": "2026-11-04-people-onboarding",
+      "status": "draft",
+      "scheduled_at": "2026-11-04T08:15:00-08:00",
+      "format": "achievement",
+      "genre": "announcement",
+      "topic": "onboarding",
+      "character": "people",
+      "text": "Our newest Partnerships hire, Kevin, completed his first week.\n\nHe finished the new-hire checklist, met each team lead, and was added to the welcome channel, the culture channel, and the channel for questions about channels.\n\nHe has one outstanding access request, which we are treating as an opportunity.\n\nWelcome, Kevin. The folder is coming.\n\nPeople & Culture, Linked Beats",
+      "page_reply": "Kevin: Thank you. Which folder?"
+    },
+    {
+      "id": "2026-11-05-keys-chatgpt-drive",
+      "status": "draft",
+      "scheduled_at": "2026-11-05T12:10:00-08:00",
+      "format": "achievement",
+      "genre": "tool-confession",
+      "topic": "drive-sharing",
+      "character": "keys",
+      "text": "I used ChatGPT to draft a guide to our shared Google Drive.\n\nIt produced four pages. I removed two. The remaining two explain where the folders are and who to ask for access.\n\nWho to ask is still being confirmed.\n\nSometimes the most important output of a tool is a clearer picture of the question.\n\nKeys, Enablement\nLinked Beats",
+      "page_reply": "People & Culture: Love this."
+    },
+    {
+      "id": "2026-11-06-droid-moving-things-forward",
+      "status": "draft",
+      "scheduled_at": "2026-11-06T08:15:00-08:00",
+      "format": "clip",
+      "genre": "none",
+      "topic": "general",
+      "character": "page",
+      "text": "A look inside Internal Distribution.\n\nEvery morning, one member of our team moves the day's deliverables from the print room to the floor. No announcement. No recap. No follow-up thread.\n\nWe asked if there was anything we could do to support the work.\n\nThe work continued.\n\nLinked Beats",
+      "media": {
+        "type": "video",
+        "path": "public/cutting-room/films/moving-things-forward-7fdb2147.mp4",
+        "title": "Moving Things Forward"
+      },
+      "page_reply": "Synergy: Let's make sure this gets captured in the Q4 narrative."
+    },
+    {
+      "id": "2026-11-09-strategy-humbled",
+      "status": "draft",
+      "scheduled_at": "2026-11-09T12:10:00-08:00",
+      "format": "achievement",
+      "genre": "humbling",
+      "topic": "conference-followup",
+      "character": "strategy",
+      "text": "Humbled to be recognized at Alignment Summit 2026.\n\nI will not say much about the award itself. The category was broad, the field was strong, and attendance was a component.\n\nWhat I will remember is the conversations. Specifically, the one about whether our Q4 narrative is a narrative or a framework. We have agreed it is both.\n\nGrateful to the organizers, to my team, and to the many people who sat near me.\n\nStrategy, Linked Beats",
+      "page_reply": "Linda: We received one in 2019. It's in the spreadsheet."
+    },
+    {
+      "id": "2026-11-10-transcript-drive-guide",
+      "status": "draft",
+      "scheduled_at": "2026-11-10T08:15:00-08:00",
+      "format": "transcript",
+      "genre": "tool-confession",
+      "topic": "drive-sharing",
+      "character": "page",
+      "text": "From this week's Tuesday alignment.\n\nKeys: I used ChatGPT to draft a guide to our shared Drive.\nPeople & Culture: Love this.\nKevin: Does the guide say how to get access?\nKeys: It says to ask your manager.\nKevin: Who is my manager?\nSynergy: Let's take that offline.\n\nMinutes available on request.\n\nLinked Beats",
+      "page_reply": "Operations: Minutes are in the folder."
+    },
+    {
+      "id": "2026-11-11-synergy-intern-impressions",
+      "status": "draft",
+      "scheduled_at": "2026-11-11T12:10:00-08:00",
+      "format": "achievement",
+      "genre": "announcement",
+      "topic": "intern-impressions",
+      "character": "synergy",
+      "text": "Encouraged by the visibility our latest post is generating.\n\nOur social media intern published Thursday's campaign post and reported 1,140 impressions by Monday. We asked what an impression is. The explanation was clear, which is more than we had before.\n\nArjun asked how many of them were people. We are looking into it.\n\nProud of this team.\n\nSynergy, Host\nLinked Beats",
+      "page_reply": "Strategy: Let's zoom out. What's the broader impressions narrative?"
+    },
+    {
+      "id": "2026-11-12-synthia-program",
+      "status": "draft",
+      "scheduled_at": "2026-11-12T08:15:00-08:00",
+      "format": "link",
+      "genre": "announcement",
+      "topic": "professional-development",
+      "character": "synthia",
+      "text": "This week, four members of our team made space to invest in their growth.\n\nEach completed the five-lesson Professional Development Program and received a certificate. Each posted the certificate. Each certificate was congratulated by the other three.\n\nDevelopment is a cycle.\n\nThe program is open to everyone.\n\nSynthia, Corporate Training\nLinked Beats",
+      "article": {
+        "url": "https://linkedinbeats.com/learn/?utm_source=linkedin&utm_medium=page&utm_campaign=launch",
+        "title": "Professional Development Program",
+        "description": "Five lessons. One certificate. Learn the genre one notch of the dial at a time.",
+        "thumbnail": "public/lessons-og.png"
+      },
+      "page_reply": "Synthia: A short training on how to complete the training is now available."
+    },
+    {
+      "id": "2026-11-13-operations-mom-birthday",
+      "status": "draft",
+      "scheduled_at": "2026-11-13T12:10:00-08:00",
+      "format": "achievement",
+      "genre": "unexpected-lesson",
+      "topic": "general",
+      "character": "operations",
+      "text": "My mom turned 68 on Saturday. Here is what it taught me about sales.\n\nRelationships matter. Showing up matters. I brought the cake, and I would do it again.\n\nNobody bought anything, and that was not the point. But I did notice that the people who stayed longest were the ones who felt heard.\n\nSomething to carry into Q4.\n\nOperations, Linked Beats",
+      "page_reply": "Synergy: Let's capture that as a learning."
+    },
+    {
+      "id": "2026-11-16-kevin-access-declined",
+      "status": "draft",
+      "scheduled_at": "2026-11-16T08:15:00-08:00",
+      "format": "achievement",
+      "genre": "rejection-reframe",
+      "topic": "conference-followup",
+      "character": "kevin",
+      "text": "Three weeks ago I asked for access to the Partnerships folder. On Friday, the request was declined.\n\nI am grateful.\n\nNot because I have the folder. I do not. But because the process worked exactly as designed, and I now understand the design.\n\nIn other news, I have sent follow-up emails to everyone I met at Alignment Summit. Two have replied. One asked for access to the folder.\n\nKevin, Partnerships\nLinked Beats",
+      "page_reply": "People & Culture: We see you, Kevin. A working group has been formed."
+    },
+    {
+      "id": "2026-11-17-linda-website-update",
+      "status": "draft",
+      "scheduled_at": "2026-11-17T12:10:00-08:00",
+      "format": "achievement",
+      "genre": "announcement",
+      "topic": "website-update",
+      "character": "linda",
+      "text": "We updated the website.\n\nThe registration link on the Programs page had pointed to the 2024 form since 2024. It now points to the current form. I had flagged this in a spreadsheet, which I still have.\n\nThe launch recap meeting is Thursday. Three teams will present.\n\nLinda, Governance\nLinked Beats",
+      "page_reply": "Synergy: Huge cross-functional effort. Thank you all."
+    },
+    {
+      "id": "2026-11-18-people-cried",
+      "status": "draft",
+      "scheduled_at": "2026-11-18T08:15:00-08:00",
+      "format": "achievement",
+      "genre": "vulnerable-share",
+      "topic": "onboarding",
+      "character": "people",
+      "text": "I cried after a 1:1 today. And that is okay.\n\nIt was a good conversation. We talked about belonging, about the welcome channel, and about why Kevin still cannot open the folder. I did not have an answer. I said so.\n\nThen we formed a working group.\n\nVulnerability is a leadership skill. So is scheduling.\n\nPeople & Culture, Linked Beats",
+      "page_reply": "Arjun: Does the working group have the folder?"
+    },
+    {
+      "id": "2026-11-19-printer-optimizing",
+      "status": "draft",
+      "scheduled_at": "2026-11-19T12:10:00-08:00",
+      "format": "clip",
+      "genre": "none",
+      "topic": "general",
+      "character": "page",
+      "text": "Optimizing.\n\nOur Deliverables function produced forty seconds of output this week. We asked for a summary.\n\nThis is the summary.\n\nLinked Beats",
+      "media": {
+        "type": "video",
+        "path": "public/cutting-room/films/optimizing-pocket-mix-bd5cea53.mp4",
+        "title": "Optimizing"
+      },
+      "page_reply": "Operations: Printed copies available on request."
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+name: LinkedIn drafts
+
+# Monday morning: Claude proposes next week's posts from the playbook grid and
+# opens a pull request. Nothing is approved until a person edits the status.
+
+on:
+  schedule:
+    - cron: '40 15 * * 1'
+  workflow_dispatch:
+    inputs:
+      count:
+        description: How many posts to draft
+        type: number
+        default: 5
+      from:
+        description: First date to schedule (YYYY-MM-DD), blank for the day after the last queued post
+        type: string
+        default: ''
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  draft:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Draft posts
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          COUNT: ${{ inputs.count || 5 }}
+          FROM: ${{ inputs.from }}
+        run: |
+          if [ -n "$FROM" ]; then node scripts/linkedin/draft.mjs --count "$COUNT" --from "$FROM" | tee drafts.txt
+          else node scripts/linkedin/draft.mjs --count "$COUNT" | tee drafts.txt; fi
+      - name: Validate the queue offline
+        run: node scripts/check-linkedin-queue.mjs
+      - name: Open a pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: linkedin/drafts-${{ github.run_id }}
+          delete-branch: true
+          commit-message: "linkedin: draft posts for review"
+          title: "LinkedIn drafts for review (${{ github.run_id }})"
+          body: |
+            Claude drafted these from `docs/linkedin/playbook.md`. They are status `draft` and will not post.
+
+            Read them like scripts. Edit freely. Set `status` to `approved` for the ones that should post, delete the rest, then merge.
+
+            The hourly publish job posts approved items when their `scheduled_at` passes.
+          add-paths: docs/linkedin/queue.json
+          labels: linkedin
