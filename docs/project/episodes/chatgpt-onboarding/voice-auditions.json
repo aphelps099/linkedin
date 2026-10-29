@@ -11,5 +11,6 @@
     "treatment": "Preset modulated character; highpass 90Hz; no added echo"
   },
   "normalization": "All comparison files target -18 LUFS, -2 dBTP",
-  "episode": "Existing canonical Synergy audio retained"
+  "episode": "Existing canonical Synergy audio retained",
+  "status": "REJECTED by Aaron: do not use ElevenLabs for Synergy. Original eSpeak voice retained."
 }

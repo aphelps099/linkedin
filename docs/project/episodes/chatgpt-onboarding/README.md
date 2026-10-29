@@ -1,5 +1,7 @@
 # A more intentional first day
 
+**Current review: [Studio version 5](studio-version.md)** — steady site-style meeting interface, enhanced original camera sources, original Synergy voice, silent ChatGPT → LinkedIn ending and collage hashtags. Preview: http://127.0.0.1:8852/paper-meeting-chatgpt/studio/. The prior ElevenLabs voice auditions were explicitly rejected and must not be used.
+
 First office-paper meeting scene, October 29, 2026. **90 seconds, 1280 × 720, 24 fps. First review cut; not published or creatively approved.**
 
 **Latest review:** [Photo version 4 and reusable performance kit](photo-plus-version.md). Aaron selected the original-photo direction after reviewing version 3. Version 4 adds a fast collage opening, connecting tiles, real reaction and coffee footage, and credits. Its review page also compares two new Synergy voice auditions against the established voice. Earlier descriptions below document their respective versions.

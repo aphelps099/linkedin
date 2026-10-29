@@ -1,5 +1,15 @@
 # Office-paper miniseries
 
+## Refinement — site-consistent meetings and quieter endings
+
+The current [studio cut](episodes/chatgpt-onboarding/studio-version.md) uses the site's actual meeting UI vocabulary: charcoal stage, small-radius tiles, dark name bars, a green active-speaker outline and familiar controls. Hold a steady gallery or speaker composition; avoid diagonal reaction splits, extreme eye crops, alternating pans and repeated push/pull moves. Source resolution and conservative framing must support clean delivery. The three principal camera sources have been enhanced for a 1080p master; this is enhancement of existing footage, not newly captured detail.
+
+The lively early-1990s school-sitcom collage reference belongs in the brief intro and outro: graphic paper, blue paper, pink/mint/yellow scraps, quick letter/word assembly, and TT Hoves. Keep actual performance understated. Do not copy another show's logo, title graphics or music.
+
+Let behavior reveal the joke. Instead of announcing that he has drafted a ChatGPT post, show Synergy after the meeting typing, copying a draft and pasting it into LinkedIn. Finish on sincere corporate hashtags, with a small LinkedIn Beats logo and URL in the lower corner. Keep long credit/disclaimer copy in the review footer rather than replacing the requested hashtag ending.
+
+Synergy's original voice is retained. ElevenLabs auditions were rejected; do not use that provider for his robot voice. Music remains the established original 96 BPM bed.
+
 ## Latest direction — original cast with paper branding
 
 October 29, after reviewing the paper, cel and original-photo pilots, Aaron selected **the actual cast photographs and filmed performances** as the more convincing direction. This supersedes the illustration-only selection below for the current pilot. Keep office paper as the graphic language for the branded intro, titles, transitions and credits. Human performances stay sincere and restrained; Synergy's digital screen is the most expressive face. Use awkward close-ups, real blinks, listening reactions, wider instrument views and occasional corporate virtual backgrounds.
