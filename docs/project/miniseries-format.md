@@ -6,7 +6,7 @@ Aaron approved developing recurring tension around Synergy sincerely believing h
 
 ## Mandatory face geometry
 
-Synergy uses the [locked 2×2 eyes / 1×10 mouth rule](characters.md#locked-synergy-face-rule--october-29). One bold green row, fixed vertical position and thickness, speech-driven filling from a fixed left edge toward the right, up to ten cells. No vertical growth, scattered EQ dots or multi-row mouth. This supersedes earlier expressive-face experiments.
+Synergy uses the [locked 2×2 eyes / 1×10 mouth rule](characters.md#locked-synergy-face-rule--october-29). One bold green row, fixed vertical position and thickness, speech-driven filling from a fixed left edge toward the right, up to ten cells. Keep the full ten-cell row at 10% opacity, including silence, with the bright speech fill over it. No vertical growth, scattered EQ dots or multi-row mouth. This supersedes earlier expressive-face experiments.
 
 ## Refinement — site-consistent meetings and quieter endings
 
