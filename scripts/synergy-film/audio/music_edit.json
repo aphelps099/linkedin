@@ -1,0 +1,1681 @@
+{
+ "project": "Offline (Synergy film)",
+ "generated": "2026-10-29T22:05:15Z",
+ "source": {
+  "path": "music_lofi/mixkit-970-night-sky-hip-hop.mp3",
+  "sha256": "073f81d2dd27f744665464a11b8e3bd075bb150a927a1a7f4d10c01787f06066",
+  "title": "Night Sky Hip Hop",
+  "artist": "Michael Ramir C.",
+  "provider": "Mixkit (music #970)",
+  "url": "https://assets.mixkit.co/music/970/970.mp3",
+  "license": "Mixkit Stock Music Free License (https://mixkit.co/license/#musicFree): free for video projects, no attribution required; no standalone redistribution or Content ID registration.",
+  "native_sr": 44100,
+  "decoded_frames_44k1": 11340000,
+  "decoded_duration_s": 257.142857,
+  "decoded_48k": "../out/audio/nsky_48k.wav",
+  "decode_cmd": "ffmpeg -i music_lofi/mixkit-970-night-sky-hip-hop.mp3 -ar 48000 -af aresample=resampler=soxr:precision=28 -c:a pcm_f32le ../out/audio/nsky_48k.wav",
+  "peak_note": "The decoded MP3 has inter-sample overs (peak +0.97 dBFS at 48 kHz float). Keep the chain in float and trim at least 2 dB on the music bus."
+ },
+ "film": {
+  "fps": 24,
+  "sr": 48000,
+  "samples_per_frame": 2000,
+  "bpm": 90,
+  "frames_per_beat": 16,
+  "samples_per_beat": 32000,
+  "frames_per_bar": 64,
+  "total_frames": 1440,
+  "total_samples": 2880000,
+  "frame_rule": "Frame f (1-indexed) covers samples [(f-1)*2000, f*2000). Beat b starts at frame 16b+1, i.e. sample 32000*b; bar k starts at frame 64k+1."
+ },
+ "tempo": {
+  "measured_bpm": 89.999999,
+  "uncertainty_bpm": 2e-05,
+  "target_bpm": 90.0,
+  "method": "Waveform cross-correlation of repeated loop bars (e.g. bar 2 -> 68: 66 bars = 7761600.05 samples @44.1k vs 7761600 nominal; bar 10 -> 34: 2822400.01; bar 50 -> 66: 1881600.03). Cross-checks: onset-envelope autocorrelation 90.0005 over 64 beats, kick-attack regression 89.9991 +/- 0.0003, librosa beat-track fit 89.9996.",
+  "time_stretch_factor": 1.0,
+  "stretch_deviation_ppm": 0.0,
+  "applied": false,
+  "reason": "The track is DAW-locked at exactly 90.000 BPM (bar = 117600.00 samples @44.1k, 128000 @48k). Worst-case drift over the longest continuous run (M2, 34.67 s) is < 0.001 ms, so any stretch would only add artefacts. The treatment's 89.9 BPM was a coarse estimate.",
+  "ffmpeg_rubberband_available": true,
+  "filter_if_needed": "rubberband=tempo=1.0000000:transients=crisp:detector=percussive:phase=laminar:window=standard:channels=together:pitchq=quality (a no-op at the measured tempo; fallback: atempo). For another track, tempo = 90 / measured_bpm."
+ },
+ "grid": {
+  "file_grid_zero_s": 0.0,
+  "file_grid_zero_uncertainty_ms": 0.5,
+  "rule": "file beat j starts at file sample 32000*j @48k (29400*j @44.1k); the file's first sample is the bar-0 downbeat.",
+  "evidence": "Sync-averaged onset of the 91 downbeats (bars 1-91): the full-band 10% rise is at +0.0 ms and the 2 kHz-HP 50% rise at -0.0 ms. Raw envelopes at the cut points rise at -0.5 to +0.5 ms."
+ },
+ "structure_summary": {
+  "intro": "file bars 0-1, 0.0000-5.3333 s (sparse kick, keys, a riser into bar 2)",
+  "full_kit_entry": "file bar 2 downbeat, 5.3333 s (bass, crash, groove A)",
+  "section_changes_in_used_range": [
+   "5.3333 s bar 2: drop (groove A)",
+   "24.0000 s bar 9: fill/transition bar, the busiest bar (film f705-768)",
+   "26.6667 s bar 10: groove B (backbeat + chord changes), lands on film f769"
+  ],
+  "beatmap_json": "beatmap/night_sky_beatmap.json"
+ },
+ "segments": [
+  {
+   "id": "M1",
+   "role": "intro pass 1 (S01, inside the cup)",
+   "film_frames": [
+    1,
+    128
+   ],
+   "film_beats": [
+    0,
+    7
+   ],
+   "film_time_s": [
+    0.0,
+    5.333333
+   ],
+   "film_samples_48k": [
+    0,
+    256000
+   ],
+   "file_time_s": [
+    0.0,
+    5.333333
+   ],
+   "file_samples_48k": [
+    0,
+    256000
+   ],
+   "file_samples_44k1": [
+    0,
+    235200
+   ],
+   "file_beats": [
+    0,
+    7
+   ],
+   "file_bars": [
+    0,
+    1
+   ],
+   "gain_db": 0.0,
+   "fade_in": {
+    "shape": "raised_cosine",
+    "samples": 12,
+    "ms": 0.25,
+    "starts_at": "segment start (on the grid)"
+   },
+   "fade_out": {
+    "shape": "raised_cosine",
+    "samples": 192,
+    "ms": 4.0,
+    "guard_samples": 48,
+    "guard_ms": 1.0,
+    "ends_at": "segment end minus guard: silence from 1.0 ms before the downbeat, so no part of the downbeat transient leaks"
+   },
+   "notes": "File bars 0-1 (the 2-bar intro). The first sample of the file is the bar-0 downbeat kick. Out: the end of the bar-1 riser is cut 1 ms before the file's own drop, so the drop never leaks into pass 1."
+  },
+  {
+   "id": "M2",
+   "role": "intro pass 2 + groove (S02-S10)",
+   "film_frames": [
+    129,
+    960
+   ],
+   "film_beats": [
+    8,
+    59
+   ],
+   "film_time_s": [
+    5.333333,
+    40.0
+   ],
+   "film_samples_48k": [
+    256000,
+    1920000
+   ],
+   "file_time_s": [
+    0.0,
+    34.666667
+   ],
+   "file_samples_48k": [
+    0,
+    1664000
+   ],
+   "file_samples_44k1": [
+    0,
+    1528800
+   ],
+   "file_beats": [
+    0,
+    51
+   ],
+   "file_bars": [
+    0,
+    12
+   ],
+   "gain_db": 0.0,
+   "fade_in": {
+    "shape": "raised_cosine",
+    "samples": 12,
+    "ms": 0.25,
+    "starts_at": "segment start (on the grid)"
+   },
+   "fade_out": {
+    "shape": "raised_cosine",
+    "samples": 192,
+    "ms": 4.0,
+    "guard_samples": 48,
+    "guard_ms": 1.0,
+    "ends_at": "segment end minus guard: silence from 1.0 ms before the downbeat, so no part of the downbeat transient leaks"
+   },
+   "notes": "Loop splice on f129: the intro restarts at file 0.000 exactly on the S01/S02 match cut (the music is low-passed at 400 Hz there, which hides it further). Continuous from here: file bar 2 (the drop) lands on f257, and bars 2-12 run unbroken to the f961 hard stop. The bar-13 downbeat (file 34.6667 s) is never played; the jack click takes it."
+  },
+  {
+   "id": "M3",
+   "role": "offline return (S12-S14)",
+   "film_frames": [
+    1153,
+    1408
+   ],
+   "film_beats": [
+    72,
+    87
+   ],
+   "film_time_s": [
+    48.0,
+    58.666667
+   ],
+   "film_samples_48k": [
+    2304000,
+    2816000
+   ],
+   "file_time_s": [
+    0.0,
+    10.666667
+   ],
+   "file_samples_48k": [
+    0,
+    512000
+   ],
+   "file_samples_44k1": [
+    0,
+    470400
+   ],
+   "file_beats": [
+    0,
+    15
+   ],
+   "file_bars": [
+    0,
+    3
+   ],
+   "gain_db": 0.0,
+   "fade_in": {
+    "shape": "raised_cosine",
+    "samples": 12,
+    "ms": 0.25,
+    "starts_at": "segment start (on the grid)"
+   },
+   "fade_out": {
+    "shape": "raised_cosine",
+    "samples": 192,
+    "ms": 4.0,
+    "guard_samples": 48,
+    "guard_ms": 1.0,
+    "ends_at": "segment end minus guard: silence from 1.0 ms before the downbeat, so no part of the downbeat transient leaks"
+   },
+   "notes": "The intro returns at file 0.000 on f1153 (bar 18). Continuous: file bar 1 downbeat on f1217 (firefly lock), file bar 2 (full kit, the original drop) on f1281, the sip beat on f1297. Hard stop on f1409: the file bar 4 downbeat (10.6667 s) is never played."
+  }
+ ],
+ "silences": [
+  {
+   "film_frames": [
+    961,
+    1152
+   ],
+   "film_samples_48k": [
+    1920000,
+    2304000
+   ],
+   "note": "No music (S10 after the click, then S11)."
+  },
+  {
+   "film_frames": [
+    1409,
+    1440
+   ],
+   "film_samples_48k": [
+    2816000,
+    2880000
+   ],
+   "note": "Black. The printer sheet feed at f1418 is SFX, not music."
+  }
+ ],
+ "sync_points": [
+  {
+   "frame": 1,
+   "film_s": 0.0,
+   "event": "S01 start: intro bar 0 downbeat",
+   "music": {
+    "file_s": 0.0,
+    "file_beat": 0,
+    "file_bar": 0,
+    "beat_in_bar": 1
+   }
+  },
+  {
+   "frame": 129,
+   "film_s": 5.3333,
+   "event": "match cut / loop splice: intro restarts",
+   "music": {
+    "file_s": 0.0,
+    "file_beat": 0,
+    "file_bar": 0,
+    "beat_in_bar": 1
+   }
+  },
+  {
+   "frame": 257,
+   "film_s": 10.6667,
+   "event": "DROP: S03 cut, first full-kit downbeat, crash + bass (printer feed)",
+   "music": {
+    "file_s": 5.3333,
+    "file_beat": 7,
+    "file_bar": 1,
+    "beat_in_bar": 4
+   }
+  },
+  {
+   "frame": 321,
+   "film_s": 13.3333,
+   "event": "printer feed downbeat",
+   "music": {
+    "file_s": 8.0,
+    "file_beat": 12,
+    "file_bar": 3,
+    "beat_in_bar": 1
+   }
+  },
+  {
+   "frame": 353,
+   "film_s": 14.6667,
+   "event": "S04 cut",
+   "music": {
+    "file_s": 9.3333,
+    "file_beat": 13,
+    "file_bar": 3,
+    "beat_in_bar": 2
+   }
+  },
+  {
+   "frame": 433,
+   "film_s": 18.0,
+   "event": "S05 cut",
+   "music": {
+    "file_s": 12.6667,
+    "file_beat": 19,
+    "file_bar": 4,
+    "beat_in_bar": 4
+   }
+  },
+  {
+   "frame": 512,
+   "film_s": 21.2917,
+   "event": "post plip (f512)",
+   "music": {
+    "file_s": 15.9583,
+    "file_beat": 23,
+    "file_bar": 5,
+    "beat_in_bar": 4,
+    "off_grid_beats": 0.9375
+   }
+  },
+  {
+   "frame": 529,
+   "film_s": 22.0,
+   "event": "S06 cut (LPF 600 Hz, -6 dB)",
+   "music": {
+    "file_s": 16.6667,
+    "file_beat": 25,
+    "file_bar": 6,
+    "beat_in_bar": 2
+   }
+  },
+  {
+   "frame": 553,
+   "film_s": 23.0,
+   "event": "S06 metal impact",
+   "music": {
+    "file_s": 17.6667,
+    "file_beat": 26,
+    "file_bar": 6,
+    "beat_in_bar": 3,
+    "off_grid_beats": 0.5
+   }
+  },
+  {
+   "frame": 609,
+   "film_s": 25.3333,
+   "event": "S07 cut, glass zero arrives",
+   "music": {
+    "file_s": 20.0,
+    "file_beat": 30,
+    "file_bar": 7,
+    "beat_in_bar": 3
+   }
+  },
+  {
+   "frame": 673,
+   "film_s": 28.0,
+   "event": "S07 double time starts",
+   "music": {
+    "file_s": 22.6667,
+    "file_beat": 34,
+    "file_bar": 8,
+    "beat_in_bar": 3
+   }
+  },
+  {
+   "frame": 705,
+   "film_s": 29.3333,
+   "event": "droid arrives; file bar 9 (the busiest bar, a fill)",
+   "music": {
+    "file_s": 24.0,
+    "file_beat": 36,
+    "file_bar": 9,
+    "beat_in_bar": 1
+   }
+  },
+  {
+   "frame": 721,
+   "film_s": 30.0,
+   "event": "binder lift",
+   "music": {
+    "file_s": 24.6667,
+    "file_beat": 37,
+    "file_bar": 9,
+    "beat_in_bar": 2
+   }
+  },
+  {
+   "frame": 753,
+   "film_s": 31.3333,
+   "event": "S08 cut (LPF 600 Hz, -6 dB)",
+   "music": {
+    "file_s": 26.0,
+    "file_beat": 39,
+    "file_bar": 9,
+    "beat_in_bar": 4
+   }
+  },
+  {
+   "frame": 769,
+   "film_s": 32.0,
+   "event": "file bar 10: groove B enters (backbeat snare, chord changes) 1 beat into S08",
+   "music": {
+    "file_s": 26.6667,
+    "file_beat": 40,
+    "file_bar": 10,
+    "beat_in_bar": 1
+   }
+  },
+  {
+   "frame": 833,
+   "film_s": 34.6667,
+   "event": "S09 cut (-4 dB, 5 kHz LPF)",
+   "music": {
+    "file_s": 29.3333,
+    "file_beat": 43,
+    "file_bar": 10,
+    "beat_in_bar": 4
+   }
+  },
+  {
+   "frame": 929,
+   "film_s": 38.6667,
+   "event": "S10 cut",
+   "music": {
+    "file_s": 33.3333,
+    "file_beat": 49,
+    "file_bar": 12,
+    "beat_in_bar": 2
+   }
+  },
+  {
+   "frame": 961,
+   "film_s": 40.0,
+   "event": "JACK CLICK: hard stop (bar 15 downbeat)",
+   "music": null,
+   "note": "M2 is silent from 39.999 s (1.0 ms guard); the file bar 13 downbeat at 34.6667 s is the one that is not played"
+  },
+  {
+   "frame": 1153,
+   "film_s": 48.0,
+   "event": "S12: the intro returns (bar 18)",
+   "music": {
+    "file_s": 0.0,
+    "file_beat": 0,
+    "file_bar": 0,
+    "beat_in_bar": 1
+   }
+  },
+  {
+   "frame": 1217,
+   "film_s": 50.6667,
+   "event": "fireflies lock (bar 19 downbeat)",
+   "music": {
+    "file_s": 2.6667,
+    "file_beat": 4,
+    "file_bar": 1,
+    "beat_in_bar": 1
+   }
+  },
+  {
+   "frame": 1249,
+   "film_s": 52.0,
+   "event": "S13 cut (600 Hz LPF)",
+   "music": {
+    "file_s": 4.0,
+    "file_beat": 6,
+    "file_bar": 1,
+    "beat_in_bar": 3
+   }
+  },
+  {
+   "frame": 1281,
+   "film_s": 53.3333,
+   "event": "full kit re-enters (bar 20), muffled",
+   "music": {
+    "file_s": 5.3333,
+    "file_beat": 7,
+    "file_bar": 1,
+    "beat_in_bar": 4
+   }
+  },
+  {
+   "frame": 1297,
+   "film_s": 54.0,
+   "event": "the sip (beat 81)",
+   "music": {
+    "file_s": 6.0,
+    "file_beat": 9,
+    "file_bar": 2,
+    "beat_in_bar": 2
+   }
+  },
+  {
+   "frame": 1345,
+   "film_s": 56.0,
+   "event": "S14 cut: final bar",
+   "music": {
+    "file_s": 8.0,
+    "file_beat": 12,
+    "file_bar": 3,
+    "beat_in_bar": 1
+   }
+  },
+  {
+   "frame": 1409,
+   "film_s": 58.6667,
+   "event": "HARD STOP + cut to black (bar 22 downbeat)",
+   "music": null,
+   "note": "M3 is silent from 58.6657 s; the file bar 4 downbeat at 10.6667 s is the one that is not played"
+  }
+ ],
+ "edit_points": [
+  {
+   "frame": 129,
+   "type": "loop splice (butt splice, no overlap)",
+   "out": "M1 fades out over 4 ms and is silent 1 ms before 5.3333 s (file 5.3323 s, just before its own drop)",
+   "into": "M2 starts at file sample 0 (the bar-0 kick) exactly on 5.3333 s, with a 12-sample fade-in",
+   "hidden_by": "the S01/S02 match cut, with the music low-passed at 400 Hz"
+  },
+  {
+   "frame": 961,
+   "type": "hard stop",
+   "out": "M2 fades out over 4 ms and is silent 1 ms before 40.0000 s",
+   "note": "The jack click lands on the f961 downbeat (sample 1920000)."
+  },
+  {
+   "frame": 1153,
+   "type": "hard start",
+   "into": "M3 starts at file sample 0 exactly on 48.0000 s"
+  },
+  {
+   "frame": 1409,
+   "type": "hard stop",
+   "out": "M3 fades out over 4 ms and is silent 1 ms before 58.6667 s",
+   "note": "The cut to black lands on the f1409 downbeat (sample 2816000)."
+  }
+ ],
+ "variants": {
+  "alt_button_f1409": {
+   "description": "Alternative reading of \"cut on the kick\": let the file bar 4 downbeat hit sound for exactly 1 frame (f1409), then choke it with an 8 ms raised-cosine fade, ending at f1410. Rendered for comparison as test_music_edit_alt_button.wav.",
+   "segment_override": {
+    "id": "M3",
+    "film_frames": [
+     1153,
+     1409
+    ],
+    "file_samples_48k": [
+     0,
+     514000
+    ],
+    "fade_out": {
+     "shape": "raised_cosine",
+     "samples": 384,
+     "ms": 8.0,
+     "guard_samples": 0
+    }
+   }
+  }
+ },
+ "automation_from_treatment": [
+  {
+   "frames": [
+    1,
+    128
+   ],
+   "source": "S01",
+   "lpf_hz": 400,
+   "gain_db": 0,
+   "note": "intro heard through a paper wall"
+  },
+  {
+   "frames": [
+    129,
+    250
+   ],
+   "source": "S02",
+   "lpf_hz": [
+    400,
+    "open"
+   ],
+   "gain_db": 0,
+   "note": "exponential sweep 400 Hz -> full range by f250"
+  },
+  {
+   "frames": [
+    252,
+    256
+   ],
+   "source": "S02 \"held breath of near-silence\"",
+   "optional": true,
+   "note": "Not applied in the test edit. If it is meant for the music too, mute 5 frames before the drop (fade out ending at f252, back on the f257 downbeat). The end of the intro riser would then be lost."
+  },
+  {
+   "frames": [
+    257,
+    528
+   ],
+   "source": "S03-S05",
+   "lpf_hz": null,
+   "gain_db": 0,
+   "note": "full range, in the room"
+  },
+  {
+   "frames": [
+    529,
+    608
+   ],
+   "source": "S06",
+   "lpf_hz": 600,
+   "gain_db": -6,
+   "note": "snap back to full on the f609 cut"
+  },
+  {
+   "frames": [
+    609,
+    752
+   ],
+   "source": "S07",
+   "lpf_hz": null,
+   "gain_db": 0
+  },
+  {
+   "frames": [
+    753,
+    832
+   ],
+   "source": "S08",
+   "lpf_hz": 600,
+   "gain_db": -6,
+   "note": "snap back on the f833 cut"
+  },
+  {
+   "frames": [
+    833,
+    928
+   ],
+   "source": "S09",
+   "lpf_hz": 5000,
+   "gain_db": -4,
+   "note": "gentle 5 kHz low-pass for tension"
+  },
+  {
+   "frames": [
+    929,
+    960
+   ],
+   "source": "S10 (unspecified)",
+   "lpf_hz": 5000,
+   "gain_db": -4,
+   "note": "recommend holding the S09 state into the stop"
+  },
+  {
+   "frames": [
+    961,
+    961
+   ],
+   "source": "S10",
+   "note": "hard stop; the jack click carries the downbeat"
+  },
+  {
+   "frames": [
+    1153,
+    1248
+   ],
+   "source": "S12",
+   "lpf_hz": null,
+   "gain_db": 0,
+   "note": "clean and close"
+  },
+  {
+   "frames": [
+    1249,
+    1280
+   ],
+   "source": "S13",
+   "lpf_hz": 600,
+   "gain_db": 0,
+   "note": "heard from inside the cup"
+  },
+  {
+   "frames": [
+    1281,
+    1297
+   ],
+   "source": "S13",
+   "lpf_hz": [
+    600,
+    3000
+   ],
+   "gain_db": [
+    0,
+    6
+   ],
+   "note": "full kit re-enters muffled at f1281; the filter opens and the music swells while the cup rises to his face, arriving on the sip (f1297)"
+  },
+  {
+   "frames": [
+    1298,
+    1344
+   ],
+   "source": "S13",
+   "lpf_hz": 3000,
+   "gain_db": 6
+  },
+  {
+   "frames": [
+    1345,
+    1408
+   ],
+   "source": "S14 / Music section",
+   "lpf_hz": [
+    3000,
+    "open"
+   ],
+   "gain_db": 6,
+   "note": "Treatment conflict: the Music section opens to full fidelity at f1345 (the final bar's downbeat), but S14 says through the skylight at f1361. Recommend opening on f1345, or ramping f1345-1361."
+  },
+  {
+   "frames": [
+    1409,
+    1409
+   ],
+   "source": "S14",
+   "note": "hard stop, cut to black"
+  }
+ ],
+ "alternatives": [
+  {
+   "rank": 1,
+   "title": "Chill Wave",
+   "artist": "Kevin MacLeod",
+   "path": "music_lofi/kevinmacleod-chill-wave.mp3",
+   "sha256": "7f07fbf89860959ff527f7b74606146dd0b0de263739989a70ce712c7c361614",
+   "license": "CC-BY 4.0. Attribution required: \"Chill Wave\" Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/. Credit goes in the post description, since the film has no text.",
+   "measured_bpm": 100.0,
+   "tempo_evidence": "onset autocorrelation 99.9996-99.9999 BPM at 4-64 beat lags; loop waveform xcorr 4 bars r=0.99 -> 100.000",
+   "first_downbeat_s": 0.0017,
+   "bar_s": 2.4,
+   "structure": "There is no sparse intro: the track is at full level from bar 0 (-12.5 dB). Breakdown bars 48-55 (115.20-134.40 s, kick and bass out, low band -42 dB), a partial build in bars 56-62 (134.40-151.20 s), a drop-out in bar 63 (151.20-153.60 s, -24 dB), then the full groove returns on bar 64 (153.60 s, +12 dB). Outro from bar 96 (230.4 s).",
+   "stretch": {
+    "tempo_factor": 0.9,
+    "change_pct": -10.0,
+    "ffmpeg": "rubberband=tempo=0.9:transients=crisp:detector=percussive:phase=laminar:window=standard:channels=together:pitchq=quality",
+    "note": "After the stretch, 1 source bar = 2.6667 s = 64 frames. Pitch is unchanged. 10% is within the usual clean range for a lo-fi loop."
+   },
+   "proposed_map": {
+    "f1-256": "source bars 54-55 played twice (sparse breakdown bars, looped exactly like the primary plan; splice on f129)",
+    "f257": "bar 64 downbeat, the return (153.6017 s source)",
+    "f257-960": "bars 64-74 continuous",
+    "f961": "hard stop before the bar 75 downbeat (180.0017 s)",
+    "f1153-1280": "bars 62-63 (end of the build plus the drop-out)",
+    "f1281": "bar 64 return again",
+    "f1409": "hard stop before the bar 66 downbeat (158.4017 s)"
+   },
+   "pros": "Loop-exact production, so the grid is as clean as Night Sky. The smallest stretch of any candidate (10%). A warm, chill electronic groove close to the treatment's mood.",
+   "cons": "CC-BY credit is required. The intro has to be borrowed from the breakdown. Electronic rather than dusty hip-hop."
+  },
+  {
+   "rank": 2,
+   "title": "Sweet September",
+   "artist": "Arulo",
+   "provider": "Mixkit (music #282)",
+   "path": "music_lofi/mixkit-282-sweet-september.mp3",
+   "sha256": "6ad6db61c4c9018cb9dfc99ed5c3b72f3143d3a5db31920e4f1f6b01d2f1b4a1",
+   "license": "Mixkit Stock Music Free License (same terms as the primary track; no attribution required).",
+   "measured_bpm": 76.0,
+   "tempo_evidence": "onset autocorrelation 75.998-76.000 BPM; loop waveform xcorr 16 bars r=0.97 -> 76.000",
+   "first_downbeat_s": 0.0103,
+   "bar_s": 3.1579,
+   "structure": "4-bar sparse intro in bars 0-3 (0.010-12.642 s, -22 dB). DROP on bar 4 (12.6419 s, +8.7 dB, bass in). Groove in bars 4-11, a lift on bar 12 (37.905 s, +2 dB), breakdown in bars 21-23 (66.3-75.8 s), return on bar 24 (75.80 s), fade from bar 29 (91.6 s).",
+   "stretch": {
+    "tempo_factor": 1.184211,
+    "change_pct": 18.42,
+    "ffmpeg": "rubberband=tempo=1.184211:transients=crisp:detector=percussive:phase=laminar:window=standard:channels=together:pitchq=quality",
+    "note": "A large stretch. Audition the piano and pads for phasiness before committing."
+   },
+   "proposed_map": {
+    "f1-256": "source bars 0-3 straight through (the 4-bar intro fills S01+S02 exactly, so no loop splice is needed)",
+    "f257": "bar 4 downbeat, the drop (12.6419 s source)",
+    "f257-960": "bars 4-14 continuous (the bar 12 lift lands on f769, like Night Sky's groove B)",
+    "f961": "hard stop before the bar 15 downbeat (47.3787 s)",
+    "f1153-1280": "bars 2-3 (the last 2 intro bars)",
+    "f1281": "bar 4 drop again",
+    "f1409": "hard stop before the bar 6 downbeat (18.9577 s)"
+   },
+   "pros": "The best structural fit: a real 4-bar sparse intro into a drop lands on f257 without a splice, and the breakdown and return are built in. Same licence as the primary, no credit needed. Dusty lo-fi hip-hop, as the treatment specifies.",
+   "cons": "An 18.4% speed-up (76 -> 90 BPM) changes the laid-back feel and risks stretch artefacts on sustained keys."
+  }
+ ],
+ "rejected_candidates": {
+  "note": "No other library track sits within the treatment's 0.2% conform limit of 90 BPM (or 45/180). Measured tempos:",
+  "tempos": {
+   "Cyberpunk City (Mixkit 140)": "100.00 BPM, dark/eerie mood, kick and bass only from bar 7 (17.65 s); -10% stretch but the wrong tone",
+   "Local Forecast - Elevator (MacLeod)": "82.0 BPM swing lounge, not loop-based (xcorr r<0.06), no kick to stop on; +9.8%",
+   "Tonight (Mixkit 841)": "105.0 BPM boom-bap, -14.3%, already heavily limited (-6 dB RMS)",
+   "Close Up / Coffee or Tea (Mixkit 1167/1168)": "105.0 BPM corporate electronica, -14.3%",
+   "Ouroboros (MacLeod)": "107 BPM",
+   "Brainiac / Autofahren (Mixkit)": "118 / 117 BPM",
+   "Better Times / Electro Dreams / Mountains": "120 / 120 / 121.5 BPM",
+   "Digital Clouds / Lobby Time": "129 / 128 BPM (64.5 / 64 half-time)",
+   "Uplifting Bass (Mixkit 726)": "134.0 BPM",
+   "Epical Drums 05 (Mixkit 680)": "150.0 BPM (75 half-time)",
+   "Focus on Yourself (Mixkit 568)": "114 BPM"
+  }
+ },
+ "render": {
+  "script": "beatmap/render_music_edit.py",
+  "test_wav": "../out/audio/test_music_edit.wav",
+  "format": "48 kHz stereo float32, 60.000 s (2880000 samples), unity gain, no automation applied",
+  "verify_script": "beatmap/verify_music_edit.py"
+ },
+ "verification": {
+  "test_wav": "test_music_edit.wav",
+  "total_samples": 2880000,
+  "duration_s": 60.0,
+  "mapping": [
+   {
+    "id": "M1",
+    "max_abs_diff_outside_fades": 0.0,
+    "xcorr_lag_samples_head_mid_tail": [
+     0.0012,
+     -0.0001,
+     -0.0008
+    ],
+    "lag_ms_max": 2e-05
+   },
+   {
+    "id": "M2",
+    "max_abs_diff_outside_fades": 0.0,
+    "xcorr_lag_samples_head_mid_tail": [
+     0.0012,
+     -0.0002,
+     -0.0029
+    ],
+    "lag_ms_max": 6e-05
+   },
+   {
+    "id": "M3",
+    "max_abs_diff_outside_fades": 0.0,
+    "xcorr_lag_samples_head_mid_tail": [
+     0.0012,
+     -0.0001,
+     -0.0699
+    ],
+    "lag_ms_max": 0.00146
+   }
+  ],
+  "section_boundaries": [
+   {
+    "frame": 1,
+    "label": "S01 start / intro",
+    "grid_s": 0.0,
+    "type": "onset",
+    "error_ms": 0.0,
+    "first_transient_ms": 0.0,
+    "rise_db": 106.3,
+    "silent_1ms_before": true,
+    "first_nonzero_sample_offset": 0,
+    "source_sample_at_grid": 0
+   },
+   {
+    "frame": 129,
+    "label": "f129 loop splice (match cut)",
+    "grid_s": 5.333333,
+    "type": "onset",
+    "error_ms": 0.0,
+    "first_transient_ms": 0.0,
+    "rise_db": 106.3,
+    "silent_1ms_before": true,
+    "first_nonzero_sample_offset": 0,
+    "source_sample_at_grid": 0
+   },
+   {
+    "frame": 257,
+    "label": "f257 DROP",
+    "grid_s": 10.666667,
+    "type": "onset",
+    "error_ms": 0.0,
+    "first_transient_ms": 0.0,
+    "rise_db": 12.8
+   },
+   {
+    "frame": 321,
+    "label": "f321 printer downbeat",
+    "grid_s": 13.333333,
+    "type": "onset",
+    "error_ms": 2.75,
+    "first_transient_ms": -4.25,
+    "rise_db": 17.9
+   },
+   {
+    "frame": 705,
+    "label": "f705 file bar 9 (busiest bar)",
+    "grid_s": 29.333333,
+    "type": "onset",
+    "error_ms": 1.5,
+    "first_transient_ms": -5.5,
+    "rise_db": 12.7
+   },
+   {
+    "frame": 769,
+    "label": "f769 file bar 10 (groove B)",
+    "grid_s": 32.0,
+    "type": "onset",
+    "error_ms": 4.0,
+    "first_transient_ms": 3.5,
+    "rise_db": 17.7
+   },
+   {
+    "frame": 833,
+    "label": "f833 S09 cut",
+    "grid_s": 34.666667,
+    "type": "onset",
+    "error_ms": -2.75,
+    "first_transient_ms": -3.75,
+    "rise_db": 12.9
+   },
+   {
+    "frame": 961,
+    "label": "f961 JACK CLICK hard stop",
+    "grid_s": 40.0,
+    "type": "stop",
+    "silent_from_ms": -1.0,
+    "fade_minus6db_ms": -3.0,
+    "peak_after_grid_500ms": 0.0,
+    "error_ms": -1.0
+   },
+   {
+    "frame": 1153,
+    "label": "f1153 intro returns",
+    "grid_s": 48.0,
+    "type": "onset",
+    "error_ms": 0.0,
+    "first_transient_ms": 0.0,
+    "rise_db": 106.3,
+    "silent_1ms_before": true,
+    "first_nonzero_sample_offset": 0,
+    "source_sample_at_grid": 0
+   },
+   {
+    "frame": 1217,
+    "label": "f1217 firefly lock",
+    "grid_s": 50.666667,
+    "type": "onset",
+    "error_ms": 7.25,
+    "first_transient_ms": 2.5,
+    "rise_db": 15.0
+   },
+   {
+    "frame": 1281,
+    "label": "f1281 full kit re-enters",
+    "grid_s": 53.333333,
+    "type": "onset",
+    "error_ms": 0.0,
+    "first_transient_ms": 0.0,
+    "rise_db": 12.8
+   },
+   {
+    "frame": 1297,
+    "label": "f1297 sip",
+    "grid_s": 54.0,
+    "type": "onset",
+    "error_ms": 6.75,
+    "first_transient_ms": 6.75,
+    "rise_db": 16.4
+   },
+   {
+    "frame": 1345,
+    "label": "f1345 final bar",
+    "grid_s": 56.0,
+    "type": "onset",
+    "error_ms": 2.75,
+    "first_transient_ms": -4.25,
+    "rise_db": 17.9
+   },
+   {
+    "frame": 1409,
+    "label": "f1409 HARD STOP",
+    "grid_s": 58.666667,
+    "type": "stop",
+    "silent_from_ms": -1.0,
+    "fade_minus6db_ms": -3.0,
+    "peak_after_grid_500ms": 0.0,
+    "error_ms": -1.0
+   }
+  ],
+  "per_segment_beat_stats": {
+   "M1": {
+    "beats_with_clear_onset": 8,
+    "beats_total": 8,
+    "mean_ms": 1.812,
+    "median_ms": 1.25,
+    "std_ms": 3.323,
+    "max_abs_ms": 7.25,
+    "sync_avg_onset_10pct_ms": -3.25,
+    "first_transient_mean_ms": -1.594,
+    "first_transient_max_abs_ms": 5.25
+   },
+   "M2": {
+    "beats_with_clear_onset": 52,
+    "beats_total": 52,
+    "mean_ms": 1.582,
+    "median_ms": 1.75,
+    "std_ms": 3.531,
+    "max_abs_ms": 8.0,
+    "sync_avg_onset_10pct_ms": -1.25,
+    "first_transient_mean_ms": -2.779,
+    "first_transient_max_abs_ms": 6.75
+   },
+   "M3": {
+    "beats_with_clear_onset": 16,
+    "beats_total": 16,
+    "mean_ms": 2.516,
+    "median_ms": 2.625,
+    "std_ms": 3.551,
+    "max_abs_ms": 8.0,
+    "sync_avg_onset_10pct_ms": -3.25,
+    "first_transient_mean_ms": -1.891,
+    "first_transient_max_abs_ms": 6.75
+   }
+  },
+  "beats": [
+   {
+    "beat": 0,
+    "frame": 1,
+    "segment": "M1",
+    "onset_err_ms": 0.0,
+    "first_transient_ms": 0.0,
+    "rise_db": 106.3
+   },
+   {
+    "beat": 1,
+    "frame": 17,
+    "segment": "M1",
+    "onset_err_ms": 4.75,
+    "first_transient_ms": -1.75,
+    "rise_db": 18.4
+   },
+   {
+    "beat": 2,
+    "frame": 33,
+    "segment": "M1",
+    "onset_err_ms": -1.25,
+    "first_transient_ms": -2.0,
+    "rise_db": 13.5
+   },
+   {
+    "beat": 3,
+    "frame": 49,
+    "segment": "M1",
+    "onset_err_ms": 4.75,
+    "first_transient_ms": -1.75,
+    "rise_db": 13.3
+   },
+   {
+    "beat": 4,
+    "frame": 65,
+    "segment": "M1",
+    "onset_err_ms": 7.25,
+    "first_transient_ms": 2.5,
+    "rise_db": 15.0
+   },
+   {
+    "beat": 5,
+    "frame": 81,
+    "segment": "M1",
+    "onset_err_ms": -3.5,
+    "first_transient_ms": -5.25,
+    "rise_db": 9.8
+   },
+   {
+    "beat": 6,
+    "frame": 97,
+    "segment": "M1",
+    "onset_err_ms": 1.25,
+    "first_transient_ms": -4.25,
+    "rise_db": 10.5
+   },
+   {
+    "beat": 7,
+    "frame": 113,
+    "segment": "M1",
+    "onset_err_ms": 1.25,
+    "first_transient_ms": -0.25,
+    "rise_db": 11.4
+   },
+   {
+    "beat": 8,
+    "frame": 129,
+    "segment": "M2",
+    "onset_err_ms": 0.0,
+    "first_transient_ms": 0.0,
+    "rise_db": 106.3
+   },
+   {
+    "beat": 9,
+    "frame": 145,
+    "segment": "M2",
+    "onset_err_ms": 4.75,
+    "first_transient_ms": -1.75,
+    "rise_db": 18.4
+   },
+   {
+    "beat": 10,
+    "frame": 161,
+    "segment": "M2",
+    "onset_err_ms": -1.25,
+    "first_transient_ms": -2.0,
+    "rise_db": 13.5
+   },
+   {
+    "beat": 11,
+    "frame": 177,
+    "segment": "M2",
+    "onset_err_ms": 4.75,
+    "first_transient_ms": -1.75,
+    "rise_db": 13.3
+   },
+   {
+    "beat": 12,
+    "frame": 193,
+    "segment": "M2",
+    "onset_err_ms": 7.25,
+    "first_transient_ms": 2.5,
+    "rise_db": 15.0
+   },
+   {
+    "beat": 13,
+    "frame": 209,
+    "segment": "M2",
+    "onset_err_ms": -3.5,
+    "first_transient_ms": -5.25,
+    "rise_db": 9.8
+   },
+   {
+    "beat": 14,
+    "frame": 225,
+    "segment": "M2",
+    "onset_err_ms": 1.25,
+    "first_transient_ms": -4.25,
+    "rise_db": 10.5
+   },
+   {
+    "beat": 15,
+    "frame": 241,
+    "segment": "M2",
+    "onset_err_ms": 1.25,
+    "first_transient_ms": -0.25,
+    "rise_db": 11.4
+   },
+   {
+    "beat": 16,
+    "frame": 257,
+    "segment": "M2",
+    "onset_err_ms": 0.0,
+    "first_transient_ms": 0.0,
+    "rise_db": 12.8
+   },
+   {
+    "beat": 17,
+    "frame": 273,
+    "segment": "M2",
+    "onset_err_ms": 6.75,
+    "first_transient_ms": 6.75,
+    "rise_db": 16.4
+   },
+   {
+    "beat": 18,
+    "frame": 289,
+    "segment": "M2",
+    "onset_err_ms": -4.0,
+    "first_transient_ms": -4.0,
+    "rise_db": 13.1
+   },
+   {
+    "beat": 19,
+    "frame": 305,
+    "segment": "M2",
+    "onset_err_ms": 8.0,
+    "first_transient_ms": -5.5,
+    "rise_db": 13.7
+   },
+   {
+    "beat": 20,
+    "frame": 321,
+    "segment": "M2",
+    "onset_err_ms": 2.75,
+    "first_transient_ms": -4.25,
+    "rise_db": 17.9
+   },
+   {
+    "beat": 21,
+    "frame": 337,
+    "segment": "M2",
+    "onset_err_ms": 2.5,
+    "first_transient_ms": -4.0,
+    "rise_db": 20.2
+   },
+   {
+    "beat": 22,
+    "frame": 353,
+    "segment": "M2",
+    "onset_err_ms": 5.75,
+    "first_transient_ms": -1.75,
+    "rise_db": 11.1
+   },
+   {
+    "beat": 23,
+    "frame": 369,
+    "segment": "M2",
+    "onset_err_ms": 4.0,
+    "first_transient_ms": -4.75,
+    "rise_db": 19.3
+   },
+   {
+    "beat": 24,
+    "frame": 385,
+    "segment": "M2",
+    "onset_err_ms": 0.0,
+    "first_transient_ms": 0.0,
+    "rise_db": 25.5
+   },
+   {
+    "beat": 25,
+    "frame": 401,
+    "segment": "M2",
+    "onset_err_ms": 2.0,
+    "first_transient_ms": -1.5,
+    "rise_db": 22.5
+   },
+   {
+    "beat": 26,
+    "frame": 417,
+    "segment": "M2",
+    "onset_err_ms": -2.0,
+    "first_transient_ms": -2.5,
+    "rise_db": 12.6
+   },
+   {
+    "beat": 27,
+    "frame": 433,
+    "segment": "M2",
+    "onset_err_ms": 0.0,
+    "first_transient_ms": -5.5,
+    "rise_db": 21.9
+   },
+   {
+    "beat": 28,
+    "frame": 449,
+    "segment": "M2",
+    "onset_err_ms": 3.75,
+    "first_transient_ms": -5.5,
+    "rise_db": 14.0
+   },
+   {
+    "beat": 29,
+    "frame": 465,
+    "segment": "M2",
+    "onset_err_ms": 6.0,
+    "first_transient_ms": -2.75,
+    "rise_db": 17.3
+   },
+   {
+    "beat": 30,
+    "frame": 481,
+    "segment": "M2",
+    "onset_err_ms": 3.5,
+    "first_transient_ms": 0.0,
+    "rise_db": 17.4
+   },
+   {
+    "beat": 31,
+    "frame": 497,
+    "segment": "M2",
+    "onset_err_ms": -5.25,
+    "first_transient_ms": -5.25,
+    "rise_db": 20.4
+   },
+   {
+    "beat": 32,
+    "frame": 513,
+    "segment": "M2",
+    "onset_err_ms": -2.0,
+    "first_transient_ms": -5.0,
+    "rise_db": 16.7
+   },
+   {
+    "beat": 33,
+    "frame": 529,
+    "segment": "M2",
+    "onset_err_ms": -0.5,
+    "first_transient_ms": -0.5,
+    "rise_db": 25.9
+   },
+   {
+    "beat": 34,
+    "frame": 545,
+    "segment": "M2",
+    "onset_err_ms": 1.5,
+    "first_transient_ms": -5.75,
+    "rise_db": 15.3
+   },
+   {
+    "beat": 35,
+    "frame": 561,
+    "segment": "M2",
+    "onset_err_ms": 3.0,
+    "first_transient_ms": -5.25,
+    "rise_db": 15.3
+   },
+   {
+    "beat": 36,
+    "frame": 577,
+    "segment": "M2",
+    "onset_err_ms": -4.0,
+    "first_transient_ms": -4.0,
+    "rise_db": 28.0
+   },
+   {
+    "beat": 37,
+    "frame": 593,
+    "segment": "M2",
+    "onset_err_ms": -2.75,
+    "first_transient_ms": -4.5,
+    "rise_db": 24.5
+   },
+   {
+    "beat": 38,
+    "frame": 609,
+    "segment": "M2",
+    "onset_err_ms": -1.25,
+    "first_transient_ms": -1.5,
+    "rise_db": 19.9
+   },
+   {
+    "beat": 39,
+    "frame": 625,
+    "segment": "M2",
+    "onset_err_ms": 7.75,
+    "first_transient_ms": -4.5,
+    "rise_db": 16.9
+   },
+   {
+    "beat": 40,
+    "frame": 641,
+    "segment": "M2",
+    "onset_err_ms": 2.25,
+    "first_transient_ms": 0.0,
+    "rise_db": 15.2
+   },
+   {
+    "beat": 41,
+    "frame": 657,
+    "segment": "M2",
+    "onset_err_ms": -1.0,
+    "first_transient_ms": -2.0,
+    "rise_db": 18.1
+   },
+   {
+    "beat": 42,
+    "frame": 673,
+    "segment": "M2",
+    "onset_err_ms": 1.5,
+    "first_transient_ms": -3.25,
+    "rise_db": 16.8
+   },
+   {
+    "beat": 43,
+    "frame": 689,
+    "segment": "M2",
+    "onset_err_ms": 2.25,
+    "first_transient_ms": -5.75,
+    "rise_db": 14.8
+   },
+   {
+    "beat": 44,
+    "frame": 705,
+    "segment": "M2",
+    "onset_err_ms": 1.5,
+    "first_transient_ms": -5.5,
+    "rise_db": 12.7
+   },
+   {
+    "beat": 45,
+    "frame": 721,
+    "segment": "M2",
+    "onset_err_ms": 4.0,
+    "first_transient_ms": -5.5,
+    "rise_db": 15.2
+   },
+   {
+    "beat": 46,
+    "frame": 737,
+    "segment": "M2",
+    "onset_err_ms": -2.0,
+    "first_transient_ms": -4.75,
+    "rise_db": 11.1
+   },
+   {
+    "beat": 47,
+    "frame": 753,
+    "segment": "M2",
+    "onset_err_ms": 5.0,
+    "first_transient_ms": -4.0,
+    "rise_db": 14.8
+   },
+   {
+    "beat": 48,
+    "frame": 769,
+    "segment": "M2",
+    "onset_err_ms": 4.0,
+    "first_transient_ms": 3.5,
+    "rise_db": 17.7
+   },
+   {
+    "beat": 49,
+    "frame": 785,
+    "segment": "M2",
+    "onset_err_ms": -0.25,
+    "first_transient_ms": -2.5,
+    "rise_db": 11.7
+   },
+   {
+    "beat": 50,
+    "frame": 801,
+    "segment": "M2",
+    "onset_err_ms": 4.5,
+    "first_transient_ms": -6.25,
+    "rise_db": 13.8
+   },
+   {
+    "beat": 51,
+    "frame": 817,
+    "segment": "M2",
+    "onset_err_ms": -2.75,
+    "first_transient_ms": -2.75,
+    "rise_db": 12.3
+   },
+   {
+    "beat": 52,
+    "frame": 833,
+    "segment": "M2",
+    "onset_err_ms": -2.75,
+    "first_transient_ms": -3.75,
+    "rise_db": 12.9
+   },
+   {
+    "beat": 53,
+    "frame": 849,
+    "segment": "M2",
+    "onset_err_ms": 3.0,
+    "first_transient_ms": -1.75,
+    "rise_db": 9.9
+   },
+   {
+    "beat": 54,
+    "frame": 865,
+    "segment": "M2",
+    "onset_err_ms": 6.25,
+    "first_transient_ms": 0.5,
+    "rise_db": 19.7
+   },
+   {
+    "beat": 55,
+    "frame": 881,
+    "segment": "M2",
+    "onset_err_ms": 4.0,
+    "first_transient_ms": -1.75,
+    "rise_db": 15.3
+   },
+   {
+    "beat": 56,
+    "frame": 897,
+    "segment": "M2",
+    "onset_err_ms": -5.0,
+    "first_transient_ms": -5.0,
+    "rise_db": 13.3
+   },
+   {
+    "beat": 57,
+    "frame": 913,
+    "segment": "M2",
+    "onset_err_ms": 6.0,
+    "first_transient_ms": -2.75,
+    "rise_db": 12.6
+   },
+   {
+    "beat": 58,
+    "frame": 929,
+    "segment": "M2",
+    "onset_err_ms": 5.25,
+    "first_transient_ms": -3.5,
+    "rise_db": 13.9
+   },
+   {
+    "beat": 59,
+    "frame": 945,
+    "segment": "M2",
+    "onset_err_ms": -3.5,
+    "first_transient_ms": -3.5,
+    "rise_db": 16.8
+   },
+   {
+    "beat": 72,
+    "frame": 1153,
+    "segment": "M3",
+    "onset_err_ms": 0.0,
+    "first_transient_ms": 0.0,
+    "rise_db": 106.3
+   },
+   {
+    "beat": 73,
+    "frame": 1169,
+    "segment": "M3",
+    "onset_err_ms": 4.75,
+    "first_transient_ms": -1.75,
+    "rise_db": 18.4
+   },
+   {
+    "beat": 74,
+    "frame": 1185,
+    "segment": "M3",
+    "onset_err_ms": -1.25,
+    "first_transient_ms": -2.0,
+    "rise_db": 13.5
+   },
+   {
+    "beat": 75,
+    "frame": 1201,
+    "segment": "M3",
+    "onset_err_ms": 4.75,
+    "first_transient_ms": -1.75,
+    "rise_db": 13.3
+   },
+   {
+    "beat": 76,
+    "frame": 1217,
+    "segment": "M3",
+    "onset_err_ms": 7.25,
+    "first_transient_ms": 2.5,
+    "rise_db": 15.0
+   },
+   {
+    "beat": 77,
+    "frame": 1233,
+    "segment": "M3",
+    "onset_err_ms": -3.5,
+    "first_transient_ms": -5.25,
+    "rise_db": 9.8
+   },
+   {
+    "beat": 78,
+    "frame": 1249,
+    "segment": "M3",
+    "onset_err_ms": 1.25,
+    "first_transient_ms": -4.25,
+    "rise_db": 10.5
+   },
+   {
+    "beat": 79,
+    "frame": 1265,
+    "segment": "M3",
+    "onset_err_ms": 1.25,
+    "first_transient_ms": -0.25,
+    "rise_db": 11.4
+   },
+   {
+    "beat": 80,
+    "frame": 1281,
+    "segment": "M3",
+    "onset_err_ms": 0.0,
+    "first_transient_ms": 0.0,
+    "rise_db": 12.8
+   },
+   {
+    "beat": 81,
+    "frame": 1297,
+    "segment": "M3",
+    "onset_err_ms": 6.75,
+    "first_transient_ms": 6.75,
+    "rise_db": 16.4
+   },
+   {
+    "beat": 82,
+    "frame": 1313,
+    "segment": "M3",
+    "onset_err_ms": -4.0,
+    "first_transient_ms": -4.0,
+    "rise_db": 13.1
+   },
+   {
+    "beat": 83,
+    "frame": 1329,
+    "segment": "M3",
+    "onset_err_ms": 8.0,
+    "first_transient_ms": -5.5,
+    "rise_db": 13.7
+   },
+   {
+    "beat": 84,
+    "frame": 1345,
+    "segment": "M3",
+    "onset_err_ms": 2.75,
+    "first_transient_ms": -4.25,
+    "rise_db": 17.9
+   },
+   {
+    "beat": 85,
+    "frame": 1361,
+    "segment": "M3",
+    "onset_err_ms": 2.5,
+    "first_transient_ms": -4.0,
+    "rise_db": 20.2
+   },
+   {
+    "beat": 86,
+    "frame": 1377,
+    "segment": "M3",
+    "onset_err_ms": 5.75,
+    "first_transient_ms": -1.75,
+    "rise_db": 11.1
+   },
+   {
+    "beat": 87,
+    "frame": 1393,
+    "segment": "M3",
+    "onset_err_ms": 4.0,
+    "first_transient_ms": -4.75,
+    "rise_db": 19.3
+   }
+  ],
+  "clicks": [
+   {
+    "frame": 129,
+    "kind": "splice",
+    "hf_gt5k_excess_db_max": 0.0,
+    "max_step_near_edit": 0.08105,
+    "p999_step_program": 0.09954,
+    "verdict": "click-free"
+   },
+   {
+    "frame": 961,
+    "kind": "stop",
+    "hf_gt5k_excess_db_max": 0.0,
+    "max_step_near_edit": 0.00724,
+    "p999_step_program": 0.15073,
+    "verdict": "click-free"
+   },
+   {
+    "frame": 1153,
+    "kind": "start",
+    "hf_gt5k_excess_db_max": 0.0,
+    "max_step_near_edit": 0.08105,
+    "p999_step_program": 0.08534,
+    "verdict": "click-free"
+   },
+   {
+    "frame": 1409,
+    "kind": "stop",
+    "hf_gt5k_excess_db_max": 0.0,
+    "max_step_near_edit": 0.00202,
+    "p999_step_program": 0.07363,
+    "verdict": "click-free"
+   }
+  ],
+  "integrated_lufs": -19.07,
+  "peak_dbfs": 0.14
+ }
+}

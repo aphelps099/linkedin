@@ -1,0 +1,100 @@
+[
+ {
+  "id": "s01",
+  "start": 1,
+  "end": 128,
+  "env": "E1_OFFLINE",
+  "script": "s01_offline_glide.py"
+ },
+ {
+  "id": "s02",
+  "start": 129,
+  "end": 256,
+  "env": "E3_MACRO_INSERTS",
+  "script": "s02_lid_reveal.py"
+ },
+ {
+  "id": "s03",
+  "start": 257,
+  "end": 352,
+  "env": "E2_LONG_ROOM",
+  "script": "s03_the_drop.py"
+ },
+ {
+  "id": "s04",
+  "start": 353,
+  "end": 432,
+  "env": "E2_LONG_ROOM",
+  "script": "s04_padlock_glide.py"
+ },
+ {
+  "id": "s05",
+  "start": 433,
+  "end": 528,
+  "env": "E2_LONG_ROOM",
+  "script": "s05_outstanding.py"
+ },
+ {
+  "id": "s06",
+  "start": 529,
+  "end": 608,
+  "env": "E1_OFFLINE",
+  "script": "s06_arch.py"
+ },
+ {
+  "id": "s07",
+  "start": 609,
+  "end": 752,
+  "env": "E2_LONG_ROOM",
+  "script": "s07_deferral_machine.py"
+ },
+ {
+  "id": "s08",
+  "start": 753,
+  "end": 832,
+  "env": "E1_OFFLINE",
+  "script": "s08_landscape.py"
+ },
+ {
+  "id": "s09",
+  "start": 833,
+  "end": 928,
+  "env": "E2_LONG_ROOM",
+  "script": "s09_same_padlock.py"
+ },
+ {
+  "id": "s10",
+  "start": 929,
+  "end": 992,
+  "env": "E3_MACRO_INSERTS",
+  "script": "s10_jack.py"
+ },
+ {
+  "id": "s11",
+  "start": 993,
+  "end": 1152,
+  "env": "E2_LONG_ROOM",
+  "script": "s11_shutdown.py"
+ },
+ {
+  "id": "s12",
+  "start": 1153,
+  "end": 1248,
+  "env": "E1_OFFLINE",
+  "script": "s12_fireflies.py"
+ },
+ {
+  "id": "s13",
+  "start": 1249,
+  "end": 1344,
+  "env": "E2_LONG_ROOM",
+  "script": "s13_first_sip.py"
+ },
+ {
+  "id": "s14",
+  "start": 1345,
+  "end": 1440,
+  "env": "E2_LONG_ROOM",
+  "script": "s14_circle_back.py"
+ }
+]
