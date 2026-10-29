@@ -1,0 +1,80 @@
+<!doctype html><meta charset="utf-8"><style>html,body{margin:0;background:#0a2735}canvas{display:block;width:1280px;height:720px}</style><canvas id="film" width="1280" height="720"></canvas>
+<script>
+const input=__INPUT__;
+const canvas=document.querySelector('canvas'),ctx=canvas.getContext('2d');
+const load=src=>new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=reject;im.src=src});
+let art,mark,whiteMark;const W=1280,H=720;
+const regions={synergy:[127,39,685,360],people:[861,39,682,360],operations:[127,448,685,347],printer:[862,448,681,347]};
+const names={synergy:'Synergy',people:'People & Culture',operations:'Operations',printer:'Printer'};
+const clamp=x=>Math.max(0,Math.min(1,x));
+function rounded(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r)}
+function background(blue=false){
+ ctx.fillStyle=blue?'#174da9':'#f3efdf';ctx.fillRect(0,0,W,H);
+ ctx.save();ctx.globalAlpha=blue?.23:.10;ctx.globalCompositeOperation=blue?'soft-light':'multiply';
+ for(let y=0;y<H;y+=128)for(let x=0;x<W;x+=128)ctx.drawImage(art,0,0,72,72,x,y,128,128);
+ ctx.restore();
+}
+function brand(x,y,w=210,light=false){const im=light?whiteMark:mark;ctx.drawImage(im,x,y,w,w*im.height/im.width)}
+function wrap(text,size,width,weight=400){
+ ctx.font=`${weight} ${size}px Hoves`;let lines=[],line='';
+ for(const word of text.split(' ')){const next=line?line+' '+word:word;if(ctx.measureText(next).width>width&&line){lines.push(line);line=word}else line=next}if(line)lines.push(line);return lines;
+}
+function lines(text,x,y,width,size,color='#112e3f',weight=400,center=false){
+ const rows=wrap(text,size,width,weight);ctx.fillStyle=color;ctx.textAlign=center?'center':'left';ctx.textBaseline='top';
+ rows.forEach((s,i)=>ctx.fillText(s,center?x+width/2:x,y+i*size*1.12));return rows.length*size*1.12;
+}
+function tile(who,x,y,w,h,{active=false,zoom=1,alpha=1}={}){
+ ctx.save();ctx.globalAlpha=alpha;
+ ctx.shadowColor='#102c4530';ctx.shadowBlur=12;ctx.shadowOffsetY=6;ctx.fillStyle='#f9f4e6';rounded(x,y,w,h,27);ctx.fill();ctx.shadowColor='transparent';
+ const inset=12;rounded(x+inset,y+inset,w-inset*2,h-inset*2,17);ctx.clip();
+ const [sx,sy,sw,sh]=regions[who],iw=w-inset*2,ih=h-inset*2;
+ const s=Math.max(iw/sw,ih/sh)*zoom,dw=sw*s,dh=sh*s;
+ ctx.drawImage(art,sx,sy,sw,sh,x+w/2-dw/2,y+h/2-dh/2,dw,dh);
+ ctx.restore();
+ if(active){ctx.save();ctx.strokeStyle='#dfff78';ctx.lineWidth=4;rounded(x+2,y+2,w-4,h-4,25);ctx.stroke();ctx.restore()}
+}
+function caption(e,t){
+ if(!e||t>e.end+.18)return;
+ const text=e.text;let size=34;let rows=wrap(text,size,1120,400);if(rows.length>2)size=30;
+ const count=wrap(text,size,1120,400).length;
+ lines(text,80,643-(count-1)*18,1120,size,'#f8f4e8',400,true);
+}
+function footer(){ctx.fillStyle='#102c45';ctx.fillRect(0,610,1280,110)}
+window.ready=(async()=>{
+ const regular=new FontFace('Hoves',`url(${input.regular})`,{weight:'400'}),bold=new FontFace('Hoves',`url(${input.bold})`,{weight:'600'});
+ await Promise.all([regular.load(),bold.load()]);document.fonts.add(regular);document.fonts.add(bold);
+ [art,mark,whiteMark]=await Promise.all([load(input.art),load(input.mark),load(input.whiteMark)]);
+ window.draw=t=>{
+  const events=input.timeline.events;const current=events.find(e=>t>=e.start&&t<e.end+e.gap)||null;
+  background(t<2.5||current?.shot==='text');
+  if(t<2.5){
+   brand(76,65,390,true);lines('A more intentional',76,292,1100,91,'#f7f2df',600);lines('first day.',76,395,1100,91,'#f7f2df',600);return;
+  }
+  if(t>events.at(-1).end+2.5){
+   brand(78,68,390);lines('The onboarding update.',78,302,1100,75,'#102c45',600);return;
+  }
+  let e=current||events.find(q=>q.start>t)||events.at(-1);
+  const shot=t<3.1?'grid':e.shot;
+  if(shot==='text'){
+   brand(74,53,225,true);
+   let phrase=e.text;
+   if(e.text.startsWith('Streamlined onboarding.')){const cuts=e.phraseCuts?.length===2?e.phraseCuts:[1.7,3.2];const elapsed=t-e.start;phrase=['Streamlined onboarding.','Reduced friction.','Empowered people.'][elapsed<cuts[0]?0:elapsed<cuts[1]?1:2]}
+   const rows=wrap(phrase,89,1080,600),y=300-(rows.length-1)*49;
+   ctx.font='600 89px Hoves';ctx.textBaseline='top';ctx.textAlign='left';
+   rows.forEach((line,i)=>{let width=ctx.measureText(line).width;ctx.fillStyle='#e4f4b1';ctx.fillRect(70,y+i*100-3,width+26,98);ctx.fillStyle='#102c45';ctx.fillText(line,83,y+i*100)});
+   return;
+  }
+  if(shot==='grid'){
+   ['synergy','people','operations','printer'].forEach((who,i)=>{
+    const q=clamp((t-2.5-i*.11)/.42),shift=(1-Math.pow(q,3))*(q===0?100:32);
+    tile(who,62+(i%2)*590,24+Math.floor(i/2)*289+shift,566,274,{active:who===e.who&&t>=e.start&&t<e.end,alpha:q});
+   });
+  }else{
+   const dt=clamp((t-e.start)/Math.max(.1,e.end-e.start));
+   tile(shot,104,30,1072,556,{zoom:1+dt*.012});
+  }
+  footer();caption(e,t);
+ };
+ window.draw(0);return true;
+})();
+</script>

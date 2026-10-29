@@ -84,4 +84,4 @@ Sources checked October 29, 2026: [Runway credit guide](https://help.runwayml.co
 
 ## Current status
 
-Paper treatment selected. Cast and desk concept stills exist. A new meeting-grid concept is recorded for review. Layer separation, reusable motion, voice tracks, timed text and the first finished episode still need production. The shorter personalized meeting generator remains a separate future product that can reuse this kit.
+Paper treatment selected. Cast and desk concept stills exist. The [first 90-second paper meeting scene](episodes/chatgpt-onboarding/README.md) now combines the meeting-grid artwork, established cast voices, the existing 96 BPM score, local paper-window motion, speaker cuts and timed phrase cards. It is a first review cut, not an approved release. Layered character rigs and expressive prop animation remain future work. The shorter personalized meeting generator remains a separate future product that can reuse this kit.
