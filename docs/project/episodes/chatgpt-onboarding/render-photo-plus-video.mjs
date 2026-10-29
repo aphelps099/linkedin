@@ -16,7 +16,8 @@ const manifest=JSON.parse(await readFile(resolve(root,'assets/motion-manifest.js
 const motion={};for(const [key,m] of Object.entries(manifest)){motion[key]=await Promise.all(m.files.map(p=>data(resolve(root,p),'image/jpeg')))}
 const input={motion,timeline,photos,envelopes,mark:await data(resolve(repo,'public/brand/afterbeat/wordmark-black.svg'),'image/svg+xml'),whiteMark:await data(resolve(repo,'public/brand/afterbeat/wordmark-white.svg'),'image/svg+xml'),regular:await data(resolve(repo,'public/home-2/fonts/tt-hoves-regular.ttf'),'font/ttf'),bold:await data(resolve(repo,'public/home-2/fonts/tt-hoves-demibold.ttf'),'font/ttf')};
 const printer=(await readFile(resolve(repo,'src/meeting-room/printer-paper.js'),'utf8')).replace(/export /g,'');
-const html=(await readFile(resolve(here,'scene-photo-plus.html'),'utf8')).replace('__INPUT__',JSON.stringify(input)).replace('__PRINTER__',printer);
+const synergyDisplay=(await readFile(resolve(repo,'src/meeting-room/synergy-display.js'),'utf8')).replace(/export /g,'');
+const html=(await readFile(resolve(here,'scene-photo-plus.html'),'utf8')).replace('__INPUT__',JSON.stringify(input)).replace('__PRINTER__',printer).replace('__SYNERGY_DISPLAY__',synergyDisplay);
 const browser=await chromium.launch({executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:true});
 const page=await browser.newPage({viewport:{width:1280,height:720},deviceScaleFactor:1});
 await page.setContent(html);await page.evaluate(()=>window.ready);

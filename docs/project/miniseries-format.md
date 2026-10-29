@@ -4,6 +4,10 @@
 
 Aaron approved developing recurring tension around Synergy sincerely believing he is improving efficiency and unifying the company culture. See [the story engine and episode slate](story-engine.md). The current intro and outro are approved; add actual instrument performances to the intro without replacing its paper, typography or timing.
 
+## Mandatory face geometry
+
+Synergy uses the [locked 2×2 eyes / 1×10 mouth rule](characters.md#locked-synergy-face-rule--october-29). One bold green row, fixed vertical position and thickness, horizontal speech-driven expansion to ten cells. No vertical growth, scattered EQ dots or multi-row mouth. This supersedes earlier expressive-face experiments.
+
 ## Refinement — site-consistent meetings and quieter endings
 
 The current [studio cut](episodes/chatgpt-onboarding/studio-version.md) uses the site's actual meeting UI vocabulary: charcoal stage, small-radius tiles, dark name bars, a green active-speaker outline and familiar controls. Hold a steady gallery or speaker composition; avoid diagonal reaction splits, extreme eye crops, alternating pans and repeated push/pull moves. Source resolution and conservative framing must support clean delivery. The three principal camera sources have been enhanced for a 1080p master; this is enhancement of existing footage, not newly captured detail.

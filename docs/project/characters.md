@@ -1,8 +1,17 @@
 # LinkedIn Beats characters and animation
 
+
+## Locked Synergy face rule — October 29
+
+**Mandatory in every new still, scene, animation and renderer:** Synergy's mouth is a single bold green horizontal EQ row. Use a **2×2 logical pixel grid for each open eye and 1×10 for the full mouth**, with the same pixel unit. The mouth is therefore half the height of an open eye. Louder/emphasized syllables extend the lit row horizontally, up to all ten cells; pauses contract it. Its vertical position and thickness never change. Use adjacent illuminated cells so it reads as a solid line, not scattered dots. No stacked rows, vertical spectrum bars, opening jaw, waveform, bouncing baseline or changing glow height.
+
+The row follows the real speech envelope, not a free-running decorative wave. Keep it inside the existing black face screen. Preserve the cream faceted head and existing voice. Open-eye proportions are the reference even during a blink. Existing filmed source eyes may be retained; do not warp the real head to force a grid.
+
+`src/meeting-room/synergy-display.js` is the shared geometry/painter used by the film templates and live Synergy overlay. Run `node scripts/check-synergy-display.mjs` after any face-animation change. Historical exports are superseded, not evidence for loosening this rule.
+
 **Latest voice decision:** retain Synergy's current eSpeak voice. Aaron explicitly rejected the ElevenLabs auditions and instructed that ElevenLabs not be used for his robot voice. The auditions are archived only as rejected history; they are removed from active review. Do not continue that provider's voice exploration without a new user instruction.
 
-**Current pilot direction, October 29:** Aaron prefers the original-photo cast. Use real listening/blink footage and instrument views where those roles already exist, with paper/collage title branding. The [photo performance kit](episodes/chatgpt-onboarding/photo-plus-version.md) retains all seven human identities, archives six unique supplied Synergy coffee clips, and archives two rejected robot-voice auditions. Synergy's existing eSpeak voice remains canonical. The expressive digital face in the photo pilot is a deliberate exception to the older fixed-row screen treatment documented below; the live meeting engine is unchanged.
+**Current pilot direction, October 29:** Aaron prefers the original-photo cast. Use real listening/blink footage and instrument views where those roles already exist, with paper/collage title branding. The [photo performance kit](episodes/chatgpt-onboarding/photo-plus-version.md) retains all seven human identities, archives six unique supplied Synergy coffee clips, and archives two rejected robot-voice auditions. Synergy's existing eSpeak voice remains canonical. The photo pilot follows the locked single-row mouth rule above; expressiveness must come from horizontal speech response, eye timing and staging.
 
 The cast is an office with an internal band. Musical duties follow existing performances where those exist. A character need not hold an instrument to have a useful sonic role. Existing names and voice identities stay stable; proposed motivations develop the characters rather than recasting them.
 
@@ -87,7 +96,7 @@ Start with People & Culture and Operations, then Kevin and Keys, then Strategy, 
 
 ## Mechanical continuity
 
-Synergy walks with short restricted steps, rigid torso, bent elbows and little arm swing. His screen mouth in current meeting footage is a fixed-height green horizontal row with brightness movement; do not stretch metal or move the mouth off the screen.
+Synergy walks with short restricted steps, rigid torso, bent elbows and little arm swing. His screen mouth is the locked 1×10 green EQ row: horizontal length follows speech, height stays half the open eyes. Do not stretch metal or move the mouth off the screen.
 
 The floor droid is a separate squat cream canister with a dome, dark visor and blue stripe. It rolls on small wheels and tows a connected trolley. No humanoid limbs, rotating duster, stretching tow bar or changing scale.
 

@@ -1,0 +1,21 @@
+{
+  "duration": 96,
+  "size": [
+    1920,
+    1080
+  ],
+  "fps": 24,
+  "full_decode": "passed",
+  "audio_bit_identical_to_v6": true,
+  "aac_sha256": "06f49cac765f706bca9d7641d45ff24fd79236fe8b10ef614ceca09057cbb1ce",
+  "display_contract": "1001 levels checked: single contiguous row; 6px constant height; 12px open eyes; max 60px / ten cells; constant center",
+  "production_build": "passed",
+  "runway_credits": 0,
+  "browser": {
+    "playback": "passed",
+    "synergy_eq_seek": "passed",
+    "mobile_width": 390,
+    "horizontal_overflow": false,
+    "page_errors": []
+  }
+}

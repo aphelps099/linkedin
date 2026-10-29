@@ -1,6 +1,10 @@
-# Studio edit — version 6
+# Studio edit — version 7
 
 Aaron requested the original Synergy voice, higher-quality source media, calmer camera coverage, stronger consistency with the site's meeting interface, a subtle after-meeting ChatGPT/LinkedIn action, and a more energetic early-1990s paper-collage opening/closing.
+
+## Locked mouth correction
+
+Version 7 corrects Synergy to a fixed-height 1×10 green horizontal EQ row, with 2×2 open eyes using the same six-pixel unit. Vocal energy only changes the illuminated horizontal length. The painter is shared with the live Synergy overlay and older photo templates; a geometry regression check enforces one row, a fixed center/height and the full ten-cell peak. No voice, music, edit timing, intro or outro changes. Earlier film exports retain the rejected mouth geometry and are superseded.
 
 ## Approved branding and latest refinement
 
@@ -11,7 +15,7 @@ The [story engine](../../story-engine.md) records the approved recurring charact
 ## Review
 
 - http://127.0.0.1:8852/paper-meeting-chatgpt/studio/
-- Master: `/Users/ap457/Projects/linkedinbeats-meeting-art/optimizing/paper-meeting-chatgpt/studio/output/chatgpt-meeting-studio-v6.mp4`
+- Master: `/Users/ap457/Projects/linkedinbeats-meeting-art/optimizing/paper-meeting-chatgpt/studio/output/chatgpt-meeting-studio-v7.mp4`
 - 96 seconds, 1920 × 1080, 24 fps. Local review only.
 
 ## Edit
@@ -49,4 +53,4 @@ node docs/project/episodes/chatgpt-onboarding/render-studio-video.mjs /path/to/p
 python docs/project/episodes/chatgpt-onboarding/build-studio-review.py /path/to/paper-meeting-chatgpt/studio
 ```
 
-Use `--stills` on the renderer for visual review without a full export. Source-frame motion plays at 24 fps. All expensive enhancements are cached; rendering and compositing are local. See `verification-studio-v5.json` for export, speech-removal, tracking and browser checks. Version 5 branding is approved; the new instrument inserts are ready for review.
+Use `--stills` on the renderer for visual review without a full export. Source-frame motion plays at 24 fps. All expensive enhancements are cached; rendering and compositing are local. See `verification-studio-v5.json` for tracking/speech-removal checks and `verification-studio-v7.json` for the corrected export, unchanged audio and current browser checks. Version 5 branding is approved; the new instrument inserts are ready for review.
