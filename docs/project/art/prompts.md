@@ -16,3 +16,7 @@ Use case: style-transfer. Edit this three-person LinkedIn Beats cast study. Pres
 ## Output review
 
 Selected concept: `animated-cast-study-v1.png`. The second pass has visibly sculpted human faces and preserves the cream blouse/braided bun, blue shirt/drum pad, and angular robot/headset cues. This is a medium and identity study; likeness approval, facial turnarounds, separated layers and motion tests remain to be done. No live assets were replaced.
+
+## Hand drawn television alternatives
+
+See [cel study prompts](cel-study-prompts.md) for the later Flying House-inspired and graphic sitcom studies requested by Aaron.

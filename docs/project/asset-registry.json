@@ -162,6 +162,40 @@
         "public/learn/art/synergy-tip-v2.webp"
       ],
       "reviewNotes": "Recognizable wardrobe, hair, props and identities; second pass moves faces into sculpted animation. Human motion, likeness approval, layered source and rigs remain outstanding."
+    },
+    {
+      "id": "cast-cel-adventure-v1",
+      "path": "docs/project/art/cast-cel-adventure-v1.png",
+      "characterIds": [
+        "people",
+        "synergy",
+        "operations"
+      ],
+      "status": "concept-awaiting-creative-review",
+      "type": "still-concept-not-animation",
+      "generationMethod": "built-in-imagegen",
+      "promptRecord": "docs/project/art/cel-study-prompts.md",
+      "sourceReferences": [
+        "docs/project/art/animated-cast-study-v1.png"
+      ],
+      "reviewNotes": "Hand-drawn 2D alternative requested after sculpted study; likeness, turnarounds and motion require further review."
+    },
+    {
+      "id": "cast-cel-sitcom-v1",
+      "path": "docs/project/art/cast-cel-sitcom-v1.png",
+      "characterIds": [
+        "people",
+        "synergy",
+        "operations"
+      ],
+      "status": "concept-awaiting-creative-review",
+      "type": "still-concept-not-animation",
+      "generationMethod": "built-in-imagegen",
+      "promptRecord": "docs/project/art/cel-study-prompts.md",
+      "sourceReferences": [
+        "docs/project/art/animated-cast-study-v1.png"
+      ],
+      "reviewNotes": "Hand-drawn 2D alternative requested after sculpted study; likeness, turnarounds and motion require further review."
     }
   ]
 }

@@ -42,6 +42,19 @@ The initial cast study uses People & Culture and Operations beside Synergy. It t
 
 ![Initial sculpted cast study](art/animated-cast-study-v1.png)
 
+## Hand drawn television animation exploration
+
+October 29 direction from Aaron: explore the hand-drawn television-animation language of *The Flying House*, or another animated-series treatment. The sculpted study above is retained as exploration history; it is not a locked production style.
+
+Two new still studies preserve People & Culture, Synergy and Operations, their clothes, headsets and props:
+
+- [Cel adventure study](art/cast-cel-adventure-v1.png): finer drawn facial detail, warm cel colors and a softly painted office. This follows the earnest television-adventure reference most closely.
+- [Cel sitcom study](art/cast-cel-sitcom-v1.png): simpler shapes, stronger contours and more economical facial design. The office performance remains understated.
+
+Use the filmed references to check likeness before locking turnarounds. Translate Synergy into the same drawn medium as the humans while preserving his faceted cream head, black screen and green features. The reference concerns animation craft, not religious imagery or copying another show's cast. These are alternative concept frames, not completed animation. Neither is approved as the final series style yet.
+
+Style reference: [The Flying House, Tatsunoko Production](https://tatsunoko.co.jp/en/works/the-flying-house/). Prompts and generation method are recorded in [art prompts](art/prompts.md).
+
 ## Model sheet and motion package
 
 Create one package per character before making new episode footage:

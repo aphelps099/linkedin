@@ -7,7 +7,7 @@ This plan organizes the work without treating new proposals as finished product.
 | Order | Deliverable | Completion criterion | Current status |
 | --- | --- | --- | --- |
 | 1 | Project foundation | One index linking cast, art, music, drama, tools, assets and roadmap | Created in this revision |
-| 2 | Animated human art direction | Two recognizable human studies beside Learn Synergy, reviewed for tone and identity | Initial still study; approval pending |
+| 2 | Animated human art direction | Two recognizable human studies beside Learn Synergy, reviewed for tone and identity | Sculpted and two hand-drawn still studies; approval pending |
 | 3 | Reusable cast package | Seven human model sheets, stable robot references, layered/rigged assets and short motion tests | Planned |
 | 4 | Music package | Three original bed families, separate stems, clear robot voice and beep vocabulary | Existing scores supply references; reusable package planned |
 | 5 | Connected office pilot | One finished scene with an objective, relationship tension and continuity to the next episode | Outline proposed |
@@ -19,7 +19,7 @@ This plan organizes the work without treating new proposals as finished product.
 
 Develop People & Culture and Operations as animated counterparts to the filmed cast. Compare them next to the existing Learn Synergy, at full image size and in a small meeting tile. Once the visual language is settled, apply it to Kevin and Keys and build the first three-person meeting prototype with Synergy, Kevin and People & Culture.
 
-The initial image is a style study. The next production step is a reference sheet and short motion test, not immediate replacement of the live cast. Keep all existing approved films and avatars available.
+The initial images compare sculpted rendering with the newly requested hand-drawn television direction. The next production step is a reference sheet and short motion test, not immediate replacement of the live cast. Keep all existing approved films and avatars available.
 
 ## Decisions to settle through review
 
