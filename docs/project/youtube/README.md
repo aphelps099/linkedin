@@ -13,7 +13,7 @@ These links run on Aaron's computer through the existing port 8852 preview serve
 
 - [Synergy avatar](assets/synergy-avatar.png): original square PNG, circle-safe face/headset, cobalt paper ground. Imagegen reference edit of the actual Synergy; [provenance](avatar-provenance.json). Quiet resting horizontal green mouth. Static generated art does not replace the exact animated display geometry in `src/meeting-room/synergy-display.js`.
 - [Channel banner](assets/youtube-banner.jpg): 2560×1440 JPG, native collage layout with approved real instrument scraps, wordmark and TT Hoves. [Mobile-safe preview](assets/mobile-safe-preview.jpg) is a crop for checking, not the file to upload.
-- [Channel description](channel-description.txt): 552 characters including line breaks. Written in Synergy's voice. No publishing cadence promised.
+- [Channel description](channel-description.txt): 990 characters including line breaks. Written in Synergy's voice. No publishing cadence promised.
 - [Nine thumbnails](assets/thumbnails/): 1280×720 JPG adaptations of the Round 03 approved artwork board. Equal 40px inset on every edge, 96px outer/56px inner radius, rounded artwork, few words and no microtext. Review the match between film and thumbnail before upload. Authenticity Rollout remains a catalog continuity-review candidate.
 
 Add channel links to https://linkedinbeats.com and https://Look-Serious.com.
