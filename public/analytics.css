@@ -1,1 +1,9 @@
-.lb-analytics-choice{position:fixed;z-index:2147483000;bottom:18px;left:18px;width:min(440px,calc(100vw - 36px));box-sizing:border-box;padding:20px;background:#fffdf5;color:#092f43;border:1px solid #d9ddd9;border-radius:16px;box-shadow:0 8px 32px #0002;font:15px/1.45 "TT Hoves",Arial,sans-serif}.lb-analytics-choice p{margin:0 0 14px}.lb-analytics-choice>div{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.lb-analytics-choice button{font:inherit;font-weight:600;cursor:pointer;padding:9px 13px;background:#092f43;color:#fffdf5;border:1px solid #092f43;border-radius:8px}.lb-analytics-choice button+button{background:transparent;color:#092f43}.lb-analytics-choice a{color:#092f43;text-decoration:underline;margin-left:4px}.lb-analytics-choice :focus-visible{outline:3px solid #1457ff;outline-offset:3px}
+@font-face{font-family:"LB Analytics Hoves";src:url('/home-2/fonts/tt-hoves-regular.ttf') format('truetype');font-weight:400;font-display:swap}
+.lb-analytics-choice{position:fixed;z-index:2147483000;inset:auto 0 0;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:28px;padding:10px 24px calc(10px + env(safe-area-inset-bottom));background:#f6f3e9;color:#092f43;border-top:1px solid #092f4326;font:14px/1.4 "LB Analytics Hoves",Arial,sans-serif}
+.lb-analytics-choice p{margin:0}
+.lb-analytics-choice>div{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.lb-analytics-choice button{min-height:40px;padding:8px 14px;border:1px solid #092f4340;border-radius:999px;background:transparent;color:inherit;font:inherit;cursor:pointer;white-space:nowrap}
+.lb-analytics-choice button:hover{background:#092f430a;border-color:#092f43}
+.lb-analytics-choice a{display:inline-flex;align-items:center;min-height:40px;margin-left:8px;color:inherit;text-underline-offset:3px}
+.lb-analytics-choice :focus-visible{outline:2px solid #1457ff;outline-offset:3px}
+@media(max-width:600px){.lb-analytics-choice{flex-direction:column;gap:4px;padding:10px 12px calc(10px + env(safe-area-inset-bottom))}}
