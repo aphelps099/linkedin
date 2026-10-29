@@ -18,17 +18,37 @@ Example development scene:
 
 The humor is carried by the process and the delivery. Do not add a caption explaining it.
 
+## Standing rule for achievements
+
+User rule, October 29, 2026: achievements should be realistic and centered on onboarding, Google Drive sharing, website updates, a social media intern getting impressions on posts, time spent on professional development, and conference follow-up. This governs new scripts, lyrics, ChatGPT screen prompts, certificate concepts and personalized meeting stories.
+
+Start with a credible piece of work and its actual outcome. The satire comes from the announcement, self-reflection, process and importance attached to it. Keep the accomplishment plausible even when described without corporate language. Avoid defaulting to a folder rename or similarly empty action as the whole achievement.
+
+| Focus | Credible achievement | Possible announcement language |
+| --- | --- | --- |
+| Onboarding | Completed the new-hire checklist and helped a colleague find the team's resources | “Reflecting on a first week built around connection, clarity and shared purpose.” |
+| Google Drive sharing | Organized onboarding files, corrected permissions and shared the right link with the team | “Making knowledge more accessible across the organization.” |
+| Website updates | Published revised service information and fixed an outdated registration link | “A small update to how we connect people with the resources they need.” |
+| Social media intern | Published a campaign post, checked its impressions and reported what they learned | “Encouraged by the visibility our latest post is generating.” |
+| Professional development | Spent an afternoon in a webinar or completed a short training module | “Making space to invest in the next stage of my professional growth.” |
+| Conference follow-up | Sent promised materials and follow-up emails to people met at an event | “Continuing the conversations that made this week's gathering so valuable.” |
+
+These are fictional writing examples, not assertions about real results. If a user supplies numbers, preserve what they mean: impressions are not unique people, clicks, leads or revenue; time in training is not automatically mastery; follow-up is not a completed partnership. Do not invent impact to make the post more impressive.
+
+The intern's work can be genuinely useful. Aim the humor at inflated corporate framing and the pressure to announce progress, not at a junior person's competence. All characters remain sincere.
+
 ## Proposed first connected arc
 
 | Episode | Practical need | Escalation | Continuing consequence |
 | --- | --- | --- | --- |
-| Access pending | Kevin needs one folder | Welcome journey becomes its own project | Kevin receives a certificate before access |
-| A single source of truth | Agree which document is final | A committee commissions a second source of truth | Linda keeps the original spreadsheet |
-| Paperless by design | Stop printing | The rollout requires printed guidance | Printer and floor droid become indispensable |
-| Shared ownership | Assign one decision | Every team becomes jointly accountable | Nobody can approve the next step |
-| Quarterly alignment | Report progress | The dashboard measures meeting attendance | Arjun asks what changed; the calendar did |
+| First week | Help Kevin complete onboarding and find the team's resources | Every team has a different welcome checklist | He finishes training but still needs one permission |
+| Access granted | Correct Google Drive sharing permissions | The working link becomes an announcement about knowledge access | People keep requesting the old link |
+| Website update | Publish revised information and fix a registration link | A small release gets a multi-team launch recap | Conference follow-up points to the updated page |
+| Early impressions | The social media intern reports a post's visibility | Strategy asks for the broader narrative; Arjun asks what impressions measure | The team agrees to watch the next post too |
+| Investing in growth | Log professional-development time after a useful webinar | Everyone needs to share their key takeaway in another meeting | Someone finally applies one small practical tip |
+| Continuing the conversation | Send promised resources to conference contacts | Follow-up becomes a relationship-development initiative | Kevin gets a reply asking for Google Drive access |
 
-Each can generate a short meeting, a character moment, a song refrain and a thumbnail. Carry an object or unresolved detail forward so the work feels like one office rather than unrelated jokes.
+Each can generate a short meeting, character moment, song refrain and thumbnail. Carry an object or unresolved detail forward so the work feels like one office. Earlier published films and approved artwork remain historical references; new development follows this rule.
 
 ## Music and synth
 

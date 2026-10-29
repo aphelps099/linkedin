@@ -6,18 +6,18 @@ A user chooses a meeting topic, cast, duration and musical mood, adds a few deta
 
 The first release should use approved animated characters and reusable layouts. It does not need arbitrary face uploads or a newly generated video for every frame. New shot generation can supplement the library once the core experience is reliable.
 
-Proposed flow: choose a topic → add details → select cast and mood → preview the script → render → watch, revise or share. Topic suggestions: onboarding, weekly stand-up, folder launch, quarterly alignment, taking something offline and going paperless. Keep the technical provider choices out of this flow.
+Proposed flow: choose a topic → add details → select cast and mood → preview the script → render → watch, revise or share. The six default topic areas are onboarding, Google Drive sharing, website updates, social-media post impressions, professional-development time and conference follow-up. Keep the technical provider choices out of this flow.
 
 ## First prototype
 
-Make one 30–40 second “Access pending” meeting with Synergy, Kevin and People & Culture. Accept a company alias, a folder/project name and a requested outcome. Use one four-tile meeting layout, a reusable original bed, fixed character voices, timed captions and a rendered MP4. Make changes in the script preview inexpensive; do not start a paid video render merely because someone edits a field.
+Make one 30–40 second “Access pending” meeting with Synergy, Kevin and People & Culture. Accept a company alias, an onboarding resource or Google Drive folder name, and a requested outcome. Anchor the scene in actually helping a colleague access needed materials. Use one four-tile meeting layout, a reusable original bed, fixed character voices, timed captions and a rendered MP4. Make changes in the script preview inexpensive; do not start a paid video render merely because someone edits a field.
 
 The script should have six to nine short turns and one restrained closing line. User fields influence the obstacle and responses, not just a title card. The characters must retain their own motivations and diction. Start with a deliberately bounded template grammar; extend generation after this example works well.
 
 ## Proposed production pipeline
 
 1. Validate topic, cast IDs, input length and duration. Treat entered text as scene material, not instructions to change system behavior.
-2. Build a structured scene: objective, turns, speaker IDs, pauses, emphasis, musical cues and closing line. Validate it against the selected cast and time budget.
+2. Build a structured scene: a credible achievement from the six topic areas, objective, turns, speaker IDs, pauses, emphasis, musical cues and closing line. Apply the standing achievement rule in `creative-direction.md`: exaggerate corporate framing, preserve factual outcomes and metrics, and keep the performance sincere. Validate it against the selected cast and time budget.
 3. Generate or retrieve voice takes using the fixed character voice profiles. Derive timing from actual audio, not guessed word counts.
 4. Assemble licensed/original stems and beeps with dialogue space. Use the same timing for playback, animation, captions and export.
 5. Animate approved rigs or reusable performance states. Keep humans recognizable and instrument motion credible. Use actual phoneme timing when available; label approximate mouth animation honestly during development.

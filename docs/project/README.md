@@ -28,7 +28,7 @@ The existing films and tools establish the world. New character motivations, epi
 
 ## The shared creative contract
 
-Treat modest office events with absolute sincerity. A folder rename may have political consequences. A printer can receive a career retrospective. Someone still needs access. Nobody performs a joke for the camera.
+Treat credible workplace achievements with absolute sincerity. Center new stories on onboarding, Google Drive sharing, website updates, a social media intern’s post impressions, professional-development time and conference follow-up. The achievement is believable; the professional significance attached to it supplies the dry humor. See the [standing achievement rule](creative-direction.md#standing-rule-for-achievements). Nobody performs a joke for the camera.
 
 Give characters practical desires and obstacles. A list of fashionable words is raw material; a scene needs a reason someone says them. Keep dialogue specific enough that removing a character would change the scene.
 

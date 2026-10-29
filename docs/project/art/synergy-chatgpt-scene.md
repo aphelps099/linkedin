@@ -4,6 +4,10 @@ Office-paper scene concept, October 29, 2026. Generated with built-in image gene
 
 The user prompt on the monitor is “I renamed a folder. Write my LinkedIn post.” The illustrated response opens “Humbled to share a major milestone.” This is staged fictional screen content, not a record of a live ChatGPT interaction.
 
+## Subsequent writing rule
+
+The user approved this scene and then asked for more realistic achievements. Preserve this image as the approved visual reference; future screen-copy variants should follow the six focus areas in `../creative-direction.md`. Example replacement prompt: “I organized our onboarding files in Google Drive and fixed the sharing permissions. Help me write a LinkedIn post.” Build importance through the announcement's framing, without inventing business impact.
+
 ## Recreating the style
 
 Still scenes are feasible with approved identity references, a small texture palette and explicit composition briefs. New generations can drift in head proportions, hands, paper edges or layout, so references and review remain necessary. One successful still is not proof of frame-to-frame animation consistency.
