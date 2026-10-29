@@ -8,6 +8,8 @@ The first release should use approved animated characters and reusable layouts. 
 
 Proposed flow: choose a topic → add details → select cast and mood → preview the script → render → watch, revise or share. The six default topic areas are onboarding, Google Drive sharing, website updates, social-media post impressions, professional-development time and conference follow-up. Keep the technical provider choices out of this flow.
 
+The recurring “I used ChatGPT to…” announcement can be applied to any of those topics, following `creative-direction.md`. Ground it in a specific assisted task and an outcome the character actually checked or completed. This is a writing format, not a claim that the meeting creator already integrates with ChatGPT or performs external office tasks.
+
 ## First prototype
 
 Make one 30–40 second “Access pending” meeting with Synergy, Kevin and People & Culture. Accept a company alias, an onboarding resource or Google Drive folder name, and a requested outcome. Anchor the scene in actually helping a colleague access needed materials. Use one four-tile meeting layout, a reusable original bed, fixed character voices, timed captions and a rendered MP4. Make changes in the script preview inexpensive; do not start a paid video render merely because someone edits a field.

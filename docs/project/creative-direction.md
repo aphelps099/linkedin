@@ -37,6 +37,23 @@ These are fictional writing examples, not assertions about real results. If a us
 
 The intern's work can be genuinely useful. Aim the humor at inflated corporate framing and the pressure to announce progress, not at a junior person's competence. All characters remain sincere.
 
+## Recurring ChatGPT announcement format
+
+User addition, October 29, 2026: “I used ChatGPT to optimize the…” and “I used ChatGPT to…” are recurring openings. Apply this format across the six realistic workplace topics. Give the tool a specific role in drafting, organizing, summarizing or reviewing; the character still checks and applies the result.
+
+Possible lines:
+
+- “I used ChatGPT to optimize our onboarding checklist.”
+- “I used ChatGPT to draft a guide to our shared Google Drive.”
+- “I used ChatGPT to refine the copy on our registration page.”
+- “I used ChatGPT to write three captions for our next campaign post.”
+- “I used ChatGPT to turn my webinar notes into an action plan.”
+- “I used ChatGPT to personalize my conference follow-up emails.”
+
+Develop each into a sincere professional reflection. For example: “I used ChatGPT to optimize our onboarding checklist. We combined two steps and clarified who grants access. A small change, but an important reminder of what becomes possible when we rethink how we work.” The practical outcome is credible; the inflated significance and announcement ritual carry the satire.
+
+Use the format as a recurring motif, not the opening of every scene. Keep outcomes specific and modest. Drafting captions does not by itself establish increased impressions. A guide to sharing does not mean ChatGPT changed Drive permissions. The character using ChatGPT and the character asking it to write the announcement can be the same person; keep that additional layer understated.
+
 ## Proposed first connected arc
 
 | Episode | Practical need | Escalation | Continuing consequence |
