@@ -230,6 +230,21 @@
         "docs/project/art/cast-cel-sitcom-v1.png"
       ],
       "reviewNotes": "Requested evolution toward minimal watercolor or office-material textures. Retains three cast identities, clothing, props and dry performance. Animation and layered source remain to be developed."
+    },
+    {
+      "id": "synergy-chatgpt-paper-v1",
+      "path": "docs/project/art/synergy-chatgpt-paper-v1.png",
+      "characterIds": [
+        "synergy"
+      ],
+      "status": "scene-concept-awaiting-review",
+      "type": "still-concept-not-animation",
+      "generationMethod": "built-in-imagegen",
+      "promptRecord": "docs/project/art/synergy-chatgpt-scene.md",
+      "sourceReferences": [
+        "docs/project/art/cast-office-paper-v1.png"
+      ],
+      "reviewNotes": "Scene expansion of the preferred office-paper treatment. Identifiable angular Synergy, consistent paper materials and readable illustrative ChatGPT exchange. Monitor is staged for audience readability; production camera blocking and typing motion still need development."
     }
   ]
 }

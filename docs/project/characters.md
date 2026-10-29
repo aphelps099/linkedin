@@ -84,3 +84,7 @@ Synergy walks with short restricted steps, rigid torso, bent elbows and little a
 The floor droid is a separate squat cream canister with a dome, dark visor and blue stripe. It rolls on small wheels and tows a connected trolley. No humanoid limbs, rotating duster, stretching tow bar or changing scale.
 
 Printer paper feeds outward with normal sheet dimensions and lands on a matching stack. No reversing, expanding sheets or resetting stacks within a continuous action.
+
+## Office paper scene development
+
+Aaron singled out the office-paper treatment as especially successful and asked to see Synergy typing his LinkedIn post into ChatGPT. The [first desk scene](art/synergy-chatgpt-paper-v1.png) carries the material language into a new composition. See the [scene and reuse plan](art/synergy-chatgpt-scene.md). This establishes a preferred direction for further development, not a finished rig or animation system.
