@@ -1,5 +1,15 @@
 # Office-paper miniseries
 
+## Latest direction — original cast with paper branding
+
+October 29, after reviewing the paper, cel and original-photo pilots, Aaron selected **the actual cast photographs and filmed performances** as the more convincing direction. This supersedes the illustration-only selection below for the current pilot. Keep office paper as the graphic language for the branded intro, titles, transitions and credits. Human performances stay sincere and restrained; Synergy's digital screen is the most expressive face. Use awkward close-ups, real blinks, listening reactions, wider instrument views and occasional corporate virtual backgrounds.
+
+The [version 4 review and performance kit](episodes/chatgpt-onboarding/photo-plus-version.md) implements a 2.5-second blue/graph-paper collage opening, fast connecting tiles, human reaction inserts, a supplied coffee performance, and five seconds of end credits. Dialogue and music remain unchanged. Two clearer Synergy voice auditions are presented separately; no new canonical voice has been selected.
+
+Required credit copy: “linkedinbeats.com”, “Not affiliated with LinkedIn.” and “A project by Aaron Phelps at Look-Serious.com”. Use readable TT Hoves and avoid tiny labels. Coffee, loading moments and reaction shots should punctuate genuine pauses rather than turn every line into a visual gag.
+
+The following sections retain the earlier paper-first exploration and its reusable production principles.
+
 Direction confirmed by Aaron, October 29, 2026. This document supersedes the open choice between sculpted, cel, watercolor and paper treatments for this series. Office paper is the selected visual direction. Existing films and Learn assets remain their own approved work.
 
 ## Series format

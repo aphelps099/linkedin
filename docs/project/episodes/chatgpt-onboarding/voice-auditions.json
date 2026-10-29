@@ -1,0 +1,15 @@
+{
+  "text": "Today, I used ChatGPT to optimize our onboarding checklist. A more intentional first day. About staying human in the age of AI.",
+  "A": {
+    "voice": "Brodie",
+    "task": "dc281d53-9bdf-433a-9741-5ed76a7e2bd4",
+    "treatment": "94% dry carrier plus 6% 72Hz amplitude modulation; highpass 90Hz; no echo"
+  },
+  "B": {
+    "voice": "Xylar",
+    "task": "c2a4c415-3055-4659-a733-d1cb0962e6aa",
+    "treatment": "Preset modulated character; highpass 90Hz; no added echo"
+  },
+  "normalization": "All comparison files target -18 LUFS, -2 dBTP",
+  "episode": "Existing canonical Synergy audio retained"
+}

@@ -1,5 +1,7 @@
 # LinkedIn Beats characters and animation
 
+**Current pilot direction, October 29:** Aaron prefers the original-photo cast. Use real listening/blink footage and instrument views where those roles already exist, with paper/collage title branding. The [photo performance kit](episodes/chatgpt-onboarding/photo-plus-version.md) retains all seven human identities, archives six unique supplied Synergy coffee clips, and presents two new robot-voice auditions. Synergy's existing voice remains canonical until a replacement is selected. The expressive digital face in the photo pilot is a deliberate exception to the older fixed-row screen treatment documented below; the live meeting engine is unchanged.
+
 The cast is an office with an internal band. Musical duties follow existing performances where those exist. A character need not hold an instrument to have a useful sonic role. Existing names and voice identities stay stable; proposed motivations develop the characters rather than recasting them.
 
 ## Cast

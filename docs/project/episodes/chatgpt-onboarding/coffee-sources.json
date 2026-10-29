@@ -1,0 +1,44 @@
+[
+  {
+    "index": 0,
+    "path": "/Users/ap457/Downloads/aaronphelps_synergy_the_robot_drinks_coffee_--ar_2719_--motio_17f8cf6e-a326-4a7f-91de-e73a355b74cb_0.mp4",
+    "duration": 5.21,
+    "sha256": "2a7cbbf8ff4218650a9e3d0fdbe9eb922be297b7a870935d49b3133667b105b0"
+  },
+  {
+    "index": 1,
+    "path": "/Users/ap457/Downloads/aaronphelps_synergy_the_robot_drinks_coffee_--ar_2719_--motio_17f8cf6e-a326-4a7f-91de-e73a355b74cb_2.mp4",
+    "duration": 5.21,
+    "sha256": "7302ceec221898ff70ce29507712ed2edda2c7231bdd5f91e60b2cffb13d98f9"
+  },
+  {
+    "index": 2,
+    "path": "/Users/ap457/Downloads/aaronphelps_synergy_the_robot_drinks_coffee_--ar_2719_--motio_dd3eefdc-0f40-42d5-9e33-84a78649000e_0.mp4",
+    "duration": 5.21,
+    "sha256": "866cb763d267dded59c23ed46ecbbf08edc7d3b8c627263809eeb681bb20daa1"
+  },
+  {
+    "index": 3,
+    "path": "/Users/ap457/Downloads/aaronphelps_synergy_the_robot_drinks_coffee_--ar_4733_--motio_e4c0e0d0-a0cf-488e-8360-882e5a228dfa_0 (1).mp4",
+    "duration": 9.04,
+    "sha256": "553c456e4bc115b2304d448cef1641dbf4fcd76c99a03412504010e12851b380"
+  },
+  {
+    "index": 4,
+    "path": "/Users/ap457/Downloads/aaronphelps_synergy_the_robot_drinks_coffee_--ar_4733_--motio_e4c0e0d0-a0cf-488e-8360-882e5a228dfa_0.mp4",
+    "duration": 9.04,
+    "sha256": "553c456e4bc115b2304d448cef1641dbf4fcd76c99a03412504010e12851b380"
+  },
+  {
+    "index": 5,
+    "path": "/Users/ap457/Downloads/aaronphelps_synergy_the_robot_drinks_coffee_and_then_he_crush_85180d5d-314a-4068-8e2f-7bcf9e115dd0_1.mp4",
+    "duration": 9.04,
+    "sha256": "33b256c3d859cdcaebdaf2ded451362f2713ae380432cece92c4db182ae2a6da"
+  },
+  {
+    "index": 6,
+    "path": "/Users/ap457/Downloads/aaronphelps_synergy_the_robot_drinks_coffee_and_then_he_crush_85180d5d-314a-4068-8e2f-7bcf9e115dd0_3.mp4",
+    "duration": 9.04,
+    "sha256": "cb7658ffcae150aca9713399522554af7dab356122abce00df3cd5cdbbc1bc9e"
+  }
+]
