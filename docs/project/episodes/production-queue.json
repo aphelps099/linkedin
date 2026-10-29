@@ -1,0 +1,49 @@
+{
+  "updated": "2026-10-29",
+  "purpose": "Next three meeting videos queued for production by Aaron",
+  "status": "preproduction",
+  "background_jobs_started": false,
+  "publishing_dates_assigned": false,
+  "current_reference": "chatgpt-onboarding/studio-version.md",
+  "standing_rules": [
+    "Reuse approved original-photo cast, voices and 96 BPM music palette; no ElevenLabs for Synergy",
+    "Preserve the approved 2.5-second instrument-paper collage intro and hashtag outro; update episode title and tags",
+    "Synergy: 2×2 open eyes, single 1×10 mouth row, fixed height and left edge, 10% full-width idle track, bright speech fill left-to-right",
+    "Printer: centered 4:3 camera with equal black side borders; ordinary forward-feeding paper",
+    "Steady site-style meeting interface; sincere dry performances; no camera zigzag",
+    "Use existing footage and local compositing first; identify any genuinely necessary new shot during script prep"
+  ],
+  "workflow": [
+    "Full dialogue and timed shot list",
+    "Canonical voice takes and clear dialogue/music mix",
+    "Reuse and composite existing performances",
+    "Continuity, picture and sound review",
+    "Review cut on this local page"
+  ],
+  "episodes": [
+    {
+      "order": 1,
+      "id": "great-connecting",
+      "episode": "02",
+      "title": "Great connecting.",
+      "status": "queued",
+      "brief": "great-connecting/production-brief.json"
+    },
+    {
+      "order": 2,
+      "id": "meaningful-increase",
+      "episode": "03",
+      "title": "A meaningful increase.",
+      "status": "queued",
+      "brief": "meaningful-increase/production-brief.json"
+    },
+    {
+      "order": 3,
+      "id": "continuing-development",
+      "episode": "04",
+      "title": "Continuing development.",
+      "status": "queued",
+      "brief": "continuing-development/production-brief.json"
+    }
+  ]
+}

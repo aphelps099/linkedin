@@ -1,0 +1,65 @@
+{
+  "id": "great-connecting",
+  "episode": "02",
+  "title": "Great connecting.",
+  "target_seconds": 100,
+  "topic": "Conference follow-up",
+  "cast": [
+    "synergy",
+    "guitar",
+    "people",
+    "printer"
+  ],
+  "premise": "Synergy personalizes every conference follow-up. One reply needs a keyboard player, not another meaningful connection.",
+  "tension": "Synergy wants to demonstrate that the conference created valuable relationships; Kevin needs a specific introduction; People & Culture asks what the other person actually said.",
+  "beats": [
+    "Open on the practical request: Miriam needs a keyboard player for Friday. Kevin asks whether anyone followed up.",
+    "Synergy has used ChatGPT to draft personalized messages. Each sounds sincere but does not answer Miriam’s question.",
+    "People asks what they discussed. Kevin remembers the session and recognizes that Keys could help.",
+    "They ask Keys about availability and consent to the introduction. Synergy turns the elaborate draft into a short, specific reply.",
+    "The printer finishes the follow-up plan. Synergy pauses over a LinkedIn reflection, then returns to Miriam’s actual conversation."
+  ],
+  "resolution": "One useful introduction. Synergy makes a real connection by listening.",
+  "ending_hashtags": [
+    "MeaningfulConnections",
+    "FollowingUp"
+  ],
+  "opening_dialogue": [
+    {
+      "who": "synergy",
+      "text": "I’ve personalized the conference follow-ups."
+    },
+    {
+      "who": "people",
+      "text": "What did you and Miriam talk about?"
+    },
+    {
+      "who": "synergy",
+      "text": "Staying connected."
+    },
+    {
+      "who": "guitar",
+      "text": "She needs a keyboard player for Friday."
+    }
+  ],
+  "asset_plan": {
+    "reuse": [
+      "Approved collage intro/outro and instrument scraps",
+      "Synergy and People camera sources",
+      "Kevin listening/speaking plates and guitar performance",
+      "Continuous printer compositor",
+      "Existing 96 BPM score and canonical voice presets"
+    ],
+    "prepare": [
+      "Generalize the three-speaker film template to support Kevin without reusing Operations’ mouth coordinates",
+      "Short email thread and draft-post screen composite",
+      "Fresh dialogue takes from the existing voice profiles"
+    ],
+    "new_generated_video_required": false
+  },
+  "editorial_note": "Keys can be acknowledged through the fictional message thread; no new offscreen voice is needed. Do not perform an actual email or LinkedIn action.",
+  "status": "queued",
+  "next_step": "Draft full dialogue and timed shot list",
+  "target_seconds_is_estimate": true,
+  "opening_dialogue_status": "writing draft"
+}

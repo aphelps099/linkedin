@@ -20,7 +20,19 @@ The existing films and tools establish the world. New character motivations, epi
 
 ## Selected series format
 
-The [office-paper miniseries](miniseries-format.md) is the selected new series direction: 90-second to 4-minute episodes, a 2–3 second branded opening, paper meeting windows, narrated storybook scenes and synchronized TT Hoves text. Reuse illustrated sets and controlled local motion; the printer and Synergy’s coffee are recurring performances. This format is documented; the first episode and reusable rigs are still to be produced.
+The [miniseries](miniseries-format.md) now uses the original-photo cast with paper collage branding, a steady site-style meeting layout, established voices and the original music palette. [The current pilot](episodes/chatgpt-onboarding/studio-version.md) is a 96-second 1080p local review cut with the latest Synergy EQ and printer-framing corrections.
+
+## Next three productions
+
+Aaron requested three videos queued for production on October 29. The source of truth is [production-queue.json](episodes/production-queue.json); it also supplies the local studio review page’s “Up next” section. These are preproduction entries, not background render jobs or scheduled releases.
+
+| Order | Episode | Story | Production brief |
+| --- | --- | --- | --- |
+| 1 | 02 · Great connecting. | A personalized conference follow-up has to answer a real request. | [Cast, beats and assets](episodes/great-connecting/production-brief.json) |
+| 2 | 03 · A meaningful increase. | Ninety-three impressions become one useful conversation. | [Cast, beats and assets](episodes/meaningful-increase/production-brief.json) |
+| 3 | 04 · Continuing development. | A learning check-in consumes the time reserved for learning. | [Cast, beats and assets](episodes/continuing-development/production-brief.json) |
+
+Next step for each is full dialogue and a timed shot list, followed by existing-voice takes, asset compositing and a review cut. Reuse approved footage first; no new video generation is currently required by these briefs. Target runtimes are estimates until the dialogue edit exists.
 
 ## Read in this order
 
