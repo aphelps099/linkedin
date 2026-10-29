@@ -20,3 +20,7 @@ Selected concept: `animated-cast-study-v1.png`. The second pass has visibly scul
 ## Hand drawn television alternatives
 
 See [cel study prompts](cel-study-prompts.md) for the later Flying House-inspired and graphic sitcom studies requested by Aaron.
+
+## Watercolor and office paper alternatives
+
+See [material study prompts](material-study-prompts.md) for the later minimal watercolor and office-stationery collage studies.

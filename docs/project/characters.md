@@ -55,6 +55,15 @@ Use the filmed references to check likeness before locking turnarounds. Translat
 
 Style reference: [The Flying House, Tatsunoko Production](https://tatsunoko.co.jp/en/works/the-flying-house/). Prompts and generation method are recorded in [art prompts](art/prompts.md).
 
+## Watercolor and office material exploration
+
+Aaron liked both cel studies and requested a slightly more minimal watercolor treatment, or office-supply and typewriter textures. These two alternatives retain the same three characters for direct comparison:
+
+- [Ink and watercolor](art/cast-watercolor-v1.png): broken contours, transparent washes and unpainted ivory space; office background fades into the paper.
+- [Office paper collage](art/cast-office-paper-v1.png): manila and blue memo-paper shapes, carbon-black lines, copier grain and sparse typewriter-like impressions. Material choices come from the characters' workplace.
+
+Keep skin tones, silhouettes, props and neutral performances recognizable. Treat office textures as construction materials rather than decorative clutter. Sparse ink marks are an exploration of typewriter texture, not readable copy or character labeling. Both remain concept stills; no new style is locked for production. [Recorded prompts](art/material-study-prompts.md).
+
 ## Model sheet and motion package
 
 Create one package per character before making new episode footage:
