@@ -1,0 +1,167 @@
+{
+  "version": 1,
+  "updatedAt": "2026-10-29",
+  "purpose": "Project reference index; runtime catalogs remain authoritative.",
+  "castSource": "src/meeting-room/catalog.js",
+  "characters": [
+    {
+      "id": "synergy",
+      "name": "Synergy",
+      "officeRole": "Host",
+      "instrument": null,
+      "filmReference": "public/studio/season/posters/synergy-camera-v2-listening.jpg",
+      "sourceStatus": "existing-runtime-cast",
+      "animationStatus": "existing-learn-avatar",
+      "voiceSource": "src/meeting-room/voice-bank/characters.js",
+      "notes": [],
+      "avatarReference": "public/learn/art/synergy-tip-v2.webp"
+    },
+    {
+      "id": "synthia",
+      "name": "Synthia",
+      "officeRole": "Corporate training",
+      "instrument": null,
+      "filmReference": "public/studio/season/posters/synthia-camera-v2-listening.jpg",
+      "sourceStatus": "existing-runtime-cast",
+      "animationStatus": "not-yet-developed",
+      "voiceSource": "src/meeting-room/voice-bank/characters.js",
+      "notes": []
+    },
+    {
+      "id": "people",
+      "name": "People & Culture",
+      "officeRole": "Human resources",
+      "instrument": null,
+      "filmReference": "public/studio/season/posters/people-listening.jpg",
+      "sourceStatus": "existing-runtime-cast",
+      "animationStatus": "not-yet-developed",
+      "voiceSource": "src/meeting-room/voice-bank/characters.js",
+      "notes": []
+    },
+    {
+      "id": "strategy",
+      "name": "Strategy",
+      "officeRole": "Strategic alignment",
+      "instrument": null,
+      "filmReference": "public/studio/season/posters/strategy-listening.jpg",
+      "sourceStatus": "existing-runtime-cast",
+      "animationStatus": "not-yet-developed",
+      "voiceSource": "src/meeting-room/voice-bank/characters.js",
+      "notes": []
+    },
+    {
+      "id": "guitar",
+      "name": "Kevin",
+      "officeRole": "Partnerships",
+      "instrument": "Guitar",
+      "filmReference": "public/studio/season/posters/guitar-listening.jpg",
+      "sourceStatus": "existing-runtime-cast",
+      "animationStatus": "not-yet-developed",
+      "voiceSource": "src/meeting-room/voice-bank/characters.js",
+      "notes": []
+    },
+    {
+      "id": "keys",
+      "name": "Keys",
+      "officeRole": "Enablement",
+      "instrument": "Keyboard",
+      "filmReference": "public/studio/season/posters/keys-full-listening.jpg",
+      "sourceStatus": "existing-runtime-cast",
+      "animationStatus": "not-yet-developed",
+      "voiceSource": "src/meeting-room/voice-bank/characters.js",
+      "notes": []
+    },
+    {
+      "id": "operations",
+      "name": "Operations",
+      "officeRole": "Operational excellence",
+      "instrument": "Drum pad",
+      "filmReference": "public/studio/season/posters/drums-listening.jpg",
+      "sourceStatus": "existing-runtime-cast",
+      "animationStatus": "not-yet-developed",
+      "voiceSource": "src/meeting-room/voice-bank/characters.js",
+      "notes": []
+    },
+    {
+      "id": "accountant",
+      "name": "Arjun",
+      "officeRole": "Finance",
+      "instrument": null,
+      "filmReference": "public/studio/season/posters/arjun-listening.jpg",
+      "sourceStatus": "existing-runtime-cast",
+      "animationStatus": "not-yet-developed",
+      "voiceSource": "src/meeting-room/voice-bank/characters.js",
+      "notes": []
+    },
+    {
+      "id": "linda",
+      "name": "Linda",
+      "officeRole": "Governance",
+      "instrument": null,
+      "filmReference": "public/studio/season/posters/linda-listening.jpg",
+      "sourceStatus": "existing-runtime-cast",
+      "animationStatus": "not-yet-developed",
+      "voiceSource": "src/meeting-room/voice-bank/characters.js",
+      "notes": []
+    },
+    {
+      "id": "printer",
+      "name": "Printer",
+      "officeRole": "Deliverables",
+      "instrument": null,
+      "filmReference": "public/studio/season/posters/printer-neutral.jpg",
+      "sourceStatus": "existing-runtime-cast",
+      "animationStatus": "not-yet-developed",
+      "voiceSource": "src/meeting-room/voice-bank/characters.js",
+      "notes": []
+    },
+    {
+      "id": "droid",
+      "name": "Internal distribution",
+      "officeRole": "Paper logistics",
+      "instrument": null,
+      "filmReference": "public/studio/season/posters/droid.jpeg",
+      "sourceStatus": "existing-runtime-cast",
+      "animationStatus": "not-yet-developed",
+      "voiceSource": "src/meeting-room/voice-bank/characters.js",
+      "notes": [
+        "Silent in current meetings; own robotic vocal and beep performance in Moving Things Forward.",
+        "Distinct from humanoid Synergy. No rotating cleaning pad."
+      ]
+    },
+    {
+      "id": "pat",
+      "name": "Pat",
+      "officeRole": "Thought leadership",
+      "instrument": null,
+      "filmReference": null,
+      "sourceStatus": "existing-runtime-cast",
+      "animationStatus": "camera-off-by-design",
+      "voiceSource": "src/meeting-room/voice-bank/characters.js",
+      "notes": [
+        "Keep camera off; no invented likeness required."
+      ]
+    }
+  ],
+  "artStudies": [
+    {
+      "id": "animated-cast-study-v1",
+      "path": "docs/project/art/animated-cast-study-v1.png",
+      "characterIds": [
+        "people",
+        "synergy",
+        "operations"
+      ],
+      "status": "concept-awaiting-creative-review",
+      "type": "still-concept-not-animation",
+      "generationMethod": "built-in-imagegen",
+      "promptRecord": "docs/project/art/prompts.md",
+      "sourceReferences": [
+        "public/studio/season/posters/people-listening.jpg",
+        "public/studio/season/posters/drums-listening.jpg",
+        "public/learn/art/synergy-tip-v2.webp"
+      ],
+      "reviewNotes": "Recognizable wardrobe, hair, props and identities; second pass moves faces into sculpted animation. Human motion, likeness approval, layered source and rigs remain outstanding."
+    }
+  ]
+}
