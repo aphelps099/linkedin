@@ -264,6 +264,41 @@
         "public/studio/season/posters/printer-neutral.jpg"
       ],
       "reviewNotes": "Recurring paper conference set proposal with Synergy coffee and printer participant. Flattened concept; separate masks, equal borders and motion must be built for production."
+    },
+    {
+      "id": "cel-meeting-plates-v1",
+      "path": "docs/project/art/cel-meeting-plates-v1.png",
+      "characterIds": [
+        "synergy",
+        "people",
+        "operations",
+        "printer"
+      ],
+      "status": "scene-concept-awaiting-review",
+      "type": "still-concept-not-animation",
+      "generationMethod": "built-in-imagegen",
+      "promptRecord": "docs/project/art/cel-meeting-prompts.md",
+      "sourceReferences": [
+        "docs/project/art/cast-cel-adventure-v1.png"
+      ],
+      "reviewNotes": "Four meeting plates for alternate cel edit; not yet approved replacement art."
+    },
+    {
+      "id": "cel-meeting-reactions-v1",
+      "path": "docs/project/art/cel-meeting-reactions-v1.png",
+      "characterIds": [
+        "people",
+        "operations"
+      ],
+      "status": "scene-concept-awaiting-review",
+      "type": "still-concept-not-animation",
+      "generationMethod": "built-in-imagegen",
+      "promptRecord": "docs/project/art/cel-meeting-prompts.md",
+      "sourceReferences": [
+        "docs/project/art/cast-cel-adventure-v1.png",
+        "docs/project/art/cel-meeting-plates-v1.png"
+      ],
+      "reviewNotes": "Dedicated sincere close-ups for shot/reverse-shot and eye inserts. Still artwork; not lip sync."
     }
   ]
 }
