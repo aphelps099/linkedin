@@ -62,6 +62,8 @@ Keep camera positions, eye lines and character scale stable. Use a neutral liste
 
 ## Printer and coffee
 
+In the studio film, the printer camera uses a centered 4:3 picture with equal black side borders inside the wider meeting card, matching the other participant framing. Apply the crop to the printer and printed-paper composite together; never squeeze the full 16:9 image into 4:3. Keep the name bar across the full card.
+
 The printer is an important recurring presence, not occasional set dressing. Suggest tiredness through a hesitant feed, a slightly longer motor cycle, a lone amber light, wear on its housing or a pause before the last page. The joke works without giving it a cartoon face.
 
 Maintain ordinary sheet dimensions, forward feed and consistent stacks. No growing sheets, reversed output or resetting stacks in continuous action. Use separate paper layers and simple controlled motion for printing.

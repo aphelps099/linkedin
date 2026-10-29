@@ -101,7 +101,13 @@ function intro(c,t){pattern(c,t);const q=smooth(t/.25);c.save();c.translate(116,
 function mic(c,x,y,muted=false){c.save();c.translate(x,y);c.strokeStyle=muted?'#9d9fa8':'#dce2e9';c.lineWidth=1.7;c.beginPath();c.roundRect(-4,-10,8,14,4);c.stroke();c.beginPath();c.arc(0,0,8,0,Math.PI);c.moveTo(0,8);c.lineTo(0,12);c.moveTo(-5,12);c.lineTo(5,12);c.stroke();if(muted){c.strokeStyle='#ed8e97';c.beginPath();c.moveTo(-10,-10);c.lineTo(10,12);c.stroke()}c.restore()}
 function tile(c,who,x,y,w,h,t,active){
  c.save();rect(c,x,y,w,h,5);c.clip();c.fillStyle='#181a1e';c.fillRect(x,y,w,h);
- if(live?.who===who){const im=live.image;if(live.key==='coffee')cover(c,im,[0,im.height*.06,im.width,im.height*.94],x,y,w,h,1,.5,.30);else c.drawImage(im,x,y,w,h)}else c.drawImage(plates[who],x,y,w,h);
+ // Match the other participants' pillarboxed camera view. Crop the complete
+ // printer + animated paper composite together, preserving their proportions.
+ if(who==='printer'){
+  c.fillStyle='#101114';c.fillRect(x,y,w,h);
+  const cameraWidth=h*4/3,im=plates.printer;
+  cover(c,im,[0,0,im.width,im.height],x+(w-cameraWidth)/2,y,cameraWidth,h);
+ }else if(live?.who===who){const im=live.image;if(live.key==='coffee')cover(c,im,[0,im.height*.06,im.width,im.height*.94],x,y,w,h,1,.5,.30);else c.drawImage(im,x,y,w,h)}else c.drawImage(plates[who],x,y,w,h);
  if(t<2.65+cast.indexOf(who)*.105){c.fillStyle='#181a1e';c.fillRect(x,y,w,h);c.strokeStyle='#b1bdca';c.lineWidth=2;c.beginPath();c.arc(x+w/2,y+h/2-12,12,t*12,t*12+4.5);c.stroke();words(c,'Connecting',x,y+h/2+15,w,18,'#bcc4cf',400,true)}
  c.fillStyle='#15171bef';c.fillRect(x,y+h-30,w,30);mic(c,x+18,y+h-15,who!==active);words(c,names[who],x+37,y+h-23,w-55,18,'#e1e4eb');c.restore();if(who===active){c.strokeStyle='#7cdb65';c.lineWidth=3;rect(c,x+1.5,y+1.5,w-3,h-3,5);c.stroke()}
 }
