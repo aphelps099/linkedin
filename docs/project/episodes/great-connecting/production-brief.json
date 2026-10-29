@@ -58,8 +58,8 @@
     "new_generated_video_required": false
   },
   "editorial_note": "Keys can be acknowledged through the fictional message thread; no new offscreen voice is needed. Do not perform an actual email or LinkedIn action.",
-  "status": "queued",
-  "next_step": "Draft full dialogue and timed shot list",
+  "status": "review-cut-ready",
+  "next_step": "Review the first picture and dialogue cut; refine performances and pacing before publication",
   "target_seconds_is_estimate": true,
-  "opening_dialogue_status": "writing draft"
+  "opening_dialogue_status": "superseded by script.json draft 1"
 }

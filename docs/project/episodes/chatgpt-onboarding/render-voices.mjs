@@ -15,7 +15,7 @@ const [model,tokenizer]=await Promise.all([
   AutoTokenizer.from_pretrained(modelId),
 ]);
 const tts=new KokoroTTS(model,tokenizer);
-const script=JSON.parse(await readFile(resolve(here,'script.json'),'utf8'));
+const script=JSON.parse(await readFile(process.argv[3]?resolve(process.argv[3]):resolve(here,'script.json'),'utf8'));
 for(const [i,line] of script.lines.entries()){
   if(line.who==='synergy')continue;
   const p=characters[line.who];

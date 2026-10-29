@@ -51,8 +51,8 @@
     "new_generated_video_required": false
   },
   "editorial_note": "Let Synergy genuinely change his approach. Do not finish with another grandiose post in every episode. All calendar actions are fictional onscreen story actions.",
-  "status": "queued",
-  "next_step": "Draft full dialogue and timed shot list",
+  "status": "review-cut-ready",
+  "next_step": "Review the first picture and dialogue cut; refine performances and pacing before publication",
   "target_seconds_is_estimate": true,
-  "opening_dialogue_status": "writing draft"
+  "opening_dialogue_status": "superseded by script.json draft 1"
 }

@@ -1,0 +1,187 @@
+{
+  "date": "2026-10-29",
+  "handle": "@linkedinbeats",
+  "status": "Channel kit and review assets; not uploaded to YouTube",
+  "files": [
+    {
+      "path": "cast/arjun-listening.jpg",
+      "bytes": 71838
+    },
+    {
+      "path": "cast/drums-listening.jpg",
+      "bytes": 48634
+    },
+    {
+      "path": "cast/guitar-listening.jpg",
+      "bytes": 65546
+    },
+    {
+      "path": "cast/keys-full-listening.jpg",
+      "bytes": 32426
+    },
+    {
+      "path": "cast/people-listening.jpg",
+      "bytes": 54390
+    },
+    {
+      "path": "cast/printer-neutral.jpg",
+      "bytes": 94024
+    },
+    {
+      "path": "cast/synergy-camera-v2-listening.jpg",
+      "bytes": 56394
+    },
+    {
+      "path": "channel/channel-description.txt",
+      "bytes": 554
+    },
+    {
+      "path": "channel/mobile-safe-preview.jpg",
+      "bytes": 221594
+    },
+    {
+      "path": "channel/synergy-avatar.png",
+      "bytes": 2229935
+    },
+    {
+      "path": "channel/youtube-banner.jpg",
+      "bytes": 956106
+    },
+    {
+      "path": "explorations/animated-cast-study-v1.png",
+      "bytes": 2201531
+    },
+    {
+      "path": "explorations/cast-cel-adventure-v1.png",
+      "bytes": 2110207
+    },
+    {
+      "path": "explorations/cast-cel-sitcom-v1.png",
+      "bytes": 1901933
+    },
+    {
+      "path": "explorations/cast-office-paper-v1.png",
+      "bytes": 2980853
+    },
+    {
+      "path": "explorations/cast-watercolor-v1.png",
+      "bytes": 2681765
+    },
+    {
+      "path": "explorations/cel-meeting-plates-v1.png",
+      "bytes": 2065332
+    },
+    {
+      "path": "explorations/cel-meeting-prompts.md",
+      "bytes": 5399
+    },
+    {
+      "path": "explorations/cel-meeting-reactions-v1.png",
+      "bytes": 1946800
+    },
+    {
+      "path": "explorations/cel-study-prompts.md",
+      "bytes": 5001
+    },
+    {
+      "path": "explorations/material-study-prompts.md",
+      "bytes": 6093
+    },
+    {
+      "path": "explorations/paper-meeting-grid-v1.png",
+      "bytes": 3012824
+    },
+    {
+      "path": "explorations/paper-meeting-scene.md",
+      "bytes": 3492
+    },
+    {
+      "path": "explorations/prompts.md",
+      "bytes": 4750
+    },
+    {
+      "path": "explorations/synergy-chatgpt-paper-v1.png",
+      "bytes": 2935336
+    },
+    {
+      "path": "explorations/synergy-chatgpt-scene.md",
+      "bytes": 5879
+    },
+    {
+      "path": "logos/wordmark-black.svg",
+      "bytes": 10889
+    },
+    {
+      "path": "logos/wordmark-color.svg",
+      "bytes": 10889
+    },
+    {
+      "path": "logos/wordmark-horizontal.svg",
+      "bytes": 10889
+    },
+    {
+      "path": "logos/wordmark-stacked.svg",
+      "bytes": 11005
+    },
+    {
+      "path": "logos/wordmark-white.svg",
+      "bytes": 10889
+    },
+    {
+      "path": "notes/avatar-provenance.json",
+      "bytes": 1818
+    },
+    {
+      "path": "notes/thumbnail-art-notes.md",
+      "bytes": 15484
+    },
+    {
+      "path": "source-art/01-synergy.png",
+      "bytes": 1994280
+    },
+    {
+      "path": "source-art/02-linda.png",
+      "bytes": 3501859
+    },
+    {
+      "path": "source-art/05-room-to-scale.png",
+      "bytes": 2878517
+    },
+    {
+      "path": "thumbnails/authenticity-rollout.jpg",
+      "bytes": 182128
+    },
+    {
+      "path": "thumbnails/caffeinated-edition.jpg",
+      "bytes": 143335
+    },
+    {
+      "path": "thumbnails/gallery-view.jpg",
+      "bytes": 182222
+    },
+    {
+      "path": "thumbnails/lets-circle-back.jpg",
+      "bytes": 183863
+    },
+    {
+      "path": "thumbnails/on-mute.jpg",
+      "bytes": 268301
+    },
+    {
+      "path": "thumbnails/quick-sync.jpg",
+      "bytes": 187633
+    },
+    {
+      "path": "thumbnails/room-to-scale.jpg",
+      "bytes": 292305
+    },
+    {
+      "path": "thumbnails/same-link.jpg",
+      "bytes": 129202
+    },
+    {
+      "path": "thumbnails/welcome-to-the-office.jpg",
+      "bytes": 172589
+    }
+  ]
+}

@@ -24,7 +24,7 @@ The [miniseries](miniseries-format.md) now uses the original-photo cast with pap
 
 ## Next three productions
 
-Aaron requested three videos queued for production on October 29. The source of truth is [production-queue.json](episodes/production-queue.json); it also supplies the local studio review page’s “Up next” section. These are preproduction entries, not background render jobs or scheduled releases.
+Aaron requested three videos queued for production on October 29. The source of truth is [production-queue.json](episodes/production-queue.json); it also supplies the local studio review page’s “Up next” section. All three now have scripts, canonical voice takes, timed captions and 90-second first review cuts. No publishing dates assigned. Review them at http://127.0.0.1:8852/series/.
 
 | Order | Episode | Story | Production brief |
 | --- | --- | --- | --- |
@@ -74,3 +74,7 @@ GA4 is installed with opt-in and a slim consent bar. Google requires disclosure 
 If an uninterrupted experience is the priority, evaluate an aggregate-only measurement design against applicable exemption conditions before changing collection. A cookie-free label alone does not establish an exemption. Regional consent is another possible approach, with reliable region detection and a defined fallback. No analytics behavior changes are included in this project-bible revision.
 
 Sources checked October 29, 2026: [Google Analytics terms, section 7](https://marketingplatform.google.com/about/analytics/terms/us/) and [ICO statistical-purpose exceptions](https://ico.org.uk/for-organisations/direct-marketing-and-privacy-and-electronic-communications/guidance-on-the-use-of-storage-and-access-technologies/what-are-the-exceptions/).
+
+## YouTube channel kit
+
+[YouTube launch kit sources and setup](youtube/README.md). Local download hub: http://127.0.0.1:8852/youtube/. Includes Synergy avatar, mobile-safe collage banner, nine thumbnail compositions, logos, canonical cast references, art studies and channel description.

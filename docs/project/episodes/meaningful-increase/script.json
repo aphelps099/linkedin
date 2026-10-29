@@ -1,0 +1,163 @@
+{
+  "id": "meaningful-increase",
+  "title": "A meaningful increase.",
+  "episode": "03",
+  "status": "production-draft-1",
+  "cast": [
+    "synergy",
+    "people",
+    "accountant",
+    "printer"
+  ],
+  "topic": "Social media impressions",
+  "lines": [
+    {
+      "who": "synergy",
+      "text": "The intern’s post has received ninety-three impressions.",
+      "shot": "grid",
+      "gap": 0.65
+    },
+    {
+      "who": "people",
+      "text": "She spent most of yesterday getting the example right.",
+      "shot": "people",
+      "gap": 0.65
+    },
+    {
+      "who": "accountant",
+      "text": "What happened after the impression?",
+      "shot": "accountant",
+      "gap": 1.05
+    },
+    {
+      "who": "synergy",
+      "text": "The platform describes it as discovery.",
+      "shot": "synergy",
+      "gap": 0.65
+    },
+    {
+      "who": "accountant",
+      "text": "Did anyone ask us anything?",
+      "shot": "grid",
+      "gap": 0.65
+    },
+    {
+      "who": "people",
+      "text": "Yes. Someone wants the onboarding checklist in the post.",
+      "shot": "people",
+      "gap": 0.65
+    },
+    {
+      "who": "synergy",
+      "text": "I have included community engagement in the summary.",
+      "shot": "synergy",
+      "gap": 0.65
+    },
+    {
+      "who": "people",
+      "text": "We haven’t answered them yet.",
+      "shot": "people",
+      "gap": 1.05
+    },
+    {
+      "who": "accountant",
+      "text": "Is the checklist something we can share?",
+      "shot": "grid",
+      "gap": 0.65
+    },
+    {
+      "who": "people",
+      "text": "The blank one is. I’ll check the link.",
+      "shot": "people",
+      "gap": 0.65
+    },
+    {
+      "who": "synergy",
+      "text": "I wanted her to see that the work had made an impact.",
+      "shot": "synergy",
+      "gap": 0.65
+    },
+    {
+      "who": "people",
+      "text": "Then we should tell her what was useful.",
+      "shot": "people",
+      "gap": 0.65
+    },
+    {
+      "who": "accountant",
+      "text": "Someone wants to use the example she made.",
+      "shot": "grid",
+      "gap": 0.65
+    },
+    {
+      "who": "synergy",
+      "text": "That is more specific than increased visibility.",
+      "shot": "synergy",
+      "gap": 0.65
+    },
+    {
+      "who": "people",
+      "text": "The link works. I’ll send it to her so she can reply.",
+      "shot": "people",
+      "gap": 0.65
+    },
+    {
+      "who": "accountant",
+      "text": "Does she need another report?",
+      "shot": "accountant",
+      "gap": 1.05
+    },
+    {
+      "who": "people",
+      "text": "She needs to know what to make next.",
+      "shot": "grid",
+      "gap": 0.65
+    },
+    {
+      "who": "synergy",
+      "text": "I had suggested a post about our approach to meaningful engagement.",
+      "shot": "synergy",
+      "gap": 0.65
+    },
+    {
+      "who": "people",
+      "text": "She suggested showing how to use the checklist.",
+      "shot": "people",
+      "gap": 0.65
+    },
+    {
+      "who": "synergy",
+      "text": "Let’s do that.",
+      "shot": "synergy",
+      "gap": 0.65
+    },
+    {
+      "who": "accountant",
+      "text": "Are we keeping the ninety-three?",
+      "shot": "grid",
+      "gap": 1.05
+    },
+    {
+      "who": "synergy",
+      "text": "Yes. It is what happened.",
+      "shot": "synergy",
+      "gap": 0.65
+    }
+  ],
+  "ending": {
+    "kind": "post",
+    "heading": "Draft · Synergy",
+    "lines": [
+      "93 impressions.",
+      "One person asked for the checklist.",
+      "We sent them the blank version.",
+      "Next: show how to use it."
+    ],
+    "detail": "A smaller claim. A useful next step."
+  },
+  "hashtags": [
+    "CommunityBuilding",
+    "ContinuousImprovement"
+  ],
+  "performance": "Sincere, restrained; preserve original cast voices. New takes require listening review."
+}

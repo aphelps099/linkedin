@@ -1,7 +1,7 @@
 {
   "updated": "2026-10-29",
   "purpose": "Next three meeting videos queued for production by Aaron",
-  "status": "preproduction",
+  "status": "review-cuts-ready",
   "background_jobs_started": false,
   "publishing_dates_assigned": false,
   "current_reference": "chatgpt-onboarding/studio-version.md",
@@ -26,24 +26,37 @@
       "id": "great-connecting",
       "episode": "02",
       "title": "Great connecting.",
-      "status": "queued",
-      "brief": "great-connecting/production-brief.json"
+      "status": "review-cut-ready",
+      "brief": "great-connecting/production-brief.json",
+      "script": "great-connecting/script.json",
+      "review_url": "http://127.0.0.1:8852/series/great-connecting/",
+      "duration_seconds": 90.0,
+      "version": 1
     },
     {
       "order": 2,
       "id": "meaningful-increase",
       "episode": "03",
       "title": "A meaningful increase.",
-      "status": "queued",
-      "brief": "meaningful-increase/production-brief.json"
+      "status": "review-cut-ready",
+      "brief": "meaningful-increase/production-brief.json",
+      "script": "meaningful-increase/script.json",
+      "review_url": "http://127.0.0.1:8852/series/meaningful-increase/",
+      "duration_seconds": 90.0,
+      "version": 1
     },
     {
       "order": 3,
       "id": "continuing-development",
       "episode": "04",
       "title": "Continuing development.",
-      "status": "queued",
-      "brief": "continuing-development/production-brief.json"
+      "status": "review-cut-ready",
+      "brief": "continuing-development/production-brief.json",
+      "script": "continuing-development/script.json",
+      "review_url": "http://127.0.0.1:8852/series/continuing-development/",
+      "duration_seconds": 90.0,
+      "version": 1
     }
-  ]
+  ],
+  "completed_render_jobs": 3
 }
