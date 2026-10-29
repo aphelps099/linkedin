@@ -62,7 +62,7 @@ Aaron liked both cel studies and requested a slightly more minimal watercolor tr
 - [Ink and watercolor](art/cast-watercolor-v1.png): broken contours, transparent washes and unpainted ivory space; office background fades into the paper.
 - [Office paper collage](art/cast-office-paper-v1.png): manila and blue memo-paper shapes, carbon-black lines, copier grain and sparse typewriter-like impressions. Material choices come from the characters' workplace.
 
-Keep skin tones, silhouettes, props and neutral performances recognizable. Treat office textures as construction materials rather than decorative clutter. Sparse ink marks are an exploration of typewriter texture, not readable copy or character labeling. Both remain concept stills; no new style is locked for production. [Recorded prompts](art/material-study-prompts.md).
+Keep skin tones, silhouettes, props and neutral performances recognizable. Treat office textures as construction materials rather than decorative clutter. Sparse ink marks are an exploration of typewriter texture, not readable copy or character labeling. Both remain concept stills. Aaron subsequently selected office paper as the miniseries direction; watercolor remains an exploration. [Recorded prompts](art/material-study-prompts.md).
 
 ## Model sheet and motion package
 
@@ -88,3 +88,7 @@ Printer paper feeds outward with normal sheet dimensions and lands on a matching
 ## Office paper scene development
 
 Aaron singled out the office-paper treatment as especially successful and asked to see Synergy typing his LinkedIn post into ChatGPT. The [first desk scene](art/synergy-chatgpt-paper-v1.png) carries the material language into a new composition. See the [scene and reuse plan](art/synergy-chatgpt-scene.md). This establishes a preferred direction for further development, not a finished rig or animation system.
+
+## Selected miniseries direction
+
+Office paper is now the selected series treatment. Follow [the miniseries format](miniseries-format.md) for reusable states, paper meeting windows, timed typography, printer fatigue and Synergy’s coffee action. [The meeting-grid concept](art/paper-meeting-grid-v1.png) is a staging study awaiting review. Selection of the style does not imply that layered assets, rigs or episodes are already complete.

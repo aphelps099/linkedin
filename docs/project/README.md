@@ -11,12 +11,16 @@ The existing films and tools establish the world. New character motivations, epi
 | Workstream | Existing foundation | Next deliverable |
 | --- | --- | --- |
 | Beats and synth | CB–08 sampler, sequencer, character voice library and original film beds | A small musical vocabulary for each character; separate reusable stems and arrangements |
-| Characters | Seven human voice identities, Synergy, Synthia, printer, floor droid and Pat | Human animation model sheets matched to the Learn Synergy world |
-| Office drama | Seven agendas with two authored meetings each; printer and paper-droid films | Recurring relationships and a short connected season |
+| Characters | Seven human voice identities, Synergy, Synthia, printer, floor droid and Pat | Office-paper model sheets and reusable character states |
+| Office drama | Seven agendas with two authored meetings each; printer and paper-droid films | 90-second to 4-minute office-paper miniseries; first 90–120 second pilot |
 | Thumbnail art | Approved compact carousel, rounded art, white caption bodies, real cast references | A maintained library of compositions tied to episodes and characters |
 | Roast and certificates | Roast experience plus Learn completion and certificate system | A distinct, shareable Roast certificate concept alongside existing Learn certificates |
 | Personalized meetings | Authored meeting playback, cast media, timed voice bank and audio engine | One topic-to-video prototype using an approved cast and reusable scene templates |
 | Operations | Cutting Room catalog, media provenance, Render deployment, GA4 | Consistent approval records, release checks, generation cost tracking and useful measurement |
+
+## Selected series format
+
+The [office-paper miniseries](miniseries-format.md) is the selected new series direction: 90-second to 4-minute episodes, a 2–3 second branded opening, paper meeting windows, narrated storybook scenes and synchronized TT Hoves text. Reuse illustrated sets and controlled local motion; the printer and Synergy’s coffee are recurring performances. This format is documented; the first episode and reusable rigs are still to be produced.
 
 ## Read in this order
 

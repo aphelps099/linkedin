@@ -222,14 +222,14 @@
         "synergy",
         "operations"
       ],
-      "status": "concept-awaiting-creative-review",
+      "status": "selected-series-art-direction",
       "type": "still-concept-not-animation",
       "generationMethod": "built-in-imagegen",
       "promptRecord": "docs/project/art/material-study-prompts.md",
       "sourceReferences": [
         "docs/project/art/cast-cel-sitcom-v1.png"
       ],
-      "reviewNotes": "Requested evolution toward minimal watercolor or office-material textures. Retains three cast identities, clothing, props and dry performance. Animation and layered source remain to be developed."
+      "reviewNotes": "Aaron selected office-paper style for the miniseries. Still concept only; layered source, full cast sheets and animation remain to be produced."
     },
     {
       "id": "synergy-chatgpt-paper-v1",
@@ -237,14 +237,33 @@
       "characterIds": [
         "synergy"
       ],
-      "status": "scene-concept-awaiting-review",
+      "status": "approved-scene-concept",
       "type": "still-concept-not-animation",
       "generationMethod": "built-in-imagegen",
       "promptRecord": "docs/project/art/synergy-chatgpt-scene.md",
       "sourceReferences": [
         "docs/project/art/cast-office-paper-v1.png"
       ],
-      "reviewNotes": "Scene expansion of the preferred office-paper treatment. Identifiable angular Synergy, consistent paper materials and readable illustrative ChatGPT exchange. Monitor is staged for audience readability; production camera blocking and typing motion still need development."
+      "reviewNotes": "Scene expansion of the preferred office-paper treatment. Identifiable angular Synergy, consistent paper materials and readable illustrative ChatGPT exchange. Monitor is staged for audience readability; production camera blocking and typing motion still need development. Aaron approved the scene; subsequent achievement rule supersedes the folder-renaming copy for future stories."
+    },
+    {
+      "id": "paper-meeting-grid-v1",
+      "path": "docs/project/art/paper-meeting-grid-v1.png",
+      "characterIds": [
+        "synergy",
+        "people",
+        "operations",
+        "printer"
+      ],
+      "status": "scene-concept-awaiting-review",
+      "type": "still-concept-not-animation",
+      "generationMethod": "built-in-imagegen",
+      "promptRecord": "docs/project/art/paper-meeting-scene.md",
+      "sourceReferences": [
+        "docs/project/art/cast-office-paper-v1.png",
+        "public/studio/season/posters/printer-neutral.jpg"
+      ],
+      "reviewNotes": "Recurring paper conference set proposal with Synergy coffee and printer participant. Flattened concept; separate masks, equal borders and motion must be built for production."
     }
   ]
 }

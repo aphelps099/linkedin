@@ -7,23 +7,23 @@ This plan organizes the work without treating new proposals as finished product.
 | Order | Deliverable | Completion criterion | Current status |
 | --- | --- | --- | --- |
 | 1 | Project foundation | One index linking cast, art, music, drama, tools, assets and roadmap | Created in this revision |
-| 2 | Animated human art direction | Two recognizable human studies beside Learn Synergy, reviewed for tone and identity | Sculpted and two hand-drawn still studies; approval pending |
+| 2 | Animated human art direction | Two recognizable human studies beside Learn Synergy, reviewed for tone and identity | Office-paper direction selected; model sheets and motion still needed |
 | 3 | Reusable cast package | Seven human model sheets, stable robot references, layered/rigged assets and short motion tests | Planned |
 | 4 | Music package | Three original bed families, separate stems, clear robot voice and beep vocabulary | Existing scores supply references; reusable package planned |
-| 5 | Connected office pilot | One finished scene with an objective, relationship tension and continuity to the next episode | Outline proposed |
+| 5 | Connected office pilot | One finished 90–120 second paper episode with clear voices, timed text, meetings and printer continuity | Format and pilot premise documented |
 | 6 | Roast certificate | Previewable artifact with a grounded finding, correct share behavior and distinct identity from Learn completion | Proposed |
 | 7 | Meeting creator prototype | Selected topic and user details produce one reviewed, downloadable 30–40 second meeting | Proposed |
 | 8 | Public meeting creation | Measured quality/cost, controlled queue, failure recovery, quotas and user-driven publishing | Later |
 
 ## First production brief
 
-Develop People & Culture and Operations as animated counterparts to the filmed cast. Compare them next to the existing Learn Synergy, at full image size and in a small meeting tile. Once the visual language is settled, apply it to Kevin and Keys and build the first three-person meeting prototype with Synergy, Kevin and People & Culture.
+Build the first 90–120 second office-paper pilot using the [miniseries format](miniseries-format.md). Begin with Synergy, People & Culture, Operations and the printer; prepare layered character states and a paper meeting set before animating. Record voices first, then time text and edits to the performance. Reuse 4–6 source illustrations as a starting target, plus title and text plates.
 
-The initial images compare sculpted rendering with the newly requested hand-drawn television direction. The next production step is a reference sheet and short motion test, not immediate replacement of the live cast. Keep all existing approved films and avatars available.
+The series can expand to four-minute episodes after the short pilot establishes pacing. Paper is the selected direction; sculpted, cel and watercolor studies remain exploration history. A flattened meeting-grid concept is available; it is not yet a reusable animation system. Keep existing approved films and Learn avatars available.
 
 ## Decisions to settle through review
 
-- How closely should human proportions follow the filmed cast versus the compact Learn avatar?
+- How much movement is needed in the pilot to sustain the story while preserving the approved paper treatment?
 - Keep role names such as “People & Culture” and “Strategy,” or introduce personal names? Existing names remain until a recast decision is explicit.
 - Should the first Roast certificate be stately institutional print, a character-issued credential, or both as variants?
 - Does the generator begin with only predefined topics, or a bounded custom topic field too?
