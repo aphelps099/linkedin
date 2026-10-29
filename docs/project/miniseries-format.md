@@ -85,4 +85,3 @@ Sources checked October 29, 2026: [Runway credit guide](https://help.runwayml.co
 ## Current status
 
 Paper treatment selected. Cast and desk concept stills exist. A new meeting-grid concept is recorded for review. Layer separation, reusable motion, voice tracks, timed text and the first finished episode still need production. The shorter personalized meeting generator remains a separate future product that can reuse this kit.
-
