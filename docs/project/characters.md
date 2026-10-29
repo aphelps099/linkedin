@@ -3,7 +3,7 @@
 
 ## Locked Synergy face rule — October 29
 
-**Mandatory in every new still, scene, animation and renderer:** Synergy's mouth is a single bold green horizontal EQ row. Use a **2×2 logical pixel grid for each open eye and 1×10 for the full mouth**, with the same pixel unit. The mouth is therefore half the height of an open eye. Louder/emphasized syllables extend the lit row horizontally, up to all ten cells; pauses contract it. Its vertical position and thickness never change. Use adjacent illuminated cells so it reads as a solid line, not scattered dots. No stacked rows, vertical spectrum bars, opening jaw, waveform, bouncing baseline or changing glow height.
+**Mandatory in every new still, scene, animation and renderer:** Synergy's mouth is a single bold green horizontal EQ row. Use a **2×2 logical pixel grid for each open eye and 1×10 for the full mouth**, with the same pixel unit. The mouth is therefore half the height of an open eye. Louder/emphasized syllables fill the lit row **left to right from a fixed left edge**, up to all ten cells; pauses retract only the right edge. Never expand from the center. Its vertical position and thickness never change. Use adjacent illuminated cells so it reads as a solid line, not scattered dots. No stacked rows, vertical spectrum bars, opening jaw, waveform, bouncing baseline or changing glow height.
 
 The row follows the real speech envelope, not a free-running decorative wave. Keep it inside the existing black face screen. Preserve the cream faceted head and existing voice. Open-eye proportions are the reference even during a blink. Existing filmed source eyes may be retained; do not warp the real head to force a grid.
 

@@ -55,7 +55,7 @@ Hidden tabs pause the meeting. Failed video playback leaves the poster visible.
   small head and body movement; never anchor the overlay to the tile itself.
 - The robot mouth is ONE fixed-height green horizontal row near the bottom of
   the screen. Synergy uses the shared `synergy-display.js` painter: 1×10 logical
-  pixels, half the open-eye height (2×2). Speech changes horizontal length up to
+  pixels, half the open-eye height (2×2). The left edge is fixed; speech fills rightward up to
   all ten cells; adjacent cells form a solid green line. Synthia retains her
   existing brightness treatment. Run `node scripts/check-synergy-display.mjs`.
   **Never animate vertical height, warp the metal, move the mouth into the
