@@ -1,0 +1,54 @@
+name: LinkedIn publish
+
+# Hourly: posts anything in docs/linkedin/queue.json that is approved and due,
+# then commits the result back. Runs dry until the repository variable
+# LINKEDIN_PUBLISH_ENABLED is set to "true". See docs/linkedin/playbook.md.
+
+on:
+  schedule:
+    - cron: '10 * * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Build the post bodies and post nothing
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: linkedin-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Validate the queue offline
+        run: node scripts/check-linkedin-queue.mjs
+      - name: Publish due posts
+        env:
+          LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
+          LINKEDIN_AUTHOR_URN: ${{ secrets.LINKEDIN_AUTHOR_URN }}
+          LINKEDIN_TOKEN_EXPIRES_AT: ${{ vars.LINKEDIN_TOKEN_EXPIRES_AT }}
+          LINKEDIN_API_VERSION: ${{ vars.LINKEDIN_API_VERSION }}
+          DRY_RUN_FLAG: ${{ (vars.LINKEDIN_PUBLISH_ENABLED == 'true' && inputs.dry_run != true) && '' || '--dry-run' }}
+        run: node scripts/linkedin/publish.mjs $DRY_RUN_FLAG
+      - name: Record results in the queue
+        if: always()
+        run: |
+          git config user.name "linkedin-beats-bot"
+          git config user.email "linkedin-beats-bot@users.noreply.github.com"
+          git add docs/linkedin/queue.json
+          if git diff --cached --quiet; then echo "Queue unchanged."; exit 0; fi
+          git commit -m "linkedin: record publish results"
+          git push origin HEAD:main
