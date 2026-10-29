@@ -50,15 +50,15 @@
   function show() {
     if (panel?.isConnected) return;
     const css = document.createElement('link');
-    css.rel = 'stylesheet'; css.href = '/analytics.css';
-    if (!document.querySelector('link[href="/analytics.css"]')) document.head.appendChild(css);
+    css.rel = 'stylesheet'; css.href = '/analytics.css?v=2';
+    if (!document.querySelector('link[href="/analytics.css?v=2"]')) document.head.appendChild(css);
     panel = document.createElement('section');
     panel.className = 'lb-analytics-choice';
     panel.setAttribute('aria-label', 'Analytics preference');
     const copy = document.createElement('p');
     copy.textContent = privacySignal()
       ? 'Your browser privacy preference is on. Google Analytics stays off.'
-      : 'May we use Google Analytics to understand which pages people visit? Optional. No advertising tracking.';
+      : 'Optional Google Analytics. Site visits, no ads.';
     const actions = document.createElement('div');
     function button(text, action) { const b=document.createElement('button'); b.type='button'; b.textContent=text; b.onclick=action; actions.appendChild(b); }
     if (!privacySignal()) button('Allow analytics', () => {saveChoice('granted'); window['ga-disable-' + measurementId]=false; panel.remove(); start();});
