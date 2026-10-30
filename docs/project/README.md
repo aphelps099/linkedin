@@ -82,3 +82,7 @@ Sources checked October 29, 2026: [Google Analytics terms, section 7](https://ma
 ## Five quick meetings · Episodes 05–09
 
 The new preferred duration is 30–40 seconds. [Production notes](episodes/production/shorts-production.md) and [shorts slate](episodes/shorts-queue.json) cover five new Strategy/Linda-led cuts, with Synthia and the banner crew handling recurring Corporate visits. Review: http://127.0.0.1:8852/shorts/.
+
+## Shorts editing and shareability
+
+[Stranger meetings, sharper Shorts](shorts-editing-playbook.md): researched creative references, purposeful extreme close-ups, recurring coffee, a proposed “One source of truth” recut, vertical delivery and a small measurement plan. This records Aaron’s latest request for stranger scenes and supersedes the earlier blanket ban on extreme eye crops. The edit maps are proposals, not new renders.

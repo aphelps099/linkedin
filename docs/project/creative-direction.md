@@ -2,7 +2,7 @@
 
 ## Writing and performance
 
-Corporate sincerity is the default. The absurdity is the gap between the language, the resources committed and the actual outcome. Never tell the audience that a scene is absurd. Use patient listening, precise responses and ordinary office detail. Avoid reaction faces, wink-to-camera deliveries, punchline sound effects and a parade of interchangeable buzzwords.
+Corporate sincerity is the default. The absurdity is the gap between the language, the resources committed and the actual outcome. Never tell the audience that a scene is absurd. Use patient listening, precise responses and ordinary office detail. Avoid wink-to-camera deliveries, automatic punchline sound effects and a parade of interchangeable buzzwords. The later Shorts direction permits selective sincere reactions, extreme close-ups, a cough or one sudden outburst, with the rest of the room remaining matter-of-fact. More Synergy coffee should punctuate real pauses. See the [Shorts editing playbook](shorts-editing-playbook.md) for researched references and proposed experiments.
 
 A scene needs an objective, an obstacle, an escalation and an institutional resolution. The resolution may leave the practical problem untouched. Language should reveal what the speaker wants: reassurance, status, clarity, access, credit or permission.
 

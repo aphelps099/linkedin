@@ -31,7 +31,7 @@ The printer supplies physical evidence: three versions of a one-page simplificat
 
 The band provides a second way of being together. A brief unplanned musical response may achieve the connection that a culture initiative could not. Keep instruments tied to the established cast: Keys on keyboard, Kevin on guitar, Operations on drums. Synergy can listen before trying to organize it.
 
-Intro: preserve the approved 2.5-second graph-paper/blue-paper collage, TT Hoves, actual logo and title. Add short photographic performance scraps on successive beats of the original 96 BPM bed: keys at 0.625, guitar at 1.25, drums at 1.875. Quick arrivals, then steady paper. Do not speed up the performers or require the generic score to match a particular visible note.
+Intro: preserve the approved 2.5-second graph-paper/blue-paper collage, TT Hoves, actual logo and title for the established website films. The [Shorts playbook](shorts-editing-playbook.md) proposes a separate cold-open/brief-brand-accent experiment for vertical edits; it has not replaced the approved master. Add short photographic performance scraps on successive beats of the original 96 BPM bed: keys at 0.625, guitar at 1.25, drums at 1.875. Quick arrivals, then steady paper. Do not speed up the performers or require the generic score to match a particular visible note.
 
 Outro: preserve the approved collage hashtag ending and small lower-corner wordmark/URL. Allow the final hashtags to acquire meaning from the story rather than explicitly explain its joke.
 
