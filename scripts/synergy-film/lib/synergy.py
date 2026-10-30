@@ -5,62 +5,100 @@ Procedural model + FK rig, built from nothing in Blender 4.5 (Cycles).
     import synergy as S
     rig = S.build(timeline=face.FaceTimeline(1, 96))
     rig.apply_preset(1, 'idle_cup')
-    rig.pose(24, head=(0, 7, 0), interp='BEZIER')
+    rig.pose(24, head=(0, 4, 0), interp='BEZIER')
 
 Conventions (visual canon): metres, Z up, the character faces -Y, the
 character's LEFT is +X. The armature origin sits on the floor between the
 feet; the head apex is at 1.75 m. Every rigid part is its own mesh,
 bone-parented (no skin weights). Head and torso plates are separate objects
-with their origin at their own centroid (rig.head_plates / rig.torso_plates).
+with their origin at their own centroid (rig.head_plates / rig.torso_plates);
+a warped plate is ONE folded object (one sharp crease: no bevel, seam or rivets on the
+fold). Every plate carries the point attribute 'edge_w' (distance to its rim) that the
+enamel and steel shaders use for chips, seam grime and freckles; all wear is fixed to the
+part (object-local AO), so it never changes when another object comes near. Builds are
+deterministic: the same vertices, faces and loop order in every process.
 
 Pose controls (degrees). Tuples are (x, y, z), applied x then y then z, each
 about an axis fixed in the parent's rest frame:
   centre chain  pelvis, spine, chest, neck, head
       x > 0 pitches forward/down, y > 0 rolls so the character's LEFT side
       (earcup side) goes up, z > 0 turns toward the character's left.
-      Canonical head roll: head=(0, 7, 0).
+      Canonical head roll: head=CANON_HEAD=(0, 4, 0) (treatment).
   limbs  shoulder_*, upperarm_*, thigh_*  (and forearm_*/shin_*/foot_* as tuples)
       x > 0 swings the limb forward, y > 0 swings it outward (away from the
       body), z > 0 twists its front outward. L and R are mirrored, so equal
-      values give a symmetric pose. shoulder_*: x forward, y shrug up.
+      values give a symmetric pose. shoulder_*: x forward (protraction), y shrug up.
   forearm_*  number = elbow flex (> 0 bends the forearm forward/up)
   shin_*     number = knee flex (> 0 bends the shin back)
   foot_*     number = ankle (> 0 lifts the toes)
   hand_*     (flex toward the palm, twist palm toward the pinky side,
               deviation toward the pinky side)
-  fingers_*  curl 0..1 (all four fingers), or 'grip' (wrap the cup)
-  thumb_*    curl 0..1, or 'grip', or 'up' (extended for a thumbs-up)
+  fingers_*  curl 0..1 (all four), 'grip' (wrap the cup), a HAND_SHAPES name
+             ('point', 'pinch', 'relaxed'), or a dict per finger whose values are a
+             curl or an (MCP, PIP, DIP) tuple: fingers_L=dict(index=0, middle=0.8, ring=1, pinky=1)
+  <finger>_<n>_*  one joint, number = curl toward the palm (index_1_L=30, ...)
+  thumb_*    curl 0..1, or 'grip', 'up' (thumbs-up), 'pinch' (pad opposite the index pad,
+             2 mm apart) or ('pinch', gap); thumb_<n>_* = one joint curl in degrees
   root_loc   (x, y, z) world position of the point between the feet
   root_rot   world heading in degrees (0 = facing -Y)
   root_z     drop/raise the whole body (metres, keyed on the root's Z only)
   badge      (x, y, z) swing of the badge on its clip (centre convention)
-  pauldron_* (x, y, z) extra pauldron lift; by default it follows half of the
-             arm's sideways lift (clamped to 15 deg) and none of its forward swing.
+  pauldron_* (x, y, z) extra pauldron lift. The pauldrons are mounted on the chest top
+             (bone head = the seat): they follow half of the arm's sideways lift (lift
+             only, at most PAULDRON_FOLLOW = 8 deg) and take PAULDRON_SHOULDER of the
+             shoulder's protraction; place_arm adds a ride-up for an arm raised past 80 deg
+             (S11), hinged on a seat edge, so they never dip into the chest.
 Poses are keyed as bone quaternions (sign-continuous). Key poses first, then
-call attach_cup / detach_headset / attach_headset (they read the posed rig).
+call attach_cup / detach_headset / attach_headset / post (they read the posed rig).
 
-Presets (rig.apply_preset(frame, name)):
-  idle_cup       canon: cup in the right hand at chest height ~23 cm in front of
-                 the chest, left arm relaxed, head rolled 5 deg (earcup side up)
-  idle_cup_high  the approved plate: cup raised beside the head, forearm near
-                 vertical, sharp wrist bend (hero framing)
-  thumbs_up      idle cup + left fist with the thumb up in front of the chest
-  sip            cup raised to just below the screen, head tipped to meet it
-  reach_L        left hand reaching forward at table height, palm down
-  hands_clasped  executive steeple in front of the chest (fingertips a few cm
-                 apart). Needs both hands free: park the cup first with
-                 attach_cup(frame, None). With canon proportions (0.52 m arm,
-                 shoulders at +-0.31 m) the wrists cannot meet at the centre line
-                 without the arms crossing the chest.
+Presets (rig.apply_preset(frame, name)) set arms and hands plus the canon 4 deg
+head roll; any other head or chest acting is keyed by the shot:
+  idle_cup       canon: cup centre 1.22 m in the right hand, 30 cm in front of the
+                 chest, elbow low; sip slot toward the sternum (SLOT_BETA); left arm relaxed
+  idle_cup_high  the approved plate: cup raised beside the head (hero framing)
+  thumbs_up      idle cup + left fist 38 cm in front of the chest, thumb up toward camera
+  sip            S13 contact: cup level, the lid's spout on the chin plate just under the
+                 screen, head tipped back 5 deg, elbow low and in front of the ribs, forearm
+                 angled up (rig.sip(1249) keys the whole four-beat lift on a clear path every
+                 frame; rig.sip_stage(frame, k): 0 chest, 1 sternum, 2 collar, 2.5 chin level, 3 contact)
+  reach_L        S04/S09: left index tip resting on the walnut at env_room's fingertip_L
+                 contract (palm down, index straight, 1 mm above the table top);
+                 rig.reach_L(frame, tip_world) for any other point
+  hands_clasped  executive steeple: wrists at (+-0.17, -0.30, 1.10), fingertips just
+                 touching. Needs both hands free: park the cup first with
+                 attach_cup(frame, None) (or hide rig.cup_objects()).
+  post_L         idle cup + the left hand pinching 16 mm above the sip slot (2 mm between
+                 the pads: an envelope; post(..., gap=0.018) holds the padlock)
   seated         thighs/knees 88 deg, body dropped to a 0.40 m seat, cup held,
                  left hand resting on the thigh
   neutral        everything at rest
-All presets (and walk()) are checked free of interpenetration (BVH overlap test),
-apart from deliberate joint seats (hubs in sockets, piston stages, cable ends).
+Arm poses are solved with a clearance search (elbow pole, small shoulder offsets)
+against the chest, the arm's own pauldron (and its seat), the head, the held cup and,
+when posting, the cup being posted into; idle_cup, idle_cup_high, thumbs_up, sip (and the
+whole rig.sip lift), reach_L, hands_clasped and post_L are free of BVH interpenetration
+apart from deliberate joint seats (hubs in sockets, piston stages, cable ends):
+tools/synergy_in_room.py prints the report.
 
-Props: the cup and the headset group are unparented objects driven by Child Of
-constraints with keyed influence (cup: 'hold_R' / 'hold_L'; headset: 'on_head').
-While detached, key their location/rotation_quaternion in world space.
+S10 / S11 helpers: rig.lean(frame, deg) (spine + chest, at most 8 deg) for the jack reach
+with a world-space target; rig.grip_headband(frame) grips the band just above the left
+earcup (palm on the band, fingers past its front edge), then attach_headset(frame, 'hand_L').
+
+Posting (S02, S05, S07): rig.post(frame) keys the LEFT hand every frame along one straight
+line into the slot: approach (from frame - 8), contact (pinch 16 mm above the slot,
+fingertips ~5-10 mm) and lift (to frame + 6), without moving the head or the cup;
+rig.post_pose(frame, height) keys one pose. gap= sets the air between thumb and index pads
+(0.002 envelope, ~0.018 padlock). place_arm / place_arm_clear take space='world' targets
+(they then honour a keyed root, spine or chest lean: rig.lean(frame, deg)).
+rig.cup_handle is the props.Cup (rig.slot = the slot empty, Z out of the slot;
+rig.cup_handle.slot_glow(frame) keys the amber pulse).
+
+Props: the cup (props.cup_and_lid(hero=True); rig.cup is its root empty) and the
+headset group are unparented objects driven by Child Of constraints with keyed
+influence (cup: 'hold_R' / 'hold_L'; headset: 'on_head' / 'in_hand_L'). While
+detached, key their location/rotation_quaternion in world space. The headset cord
+unplugs on detach: over 8 frames the plug leaves the collar and the cord wraps the
+left earcup, so it leaves with the headset. rig.glass_glint(camera, frame) adds the
+thin reflected skylight slot to the face glass for a shot camera.
 Grip: fingers_*='grip' / thumb_*='grip' are solved once per hand by curling each
 segment until it touches the cup (no interpenetration with the cup or the hand).
 """
@@ -75,8 +113,9 @@ try:
     import common as C
     import face as F
     import materials as M
+    import props as PR
 except ImportError:  # imported as a package
-    from . import common as C, face as F, materials as M
+    from . import common as C, face as F, materials as M, props as PR
 
 V = Vector
 UP = V((0, 0, 1))
@@ -119,20 +158,48 @@ THIGH_LEN = HIP_Z - KNEE_Z
 SHIN_LEN = KNEE_Z - ANKLE_Z
 
 FINGERS = {  # name: (segment lengths, knuckle offset along v, knuckle u, splay deg)
-    'index': ((0.040, 0.030, 0.026), -0.0315, 0.097, -3.0),
-    'middle': ((0.044, 0.032, 0.027), -0.0105, 0.099, 0.0),
-    'ring': ((0.041, 0.030, 0.026), 0.0105, 0.097, 2.5),
-    'pinky': ((0.034, 0.025, 0.022), 0.0315, 0.092, 6.0),
+    'index': ((0.040, 0.030, 0.026), -0.03075, 0.097, -1.5),
+    'middle': ((0.044, 0.032, 0.027), -0.01025, 0.099, 0.0),
+    'ring': ((0.041, 0.030, 0.026), 0.01025, 0.097, 1.2),
+    'pinky': ((0.034, 0.025, 0.022), 0.03075, 0.092, 3.0),
 }
-FINGER_R = 0.0073          # proximal segment radius (tapers to 0.0065)
+FINGER_R = 0.0085          # proximal segment half-width (canon 0.017-0.015 dia; 3.5 mm gaps at 20.5 mm pitch)
 FIST = (80.0, 90.0, 58.0)  # MCP / PIP / DIP at curl 1.0
+# named hand shapes: per-finger (MCP, PIP, DIP) degrees; thumb handled separately
+HAND_SHAPES = {
+    'point': dict(index=(2.0, 4.0, 2.0), middle=FIST, ring=FIST, pinky=FIST),
+    'pinch': dict(index=(30.0, 70.0, 50.0), middle=(78.0, 95.0, 60.0), ring=(82.0, 95.0, 60.0),
+                  pinky=(84.0, 95.0, 58.0)),
+    'relaxed': dict(index=tuple(a * 0.35 for a in FIST), middle=tuple(a * 0.42 for a in FIST),
+                    ring=tuple(a * 0.50 for a in FIST), pinky=tuple(a * 0.55 for a in FIST)),
+}
+CANON_HEAD = (0.0, 4.0, 0.0)   # head roll 4 deg, earcup side up (treatment)
+BADGE_TILT = 2.5               # sleeve + card face tip down this much (soft strap reflection)
+PAULDRON_FOLLOW = 8.0          # max sideways follow of the pauldron (degrees)
+PAULDRON_SHOULDER = 0.25       # share of the shoulder joint's protraction / shrug the pauldron takes
+PAULDRON_RIDE_FROM = 80.0      # arm lift (deg) beyond which the pauldron starts to ride up
+PINCH_GAP = 0.002              # default air between thumb and index pads (an envelope)
+REACH_DEBUG = False
+REACH_THUMB = 0.30             # thumb tucked beside the fist while the index rests on the walnut
+SIP_GAP = 0.0025               # spout top to chin plate at the S13 contact (reads as touching)
+SIP_DEBUG = False
+PAD_R_INDEX, PAD_R_THUMB = 0.0070, 0.0072   # pad radii 6 / 4 mm behind the index / thumb tips
 
-# cup (canon): body 0.115 tall, r 0.030 -> 0.045, lid 0.018
-CUP_H = 0.115
-CUP_R0, CUP_R1 = 0.030, 0.045
+# cup + lid: props.cup_and_lid(hero=True) (h 0.111, r 0.030 -> 0.0442, lid r 0.0472, lid top ~0.129)
+CUP_H = PR.CUP['h']
+CUP_R0, CUP_R1 = PR.CUP['r_bot'], PR.CUP['r_top']
+LID_R = PR.CUP['lid_r']
+LID_SKIRT_Z = 0.1075            # lid skirt bottom
+LID_TOP = 0.1295                # top of the lid rim
+SLOT_BETA = math.radians(35.0)  # slot direction: from the thumb side toward the side opposite the palm.
+                                # 35 deg: at the chest the slot faces the sternum (and the posting left
+                                # hand); raised to the chin in the same grip it faces the chin plate
 
 
 def cup_radius(h):
+    """Outer radius of the cup (and lid skirt) at height h above the base."""
+    if h >= LID_SKIRT_Z:
+        return LID_R + 0.0005
     h = min(max(h, 0.0), CUP_H)
     return CUP_R0 + (CUP_R1 - CUP_R0) * h / CUP_H
 
@@ -140,7 +207,7 @@ def cup_radius(h):
 # grip: cup placement in the hand frame (u along fingers, v toward pinky, w palm normal)
 GRIP_U, GRIP_W = 0.086, 0.0575
 GRIP_TILT = math.radians(16.0)   # fingers spiral slightly down the cup
-GRIP_H_MID = 0.058               # cup height at the hand's centre line (index ~9 cm up the cup)
+GRIP_H_MID = 0.054               # cup height at the hand's centre line (index ~8.5 cm up the cup)
 
 
 def grip_frame(W, u, v, w):
@@ -150,8 +217,9 @@ def grip_frame(W, u, v, w):
     return c, mid - c * GRIP_H_MID
 
 
-# canonical cup hold (right hand): cup in front of the shoulder, elbow tucked low
-IDLE_CUP = dict(cup_base=V((-0.305, -0.40, 1.195)), finger_dir=V((0.1, -1.0, 0.0)), pole=V((-0.05, 0.0, -1.0)))
+# canonical cup hold (right hand): cup centre 1.22 m, 30 cm in front, elbow tucked low;
+# the sip slot faces the sternum (and the posting left hand)
+IDLE_CUP = dict(cup_base=V((-0.19, -0.30, 1.163)), finger_dir=V((0.06, -1.0, 0.0)), pole=V((-0.25, 0.1, -1.0)))
 
 # the approved plate (video_synergy-v2-source t=3s): cup raised beside the head, forearm near vertical
 IDLE_CUP_HIGH = dict(cup_base=V((-0.37, -0.25, 1.255)), finger_dir=V((0.35, -1.0, 0.0)), pole=V((-0.15, 0.25, -1.0)))
@@ -271,9 +339,30 @@ DOME_V, DOME_F = _dome()
 class MB:
     """bmesh accumulator with per-face material slots."""
 
-    def __init__(self):
+    def __init__(self, point_attrs=()):
         self.bm = bmesh.new()
         self.mats = []
+        # custom layers are created up front: adding one later invalidates live BMesh references
+        self.bm.faces.layers.float.new('plate_rand')
+        self.bm.loops.layers.uv.new('UVMap')
+        self.bm.verts.layers.float.new('edge_w')      # plate rim distance (materials.plate_edge)
+        for nm in point_attrs:
+            self.bm.verts.layers.float.new(nm)
+
+    # --- per-face plate random (read by the plate shaders) and point attributes
+    def set_rand(self, faces, value):
+        lay = self.bm.faces.layers.float.get('plate_rand') or self.bm.faces.layers.float.new('plate_rand')
+        for f in faces:
+            if f.is_valid:
+                f[lay] = value
+
+    def set_point_attr(self, name, verts, values):
+        lay = self.bm.verts.layers.float.get(name) or self.bm.verts.layers.float.new(name)
+        for v, x in zip(verts, values):
+            v[lay] = x
+
+    def uv(self):
+        return self.bm.loops.layers.uv.get('UVMap') or self.bm.loops.layers.uv.new('UVMap')
 
     def mi(self, mat):
         if mat not in self.mats:
@@ -309,8 +398,9 @@ class MB:
         M_ = M_ @ Matrix.Diagonal((*size, 1.0))
         before = set(self.bm.faces)
         r = bmesh.ops.create_cube(self.bm, size=1.0, matrix=M_)
+        self.bm.edges.index_update()
         if bevel > 0:
-            edges = list({e for v in r['verts'] for e in v.link_edges})
+            edges = sorted({e for v in r['verts'] for e in v.link_edges}, key=lambda e: e.index)
             bmesh.ops.bevel(self.bm, geom=edges, offset=bevel, offset_type='OFFSET', segments=2,
                             profile=0.5, affect='EDGES', clamp_overlap=True)
         return self._tag(before, mat, smooth)
@@ -415,7 +505,8 @@ class MB:
         new = [f for f in self.bm.faces if f not in before]
         bmesh.ops.recalc_face_normals(self.bm, faces=new)
         if bevel > 0:
-            edges = list({e for f in new for e in f.edges})
+            self.bm.edges.index_update()
+            edges = sorted({e for f in new for e in f.edges}, key=lambda e: e.index)
             bmesh.ops.bevel(self.bm, geom=edges, offset=bevel, offset_type='OFFSET', segments=2,
                             profile=0.5, affect='EDGES', clamp_overlap=True)
         return self._tag(before, mat, smooth)
@@ -489,6 +580,40 @@ class MB:
 
     def to_object(self, name, coll, origin=None, sharp=40.0):
         me = bpy.data.meshes.new(name)
+        # canonical element order: bmesh ops (convex hull, dissolve, bevel) hash pointers, so
+        # their output order can differ between processes; sorting keeps every build identical
+        bm = self.bm
+        bm.verts.index_update()
+        bm.verts.ensure_lookup_table()
+        order = sorted(range(len(bm.verts)), key=lambda i: tuple(round(x, 6) for x in bm.verts[i].co))
+        rank = {i: r for r, i in enumerate(order)}
+        bm.verts.sort(key=lambda v: rank[v.index])
+        bm.verts.index_update()
+        # n-gons from hull / dissolve ops start their loop at an arbitrary vertex: restart each at
+        # its lowest vertex (UV-less n-gons only; their face data is copied over)
+        uvl = bm.loops.layers.uv.active
+        for f in list(bm.faces):
+            if len(f.verts) <= 4:
+                continue
+            vs = [l.vert for l in f.loops]
+            k0 = min(range(len(vs)), key=lambda i: vs[i].index)
+            if k0 == 0 or (uvl is not None and any(l[uvl].uv.length > 1e-9 for l in f.loops)):
+                continue
+            mi_, sm_ = f.material_index, f.smooth
+            pr_ = bm.faces.layers.float.get('plate_rand')
+            rv_ = f[pr_] if pr_ is not None else None
+            bm.faces.remove(f)
+            nf = bm.faces.new(vs[k0:] + vs[:k0])
+            nf.material_index = mi_
+            nf.smooth = sm_
+            if pr_ is not None:
+                nf[pr_] = rv_
+        bm.faces.ensure_lookup_table()
+        bm.faces.index_update()
+        forder = sorted(range(len(bm.faces)), key=lambda i: (bm.faces[i].material_index,) +
+                        tuple(round(x, 6) for x in bm.faces[i].calc_center_median()))
+        frank = {i: r for r, i in enumerate(forder)}
+        bm.faces.sort(key=lambda f: frank[f.index])
         self.bm.normal_update()
         self.bm.to_mesh(me)
         self.bm.free()
@@ -545,6 +670,49 @@ def spline_pts(ctrl, n=24):
     return out
 
 
+def _hash(q, k=0):
+    """Stable 0..1 hash of a point (rivet variants, plate random)."""
+    x = math.sin(q[0] * 12.9898 * (k + 1) + q[1] * 78.233 + q[2] * 37.719 * (k + 3) + k * 4.1) * 43758.5453
+    return x - math.floor(x)
+
+
+def _project_to_tris(q, tris):
+    """Project q onto the triangle (of a folded plate) that contains it; returns
+    (point, outward normal, triangle)."""
+    from mathutils.geometry import intersect_point_tri
+    best = None
+    for a, b, c in tris:
+        nn = (b - a).cross(c - a)
+        if nn.length < 1e-12:
+            continue
+        nn.normalize()
+        hit = intersect_point_tri(q, a, b, c)
+        d = abs(nn.dot(q - a))
+        qp = q - nn * nn.dot(q - a)
+        if hit is not None:
+            return qp, nn, [a, b, c]
+        if best is None or d < best[0]:
+            best = (d, qp, nn, [a, b, c])
+    return best[1], best[2], best[3]
+
+
+def _ray_to_edges(q, d, n, edges):
+    """In-plane distance from q along d to the nearest polygon edge (inf if none)."""
+    e2 = n.cross(d)
+    best = 1e9
+    for a, b in edges:
+        A = (a - q)
+        B = (b - q)
+        ay, by = A.dot(e2), B.dot(e2)
+        if (ay > 0) == (by > 0) or abs(ay - by) < 1e-12:
+            continue
+        t = ay / (ay - by)
+        x = A.dot(d) + t * (B.dot(d) - A.dot(d))
+        if x > 1e-5:
+            best = min(best, x)
+    return best
+
+
 # ---------------------------------------------------------------- the builder
 
 class _Builder:
@@ -559,12 +727,16 @@ class _Builder:
         self.rivet_reg = {}
         self.mat = dict(
             cream=M.cream_enamel(0.65), cream_head=M.cream_enamel(0.7), grey=M.galvanized_grey(0.45),
+            grey_head=M.galvanized_grey(0.45, 'head'), chip_rim=M.chip_rim(), well=M.slot_well(),
+            chrome_satin=M.chrome(satin=True), hero_lid=M.cup_lid(), slot_glow=M.slot_glow(),
             gun=M.gunmetal('inner'), gun_plate=M.gunmetal('plate'), chrome=M.chrome(), bronze=M.bronze('disc'),
             tip=M.bronze('tip'), rivet=M.rivet_steel(), core=M.dark_core(), black=M.black_plastic(),
             black_gloss=M.black_plastic(gloss=True), leather=M.leatherette(), rubber=M.rubber(),
             foam=M.mic_foam(), brass=M.brass(), copper=M.copper_wire(), red=M.red_wire(),
             orange=M.orange_wire(), strap=M.lanyard_strap(), card=M.badge_card(), vinyl=M.clear_vinyl(),
             clip=M.chrome_clip(), chip=M.blue_chip(), cup=M.paper_cup(), lid=M.cup_lid(),
+            rivet_rust=M.rivet_rust(), streak=M.rust_streak(), ring=M.rust_ring(), frosted=M.frosted_clip(),
+            earcup=M.earcup_face(), finger=M.finger_enamel(),
         )
 
     # ---------------------------------------------------- registry
@@ -578,58 +750,137 @@ class _Builder:
         return self.add(key, mb.to_object(key, self.coll, origin=origin, sharp=sharp), bone)
 
     # ---------------------------------------------------- plates
-    def plate(self, key, poly, outward, kind, bone, group=None, recess=None, thick=0.0025, gap=0.0013,
-              rivets=True, reg='head', rivet_scale=1.0, spacing=0.042):
+    PLATE_RECESS = {'cream': 0.0, 'cream_head': 0.0, 'grey': 0.0028, 'grey_head': 0.0028, 'dark': 0.001}
+
+    def plate(self, key, poly, outward, kind, bone, group=None, recess=None, thick=None, gap=0.0013,
+              rivets=True, reg='head', rivet_scale=1.0, spacing=0.042, fan=None):
+        """One riveted sheet-metal plate as its own object (origin at its centroid).
+
+        A warped polygon becomes ONE folded plate: the triangles share a crease (bevelled,
+        no gap, no rivets on the fold). Cream plates sit on the hull; grey plates are
+        recessed under them and reach 2 mm further, so every cream plate shows a raised,
+        bevelled lip over the grey."""
+        mb = MB()
+        info = self._plate_into(mb, poly, outward, kind, reg, rivets=rivets, rivet_scale=rivet_scale,
+                                spacing=spacing, thick=thick, gap=gap, recess=recess, fan=fan)
+        c = sum(info['top'], V()) / len(info['top'])
+        obj = self.obj_from(key, mb, bone, origin=c)
+        obj['plate_normal'] = tuple(info['n'])
+        obj['plate_kind'] = kind
+        obj['plate_poly'] = [x for q in info['top'] for x in q]
+        obj['plate_tris'] = [x for t in info['tri3'] for p_ in t for x in p_]
+        if group is not None:
+            group.append(obj)
+        return obj
+
+    def _plate_into(self, mb, poly, outward, kind, reg, rivets=True, rivet_scale=1.0, spacing=0.042, thick=None,
+                    gap=0.0013, recess=None, fan=None, bevel=None, inner_mat=None, streaks=True):
+        """Add one plate to mb. The top is an inset polygon ringed by a rim band; the band's
+        outer verts carry edge_w = 1 and its inner verts 1 - d/EDGE_BAND, so the enamel
+        shader knows how far every point is from the rim (chips, seam grime, freckles).
+        Only the outline and the corners are bevelled: a fold stays one sharp crease.
+        inner_mat: material for the plate's underside (default: the dark core)."""
         poly = [V(p) for p in poly]
         n = newell(poly)
         if n.dot(V(outward)) < 0:
             poly.reverse()
             n = -n
-        if len(poly) >= 4:
-            cc = sum(poly, V()) / len(poly)
-            warp = max(abs((q - cc).dot(n)) for q in poly)
-            if warp > 0.0015:
-                # split along the diagonal that bulges outward (keeps the shell convex)
-                if len(poly) == 4:
-                    mA = (poly[0] + poly[2]) / 2
-                    mB = (poly[1] + poly[3]) / 2
-                    if (mA - mB).dot(n) >= 0:
-                        tris = [[poly[0], poly[1], poly[2]], [poly[0], poly[2], poly[3]]]
-                    else:
-                        tris = [[poly[1], poly[2], poly[3]], [poly[1], poly[3], poly[0]]]
-                else:
-                    tris = [[poly[0], poly[i], poly[i + 1]] for i in range(1, len(poly) - 1)]
-                out = None
-                for k, tri in enumerate(tris):
-                    out = self.plate(f'{key}_{"abcdef"[k]}', tri, outward, kind, bone, group, recess, thick, gap,
-                                     rivets, reg, rivet_scale, spacing)
-                return out
-        mat = {'cream': self.mat['cream'], 'cream_head': self.mat['cream_head'], 'grey': self.mat['grey'],
-               'dark': self.mat['gun_plate']}[kind]
+            if fan is not None:
+                fan = len(poly) - 1 - fan
+        grey = kind in ('grey', 'grey_head')
+        if thick is None:
+            thick = 0.0016 if grey else 0.0025
         if recess is None:
-            recess = {'cream': 0.0, 'cream_head': 0.0, 'grey': 0.0015, 'dark': 0.001}[kind]
-        pts = inset_poly(poly, n, gap / 2)
-        pts = [p - n * recess for p in pts]
-        mb = MB()
-        mi_core = mb.mi(self.mat['core'])
-        mb.prism(mat, pts, n, thick, bevel=0.0009)
-        for f in mb.bm.faces:
-            if f.normal.dot(n) < -0.95:
-                f.material_index = mi_core
+            recess = self.PLATE_RECESS[kind]
+        if bevel is None:
+            bevel = 0.0007 if grey else 0.0015
+        pts = inset_poly(poly, n, -0.002 if grey else gap / 2)
+        k = len(pts)
+        cc = sum(pts, V()) / k
+        warp = max(abs((q - cc).dot(n)) for q in pts)
+        if k == 3 or warp <= 0.0015:
+            tris = [list(range(k))]
+        elif k == 4 and fan is None:
+            mA = (pts[0] + pts[2]) / 2
+            mB = (pts[1] + pts[3]) / 2
+            tris = [[0, 1, 2], [0, 2, 3]] if (mA - mB).dot(n) >= 0 else [[1, 2, 3], [1, 3, 0]]
+        elif fan is not None:
+            o = [(fan + i) % k for i in range(k)]
+            tris = [[o[0], o[i], o[i + 1]] for i in range(1, k - 1)]
+        else:
+            from mathutils.geometry import tessellate_polygon
+            tris = [list(t) for t in tessellate_polygon([pts])]
+        fn = []
+        for t in tris:
+            nn = newell([pts[i] for i in t])
+            if nn.dot(n) < 0:            # keep every face wound counter-clockwise around n
+                t.reverse()
+                nn = -nn
+            fn.append(nn)
+        vn = [V((0, 0, 0)) for _ in range(k)]
+        for t, nn in zip(tris, fn):
+            for i in t:
+                vn[i] += nn
+        vn = [x.normalized() for x in vn]
+        top = [pts[i] - vn[i] * recess for i in range(k)]
+        bot = [top[i] - vn[i] * thick for i in range(k)]
+        tri3 = []
+        for t in tris:
+            tri3 += [(top[t[0]], top[t[j]], top[t[j + 1]]) for j in range(1, len(t) - 1)]
+        # rim band: inner ring inset by d_in (at most EDGE_BAND, less on slim plates)
+        area = sum(((b_ - a_).cross(c_ - a_)).length * 0.5 for a_, b_, c_ in tri3)
+        perim = sum((top[(i + 1) % k] - top[i]).length for i in range(k))
+        d_in = max(0.002, min(M.EDGE_BAND, 0.45 * 2.0 * area / max(1e-6, perim)))
+        inner = inset_poly(top, n, d_in)
+        if len(tri3) > 1:
+            inner = [_project_to_tris(q, tri3)[0] for q in inner]
+        bm = mb.bm
+        ew = bm.verts.layers.float.get('edge_w')
+        before = set(bm.faces)
+        Tv = [bm.verts.new(p) for p in top]
+        Bv = [bm.verts.new(p) for p in bot]
+        Iv = [bm.verts.new(p) for p in inner]
+        if ew is not None:
+            for v_ in Tv + Bv:
+                v_[ew] = 1.0
+            for v_ in Iv:
+                v_[ew] = 1.0 - d_in / M.EDGE_BAND
+        for t in tris:
+            bm.faces.new([Iv[i] for i in t])
+            bm.faces.new([Bv[i] for i in reversed(t)])
+        for i in range(k):
+            j = (i + 1) % k
+            bm.faces.new((Tv[i], Tv[j], Iv[j], Iv[i]))
+            bm.faces.new((Tv[j], Tv[i], Bv[i], Bv[j]))
+        bm.edges.index_update()
+        edges = []
+        for i in range(k):
+            for e in (bm.edges.get((Tv[i], Tv[(i + 1) % k])), bm.edges.get((Tv[i], Bv[i]))):
+                if e is not None:
+                    edges.append(e)
+        if bevel > 0:
+            bmesh.ops.bevel(bm, geom=edges, offset=min(bevel, 0.3 * d_in), offset_type='OFFSET',
+                            segments=3 if bevel > 0.001 else 2, profile=0.5, affect='EDGES', clamp_overlap=True)
+        new = [f for f in bm.faces if f not in before]
+        mat = {'cream': self.mat['cream'], 'cream_head': self.mat['cream_head'], 'grey': self.mat['grey'],
+               'grey_head': self.mat['grey_head'], 'dark': self.mat['gun_plate']}[kind]
+        mi, mi_core = mb.mi(mat), mb.mi(inner_mat or self.mat['core'])
+        for f in new:
+            f.normal_update()
+            f.material_index = mi_core if f.normal.dot(n) < -0.7 else mi
+            f.smooth = False
+        mb.set_rand(new, _hash(cc, 5))
         if rivets:
-            rp, rs = self.rivet_points(pts, n, reg, rivet_scale, spacing)
-            if rp:
-                mb.rivets(self.mat['rivet'], rp, n, rs)
-        c = sum(pts, V()) / len(pts)
-        obj = self.obj_from(key, mb, bone, origin=c)
-        obj['plate_normal'] = tuple(n)
-        obj['plate_kind'] = kind
-        obj['plate_poly'] = [c for q in pts for c in q]
-        if group is not None:
-            group.append(obj)
-        return obj
+            rp, rs = self.rivet_points(top, n, reg, rivet_scale, spacing)
+            placed = []
+            for q, sz in zip(rp, rs):
+                q2, nq, tri = _project_to_tris(q, tri3)
+                placed.append((q2, nq, sz, tri))
+            self.rivet_mesh(mb, placed, top if len(tris) == 1 else None, streaks=streaks,
+                            streak_rate=0.12 if grey else 0.20)
+        return dict(n=n, top=top, tris=tris, tri3=tri3)
 
-    def rivet_points(self, poly, n, reg, scale=1.0, spacing=0.048, inset=0.0072, min_dist=0.022):
+    def rivet_points(self, poly, n, reg, scale=1.0, spacing=0.048, inset=0.0085, min_dist=0.024):
         regl = self.rivet_reg.setdefault(reg, [])
         k = len(poly)
         edges = []
@@ -653,10 +904,11 @@ class _Builder:
             if bis.length < 1e-6:
                 continue
             bis.normalize()
-            q = p1 + bis * (0.0105 / max(0.3, bis.dot(in1)))
-            if inside(q, 0.0055) and free(q):
+            q = p1 + bis * (0.012 / max(0.3, bis.dot(in1)))
+            if inside(q, 0.0065) and free(q):
+                j = 1.0 + 0.12 * (2 * _hash(q, 1) - 1)
                 pts.append(q)
-                sizes.append((0.0038 * scale, 0.0021 * scale))
+                sizes.append((0.00525 * scale * j, 0.0026 * scale))
                 regl.append(q)
         for a, b, m in edges:
             L = (b - a).length
@@ -665,13 +917,99 @@ class _Builder:
                 t = (j + 0.5) / cnt
                 q = a.lerp(b, t) + m * inset
                 hsh = math.sin(q.x * 1731.0 + q.y * 977.0 + q.z * 1313.0) * 43758.5453
-                if hsh - math.floor(hsh) < 0.18:
+                if hsh - math.floor(hsh) < 0.12:
                     continue  # a few rivets are missing
-                if inside(q, 0.005) and free(q):
+                if inside(q, 0.006) and free(q):
+                    jj = 1.0 + 0.12 * (2 * _hash(q, 1) - 1)
                     pts.append(q)
-                    sizes.append((0.0031 * scale, 0.0018 * scale))
+                    sizes.append((0.00425 * scale * jj, 0.0024 * scale))
                     regl.append(q)
         return pts, sizes
+
+    def rivet_mesh(self, mb, placed, clip_poly=None, streaks=True, streak_rate=0.20):
+        """Rivets with character: ~10% empty holes, ~25% rusted-through heads, the rest dull
+        steel; a ragged rust bloom (1.35-2.1x the head) round ~10% of them and a tapering
+        bleed stain under ~`streak_rate` of them (kept on the rivet's own plate).
+        placed: [(point, normal, (radius, height), triangle-or-None)]."""
+        m = self.mat
+        for q, nq, (r, hgt), tri in placed:
+            h1, h2, h3, h4 = _hash(q, 11), _hash(q, 23), _hash(q, 37), _hash(q, 53)
+            if h1 < 0.10:
+                self._disc(mb, m['core'], q + nq * 0.00006, nq, 0.002, 12)
+                if h2 < 0.25:
+                    self._disc(mb, m['ring'], q + nq * 0.00012, nq, r * (1.3 + 0.6 * h4), 14, uv=True)
+                head_r = 0.002
+            else:
+                mat = m['rivet_rust'] if h1 < 0.35 else m['rivet']
+                mb.rivets(mat, [q], nq, [(r, hgt)])
+                head_r = r
+                if h2 < 0.11:
+                    self._disc(mb, m['ring'], q + nq * 0.00015, nq, r * (1.35 + 0.75 * h4), 18, uv=True)
+            if streaks and h3 < streak_rate:
+                down = V((0, 0, -1))
+                down = down - nq * down.dot(nq)
+                if down.length < 0.5:
+                    continue
+                down.normalize()
+                edges = list(zip(tri, tri[1:] + tri[:1])) if tri is not None else []
+                if clip_poly is not None:
+                    edges = list(zip(clip_poly, clip_poly[1:] + clip_poly[:1]))
+                side = nq.cross(down).normalized()
+                wtop = max(head_r, r) * (1.9 + 0.5 * _hash(q, 43))      # never a hairline (empty holes too)
+                room = min(_ray_to_edges(q + side * s_ * wtop * 0.5, down, nq, edges) for s_ in (-1, 0, 1))
+                L = min(0.022 + 0.022 * _hash(q, 41), room - 0.004)
+                if L < 0.012:
+                    continue
+                self._streak(mb, m['streak'], q + nq * 0.00015, down, nq, wtop, L, head_r)
+
+    def _disc(self, mb, mat, c, nrm, r, seg=12, uv=False):
+        nrm = V(nrm).normalized()
+        e1 = nrm.orthogonal().normalized()
+        e2 = nrm.cross(e1)
+        bm = mb.bm
+        cv = bm.verts.new(c)
+        ring = [bm.verts.new(c + (e1 * math.cos(2 * math.pi * i / seg) + e2 * math.sin(2 * math.pi * i / seg)) * r)
+                for i in range(seg)]
+        mi = mb.mi(mat)
+        lay = mb.uv() if uv else None
+        for i in range(seg):
+            j = (i + 1) % seg
+            f = bm.faces.new((cv, ring[i], ring[j]))
+            f.material_index = mi
+            f.smooth = False
+            if lay is not None:
+                for loop, (a_, b_) in zip(f.loops, ((0.5, 0.5),
+                                                    (0.5 + 0.5 * math.cos(2 * math.pi * i / seg),
+                                                     0.5 + 0.5 * math.sin(2 * math.pi * i / seg)),
+                                                    (0.5 + 0.5 * math.cos(2 * math.pi * j / seg),
+                                                     0.5 + 0.5 * math.sin(2 * math.pi * j / seg)))):
+                    loop[lay].uv = (a_, b_)
+            if f.normal.dot(nrm) < 0:
+                f.normal_flip()
+
+    def _streak(self, mb, mat, top, down, nrm, wtop, L, head_r):
+        """Bleed stain decal: wtop wide just under the rivet head, tapering to ~2 mm over L;
+        UV u across, v down the stain (rust_streak shades it)."""
+        side = nrm.cross(down).normalized()
+        start = top + down * (head_r * 0.15)
+        rows = [(0.0, 1.0), (0.35, 0.62), (1.0, 0.22)]
+        bm = mb.bm
+        lay = mb.uv()
+        mi = mb.mi(mat)
+        ring = []
+        for t, wf in rows:
+            c = start + down * (L * t)
+            w = max(0.002, wtop * wf)
+            ring.append((bm.verts.new(c - side * w / 2), bm.verts.new(c + side * w / 2), t))
+        for (a0, a1, ta), (b0, b1, tb) in zip(ring, ring[1:]):
+            f = bm.faces.new((a0, a1, b1, b0))
+            f.material_index = mi
+            f.smooth = False
+            for loop, uvv in zip(f.loops, ((0, ta), (1, ta), (1, tb), (0, tb))):
+                loop[lay].uv = uvv
+            f.normal_update()
+            if f.normal.dot(nrm) < 0:
+                f.normal_flip()
 
     # ================================================================= HEAD
     def build_head(self):
@@ -685,14 +1023,17 @@ class _Builder:
             return P[a].lerp(P[b], t)
 
         E = lambda t: L('BrowR', 'Rtip', t)
+        Rr = lambda t: L('apex', 'Rtip', t)       # on the apex-Rtip ridge
         Fp = lambda s: L('JawR', 'Rtip', s)
         Q11 = (L('Rtip', 'apex', 0.5)).lerp(P['BK1'], 0.42)
         Mc = L('JawR', 'JawL', 0.5)
         plates = [
             # (key, poly, kind)
             ('crown_c', [P['BrowR'], P['BrowL'], P['apex']], 'cream_head'),
-            ('crown_strip', [P['BrowR'], E(0.05), P['apex']], 'cream_head'),
-            ('crown_tri', [E(0.38), P['Rtip'], P['apex']], 'cream_head'),
+            # canon facet 3: a cream strip along BrowR-apex, a broad grey band (~6.5 cm, parallel
+            # to that edge) and a cream triangle along the apex-Rtip ridge
+            ('crown_strip', [P['BrowR'], E(0.075), Rr(0.075), P['apex']], 'cream_head'),
+            ('crown_tri', [E(0.36), P['Rtip'], Rr(0.36)], 'cream_head'),
             ('crown_left', [P['BrowL'], P['L1'], P['apex']], 'cream_head'),
             ('cheek_tri', [Fp(0.24), E(0.27), P['Rtip']], 'cream_head'),
             ('jaw_wedge', [P['LR'], P['JawR'], P['Rtip']], 'cream_head'),
@@ -706,12 +1047,12 @@ class _Builder:
             ('back_a', [P['apex'], P['L1'], P['BK1']], 'cream_head'),
             ('back_b', [P['L1'], P['BK3'], P['BK1']], 'cream_head'),
             ('back_c', [P['BK2'], P['Rtip'], P['BK1']], 'cream_head'),
-            ('crown_band', [E(0.05), E(0.38), P['apex']], 'grey'),
-            ('cheek_grey', [P['JawR'], P['BrowR'], E(0.27), Fp(0.24)], 'grey'),
-            ('chin_l', [Mc, P['JawL'], P['chin']], 'grey'),
-            ('chin_left', [P['chin'], P['L2'], P['JawL']], 'grey'),
-            ('top_back_g', [P['BK1'], P['Rtip'], Q11], 'grey'),
-            ('back_d', [P['BK3'], P['BK2'], P['BK1']], 'grey'),
+            ('crown_band', [E(0.075), E(0.36), Rr(0.36), Rr(0.075)], 'grey_head'),
+            ('cheek_grey', [P['JawR'], P['BrowR'], E(0.27), Fp(0.24)], 'grey_head'),
+            ('chin_l', [Mc, P['JawL'], P['chin']], 'grey_head'),
+            ('chin_left', [P['chin'], P['L2'], P['JawL']], 'grey_head'),
+            ('top_back_g', [P['BK1'], P['Rtip'], Q11], 'grey_head'),
+            ('back_d', [P['BK3'], P['BK2'], P['BK1']], 'grey_head'),
             ('under_1', [P['chin'], P['BK4'], P['L2']], 'dark'),
             ('under_2', [P['BK4'], P['Rtip'], P['BK2']], 'dark'),
             ('under_3', [P['BK4'], P['LR'], P['Rtip']], 'dark'),
@@ -756,10 +1097,10 @@ class _Builder:
         up_raw = (BR + BL) / 2 - (JR + JL) / 2
         ey = (up_raw - ex * ex.dot(up_raw)).normalized()
         n = ex.cross(ey)
-        self.face_frame = (c, ex, ey, n)
         Wf = (BL - BR).length - 0.0013
         Hf = up_raw.length - 0.0013
         sw, sh = 0.190 * HEAD_SCALE, 0.135 * HEAD_SCALE
+        self.face_frame = (c, ex, ey, n, sw, sh)
         k = 6
 
         def to3(x, y, z):
@@ -767,7 +1108,7 @@ class _Builder:
 
         outer = rrect2d(Wf, Hf, 0.0012, k)
         inner = rrect2d(sw, sh, 0.006 * HEAD_SCALE, k)
-        zf, zbo, zbi, zg = 0.004, -0.0025, -0.0036, -0.001
+        zf, zbo, zbi, zg = 0.004, -0.0025, -0.0068, -0.001
         bm = bmesh.new()
         Of = [bm.verts.new(to3(x, y, zf)) for x, y in outer]
         Ob = [bm.verts.new(to3(x, y, zbo)) for x, y in outer]
@@ -789,6 +1130,8 @@ class _Builder:
             f.smooth = True
         mb = MB()
         mb.bm.free()
+        bm.faces.layers.float.new('plate_rand')
+        bm.loops.layers.uv.new('UVMap')
         mb.bm = bm
         mb.mi(self.mat['cream_head'])
         # bezel rivets at corners and edge midpoints
@@ -796,24 +1139,48 @@ class _Builder:
         rx, ry = Wf / 2 - bw / 2, Hf / 2 - bh / 2
         rpts = [to3(x, y, zf) for x, y in ((rx, ry), (-rx, ry), (rx, -ry), (-rx, -ry), (0, ry), (0, -ry),
                                            (rx, 0), (-rx, 0))]
-        mb.rivets(self.mat['rivet'], rpts, n, [(0.0033, 0.0019)] * len(rpts))
+        self.rivet_mesh(mb, [(p_, n, (0.0040, 0.0022), None) for p_ in rpts], streaks=False)
         self.rivet_reg.setdefault('head', []).extend(rpts)
         bez = self.obj_from('head_bezel', mb, 'head', origin=c)
         bez['plate_normal'] = tuple(n)
         bez['plate_kind'] = 'cream_head'
         self.head_plates.append(bez)
-        # glass
+        # glass: flat, except its top 22% rolls back ~18 deg inside the recess, so the overhead
+        # skylight reflects as one thin bright band along the top edge (treatment S02/S05)
         bm = bmesh.new()
-        ring = [bm.verts.new(to3(x, y, zg)) for x, y in inner]
-        cv = bm.verts.new(to3(0, 0, zg))
         uvl = bm.loops.layers.uv.new('UVMap')
-        uvmap = {cv: (0.5, 0.5)}
-        for v, (x, y) in zip(ring, inner):
-            uvmap[v] = ((x + sw / 2) / sw, (y + sh / 2) / sh)
-        for i in range(len(ring)):
-            f = bm.faces.new((cv, ring[i], ring[(i + 1) % len(ring)]))
-            for loop in f.loops:
-                loop[uvl].uv = uvmap[loop.vert]
+        rr = 0.006 * HEAD_SCALE
+        y_roll = sh * 0.28
+        roll_d = 0.0034
+
+        def half_w(y):
+            dy = abs(y) - (sh / 2 - rr)
+            if dy <= 0:
+                return sw / 2
+            return sw / 2 - rr + math.sqrt(max(0.0, rr * rr - dy * dy))
+
+        def depth(y):
+            if y <= y_roll:
+                return zg
+            t = (y - y_roll) / (sh / 2 - y_roll)
+            return zg - roll_d * t * t
+        ys = [-sh / 2 + sh * k / 40 for k in range(1, 26)] + [y_roll + (sh / 2 - y_roll) * k / 14 for k in range(1, 14)]
+        ys = [-sh / 2] + sorted(set(round(y, 7) for y in ys if -sh / 2 < y < sh / 2)) + [sh / 2]
+        ncol = 28
+        rows = []
+        for y in ys:
+            hw = half_w(y)
+            if hw < 1e-5:
+                hw = 1e-5
+            rows.append([bm.verts.new(to3(-hw + 2 * hw * i / ncol, y, depth(y))) for i in range(ncol + 1)])
+        for j in range(len(rows) - 1):
+            for i in range(ncol):
+                f = bm.faces.new((rows[j][i], rows[j][i + 1], rows[j + 1][i + 1], rows[j + 1][i]))
+                f.smooth = True
+                for loop in f.loops:
+                    q = loop.vert.co - c
+                    x_, y_ = q.dot(ex), q.dot(ey)
+                    loop[uvl].uv = ((x_ + sw / 2) / sw, (y_ + sh / 2) / sh)
         bm.normal_update()
         for f in bm.faces:
             if f.normal.dot(n) < 0:
@@ -823,12 +1190,7 @@ class _Builder:
         bm.free()
         me.transform(Matrix.Translation(-c))
         tl = self.timeline
-        smat = F.screen_material(tl, name=f'{self.name}_screen')
-        for nd in smat.node_tree.nodes:
-            if nd.type == 'BSDF_PRINCIPLED' and abs(nd.inputs['Roughness'].default_value - 0.4) < 1e-6 \
-                    and not nd.inputs['Roughness'].is_linked:
-                nd.inputs['Roughness'].default_value = 0.18
-                nd.inputs['Specular IOR Level'].default_value = 0.3
+        smat = F.screen_material(tl, name=f'{self.name}_screen', glass_roughness=0.06, specular=0.25)
         me.materials.append(smat)
         scr = bpy.data.objects.new('screen', me)
         self.coll.objects.link(scr)
@@ -840,7 +1202,7 @@ class _Builder:
     def build_headset(self):
         hull = self.head_hull
         self.hs_parts = []
-        mb = MB()
+        mb = MB(point_attrs=('ring_r',))
         m = self.mat
 
         def cup_frame(center, axis, upref):
@@ -876,7 +1238,9 @@ class _Builder:
             mb.cylinder(m['black'], o + a * 0.004, o + a * 0.012, 0.034, seg=32)
             prof = [(0.0565, 0.022), (0.0575, 0.030), (0.0565, 0.040), (0.052, 0.047), (0.045, 0.051),
                     (0.030, 0.0535), (0.0, 0.0545)]
-            mb.lathe(m['black'], prof, o, a, seg=48, close_bottom=True)
+            shell = mb.lathe(m['earcup'], prof, o, a, seg=48, close_bottom=True)
+            sv = list({v_ for f_ in shell for v_ in f_.verts})
+            mb.set_point_attr('ring_r', sv, [((v_.co - o) - a * (v_.co - o).dot(a)).length for v_ in sv])
             mb.torus(m['black_gloss'], o + a * 0.0505, a, 0.041, 0.0022, seg=48, seg2=8)
             mb.torus(m['brass'], o + a * 0.0305, a, 0.0577, 0.0011, seg=48, seg2=6)
             for i in range(4):
@@ -900,7 +1264,7 @@ class _Builder:
         cupL = earcup(oL, axL, UP, 'L')
         # right earcup: under/behind the wedge, facing the lower wedge facets
         axR = V((-0.62, 0.56, -0.28)).normalized()
-        oR = seat(H((-0.165, 0.14, 0.15)) - axR * 0.025, axR)
+        oR = seat(H((-0.165, 0.178, 0.170)) - axR * 0.025, axR)
         cupR = earcup(oR, axR, V((0, 0.4, 1)), 'R')
         self.earcups = (cupL, cupR)
         # headband: flat band over the crown behind the apex, flat side facing the head
@@ -910,6 +1274,7 @@ class _Builder:
         path = spline_pts(ctrl, 14)
         path = [path[0]] + [hull.push(p, 0.0095) if 0 < i < len(path) - 1 else p for i, p in enumerate(path[1:], 1)]
         nrm = [(p - self.head_center).normalized() for p in path]
+        self.headband = ([p.copy() for p in path], [n_.copy() for n_ in nrm])     # rest space (head bone)
         mb.sweep(m['black_gloss'], path, rect_profile(0.026, 0.0075), normals=nrm, caps=True)
         inner_path = [p - nv * 0.0055 for p, nv in zip(path, nrm)]
         mb.sweep(m['leather'], inner_path[1:-1], rect_profile(0.022, 0.0055), normals=nrm[1:-1], caps=True)
@@ -952,7 +1317,7 @@ class _Builder:
         for sx in (-1, 1):
             s = 'L' if sx > 0 else 'R'
             self.piston(f'neck_piston_{s}', V((0.08 * sx, -0.08, 1.305)), 'chest',
-                        V((0.032 * sx, -0.032, top.z - 0.012)), 'head', 0.011, 0.0062)
+                        V((0.060 * sx, -0.038, top.z - 0.012)), 'head', 0.011, 0.0062)
             self.piston(f'neck_rod_{s}', V((0.03 * sx, 0.055, 1.30)), 'chest',
                         V((0.022 * sx, 0.06, top.z - 0.006)), 'head', 0.0055, 0.0034, cyl_mat='gun')
         # brackets under the piston bases
@@ -1038,6 +1403,8 @@ class _Builder:
         mid = mb.to_object(f'{self.name}_{key}_mid', self.coll)
         self.parts[key + '_mid'] = mid
         mid.location = (a + b) / 2
+        mid.parent = ea                     # inherits the limb's roll; constraints place and aim it
+        mid.matrix_parent_inverse = Matrix.Translation(a).inverted()
         c1 = mid.constraints.new('COPY_LOCATION')
         c1.target = ea
         c2 = mid.constraints.new('COPY_LOCATION')
@@ -1085,76 +1452,151 @@ class _Builder:
             h.matrix_inverse = Matrix.Translation(co).inverted()
         return ob
 
+    def headset_cord(self, cs, hs, worn, off, arm):
+        m = self.mat
+        cu = bpy.data.curves.new(f'{self.name}_headset_cord', 'CURVE')
+        cu.dimensions = '3D'
+        cu.bevel_depth = 0.0021
+        cu.bevel_resolution = 2
+        cu.use_fill_caps = True
+        cu.resolution_u = 10
+        sp = cu.splines.new('NURBS')
+        sp.points.add(len(worn))
+        cos = [cs] + [co for co, _ in worn]
+        for pt, co in zip(sp.points, cos):
+            pt.co = (*co, 1.0)
+        sp.use_endpoint_u = True
+        sp.order_u = 3
+        cu.materials.append(m['black'])
+        ob = bpy.data.objects.new(f'{self.name}_headset_cord', cu)
+        self.coll.objects.link(ob)
+        self.parts['headset_cord'] = ob
+        hs_rest = hs.matrix_basis.copy()      # matrix_world is not evaluated yet at build time
+        hooks = []
+
+        def dual(e, co, tgt, off_co):
+            c1 = e.constraints.new('CHILD_OF')
+            c1.name = 'worn'
+            if isinstance(tgt, bpy.types.Object):
+                c1.target = tgt
+                c1.inverse_matrix = hs_rest.inverted()
+            else:
+                c1.target = arm
+                c1.subtarget = tgt
+                c1.inverse_matrix = arm.data.bones[tgt].matrix_local.inverted()
+            c2 = e.constraints.new('CHILD_OF')
+            c2.name = 'unplugged'
+            c2.target = hs
+            c2.inverse_matrix = hs_rest.inverted() @ Matrix.Translation(off_co) @ Matrix.Translation(co).inverted()
+            c2.influence = 0.0
+
+        for i, co in enumerate(cos):
+            e = C.empty(f'{self.name}_headset_cord_h{i}', self.coll, co, size=0.005)
+            if i == 0:
+                e.parent = hs
+                e.matrix_parent_inverse = hs_rest.inverted()
+            else:
+                dual(e, co, worn[i - 1][1], off[i - 1])
+                hooks.append(e)
+            h = ob.modifiers.new(f'h{i}', 'HOOK')
+            h.object = e
+            h.vertex_indices_set([i])
+            h.center = co
+            h.matrix_inverse = Matrix.Translation(co).inverted()
+        # the plug at the collar end of the cord
+        pc = cos[-1]
+        mb = MB()
+        mb.cylinder(m['black'], V((0, 0, -0.012)), V((0, 0, 0.004)), 0.0032, seg=12)
+        mb.cylinder(m['chrome'], V((0, 0, -0.019)), V((0, 0, -0.012)), 0.0013, seg=8)
+        plug = mb.to_object(f'{self.name}_headset_plug', self.coll)
+        plug.location = pc
+        dual(plug, pc, worn[-1][1], off[-1])
+        self.parts['headset_plug'] = plug
+        hooks.append(plug)
+        self.cord_hooks = hooks
+
     # ================================================================= TORSO
     TORSO = {
-        'T0': (-0.28, -0.10, 1.315), 'T1': (-0.11, -0.14, 1.32), 'T2': (0.11, -0.14, 1.32), 'T3': (0.28, -0.10, 1.315),
-        'M0': (-0.29, -0.08, 1.18), 'M1': (-0.16, -0.165, 1.18), 'M2': (0.0, -0.175, 1.16), 'M3': (0.16, -0.165, 1.18),
-        'M4': (0.29, -0.08, 1.18),
+        'T0': (-0.256, -0.094, 1.315), 'T1': (-0.11, -0.14, 1.32), 'T2': (0.11, -0.14, 1.32),
+        'T3': (0.256, -0.094, 1.315),
+        'M0': (-0.284, -0.078, 1.18), 'M1': (-0.16, -0.165, 1.18), 'M2': (0.0, -0.175, 1.16), 'M3': (0.16, -0.165, 1.165),
+        'M4': (0.284, -0.078, 1.18),
         'B0': (-0.24, -0.07, 1.05), 'B1': (-0.10, -0.155, 1.05), 'B2': (0.10, -0.155, 1.05), 'B3': (0.24, -0.07, 1.05),
         'D0': (-0.17, -0.06, 0.99), 'D1': (0.0, -0.12, 0.99), 'D2': (0.17, -0.06, 0.99),
-        'T0b': (-0.28, 0.10, 1.315), 'T1b': (-0.11, 0.13, 1.32), 'T2b': (0.11, 0.13, 1.32), 'T3b': (0.28, 0.10, 1.315),
-        'M0b': (-0.29, 0.08, 1.18), 'M1b': (-0.15, 0.14, 1.18), 'M2b': (0.0, 0.145, 1.17), 'M3b': (0.15, 0.14, 1.18),
-        'M4b': (0.29, 0.08, 1.18),
+        'T0b': (-0.268, 0.098, 1.315), 'T1b': (-0.11, 0.13, 1.32), 'T2b': (0.11, 0.13, 1.32),
+        'T3b': (0.268, 0.098, 1.315),
+        'M0b': (-0.284, 0.078, 1.18), 'M1b': (-0.15, 0.14, 1.18), 'M2b': (0.0, 0.145, 1.17), 'M3b': (0.15, 0.14, 1.18),
+        'M4b': (0.284, 0.078, 1.18),
         'B0b': (-0.24, 0.07, 1.05), 'B1b': (-0.10, 0.13, 1.05), 'B2b': (0.10, 0.13, 1.05), 'B3b': (0.24, 0.07, 1.05),
         'D0b': (-0.17, 0.06, 0.99), 'D1b': (0.0, 0.10, 0.99), 'D2b': (0.17, 0.06, 0.99),
         'C2': (0.075, 0.045, 1.322), 'C3': (-0.075, 0.045, 1.322),
+        # the bold reference layout (video_synergy-v2-source / torso close-up): a tall grey
+        # triangle on his right starting a quarter below the collar, and one big folded grey
+        # panel under the chip whose tip reaches the lanyard's V
+        'G0': (-0.277, -0.082, 1.215), 'G1': (-0.135, -0.153, 1.245), 'Lc': (-0.05, -0.165, 1.105),
+        'M3p': (0.148, -0.158, 1.225), 'Rb': (0.200, -0.095, 1.035), 'Bc': (0.030, -0.155, 1.045),
     }
 
     def build_torso(self):
         T = {k: V(v) for k, v in self.TORSO.items()}
         self.torso_hull = Hull([v for k, v in T.items() if not k.startswith('C')])
         tc = V((0, 0, 1.16))
+        # side plates close the upper flank up to z 1.28, leaving a 3.5 cm armpit slot under the
+        # pauldron (the shoulder hub sits just outside it)
+        zf = 1.28
+        for sx_, (t, m_, mb_, tb) in ((-1, ('T0', 'G0', 'M0b', 'T0b')), (1, ('T3', 'M4', 'M4b', 'T3b'))):
+            k = (zf - T[m_].z) / (T[t].z - T[m_].z)
+            T['F%d' % sx_] = T[m_].lerp(T[t], k) - V((0.010 * sx_, 0, 0))
+            T['Fb%d' % sx_] = T[mb_].lerp(T[tb], k) - V((0.010 * sx_, 0, 0))
         plates = [
-            # front (canonical layout)
-            ('f_collar_r', ['T0', 'T1', 'M1', 'M0'], 'cream'),
-            ('f_grey_r', ['M0', 'M1', 'B0'], 'grey'),
-            ('f_mid_r', ['T1', 'M2', 'M1'], 'cream'),
-            ('f_low_r', ['M1', 'B1', 'B0'], 'cream'),
-            ('f_v', ['T1', 'T2', 'M2'], 'cream'),
-            ('f_chip', ['T2', 'T3', 'M4', 'M3'], 'cream'),
-            ('f_chip_in', ['T2', 'M3', 'M2'], 'cream'),
-            ('f_grey_big', ['M2', 'M3', 'B3', 'B2'], 'grey'),
-            ('f_outer_l', ['M3', 'M4', 'B3'], 'cream'),
-            ('f_centre_r', ['M1', 'M2', 'B1'], 'cream'),
-            ('f_centre_c', ['M2', 'B2', 'B1'], 'cream'),
-            ('f_bot_r', ['B0', 'B1', 'D0'], 'cream'),
-            ('f_bot_rc', ['B1', 'D1', 'D0'], 'cream'),
-            ('f_bot_grey', ['B1', 'B2', 'D1'], 'grey'),
-            ('f_bot_lc', ['B2', 'D2', 'D1'], 'cream'),
-            ('f_bot_l', ['B2', 'B3', 'D2'], 'cream'),
-            # sides (upper flank left open: armpit mechanics)
-            ('s_mid_r', ['M0', 'B0', 'B0b', 'M0b'], 'cream'),
-            ('s_low_r', ['B0', 'D0', 'D0b', 'B0b'], 'cream'),
-            ('s_mid_l', ['M4', 'M4b', 'B3b', 'B3'], 'cream'),
-            ('s_low_l', ['B3', 'B3b', 'D2b', 'D2'], 'cream'),
+            # front: ten bold plates (2 grey + the chip plate), no seam or rivets on a fold
+            ('f_collar_r', ['T0', 'T1', 'G1', 'G0'], 'cream', None),
+            ('f_grey_r', ['G0', 'G1', 'B0'], 'grey', None),
+            ('f_mid_r', ['G1', 'M2', 'Lc', 'B0'], 'cream', None),
+            ('f_v', ['T1', 'T2', 'M2', 'G1'], 'cream', None),
+            ('f_chip', ['T2', 'T3', 'M3p', 'M2'], 'cream', None),
+            ('f_chip_in', ['M2', 'M3p', 'Lc'], 'cream', None),
+            ('f_grey_big', ['Lc', 'M3p', 'Rb', 'Bc'], 'grey', None),
+            ('f_outer_l', ['M3p', 'T3', 'M4', 'B3', 'Rb'], 'cream', None),
+            ('f_bot_r', ['B0', 'Lc', 'Bc', 'D1', 'D0'], 'cream', None),
+            ('f_bot_l', ['Bc', 'Rb', 'B3', 'D2', 'D1'], 'cream', None),
+            # sides: closed up to z 1.28 (a 3.5 cm armpit slot under the pauldron)
+            ('s_top_r', ['F-1', 'G0', 'M0b', 'Fb-1'], 'cream', None),
+            ('s_mid_r', ['G0', 'B0', 'B0b', 'M0b'], 'cream', None),
+            ('s_low_r', ['B0', 'D0', 'D0b', 'B0b'], 'cream', None),
+            ('s_top_l', ['F1', 'Fb1', 'M4b', 'M4'], 'cream', None),
+            ('s_mid_l', ['M4', 'M4b', 'B3b', 'B3'], 'cream', None),
+            ('s_low_l', ['B3', 'B3b', 'D2b', 'D2'], 'cream', None),
             # top yoke around the collar opening
-            ('t_r', ['T0', 'T1', 'C3', 'T1b', 'T0b'], 'cream'),
-            ('t_l', ['T3b', 'T2b', 'C2', 'T2', 'T3'], 'cream'),
-            ('t_back', ['C3', 'C2', 'T2b', 'T1b'], 'grey'),
-            # back
-            ('b_top_r', ['T0b', 'T1b', 'M1b', 'M0b'], 'cream'),
-            ('b_top_c', ['T1b', 'T2b', 'M2b'], 'cream'),
-            ('b_top_cr', ['T1b', 'M2b', 'M1b'], 'grey'),
-            ('b_top_cl', ['T2b', 'M3b', 'M2b'], 'cream'),
-            ('b_top_l', ['T2b', 'T3b', 'M4b', 'M3b'], 'cream'),
-            ('b_mid_r', ['M0b', 'M1b', 'B1b', 'B0b'], 'cream'),
-            ('b_mid_c', ['M1b', 'M2b', 'B1b'], 'cream'),
-            ('b_mid_c2', ['M2b', 'B2b', 'B1b'], 'cream'),
-            ('b_mid_cl', ['M2b', 'M3b', 'B2b'], 'grey'),
-            ('b_mid_l', ['M3b', 'M4b', 'B3b', 'B2b'], 'cream'),
-            ('b_bot_r', ['B0b', 'B1b', 'D1b', 'D0b'], 'cream'),
-            ('b_bot_l', ['B1b', 'B2b', 'D2b', 'D1b'], 'grey'),
-            ('b_bot_l2', ['B2b', 'B3b', 'D2b'], 'cream'),
+            ('t_r', ['T0', 'T1', 'C3', 'T1b', 'T0b'], 'cream', None),
+            ('t_l', ['T3b', 'T2b', 'C2', 'T2', 'T3'], 'cream', None),
+            ('t_back', ['C3', 'C2', 'T2b', 'T1b'], 'grey', None),
+            # back: near-planar quads and triangles only (no degenerate fans)
+            ('b_top_r', ['T0b', 'T1b', 'M1b', 'M0b'], 'cream', None),
+            ('b_top_c', ['T1b', 'T2b', 'M2b'], 'cream', None),
+            ('b_top_cr', ['T1b', 'M2b', 'M1b'], 'grey', None),
+            ('b_top_l', ['T2b', 'T3b', 'M4b', 'M3b'], 'cream', None),
+            ('b_top_l2', ['T2b', 'M3b', 'M2b'], 'cream', None),
+            ('b_mid_r', ['M0b', 'M1b', 'B1b', 'B0b'], 'cream', None),
+            ('b_mid_c', ['M1b', 'M2b', 'B2b', 'B1b'], 'cream', None),
+            ('b_mid_cl', ['M2b', 'M3b', 'B2b'], 'grey', None),
+            ('b_mid_l', ['M3b', 'M4b', 'B3b', 'B2b'], 'cream', None),
+            ('b_bot_r', ['B0b', 'B1b', 'D1b', 'D0b'], 'cream', None),
+            ('b_bot_l', ['B1b', 'B2b', 'D2b', 'D1b'], 'grey', None),
+            ('b_bot_l2', ['B2b', 'B3b', 'D2b'], 'cream', None),
         ]
-        for key, names, kind in plates:
+        for key, names, kind, fan in plates:
             poly = [T[n] for n in names]
             c = sum(poly, V()) / len(poly)
             out = c - tc
             if key.startswith('t_'):
                 out = UP
-            self.plate('torso_' + key, poly, out, kind, 'chest', self.torso_plates, reg='torso')
+            if key.startswith('s_'):
+                out = V((c.x, 0, 0))
+            self.plate('torso_' + key, poly, out, kind, 'chest', self.torso_plates, reg='torso', fan=fan)
         # inner core: everything below the collar cavity floor, dark
-        core = [T[k] - (T[k] - tc).normalized() * 0.006 for k in T if not k.startswith('C')]
+        used = sorted({nm for _, names, _, _ in plates for nm in names if not nm.startswith('C')})
+        core = [T[k] - (T[k] - tc).normalized() * 0.020 for k in used]     # well inside the concave front
         core = [V((p.x, p.y, min(p.z, 1.245))) for p in core]
         mb = MB()
         mb.hull(self.mat['core'], core)
@@ -1162,65 +1604,111 @@ class _Builder:
         for sx in (-1, 1):
             mb.box(self.mat['gun'], V((0.235 * sx, 0.0, 1.255)), (0.06, 0.12, 0.06), bevel=0.004)
             mb.cylinder(self.mat['chrome'], V((0.25 * sx, -0.06, 1.20)), V((0.25 * sx, 0.06, 1.20)), 0.008)
-            for k, z in enumerate((1.21, 1.235)):
-                mb.cylinder(self.mat['rubber'], V((0.21 * sx, -0.05 + 0.03 * k, z)), V((0.28 * sx, -0.04 + 0.03 * k, z)),
+            for k, z in enumerate((1.25, 1.27)):
+                mb.cylinder(self.mat['rubber'], V((0.21 * sx, -0.05 + 0.03 * k, z)), V((0.268 * sx, -0.04 + 0.03 * k, z)),
                             0.005)
         self.obj_from('torso_core', mb, 'chest')
         # blue paint chip on the chest plate (character's left, beside the strap)
         self.blue_chip(T)
 
-    def blue_chip(self, T, centre=(0.104, 0.0, 1.236)):
-        """Flaked cobalt paint patch on whichever front plate holds `centre` (x, -, z)."""
-        best = None
-        for ob in self.torso_plates:
-            if not ob.name.split('torso_')[-1].startswith('f_'):
-                continue
-            n = V(ob['plate_normal'])
-            flat = list(ob['plate_poly'])
-            poly = [V(flat[i:i + 3]) for i in range(0, len(flat), 3)]
-            p0 = poly[0]
-            if abs(n.y) < 0.3:
-                continue
-            cen = V(centre)
-            cen.y = p0.y - ((cen.x - p0.x) * n.x + (cen.z - p0.z) * n.z) / n.y
-            inside = True
-            k = len(poly)
-            for i in range(k):
-                a_, b_ = poly[i], poly[(i + 1) % k]
-                if (cen - a_).dot(n.cross(b_ - a_)) < 0:
-                    inside = False
-                    break
-            if inside:
-                best = (ob, n, cen, poly)
-                break
-        if best is None:
+    def blue_chip(self, T, centre=(0.115, 0.0, 1.250)):
+        """Flaked cobalt paint patch (#1F5FA8) just right of the lanyard strap, wholly on the
+        chip plate: one ragged, angular flake (about 55 x 30 mm) with a raised lip, ringed by a
+        0.5 mm band of bare steel where the cream enamel flaked round it, plus two tiny flakes
+        beside it (none below: no drips)."""
+        plate = self.parts.get('torso_f_chip')
+        if plate is None:
             return
-        plate, n, cen, poly = best
+        flat = list(plate['plate_tris'])
+        tris = [tuple(V(flat[i + 3 * j:i + 3 * j + 3]) for j in range(3)) for i in range(0, len(flat), 9)]
+        n = V(plate['plate_normal'])
+        cen = V(centre)
+        cen.y = -1.0
+        hit = None
+        from mathutils.geometry import intersect_ray_tri
+        for a_, b_, c_ in tris:
+            hit = intersect_ray_tri(a_, b_, c_, V((0, 1, 0)), cen, False)
+            if hit is not None:
+                break
+        if hit is None:
+            return
+        cen = V(hit)
         ax = V((1, 0, 0))
         ax = (ax - n * ax.dot(n)).normalized()
         ay = n.cross(ax).normalized()
         if ay.z < 0:
             ay = -ay
+        poly = [V(plate['plate_poly'][i:i + 3]) for i in range(0, len(plate['plate_poly']), 3)]
+        poly2 = [V(((q - cen).dot(ax), (q - cen).dot(ay))) for q in poly]
+
+        def inside(q2, margin):
+            k = len(poly2)
+            area = sum(poly2[i].x * poly2[(i + 1) % k].y - poly2[(i + 1) % k].x * poly2[i].y for i in range(k))
+            sgn = 1.0 if area > 0 else -1.0
+            for i in range(k):
+                a2, b2 = poly2[i], poly2[(i + 1) % k]
+                e = (b2 - a2).normalized()
+                nrm_in = V((-e.y, e.x)) * sgn
+                if (q2 - a2).dot(nrm_in) < margin:
+                    return False
+            return True
         import random
         rnd = random.Random(7)
-        pts = []
-        K = 56
-        for i in range(K):
-            a = 2 * math.pi * i / K
-            r = 1.0 + 0.22 * math.sin(3 * a + 0.4) + 0.12 * math.sin(7 * a + 1.3) + rnd.uniform(-0.13, 0.13)
-            x = 0.031 * r * math.cos(a)
-            y = 0.0175 * r * math.sin(a) * (1.3 if math.sin(a) < 0 else 1.0)
-            q = cen + ax * x + ay * y + n * 0.0003
-            # keep inside the plate
-            for j in range(len(poly)):
-                a_, b_ = poly[j], poly[(j + 1) % len(poly)]
-                mm = n.cross(b_ - a_).normalized()
-                d = (q - a_).dot(mm)
-                if d < 0.007:
-                    q = q + mm * (0.007 - d)
-            pts.append(q)
+        ph = [rnd.uniform(0, 6.283) for _ in range(6)]
+
+        def outline(c2, sx_, sy_, K, rough):
+            out = []
+            for i in range(K):
+                a = 2 * math.pi * i / K
+                r = (1.0 + 0.16 * math.sin(3 * a + ph[0]) + 0.10 * math.sin(5 * a + ph[1]) +
+                     0.07 * math.sin(11 * a + ph[2]) + 0.05 * math.sin(23 * a + ph[3]) +
+                     rough * (rnd.random() - 0.5))
+                # angular, flaked look: snap the radius into short straight runs
+                out.append(c2 + V((sx_ * r * math.cos(a), sy_ * r * math.sin(a))))
+            return out
+
+        flakes = [outline(V((0, 0)), 0.0275, 0.0150, 96, 0.22)]
+        for (fx, fy, fr) in ((0.036, 0.006, 0.0030), (-0.031, 0.011, 0.0022)):
+            flakes.append(outline(V((fx, fy)), fr, fr * 0.7, 16, 0.35))
+        # keep every flake (and its steel rim) 5 mm inside the plate
+        for fl in flakes:
+            c2 = sum(fl, V((0, 0))) / len(fl)
+            for _ in range(20):
+                if all(inside(q + (q - c2).normalized() * 0.001, 0.005) for q in fl):
+                    break
+                fl[:] = [c2 + (q - c2) * 0.92 for q in fl]
         mb = MB()
-        mb.prism(self.mat['chip'], pts, n, 0.0002)
+        mi = mb.mi(self.mat['chip'])
+        mr = mb.mi(self.mat['chip_rim'])
+        for fl in flakes:
+            c2 = sum(fl, V((0, 0))) / len(fl)
+            inner = [c2 + (q - c2) * max(0.0, 1.0 - 0.0009 / max(1e-4, (q - c2).length)) for q in fl]
+            outer = [c2 + (q - c2) * (1.0 + 0.0005 / max(1e-4, (q - c2).length)) for q in fl]
+
+            def to3(q2, h):
+                p3 = cen + ax * q2.x + ay * q2.y
+                p3, nn, _ = _project_to_tris(p3, tris)
+                return p3 + nn * h
+            R_ = [mb.bm.verts.new(to3(q, 0.00012)) for q in outer]
+            O = [mb.bm.verts.new(to3(q, 0.00055)) for q in fl]
+            Ib = [mb.bm.verts.new(to3(q, 0.00035)) for q in inner]
+            D = [mb.bm.verts.new(to3(q, 0.00012)) for q in fl]
+            k = len(fl)
+            for i in range(k):
+                j = (i + 1) % k
+                for f in (mb.bm.faces.new((O[i], O[j], Ib[j], Ib[i])), mb.bm.faces.new((D[i], D[j], O[j], O[i]))):
+                    f.material_index = mi
+                f = mb.bm.faces.new((R_[i], R_[j], D[j], D[i]))
+                f.material_index = mr
+            f = mb.bm.faces.new(Ib)
+            f.material_index = mi
+        bmesh.ops.triangulate(mb.bm, faces=[f for f in mb.bm.faces if len(f.verts) > 4])
+        bmesh.ops.recalc_face_normals(mb.bm, faces=mb.bm.faces[:])
+        for f in mb.bm.faces:
+            f.smooth = False
+            f.normal_update()
+            if f.normal.dot(n) < -0.5:
+                f.normal_flip()
         ob = mb.to_object(f'{self.name}_blue_chip', self.coll, origin=cen)
         ob.parent = plate
         ob.matrix_parent_inverse = Matrix.Translation(plate.location).inverted()
@@ -1228,8 +1716,10 @@ class _Builder:
 
     # ================================================================= WAIST / PELVIS
     PELVIS = {
-        'PT0': (-0.17, -0.09, 0.90), 'PT1': (-0.06, -0.112, 0.90), 'PT2': (0.06, -0.112, 0.90), 'PT3': (0.17, -0.09, 0.90),
-        'PB0': (-0.085, -0.075, 0.795), 'PB1': (0.0, -0.095, 0.78), 'PB2': (0.085, -0.075, 0.795),
+        'PT0': (-0.17, -0.09, 0.90), 'PT1': (-0.055, -0.112, 0.90), 'PT2': (0.055, -0.112, 0.90),
+        'PT3': (0.17, -0.09, 0.90),
+        'PB0': (-0.100, -0.078, 0.800), 'PBc0': (-0.036, -0.096, 0.790), 'PBc1': (0.036, -0.096, 0.790),
+        'PB2': (0.100, -0.078, 0.800),
         'PT0b': (-0.17, 0.09, 0.90), 'PT1b': (-0.06, 0.10, 0.90), 'PT2b': (0.06, 0.10, 0.90), 'PT3b': (0.17, 0.09, 0.90),
         'PB0b': (-0.085, 0.075, 0.795), 'PB1b': (0.0, 0.085, 0.785), 'PB2b': (0.085, 0.075, 0.795),
     }
@@ -1237,13 +1727,15 @@ class _Builder:
     def build_pelvis(self):
         T = {k: V(v) for k, v in self.PELVIS.items()}
         pc = V((0, 0, 0.85))
+        # front: three plates side by side under one level top seam (cream | grey | cream),
+        # the lower edge a shallow V (canon inverted trapezoid 0.34 -> 0.20)
         plates = [
-            ('f_r', ['PT0', 'PT1', 'PB1', 'PB0'], 'cream'), ('f_c', ['PT1', 'PT2', 'PB1'], 'grey'),
-            ('f_l', ['PT2', 'PT3', 'PB2', 'PB1'], 'cream'),
+            ('f_r', ['PT0', 'PT1', 'PBc0', 'PB0'], 'cream'), ('f_c', ['PT1', 'PT2', 'PBc1', 'PBc0'], 'grey'),
+            ('f_l', ['PT2', 'PT3', 'PB2', 'PBc1'], 'cream'),
             ('s_r', ['PT0', 'PB0', 'PB0b', 'PT0b'], 'cream'), ('s_l', ['PT3', 'PT3b', 'PB2b', 'PB2'], 'cream'),
             ('b_r', ['PT0b', 'PB0b', 'PB1b', 'PT1b'], 'cream'), ('b_c', ['PT1b', 'PB1b', 'PT2b'], 'grey'),
             ('b_l', ['PT2b', 'PB1b', 'PB2b', 'PT3b'], 'cream'),
-            ('u', ['PB0', 'PB1', 'PB2', 'PB2b', 'PB1b', 'PB0b'], 'dark'),
+            ('u', ['PB0', 'PBc0', 'PBc1', 'PB2', 'PB2b', 'PB1b', 'PB0b'], 'dark'),
         ]
         for key, names, kind in plates:
             poly = [T[n] for n in names]
@@ -1318,16 +1810,21 @@ class _Builder:
         f = FWD
         hinge = d.cross(f).normalized()       # elbow / wrist flex axis
         hz = hinge if hinge.dot(out) > 0 else -hinge
-        # ---- pauldron (pauldron bone)
-        cx = 0.35 * sx
-        pts = []
-        for y in (-0.095, 0.095):
-            pts += [V((cx + 0.095 * sx, y, 1.222)), V((cx - 0.075 * sx, y * 0.95, 1.343))]
-        for y in (-0.064, 0.064):
-            pts += [V((cx - 0.042 * sx, y, 1.378)), V((cx + 0.058 * sx, y, 1.342))]
-        pts += [V((cx + 0.012 * sx, -0.104, 1.28)), V((cx + 0.012 * sx, 0.104, 1.28)),
-                V((cx + 0.104 * sx, 0, 1.268))]
+        # ---- pauldron (pauldron bone): a faceted truncated pyramid seated on the chest top
+        # (inner edge <= 5 mm above the yoke), outer edge at x 0.40 (span / chest ~1.40);
+        # the inside of the shell is grey steel, so it never shows a black hollow
+        pts = [V((0.394 * sx, -0.086, 1.250)), V((0.398 * sx, 0.092, 1.222))]     # front edge cut higher
+        for y in (-0.092, 0.092):
+            pts += [V((0.262 * sx, y * 0.96, 1.3215))]
+        for y in (-0.062, 0.062):
+            pts += [V((0.300 * sx, y, 1.372)), V((0.372 * sx, y, 1.346))]
+        pts += [V((0.335 * sx, -0.100, 1.298)), V((0.335 * sx, 0.102, 1.285)), V((0.404 * sx, 0, 1.262))]
         hull = Hull(pts)
+        self.pauldron_hulls = getattr(self, 'pauldron_hulls', {})
+        self.pauldron_hulls[s] = hull
+        self.pauldron_pts = getattr(self, 'pauldron_pts', {})
+        self.pauldron_pts[s] = [p.copy() for p in pts] + [V((0.278 * sx, -0.085, 1.318)), V((0.278 * sx, 0.085, 1.318)),
+                                                         V((0.275 * sx, -0.033, 1.318)), V((0.275 * sx, 0.033, 1.318))]
         bm = bmesh.new()
         for p in pts:
             bm.verts.new(p)
@@ -1336,42 +1833,37 @@ class _Builder:
         bm.normal_update()
         pc = sum(pts, V()) / len(pts)
         polys = []
-        for fc in bm.faces:
+        for fc in sorted(bm.faces, key=lambda f_: tuple(round(x, 5) for x in f_.calc_center_median())):
             poly = [vv.co.copy() for vv in fc.verts]
+            k0 = min(range(len(poly)), key=lambda i: tuple(round(x, 5) for x in poly[i]))
+            poly = poly[k0:] + poly[:k0]
             nn = fc.normal.copy()
             if nn.dot(fc.calc_center_median() - pc) < 0:
                 nn = -nn
             polys.append((poly, nn))
         bm.free()
         mb = MB()
-        mi_core = mb.mi(m['core'])
         for poly, nn in polys:
-            cen = sum(poly, V()) / len(poly)
             # open underside (faces pointing down/in toward the arm)
             if nn.z < -0.55:
                 continue
             kind = 'grey' if (nn.z < -0.1 and nn.x * sx > 0.4) else 'cream'
             if nn.dot(V((0, -1, 0))) > 0.8 and nn.z > 0:
                 kind = 'cream'
-            mat = m['grey'] if kind == 'grey' else m['cream']
-            rec = 0.0012 if kind == 'grey' else 0.0
-            ppts = inset_poly(poly, nn, 0.00065)
-            ppts = [p - nn * rec for p in ppts]
-            if newell(ppts).dot(nn) < 0:
-                ppts.reverse()
-            faces = mb.prism(mat, ppts, nn, 0.0025, bevel=0.0008)
-            for fc in faces:
-                if fc.normal.dot(nn) < -0.95:
-                    fc.material_index = mi_core
-            rp, rs = self.rivet_points(ppts, nn, 'pauldron_' + s, 0.95, 0.04)
-            mb.rivets(m['rivet'], rp, nn, rs)
-        # mount bracket to the chest top
-        mb.box(m['gun'], V((0.298 * sx, 0, 1.337)), (0.046, 0.066, 0.016), bevel=0.003)
+            self._plate_into(mb, poly, nn, kind, 'pauldron_' + s, rivet_scale=0.9, spacing=0.04,
+                             inner_mat=self.mat['grey'])
+        # mount bracket to the chest top (inside the shell) and a grey liner closing the top
+        # of the cavity above the shoulder hub
+        mb.box(m['gun'], V((0.298 * sx, 0, 1.326)), (0.046, 0.066, 0.016), bevel=0.003)
+        liner = [V((0.278 * sx, -0.085, 1.318)), V((0.385 * sx, -0.085, 1.250)), V((0.385 * sx, 0.085, 1.250)),
+                 V((0.278 * sx, 0.085, 1.318))]
+        self._plate_into(mb, liner, V((-0.5 * sx, 0, -1.0)), 'grey', 'pauldron_in_' + s, rivets=False,
+                         inner_mat=self.mat['grey'])
         self.obj_from(f'pauldron_{s}', mb, f'pauldron_{s}')
         # ---- shoulder hub (shoulder bone)
         mb = MB()
-        mb.cylinder(m['gun'], S - out * 0.03, S + out * 0.025, 0.031, seg=28)
-        mb.cylinder(m['chrome'], S + out * 0.025, S + out * 0.031, 0.013, seg=16)
+        mb.cylinder(m['gun'], S - out * 0.022, S + out * 0.025, 0.031, seg=28)
+        mb.cylinder(m['chrome_satin'], S + out * 0.025, S + out * 0.031, 0.013, seg=16)
         mb.torus(m['bronze'], S, out, 0.031, 0.003, seg=28, seg2=6)
         self.obj_from(f'shoulder_hub_{s}', mb, f'shoulder_{s}')
         # ---- upper arm (upperarm bone)
@@ -1384,77 +1876,95 @@ class _Builder:
             mb.cylinder(m['gun'], S + d * 0.04 + off, S + d * 0.05 + off, 0.0125, seg=16)
             mb.cylinder(m['chrome'], S + d * 0.13 + off, S + d * 0.172 + off, 0.006, seg=12)
             mb.cylinder(m['gun'], S + d * 0.168 + off, S + d * 0.18 + off, 0.009, seg=12)
-        # cable bundle on the inner side
-        for k, (mk, r) in enumerate((('black', 0.0042), ('red', 0.0028), ('copper', 0.0025))):
-            off = -f * (0.045 + 0.0055 * k) - out * (0.006 * (k - 1))
-            path = [S + d * t + off + (-out) * 0.006 * math.sin(math.pi * t / UPPER_LEN) for t in
-                    [UPPER_LEN * i / 10 for i in range(11)]]
-            mb.sweep(m['black'] if mk == 'black' else m[mk], path, circle_profile(r, 8))
-        # small cream plate on the outer upper arm
+        # three ROUND cables (black 8.4 mm, red 5.6 mm, copper 5 mm) loosely twisted down the
+        # inner back of the arm, held by two clamps; gaps between them so they never read as a flat ribbon
+        ax0 = S + (-f) * 0.046 + out * 0.012
+        cab = (('black', 0.0042, 0.0), ('red', 0.0028, 2.2), ('copper', 0.0025, 4.2))
+        for mk, r, ph0 in cab:
+            path = []
+            for i in range(17):
+                t = i / 16
+                ang = ph0 + t * math.pi * 1.1
+                rad = 0.0075 + 0.002 * math.sin(math.pi * t)
+                sag = 0.008 * math.sin(math.pi * t)
+                q = ax0 + d * (0.02 + 0.235 * t) + (out * math.cos(ang) + (-f) * math.sin(ang)) * rad + (-f) * sag
+                path.append(q)
+            mb.sweep(m['black'] if mk == 'black' else m[mk], path, circle_profile(r, 12))
+        for t in (0.25, 0.70):
+            c = ax0 + d * (0.02 + 0.235 * t) + (-f) * (0.008 * math.sin(math.pi * t))
+            mb.cylinder(m['gun'], c - d * 0.0045, c + d * 0.0045, 0.0135, seg=14)
+        # canon cream plate on the outer upper arm (0.07 x 0.09) and a smaller one on its front
         pc = S + d * 0.085 + out * 0.024
         a1 = d * 0.045
         a2 = f * 0.035
         poly = [pc - a1 - a2, pc - a1 + a2, pc + a1 + a2 * 0.8, pc + a1 - a2 * 0.8]
-        if newell(poly).dot(out) < 0:
-            poly.reverse()
-        mb.prism(m['cream'], poly, out, 0.0025, bevel=0.0008)
-        rp, rs = self.rivet_points(poly, out, 'uarm_' + s, 0.85, 0.04)
-        mb.rivets(m['rivet'], rp, out, rs)
+        self._plate_into(mb, poly, out, 'cream', 'uarm_' + s, rivet_scale=0.8, spacing=0.04)
+        pf = S + d * 0.11 + f * 0.043
+        b1 = d * 0.04
+        b2 = out * 0.022
+        poly = [pf - b1 - b2, pf - b1 + b2 * 1.1, pf + b1 + b2 * 0.9, pf + b1 - b2]
+        self._plate_into(mb, poly, f, 'cream', 'uarm_' + s, rivet_scale=0.75, spacing=0.04)
+        mb.box(m['gun'], pf - f * 0.006, (0.07, 0.05, 0.008), rot=frame3(d, out), bevel=0.0015)
         # bracket for the outer elbow piston
-        mb.box(m['gun'], S + d * 0.142 + hz * 0.04, (0.014, 0.03, 0.03), rot=frame3(d, hz), bevel=0.002)
-        # elbow hub (rides on the upper arm)
-        mb.cylinder(m['gun'], E - hinge * 0.026, E + hinge * 0.026, 0.0325, seg=28)
+        mb.box(m['gun'], S + d * 0.122 + hz * 0.048, (0.014, 0.03, 0.03), rot=frame3(d, hz), bevel=0.002)
+        # elbow hub (canon dia 0.065, width 0.05): dark machined drum with a recessed face, a small
+        # satin axle cap and six bolt heads; no chrome rings (it must not read as a lens or a wheel)
+        prof = [(0.0, -0.025), (0.0262, -0.025), (0.0292, -0.022), (0.0310, -0.016), (0.0318, -0.006),
+                (0.0318, 0.006), (0.0310, 0.016), (0.0292, 0.022), (0.0262, 0.025), (0.0, 0.025)]
+        mb.lathe(m['gun'], prof, E, hinge, seg=36, smooth=True)
         for k in (-1, 1):
-            mb.cylinder(m['chrome'], E + hinge * 0.026 * k, E + hinge * 0.031 * k, 0.012, seg=16)
+            mb.cylinder(m['gun_plate'], E + hinge * 0.0235 * k, E + hinge * 0.0262 * k, 0.0215, seg=24)
+            mb.cylinder(m['chrome_satin'], E + hinge * 0.0255 * k, E + hinge * 0.0285 * k, 0.0085, 0.0078, seg=20)
+            e1 = hinge.orthogonal().normalized()
+            e2 = hinge.cross(e1)
+            for i in range(6):
+                a_ = math.pi / 3 * i + 0.3
+                bp = E + hinge * 0.026 * k + (e1 * math.cos(a_) + e2 * math.sin(a_)) * 0.0160
+                mb.cylinder(m['rivet'], bp, bp + hinge * 0.0016 * k, 0.0019, seg=6, smooth=False)
         self.obj_from(f'upperarm_{s}', mb, f'upperarm_{s}')
         # bicep piston (upper arm -> forearm)
         hz = hinge if hinge.dot(out) > 0 else -hinge
-        self.piston3(f'bicep_{s}', S + d * 0.15 + hz * 0.056, f'upperarm_{s}', E + d * 0.09 + hz * 0.056,
-                     f'forearm_{s}', 0.0085, 0.0045, stage=0.37)
-        # ---- forearm shell (forearm bone)
+        self.piston3(f'bicep_{s}', S + d * 0.13 + hz * 0.061 - f * 0.018, f'upperarm_{s}',
+                     E + d * 0.12 + hz * 0.061 - f * 0.018,
+                     f'forearm_{s}', 0.0085, 0.0045, stage=0.34)
+        # ---- forearm shell (forearm bone): canon 8-sided cream shell tapering from 0.085 at the
+        # elbow to 0.068 at the wrist; a grey inlay on the top (front) facet, a dark vent slot
+        # (0.012 x 0.06) on the outer facet, the inner facet open over two chrome rods
         mb = MB()
-        mi_core = mb.mi(m['core'])
-        a0 = E + d * 0.05
-        a1_ = W - d * 0.027
+        a0 = E + d * 0.048
+        a1_ = W - d * 0.030
         sides = 8
         ringA, ringB = [], []
-        # side 0 faces 'out', side 2 faces 'f' (top in the cup pose), side 4 faces in (open)
         for i in range(sides):
-            ang = 2 * math.pi * (i + 0.5) / sides
+            ang = 2 * math.pi * (i - 0.5) / sides            # facet i is centred on angle i * 45 deg
             dirv = out * math.cos(ang) + f * math.sin(ang)
-            ringA.append(a0 + dirv * 0.040 / math.cos(math.pi / sides))
+            ringA.append(a0 + dirv * 0.0425 / math.cos(math.pi / sides))
             ringB.append(a1_ + dirv * 0.034 / math.cos(math.pi / sides))
         for i in range(sides):
             j = (i + 1) % sides
             ang = 2 * math.pi * i / sides
             nn = (out * math.cos(ang) + f * math.sin(ang)).normalized()
             if i == 4:
-                continue  # inner side open
-            kind = 'grey' if i == 2 else 'cream'
+                continue                                   # inner facet open (chrome rods show)
             poly = [ringA[i], ringA[j], ringB[j], ringB[i]]
-            if newell(poly).dot(nn) < 0:
-                poly.reverse()
-            ppts = inset_poly(poly, newell(poly), 0.0006)
-            if kind == 'grey':
-                ppts = [p - nn * 0.001 for p in ppts]
-            faces = mb.prism(m['grey'] if kind == 'grey' else m['cream'], ppts, newell(ppts), 0.0025, bevel=0.0008)
-            for fc in faces:
-                if fc.normal.dot(nn) < -0.9:
-                    fc.material_index = mi_core
-            rp, rs = self.rivet_points(ppts, newell(ppts), 'farm_' + s, 0.8, 0.06)
-            mb.rivets(m['rivet'], rp, newell(ppts), rs)
-            if i == 0:
-                vc = (ringA[i] + ringA[j] + ringB[i] + ringB[j]) / 4 + nn * 0.0012 - d * 0.02
-                mb.box(m['black'], vc, (0.06, 0.012, 0.003), rot=frame3(d, ringA[j] - ringA[i]), bevel=0.001)
+            self._plate_into(mb, poly, nn, 'cream', 'farm_' + s, rivet_scale=0.75, spacing=0.07, gap=0.0011)
+            fc = sum(poly, V()) / 4
+            along = (ringB[i] + ringB[j] - ringA[i] - ringA[j]).normalized()
+            if i == 2:                                     # grey inlay, inset 6 mm from the facet edges
+                inl = inset_poly([q + nn * 0.0004 for q in poly], nn, 0.0065)
+                self._plate_into(mb, inl, nn, 'grey', 'farm_in_' + s, rivets=False, recess=-0.0006, thick=0.0012)
+            if i == 0:                                     # vent slot
+                vc = fc + nn * 0.0016 - along * 0.012
+                mb.box(m['black'], vc, (0.060, 0.012, 0.0022), rot=frame3(along, ringA[j] - ringA[i]), bevel=0.0009)
         # inner rods and core
         mb.cylinder(m['core'], a0, a1_, 0.022, seg=12)
         for k in (-1, 1):
             mb.cylinder(m['chrome'], a0 - out * 0.018 + f * 0.012 * k, a1_ - out * 0.015 + f * 0.01 * k, 0.0045, seg=10)
-        # wrist band
-        bandA, bandB = W - d * 0.041, W - d * 0.026
-        mb.cylinder(m['rubber'], bandA, bandB, 0.0368, 0.0358, seg=8)
-        mb.cylinder(m['gun'], W - d * 0.027, W - d * 0.014, 0.0155, seg=12)
-        mb.box(m['gun'], E + d * 0.097 + hz * 0.042, (0.012, 0.026, 0.024), rot=frame3(d, hz), bevel=0.002)
+        # wrist band (canon black band 14 mm wide at the wrist end)
+        bandA, bandB = W - d * 0.044, W - d * 0.030
+        mb.cylinder(m['rubber'], bandA, bandB, 0.0372, 0.0365, seg=8)
+        mb.cylinder(m['gun'], W - d * 0.031, W - d * 0.014, 0.0155, seg=12)
+        mb.box(m['gun'], E + d * 0.127 + hz * 0.050, (0.012, 0.026, 0.024), rot=frame3(d, hz), bevel=0.002)
         self.obj_from(f'forearm_{s}', mb, f'forearm_{s}')
         # ---- hand
         self.build_hand(sx, W, d, w, v)
@@ -1497,20 +2007,21 @@ class _Builder:
                     palm.append(W + u * uu + v * vv + w * ww)
         mb.hull(m['gun'], palm)
         mb.box(m['gun'], W + u * 0.016 - w * 0.001, (0.026, 0.034, 0.02), rot=rot, bevel=0.003)
-        # back-of-hand cream plate(s)
-        bc = W + u * 0.063 - w * 0.0155
-        poly = [bc - u * 0.030 - v * 0.032, bc + u * 0.031 - v * 0.040, bc + u * 0.033 + v * 0.040,
-                bc - u * 0.026 + v * 0.030]
-        nn = -w
-        if newell(poly).dot(nn) < 0:
-            poly.reverse()
-        mb.prism(m['cream'], poly, nn, 0.003, bevel=0.0009)
-        rp, rs = self.rivet_points(poly, newell(poly), 'hand_' + s, 0.75, 0.035)
-        mb.rivets(m['rivet'], rp, newell(poly), rs)
-        # knuckle hubs
+        # back-of-hand cream plate (canon ~0.08 x 0.07) and two cheek plates that wrap the
+        # palm's sides, so the hand reads cream (not a black hinge block) from the side
+        bc = W + u * 0.062 - w * 0.0158
+        poly = [bc - u * 0.034 - v * 0.034, bc + u * 0.032 - v * 0.043, bc + u * 0.035 + v * 0.043,
+                bc - u * 0.030 + v * 0.032]
+        self._plate_into(mb, poly, -w, 'cream', 'hand_' + s, rivet_scale=0.7, spacing=0.034, gap=0.001)
+        for sv in (-1, 1):
+            cc = W + v * (0.0446 * sv)
+            poly = [cc + u * 0.034 - w * 0.0150, cc + u * 0.088 - w * 0.0150, cc + u * 0.086 + w * 0.0045,
+                    cc + u * 0.040 + w * 0.0035]
+            self._plate_into(mb, poly, v * sv, 'cream', 'hand_' + s, rivets=False, gap=0.001)
+        # knuckle hubs (canon: dia 0.020, width 0.017)
         for name, fd in fingers.items():
             K = fd['K']
-            mb.cylinder(m['rubber'], K - v * 0.0075, K + v * 0.0075, 0.0094, seg=16)
+            mb.cylinder(m['rubber'], K - v * 0.0085, K + v * 0.0085, 0.0100, seg=18)
         # thumb base housing
         T0 = thumb['pts'][0]
         mb.sphere(m['gun'], T0, 0.0105, seg=14, rings=8)
@@ -1522,14 +2033,14 @@ class _Builder:
             for i in range(3):
                 a, b = pts[i], pts[i + 1]
                 mb = MB()
-                r0 = FINGER_R - 0.0004 * i
+                r0 = FINGER_R - 0.00045 * i
                 r1 = r0 - 0.0004
-                start = a + dirn * (0.0095 if i == 0 else 0.0036)
-                end = b - dirn * 0.0036 if i < 2 else b
+                start = a + dirn * (0.0068 if i == 0 else 0.0034)
+                end = b - dirn * 0.0034 if i < 2 else b
                 self.finger_segment(mb, start, end, r0, r1, w, last=(i == 2))
                 if i > 0:
-                    # joint band centred on the joint at the start of this segment
-                    mb.cylinder(m['rubber'], a - dirn * 0.0031, a + dirn * 0.0031, r0 + 0.0011, seg=14)
+                    # joint band (canon 6-7 mm wide, ~1 mm proud) centred on the joint
+                    mb.cylinder(m['rubber'], a - dirn * 0.0032, a + dirn * 0.0032, r0 + 0.0010, seg=20)
                 self.obj_from(f'{name}_{i + 1}_{s}', mb, f'{name}_{i + 1}_{s}')
         # thumb: metacarpal (dark) + two cream segments
         T0, T1, T2, T3 = thumb['pts']
@@ -1538,37 +2049,49 @@ class _Builder:
         self.obj_from(f'thumb_0_{s}', mb, f'thumb_0_{s}')
         mb = MB()
         d1 = thumb['d1']
-        mb.cylinder(m['rubber'], T1 - d1 * 0.004, T1 + d1 * 0.004, 0.0098, seg=14)
-        self.finger_segment(mb, T1 + d1 * 0.004, T2 - d1 * 0.0036, 0.0088, 0.0084, w, last=False)
+        mb.cylinder(m['rubber'], T1 - d1 * 0.004, T1 + d1 * 0.004, 0.0105, seg=16)
+        self.finger_segment(mb, T1 + d1 * 0.004, T2 - d1 * 0.0036, 0.0090, 0.0086, w, last=False)
         self.obj_from(f'thumb_1_{s}', mb, f'thumb_1_{s}')
         mb = MB()
-        mb.cylinder(m['rubber'], T2 - d1 * 0.0034, T2 + d1 * 0.0034, 0.0096, seg=14)
-        self.finger_segment(mb, T2 + d1 * 0.0036, T3, 0.0083, 0.0078, w, last=True)
+        mb.cylinder(m['rubber'], T2 - d1 * 0.0034, T2 + d1 * 0.0034, 0.0102, seg=16)
+        self.finger_segment(mb, T2 + d1 * 0.0036, T3, 0.0086, 0.0080, w, last=True)
         self.obj_from(f'thumb_2_{s}', mb, f'thumb_2_{s}')
 
     def finger_segment(self, mb, a, b, r0, r1, w, last=False):
-        """Cream, slightly flattened segment with chamfered ends; bronze rounded tip cap if last."""
+        """Cream segment with a rounded-square, slightly flattened section (aspect 0.85, crisp
+        chamfered corners) and chamfered ends; bronze rounded tip cap if last."""
         m = self.mat
         d = (b - a)
         L = d.length
         d.normalize()
-        flat = 0.86
-        seg = 12
+        flat = 0.90
+        seg = 20
         x = (w - d * d.dot(w)).normalized()   # flattened toward the palm normal
         y = d.cross(x)
+        prof = []
+        for k in range(seg):
+            t = 2 * math.pi * (k + 0.5) / seg
+            c_, s_ = math.cos(t), math.sin(t)
+            e = 2.0 / 2.6                     # superellipse exponent 2.6: a softly squared round
+            prof.append((math.copysign(abs(c_) ** e, c_), math.copysign(abs(s_) ** e, s_)))
 
         def ring(c, r):
-            return [c + (x * math.cos(2 * math.pi * k / seg) * r * flat + y * math.sin(2 * math.pi * k / seg) * r)
-                    for k in range(seg)]
+            return [c + x * (px * r * flat) + y * (py * r) for px, py in prof]
+
+        def ring_round(c, r):
+            return [c + (x * math.cos(2 * math.pi * (k + 0.5) / seg) * r * flat +
+                         y * math.sin(2 * math.pi * (k + 0.5) / seg) * r) for k in range(seg)]
 
         tipL = 0.0085 if last else 0.0
         bodyL = L - tipL
-        rings = [(0.0, r0 * 0.62), (0.0028, r0), (bodyL - 0.0028 if not last else bodyL, r1),
-                 (bodyL, r1 * 0.62 if not last else r1)]
+        rings = [(0.0, r0 * 0.70, False), (0.0012, r0 * 0.94, False), (0.0024, r0, True),
+                 ((bodyL - 0.0024) if not last else bodyL - 0.0004, r1, True)]
+        if not last:
+            rings += [(bodyL - 0.0012, r1 * 0.94, False), (bodyL, r1 * 0.70, False)]
         before = set(mb.bm.faces)
         vr = []
-        for t, r in rings:
-            vr.append([mb.bm.verts.new(p) for p in ring(a + d * t, r)])
+        for t, r, sq in rings:
+            vr.append([mb.bm.verts.new(p) for p in (ring(a + d * t, r) if sq else ring_round(a + d * t, r))])
         for k in range(len(vr) - 1):
             for i in range(seg):
                 j = (i + 1) % seg
@@ -1576,17 +2099,17 @@ class _Builder:
         mb.bm.faces.new(list(reversed(vr[0])))
         if not last:
             mb.bm.faces.new(vr[-1])
-        mb._tag(before, m['cream'], True)
+        mb._tag(before, m['finger'], True)
         if last:
             before = set(mb.bm.faces)
-            prof = [(r1, 0.0), (r1 * 0.98, 0.0035), (r1 * 0.88, 0.0062), (r1 * 0.62, 0.0080), (r1 * 0.3, 0.0088),
-                    (0.0, 0.0090)]
+            prof_t = [(r1, 0.0), (r1 * 0.98, 0.0035), (r1 * 0.88, 0.0062), (r1 * 0.62, 0.0080), (r1 * 0.3, 0.0088),
+                      (0.0, 0.0090)]
             ringsT = []
-            for rr, t in prof:
+            for rr, t in prof_t:
                 if rr < 1e-6:
                     ringsT.append([mb.bm.verts.new(a + d * (bodyL + t))])
                 else:
-                    ringsT.append([mb.bm.verts.new(p) for p in ring(a + d * (bodyL + t), rr)])
+                    ringsT.append([mb.bm.verts.new(p) for p in ring_round(a + d * (bodyL + t), rr)])
             for k in range(len(ringsT) - 1):
                 A, B = ringsT[k], ringsT[k + 1]
                 for i in range(seg):
@@ -1613,9 +2136,27 @@ class _Builder:
         mb.cylinder(m['gun'], V((0.055 * sx, 0, HIP_Z)), V((0.09 * sx, 0, HIP_Z)), 0.026, seg=24)
         mb.box(m['gun'], V((0.175 * sx, 0, 0.808)), (0.013, 0.066, 0.12), bevel=0.003)
         mb.cylinder(m['chrome'], V((0.168 * sx, 0, HIP_Z)), V((0.186 * sx, 0, HIP_Z)), 0.017, seg=16)
-        self.hex_shell(mb, sx, V((X + 0.006 * sx, 0, 0.742)), V((X, 0, 0.532)), (0.185, 0.165), (0.13, 0.125),
-                       'thigh_' + s, grey_sides=(1, 4), top_drop=(0.042, 0.024, 0.0, 0.0, 0.0, 0.024))
-        mb.cylinder(m['gun'], V((X, 0, 0.535)), V((X, 0, 0.505)), 0.04, 0.036, seg=16)
+        # faceted thigh (team-master): the front is five triangular plates on diagonal seams that
+        # zig-zag down a ridge (>= 15 deg between neighbouring facets), with a grey triangle insert
+        # on the outer front face; the shell tapers from 0.18 at the hip to 0.12 at the knee
+        rings = [(0.775, [(-0.078, -0.062), (-0.010, -0.094), (0.096, -0.052), (0.088, 0.058), (0.0, 0.070),
+                          (-0.082, 0.050)]),
+                 (0.655, [(0.034, -0.090)]),
+                 (0.540, [(-0.054, -0.044), (0.002, -0.068), (0.064, -0.034), (0.058, 0.040), (0.0, 0.052),
+                          (-0.056, 0.036)])]
+        fp = lambda r, i: (r, i)
+        self.facet_shell(mb, sx, X, rings, [
+            ([fp(0, 0), fp(0, 1), fp(1, 0), fp(2, 0)], 'cream'),
+            ([fp(2, 0), fp(1, 0), fp(2, 1)], 'cream'),
+            ([fp(0, 1), fp(0, 2), fp(1, 0)], 'cream'),
+            ([fp(0, 2), fp(2, 2), fp(1, 0)], 'grey'),
+            ([fp(1, 0), fp(2, 2), fp(2, 1)], 'cream'),
+            ([fp(0, 2), fp(0, 3), fp(2, 3), fp(2, 2)], 'cream'),
+            ([fp(0, 3), fp(0, 4), fp(2, 4), fp(2, 3)], 'cream'),
+            ([fp(0, 4), fp(0, 5), fp(2, 5), fp(2, 4)], 'grey'),
+            ([fp(0, 5), fp(0, 0), fp(2, 0), fp(2, 5)], 'cream'),
+        ], 'thigh_' + s)
+        mb.cylinder(m['gun'], V((X, 0, 0.543)), V((X, 0, 0.505)), 0.04, 0.036, seg=16)
         self.obj_from(f'thigh_{s}', mb, f'thigh_{s}')
         # hamstring piston: thigh -> shin
         self.piston3(f'hamstring_{s}', V((X - 0.02 * sx, 0.088, 0.66)), f'thigh_{s}',
@@ -1635,8 +2176,21 @@ class _Builder:
         self.obj_from(f'kneecap_{s}', mb, f'shin_{s}')
         # ---- shin
         mb = MB()
-        self.hex_shell(mb, sx, V((X, 0, 0.428)), V((X, 0, 0.14)), (0.13, 0.125), (0.09, 0.09), 'shin_' + s,
-                       grey_sides=(2, 5))
+        # shin: triangular front plates on a diagonal ridge, a grey triangle on the inner front;
+        # the kneecap overlaps its top
+        rings = [(0.432, [(-0.062, -0.022), (0.006, -0.068), (0.066, -0.020), (0.050, 0.052), (-0.050, 0.052)]),
+                 (0.290, [(-0.018, -0.063)]),
+                 (0.142, [(-0.046, -0.016), (0.004, -0.050), (0.046, -0.014), (0.036, 0.040), (-0.036, 0.040)])]
+        fp = lambda r, i: (r, i)
+        self.facet_shell(mb, sx, X, rings, [
+            ([fp(0, 0), fp(0, 1), fp(1, 0)], 'cream'),
+            ([fp(0, 1), fp(0, 2), fp(2, 2), fp(1, 0)], 'cream'),
+            ([fp(0, 0), fp(1, 0), fp(2, 0)], 'grey'),
+            ([fp(1, 0), fp(2, 2), fp(2, 1), fp(2, 0)], 'cream'),
+            ([fp(0, 2), fp(0, 3), fp(2, 3), fp(2, 2)], 'cream'),
+            ([fp(0, 3), fp(0, 4), fp(2, 4), fp(2, 3)], 'cream'),
+            ([fp(0, 4), fp(0, 0), fp(2, 0), fp(2, 4)], 'cream'),
+        ], 'shin_' + s)
         mb.cylinder(m['gun'], V((X, 0, 0.46)), V((X, 0, 0.425)), 0.03, seg=16)
         mb.cylinder(m['gun'], V((X, 0, 0.14)), V((X, 0, 0.105)), 0.03, 0.026, seg=16)
         # ankle hub
@@ -1660,61 +2214,38 @@ class _Builder:
         self.hull_plates(mb, fp, 'foot_' + s, grey_pick=lambda nn: abs(nn.x) > 0.8 and nn.y < 0, skip_down=True)
         self.obj_from(f'foot_{s}', mb, f'foot_{s}')
 
-    def hex_shell(self, mb, sx, top, bot, size_top, size_bot, reg, grey_sides=(), top_drop=None):
+    def facet_shell(self, mb, sx, X, rings, plates, reg, cap_top=True, cap_bot=True):
+        """Faceted limb shell from explicit plates. rings: [(z, [(x_out, y), ...])] (x_out > 0 =
+        away from the body); plates: [([(ring, index), ...], kind)]. A dark core hull fills the
+        inside and recessed machined caps close both ends."""
         m = self.mat
-        mi_core = mb.mi(m['core'])
-
-        def ring(c, size):
-            W_, D_ = size
-            return [c + V((0, -D_ / 2, 0)), c + V((W_ / 2 * sx, -D_ / 4, 0)), c + V((W_ / 2 * sx, D_ / 4, 0)),
-                    c + V((0, D_ / 2, 0)), c + V((-W_ / 2 * sx, D_ / 4, 0)), c + V((-W_ / 2 * sx, -D_ / 4, 0))]
-
-        rt, rb = ring(top, size_top), ring(bot, size_bot)
-        if top_drop:
-            rt = [p - V((0, 0, dz)) for p, dz in zip(rt, top_drop)]
-        cen = (top + bot) / 2
-        for i in range(6):
-            j = (i + 1) % 6
-            mid_t = (rt[i] + rt[j]) / 2
-            mid_b = (rb[i] + rb[j]) / 2
-            tris = [[rt[i], rt[j], rb[i]], [rt[j], rb[j], rb[i]]] if i % 2 == 0 else \
-                [[rt[i], rt[j], rb[j]], [rt[i], rb[j], rb[i]]]
-            for k, poly in enumerate(tris):
-                c = sum(poly, V()) / 3
-                nn = newell(poly)
-                if nn.dot(c - V((cen.x, cen.y, c.z))) < 0:
-                    poly = list(reversed(poly))
-                    nn = -nn
-                kind = 'grey' if (i in grey_sides and k == 0) else 'cream'
-                ppts = inset_poly(poly, nn, 0.00065)
-                if kind == 'grey':
-                    ppts = [p - nn * 0.0012 for p in ppts]
-                faces = mb.prism(m['grey'] if kind == 'grey' else m['cream'], ppts, nn, 0.0025, bevel=0.0008)
-                for fc in faces:
-                    if fc.normal.dot(nn) < -0.9:
-                        fc.material_index = mi_core
-                rp, rs = self.rivet_points(ppts, nn, reg, 0.85, 0.045)
-                mb.rivets(m['rivet'], rp, nn, rs)
-        core = [p + (V((cen.x, cen.y, p.z)) - p).normalized() * 0.005 for p in rt + rb]
+        P = [[V((X + px * sx, py, z)) for px, py in pts] for z, pts in rings]
+        axis = lambda z: V((X, 0.004, z))
+        for idx, kind in plates:
+            poly = [P[r][i] for r, i in idx]
+            c = sum(poly, V()) / len(poly)
+            out = c - axis(c.z)
+            out.z = 0.0
+            self._plate_into(mb, poly, out, kind, reg, rivet_scale=0.8, spacing=0.045)
+        core = []                                          # top and bottom rings only, well inside: the
+        for ring in (P[0], P[-1]):                         # zig-zag ridge makes the shell locally concave
+            for p in ring:
+                core.append(p + (axis(p.z) - p).normalized() * 0.014)
         mb.hull(m['core'], core)
-        # machined end caps with a centre boss so the open ends never read as hollow tubes
-        for ring_, sgn in ((rt, -1.0), (rb, 1.0)):
-            cc = sum(ring_, V()) / len(ring_)
-            cap = [cc + (q - cc) * 0.9 + V((0, 0, 0.004 * sgn)) for q in ring_]
+        for ring, sgn, ok in ((P[0], -1.0, cap_top), (P[-1], 1.0, cap_bot)):
+            if not ok:
+                continue
+            cc = sum(ring, V()) / len(ring)
+            cap = [cc + (q - cc) * 0.86 + V((0, 0, 0.009 * sgn)) for q in ring]
             nrm = V((0, 0, -sgn))
             if newell(cap).dot(nrm) < 0:
                 cap.reverse()
             mb.prism(m['gun'], cap, nrm, 0.004, bevel=0.0012)
-            mb.cylinder(m['gun'], cc + V((0, 0, 0.002 * sgn)), cc - nrm * 0.012 + V((0, 0, 0.002 * sgn)),
-                        0.022, seg=20)
-            for k in range(6):
-                ang = math.pi / 3 * k + math.pi / 6
-                bp = cc + V((math.cos(ang), math.sin(ang), 0)) * 0.034 - nrm * 0.0005 + V((0, 0, 0.004 * sgn))
-                mb.cylinder(m['rivet'], bp, bp - nrm * 0.003, 0.0035, seg=8)
+            mb.cylinder(m['gun'], cc + V((0, 0, 0.009 * sgn)), cc - nrm * 0.012 + V((0, 0, 0.009 * sgn)), 0.022,
+                        seg=20)
 
     def hull_plates(self, mb, pts, reg, grey_pick=lambda n: False, skip_down=False):
         m = self.mat
-        mi_core = mb.mi(m['core'])
         bm = bmesh.new()
         for p in pts:
             bm.verts.new(p)
@@ -1723,65 +2254,81 @@ class _Builder:
         bm.normal_update()
         pc = sum(pts, V()) / len(pts)
         polys = []
-        for fc in bm.faces:
+        for fc in sorted(bm.faces, key=lambda f_: tuple(round(x, 5) for x in f_.calc_center_median())):
             nn = fc.normal.copy()
             if nn.dot(fc.calc_center_median() - pc) < 0:
                 nn = -nn
-            polys.append(([v_.co.copy() for v_ in fc.verts], nn))
+            vs_ = [v_.co.copy() for v_ in fc.verts]
+            k0 = min(range(len(vs_)), key=lambda i: tuple(round(x, 5) for x in vs_[i]))
+            polys.append((vs_[k0:] + vs_[:k0], nn))
         bm.free()
         for poly, nn in polys:
             if skip_down and nn.z < -0.9:
                 continue
             kind = 'grey' if grey_pick(nn) else 'cream'
-            if newell(poly).dot(nn) < 0:
-                poly.reverse()
-            ppts = inset_poly(poly, nn, 0.00065)
-            if kind == 'grey':
-                ppts = [p - nn * 0.001 for p in ppts]
-            faces = mb.prism(m['grey'] if kind == 'grey' else m['cream'], ppts, nn, 0.0025, bevel=0.0008)
-            for fc in faces:
-                if fc.normal.dot(nn) < -0.9:
-                    fc.material_index = mi_core
-            rp, rs = self.rivet_points(ppts, nn, reg, 0.8, 0.04)
-            mb.rivets(m['rivet'], rp, nn, rs)
+            self._plate_into(mb, poly, nn, kind, reg, rivet_scale=0.75, spacing=0.04, gap=0.001)
         mb.hull(m['core'], [p + (pc - p).normalized() * 0.004 for p in pts])
 
     # ================================================================= CUP
     def build_cup(self):
-        m = self.mat
-        mb = MB()
-        o = V((0, 0, 0))
-        prof = [(0.0, 0.004), (0.0285, 0.004), (0.0292, 0.0), (CUP_R0, 0.0)]
-        for i in range(1, 13):
-            h = CUP_H * i / 12
-            prof.append((cup_radius(h), h))
-        mb.lathe(m['cup'], prof, o, UP, seg=56, close_bottom=False, close_top=False)
-        # inner wall just below the rim (visible only if the lid comes off)
-        mb.lathe(m['cup'], [(CUP_R1 - 0.0006, CUP_H), (cup_radius(CUP_H - 0.03) - 0.0006, CUP_H - 0.03),
-                            (0.0, CUP_H - 0.03)], o, UP, seg=56, close_bottom=False, close_top=False)
-        mb.torus(m['cup'], V((0, 0, CUP_H)), UP, CUP_R1 - 0.0004, 0.0021, seg=56, seg2=10)
-        # lid
-        lid = [(CUP_R1 + 0.0008, CUP_H - 0.007), (CUP_R1 + 0.0021, CUP_H - 0.006), (CUP_R1 + 0.0026, CUP_H + 0.002),
-               (CUP_R1 + 0.0022, CUP_H + 0.0085), (CUP_R1 + 0.0010, CUP_H + 0.0118), (CUP_R1 - 0.0025, CUP_H + 0.0126),
-               (CUP_R1 - 0.0045, CUP_H + 0.0112), (CUP_R1 - 0.0055, CUP_H + 0.0082), (CUP_R1 - 0.0075, CUP_H + 0.0078),
-               (0.0, CUP_H + 0.0078)]
-        mb.lathe(m['lid'], lid, o, UP, seg=64, close_bottom=False, close_top=False)
-        mb.lathe(m['lid'], [(CUP_R1 + 0.0008, CUP_H - 0.007), (CUP_R1 - 0.0005, CUP_H - 0.0068)], o, UP, seg=64,
-                 close_bottom=False, close_top=False)
-        # sip spout: raised lozenge near the rim (toward -Y in cup space)
-        sc = V((0, -0.030, CUP_H + 0.0105))
-        mb.sphere(m['lid'], sc, 0.008, seg=20, rings=10, scale=(1.5, 0.9, 0.42))
-        mb.box(self.mat['core'], sc + V((0, -0.0035, 0.0028)), (0.008, 0.002, 0.0012))
-        ob = mb.to_object('cup', self.coll)
-        ob.name = f'{self.name}_cup'
-        self.parts['cup'] = ob
-        return ob
+        """The hero cup + lid from props.cup_and_lid(hero=True): a separate polystyrene lid with
+        an overhang shadow line and a real 15 x 5 mm rounded-oblong sip slot. Its root empty
+        (origin = cup base centre, +Z up, slot toward +Y) is the rig's cup object, driven by the
+        hands' Child Of constraints; body, lid, coffee, the amber slot glow and the `slot` empty
+        are its children (rig.cup_objects() lists them)."""
+        handle = PR.cup_and_lid(f'{self.name}_cup', self.coll, (0, 0, 0), 0.0, hero=True)
+        root = handle.root
+        root.name = f'{self.name}_cup'
+        self.cup_handle = handle
+        self.parts['cup'] = root
+        self.parts['cup_slot'] = handle.slot
+        self.parts['cup_glow'] = handle.glow
+        # hero finish: the lid gets its own #ECE9E3 polystyrene (ring shading survives the top
+        # light), and a dark stadium well under the slot so the slot reads as a real opening
+        # from outside (S01/S02 match cut); the amber glow sits inside the well
+        lid = handle.parts.get('lid')
+        if lid is not None and lid.data.materials:
+            lid.data.materials[0] = self.mat['hero_lid']
+        sz = PR._lid_z(PR.CUP['slot_r'], PR.CUP['slot_theta'])
+        L_, W_ = PR.CUP['slot_len'] + 0.0010, PR.CUP['slot_w'] + 0.0010
+        z0, z1 = -0.0050, -0.0020                  # top hidden inside the lid shell, floor 5 mm down
+        bm = bmesh.new()
+        outline = PR.stadium(L_, W_, 16)
+        lo = [bm.verts.new((x, y, z0)) for x, y in outline]
+        hi = [bm.verts.new((x, y, z1)) for x, y in outline]
+        k = len(outline)
+        for i in range(k):
+            j = (i + 1) % k
+            bm.faces.new((lo[i], lo[j], hi[j], hi[i]))
+        bm.faces.new(lo)
+        bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
+        for f_ in bm.faces:                        # normals point into the well (seen from above)
+            f_.normal_update()
+            cen = f_.calc_center_median()
+            if f_.normal.dot(V((0, 0, 1)) if len(f_.verts) > 4 else -V((cen.x, cen.y, 0))) < 0:
+                f_.normal_flip()
+        me = bpy.data.meshes.new(f'{self.name}_cup_well')
+        bm.to_mesh(me)
+        bm.free()
+        me.materials.append(self.mat['well'])
+        well = bpy.data.objects.new(f'{self.name}_cup_well', me)
+        self.coll.objects.link(well)
+        well.parent = root
+        well.location = (handle.slot.location.x, handle.slot.location.y, sz)
+        well.rotation_euler = handle.slot.rotation_euler.copy()
+        well.visible_shadow = False
+        self.parts['cup_well'] = well
+        g = handle.glow
+        g.location.z = sz - 0.0040
+        if g.data.materials:
+            g.data.materials[0] = self.mat['slot_glow']
+        return root
 
     # ================================================================= LANYARD + BADGE
     def build_lanyard(self):
         m = self.mat
         hull = self.torso_hull
-        Vp = V((0.0, -0.188, 1.103))
+        Vp = V((0.0, -0.186, 1.141))
         self.badge_pivot = Vp
         path = []
         for sx in (-1, 1):
@@ -1809,43 +2356,96 @@ class _Builder:
         mb = MB()
         mb.sweep(m['strap'], pts, prof, normals=nrm, uv=True)
         self.obj_from('lanyard', mb, 'chest')
-        # crimp, swivel hook, clear clip, badge (badge bone)
+        # crimp, swivel + lobster clip, frosted strap clip, sleeve and card (badge bone).
+        # Every link touches the next (no visible gap); card centre z ~1.045, bottom 15 mm
+        # above the breastplate's lower edge.
         mb = MB()
-        mb.box(m['black'], Vp + V((0, 0, -0.002)), (0.016, 0.006, 0.016), bevel=0.0015)
-        hook_c = Vp + V((0, -0.002, -0.022))
-        mb.cylinder(m['clip'], Vp + V((0, 0, -0.010)), Vp + V((0, 0, -0.014)), 0.0035, seg=12)
-        mb.torus(m['clip'], hook_c, V((0, 1, 0)), 0.0075, 0.0016, seg=24, seg2=8, arc=(math.radians(-60), math.radians(250)))
-        mb.cylinder(m['clip'], hook_c + V((0.0075 * math.cos(math.radians(-60)), 0, 0.0075 * math.sin(math.radians(-60)))),
-                    hook_c + V((0.0, 0, -0.0075)), 0.0012, seg=8)
-        clip_top = hook_c + V((0, 0, -0.008))
-        mb.box(m['vinyl'], clip_top + V((0, 0, -0.012)), (0.012, 0.0025, 0.026), bevel=0.0008)
-        mb.box(m['clip'], clip_top + V((0, 0, -0.002)), (0.009, 0.004, 0.004), bevel=0.0008)
-        badge_top = clip_top.z - 0.020
-        bc = V((0.0, Vp.y + 0.006, badge_top - 0.040))
-        # clear sleeve 0.105 x 0.080, card 0.100 x 0.072 inside
-        mb.box(m['vinyl'], bc, (0.105, 0.0024, 0.080), bevel=0.0009)
+        mb.box(m['black'], Vp + V((0, 0, -0.0055)), (0.012, 0.006, 0.015), bevel=0.0015)
+        z = Vp.z - 0.013
+        mb.cylinder(m['clip'], V((0, Vp.y, z + 0.001)), V((0, Vp.y, z - 0.004)), 0.0028, seg=12)       # swivel
+        mb.torus(m['clip'], V((0, Vp.y, z - 0.0065)), V((0, 1, 0)), 0.0028, 0.0009, seg=20, seg2=6)   # eye
+        lob_c = V((0, Vp.y - 0.0004, z - 0.0165))
+        mb.sphere(m['clip'], lob_c, 0.0050, seg=20, rings=12, scale=(0.62, 0.42, 1.0))              # lobster body
+        mb.torus(m['clip'], lob_c + V((0, 0, -0.0062)), V((0, 1, 0)), 0.0032, 0.0011, seg=20, seg2=6,
+                 arc=(math.radians(-200), math.radians(20)))                                       # jaw
+        mb.cylinder(m['clip'], lob_c + V((0.0026, -0.0012, 0.003)), lob_c + V((0.0034, -0.0012, -0.004)), 0.0007,
+                    seg=6)                                                                         # gate lever
+        # frosted vinyl strap loop through the jaw, down into the sleeve's slot punch
+        jaw_z = lob_c.z - 0.0094
+        strap_top = jaw_z - 0.0011
+        sleeve_top = strap_top - 0.0115
+        mb.torus(m['frosted'], V((0, Vp.y, jaw_z)), V((1, 0, 0)), 0.0021, 0.0006, seg=16, seg2=6,
+                 arc=(math.radians(-10), math.radians(190)))
+        mb.box(m['frosted'], V((0, Vp.y - 0.0015, strap_top - 0.008)), (0.012, 0.0011, 0.0165), bevel=0.0004)
+        mb.box(m['frosted'], V((0, Vp.y + 0.0015, strap_top - 0.008)), (0.012, 0.0011, 0.0165), bevel=0.0004)
+        mb.cylinder(m['clip'], V((0, Vp.y - 0.0021, sleeve_top + 0.0018)), V((0, Vp.y - 0.0032, sleeve_top + 0.0018)),
+                    0.0024, seg=14)                                                                # snap stud
+        badge_top = sleeve_top
+        bc = V((0.0, Vp.y + 0.0006, badge_top - 0.040))
+        nv = len(mb.bm.verts)
+        self.sleeve(mb, bc, 0.105, 0.080, 0.0012, 0.003)
+        mb.bm.verts.ensure_lookup_table()
+        tilt = Matrix.Translation((0, bc.y, badge_top)) @ Matrix.Rotation(math.radians(BADGE_TILT), 4, 'X') @ \
+            Matrix.Translation((0, -bc.y, -badge_top))
+        bmesh.ops.transform(mb.bm, matrix=tilt, verts=mb.bm.verts[nv:])
         self.obj_from('badge_hw', mb, 'badge')
+        # card: 100 x 72 mm, 3 mm corner radius, sitting at the bottom of the sleeve
         mb = MB()
         bm = mb.bm
-        uvl = bm.loops.layers.uv.new('UVMap')
+        uvl = mb.uv()                       # the render-active 'UVMap' (MB made it), not a second layer
         w_, h_ = 0.100, 0.072
         y0 = bc.y
-        vs = [bm.verts.new(V((x, y0, z))) for x, z in
-              ((-w_ / 2, bc.z - h_ / 2 - 0.003), (w_ / 2, bc.z - h_ / 2 - 0.003), (w_ / 2, bc.z + h_ / 2 - 0.003),
-               (-w_ / 2, bc.z + h_ / 2 - 0.003))]
-        f = bm.faces.new(vs)
-        f.normal_update()
-        if f.normal.y > 0:
-            f.normal_flip()
-        for loop in f.loops:
-            co = loop.vert.co
-            loop[uvl].uv = ((co.x + w_ / 2) / w_, (co.z - (bc.z - 0.003) + h_ / 2) / h_)
-        back = bm.faces.new([bm.verts.new(V((x, y0 + 0.0004, z))) for x, z in
-                             ((-w_ / 2, bc.z - h_ / 2 - 0.003), (-w_ / 2, bc.z + h_ / 2 - 0.003),
-                              (w_ / 2, bc.z + h_ / 2 - 0.003), (w_ / 2, bc.z - h_ / 2 - 0.003))])
+        cz = bc.z - 0.003
+        rr = rrect2d(w_, h_, 0.003, 4)
+        for yy, flip in ((y0, False), (y0 + 0.0004, True)):
+            vs = [bm.verts.new(V((x, yy, cz + zz))) for x, zz in rr]
+            f = bm.faces.new(vs if not flip else list(reversed(vs)))
+            f.normal_update()
+            if (f.normal.y > 0) != flip:
+                f.normal_flip()
+            for loop in f.loops:
+                co = loop.vert.co
+                loop[uvl].uv = ((co.x + w_ / 2) / w_, (co.z - cz + h_ / 2) / h_)
         mb.mi(m['card'])
+        tilt = Matrix.Translation((0, bc.y, badge_top)) @ Matrix.Rotation(math.radians(BADGE_TILT), 4, 'X') @ \
+            Matrix.Translation((0, -bc.y, -badge_top))
+        bmesh.ops.transform(bm, matrix=tilt, verts=bm.verts[:])
         card = self.obj_from('badge', mb, 'badge', origin=bc)
         self.badge = card
+
+    def sleeve(self, mb, bc, W, H, thick, rad):
+        """Clear vinyl sleeve: rounded corners and a stadium slot punch at the top centre; flat
+        (flat-shaded), so the sheen across it stays one soft broad highlight."""
+        k = 96
+        o2 = [V(p) for p in PR.resample_closed(rrect2d(W, H, rad, 8), k)]
+        sc = V((0.0, H / 2 - 0.006))
+        st = [V(p) for p in PR.resample_closed(PR.stadium(0.013, 0.0032, 16, sc.x, sc.y), k)]
+        ang = lambda p: math.atan2(p.y - sc.y, p.x - sc.x)
+        a0 = ang(o2[0])
+        j0 = min(range(k), key=lambda j: abs(math.atan2(math.sin(ang(st[j]) - a0), math.cos(ang(st[j]) - a0))))
+        st = st[j0:] + st[:j0]
+
+        def curl(x, z):
+            return 0.0           # flat: the radial faces round the slot punch must not crease the sheen
+        bm = mb.bm
+        mi = mb.mi(self.mat['vinyl'])
+        rings = []
+        for yy in (-thick / 2, thick / 2):
+            ro = [bm.verts.new(V((bc.x + p.x, bc.y + yy + curl(p.x, p.y), bc.z + p.y))) for p in o2]
+            ri = [bm.verts.new(V((bc.x + p.x, bc.y + yy, bc.z + p.y))) for p in st]
+            rings.append((ro, ri))
+        new = []
+        (fo, fi), (bo, bi) = rings
+        for i in range(k):
+            j = (i + 1) % k
+            new.append(bm.faces.new((fo[i], fo[j], fi[j], fi[i])))
+            new.append(bm.faces.new((bo[j], bo[i], bi[i], bi[j])))
+            new.append(bm.faces.new((fo[j], fo[i], bo[i], bo[j])))
+            new.append(bm.faces.new((fi[i], fi[j], bi[j], bi[i])))
+        bmesh.ops.recalc_face_normals(bm, faces=new)
+        for f in new:
+            f.material_index = mi
+            f.smooth = False
 
     # ================================================================= ARMATURE
     def build_armature(self):
@@ -1884,7 +2484,9 @@ class _Builder:
             s = 'L' if sx > 0 else 'R'
             S, E, W, d, out, w, v = self.arm_frames(sx)
             bone(f'shoulder_{s}', (0.07 * sx, 0, 1.28), S, 'chest', roll_to=UP)
-            bone(f'pauldron_{s}', S, S + d * 0.1, f'shoulder_{s}', roll_to=FWD)
+            # mounted on the chest top: the bone's head is the pauldron's seat (hinge), so every
+            # follow or ride-up lifts the outer edge and the inner edge never dives into the chest
+            bone(f'pauldron_{s}', V((0.262 * sx, 0.0, 1.3215)), S + d * 0.1, 'chest', roll_to=FWD)
             bone(f'upperarm_{s}', S, E, f'shoulder_{s}', roll_to=FWD)
             bone(f'forearm_{s}', E, W, f'upperarm_{s}', roll_to=FWD, connect=True)
             hd = self.hands[s]
@@ -1921,7 +2523,12 @@ class _Builder:
             lim = arm.pose.bones[f'pauldron_{s}'].constraints.new('LIMIT_ROTATION')
             lim.owner_space = 'LOCAL'
             lim.use_limit_z = True
-            lim.min_z, lim.max_z = math.radians(-15), math.radians(15)
+            # lift only (abduction is +Z local on the left, -Z on the right): an adducted arm
+            # never tips the pauldron's inner edge down into the chest
+            if s == 'L':
+                lim.min_z, lim.max_z = 0.0, math.radians(PAULDRON_FOLLOW)
+            else:
+                lim.min_z, lim.max_z = math.radians(-PAULDRON_FOLLOW), 0.0
         self.arm = arm
         return arm
 
@@ -1965,6 +2572,185 @@ class Rig:
         self._cup_rest = getattr(b, 'cup_rest', None)
         self._cup_rest_L = getattr(b, 'cup_rest_L', None)
         self._hs_rest = getattr(b, 'hs_rest', None)
+        self.cord_hooks = getattr(b, 'cord_hooks', [])
+        self.cup_handle = getattr(b, 'cup_handle', None)     # props.Cup: .slot empty, .slot_glow(frame)
+        self.slot = self.cup_handle.slot if self.cup_handle else None
+        self._builder_hulls = dict(torso=getattr(b, 'torso_hull', None), head=getattr(b, 'head_hull', None))
+        self._pauldron_hulls = getattr(b, 'pauldron_hulls', {})
+        self._pauldron_pts = getattr(b, 'pauldron_pts', {})
+        self.face_frame = getattr(b, 'face_frame', None)
+        self.headband = getattr(b, 'headband', None)       # (points, normals), head-bone rest space
+        cups = getattr(b, 'earcups', None)
+        self._earcup_L = (cups[0]['o'] + cups[0]['a'] * 0.030, cups[0]['top']) if cups else None
+
+    # ---------------------------------------------------- inspection helpers
+    def screen_point(self, u, v, frame=None):
+        """World position of screen UV (u, v) (u left->right seen from the front, v bottom->top)."""
+        if frame is not None:
+            bpy.context.scene.frame_set(frame)
+        c, ex, ey, n, sw, sh = self.face_frame
+        local = ex * ((u - 0.5) * sw) + ey * ((v - 0.5) * sh) + n * (-0.001)
+        dg = bpy.context.evaluated_depsgraph_get()
+        return self.screen.evaluated_get(dg).matrix_world @ local
+
+    def glass_glint(self, camera, frame, strength=7.0, length=0.12, width=0.04, dist=2.2, v=0.88):
+        """The treatment's thin reflected skylight slot on the face glass: key a hot stadium card,
+        visible to glossy rays only (no camera, diffuse or shadow rays), where the glass reflects
+        `camera`'s ray through screen height v (0 bottom .. 1 top). Call once per shot camera and
+        frame (the card is created on first use; it also adds a matching glint to chrome)."""
+        card = getattr(self, '_glint', None)
+        if card is None:
+            # a soft-ended slot: a strip whose emission falls off smoothly toward both ends and
+            # edges (UV u along, v across), so the reflection reads as a thin skylight, not a bar
+            bm = bmesh.new()
+            uvl = bm.loops.layers.uv.new('UVMap')
+            nu, nv = 12, 3
+            grid = [[bm.verts.new(((i / nu - 0.5) * length, (j / nv - 0.5) * width, 0.0)) for j in range(nv + 1)]
+                    for i in range(nu + 1)]
+            for i in range(nu):
+                for j in range(nv):
+                    f_ = bm.faces.new((grid[i][j], grid[i + 1][j], grid[i + 1][j + 1], grid[i][j + 1]))
+                    for loop, (a_, b_) in zip(f_.loops, ((i, j), (i + 1, j), (i + 1, j + 1), (i, j + 1))):
+                        loop[uvl].uv = (a_ / nu, b_ / nv)
+            me = bpy.data.meshes.new(f'{self.name}_glint')
+            bm.to_mesh(me)
+            bm.free()
+            card = bpy.data.objects.new(f'{self.name}_glint', me)
+            self.collection.objects.link(card)
+            mat = bpy.data.materials.new(f'{self.name}_glint_emit')
+            mat.use_nodes = True
+            nt = mat.node_tree
+            for n_ in list(nt.nodes):
+                nt.nodes.remove(n_)
+            out_ = nt.nodes.new('ShaderNodeOutputMaterial')
+            em = nt.nodes.new('ShaderNodeEmission')
+            em.inputs['Color'].default_value = (0.93, 0.96, 1.0, 1.0)
+            tc = nt.nodes.new('ShaderNodeTexCoord')
+            sep = nt.nodes.new('ShaderNodeSeparateXYZ')
+            nt.links.new(tc.outputs['UV'], sep.inputs['Vector'])
+
+            def bell(sock, power):
+                a_ = nt.nodes.new('ShaderNodeMath')
+                a_.operation = 'MULTIPLY_ADD'
+                a_.inputs[1].default_value = 2.0
+                a_.inputs[2].default_value = -1.0
+                nt.links.new(sock, a_.inputs[0])
+                b_ = nt.nodes.new('ShaderNodeMath')
+                b_.operation = 'POWER'
+                b_.inputs[1].default_value = power
+                ab = nt.nodes.new('ShaderNodeMath')
+                ab.operation = 'ABSOLUTE'
+                nt.links.new(a_.outputs[0], ab.inputs[0])
+                nt.links.new(ab.outputs[0], b_.inputs[0])
+                c_ = nt.nodes.new('ShaderNodeMath')
+                c_.operation = 'SUBTRACT'
+                c_.use_clamp = True
+                c_.inputs[0].default_value = 1.0
+                nt.links.new(b_.outputs[0], c_.inputs[1])
+                return c_.outputs[0]
+            mu = nt.nodes.new('ShaderNodeMath')
+            mu.operation = 'MULTIPLY'
+            nt.links.new(bell(sep.outputs['X'], 2.0), mu.inputs[0])
+            nt.links.new(bell(sep.outputs['Y'], 2.5), mu.inputs[1])
+            st = nt.nodes.new('ShaderNodeMath')
+            st.operation = 'MULTIPLY'
+            st.inputs[1].default_value = strength
+            nt.links.new(mu.outputs[0], st.inputs[0])
+            nt.links.new(st.outputs[0], em.inputs['Strength'])
+            nt.links.new(em.outputs[0], out_.inputs['Surface'])
+            try:
+                mat.cycles.emission_sampling = 'NONE'
+            except AttributeError:
+                pass
+            me.materials.append(mat)
+            for attr in ('visible_camera', 'visible_diffuse', 'visible_transmission', 'visible_volume_scatter',
+                         'visible_shadow'):
+                setattr(card, attr, False)
+            card.visible_glossy = True
+            card.rotation_mode = 'QUATERNION'
+            self._glint = card
+        sc = bpy.context.scene
+        sc.frame_set(frame)
+        cam_loc = camera.matrix_world.translation.copy() if isinstance(camera, bpy.types.Object) else V(camera)
+        p0 = self.screen_point(0.5, v)
+        p1 = self.screen_point(0.5, 0.5)
+        n = (self.screen_point(0.6, 0.5) - p1).cross(self.screen_point(0.5, 0.6) - p1).normalized()
+        d = (p0 - cam_loc).normalized()
+        if n.dot(d) > 0:
+            n = -n
+        # the rolled top of the glass tips its normal back by ~12 deg near v = 0.9
+        n = (Matrix.Rotation(math.radians(12.0 * max(0.0, (v - 0.78) / 0.22)), 3, n.cross(V((0, 0, 1)))) @ n)
+        r = d - n * (2 * d.dot(n))
+        card.location = p0 + r * dist
+        card.rotation_quaternion = (-r).to_track_quat('Z', 'Y')
+        card.keyframe_insert('location', frame=frame)
+        card.keyframe_insert('rotation_quaternion', frame=frame)
+        return card
+
+    def parts_on_bones(self, bones):
+        """Mesh parts parented to any of the named bones (plus piston pieces aimed from them)."""
+        bones = set(bones)
+        out = []
+        for o in self.collection.all_objects:
+            if o.type not in ('MESH', 'CURVE'):
+                continue
+            pb = o.parent_bone if o.parent is self.arm and o.parent_type == 'BONE' else None
+            if pb is None and o.parent is not None and o.parent.parent is self.arm:
+                pb = o.parent.parent_bone
+            if pb in bones:
+                out.append(o)
+        return out
+
+    def overlap_report(self, frame, group_a, group_b, ignore=()):
+        """Triangle-pair overlaps between two groups of objects at `frame` (world-space BVH).
+        Returns {(a_name, b_name): pairs}; pairs listed in `ignore` (name substrings) are skipped."""
+        from mathutils.bvhtree import BVHTree
+        sc = bpy.context.scene
+        sc.frame_set(frame)
+        dg = bpy.context.evaluated_depsgraph_get()
+        cache = {}
+
+        def tree(o):
+            if o.name in cache:
+                return cache[o.name]
+            ev = o.evaluated_get(dg)
+            try:
+                me = ev.to_mesh()
+            except RuntimeError:
+                cache[o.name] = None
+                return None
+            if me is None or not len(me.polygons):
+                ev.to_mesh_clear()
+                cache[o.name] = None
+                return None
+            Mw = ev.matrix_world
+            vs = [Mw @ v.co for v in me.vertices]
+            ps = [tuple(p.vertices) for p in me.polygons]
+            t = BVHTree.FromPolygons(vs, ps)
+            ev.to_mesh_clear()
+            cache[o.name] = t
+            return t
+        out = {}
+        for a in group_a:
+            ta = tree(a)
+            if ta is None:
+                continue
+            for b_ in group_b:
+                if a is b_ or any(x in a.name and y in b_.name or x in b_.name and y in a.name for x, y in ignore):
+                    continue
+                tb = tree(b_)
+                if tb is None:
+                    continue
+                n = len(ta.overlap(tb))
+                if n:
+                    out[(a.name, b_.name)] = n
+        return out
+
+    def cup_objects(self):
+        """The cup's root and every object riding on it (hide/show them together)."""
+        if self.cup is None:
+            return []
+        return [self.cup] + list(self.cup.children_recursive)
 
     # ---------------------------------------------------- low level keys
     def _fcurves(self, path):
@@ -2048,23 +2834,134 @@ class Rig:
         x, y, z = val
         return rot_to(FWD, out, z) @ rot_to(d, out, y) @ rot_to(d, FWD, x)
 
+    def finger_angles(self, s, val):
+        """{finger: [MCP, PIP, DIP] degrees} for a fingers_* value: a curl 0..1, 'grip', a
+        HAND_SHAPES name ('point', 'pinch', 'relaxed'), or a dict per finger whose values are
+        a curl 0..1 or an (MCP, PIP, DIP) tuple, e.g. dict(index=0.0, middle=0.8, ring=1, pinky=1)."""
+        if isinstance(val, str):
+            if val == 'grip':
+                return {k: list(a) for k, a in self.grip_angles(s)['fingers'].items()}
+            return {n: list(HAND_SHAPES[val][n]) for n in FINGERS}
+        if isinstance(val, dict):
+            out = {}
+            for n in FINGERS:
+                x = val.get(n, 0.0)
+                out[n] = list(x) if isinstance(x, (tuple, list)) else [a * float(x) for a in FIST]
+            return out
+        return {n: [a * float(val) for a in FIST] for n in FINGERS}
+
     def _finger_keys(self, frame, s, val, interp):
         hd = self.hands[s]
         w = hd['w']
-        if isinstance(val, str):
-            angles = self.grip_angles(s)['fingers']
-        else:
-            angles = {n: [a * float(val) for a in FIST] for n in FINGERS}
+        angles = self.finger_angles(s, val)
         for name, fd in hd['fingers'].items():
             for i in range(3):
                 bn = f'{name}_{i + 1}_{s}'
                 d = self._dir(bn)
                 self.key_rest_rot(bn, frame, rot_to(d, w, angles[name][i]), interp)
 
+    def _thumb_curl_axis(self, s):
+        hd = self.hands[s]
+        T0, T1, T2, T3 = hd['thumb']['pts']
+        d1 = (T2 - T1).normalized()
+        toward = (hd['W'] + hd['u'] * 0.06) - T2
+        toward = (toward - d1 * toward.dot(d1)).normalized()
+        return d1.cross(toward).normalized()
+
+    def thumb_pinch(self, s, index_angles=None, gap=None):
+        """Thumb rotations (rest frames, [R0, R1, R2]) that bring the thumb pad opposite the index
+        pad with `gap` metres of air between the two pad surfaces (default PINCH_GAP = 2 mm, an
+        envelope's thickness; ~0.018 holds the padlock between thumb, index and middle), and the
+        pinch point (midway between the pads, where the held object sits) in hand-rest space."""
+        gap = PINCH_GAP if gap is None else float(gap)
+        key = ('pinch', s, tuple(index_angles) if index_angles else None, round(gap, 4))
+        if key in self._grip:
+            return self._grip[key]
+        hd = self.hands[s]
+        W, u, w, v = hd['W'], hd['u'], hd['w'], hd['v']
+        fd = hd['fingers']['index']
+        ang = index_angles or HAND_SHAPES['pinch']['index']
+        hinge = fd['dir'].cross(w).normalized()
+        P = fd['K'].copy()
+        d = fd['dir'].copy()
+        acc = 0.0
+        segs = []
+        for L, a_ in zip(fd['lens'], ang):
+            acc += a_
+            d = Matrix.Rotation(math.radians(acc), 3, hinge) @ fd['dir']
+            segs.append((P.copy(), P + d * L))
+            P = P + d * L
+        tip = P
+        pad_n = (Matrix.Rotation(math.radians(acc), 3, hinge) @ w).normalized()
+        index_pad = tip - d * 0.006
+        target = index_pad + pad_n * (PAD_R_INDEX + PAD_R_THUMB + gap)
+        T0, T1, T2, T3 = hd['thumb']['pts']
+        h_loc = self._thumb_curl_axis(s)
+
+        def fk(a0, b0, c1, c2):
+            R0 = Matrix.Rotation(math.radians(b0), 3, u) @ Matrix.Rotation(math.radians(a0), 3, v)
+            R1 = Matrix.Rotation(math.radians(c1), 3, h_loc)
+            R2 = Matrix.Rotation(math.radians(c2), 3, h_loc)
+            t1 = T0 + R0 @ (T1 - T0)
+            t2 = t1 + R0 @ R1 @ (T2 - T1)
+            t3 = t2 + R0 @ R1 @ R2 @ (T3 - T2)
+            return (R0, R1, R2), (t1, t2, t3)
+
+        def cost(a0, b0, c1, c2):
+            Rs, (t1, t2, t3) = fk(a0, b0, c1, c2)
+            dt = (t3 - t2).normalized()
+            pad = t3 - dt * 0.004
+            c = (pad - target).length
+            for pt in (t1.lerp(t2, 0.5), t2, t2.lerp(t3, 0.5)):
+                q = pt - W
+                if -0.0175 < q.dot(w) < 0.016 and 0.0 < q.dot(u) < 0.10 and abs(q.dot(v)) < 0.046:
+                    c += 0.05
+                for a_, b_ in segs[:2]:
+                    ab = b_ - a_
+                    t = max(0.0, min(1.0, (pt - a_).dot(ab) / ab.dot(ab)))
+                    dd = (pt - (a_ + ab * t)).length
+                    if dd < 0.017:
+                        c += (0.017 - dd) * 3
+            return c + (abs(a0) + abs(b0)) * 0.00002
+        best = None
+        for a0 in range(-60, 61, 10):
+            for b0 in range(-60, 61, 10):
+                for c1 in range(-20, 91, 10):
+                    for c2 in range(-20, 91, 10):
+                        c = cost(a0, b0, c1, c2)
+                        if best is None or c < best[0]:
+                            best = (c, a0, b0, c1, c2)
+        for step in (5, 2.5, 1.0):
+            improved = True
+            while improved:
+                improved = False
+                c0, a0, b0, c1, c2 = best
+                for da in (-step, 0, step):
+                    for db in (-step, 0, step):
+                        for dc1 in (-step, 0, step):
+                            for dc2 in (-step, 0, step):
+                                c = cost(a0 + da, b0 + db, c1 + dc1, c2 + dc2)
+                                if c < best[0] - 1e-7:
+                                    best = (c, a0 + da, b0 + db, c1 + dc1, c2 + dc2)
+                                    improved = True
+        _, a0, b0, c1, c2 = best
+        Rs, (t1, t2, t3) = fk(a0, b0, c1, c2)
+        thumb_pad = t3 - (t3 - t2).normalized() * 0.004
+        mid = (index_pad + pad_n * PAD_R_INDEX + thumb_pad + (index_pad - thumb_pad).normalized() * PAD_R_THUMB) / 2
+        out = dict(rot=list(Rs), point=mid, err=best[0], tip=tip, thumb_tip=t3, gap=gap,
+                   pad_gap=(thumb_pad - index_pad).length - PAD_R_INDEX - PAD_R_THUMB)
+        self._grip[key] = out
+        return out
+
     def _thumb_keys(self, frame, s, val, interp):
         if isinstance(val, str) and val == 'grip':
             g = self.grip_angles(s)['thumb']
             for i, R in enumerate(g):
+                self.key_rest_rot(f'thumb_{i}_{s}', frame, R, interp)
+            return
+        if (isinstance(val, str) and val == 'pinch') or (isinstance(val, (tuple, list)) and val and val[0] == 'pinch'):
+            gap = val[1] if isinstance(val, (tuple, list)) and len(val) > 1 else None
+            for i, R in enumerate(self.thumb_pinch(s, gap=gap)['rot']):
                 self.key_rest_rot(f'thumb_{i}_{s}', frame, R, interp)
             return
         hd = self.hands[s]
@@ -2082,14 +2979,22 @@ class Rig:
             self.key_rest_rot(f'thumb_1_{s}', frame, R1, interp)
             self.key_rest_rot(f'thumb_2_{s}', frame, Matrix.Identity(3), interp)
             return
-        c = float(val)
-        palm_c = hd['W'] + u * 0.06
+        for i, R in enumerate(self.thumb_curl_rots(s, float(val))):
+            self.key_rest_rot(f'thumb_{i}_{s}', frame, R, interp)
+
+    def thumb_curl_rots(self, s, c):
+        """Rest-frame rotations [R0, R1, R2] of the thumb joints for a curl 0..1 toward the palm."""
+        hd = self.hands[s]
+        tp = hd['thumb']['pts']
+        palm_c = hd['W'] + hd['u'] * 0.06
+        out = []
         for i, deg in ((0, 22.0), (1, 38.0), (2, 45.0)):
             a, b = tp[i], tp[i + 1]
             d = (b - a).normalized()
             toward = (palm_c - b)
             toward = (toward - d * toward.dot(d)).normalized()
-            self.key_rest_rot(f'thumb_{i}_{s}', frame, rot_to(d, toward, deg * c), interp)
+            out.append(rot_to(d, toward, deg * c))
+        return out
 
     def pose(self, frame, interp='BEZIER', **controls):
         """Key FK controls at `frame` (degrees; see module docstring)."""
@@ -2107,6 +3012,18 @@ class Rig:
                 self.key_loc('root', frame, V((0, 0, float(val))), interp, index=1)
             elif ctrl.startswith('fingers_'):
                 self._finger_keys(frame, ctrl[-1], val, interp)
+            elif ctrl in self.arm.pose.bones and ctrl.split('_')[0] in FINGERS and \
+                    not isinstance(val, (tuple, list)):
+                # one finger joint: number = curl toward the palm (degrees)
+                self.key_rest_rot(ctrl, frame, rot_to(self._dir(ctrl), self.hands[ctrl[-1]]['w'], float(val)), interp)
+            elif ctrl.startswith('thumb_') and ctrl.count('_') == 2 and not isinstance(val, (tuple, list)):
+                bn = ctrl
+                s_ = bn[-1]
+                d = self._dir(bn)
+                hd = self.hands[s_]
+                toward = (hd['W'] + hd['u'] * 0.06) - self.arm.data.bones[bn].tail_local
+                toward = (toward - d * toward.dot(d)).normalized()
+                self.key_rest_rot(bn, frame, rot_to(d, toward, float(val)), interp)
             elif ctrl.startswith('thumb_'):
                 self._thumb_keys(frame, ctrl[-1], val, interp)
             elif ctrl in self.arm.pose.bones:
@@ -2153,12 +3070,318 @@ class Rig:
         Rh = (Ru @ Rf).transposed() @ Rt
         return Ru, Rf, Rh
 
-    def place_arm(self, frame, s, wrist, hand_u, hand_w, pole, interp='BEZIER'):
-        Ru, Rf, Rh = self.solve_arm(s, wrist, hand_u, hand_w, pole)
+    def to_chest(self, frame, p=None, d=None):
+        """World point p (or direction d) -> chest-rest space at frame (root, spine and chest as
+        keyed: key them first). place_arm(..., space='world') uses it."""
+        Dc = self._chest_delta(frame)
+        if p is not None:
+            return Dc @ V(p)
+        return (Dc.to_3x3() @ V(d)).normalized()
+
+    def place_arm(self, frame, s, wrist, hand_u, hand_w, pole, interp='BEZIER', shoulder=(0.0, 0.0, 0.0),
+                  space='chest'):
+        """Key shoulder (control tuple: x protraction forward, y shrug), upper arm, forearm and
+        hand so the wrist reaches `wrist` with hand axes (u along the fingers, w palm normal); the
+        elbow swings toward `pole`. space='chest' (default): chest-rest coordinates; 'world': world
+        coordinates, converted with the root/spine/chest pose keyed at `frame` (so a lean or a
+        moved root is honoured). Past 70 deg of arm lift the pauldron hinges up on its chest seat."""
+        if space == 'world':
+            wrist = self.to_chest(frame, wrist)
+            hand_u, hand_w, pole = (self.to_chest(frame, d=x) for x in (hand_u, hand_w, pole))
+        Rsh, Ru, Rf, Rh = self._arm_solution(s, wrist, hand_u, hand_w, pole, shoulder)
+        Rp = self._pauldron_total(s, Rsh, Ru)
+        self.key_rest_rot(f'pauldron_{s}', frame, Rp, interp)
+        self.key_loc(f'pauldron_{s}', frame, self._pauldron_shift(s, Rp), interp)
+        self.key_rest_rot(f'shoulder_{s}', frame, Rsh, interp)
         self.key_rest_rot(f'upperarm_{s}', frame, Ru, interp)
         self.key_rest_rot(f'forearm_{s}', frame, Rf, interp)
         self.key_rest_rot(f'hand_{s}', frame, Rh, interp)
-        self.key_rest_rot(f'shoulder_{s}', frame, Matrix.Identity(3), interp)
+
+    def place_arm_clear(self, frame, s, wrist, hand_u, hand_w, pole, interp='BEZIER', fingers=None,
+                        shoulders=None, space='chest', obstacles=None):
+        """place_arm, searching the elbow pole around `pole` and small shoulder offsets for the
+        pose that clears the chest, pauldron and head (and `obstacles`: [(point, radius)] in the
+        same space, e.g. the headband). space as in place_arm. Returns the chosen solution
+        (in chest-rest space)."""
+        if space == 'world':
+            wrist = self.to_chest(frame, wrist)
+            hand_u, hand_w, pole = (self.to_chest(frame, d=x) for x in (hand_u, hand_w, pole))
+            if obstacles:
+                obstacles = [(self.to_chest(frame, q), r) for q, r in obstacles]
+        key = ('place', s, tuple(round(x, 4) for x in wrist), tuple(round(x, 3) for x in hand_u),
+               tuple(round(x, 3) for x in hand_w), tuple(round(x, 3) for x in pole), str(fingers),
+               tuple((tuple(round(x, 4) for x in q), round(r, 4)) for q, r in (obstacles or ())))
+        sol = self._grip.get(key)
+        if sol is None:
+            p0 = V(pole).normalized()
+            poles = [p0] + [(p0 + V(q) * 0.6).normalized() for q in
+                            ((1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1))]
+            fa = self.finger_angles(s, fingers) if fingers is not None else None
+            poles += [(p0 + V(q).normalized() * 1.2).normalized() for q in
+                      ((1, 1, 0), (-1, 1, 0), (1, -1, 0), (-1, -1, 0), (1, 0, 1), (-1, 0, 1))]
+            sol = self.solve_arm_clear(s, wrist, [(hand_u, hand_w)], poles,
+                                       shoulders or [(0, 0, 0), (6, 0, 0), (12, 2, 0), (0, 5, 0), (18, 4, 0),
+                                                     (24, 4, 0), (30, 6, 0), (12, 8, 0), (-6, 2, 0)],
+                                       fingers=fa, obstacles=obstacles)
+            self._grip[key] = sol
+        self.place_arm(frame, s, sol['wrist'], sol['u'], sol['w'], sol['pole'], interp, shoulder=sol['shoulder'])
+        return sol
+
+    def finger_points(self, s, name, angles):
+        """Joint and end points (hand-rest space) of a finger for (MCP, PIP, DIP) angles."""
+        hd = self.hands[s]
+        fd = hd['fingers'][name]
+        hinge = fd['dir'].cross(hd['w']).normalized()
+        P = fd['K'].copy()
+        acc = 0.0
+        out = []
+        for L, a_ in zip(fd['lens'], angles):
+            acc += a_
+            P = P + (Matrix.Rotation(math.radians(acc), 3, hinge) @ fd['dir']) * L
+            out.append(P.copy())
+        return out
+
+    def fingertip(self, s, name, angles):
+        """Tip of a finger in hand-rest space for (MCP, PIP, DIP) angles."""
+        hd = self.hands[s]
+        fd = hd['fingers'][name]
+        hinge = fd['dir'].cross(hd['w']).normalized()
+        P = fd['K'].copy()
+        acc = 0.0
+        for L, a_ in zip(fd['lens'], angles):
+            acc += a_
+            P = P + (Matrix.Rotation(math.radians(acc), 3, hinge) @ fd['dir']) * L
+        return P + (Matrix.Rotation(math.radians(acc), 3, hinge) @ fd['dir']) * 0.009
+
+    # ---------------------------------------------------- IK with clearance
+    @staticmethod
+    def _about(c, R):
+        c = V(c)
+        return Matrix.Translation(c) @ R.to_4x4() @ Matrix.Translation(-c)
+
+    def _arm_solution(self, s, wrist, hand_u, hand_w, pole, shoulder=(0.0, 0.0, 0.0)):
+        b = self.arm.data.bones
+        Rsh = self.control_rotation(f'shoulder_{s}', shoulder) if not isinstance(shoulder, Matrix) else shoulder
+        Dsh = self._about(b[f'shoulder_{s}'].head_local, Rsh)
+        Di = Dsh.inverted()
+        Ri = Rsh.inverted()
+        Ru, Rf, Rh = self.solve_arm(s, Di @ V(wrist), Ri @ V(hand_u), Ri @ V(hand_w), Ri @ V(pole))
+        return Rsh, Ru, Rf, Rh
+
+    def _pauldron_rot(self, s, Ru):
+        """Ride-up of the pauldron for a raised arm (lift past PAULDRON_RIDE_FROM = 80 deg, e.g.
+        the S11 headband grip): it tips toward the arm by 25% of the excess (at most 30 deg),
+        hinging on the seat point that keeps it highest above the chest, so it rises off the arm
+        and never dips into the chest. Below that (cup hold, posting, thumbs-up, the sip, whose
+        arm slides out under the cut-back front edge) it stays put apart from the 8 deg follow,
+        and its (grey) underside does not show. Past 110 deg (an arm overhead) it rises a
+        further 80% of the excess (up to 65 deg in all)."""
+        d0 = self._dir(f'upperarm_{s}')
+        du = Ru @ d0
+        lift = math.degrees(d0.angle(du))
+        if lift <= PAULDRON_RIDE_FROM:
+            return Matrix.Identity(3)
+        ang = min(30.0, 0.25 * (lift - PAULDRON_RIDE_FROM)) + max(0.0, min(35.0, 0.8 * (lift - 110.0)))
+        return rot_to(d0, du, ang)
+
+    def _pauldron_hinge(self, s, Rp=None):
+        """Pivot of the pauldron's rotation: its seat centre, or the seat point (front, back or
+        centre of the seat line, or the top of its inner face) about which the rotation keeps
+        every part of the pauldron highest above the chest (it hinges up, never dips in)."""
+        sx = 1.0 if s == 'L' else -1.0
+        c = V((0.262 * sx, 0.0, 1.3215))
+        if Rp is None or Rp.to_quaternion().angle < 1e-4:
+            return c
+        th = self._builder_hulls.get('torso')
+        pts = self._pauldron_pts.get(s, ())
+        cands = (c, V((0.262 * sx, -0.085, 1.3215)), V((0.262 * sx, 0.085, 1.3215)), V((0.300 * sx, -0.06, 1.372)),
+                 V((0.300 * sx, 0.06, 1.372)), V((0.398 * sx, 0.0, 1.222)))
+        low = V((0.398 * sx, 0.0, 1.222))
+        mv = (Rp @ (low - c)) - (low - c)                 # where the pauldron's lower edge is pushed
+        mv.z = 0.0
+        mvn = mv.normalized() if mv.length > 1e-6 else V((0, 0, 0))
+        best, best_v = c, None
+        for e in cands:
+            if th is not None and pts:
+                v_ = min(th.sdf((Rp @ (q - e)) + e) for q in pts)
+            else:
+                v_ = min(((Rp @ (q - e)) + e - q).z for q in (V((0.262 * sx, -0.085, 1.3215)),
+                                                              V((0.262 * sx, 0.085, 1.3215))))
+            v_ = v_ - (e - c).dot(mvn) * 0.01                # clear of the chest first; ties hinge away from the arm
+            if best_v is None or v_ > best_v + 1e-6:
+                best, best_v = e, v_
+        return best
+
+    def _pauldron_shift(self, s, Rp):
+        """Pose-bone location (armature-rest axes) that turns the pauldron's rotation about its
+        bone head (the seat centre) into a rotation about the chosen seat edge."""
+        S0 = self.arm.data.bones[f'pauldron_{s}'].head_local
+        h = self._pauldron_hinge(s, Rp) - S0
+        return h - Rp @ h
+
+    def _pauldron_total(self, s, Rsh, Ru):
+        """Pauldron rotation (armature-rest axes) about its chest seat: PAULDRON_SHOULDER of the
+        shoulder's protraction / shrug plus the ride-up of a high arm. It is mounted on the chest,
+        so it never swings down into the collar plates with the shoulder joint."""
+        q = Quaternion().slerp(Rsh.to_quaternion(), PAULDRON_SHOULDER)
+        return q.to_matrix() @ self._pauldron_rot(s, Ru)
+
+    def _pauldron_delta(self, s, chain, Ru, Rsh=None):
+        """Rest -> posed transform of the pauldron for an arm chain (chest-rest space)."""
+        if Rsh is None:
+            Rsh = chain[0].to_3x3()
+        Rp = self._pauldron_total(s, Rsh, Ru)
+        return self._about(self._pauldron_hinge(s, Rp), Rp)
+
+    def _arm_chain(self, s, Rsh, Ru, Rf, Rh):
+        """Delta transforms (chest-rest space) of shoulder, upper arm, forearm and hand."""
+        b = self.arm.data.bones
+        Dsh = self._about(b[f'shoulder_{s}'].head_local, Rsh)
+        Du = Dsh @ self._about(b[f'upperarm_{s}'].head_local, Ru)
+        Df = Du @ self._about(b[f'forearm_{s}'].head_local, Rf)
+        Dh = Df @ self._about(b[f'hand_{s}'].head_local, Rh)
+        return Dsh, Du, Df, Dh
+
+    def _arm_samples(self, s, chain, fingers=None, skip_tips=False, thumb=None):
+        """Capsule samples (point, radius, part) of a posed arm in chest-rest space.
+        thumb: [R0, R1, R2] thumb rotations to include the thumb."""
+        Dsh, Du, Df, Dh = chain
+        b = self.arm.data.bones
+        S0 = b[f'upperarm_{s}'].head_local
+        E0 = b[f'forearm_{s}'].head_local
+        W0 = b[f'hand_{s}'].head_local
+        hd = self.hands[s]
+        sx = 1.0 if s == 'L' else -1.0
+        out = []
+        for k in range(8):                         # rim of the shoulder hub's inner face
+            a_ = 2 * math.pi * k / 8
+            out.append((Dsh @ (S0 + V((-0.022 * sx, 0.029 * math.cos(a_), 0.029 * math.sin(a_)))), 0.003, 'hub'))
+        if thumb is not None:
+            T0, T1, T2, T3 = hd['thumb']['pts']
+            R0, R1, R2 = thumb
+            t1 = T0 + R0 @ (T1 - T0)
+            t2 = t1 + R0 @ R1 @ (T2 - T1)
+            t3 = t2 + R0 @ R1 @ R2 @ (T3 - T2)
+            for q in (T0.lerp(t1, 0.5), t1, t1.lerp(t2, 0.5), t2, t2.lerp(t3, 0.5), t3):
+                out.append((Dh @ q, 0.0095, 'thumb'))
+        f_ = FWD
+        o_ = V((sx, 0.0, 0.0))
+        for t in (0.15, 0.25, 0.4, 0.55, 0.7, 0.85):
+            q = S0.lerp(E0, t)
+            out.append((Du @ q, 0.040, 'upper'))
+            out.append((Du @ (q - f_ * 0.050 + o_ * 0.012), 0.013, 'upper'))      # cable bundle
+            if 0.2 < t < 0.6:
+                out.append((Du @ (q + f_ * 0.042), 0.012, 'upper'))               # front cream plate
+        out.append((Du @ E0, 0.033, 'elbow'))
+        for t in (0.2, 0.4, 0.6, 0.8):
+            out.append((Df @ E0.lerp(W0, t), 0.045 - 0.008 * t, 'fore'))
+        out.append((Dh @ W0, 0.023, 'wrist'))
+        u, v, w = hd['u'], hd['v'], hd['w']
+        for uu in (0.035, 0.065, 0.09):
+            for vv in (-0.028, 0.0, 0.028):
+                out.append((Dh @ (W0 + u * uu + v * vv), 0.016, 'palm'))
+        if fingers is not None:
+            for name, fd in hd['fingers'].items():
+                hinge = fd['dir'].cross(w).normalized()
+                P = fd['K'].copy()
+                acc = 0.0
+                for i, (L, a_) in enumerate(zip(fd['lens'], fingers[name])):
+                    acc += a_
+                    d = Matrix.Rotation(math.radians(acc), 3, hinge) @ fd['dir']
+                    Q = P + d * L
+                    tag = 'tip' if (skip_tips and name == 'index' and i == 2) else 'finger'
+                    for t_ in (0.3, 0.7):
+                        out.append((Dh @ P.lerp(Q, t_), 0.009, tag))
+                    out.append((Dh @ Q, 0.0095, tag))
+                    P = Q
+        return out
+
+    def _penetration(self, samples, cup=None, margin=0.004, side=None, Dsh=None, obstacles=None, cup_arm=None):
+        """Sum of squared penetrations of the samples into torso, head, the arm's own pauldron
+        shell (side, Dsh), optionally the cup (cup = (base, axis) in chest-rest space) and
+        spherical obstacles [(point, radius)]."""
+        pen = 0.0
+        for q, rq in (obstacles or ()):
+            for p, r, part in samples:
+                d = (p - q).length - r - rq - 0.002
+                if d < 0:
+                    pen += d * d
+        hulls = [h for h in (self._builder_hulls.get('torso'), self._builder_hulls.get('head')) if h is not None]
+        ph = self._pauldron_hulls.get(side) if side else None
+        Di = Dsh.inverted() if (ph is not None and Dsh is not None) else None
+        for p, r, part in samples:
+            if part != 'tip':
+                for h in hulls:
+                    d = h.sdf(p) - (r + margin if part != 'hub' else r + 0.002)
+                    if d < 0:
+                        pen += d * d
+            if Di is not None and part in ('upper', 'elbow', 'fore', 'wrist'):
+                sd = ph.sdf(Di @ p)
+                if sd > -0.05:
+                    d = abs(sd) - r - 0.003
+                    if d < 0:
+                        pen += d * d
+            if cup_arm is not None and part in ('upper', 'elbow', 'fore', 'wrist'):
+                base_, ax_ = cup_arm
+                rel = p - base_
+                hh = rel.dot(ax_)
+                rr = r + 0.003
+                if -rr < hh < LID_TOP + rr:
+                    rad = (rel - ax_ * hh).length
+                    din = max(rad - cup_radius(max(0.0, min(hh, LID_TOP))) - rr, hh - LID_TOP - rr, -hh - rr)
+                    if din < 0:
+                        pen += din * din * 4
+            if cup is not None:
+                r = r + (0.002 if part in ('tip', 'thumb') else 0.004)
+                base, ax = cup
+                rel = p - base
+                hh = rel.dot(ax)
+                top = LID_TOP + 0.0040                      # the raised spout round the slot
+                if -r < hh < top + r:
+                    rad = (rel - ax * hh).length
+                    din = max(rad - LID_R - r, hh - top - r, -hh - r)
+                    if din < 0:
+                        pen += din * din * 12
+        return pen
+
+    def solve_arm_clear(self, s, target, hand_frames, pole_dirs, shoulders, fingers=None, cup=None,
+                        point_local=None, prefer=None, thumb=None, obstacles=None, cup_arm=None):
+        """Search hand orientations x elbow poles x shoulder offsets for the arm pose that reaches
+        `target` with the least penetration (torso, head, cup). hand_frames: [(u, w)];
+        point_local: hand-rest point that must land on target (default: the wrist).
+        Returns dict(wrist, u, w, pole, shoulder, pen)."""
+        b = self.arm.data.bones
+        W0 = b[f'hand_{s}'].head_local
+        hd = self.hands[s]
+        best = None
+        for (hu, hw) in hand_frames:
+            hu = V(hu).normalized()
+            hw = (V(hw) - hu * V(hw).dot(hu)).normalized()
+            Rt = frame3(hu, hw) @ frame3(hd['u'], hd['w']).transposed()
+            wrist = V(target) - Rt @ ((point_local - W0) if point_local is not None else V((0, 0, 0)))
+            for sh in shoulders:
+                for pole in pole_dirs:
+                    Rsh, Ru, Rf, Rh = self._arm_solution(s, wrist, hu, hw, pole, sh)
+                    chain = self._arm_chain(s, Rsh, Ru, Rf, Rh)
+                    reach = (chain[3] @ W0 - wrist).length
+                    Dp = self._pauldron_delta(s, chain, Ru)
+                    pen = self._penetration(self._arm_samples(s, chain, fingers, skip_tips=True, thumb=thumb), cup,
+                                            side=s, Dsh=Dp, obstacles=obstacles, cup_arm=cup_arm)
+                    th = self._builder_hulls.get('torso')
+                    if th is not None:
+                        sxp = 1.0 if s == 'L' else -1.0
+                        for q in (V((0.262 * sxp, -0.085, 1.3215)), V((0.262 * sxp, 0.085, 1.3215)),
+                                  V((0.300 * sxp, -0.060, 1.372)), V((0.300 * sxp, 0.060, 1.372))):
+                            dq = th.sdf(Dp @ q) - 0.003
+                            if dq < 0:
+                                pen += dq * dq
+                    score = pen * 1e4 + reach * 50 + 0.0004 * (abs(sh[0]) + abs(sh[1]))
+                    if prefer is not None:
+                        score += prefer(hu, hw, pole, sh, chain)
+                    if best is None or score < best['score']:
+                        best = dict(score=score, wrist=wrist, u=hu, w=hw, pole=V(pole), shoulder=tuple(sh), pen=pen,
+                                    reach=reach)
+        return best
 
     def cup_hand_frame(self, s, cup_base, cup_axis, finger_dir):
         """Wrist position and hand axes (u, w) that hold the cup (base centre, axis up)."""
@@ -2185,9 +3408,9 @@ class Rig:
             rel = p - base
             h = rel.dot(c)
             radial = (rel - c * h).length
-            if h > CUP_H + 0.012 or h < -0.002:
+            if h > LID_TOP + 0.002 or h < -0.002:
                 return 1.0
-            rr = cup_radius(h) + (0.0028 if h > CUP_H - 0.008 else 0.0)
+            rr = cup_radius(h)
             return radial - rr - rad
 
         def seg_clear(a, d, L, rad, start=0.0):
@@ -2303,15 +3526,22 @@ class Rig:
         return out
 
     # ---------------------------------------------------- presets
+    PRESETS = ('neutral', 'idle_cup', 'idle_cup_high', 'thumbs_up', 'sip', 'hands_clasped', 'reach_L', 'seated',
+               'post_L')
+
     def apply_preset(self, frame, name, interp='BEZIER'):
+        """Key a named pose. Presets set the arms and hands (and the canonical 4 deg head roll);
+        any further head or chest acting is keyed by the shot. 'sip' also tips the head back 5 deg
+        to meet the cup (S13)."""
         p = self.pose
         if name == 'neutral':
             self.rest(frame, interp)
             return
-        if name in ('idle_cup', 'idle_cup_high', 'thumbs_up', 'sip', 'hands_clasped', 'reach_L', 'seated'):
-            # body defaults
-            p(frame, interp, pelvis=(0, 0, 0), spine=(0, 0, 0), chest=(0, 0, 0), neck=(2, 0, 0), head=(0, 5, 0))
-            p(frame, interp, thigh_L=(0, 0, 0), thigh_R=(0, 0, 0), shin_L=0, shin_R=0, foot_L=0, foot_R=0)
+        if name not in self.PRESETS:
+            raise KeyError(f'unknown preset {name!r}')
+        # body defaults
+        p(frame, interp, pelvis=(0, 0, 0), spine=(0, 0, 0), chest=(0, 0, 0), neck=(0, 0, 0), head=CANON_HEAD)
+        p(frame, interp, thigh_L=(0, 0, 0), thigh_R=(0, 0, 0), shin_L=0, shin_R=0, foot_L=0, foot_R=0)
         if name == 'idle_cup':
             self.hold_cup(frame, 'R', **IDLE_CUP, interp=interp)
             self.relaxed_arm(frame, 'L', interp)
@@ -2320,33 +3550,41 @@ class Rig:
             self.relaxed_arm(frame, 'L', interp)
         elif name == 'thumbs_up':
             self.hold_cup(frame, 'R', **IDLE_CUP, interp=interp)
-            wrist = V((0.36, -0.30, 1.09))
-            self.place_arm(frame, 'L', wrist, hand_u=V((-0.42, -0.90, 0.1)), hand_w=V((-0.90, 0.42, 0.0)),
-                           pole=V((0.45, 0.35, -0.8)), interp=interp)
-            p(frame, interp, fingers_L=1.0, thumb_L='up', head=(0, 7, 4))
+            # fist in front of the chest, knuckles to camera, thumb straight up and clear of the fist
+            self.place_arm_clear(frame, 'L', V((0.19, -0.38, 1.13)), hand_u=V((-0.42, -0.90, 0.10)),
+                                 hand_w=V((-0.90, 0.42, 0.0)), pole=V((0.55, 0.25, -0.8)), interp=interp,
+                                 fingers=1.0)
+            p(frame, interp, fingers_L=1.0, thumb_L='up')
         elif name == 'sip':
-            self.hold_cup(frame, 'R', cup_base=V((-0.08, -0.34, 1.30)), cup_axis=V((0.2, 0.3, 1.0)),
-                          finger_dir=V((0.55, -0.83, 0.0)), pole=V((-0.75, 0.15, -0.65)), interp=interp)
+            self.sip_stage(frame, 3, interp)
             self.relaxed_arm(frame, 'L', interp)
-            p(frame, interp, head=(-6, 3, -6), neck=(-4, 0, 0))
         elif name == 'hands_clasped':
-            # executive steeple: hands raised in front of the chest, palms facing, fingertips pointing
-            # at each other a few cm apart.
-            # Needs both hands free: park the cup first (rig.attach_cup(frame, None) and key it on a desk).
-            # With canon proportions (0.52 m arm, shoulders at +-0.31 m) the wrists cannot meet at the
-            # centre line without the arms crossing the chest, but the fingertips can.
+            # executive steeple: wrists at (+-0.17, -0.30, 1.10), fingertips touching in front of the
+            # sternum, elbows out ~20 deg. Needs both hands free: park the cup first
+            # (rig.attach_cup(frame, None) and key it on a desk).
+            curl = 0.10
+            ang = [a * curl for a in FIST]
             for s_, sx in (('R', -1.0), ('L', 1.0)):
-                u = V((-0.45 * sx, -0.45, 0.72)).normalized()
-                w = V((-sx, 0.0, 0.0))
-                w = (w - u * w.dot(u)).normalized()
-                self.place_arm(frame, s_, V((0.14 * sx, -0.34, 1.12)), hand_u=u, hand_w=w,
-                               pole=V((1.0 * sx, 0.0, -0.4)), interp=interp)
-            p(frame, interp, fingers_L=0.12, fingers_R=0.12, thumb_L=0.35, thumb_R=0.35, head=(4, 5, 0))
+                wrist = V((0.17 * sx, -0.30, 1.10))
+                lo, hi = 0.3, 1.2
+                for _ in range(24):            # turn the hand in until the middle fingertip meets the centre line
+                    kx = (lo + hi) / 2
+                    u = V((-kx * sx, -0.32, 0.50)).normalized()
+                    w = V((-sx, 0.0, 0.0))
+                    w = (w - u * w.dot(u)).normalized()
+                    hd = self.hands[s_]
+                    Rt = frame3(u, w) @ frame3(hd['u'], hd['w']).transposed()
+                    tip = wrist + Rt @ (self.fingertip(s_, 'middle', ang) - hd['W'])
+                    if tip.x * sx > 0.0045:
+                        lo = kx
+                    else:
+                        hi = kx
+                self.place_arm_clear(frame, s_, wrist, hand_u=u, hand_w=w, pole=V((0.95 * sx, 0.15, -0.35)),
+                                     interp=interp, fingers=curl)
+            p(frame, interp, fingers_L=curl, fingers_R=curl, thumb_L=0.3, thumb_R=0.3)
         elif name == 'reach_L':
             self.hold_cup(frame, 'R', **IDLE_CUP, interp=interp)
-            self.place_arm(frame, 'L', V((0.30, -0.36, 0.93)), hand_u=V((0.0, -0.8, -0.6)),
-                           hand_w=V((0.0, 0.6, -0.8)), pole=V((0.6, 0.35, -0.7)), interp=interp)
-            p(frame, interp, fingers_L=0.15, thumb_L=0.1, chest=(6, 0, 4), head=(6, 3, 6))
+            self.reach_L(frame, interp=interp)
         elif name == 'seated':
             drop = -(HIP_Z - KNEE_Z)
             p(frame, interp, thigh_L=(88, 3, 0), thigh_R=(88, 3, 0), shin_L=88, shin_R=88, foot_L=0, foot_R=0)
@@ -2355,20 +3593,612 @@ class Rig:
             self.place_arm(frame, 'L', V((0.15, -0.14, 0.955)), hand_u=V((0.0, -1.0, 0.0)),
                            hand_w=V((0.2, 0, -1)), pole=V((0.9, 0.4, -0.2)), interp=interp)
             p(frame, interp, fingers_L=0.06, thumb_L='up')
-        else:
-            raise KeyError(f'unknown preset {name!r}')
+        elif name == 'post_L':
+            self.hold_cup(frame, 'R', **IDLE_CUP, interp=interp)
+            self.post_pose(frame, height=0.016, interp=interp)
 
     def hold_cup(self, frame, s, cup_base, finger_dir, pole, cup_axis=UP, interp='BEZIER',
-                 chest_rest_offset=V((0, 0, 0))):
+                 chest_rest_offset=V((0, 0, 0)), shoulder=None, clear=True):
         """Pose arm s so its hand holds the cup with its base centre at cup_base
-        (chest-rest space) and its axis along cup_axis; fingers wrap the cup."""
-        wrist, u, w = self.cup_hand_frame(s, V(cup_base) - chest_rest_offset, cup_axis, finger_dir)
-        self.place_arm(frame, s, wrist, u, w, pole, interp)
+        (chest-rest space) and its axis along cup_axis; fingers wrap the cup. With clear=True
+        (and no explicit shoulder) the elbow pole and a small shoulder offset are searched
+        around `pole` so the arm clears the chest, pauldron and head."""
+        base = V(cup_base) - chest_rest_offset
+        wrist, u, w = self.cup_hand_frame(s, base, cup_axis, finger_dir)
+        if shoulder is None and clear:
+            sol = self._cup_solution(base, finger_dir, s=s, axis=cup_axis, pole=pole)
+            pole, shoulder = sol['pole'], sol['shoulder']
+        self.place_arm(frame, s, wrist, u, w, pole, interp, shoulder=shoulder or (0.0, 0.0, 0.0))
         self.pose(frame, interp, **{f'fingers_{s}': 'grip', f'thumb_{s}': 'grip'})
 
+    def lean(self, frame, deg, interp='BEZIER', turn=0.0):
+        """A small forward lean from the waist (S10 jack reach): spine and chest pitch half each,
+        clamped to 8 deg in total; `turn` yaws the chest the same way. Key it before any
+        place_arm(..., space='world') at that frame."""
+        d = max(-8.0, min(8.0, float(deg)))
+        t = max(-8.0, min(8.0, float(turn)))
+        self.pose(frame, interp, spine=(d * 0.5, 0.0, t * 0.5), chest=(d * 0.5, 0.0, t * 0.5))
+
+    def headband_world(self, frame):
+        """(points, outward normals) of the headset's band in world space at frame (it rides on the head)."""
+        if not self.headband:
+            return [], []
+        Pw = self._bone_world('head', frame)
+        D = Pw @ self._rest['head'].inverted()
+        R3 = D.to_3x3()
+        pts, nrm = self.headband
+        return [D @ p for p in pts], [(R3 @ n_).normalized() for n_ in nrm]
+
+    def grip_headband(self, frame, interp='BEZIER', above=None, curl=None):
+        """S11 f1129: the LEFT hand grips the headband just above the left earcup: palm flat on
+        the band's outer face, fingers up and forward with their tips curled in past the band's
+        front edge, thumb behind it. Solved against the torso, head, its own pauldron (which
+        hinges up for the raised arm) and the band itself. Key the head and chest at `frame`
+        first, then call attach_headset(frame, 'hand_L'). Returns the solution."""
+        pts, nrm = self.headband_world(frame)
+        if not pts:
+            return None
+        acc = [0.0]
+        for a_, b_ in zip(pts, pts[1:]):
+            acc.append(acc[-1] + (b_ - a_).length)
+        Dhw = self._bone_world('head', frame) @ self._rest['head'].inverted()
+        best = None
+        for ab in ((above,) if above is not None else (0.05, 0.07, 0.09)):
+            sol = self._grip_band_at(frame, pts, nrm, acc, ab, curl, Dhw)
+            if best is None or sol['score'] < best['score']:
+                best = sol
+        self.place_arm(frame, 'L', best['wrist'], best['u'], best['w'], best['pole'], interp, shoulder=best['shoulder'])
+        self.pose(frame, interp, fingers_L={nm: tuple(a * best['curl'] * k_ for a in FIST)
+                                            for nm, k_ in (('index', 0.9), ('middle', 1.0), ('ring', 1.05),
+                                                           ('pinky', 1.1))}, thumb_L=best['thumb'])
+        return best
+
+    def _grip_band_at(self, frame, pts, nrm, acc, above, curl, Dhw):
+        i = min(range(len(pts)), key=lambda k: abs(acc[k] - above))
+        p, n_out = pts[i], nrm[i]
+        tan = (pts[min(len(pts) - 1, i + 1)] - pts[max(0, i - 1)]).normalized()
+        wdir = tan.cross(n_out).normalized()
+        if wdir.y > 0:
+            wdir = -wdir                                  # across the band, toward the front
+        Dc = self._chest_delta(frame)
+        R3 = Dc.to_3x3()
+        hd = self.hands['L']
+        W0 = self.arm.data.bones['hand_L'].head_local
+        palm_pt = W0 + hd['u'] * 0.058 + hd['w'] * 0.0125
+        obstacles = []
+        for k in range(len(pts)):                          # the flat band (26 x 7.5 mm + its inner pad)
+            tk = (pts[min(len(pts) - 1, k + 1)] - pts[max(0, k - 1)]).normalized()
+            wk = tk.cross(nrm[k]).normalized()
+            for off in (-0.0105, 0.0, 0.0105):
+                obstacles.append((Dc @ (pts[k] + wk * off - nrm[k] * 0.002), 0.0058))
+        if self._earcup_L is not None:                    # the left earcup and its slider
+            obstacles.append((Dc @ (Dhw @ self._earcup_L[0]), 0.073))      # shell + yoke
+            obstacles.append((Dc @ (Dhw @ self._earcup_L[1]), 0.022))
+        best = None
+        for c_, tc in [(c0, t0) for c0 in ((curl,) if curl is not None else (0.30, 0.45))
+                       for t0 in (0.0, 0.25, 0.5)]:
+            fing = {nm: [a * c_ * k_ for a in FIST] for nm, k_ in (('index', 0.9), ('middle', 1.0), ('ring', 1.05),
+                                                                     ('pinky', 1.1))}
+            frames_ = []
+            for a_ in (-30, -15, 0, 15, 30):
+                u = (Matrix.Rotation(math.radians(a_), 3, n_out) @ (tan * 0.55 + wdir * 0.83)).normalized()
+                w = -n_out
+                w = (w - u * w.dot(u)).normalized()
+                frames_.append((R3 @ u, R3 @ w))
+            sol = self.solve_arm_clear('L', Dc @ (p + n_out * 0.0072), frames_,
+                                       [V(q).normalized() for q in ((0.9, -0.3, -0.1), (0.8, -0.5, 0.2), (0.7, 0.2, -0.3),
+                                                                    (0.6, -0.7, -0.2), (0.4, -0.9, -0.1), (0.3, -0.9, -0.3),
+                                                                    (0.5, -0.8, -0.35), (0.2, -0.95, -0.2))],
+                                       [(0, 0, 0), (8, 0, 0), (14, 2, 0), (20, 0, 0), (0, 5, 0), (25, 2, 0)],
+                                       fingers=fing, point_local=palm_pt, obstacles=obstacles,
+                                       thumb=self.thumb_curl_rots('L', tc))
+            sol['curl'] = c_
+            sol['thumb'] = tc
+            sol['above'] = above
+            if best is None or sol['score'] < best['score']:
+                best = sol
+        return best
+
     def relaxed_arm(self, frame, s, interp='BEZIER'):
+        """Arm hanging relaxed: fingers curled 0.35 (index) to 0.55 (pinky), thumb 0.3."""
         self.pose(frame, interp, **{f'upperarm_{s}': (6, 3, 0), f'forearm_{s}': 18, f'hand_{s}': (6, 0, 0),
-                                    f'fingers_{s}': 0.22, f'thumb_{s}': 0.15, f'shoulder_{s}': (0, 0, 0)})
+                                    f'fingers_{s}': 'relaxed', f'thumb_{s}': 0.3, f'shoulder_{s}': (0, 0, 0),
+                                    f'pauldron_{s}': (0, 0, 0)})
+        self.key_loc(f'pauldron_{s}', frame, V((0, 0, 0)), interp)
+
+    # ---------------------------------------------------- cup slot, posting and the sip
+    def slot_dir_for(self, s, finger_dir, cup_axis=UP):
+        """Horizontal direction the sip slot faces for a hold_cup finger_dir."""
+        wrist, u, w = self.cup_hand_frame(s, V((0, 0, 0)), cup_axis, finger_dir)
+        c = V(cup_axis).normalized()
+        un = (u - c * u.dot(c)).normalized()
+        wn = (w - c * w.dot(c)).normalized()
+        return (-un * math.cos(SLOT_BETA) + wn * math.sin(SLOT_BETA)).normalized()
+
+    def finger_dir_for_slot(self, slot_dir, s='R'):
+        """finger_dir for hold_cup (level cup) that turns the sip slot toward slot_dir."""
+        sd = V((slot_dir[0], slot_dir[1], 0.0)).normalized()
+        best = None
+        for k in range(360):
+            a = math.radians(k)
+            fdir = V((math.cos(a), math.sin(a), 0.0))
+            d = (self.slot_dir_for(s, fdir) - sd).length
+            if best is None or d < best[0]:
+                best = (d, fdir)
+        return best[1]
+
+    def _chest_delta(self, frame):
+        """Armature-world -> chest-rest-space transform at frame (shots may move root/chest)."""
+        sc = bpy.context.scene
+        sc.frame_set(frame)
+        dg = bpy.context.evaluated_depsgraph_get()
+        ae = self.arm.evaluated_get(dg)
+        pb = ae.pose.bones['chest']
+        D = pb.matrix @ self._rest['chest'].inverted()
+        return (ae.matrix_world @ D).inverted()
+
+    def slot_world(self, frame):
+        """(position, axis out of the slot) of the sip slot in world space at frame."""
+        sc = bpy.context.scene
+        sc.frame_set(frame)
+        dg = bpy.context.evaluated_depsgraph_get()
+        Mw = self.slot.evaluated_get(dg).matrix_world
+        return Mw.translation.copy(), (Mw.to_3x3() @ V((0, 0, 1))).normalized()
+
+    def post_pose(self, frame, height=0.016, interp='BEZIER', slot=None, gap=None):
+        """Key the LEFT hand pinching (thumb + index, `gap` metres between the pads) with the
+        pinch point `height` above the sip slot along its axis (fingertip surfaces ~5-10 mm
+        above it; cup and head untouched). Pose the cup arm at `frame` first.
+        slot: optional (world position, world axis); default: the cup's slot at that frame."""
+        if slot is None:
+            pos, ax = self.slot_world(frame)
+        else:
+            pos, ax = V(slot[0]), V(slot[1])
+        Dc = self._chest_delta(frame)
+        tgt = Dc @ (pos + ax * height)
+        axr = (Dc.to_3x3() @ ax).normalized()
+        cup_base = Dc @ self._cup_base_world(frame, pos, ax)
+        sol = self._post_solution(tgt, axr, cup_base, gap)
+        self.place_arm(frame, 'L', sol['wrist'], sol['u'], sol['w'], sol['pole'], interp, shoulder=sol['shoulder'])
+        self.pose(frame, interp, fingers_L='pinch', thumb_L=('pinch', gap))
+        return sol
+
+    def post(self, frame, approach=0.045, height=0.016, approach_frames=8, lift_frames=6, interp='BEZIER',
+             slot=None, gap=None, approach_dir=None, step=1):
+        """The posting action of the LEFT hand. The pinch point travels in ONE straight,
+        mechanical line: `approach` metres out along `approach_dir` (world; default the slot's
+        axis, i.e. straight down into the slot) at frame - approach_frames, eased in to contact
+        (`height` above the slot, fingertips 5-10 mm) on `frame`, then back out along the same
+        line by frame + lift_frames. The contact pose is solved once (clearance search); every
+        other frame (each `step` frames) keeps that hand orientation, elbow pole and shoulder and
+        only re-solves the arm, so the hand never arcs or wobbles (LINEAR keys in between).
+        Head and cup do not move. The shot shrinks its object into the slot and calls
+        rig.cup_handle.slot_glow(). Returns {frame: solution}."""
+        if slot is None:
+            slot = self.slot_world(frame)
+        pos, ax = V(slot[0]), V(slot[1]).normalized()
+        line = V(approach_dir).normalized() if approach_dir is not None else ax
+        sol = self.post_pose(frame, height, 'LINEAR', slot=(pos, ax), gap=gap)
+        pin = self.thumb_pinch('L', gap=gap)
+        hd = self.hands['L']
+        W0 = self.arm.data.bones['hand_L'].head_local
+        Rt = frame3(sol['u'], sol['w']) @ frame3(hd['u'], hd['w']).transposed()
+        off = Rt @ (pin['point'] - W0)
+        out = {frame: sol}
+        frames = sorted(set(list(range(frame - approach_frames, frame, max(1, step))) + [frame - approach_frames] +
+                            list(range(frame + max(1, step), frame + lift_frames + 1, max(1, step))) +
+                            [frame + lift_frames]))
+        for f in frames:
+            if f == frame:
+                continue
+            if f < frame:
+                t = (frame - f) / max(1, approach_frames)
+            else:
+                t = (f - frame) / max(1, lift_frames)
+            d = approach * (t * t * (3 - 2 * t))
+            Dc = self._chest_delta(f)
+            tgt = Dc @ (pos + ax * height + line * d)
+            ip = interp if f in (frame - approach_frames, frame + lift_frames) else 'LINEAR'
+            self.place_arm(f, 'L', tgt - off, sol['u'], sol['w'], sol['pole'], ip, shoulder=sol['shoulder'])
+            self.pose(f, ip, fingers_L='pinch', thumb_L=('pinch', gap))
+            out[f] = sol
+        return out
+
+    @staticmethod
+    def _slot_z():
+        return PR._lid_z(PR.CUP['slot_r'], PR.CUP['slot_theta'])
+
+    def _cup_base_world(self, frame, pos, ax):
+        """World centre of the cup's base for a slot at (pos, axis): the cup root itself when the
+        rig's cup carries that slot, else the point under the slot moved in to the cup's axis."""
+        if self.cup is not None and self.slot is not None:
+            sc = bpy.context.scene
+            sc.frame_set(frame)
+            dg = bpy.context.evaluated_depsgraph_get()
+            sp_ = self.slot.evaluated_get(dg).matrix_world.translation
+            if (sp_ - V(pos)).length < 1e-4:
+                return self.cup.evaluated_get(dg).matrix_world.translation.copy()
+        # slot empty: X along the slot, Z out of it; the cup axis is slot_r away, across the slot
+        return V(pos) - V(ax) * self._slot_z()
+
+    def _post_solution(self, tgt, ax, cup_base, gap=None):
+        key = ('post', tuple(round(x, 4) for x in tgt), tuple(round(x, 3) for x in ax), gap)
+        if key in self._grip:
+            return self._grip[key]
+        pin = self.thumb_pinch('L', gap=gap)
+        fingers = self.finger_angles('L', 'pinch')
+        frames = []
+        ax = V(ax).normalized()
+        for el in (35, 50, 62, 75):                      # how steeply the hand points down
+            for az in range(150, 271, 20):              # where it comes from (around the slot)
+                e, a_ = math.radians(el), math.radians(az)
+                hu = V((math.cos(e) * math.cos(a_), math.cos(e) * math.sin(a_), -math.sin(e)))
+                side = hu.cross(V((0, 0, 1))).normalized()
+                for roll in (-50, -25, 0, 25, 50):
+                    hw = Matrix.Rotation(math.radians(roll), 3, hu) @ side
+                    frames.append((hu, hw))
+        poles = [V((0.6, -0.6, -0.5)), V((0.9, -0.2, -0.4)), V((0.3, -0.9, -0.3)), V((0.8, -0.5, 0.0)),
+                 V((0.5, -0.4, -0.8))]
+        shoulders = [(0, 0, 0), (12, 0, 0), (22, 3, 0), (32, 5, 0), (16, 8, 0), (26, 9, 0), (8, 6, 0)]
+        sol = self.solve_arm_clear('L', tgt, frames, poles, shoulders, fingers=fingers, cup=(cup_base, ax),
+                                   point_local=pin['point'], thumb=pin['rot'])
+        self._grip[key] = sol
+        return sol
+
+    # ---------------------------------------------------- reach (S04 / S09 table touch)
+    REACH_L_TIP = (0.29, -0.49, 0.755)    # = env_room ROOM['fingertip_L'] at SYNERGY_POS (0, 0.40, 0), rig space
+    TABLE_Z = 0.75
+
+    def _reach_solution(self, tip, table_z):
+        """Left hand palm-down, index straight, the other fingers loosely curled: the index tip
+        end at `tip` (chest-rest space) with the lowest point of the finger 1 mm above table_z,
+        every other part of the hand >= 6 mm above it."""
+        key = ('reach', tuple(round(x, 4) for x in tip), round(table_z, 4))
+        if key in self._grip:
+            return self._grip[key]
+        hd = self.hands['L']
+        W0 = hd['W']
+        fd = hd['fingers']['index']
+        best = None
+        for pitch in (28, 32, 36, 40, 44, 48, 52):
+            for yaw in (-6, 0, 6):
+                p, y = math.radians(pitch), math.radians(yaw)
+                u = V((math.sin(y) * math.cos(p), -math.cos(y) * math.cos(p), -math.sin(p)))
+                w = V((math.sin(y) * math.sin(p), -math.cos(y) * math.sin(p), math.cos(p))) * -1.0
+                Rt = frame3(u, w) @ frame3(hd['u'], hd['w']).transposed()
+                for curl in (0.75, 0.9, 1.0):          # the other three tuck into a loose fist
+                    ang = {'index': (0.0, 0.0, 0.0)}
+                    for nm, k_ in (('middle', 1.0), ('ring', 1.15), ('pinky', 1.3)):
+                        ang[nm] = tuple(a * min(1.0, curl * k_) for a in FIST)
+                    # index distal underside (local, hand-rest) and the tip end
+                    end = fd['K'] + fd['dir'] * sum(fd['lens'])
+                    dd = fd['dir']
+                    low_index = min((Rt @ (end - dd * t_ - W0)).z - r_ for t_, r_ in
+                                    ((0.0003, 0.0022), (0.001, 0.0045), (0.0028, 0.0063), (0.0055, 0.0071),
+                                     (0.009, 0.0072), (0.02, 0.0074), (0.03, 0.0076)))
+                    tip_rel = Rt @ (end - W0)
+                    others = []
+                    for nm in ('middle', 'ring', 'pinky'):
+                        for q in self.finger_points('L', nm, ang[nm]):
+                            others.append((Rt @ (q - W0)).z - 0.0085)
+                    palm = min((Rt @ (W0 + hd['u'] * uu + hd['v'] * vv + hd['w'] * ww - W0)).z
+                               for uu in (0.0, 0.1) for vv in (-0.045, 0.045) for ww in (-0.018, 0.016))
+                    T0, T1, T2, T3 = hd['thumb']['pts']
+                    R0, R1, R2 = self.thumb_curl_rots('L', REACH_THUMB)
+                    t1 = T0 + R0 @ (T1 - T0)
+                    t2 = t1 + R0 @ R1 @ (T2 - T1)
+                    t3 = t2 + R0 @ R1 @ R2 @ (T3 - T2)
+                    palm = min([palm] + [(Rt @ (q - W0)).z - 0.0105 for q in (t1, t2, t3, t2.lerp(t3, 0.5))])
+                    wrist_z = table_z + 0.001 - low_index
+                    clear = min(min(others), palm) + wrist_z - table_z
+                    if REACH_DEBUG:
+                        print('REACH', pitch, yaw, curl, 'low_index', round(low_index, 4), 'others',
+                              round(min(others), 4), 'palm', round(palm, 4), 'clear', round(clear, 4))
+                    if clear < 0.006:
+                        continue
+                    wrist = V(tip) - V((tip_rel.x, tip_rel.y, 0.0))
+                    wrist.z = wrist_z
+                    tip_z = wrist_z + tip_rel.z
+                    score = pitch * 0.01 + abs(yaw) * 0.005 - curl * 0.1 + abs(tip_z - tip[2]) * 100
+                    if best is None or score < best[0]:
+                        best = (score, wrist, u, w, ang, tip_z)
+        if best is None:
+            raise RuntimeError('reach_L: no palm-down hand pose clears the table')
+        _, wrist, u, w, ang, tip_z = best
+        sol = self.solve_arm_clear('L', wrist, [(u, w)],
+                                   [V((0.6, 0.35, -0.7)), V((0.9, 0.2, -0.4)), V((0.5, 0.6, -0.6)), V((0.8, -0.1, -0.6)),
+                                    V((0.95, 0.3, 0.0))],
+                                   [(0, 0, 0), (8, 0, 0), (16, 2, 0), (24, 4, 0), (-6, 0, 0)],
+                                   fingers=ang)
+        sol['fingers'] = ang
+        sol['tip_z'] = tip_z
+        self._grip[key] = sol
+        return sol
+
+    def reach_L(self, frame, tip=None, interp='BEZIER', table_z=None):
+        """S04/S09: the LEFT index fingertip resting on the walnut, palm down, index straight.
+        tip: world point (default env_room's fingertip_L contract: rig-space REACH_L_TIP, used as
+        is when the rig stands at the origin); table_z: world height of the walnut (0.75). Key
+        the root/chest at `frame` first when tip is given in world space."""
+        if tip is None:
+            tipc, tz = V(self.REACH_L_TIP), self.TABLE_Z if table_z is None else table_z
+        else:
+            Dc = self._chest_delta(frame)
+            tipc = Dc @ V(tip)
+            tz = (Dc @ V((tip[0], tip[1], self.TABLE_Z if table_z is None else table_z))).z
+        sol = self._reach_solution(tipc, tz)
+        self.place_arm(frame, 'L', sol['wrist'], sol['u'], sol['w'], sol['pole'], interp, shoulder=sol['shoulder'])
+        self.pose(frame, interp, fingers_L=sol['fingers'], thumb_L=REACH_THUMB)
+        return sol
+
+    # ---------------------------------------------------- the sip (S13)
+    # the spout meets the chin plate just below the screen (head-local canon point), the head
+    # tips back 5 deg; the cup is held exactly as at the chest (palm on its right side, fingers
+    # round the front), so the lift is one rigid move and the cup reads beside the hand
+    SIP_TARGET = (-0.016, -0.146, 0.041)
+    SIP_HEAD = (-5.0, 4.0, 0.0)
+    SIP_STAGE_T = {0: 0.0, 1: 0.30, 2: 0.60, 2.5: 0.86, 3: 1.0}   # path fraction per stage (2.5 = chin level)
+
+    def _head_fk(self, neck=(0, 0, 0), head=(0, 0, 0)):
+        b = self.arm.data.bones
+        Dn = self._about(b['neck'].head_local, self.control_rotation('neck', neck))
+        Dh = Dn @ self._about(b['head'].head_local, self.control_rotation('head', head))
+        return Dh
+
+    def _cup_hull_pen(self, base, Dh=None, margin=0.005, spare=None):
+        """Squared penetration of the (level) cup + lid at `base` into the torso hull and the
+        head (posed by Dh), samples within 2 cm of `spare` (the spout contact) excused."""
+        pen = 0.0
+        th = self._builder_hulls.get('torso')
+        hh = self._builder_hulls.get('head')
+        Di = Dh.inverted() if Dh is not None else None
+        for h_ in (0.0, 0.03, 0.06, 0.09, 0.108, 0.122):
+            r = cup_radius(h_) if h_ < LID_SKIRT_Z else LID_R
+            for i in range(12):
+                a = 2 * math.pi * i / 12
+                p = V(base) + V((math.cos(a) * r, math.sin(a) * r, h_))
+                if th is not None:
+                    d = th.sdf(p) - margin
+                    if d < 0:
+                        pen += d * d
+                if hh is not None and Di is not None and (spare is None or (p - spare).length > 0.02):
+                    d = hh.sdf(Di @ p) - margin
+                    if d < 0:
+                        pen += d * d
+        return pen
+
+    def _sip_prefer(self, base):
+        b = self.arm.data.bones
+        S0, E0 = b['upperarm_R'].head_local, b['forearm_R'].head_local
+        W0 = b['hand_R'].head_local
+
+        def pref(hu, hw, pole, sh, chain):
+            S_ = chain[0] @ S0
+            E = chain[1] @ E0
+            Wp = chain[2] @ W0
+            pen = 0.0
+            if E.z > base.z - 0.015:                         # the elbow stays below the cup
+                pen += (E.z - base.z + 0.015) * 60.0
+            if E.z > S_.z - 0.05:                            # ... and well below the shoulder
+                pen += (E.z - S_.z + 0.05) * 25.0
+            du = (E - S_).normalized()
+            abd = math.degrees(math.asin(max(-1.0, min(1.0, -du.x))))     # outward (his right is -X)
+            if abd > 30.0:
+                pen += (abd - 30.0) * 0.06
+            fz = (Wp - E).normalized().z
+            if fz < 0.45:                                    # the forearm angles UP to the cup
+                pen += (0.45 - fz) * 3.0
+            if E.y > -0.17:                                  # elbow forward, in front of the ribs
+                pen += (E.y + 0.17) * 20.0
+            fdir_ = (Wp - E).normalized()
+            if fdir_.dot(hw) < -0.25:                        # never flex the wrist into the palm
+                pen += (-0.25 - fdir_.dot(hw)) * 6.0
+            pen += abs(sh[1]) * 0.01 + max(0.0, abs(sh[0]) - 15.0) * 0.02
+            if base.z > 1.30:                                # near the face: keep the cup in view of S13
+                pen += max(0.0, 0.62 - self._cup_visibility(base, None, chain=chain)) * 6.0
+            return pen
+        return pref
+
+    def _sip_arm(self, base, fdir, prev=None):
+        """Arm solution (chest-rest) holding the cup at `base`, low elbow, forearm up."""
+        key = ('siparm', tuple(round(x, 4) for x in base), tuple(round(x, 3) for x in fdir),
+               None if prev is None else (tuple(round(x, 2) for x in prev['pole']), prev['shoulder']))
+        if key in self._grip:
+            return self._grip[key]
+        wrist, u, w = self.cup_hand_frame('R', base, UP, fdir)
+        poles = [V(q).normalized() for q in ((-0.30, -0.65, -0.70), (-0.50, -0.55, -0.65), (-0.15, -0.80, -0.55),
+                                              (-0.65, -0.35, -0.65), (0.0, -0.75, -0.65), (-0.40, -0.80, -0.45),
+                                              (-0.75, -0.50, -0.45), (-0.25, -0.45, -0.85), (-0.10, -0.40, -0.90),
+                                              (0.10, -0.55, -0.83), (-0.35, -0.25, -0.90))]
+        shoulders = [(0, 0, 0), (8, 0, 0), (14, 0, 0), (20, 0, 0), (25, 0, 0), (22, 2, 0)]
+        pref0 = self._sip_prefer(base)
+        if prev is not None:
+            def pref(hu, hw, pole, sh, chain):
+                return pref0(hu, hw, pole, sh, chain) + (V(pole) - prev['pole']).length * 0.6 + \
+                    (abs(sh[0] - prev['shoulder'][0]) + abs(sh[1] - prev['shoulder'][1])) * 0.02
+            poles = [prev['pole']] + poles
+            shoulders = [prev['shoulder']] + shoulders
+        else:
+            pref = pref0
+        sol = self.solve_arm_clear('R', wrist, [(u, w)], poles, shoulders, fingers=self.finger_angles('R', 'grip'),
+                                   thumb=self.grip_angles('R')['thumb'], prefer=pref, cup_arm=(V(base), UP))
+        sol['base'] = V(base)
+        sol['fdir'] = V(fdir)
+        self._grip[key] = sol
+        return sol
+
+    SIP_CAM = (-0.264, -1.881, 1.35)      # S13 camera in rig space (1.9 m, 8 deg to his right, 1.35 m high)
+
+    def _cup_visibility(self, base, fdir, sol=None, chain=None):
+        """Fraction of the cup's camera-facing surface (S13 camera) not hidden by the right hand,
+        wrist or forearm (capsule samples)."""
+        cam = V(self.SIP_CAM)
+        if chain is None:
+            chain = self._arm_chain('R', *self._arm_solution('R', sol['wrist'], sol['u'], sol['w'], sol['pole'],
+                                                              sol['shoulder']))
+        caps = [(p, r) for p, r, part in self._arm_samples('R', chain, self.finger_angles('R', 'grip'),
+                                                          thumb=self.grip_angles('R')['thumb'])
+                if part in ('fore', 'wrist', 'palm', 'finger', 'tip', 'thumb', 'elbow')]
+        tot = vis = 0
+        for hh in (0.01, 0.03, 0.05, 0.07, 0.09, 0.105, 0.12):
+            r = cup_radius(hh) if hh < LID_SKIRT_Z else LID_R
+            for i in range(24):
+                a = 2 * math.pi * i / 24
+                n_ = V((math.cos(a), math.sin(a), 0.0))
+                p = V(base) + n_ * r + UP * hh
+                d = cam - p
+                if n_.dot(d) <= 0:
+                    continue
+                tot += 1
+                dn = d.normalized()
+                hit = False
+                for q, rq in caps:
+                    t = (q - p).dot(dn)
+                    if t > 0 and (p + dn * t - q).length < rq * 0.9:
+                        hit = True
+                        break
+                vis += 0 if hit else 1
+        return vis / max(1, tot)
+
+    def _sip_path(self, head=None):
+        """(base(t), fdir(t)) of the lift, t 0 (idle) -> 1 (contact). The hand turns the cup
+        (as one with the wrist) just far enough that the sip slot faces straight back at the chin
+        plate, choosing the turn that keeps the elbow low, the wrist natural and most of the cup
+        in view of the S13 camera; the cup rises level along a line pushed forward where needed
+        so it clears the breastplate and the head by >= 5 mm all the way."""
+        head = tuple(head or self.SIP_HEAD)
+        key = ('sippath', head)
+        if key in self._grip:
+            return self._grip[key]
+        Dh = self._head_fk((0, 0, 0), head)
+        spout = Dh @ H(self.SIP_TARGET)
+        f0 = V(IDLE_CUP['finger_dir'])
+        idle_base = V(IDLE_CUP['cup_base'])
+        best = None
+        for yaw in range(0, 61, 2):
+            fdir = Matrix.Rotation(math.radians(yaw), 3, 'Z') @ f0
+            sd = self.slot_dir_for('R', fdir)
+            if math.degrees(sd.angle(V((0.0, 1.0, 0.0)))) > 5.0:
+                continue
+            sip_base = spout - UP * (self._slot_z() + SIP_GAP) - sd * PR.CUP['slot_r']
+            sol = self._sip_arm(sip_base, fdir)
+            vis = self._cup_visibility(sip_base, fdir, sol)
+            score = sol['score'] + max(0.0, 0.62 - vis) * 25.0
+            if SIP_DEBUG:
+                print('SIP yaw', yaw, 'sd', tuple(round(x, 2) for x in sd), 'score', round(sol['score'], 3), 'pen',
+                      round(sol['pen'], 6), 'vis', round(vis, 2), 'pole', tuple(round(x, 2) for x in sol['pole']),
+                      'sh', sol['shoulder'])
+            if best is None or score < best[0]:
+                best = (score, yaw, fdir, sip_base, vis)
+        if best is None:
+            raise RuntimeError('sip: no hand turn faces the slot to the chin')
+        _, yaw, fdir_sip, sip_base, vis = best
+        zf = lambda t: t * t * (3 - 2 * t) * 0.35 + t * 0.65
+
+        def fdir_at(t):
+            return Matrix.Rotation(math.radians(yaw * min(1.0, t / 0.86)), 3, 'Z') @ f0
+        bulge = 0.0
+        for _ in range(12):
+            ok = True
+            for i in range(1, 20):
+                t = i / 20
+                bt = idle_base.lerp(sip_base, t) + FWD * bulge * math.sin(math.pi * t)
+                bt.z = idle_base.z + (sip_base.z - idle_base.z) * zf(t)
+                Dt = self._head_fk((0, 0, 0), tuple(CANON_HEAD[j] + (head[j] - CANON_HEAD[j]) * max(0.0, t - 0.86) / 0.14
+                                                 for j in range(3)))
+                if self._cup_hull_pen(bt, Dt, spare=spout if t > 0.9 else None) > 0:
+                    ok = False
+                    break
+            if ok:
+                break
+            bulge += 0.01
+
+        def base_at(t):
+            bt = idle_base.lerp(sip_base, t) + FWD * bulge * math.sin(math.pi * t)
+            bt.z = idle_base.z + (sip_base.z - idle_base.z) * zf(t)
+            return bt
+        out = dict(base=base_at, fdir=fdir_at, spout=spout, sip_base=sip_base, bulge=bulge, head=head, yaw=yaw,
+                   visibility=vis)
+        self._grip[key] = out
+        return out
+
+    def sip_stage(self, frame, k, interp='BEZIER', head=None):
+        """S13 lift, one call per stage on its beat: k = 0 chest (idle), 1 sternum, 2 collar,
+        2.5 chin level, 3 contact: the lid's spout touches the chin plate just below the screen and
+        the head tips back 5 deg. The cup stays level and turns neither way in the hand; the
+        elbow stays low and in front of the ribs, the forearm angled up. For the whole move with
+        a clear path on every frame use rig.sip(start)."""
+        head = tuple(head or self.SIP_HEAD)
+        k = 3 if k > 3 else (0 if k < 0 else k)
+        t = self.SIP_STAGE_T.get(k, k / 3.0)
+        path = self._sip_path(head)
+        if t <= 0.0:
+            self.hold_cup(frame, 'R', **IDLE_CUP, interp=interp)
+            self.pose(frame, interp, head=CANON_HEAD, neck=(0, 0, 0))
+            return V(IDLE_CUP['cup_base'])
+        base = path['base'](t)
+        sol = self._sip_arm(base, path['fdir'](t))
+        self._key_cup_arm(frame, sol, interp)
+        self.pose(frame, interp, head=head if k == 3 else CANON_HEAD, neck=(0, 0, 0))
+        return base
+
+    def _key_cup_arm(self, frame, sol, interp):
+        self.place_arm(frame, 'R', sol['wrist'], sol['u'], sol['w'], sol['pole'], interp, shoulder=sol['shoulder'])
+        self.pose(frame, interp, fingers_R='grip', thumb_R='grip')
+
+    def sip(self, start=1249, beat=16, move=10, touch=4, head=None, step=1):
+        """The whole S13 lift on the treatment's beats, keyed every `step` frames so the cup runs
+        on its clear, level path (no in-between can swing it into the breastplate): stage 1
+        (sternum) moves start..start+move then holds, stage 2 (collar) from start+beat, stage 3
+        (chin level) from start+2*beat, and the spout meets the chin exactly on start+3*beat
+        (f1297) after a `touch`-frame final rise while the head tips back 5 deg. Returns the
+        contact frame."""
+        head = tuple(head or self.SIP_HEAD)
+        path = self._sip_path(head)
+        T = self.SIP_STAGE_T
+        segs = [(start, start + move, T[0], T[1]), (start + beat, start + beat + move, T[1], T[2]),
+                (start + 2 * beat, start + 2 * beat + move, T[2], T[2.5]),
+                (start + 3 * beat - touch, start + 3 * beat, T[2.5], T[3])]
+        prev = None
+        self.hold_cup(start, 'R', **IDLE_CUP, interp='LINEAR')
+        self.pose(start, 'LINEAR', head=CANON_HEAD, neck=(0, 0, 0))
+        for i, (f0, f1, t0, t1) in enumerate(segs):
+            for f in range(f0 + (0 if i else max(1, step)), f1 + 1, max(1, step)):
+                x = (f - f0) / max(1, f1 - f0)
+                e = x * x * (3 - 2 * x)
+                t = t0 + (t1 - t0) * e
+                if t <= 0.0:
+                    continue
+                sol = self._sip_arm(path['base'](t), path['fdir'](t), prev)
+                prev = sol
+                last = f == f1
+                self._key_cup_arm(f, sol, 'CONSTANT' if last and i < 3 else 'LINEAR')
+                if i == 3:
+                    hk = tuple(CANON_HEAD[j] + (head[j] - CANON_HEAD[j]) * e for j in range(3))
+                    self.pose(f, 'LINEAR', head=hk, neck=(0, 0, 0))
+            # hold until the next stage begins
+        return start + 3 * beat
+
+
+    def _cup_solution(self, base, fdir, s='R', axis=UP, pole=None):
+        key = ('cup', s, tuple(round(x, 4) for x in base), tuple(round(x, 3) for x in fdir),
+               tuple(round(x, 3) for x in axis), tuple(round(x, 2) for x in pole) if pole is not None else None)
+        if key in self._grip:
+            return self._grip[key]
+        wrist, u, w = self.cup_hand_frame(s, V(base), axis, fdir)
+        sx = -1.0 if s == 'R' else 1.0
+        poles = [V((0.3 * sx, -0.2, -1.0)), V((0.7 * sx, -0.3, -0.6)), V((0.9 * sx, 0.0, -0.4)),
+                 V((0.5 * sx, -0.7, -0.5)), V((0.2 * sx, -0.8, -0.6)), V((1.0 * sx, -0.2, 0.0)),
+                 V((0.45 * sx, 0.1, -0.9))]
+        if pole is not None:
+            p0 = V(pole).normalized()
+            poles = [p0] + [(p0 + V(q).normalized() * 0.6).normalized() for q in poles] + poles
+        shoulders = [(0, 0, 0), (6, 0, 0), (12, 2, 0), (18, 4, 0), (24, 6, 0), (0, 6, 0), (10, 8, 0), (-8, 2, 0)]
+        grip = self.finger_angles(s, 'grip')
+        sol = self.solve_arm_clear(s, wrist, [(u, w)], poles, shoulders, fingers=grip,
+                                   thumb=self.grip_angles(s)['thumb'], cup_arm=(V(base), V(axis).normalized()))
+        self._grip[key] = sol
+        return sol
 
     # ---------------------------------------------------- props: cup and headset
     def _bone_world(self, bone, frame):
@@ -2406,55 +4236,116 @@ class Rig:
         tgt = rest_target if rest_target is not None else rest
         return Pw @ Pr.inverted() @ tgt
 
+    def _basis_at(self, obj, frame):
+        """obj's keyed (un-constrained) local matrix at frame, read from its own animation."""
+        sc = bpy.context.scene
+        sc.frame_set(frame)
+        return obj.matrix_basis.copy()
+
     def attach_cup(self, frame, to='hand_R'):
-        """Switch the cup between hands ('hand_R', 'hand_L') and the world (None).
-        Call after the poses around `frame` are keyed."""
+        """Switch the cup between hands ('hand_R', 'hand_L') and the world (None) at `frame`.
+        Call after the poses around `frame` are keyed. frame - 1 keeps exactly the state the cup
+        had (its basis and influences), so nothing before the switch moves; on `frame` it is
+        either in the new hand's grip or left in the world where it was."""
         cup = self.cup
         if cup is None:
             return
         cons = {'hand_R': 'hold_R', 'hand_L': 'hold_L'}
-        # where is it right now (just before the switch)?
         sc = bpy.context.scene
+        if cup.animation_data is None or cup.animation_data.action is None:
+            # first key: pin the build state at the scene start so earlier frames stay put
+            self._key_obj(cup, sc.frame_start, self._cup_rest, 'CONSTANT')
+            for cn in cons.values():
+                self._key_influence(cup, cn, sc.frame_start, cup.constraints[cn].influence)
+        prev = self._basis_at(cup, frame - 1)
+        infl = {cn: cup.constraints[cn].influence for cn in cons.values()}
         sc.frame_set(frame)
         dg = bpy.context.evaluated_depsgraph_get()
         now = cup.evaluated_get(dg).matrix_world.copy()
+        self._key_obj(cup, frame - 1, prev, 'CONSTANT')
+        for cn, v in infl.items():
+            self._key_influence(cup, cn, frame - 1, v)
         if to is None:
-            self._key_obj(cup, frame - 1, self._cup_rest, 'CONSTANT')
             self._key_obj(cup, frame, now, 'BEZIER')
             for cn in cons.values():
-                self._key_influence(cup, cn, frame - 1, cup.constraints[cn].influence)
                 self._key_influence(cup, cn, frame, 0.0)
             return
-        rest_target = self._cup_rest if to == 'hand_R' else self._cup_rest_L
-        W = self._attached_world(cup, self._cup_rest, to, frame, rest_target)
-        self._key_obj(cup, frame - 1, W, 'CONSTANT')
         self._key_obj(cup, frame, self._cup_rest, 'CONSTANT')
         for key, cn in cons.items():
-            self._key_influence(cup, cn, frame - 1, cup.constraints[cn].influence)
             self._key_influence(cup, cn, frame, 1.0 if key == to else 0.0)
 
-    def detach_headset(self, frame):
+    def _key_cord(self, frame, worn, unplug_frames=8):
+        """Blend the cord hooks between the body (worn=1) and the earcup wrap (worn=0)."""
+        for e in self.cord_hooks:
+            for cn, v0, v1 in (('worn', 1.0 - worn, worn), ('unplugged', worn, 1.0 - worn)):
+                con = e.constraints[cn]
+                for f, v in ((frame, v0), (frame + unplug_frames, v1)):
+                    con.influence = v
+                    con.keyframe_insert('influence', frame=f)
+            for fc in C.fcurves(e.animation_data.action):
+                for kp in fc.keyframe_points:
+                    kp.interpolation = 'BEZIER'
+
+    def _hs_influences(self, frame, head, hand):
+        hs = self.headset
+        self._key_influence(hs, 'on_head', frame - 1, hs.constraints['on_head'].influence)
+        self._key_influence(hs, 'in_hand_L', frame - 1, hs.constraints['in_hand_L'].influence)
+        self._key_influence(hs, 'on_head', frame, head)
+        self._key_influence(hs, 'in_hand_L', frame, hand)
+
+    def detach_headset(self, frame, unplug_frames=8):
+        """Release the headset into world space at `frame` (key its location/rotation afterwards).
+        The cord unplugs: over `unplug_frames` the plug leaves the collar and the cord wraps
+        round the left earcup, so it leaves with the headset."""
         hs = self.headset
         if hs is None:
             return
+        sc = bpy.context.scene
+        prev = self._basis_at(hs, frame - 1)
+        infl = (hs.constraints['on_head'].influence, hs.constraints['in_hand_L'].influence)
+        sc.frame_set(frame)
+        dg = bpy.context.evaluated_depsgraph_get()
+        now = hs.evaluated_get(dg).matrix_world.copy()
+        worn = self.cord_hooks[0].constraints['worn'].influence if self.cord_hooks else 0.0
+        self._key_obj(hs, frame - 1, prev, 'CONSTANT')
+        self._key_obj(hs, frame, now, 'BEZIER')
+        self._key_influence(hs, 'on_head', frame - 1, infl[0])
+        self._key_influence(hs, 'in_hand_L', frame - 1, infl[1])
+        self._key_influence(hs, 'on_head', frame, 0.0)
+        self._key_influence(hs, 'in_hand_L', frame, 0.0)
+        if self.cord_hooks and worn > 0.5:
+            self._key_cord(frame, 0.0, unplug_frames)
+
+    def attach_headset(self, frame, to='head', unplug_frames=8):
+        """to='head' (back on, cord plugged in again), 'hand_L' (gripped by the left hand at its
+        current place: pose the hand on the headband first) or None (= detach_headset)."""
+        hs = self.headset
+        if hs is None:
+            return
+        if to is None:
+            self.detach_headset(frame, unplug_frames)
+            return
+        if to == 'head':
+            self._key_obj(hs, frame - 1, self._basis_at(hs, frame - 1), 'CONSTANT')
+            self._key_obj(hs, frame, self._hs_rest, 'CONSTANT')
+            self._hs_influences(frame, 1.0, 0.0)
+            if self.cord_hooks and self.cord_hooks[0].constraints['worn'].influence < 0.5:
+                self._key_cord(frame - unplug_frames, 1.0, unplug_frames)
+            return
+        if to != 'hand_L':
+            raise KeyError(to)
         sc = bpy.context.scene
         sc.frame_set(frame)
         dg = bpy.context.evaluated_depsgraph_get()
         now = hs.evaluated_get(dg).matrix_world.copy()
-        self._key_obj(hs, frame - 1, self._hs_rest, 'CONSTANT')
-        self._key_obj(hs, frame, now, 'BEZIER')
-        self._key_influence(hs, 'on_head', frame - 1, 1.0)
-        self._key_influence(hs, 'on_head', frame, 0.0)
-
-    def attach_headset(self, frame):
-        hs = self.headset
-        if hs is None:
-            return
-        W = self._attached_world(hs, self._hs_rest, 'head', frame)
-        self._key_obj(hs, frame - 1, W, 'CONSTANT')
+        Th = self._bone_world('hand_L', frame)
+        con = hs.constraints['in_hand_L']
+        con.inverse_matrix = Th.inverted() @ now @ self._hs_rest.inverted()
+        self._key_obj(hs, frame - 1, self._basis_at(hs, frame - 1), 'CONSTANT')
         self._key_obj(hs, frame, self._hs_rest, 'CONSTANT')
-        self._key_influence(hs, 'on_head', frame - 1, 0.0)
-        self._key_influence(hs, 'on_head', frame, 1.0)
+        self._hs_influences(frame, 0.0, 1.0)
+        if self.cord_hooks and self.cord_hooks[0].constraints['worn'].influence > 0.5:
+            self._key_cord(frame, 0.0, unplug_frames)
 
     # ---------------------------------------------------- walking
     def walk(self, start, end, start_xy, end_xy, step_frames=14, lift=0.032, arm_swing=3.0, bob=1.0):
@@ -2622,12 +4513,19 @@ def build(name='Synergy', timeline=None, cup=True, headset=True, badge=True, loc
         con.subtarget = 'head'
         con.inverse_matrix = arm.data.bones['head'].matrix_local.inverted()
         b.hs_rest = hs.matrix_basis.copy()
-        # cord: from the left cup down into the collar (follows the headset when it comes off)
+        con = hs.constraints.new('CHILD_OF')         # carried in the left hand (attach_headset 'hand_L')
+        con.name = 'in_hand_L'
+        con.target = arm
+        con.subtarget = 'hand_L'
+        con.influence = 0.0
+        # cord: from the left cup down into the collar. On detach it unplugs: the plug slides out
+        # of the collar and the cord wraps round the left earcup, leaving with the headset.
         cs = b.cord_start
-        hook_hs = [(cs, hs), (cs + V((0.018, -0.012, -0.05)), hs)]
-        pts = hook_hs + [(V((0.066, -0.022, 1.36)), 'neck'), (V((0.05, -0.016, 1.30)), 'chest'),
-                         (V((0.04, -0.01, 1.258)), 'chest')]
-        b.hooked_cable('headset_cord', pts, 0.0021, b.mat['black'])
+        P_ = b.earcups[0]['P']
+        worn = [(cs + V((0.018, -0.012, -0.05)), hs), (V((0.066, -0.022, 1.36)), 'neck'),
+                (V((0.05, -0.016, 1.30)), 'chest'), (V((0.04, -0.01, 1.258)), 'chest')]
+        off = [P_(math.radians(a_), 0.0605, 0.022) for a_ in (-128, -168, 152, 118)]
+        b.headset_cord(cs, hs, worn, off, arm)
     # parent the empties created after parent_all (cord hooks)
     for obj, bone in b.later_parent:
         if bone is not None and obj.parent is None:
@@ -2647,10 +4545,13 @@ def build(name='Synergy', timeline=None, cup=True, headset=True, badge=True, loc
         for s in 'RL':
             hd = b.hands[s]
             c, basep = grip_frame(hd['W'], hd['u'], hd['v'], hd['w'])
-            fwd = hd['u']
-            # cup local: Z = axis, -Y = sip spout direction (faces the fingers' side)
+            # cup local: Z = axis, +Y = sip slot: SLOT_BETA from the thumb side toward the side
+            # away from the palm (idle: the slot faces the sternum and the posting left hand;
+            # raised to the chin with the palm in front, it faces the face)
             zc = c
-            yc = -(fwd - zc * fwd.dot(zc)).normalized()
+            un = (hd['u'] - zc * hd['u'].dot(zc)).normalized()
+            wn = (hd['w'] - zc * hd['w'].dot(zc)).normalized()
+            yc = (-un * math.cos(SLOT_BETA) + wn * math.sin(SLOT_BETA)).normalized()
             xc = yc.cross(zc)
             Rm = Matrix((xc, yc, zc)).transposed()
             rests[s] = Matrix.Translation(basep) @ Rm.to_4x4()

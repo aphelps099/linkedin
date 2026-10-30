@@ -2,8 +2,11 @@
 
     import env_room as R
     room = R.build(placeholder=True, seat_yaw_deg=R.SHOT_SEAT_YAW['s03'])
+    room.render_budget(kind='wide')        # opt in: the room's measured render settings
     room.terminals['kevin'].speak(353, 376)
-    P.slide(room.props['kevin'][0], 377, 424, R.prop_home('kevin'), R.ROOM['stop_L'])
+    pad = room.props['kevin'][0]
+    P.slide(pad, 377, 424, R.prop_home('kevin'), R.stop_for('padlock', obj=pad))
+    room.key_visible(pad, 519, False)      # posted through the slot: gone (and its insert card)
     room.shutdown_wave(1001)               # S11 order, a screen every 5 frames
     room.set_state(1053, 'dark')
     room.tune_scanlines(cam)               # moire-safe CRT scanlines for this lens
@@ -14,7 +17,8 @@ metres, Z up, floor z=0, the table runs from its foot (y=-30) to its head edge
 (y=0), and Synergy stands at SYNERGY_POS facing -Y (his right is -X).
 One 6500K sun lays a hard 0.75 m slab down the table spine through a rounded-slot
 skylight; each CRT pools its colour on the glossy walnut through its own area
-light. No volumetrics: depth haze comes from the compositor mist pass.
+light, and a glossy-only card per live screen streaks that colour down the coat.
+No volumetrics: depth haze comes from the compositor mist pass.
 
 Cords: each terminal's yellow coiled cord drops from the CRT, loops under the
 table edge, runs beneath the walnut and rises through a grommet into the brass
@@ -25,6 +29,9 @@ channel fills with yellow toward the host.
 Per-shot chair swivel: terminals face the host by default (seat_yaw_deg); shots
 that look up-table from the foot swivel them toward the camera
 (build(seat_yaw_deg=...) or room.set_seat_yaw(deg); SHOT_SEAT_YAW has the values).
+
+Insert light kits (room.insert_lights('jack' | 'padlock' | 'sip')) each live in their
+own collection; room.use_kits('jack') shows one kit and hides the others.
 """
 
 import math
@@ -48,28 +55,33 @@ ROOM = dict(
     hub_pos=(0.0, -0.30, 0.75),
     socket_pos=(0.22, 0.0, 0.70),          # set into the head edge, facing +Y
     printer_chair=(0.0, -31.2, 0.0),        # faces +Y (toward the host)
-    printer_stack=(0.0, -30.66, 0.0),
+    printer_stack=(-0.55, -30.22, 0.0),     # on the floor between the printer's chair and the table foot, camera-left
     chair_x=1.25,
-    seat_top_z=0.55,
+    seat_top_z=0.55,                        # the cushion's rim; its crown is 10 mm higher
+    seat_rest_z=0.5585,                     # where a CRT base / the printer rests on the crowned cushion
     seat_yaw_deg=22.0,                      # colleagues turned toward the host (0 = square to the axis)
     seat_yaw_wide_deg=-40.0,                # chair-swivel cheat: screens toward the foot camera (S03)
     droid_lane_x=1.9,
-    droid_start=(1.9, -29.9),
+    droid_start=(1.5, -30.4),               # parked across the lane beside the foot, facing +X (heading below)
+    droid_start_heading=-90.0,              # degrees, props.Droid convention (0 faces +Y, -90 faces +X)
     droid_bay=(1.15, -3.0),
     skylight_len=28.4, skylight_w=0.75, skylight_cy=-13.6, skylight_depth=0.9,   # slot y -27.8 .. +0.6
-    mullion_pitch=1.3,
+    mullion_pitch=2.6,                      # 20 mm glazing bars, barely darker than the glass
     sun_tilt_deg=10.0,                      # light travels toward +Y: the slab reaches over the host
     prop_x=0.50,                            # problem props sit this far off the spine
-    # Synergy's left index fingertip resting on the walnut (reach_L preset at SYNERGY_POS:
-    # wrist (0.30, -0.36, 0.93) local, hand pitched down) and where a sliding object's centre
-    # stops against it (padlock-sized; see stop_for()).
+    # Synergy's left index fingertip resting on the walnut: the reach_L contract (synergy.py
+    # REACH_L_TIP) puts the END of the index tip, its down-table surface, here. stop_for()
+    # measures the sliding object itself and can take a measured tip (measure_tip) instead.
     fingertip_L=(0.29, -0.09, 0.755),
-    stop_L=(0.29, -0.12),
+    stop_L=(0.29, -0.108),                  # the hero padlock's stop against the contract tip (stop_for('padlock'))
+    streak_x=0.55, streak_z=0.95,           # walnut-streak cards: over the table, inboard of each terminal (head end)
 )
 SYNERGY_POS = ROOM['synergy_pos']
 HUB_POS = ROOM['hub_pos']
 SOCKET_POS = ROOM['socket_pos']
 TABLE_TOP = ROOM['table_top_z']
+FINGER_R = 0.0          # fingertip_L is the tip's surface (kept for callers that offset a centre)
+FINGER_W = 0.010        # half-width of the fingertip: the band of the object that meets it
 
 # side: -1 = his right (-X, camera-left from the foot), +1 = his left (+X)
 SEATS = {
@@ -93,10 +105,23 @@ SHUTDOWN_ORDER = ['synthia', 'keys', 'arjun', 'kevin', 'strategy', 'operations',
 SHOT_SEAT_YAW = {'s02': 22.0, 's03': -40.0, 's04': 45.0, 's05': 22.0, 's07': 45.0, 's09': 22.0, 's10': 22.0,
                  's11': 45.0, 's13': 22.0, 's14': 22.0}
 
-LIGHT = dict(sun=10.5, sun_angle=0.35, diffuser=4.0, fill=0.10, crt=6.5, wash=0.30, pat=40.0, foot=6.0)
+LIGHT = dict(sun=6.5, sun_angle=0.35, diffuser=1.9, fill=0.07, crt=6.5, wash=0.07, pat=40.0, foot=6.0,
+             streak=0.8, streak_len=12.0, streak_w=0.11, wash_span=15.0, wash_cy=-12.0)
 
 CORD_RC = 0.0042 + 0.0013                  # coil outer radius
-STOP_HALF = {'padlock': 0.016, 'envelope': 0.012, 'tabs': 0.025, 'glass_zero': 0.064, 'binder': 0.15}
+# half-depth of each problem object along its slide (the padlock turned 8 deg, broad face down-table)
+STOP_HALF = {'padlock': 0.0160, 'envelope': 0.012, 'tabs': 0.025, 'glass_zero': 0.064, 'binder': 0.15}
+
+# Room-level render settings per kind of framing (Room.render_budget). 'final' clamps the
+# samples only when no explicit --samples override was given; 'hero' is never clamped.
+BUDGET = {
+    # (max_bounces only caps transmission chains: three stacked acrylic tabs or the glass zero
+    # need 6-8 interfaces, diffuse and glossy are capped on their own)
+    'wide': dict(max_bounces=8, diffuse=2, glossy=2, transmission=8, transparent=6, volume=0,
+                 threshold=0.06, min_samples=6, final_spp=12),
+    'macro': dict(max_bounces=8, diffuse=1, glossy=2, transmission=8, transparent=4, volume=0,
+                  threshold=0.08, min_samples=6, final_spp=9),       # 9 spp: mean abs diff 0.55/255 vs 12
+}
 
 
 def seat_xy(name):
@@ -119,13 +144,144 @@ def prop_home(name, index=0):
     return side * ROOM['prop_x'], y + 0.60 - 0.42 * index
 
 
-def stop_for(kind='padlock'):
-    """(x, y) where an object of `kind` stops against Synergy's left fingertip."""
-    fx, fy, _ = ROOM['fingertip_L']
-    return fx, fy - 0.008 - STOP_HALF.get(kind, 0.02)
+def _world_points(obj):
+    """Evaluated world-space vertices of an object and all its mesh descendants."""
+    bpy.context.view_layer.update()
+    dg = bpy.context.evaluated_depsgraph_get()
+    stack = [obj]
+    pts = []
+    while stack:
+        o = stack.pop()
+        stack.extend(o.children)
+        if o.type != 'MESH':
+            continue
+        ev = o.evaluated_get(dg)
+        me = ev.to_mesh()
+        mw = ev.matrix_world
+        pts.extend(mw @ v.co for v in me.vertices)
+        ev.to_mesh_clear()
+    return pts
+
+
+def measure_tip(objs, x_span=None, z_band=(0.0, 10.0)):
+    """The down-table-most (-Y) surface point of a set of meshes (e.g. the rig's left
+    finger tips, rig.parts_on_bones(['index_3_L', 'middle_3_L', 'ring_3_L'])) at the current
+    frame, optionally only within x_span=(x0, x1) and a z band. Pass it to stop_for(tip=...)."""
+    best = None
+    for o in objs:
+        for p in _world_points(o):
+            if x_span and not (x_span[0] <= p.x <= x_span[1]):
+                continue
+            if not (z_band[0] <= p.z <= z_band[1]):
+                continue
+            if best is None or p.y < best.y:
+                best = p.copy()
+    return tuple(best) if best is not None else None
+
+
+def _bvh_world(objs, offset=Vector((0.0, 0.0, 0.0))):
+    """BVH tree (and its world-space vertices) of the evaluated meshes of objs and all their
+    mesh descendants, translated by offset."""
+    from mathutils.bvhtree import BVHTree
+    bpy.context.view_layer.update()
+    dg = bpy.context.evaluated_depsgraph_get()
+    verts, polys = [], []
+    stack = list(objs)
+    while stack:
+        o = stack.pop()
+        stack.extend(o.children)
+        if o.type != 'MESH':
+            continue
+        ev = o.evaluated_get(dg)
+        me = ev.to_mesh()
+        mw = ev.matrix_world
+        base = len(verts)
+        verts.extend(mw @ v.co + offset for v in me.vertices)
+        polys.extend([base + i for i in p.vertices] for p in me.polygons)
+        ev.to_mesh_clear()
+    return BVHTree.FromPolygons(verts, polys), verts
+
+
+def _swept_contact(obj, hand, start2, d2):
+    """Distance the object can travel from start2 along d2 before it first touches a hand
+    surface (vertices of each cast against the other's surface), within the object's height."""
+    origin = obj.matrix_world.translation
+    off = Vector((start2.x - origin.x, start2.y - origin.y, 0.0))
+    t_obj, v_obj = _bvh_world([obj], off)
+    t_hand, v_hand = _bvh_world(hand)
+    zl = min(v.z for v in v_obj) - 0.001
+    zh = max(v.z for v in v_obj) + 0.001
+    d3 = Vector((d2.x, d2.y, 0.0)).normalized()
+    best = None
+    for q in v_hand:
+        if zl <= q.z <= zh:
+            hit = t_obj.ray_cast(q, -d3, 40.0)
+            if hit[0] is not None and (best is None or hit[3] < best):
+                best = hit[3]
+    for p in v_obj:
+        hit = t_hand.ray_cast(p, d3, 40.0)
+        if hit[0] is not None and (best is None or hit[3] < best):
+            best = hit[3]
+    return best
+
+
+def stop_for(kind='padlock', obj=None, tip=None, start=None, gap=None, hand=None):
+    """(x, y) where an object's centre stops against Synergy's left fingertip.
+
+    hand: the rig's left-hand meshes posed at the arrival frame (e.g.
+    rig.parts_on_bones(['hand_L', 'index_1_L', ... 'thumb_2_L'])): the exact stop. The
+    object (`obj`, required) is swept from `start` toward the tip and stops `gap` before its
+    first contact with any hand vertex inside its own height band: zero overlap, a 1-2 mm
+    gap where it meets the finger.
+    Without `hand`: `tip` (a measured surface point, measure_tip) or the contract
+    fingertip_L, and the object's full evaluated extent along the slide (`obj`) or
+    STOP_HALF[kind]: its leading face ends `gap` short of the tip (conservative: a corner
+    of a turned object leads). gap defaults to 1.5 mm with a hand or a measured tip, 3 mm
+    against the contract point."""
+    if gap is None:              # the contract tip ignores the finger's rounded cap: keep clear of it
+        gap = 0.0015 if (hand or tip is not None) else 0.003
+    fx, fy = (ROOM['fingertip_L'][0], ROOM['fingertip_L'][1] - FINGER_R) if tip is None else (tip[0], tip[1])
+    if obj is None:
+        return fx, fy - gap - STOP_HALF.get(kind, 0.02)
+    pts = _world_points(obj)
+    origin = obj.matrix_world.translation
+    o2 = Vector((origin.x, origin.y))
+    rel = [Vector((p.x, p.y)) - o2 for p in pts]
+    st = Vector(start[:2]) if start is not None else o2
+    t2 = Vector((fx, fy))
+    d = t2 - st
+    d = d.normalized() if d.length > 1e-6 else Vector((0.0, 1.0))
+    if hand:
+        best = _swept_contact(obj, hand, st, d)
+        if best is not None:
+            stop = st + d * (best - gap)
+            return stop.x, stop.y
+    lead = 0.0
+    stop = t2
+    for _ in range(6):
+        d = stop - st
+        d = d.normalized() if d.length > 1e-6 else Vector((0.0, 1.0))
+        lead = max(r.dot(d) for r in rel)
+        stop = t2 - d * (lead + gap)
+    return stop.x, stop.y
 
 
 # ================================================================== Room handle
+
+
+def _key_value(owner, path, frame, value, interp):
+    """Set and key owner.path at frame, styling ONLY that key."""
+    setattr(owner, path, value)
+    owner.keyframe_insert(path, frame=frame)
+    idb = owner.id_data
+    dp = owner.path_from_id(path) if owner is not idb else path
+    ad = idb.animation_data
+    if ad and ad.action:
+        for fc in C.fcurves(ad.action):
+            if fc.data_path == dp:
+                for kp in fc.keyframe_points:
+                    if abs(kp.co.x - frame) < 1e-3:
+                        kp.interpolation = interp
 
 
 class Room:
@@ -135,7 +291,7 @@ class Room:
     props{name: [objects]}            printer (props.Printer)   droid (props.Droid)
     hub (props.Hub)  socket  jack (props.Jack)  master (props.MasterCord)
     sun  diffuser  fills[]  walls{'head','foot','left','right'}  table  placeholder (or None)
-    seat_yaw (degrees)  insert{} (lights/dust added by insert_lights)
+    streaks{name: card}  seat_yaw (degrees)  insert{} (lights/dust added by insert_lights)
     """
 
     def __init__(self):
@@ -146,42 +302,37 @@ class Room:
         self.walls = {}
         self.fills = []
         self.insert = {}
+        self.kits = {}
+        self.streaks = {}
         self.placeholder = None
+        self.mullions = None
         self.seat_yaw = ROOM['seat_yaw_deg']
+        self._budget_base = None
 
     # --- room-wide lighting state
     def set_state(self, frame, state, ramp=0):
         """'lit' (meeting on) or 'dark' (after the unplug), switched at `frame` (or faded
-        over `ramp` frames). Keys the ambient fills and the skylight diffuser; the slab
-        (sun) always stays. Terminals keep their own keys."""
+        over `ramp` frames from `frame`). Keys the ambient fills and the skylight diffuser;
+        the slab (sun) always stays. Terminals keep their own keys.
+
+        Every change keys its own hold: the previous value is keyed at frame-1 (or at the
+        ramp start) and only the keys this call inserts are styled, so an earlier fade is
+        never turned into a hard switch by a later call."""
         lit = state == 'lit'
         prev = getattr(self, '_state', None)
-        targets = [(l.data, 'energy', e if lit else e * 0.04, e if prev == 'lit' else e * 0.04) for l, e in self.fills]
         d = LIGHT['diffuser']
+        targets = [(l.data, 'energy', e if lit else e * 0.04, e if prev == 'lit' else e * 0.04) for l, e in self.fills]
         targets.append((self.diffuser_strength, 'default_value', d if lit else d * 0.55,
                         d if prev == 'lit' else d * 0.55))
         for owner, path, new, old in targets:
-            if prev is not None and ramp > 0:
-                setattr(owner, path, old)
-                owner.keyframe_insert(path, frame=frame)
-                setattr(owner, path, new)
-                owner.keyframe_insert(path, frame=frame + ramp)
+            if prev is None:
+                _key_value(owner, path, frame, new, 'CONSTANT')
+            elif ramp > 0:
+                _key_value(owner, path, frame, old, 'LINEAR')
+                _key_value(owner, path, frame + ramp, new, 'CONSTANT')
             else:
-                setattr(owner, path, new)
-                owner.keyframe_insert(path, frame=frame)
-        for idb in [l.data for l, _ in self.fills] + [self.diffuser_mat.node_tree]:
-            ad = idb.animation_data
-            if ad and ad.action:
-                for fc in C.fcurves(ad.action):
-                    for kp in fc.keyframe_points:
-                        if abs(kp.co.x - frame) < 1e-3 and ramp == 0:
-                            kp.interpolation = 'CONSTANT'
-                        elif abs(kp.co.x - frame) < 1e-3:
-                            kp.interpolation = 'LINEAR'
-                    # keys before this one hold until it
-                    for kp in fc.keyframe_points:
-                        if kp.co.x < frame - 1e-3 and ramp == 0:
-                            kp.interpolation = 'CONSTANT'
+                _key_value(owner, path, frame - 1, old, 'CONSTANT')
+                _key_value(owner, path, frame, new, 'CONSTANT')
         self._state = state
 
     def shutdown_wave(self, f0, order=SHUTDOWN_ORDER, step=5):
@@ -210,9 +361,35 @@ class Room:
             for o in self.walls[name]:
                 o.visible_camera = False
 
+    def hide_far_room(self, hide=True):
+        """Macro inserts: walls and ceiling off for camera rays (they only ever fill the
+        defocused background; their reflections and the light they bounce stay)."""
+        for w in self.walls.values():
+            for o in w:
+                o.visible_camera = not hide
+        for o in (self.ceiling, self.well):
+            o.visible_camera = not hide
+
+    def head_mirror(self, on=True):
+        """S02/S05 option: the acoustic panels behind the host become smoked black glass, so
+        the nine screens and the slab down the table mirror behind him as soft colour discs
+        in a long-lens close-up. Off restores the fabric."""
+        mat = P.smoked_glass()
+        for o in self.walls['head']:
+            if o.type != 'MESH' or not o.name.startswith('panel_'):
+                continue
+            slot = o.material_slots[0]
+            if on:
+                slot.link = 'OBJECT'
+                slot.material = mat
+            else:
+                slot.link = 'DATA'
+        self.mirror = on
+
     def set_seat_yaw(self, yaw_deg):
         """Swivel every colleague's chair (and terminal, glow and cord with it) to
-        `yaw_deg` (+ toward the host, - toward the foot). Rebuilds the cords."""
+        `yaw_deg` (+ toward the host, - toward the foot). Rebuilds the cords, then
+        re-evaluates the depsgraph so the next render sees the new geometry."""
         self.seat_yaw = yaw_deg
         for name in TERMINALS:
             rot = seat_rot(name, yaw_deg)
@@ -232,95 +409,267 @@ class Room:
                 bpy.data.curves.remove(data)
             self.cords = {}
             _cords(self, coll)
+        bpy.context.view_layer.update()
+        dg = bpy.context.evaluated_depsgraph_get()
+        dg.update()
+        for cu in self.cords.values():
+            cu.evaluated_get(dg)
 
     def tune_scanlines(self, cam=None, res_x=None):
-        """Moire-safe CRT scanlines for this camera's lens and the render width."""
+        """Moire-safe CRT scanlines (and the coarse raster ripple) for this camera's lens
+        and the render width."""
         sc = bpy.context.scene
         cam = cam or sc.camera
         res_x = res_x or sc.render.resolution_x * sc.render.resolution_percentage / 100.0
         return P.set_scanlines(cam.data.lens, res_x, cam.data.sensor_width)
 
-    def insert_lights(self, kind='jack', dust=True, cache_dir=None, target=None, card_dir=None):
-        """Insert light kits lit inside the room. Returns the dict of added objects.
+    # --- visibility of animated props (posted objects leave the table)
+    def key_visible(self, obj, frame, visible):
+        """Key `obj` and all its descendants (and any insert card riding on it) visible or
+        hidden from `frame` (constant). The schedule is stored on the object, so insert
+        cards added later inherit it."""
+        sched = list(obj.get('vis_keys', []))
+        sched.append([float(frame), 1.0 if visible else 0.0])
+        obj['vis_keys'] = sched
+        stack = [obj]
+        while stack:
+            o = stack.pop()
+            stack.extend(o.children)
+            _key_hidden(o, frame, not visible)
 
-        'jack': the head edge faces away from the sun, so add a warm walnut bounce card
-        below and in front of the socket, a cool 6500K kicker raking along the knurl and
-        a small rim (none seen by camera), plus dust motes drifting in the slab.
-        'padlock': a soft warm card that rides with `target` (default Kevin's padlock),
-        0.55 m out along `card_dir` (default: the camera side, away from Kevin's screen),
-        for the S04/S09 macro: the brass reads instead of silhouetting."""
-        coll = C.collection('LR_insert', C.collection('LongRoom'))
+    # --- insert light kits
+    def insert_lights(self, kind='jack', dust=True, cache_dir=None, target=None, card_dir=None):
+        """Insert light kits lit inside the room, each in its own collection (use_kits shows
+        one and hides the rest). Building a kit twice returns the existing one.
+
+        'jack' (S10): a warm walnut bounce card below and in front of the socket (diffuse
+        only), a soft warm field the gold mirrors on its lower flank (glossy only, light-linked
+        to the jack and socket), a cool 6500K kicker raking along the knurl (glossy-visible, low), a small rim,
+        a long soft warm card above and behind the lens that only glossy rays see (it lays
+        one continuous gold streak down the barrel), and ~120 dust motes drifting in the
+        slab above the walnut and in front of the host.
+        'padlock' (S04/S09): a soft warm card that rides with `target` (default Kevin's
+        padlock) 0.55 m out along `card_dir` (default: the camera side, away from Kevin's
+        screen): the brass face reads instead of silhouetting. It inherits the padlock's
+        visibility keys (gone when the padlock is posted).
+        'sip' (S13): a small cool-neutral card at cup height from camera-left (diffuse only)
+        and a thin rim card for the lid, so the white cup holds a neutral grey in the dark;
+        `target` = the cup meshes (default: every '*_cup_cup' / '*_cup_lid' in the scene).
+        The padlock card, the jack's gold-streak card and the sip kit are light-linked to
+        their hero objects only."""
+        parent = C.collection('LR_insert', C.collection('LongRoom'))
+        coll = C.collection(f'LR_ins_{kind}', parent)
+        self.kits[kind] = coll
         out = {}
         if kind == 'jack':
-            s = Vector(ROOM['socket_pos'])
+            if 'bounce' in self.insert:
+                return {k: self.insert[k] for k in ('bounce', 'kicker', 'rim', 'streak', 'gold_field', 'dust')
+                        if k in self.insert}
+            s = Vector(ROOM['socket_pos']) + Vector((0.0, P.SOCKET_FACE, 0.0))
             b = C.area_light('ins_bounce', tuple(s + Vector((0.03, 0.16, -0.10))), tuple(s + Vector((0.0, 0.02, 0.0))),
-                             0.30, 0.18, 0.10, color=(1.0, 0.70, 0.46), coll=coll)
+                             0.30, 0.18, 0.10, color=(1.0, 0.76, 0.52), coll=coll)
+            gf = C.area_light('ins_gold_field', tuple(s + Vector((0.05, 0.17, -0.08))), tuple(s + Vector((0.0, 0.02, 0.0))),
+                              0.55, 0.40, 0.22, color=(1.0, 0.82, 0.58), coll=coll)
             k = C.area_light('ins_kicker', tuple(s + Vector((-0.10, 0.05, 0.22))), tuple(s + Vector((0.0, 0.02, 0.0))),
-                             0.20, 0.035, 0.12, color=(0.86, 0.91, 1.0), coll=coll)
+                             0.10, 0.035, 0.12, color=(0.86, 0.91, 1.0), coll=coll)
             r = C.area_light('ins_rim', tuple(s + Vector((0.20, 0.10, 0.06))), tuple(s + Vector((0.0, 0.025, 0.0))),
                              0.05, 0.05, color=(1.0, 0.93, 0.85), coll=coll)
-            for l in (b, k, r):
+            # gold streak: for a barrel along +Y seen from the lens direction V, the mirror
+            # direction off its upper flank is R = (-0.33, -0.5, 0.8) (R_y = -V_y); a card
+            # long along Y out along R lays one streak the barrel's whole length
+            st = C.area_light('ins_streak', tuple(s + Vector((-0.08, 0.02 - 0.12, 0.19))),
+                              tuple(s + Vector((0.0, 0.022, 0.0))), 0.28, 0.05, 0.22, color=(1.0, 0.92, 0.78),
+                              coll=coll)
+            aim_light(st, (s + Vector((0.0, 0.022, 0.0))) - st.location)
+            for l in (b, r):
                 l.visible_camera = False
-                l.visible_glossy = l is b                # only the warm bounce card shows in the brass and gold
+                l.visible_glossy = False
                 l.data.spread = math.radians(60)
-            out.update(bounce=b, kicker=k, rim=r)
+            # the soft warm field the gold barrel and the brass mirror on their lower flanks:
+            # glossy only, linked to the jack and socket (the walnut keeps the diffuse bounce)
+            gf.visible_camera = False
+            gf.visible_diffuse = False
+            gf.visible_transmission = False
+            gf.visible_glossy = True
+            gf.data.spread = math.radians(60)
+            _link_light(gf, _meshes(self.jack.root) + _meshes(self.socket), 'LR_ins_jack_field_receivers')
+            k.visible_camera = False
+            k.visible_glossy = True
+            k.data.spread = math.radians(60)
+            st.visible_camera = False
+            st.visible_diffuse = False
+            st.visible_glossy = True
+            st.visible_transmission = False
+            _link_light(st, _meshes(self.jack.root) + _meshes(self.socket) + [self.master.obj], 'LR_ins_jack_receivers')
+            out.update(bounce=b, kicker=k, rim=r, streak=st, gold_field=gf)
             if dust:
-                out['dust'] = P.dust_motes('ins_dust', coll, center=(0.16, 0.14, 0.86), size=(0.6, 0.40, 0.36), n=320,
-                                           cache_dir=cache_dir)
+                out['dust'] = P.dust_motes('ins_dust', coll, center=(0.18, 0.10, 0.95), size=(0.5, 0.24, 0.30), n=120,
+                                           cache_dir=cache_dir, radius=(0.0004, 0.0009))
         elif kind == 'padlock':
-            # a soft warm card that rides with the padlock on the camera side, so the brass
-            # face shows its patina, scratches and prints instead of a silhouette
+            if 'card' in self.insert:
+                return {'card': self.insert['card']}
             tgt = target or self.props['kevin'][0]
             bpy.context.view_layer.update()
             p = tgt.matrix_world.translation.copy()
             if card_dir is None:
+                # the lens sits on the far side from Kevin's screen; the card goes where the
+                # broad face mirrors that view, so the brass reflects a soft warm field
                 crt = self.terminals['kevin'].to_world((0.0, P.CRT['front'], P.CRT['zs']))
-                card_dir = (Vector((p.x, p.y, 0)) - Vector((crt.x, crt.y, 0))).normalized()
-            pos = p + Vector(card_dir).normalized() * 0.55 + Vector((0.0, 0.0, 0.16))
-            c = C.area_light('ins_padlock_card', tuple(pos), tuple(p + Vector((0, 0, 0.03))), 0.9, 0.45, 0.22,
-                             color=(1.0, 0.92, 0.82), coll=coll)
+                v = (Vector((p.x, p.y, 0)) - Vector((crt.x, crt.y, 0))).normalized()
+                n = tgt.matrix_world.to_3x3() @ Vector((0.0, 1.0, 0.0))
+                n = Vector((n.x, n.y, 0.0)).normalized()
+                if n.dot(v) < 0:
+                    n = -n
+                card_dir = (n * (2.0 * n.dot(v)) - v).normalized()
+            pos = p + Vector(card_dir).normalized() * 0.55 + Vector((0.0, 0.0, 0.20))
+            c = C.area_light('ins_padlock_card', tuple(pos), tuple(p + Vector((0, 0, 0.03))), 1.0, 0.62, 0.30,
+                             color=(1.0, 0.76, 0.48), coll=coll)
+            _link_light(c, _meshes(tgt), 'LR_ins_padlock_receivers')
             bpy.context.view_layer.update()
             c.parent = tgt
             c.matrix_parent_inverse = tgt.matrix_world.inverted()
             c.visible_camera = False
+            for f, vis in tgt.get('vis_keys', []):
+                _key_hidden(c, int(f), vis < 0.5)
             out['card'] = c
+        elif kind == 'sip':
+            if 'sip_key' in self.insert:
+                return {k: self.insert[k] for k in ('sip_key', 'sip_rim')}
+            sp = Vector(SYNERGY_POS)
+            cup = sp + Vector((-0.12, -0.24, 1.40))          # around the cup at the chin
+            kl = C.area_light('ins_sip_key', tuple(sp + Vector((-0.95, -0.75, 1.38))), tuple(cup), 1.6, 0.28, 0.22,
+                              color=(0.92, 0.95, 1.0), coll=coll)
+            kl.visible_camera = False
+            kl.visible_glossy = False
+            rl = C.area_light('ins_sip_rim', tuple(sp + Vector((-0.30, 0.35, 1.78))), tuple(cup + Vector((0, 0, 0.06))),
+                              0.35, 0.22, 0.035, color=(0.95, 0.97, 1.0), coll=coll)
+            rl.visible_camera = False
+            cups = list(target) if target else [o for o in bpy.context.scene.objects
+                                                if o.type == 'MESH' and o.name.endswith(('_cup_cup', '_cup_lid'))]
+            if cups:
+                _link_light(kl, cups, 'LR_ins_sip_receivers')
+                _link_light(rl, cups, 'LR_ins_sip_receivers')
+            out.update(sip_key=kl, sip_rim=rl)
         else:
             raise KeyError(kind)
         self.insert.update(out)
         return out
 
-    def render_budget(self, scene=None, still=False, samples=None):
-        """Room-level render settings that hold a final Long Room frame under 35 s on an
-        idle 4-core CPU (S03 at 1600x900 with motion blur measured 124 CPU-s, ~31 s):
-        short bounce chains (the coat is a 2-bounce mirror), 12 spp with adaptive
-        stopping at 0.06 and OIDN, uniform light picking (the light tree costs more
-        than it saves with 18 local lights), motion blur off for locked-off plates
-        (still=True)."""
+    def use_kits(self, *kinds):
+        """Show only the named insert kits (collection-level hide_render on the others)."""
+        for kind, coll in self.kits.items():
+            coll.hide_render = kind not in kinds
+            coll.hide_viewport = kind not in kinds
+
+    # --- render settings
+    def render_budget(self, scene=None, still=False, samples=None, kind='wide', tier=None):
+        """Room-level render settings (opt in; build() no longer applies them).
+
+        kind 'wide' (S03/S07/S11/S13): short bounce chains (the coat is a 2-bounce mirror),
+        adaptive stopping at 0.06; 'macro' (S04/S09/S10 inserts at f/2.8-4): max 3 bounces,
+        1 diffuse, adaptive 0.08 with at least 8 samples. Uniform light picking for both.
+        Sample clamps apply at the 'final' tier only and never to an explicit sample count
+        (`samples`, or a scene count that differs from the tier's default); 'hero' and the
+        preview tiers keep their samples. Calling it again with another kind first restores
+        the scene's own settings. Prints the effective settings."""
         sc = scene or bpy.context.scene
         cy = sc.cycles
-        cy.max_bounces = 4
-        cy.diffuse_bounces = 2
-        cy.glossy_bounces = 2
-        cy.transmission_bounces = 4
-        cy.transparent_max_bounces = 6
-        cy.volume_bounces = 0
-        cy.adaptive_threshold = max(cy.adaptive_threshold, 0.06)
-        cy.adaptive_min_samples = 6
-        cy.use_light_tree = False           # 18 lights, mostly local: uniform picking is cheaper here
+        if self._budget_base is None:
+            self._budget_base = dict(samples=cy.samples, threshold=cy.adaptive_threshold,
+                                     min_samples=cy.adaptive_min_samples, blur=sc.render.use_motion_blur,
+                                     dq=getattr(cy, 'denoising_quality', None), pre=cy.denoising_prefilter)
+        base = self._budget_base
+        cy.samples = base['samples']
+        cy.adaptive_threshold = base['threshold']
+        cy.adaptive_min_samples = base['min_samples']
+        sc.render.use_motion_blur = base['blur']
+        if base['dq'] is not None:
+            cy.denoising_quality = base['dq']
+        cy.denoising_prefilter = base['pre']
+        if tier is None:
+            res = (sc.render.resolution_x, sc.render.resolution_y)
+            tier = next((k for k, v in C.QUALITY.items() if (v[0], v[1]) == res), None)
+        b = BUDGET[kind]
+        cy.max_bounces = b['max_bounces']
+        cy.diffuse_bounces = b['diffuse']
+        cy.glossy_bounces = b['glossy']
+        cy.transmission_bounces = b['transmission']
+        cy.transparent_max_bounces = b['transparent']
+        cy.volume_bounces = b['volume']
+        cy.use_light_tree = False           # ~20 lights, mostly local: uniform picking is cheaper here
+        tier_spp = C.QUALITY[tier][2] if tier in C.QUALITY else None
+        explicit = samples is not None or (tier_spp is not None and base['samples'] != tier_spp)
         if samples:
             cy.samples = samples
-        else:                                # final 32 -> 12, hero 48 -> 18 (OIDN cleans the rest)
-            cy.samples = min(cy.samples, max(12, int(round(cy.samples * 0.375))))
-        if hasattr(cy, 'denoising_quality'):
-            cy.denoising_quality = 'BALANCED' if cy.denoising_quality == 'HIGH' else cy.denoising_quality
+        if tier == 'final':
+            cy.adaptive_threshold = max(cy.adaptive_threshold, b['threshold'])
+            cy.adaptive_min_samples = b['min_samples']
+            if not explicit:
+                cy.samples = b['final_spp']
+            if hasattr(cy, 'denoising_quality') and cy.denoising_quality == 'HIGH':
+                cy.denoising_quality = 'BALANCED'
+            cy.denoising_prefilter = 'FAST'     # the albedo/normal passes are clean at 12 spp
+        elif tier not in ('hero',):
+            cy.adaptive_threshold = max(cy.adaptive_threshold, b['threshold'] if kind == 'macro' else 0.0)
+        cy.adaptive_min_samples = min(cy.adaptive_min_samples, cy.samples)
         if still:
             sc.render.use_motion_blur = False
+        print(f'RENDER BUDGET kind={kind} tier={tier} spp={cy.samples} adaptive={cy.adaptive_threshold:.3f} '
+              f'min={cy.adaptive_min_samples} bounces={cy.max_bounces}/{cy.diffuse_bounces}/{cy.glossy_bounces} '
+              f'denoise={getattr(cy, "denoising_quality", "-")}/{cy.denoising_prefilter} blur={sc.render.use_motion_blur}',
+              flush=True)
         return sc
 
     def compositor(self, glare=0.35, mist_amount=0.55, vignette=0.25):
-        C.compositor(glare=glare, glare_threshold=0.9, glare_size=8, vignette=vignette,
-                     mist=dict(color=(0.006, 0.008, 0.016), start=6.0, depth=46.0, amount=mist_amount,
-                               falloff='LINEAR'))
+        """House look: fog-glow glare, mist-pass depth haze, a soft vignette. Built on
+        common.compositor, with the vignette's mask blurred by a recursive (fast) Gaussian
+        instead of a 560 px convolution, and the glare at medium quality: the same look for
+        a fraction of the compositing cost."""
+        nt = C.compositor(glare=glare, glare_threshold=0.9, glare_size=8, vignette=vignette,
+                          mist=dict(color=(0.006, 0.008, 0.016), start=6.0, depth=46.0, amount=mist_amount,
+                                    falloff='LINEAR'))
+        for n in nt.nodes:
+            if n.type == 'BLUR':
+                n.filter_type = 'FAST_GAUSS'
+            elif n.type == 'GLARE':
+                n.quality = 'MEDIUM'
+        return nt
+
+
+def _meshes(root_obj):
+    out, stack = [], [root_obj]
+    while stack:
+        o = stack.pop()
+        stack.extend(o.children)
+        if o.type in ('MESH', 'CURVE'):
+            out.append(o)
+    return out
+
+
+def _link_light(light, receivers, name):
+    """Light linking: `light` lights (and shows in) only `receivers`, so an insert card
+    never paints the walnut or the room around the hero object."""
+    coll = bpy.data.collections.get(name) or bpy.data.collections.new(name)
+    for o in receivers:
+        if coll.objects.get(o.name) is None:
+            coll.objects.link(o)
+    light.light_linking.receiver_collection = coll
+    return coll
+
+
+def _key_hidden(o, frame, hidden):
+    """Constant visibility keys on one object (render and viewport)."""
+    for path in ('hide_render', 'hide_viewport'):
+        setattr(o, path, not hidden)
+        o.keyframe_insert(path, frame=frame - 1)
+        setattr(o, path, hidden)
+        o.keyframe_insert(path, frame=frame)
+    ad = o.animation_data
+    if ad and ad.action:
+        for fc in C.fcurves(ad.action):
+            if fc.data_path in ('hide_render', 'hide_viewport'):
+                for kp in fc.keyframe_points:
+                    kp.interpolation = 'CONSTANT'
 
 
 # ================================================================== builders
@@ -401,21 +750,23 @@ def _ceiling_and_skylight(room, coll):
     bo.operation = 'DIFFERENCE'
     bo.solver = 'EXACT'
     bo.object = cutter
-    # light well: plaster walls around the slot, slightly flared
+    # light well: plaster walls around the slot, slightly flared, sunlit warm toward the top
     bm = bmesh.new()
     hi_outline = [(-y, x) for x, y in P.stadium(L + 0.02, W + 0.02, 32)]
     hi_outline = [(x, y + cy) for x, y in hi_outline]
     lo = [(x, y, z - 0.002) for x, y in hole]
     hi = [(x, y, z + dep) for x, y in hi_outline]
     P.bm_loft(bm, [lo, hi], True, False, False, 0)
-    well = P.to_object(bm, 'skylight_well', [P.plaster(0.6)], coll, smooth=40.0)
-    # diffuser: the hot slot seen from below. It clips to white and blooms, but it is
-    # seen only by camera and glossy rays (no fill, no light sampling, no shadow), so
-    # the sun alone lays the slab.
+    well = P.to_object(bm, 'skylight_well', [P.skylight_well(z, dep)], coll, smooth=40.0)
+    # diffuser: the daylight slot seen from below, a soft centre-to-edge gradient that peaks
+    # near 0.85 display. Seen only by camera and glossy rays (40% for glossy), no fill, no
+    # light sampling, no shadow: the sun alone lays the slab. The 20 mm glazing bars every
+    # 2.6 m live in its emission as a faint dip (no mullion geometry: no ladder).
     bm = bmesh.new()
     vs = P.bm_ring(bm, [(x, y, z + dep - 0.02) for x, y in hi_outline])
     P.bm_cap(bm, vs, 0, flip=True)
-    diff = P.to_object(bm, 'skylight_diffuser', [P.skylight_diffuser(LIGHT['diffuser'])], coll, smooth=None,
+    diff = P.to_object(bm, 'skylight_diffuser',
+                       [P.skylight_diffuser(LIGHT['diffuser'], W + 0.02, ROOM['mullion_pitch'])], coll, smooth=None,
                        recalc=False)
     diff.visible_shadow = False
     diff.visible_diffuse = False
@@ -430,20 +781,7 @@ def _ceiling_and_skylight(room, coll):
     room.diffuser = diff
     room.diffuser_strength = _emission_strength_socket(mat)
     room.diffuser_mat = mat
-    # glazing bars every 1.3 m across the slot, just under the diffuser (dark against the
-    # white; they cast no shadow, so the slab stays one clean band)
-    pitch = ROOM['mullion_pitch']
-    n = int(L // pitch)
-    bars = bmesh.new()
-    for i in range(1, n + 1):
-        yb = cy - L / 2 + W / 2 + (L - W) * i / (n + 1)
-        geom = bmesh.ops.create_cube(bars, size=1.0)
-        for v in geom['verts']:
-            v.co = Vector((v.co.x * (W + 0.04), v.co.y * 0.045 + yb, v.co.z * 0.07 + z + dep - 0.065))
-    mull = P.to_object(bars, 'skylight_mullions', [P.flat((0.012, 0.012, 0.013), 0.5, 0.6)], coll, smooth=30.0)
-    P.soft_bevel(mull, 0.004, 2)
-    mull.visible_shadow = False
-    room.mullions = mull
+    room.mullions = None
     room.ceiling = ceil
     room.well = well
     # the sun: hard 6500K slab down the spine, tilted so it reaches over the host
@@ -458,7 +796,7 @@ def _ceiling_and_skylight(room, coll):
 def _emission_strength_socket(mat):
     for n in mat.node_tree.nodes:
         if n.type == 'EMISSION':
-            # strength is driven by (bars * strength): find the multiply feeding it
+            # strength is driven by (pattern * strength): find the multiply feeding it
             link = n.inputs['Strength'].links
             if link:
                 src = link[0].from_node
@@ -468,12 +806,12 @@ def _emission_strength_socket(mat):
 
 
 def _terminal_matrix(name, yaw_deg):
-    """World matrix of a colleague's terminal root (on the seat, against the chair back)."""
+    """World matrix of a colleague's terminal root (on the crowned seat, against the chair back)."""
     side, y = SEATS[name]
     x = side * ROOM['chair_x']
     rot = seat_rot(name, yaw_deg)
     fwd = Vector((-math.sin(rot), math.cos(rot), 0.0))
-    loc = Vector((x, y, ROOM['seat_top_z'])) + fwd * 0.06
+    loc = Vector((x, y, ROOM['seat_rest_z'])) + fwd * 0.06
     return Matrix.Translation(loc) @ Matrix.Rotation(rot, 4, 'Z')
 
 
@@ -531,7 +869,9 @@ def _table(room, coll):
     room.table = top
     room.table_cutters = cut_coll
     # brass liner: the walls and a flush lip (the floor is the walnut, so each cord's
-    # grommet opens through it). The lip carries the glints; the walls are aged dark.
+    # grommet opens through it). The lip is polished along the channel (its own material,
+    # UV u down the table: one narrow, paler glint line each side of the yellow bundle);
+    # the walls are aged dark.
     inner = [(-y, x) for x, y in P.stadium(c1 - c0, cw, 24)]
     inner = [(x, y + (c0 + c1) / 2) for x, y in inner]
     lip = [(-y, x) for x, y in P.stadium(c1 - c0 + 0.010, cw + 0.010, 24)]
@@ -542,9 +882,14 @@ def _table(room, coll):
     r_in = P.bm_ring(bm, [(x, y, tz - 0.0015) for x, y in inner])
     r_bot = P.bm_ring(bm, [(x, y, tz - cd + 0.0002) for x, y in inner])
     P.bm_bridge(bm, r_lip, r_top, 0)
-    P.bm_bridge(bm, r_top, r_in, 0)
+    P.bm_bridge(bm, r_top, r_in, 2)
     P.bm_bridge(bm, r_in, r_bot, 1)
-    liner = P.to_object(bm, 'brass_channel', [P.brass('brushed'), P.brass('aged')], coll, smooth=35.0, recalc=False)
+    uvl = bm.loops.layers.uv.new('UVMap')
+    for f in bm.faces:
+        for lp in f.loops:
+            lp[uvl].uv = (lp.vert.co.y, lp.vert.co.x + lp.vert.co.z)
+    liner = P.to_object(bm, 'brass_channel', [P.brass('lip'), P.brass('aged'), P.brass('brushed')], coll, smooth=35.0,
+                        recalc=False)
     room.channel = liner
     # grommets: a black rubber stadium ring round each bore, on the channel floor
     gbm = bmesh.new()
@@ -589,6 +934,16 @@ def _seats(room, coll):
         t = P.crt_terminal(name, P.TERMINAL_HEX[name], coll, tuple(mw.translation), rot,
                            powered=(name != 'pat'), energy=LIGHT['pat'] if name == 'pat' else e)
         room.terminals[name] = t
+        # its streak in the walnut: a glossy-only card over the table, inboard of the screen
+        # (long, so its mirror image spans metres of walnut; alternate seats sit 6 cm in or
+        # out, so a tail never runs under its neighbour's card, and each card is 1 cm lower
+        # than the next one up-table, so an overlapping tail never hides a bright head)
+        k = [n for n, (sd, _) in sorted(SEATS.items(), key=lambda it: -it[1][1]) if sd == side].index(name)
+        sx = side * (ROOM['streak_x'] + (0.06 if k % 2 == 0 else -0.06))
+        room.streaks[name] = P.crt_streak_card(t, f'streak_{name}', coll,
+                                               (sx, y, ROOM['streak_z'] + 0.002 * y),
+                                               size=(LIGHT['streak_w'], LIGHT['streak_len']), gain=LIGHT['streak'],
+                                               head=0.6)
 
 
 def _cord_points(room, name):
@@ -667,7 +1022,7 @@ def master_cord_mids(socket_pos, tz, origin=(0.0, 0.0, 0.0)):
     sx, sy, sz = socket_pos
     rc = 0.0055
     return [o + Vector(v) for v in ((0.045, -0.165, tz + rc), (0.13, -0.085, tz + rc), (0.195, -0.018, tz + rc),
-                                    (sx - 0.004, 0.016, tz + rc + 0.004), (sx, 0.064, tz - 0.012))]
+                                    (sx - 0.004, 0.016, tz + rc + 0.004), (sx, 0.065, tz - 0.012))]
 
 
 def _problem_props(room, coll):
@@ -678,7 +1033,9 @@ def _problem_props(room, coll):
             x, yy = prop_home(name, i)
             loc = (x, yy, ROOM['table_top_z'])
             if kind == 'padlock':
-                o = P.padlock(f'padlock_{name}', coll, loc, math.radians(90 + 8))
+                # broad faces look down-table, square to its slide to the fingertip: the
+                # S04/S09 lenses see the scratched face and the leading face meets the finger flat
+                o = P.padlock(f'padlock_{name}', coll, loc, math.radians(-4))
             elif kind == 'glass_zero':
                 o = P.glass_zero(f'zero_{name}', coll, loc)
             elif kind == 'envelope':
@@ -694,16 +1051,17 @@ def _printer(room, coll):
     cx, cy, _ = ROOM['printer_chair']
     ch = P.office_chair('chair_printer', coll, (cx, cy, 0.0), 0.0, low=True)   # low back: it reads from behind
     room.chairs['printer'] = ch
-    seat = ROOM['seat_top_z']
-    pr = P.laser_printer('printer', coll, (cx, cy + 0.02, seat), 0.0,
-                         stack_offset=(0.0, ROOM['printer_stack'][1] - (cy + 0.02), 0.0), stack_height=0.30,
-                         stack_floor_z=-seat)
+    seat = ROOM['seat_rest_z']
+    py = cy + 0.02
+    sx, sy, _ = ROOM['printer_stack']
+    pr = P.laser_printer('printer', coll, (cx, py, seat), 0.0,
+                         stack_offset=(sx - cx, sy - py, 0.0), stack_height=0.42, stack_floor_z=-seat)
     room.printer = pr
 
 
 def _droid(room, coll):
     x, y = ROOM['droid_start']
-    d = P.paper_droid('droid', coll, (x, y, 0.0), 0.0)
+    d = P.paper_droid('droid', coll, (x, y, 0.0), math.radians(ROOM['droid_start_heading']))
     room.droid = d
 
 
@@ -713,18 +1071,21 @@ def _fills(room, coll):
     y0, y1 = ROOM['interior_y']
     fills = []
     for i, yy in enumerate((-26.0, -15.0, -4.0)):
-        l = C.area_light(f'fill_{i}', (0.0, yy, 5.6), (0.0, yy, 0.0), 120.0 * LIGHT['fill'], 7.0, 9.0,
+        l = C.area_light(f'fill_{i}', (0.0, yy, 5.6), (0.0, yy, 0.0), 120.0 * LIGHT['fill'], 5.0, 9.0,
                          color=(0.85, 0.88, 1.0), coll=coll)
         l.data.size_y = 10.0
+        l.data.spread = math.radians(60)
         l.visible_camera = False
         l.visible_glossy = False
         fills.append((l, l.data.energy))
-    # neutral grazing wash down each long wall so the panel edges read as a rhythm
+    # neutral grazing wash on each long wall, only over its middle stretch: the near panels
+    # (the frame edges of the foot wide) and the far ones fall off to blue-black, so the lit
+    # table is the only figure
     for side in (-1, 1):
-        l = C.area_light(f'wallwash_{side}', (side * (x1 - 0.7), (y0 + y1) / 2, 5.85), None,
-                         300.0 * LIGHT['wash'], 0.4, color=(0.85, 0.88, 1.0), coll=coll)
-        l.data.size_y = 34.0
-        l.data.spread = math.radians(70)
+        l = C.area_light(f'wallwash_{side}', (side * (x1 - 0.7), LIGHT['wash_cy'], 5.85), None,
+                         300.0 * LIGHT['wash'] * LIGHT['wash_span'] / 34.0, 0.4, color=(0.85, 0.88, 1.0), coll=coll)
+        l.data.size_y = LIGHT['wash_span']
+        l.data.spread = math.radians(60)
         aim_light(l, Vector((side * 1.0, 0.0, -1.3)))
         l.visible_camera = False
         l.visible_glossy = False
@@ -741,7 +1102,7 @@ def _fills(room, coll):
         fills.append((l, l.data.energy))
     # the foot: a soft high downlight so the printer, its stack and the droid's start
     # read in the dark foreground of the wide
-    l = C.area_light('foot_fill', (0.0, -31.0, 5.4), (0.0, -30.6, 0.5), 10.0 * LIGHT['foot'], 2.4, 1.6,
+    l = C.area_light('foot_fill', (0.0, -31.0, 5.4), (0.4, -30.8, 0.4), 10.0 * LIGHT['foot'], 2.6, 1.6,
                      color=(0.9, 0.93, 1.0), coll=coll)
     l.visible_camera = False
     l.visible_glossy = False
@@ -785,12 +1146,13 @@ def stand_in(coll, pos=SYNERGY_POS):
     return rt
 
 
-def build(placeholder=False, state='lit', cords=True, seat_yaw_deg=None, render_budget=True):
+def build(placeholder=False, state='lit', cords=True, seat_yaw_deg=None, render_budget=False):
     """Build the whole Long Room into the current scene. Returns a Room handle.
 
     placeholder=True adds the 1.75 m grey stand-in for Synergy at SYNERGY_POS.
     seat_yaw_deg swivels the colleagues for this shot (default ROOM['seat_yaw_deg'];
-    see SHOT_SEAT_YAW). render_budget applies the room's render settings (Room.render_budget)."""
+    see SHOT_SEAT_YAW). render_budget=True (or a kind, 'wide'/'macro') applies the room's
+    render settings (Room.render_budget); by default the scene's own settings are kept."""
     room = Room()
     room.seat_yaw = ROOM['seat_yaw_deg'] if seat_yaw_deg is None else seat_yaw_deg
     coll = C.collection('LongRoom')
@@ -812,15 +1174,24 @@ def build(placeholder=False, state='lit', cords=True, seat_yaw_deg=None, render_
     room.set_state(1, state)
     room.compositor()
     if render_budget:
-        room.render_budget()
+        room.render_budget(kind=render_budget if isinstance(render_budget, str) else 'wide')
     return room
 
 
 # ================================================================== demo timeline + preview cameras
 
+# S07 deferral machine (colleague, prop index, arrival frame on the beat, double time?)
+S07_ARRIVALS = [('linda', 0, 609, False), ('keys', 0, 625, False), ('strategy', 0, 641, False),
+                ('people', 0, 657, False), ('arjun', 0, 673, True), ('operations', 0, 681, True),
+                ('synthia', 0, 689, True), ('strategy', 1, 697, True)]
+
 
 def demo_timeline(room):
-    """The treatment's room events on the film timeline (used by previews; shots may copy it)."""
+    """The treatment's room events on the film timeline (used by previews; shots may copy it).
+
+    Every object that is stopped and posted is hidden from its post frame on (as the
+    shots will), Kevin's padlock comes back for S09, the droid swings out from beside
+    the foot into its lane at f300."""
     pr = room.printer
     for f in (257, 321, 385, 449, 513, 577, 641, 705, 769, 833, 897):
         pr.feed(f)
@@ -829,23 +1200,40 @@ def demo_timeline(room):
     pr.led_off(1049)
     room.droid.blink(1, 1440, 48)
     lane = ROOM['droid_lane_x']
-    room.droid.drive(300, 712, [ROOM['droid_start'], (lane, -26.0), (lane, -8.0), (lane, -4.6), (1.55, -3.4),
-                                ROOM['droid_bay']])
+    x0, y0 = ROOM['droid_start']
+    # parked across the lane facing +X: it swings left into the lane over f300-330 (in
+    # profile, bar and trolley trailing), then runs up the lane at a measured pace
+    room.droid.place(299, x0, y0, ROOM['droid_start_heading'])
+    room.droid.drive(300, 712, [(x0, y0), (x0 + 0.08, y0), (x0 + 0.16, y0 + 0.005), (lane - 0.08, y0 + 0.13),
+                                (lane, y0 + 0.40), (lane, y0 + 1.2), (lane, -26.0), (lane, -8.0), (lane, -4.6),
+                                (1.55, -3.4), ROOM['droid_bay']], ease='cruise')
     T = room.terminals
     T['kevin'].speak(353, 377, seed=7)
     pad = room.props['kevin'][0]
-    P.slide(pad, 377, 424, prop_home('kevin'), stop_for('padlock'), settle=0.0, accel=0.55)
-    # S07 deferral machine (flares + slides arriving on the beats)
+    home = prop_home('kevin')
+    stop = Vector(stop_for('padlock', obj=pad, start=home))
+    P.slide(pad, 377, 424, home, tuple(stop), settle=0.0, accel=0.55)
+    pad.keyframe_insert('location', frame=520)        # holds at the stop until it is posted
+    room.key_visible(pad, 519, False)                 # S05: posted at f510-518
+    # S07 deferral machine (flares + slides arriving on the beats); each object is posted
+    # and gone by the end of its cycle
     for nm, f in (('linda', 609), ('keys', 625), ('strategy', 641), ('people', 657), ('arjun', 673),
                   ('operations', 681), ('synthia', 689), ('strategy', 697)):
         T[nm].flare(f - 16 if f - 16 > 600 else f - 8)
     T['people'].speak(645, 657, seed=3)
     T['strategy'].speak(629, 641, seed=5)
-    P.slide(room.props['strategy'][0], 627, 641, prop_home('strategy', 0), stop_for('tabs'), settle=0.004)
-    P.slide(room.props['people'][0], 643, 657, prop_home('people', 0), stop_for('envelope'), settle=0.004,
-            spin_deg=540)
-    # S09 Kevin again
+    tabs = room.props['strategy'][0]
+    P.slide(tabs, 627, 641, prop_home('strategy', 0), stop_for('tabs', obj=tabs, start=prop_home('strategy', 0)),
+            settle=0.004)
+    env = room.props['people'][0]
+    P.slide(env, 643, 657, prop_home('people', 0), stop_for('envelope'), settle=0.004, spin_deg=540)
+    for nm, i, f, dbl in S07_ARRIVALS:
+        room.key_visible(room.props[nm][i], f + (8 if dbl else 16), False)
+    # S09 Kevin again: the same padlock slides in from down-table and stops on the beat
     T['kevin'].speak(833, 869, seed=7)
+    dirn = (stop - Vector(home)).normalized()
+    room.key_visible(pad, 838, True)
+    P.slide(pad, 838, 852, tuple(stop - dirn * 1.6), tuple(stop), settle=0.0, accel=0.2)
     # S10 the jack pull on the downbeat: axial first (the pin clears the bore), then up and back
     j = room.jack.root
     base = Vector(j.location)
@@ -877,31 +1265,72 @@ def _cam(name, lens, loc, target, fstop=0.0, focus=None, shift_y=0.0, roll=0.0, 
     return cam
 
 
-PREVIEW_YAW = {'s03_wide': 's03', 's04_start': 's04', 's04_tabletop': 's04', 's07_profile_lane': 's07',
-               's09_low': 's09', 's10_jack_macro': 's10', 's11_shutdown': 's11', 's11_pat': 's11', 's13_dark': 's13'}
+PREVIEW_YAW = {'s02_end': 's02', 's03_wide': 's03', 's04_start': 's04', 's04_tabletop': 's04',
+               's07_profile_lane': 's07', 's09_low': 's09', 's10_jack_macro': 's10', 's11_shutdown': 's11',
+               's11_pat': 's11', 's13_dark': 's13'}
+# render_budget kind and insert kits per preview framing
+PREVIEW_BUDGET = {'s04_start': 'macro', 's04_tabletop': 'macro', 's09_low': 'macro', 's10_jack_macro': 'macro',
+                  's02_end': 'macro'}
+PREVIEW_KITS = {'s04_start': ('padlock',), 's04_tabletop': ('padlock',), 's09_low': ('padlock',),
+                's10_jack_macro': ('jack',), 's13_dark': ('sip',)}
+MACRO_PROPS = ('padlock', 'envelope', 'tabs', 'binder', 'zero')
+
+
+def _macro_props(room):
+    """Hero copies of the problem props on the walnut inside the slab near the foot, for
+    100 mm macro judgement under the room's own light (built once, hidden otherwise)."""
+    if getattr(room, 'macro_set', None):
+        return room.macro_set
+    coll = C.collection('LR_macro_props', C.collection('LongRoom'))
+    tz = TABLE_TOP
+    y = -21.5                                   # inside the slab (it lands on the walnut from y -26.7 up)
+    objs = {
+        'padlock': P.padlock('mac_padlock', coll, (0.18, y, tz), math.radians(64)),
+        'envelope': P.envelope('mac_envelope', coll, (0.20, y - 1.0, tz), math.radians(68), seed=4),
+        'tabs': P.tab_stack('mac_tabs', coll, (0.20, y - 2.0, tz), math.radians(-24)),
+        'binder': P.binder('mac_binder', coll, (0.24, y - 3.1, tz), math.radians(-14)),
+        'zero': P.glass_zero('mac_zero', coll, (0.20, y - 4.3, tz)),
+    }
+    room.macro_set = (coll, objs)
+    return room.macro_set
 
 
 def preview_camera(room, name):
     """(frame, camera) for the treatment framings used by tools/preview_room.py.
-    Swivels the chairs to the shot's SHOT_SEAT_YAW first."""
+    Swivels the chairs to the shot's SHOT_SEAT_YAW first, and shows only the insert kits
+    the framing uses (PREVIEW_KITS)."""
     sc = bpy.context.scene
     tz = ROOM['table_top_z']
     shot = PREVIEW_YAW.get(name)
     if shot is not None and abs(room.seat_yaw - SHOT_SEAT_YAW[shot]) > 1e-6:
         room.set_seat_yaw(SHOT_SEAT_YAW[shot])
+    for kit in PREVIEW_KITS.get(name, ()):
+        if kit == 'padlock':
+            room.insert_lights('padlock', target=room.props['kevin'][0])
+        else:
+            room.insert_lights(kit)
+    room.use_kits(*PREVIEW_KITS.get(name, ()))
+    mset = getattr(room, 'macro_set', None)
+    if mset:
+        mset[0].hide_render = not name.startswith('macro_')
+    room.hide_far_room(False)
+    if getattr(room, 'mirror', False) and name != 's02_end':
+        room.head_mirror(False)
     if name == 's03_wide':
-        # level camera on the axis behind the foot (the foot wall is hidden), shifted
-        # down for rigid one-point verticals: skylight ends above, printer, its stack
-        # and the droid's lane in the bottom fifth. 1 m push over the shot.
+        # level camera on the axis behind the foot (the foot wall is hidden), shifted down for
+        # rigid one-point verticals: 50 mm, so the walls converge out of the frame edges and
+        # the lit table, the nine screens and the host are the figure; the printer on its chair
+        # is the soft lower foreground, the droid swings out at the lower right. 1.5 m push.
         room.hide_from_camera('foot')
         f = 300
-        cam = bpy.data.objects.get('cam_s03') or C.camera('cam_s03', 32.0, (0, -39.5, 2.8), None, fstop=8.0,
-                                                           focus=16.0, clip=(0.05, 200.0))
+        cam = bpy.data.objects.get('cam_s03') or C.camera('cam_s03', 50.0, (0, -39.0, 2.6), None, fstop=8.0,
+                                                           focus=20.0, clip=(0.05, 200.0))
         cam.rotation_euler = (math.pi / 2, 0.0, 0.0)
-        cam.data.lens = 32.0
-        cam.data.shift_y = -0.062
-        for fr, yy in ((257, -39.5), (352, -38.5)):
-            cam.location = (0.0, yy, 2.8)
+        cam.data.lens = 50.0
+        cam.data.shift_y = -0.13
+        cam.data.dof.focus_distance = 20.0
+        for fr, yy in ((257, -39.0), (352, -37.5)):
+            cam.location = (0.0, yy, 2.6)
             cam.keyframe_insert('location', frame=fr)
         for fc in C.fcurves(cam.animation_data.action):
             for kp in fc.keyframe_points:
@@ -913,36 +1342,42 @@ def preview_camera(room, name):
         room.hide_from_camera()
         f = 364 if name == 's04_start' else 390
         pad = room.props['kevin'][0]
-        if 'card' not in room.insert:
-            room.insert_lights('padlock', target=pad)
         home = Vector((*prop_home('kevin'), tz))
         crt = room.terminals['kevin'].to_world((0.0, P.CRT['front'], P.CRT['zs']))
         d = (Vector((home.x, home.y, 0)) - Vector((crt.x, crt.y, 0))).normalized()
         off = d * 0.5 + Vector((0, 0, 0.03))
         aim = Vector((crt.x * 0.55 + home.x * 0.45, crt.y * 0.55 + home.y * 0.45, tz + 0.06)) - home
         cam = _cam(f'cam_{name}', 40.0, tuple(home + off), tuple(home + aim), fstop=2.8, focus=0.5)
-        foc = C.empty(f'focus_{name}', None, tuple(home + Vector((0, 0, 0.035))))
+        foc = bpy.data.objects.get(f'focus_{name}') or C.empty(f'focus_{name}', None, tuple(home + Vector((0, 0, 0.035))))
         cam.data.dof.focus_object = foc
         if name == 's04_tabletop':
-            # ride beside the padlock: camera and focus follow it around the preview frame
-            for fr in range(f - 2, f + 3):
+            # ride beside the padlock: camera and focus keyed every frame with LINEAR keys
+            # (the slide's own interpolation), so motion blur sees the padlock still in frame
+            for fr in range(f - 3, f + 4):
                 sc.frame_set(fr)
                 p = pad.matrix_world.translation.copy()
                 cam.location = p + off
                 cam.keyframe_insert('location', frame=fr)
                 foc.location = p + Vector((0, 0, 0.035))
                 foc.keyframe_insert('location', frame=fr)
+            for o in (cam, foc):
+                for fc in C.fcurves(o.animation_data.action):
+                    for kp in fc.keyframe_points:
+                        kp.interpolation = 'LINEAR'
         return f, cam
     if name == 's07_profile_lane':
-        # on his right, the cup nearest camera: he stands at frame right and the walnut and
-        # terminals recede to a vanishing point left of centre. (The treatment's 1.6 m right /
-        # 0.4 m down-table spot cannot hold both him and the table's vanishing point in one
-        # 35 mm frame; this is the nearest framing that does.)
+        # down-table of him on his right (2.0 m right, 0.95 m down-table, 1.55 m high), 35 mm:
+        # his face screen ~55 deg to the lens with the LEDs readable, the cup nearest camera,
+        # the hub and the stop point at frame centre, objects arriving from frame right. (No
+        # 35 mm frame holds both a readable face and the table's far vanishing point: from
+        # anywhere his screen faces, the far end lies more than 90 deg from him.)
         room.hide_from_camera('head')
         f = 650
         sp = Vector(SYNERGY_POS)
-        cam = _cam('cam_s07', 30.0, (sp.x - 1.05, sp.y + 1.05, 1.55), (sp.x + 0.55, sp.y - 6.5, 1.0), fstop=8.0,
-                   focus=3.0)
+        loc = Vector((sp.x - 2.0, sp.y - 0.95, 1.55))
+        b = math.radians(16.0)
+        cam = _cam('cam_s07', 35.0, tuple(loc), tuple(loc + Vector((math.cos(b), math.sin(b), -math.tan(math.radians(6.0))))),
+                   fstop=8.0, focus=2.4)
         return f, cam
     if name == 's09_low':
         # lens 6 cm above the walnut, 0.9 m down-table from his stop point, looking back up
@@ -951,27 +1386,28 @@ def preview_camera(room, name):
         sx, sy = stop_for('padlock')
         loc = Vector((sx - 0.06, sy - 1.15, tz + 0.06))
         cam = _cam('cam_s09', 40.0, tuple(loc), (sx * 0.45, SYNERGY_POS[1], 1.02), fstop=2.8)
-        foc = C.empty('focus_s09', None, (sx, sy, tz + 0.03))
+        foc = bpy.data.objects.get('focus_s09') or C.empty('focus_s09', None, (sx, sy, tz + 0.03))
         cam.data.dof.focus_object = foc
         return f, cam
     if name == 's10_jack_macro':
         room.hide_from_camera()
-        if not room.insert:
-            room.insert_lights('jack')
+        room.hide_far_room(True)
         f = 950
         s = Vector(ROOM['socket_pos']) + Vector((0.0, P.SOCKET_FACE, 0.0))
         tgt = s + Vector((-0.006, 0.016, 0.004))
         d = Vector((0.66, 0.50, 0.56)).normalized()
-        foc = C.empty('focus_s10', None, tuple(s + Vector((0, 0.014, 0.0))))
+        foc = bpy.data.objects.get('focus_s10') or C.empty('focus_s10', None, tuple(s + Vector((0, 0.014, 0.0))))
         cam = _cam('cam_s10', 100.0, tuple(tgt + d * 0.30), tuple(tgt), fstop=4.0, focus=foc)
         cam.data.dof.focus_object = foc
         return f, cam
     if name in ('s11_shutdown', 's11_pat'):
+        # behind-left of him, a touch above eye height and tilted up 2 deg: the slot's
+        # far rounded end sits in the top of frame (the sip-hole rhyme)
         room.hide_from_camera('head')
         f = 1030 if name == 's11_shutdown' else 1110
         sp = Vector(SYNERGY_POS)
         cam = _cam(f'cam_{name}', 32.0, (sp.x + 0.5, sp.y + 1.4, 1.5),
-                   (sp.x + 0.5, -30.0, 1.5 - 30.0 * math.tan(math.radians(2.0))), fstop=5.6, focus=1.5)
+                   (sp.x + 0.5, -30.0, 1.5 + 30.0 * math.tan(math.radians(1.0))), fstop=5.6, focus=1.5)
         return f, cam
     if name == 's13_dark':
         room.hide_from_camera()
@@ -980,5 +1416,31 @@ def preview_camera(room, name):
         a = math.radians(8)
         loc = (sp.x - 1.9 * math.sin(a), sp.y - 1.9 * math.cos(a), 1.35)
         cam = _cam('cam_s13', 65.0, loc, (sp.x, sp.y, 1.42), fstop=2.8, focus=1.9)
+        return f, cam
+    if name == 's02_end':
+        # the S02 end position (2.1 m in front, screen height, 10 deg to his right, 65 mm
+        # f/2) with the smoked-glass head wall: the screens mirror behind him as colour discs
+        room.hide_from_camera()
+        room.head_mirror(True)
+        f = 250
+        sp = Vector(SYNERGY_POS)
+        a = math.radians(10)
+        loc = (sp.x - 2.1 * math.sin(a), sp.y - 2.1 * math.cos(a), 1.58)
+        cam = _cam('cam_s02_end', 65.0, loc, (sp.x, sp.y, 1.50), fstop=2.0, focus=2.1)
+        return f, cam
+    if name.startswith('macro_'):
+        kind = name[len('macro_'):]
+        coll, objs = _macro_props(room)
+        coll.hide_render = False
+        room.hide_from_camera()
+        f = 300
+        o = objs[kind]
+        bpy.context.view_layer.update()
+        c = o.matrix_world.translation.copy()
+        dist = {'padlock': 0.42, 'envelope': 0.75, 'tabs': 0.52, 'binder': 0.95, 'zero': 0.55}[kind]
+        lift = {'padlock': 0.03, 'envelope': 0.0, 'tabs': 0.004, 'binder': 0.04, 'zero': 0.012}[kind]
+        aim = c + Vector((0.0, 0.0, lift))
+        d = Vector((0.75, -0.45, 0.62)).normalized()
+        cam = _cam(f'cam_{name}', 100.0, tuple(aim + d * dist), tuple(aim), fstop=5.6, focus=dist)
         return f, cam
     raise KeyError(name)

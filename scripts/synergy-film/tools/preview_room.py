@@ -1,24 +1,30 @@
 """Preview renders of the Long Room (E2), the macro inserts (E3) and a prop contact sheet.
 
     blender -b -P tools/preview_room.py -- --out DIR [--quality proof] [--only s03_wide,props_sheet]
-                                           [--samples N] [--save-blend PATH] [--res-scale F]
+                                           [--samples N] [--save-blend PATH] [--res-scale F] [--no-budget]
 
 Framings (film frames, from the treatment; each swivels the chairs to its shot's
-R.SHOT_SEAT_YAW and retunes the CRT scanlines for its lens):
+R.SHOT_SEAT_YAW, shows only its insert kit, applies the room's render budget for its
+kind (R.PREVIEW_BUDGET: 'macro' for the inserts, 'wide' otherwise; an explicit --samples
+is never lowered) and retunes the CRT scanlines for its lens):
+    s02_end           f250   S02's end position, 65 mm f/2, smoked-glass head wall (colour discs)
     s03_wide          f300   the drop: one-point wide from behind the foot, printer + droid below
     s04_start         f364   Kevin speaks; padlock still at home, lens 3 cm above the walnut
     s04_tabletop      f390   riding beside the gliding padlock
-    s07_profile_lane  f650   beside the head on his right, the deferral machine
+    s07_profile_lane  f650   down-table of him on his right, the deferral machine
     s09_low           f870   lens 6 cm above the walnut, 0.9 m down-table, looking back up at him
     s10_jack_macro    f950   100 mm f/4 macro of the brass socket and gold jack (insert light kit)
     s11_shutdown      f1030  from behind-left of the host, the shutdown wave mid-way
     s11_pat           f1110  the dark room; Pat's grey field at the far end
-    s13_dark          f1300  dark state: the slab as top key
+    s13_dark          f1300  dark state: the slab as top key, the 'sip' kit on the cup
+    macro_<prop>             100 mm macros of padlock / envelope / tabs / binder / zero on the
+                             walnut under the room's slab
     props_sheet              studio contact sheet of every prop (4 x 4 tiles)
 
 Synergy is a 1.75 m grey stand-in at SYNERGY_POS. Each image is written to
 <out>/<name>.png; render cost is printed as 'TIME <name> <wall s> cpu=<CPU s>'
-(CPU seconds of this process: divide by 4 for an idle 4-core machine).
+(CPU seconds of this process: divide by 4 for an idle 4-core machine), and a summary
+'COST' table at the end. Room.set_state is regression-checked before rendering.
 """
 
 import argparse
@@ -38,7 +44,8 @@ import common as C  # noqa: E402
 import props as P  # noqa: E402
 
 ALL = ['s03_wide', 's04_start', 's04_tabletop', 's07_profile_lane', 's09_low', 's10_jack_macro', 's11_shutdown',
-       's11_pat', 's13_dark', 'props_sheet']
+       's11_pat', 's13_dark', 's02_end', 'macro_padlock', 'macro_envelope', 'macro_tabs', 'macro_binder',
+       'macro_zero', 'props_sheet']
 
 
 def args():
@@ -51,6 +58,8 @@ def args():
     p.add_argument('--save-blend', default='')
     p.add_argument('--tile', default='480x270')
     p.add_argument('--res-scale', type=float, default=1.0)
+    p.add_argument('--no-budget', action='store_true', help="keep the tier's own settings (no room budget)")
+    p.add_argument('--tiles', default='', help='props_sheet: only these tiles (comma list, e.g. padlock,envelope)')
     return p.parse_args(argv)
 
 
@@ -243,7 +252,10 @@ def props_sheet(a):
              and o.name not in ('studio_rig', 'studio_sweep')]
     paths = []
     total = 0.0
+    want = [t for t in a.tiles.split(',') if t]
     for i, tl in enumerate(tiles):
+        if want and tl['name'] not in want:
+            continue
         mine = set(o.name for o in tl['objs'])
         for o in every:
             o.hide_render = o.name not in mine
@@ -275,7 +287,8 @@ def props_sheet(a):
         total += render_to(path, 'tile_' + tl['name'])
         paths.append(path)
     print(f'TIME props_sheet_total {total:.1f}', flush=True)
-    stitch(paths, os.path.join(os.path.abspath(a.out), 'props_sheet.png'), 4, tw, th)
+    if not want:
+        stitch(paths, os.path.join(os.path.abspath(a.out), 'props_sheet.png'), 4, tw, th)
 
 
 def stitch(paths, out, cols, tw, th):
@@ -302,12 +315,42 @@ def stitch(paths, out, cols, tw, th):
 # ================================================================== room framings
 
 
+def check_set_state(R):
+    """Regression check: a later set_state must not turn an earlier fade into a hard switch."""
+    import bpy as _b
+    room = R.Room()
+    ld = _b.data.lights.new('_chk_fill', 'AREA')
+    lo = _b.data.objects.new('_chk_fill', ld)
+    _b.context.scene.collection.objects.link(lo)
+    ld.energy = 10.0
+    room.fills = [(lo, 10.0)]
+    m = _b.data.materials.new('_chk_mat')
+    m.use_nodes = True
+    mth = m.node_tree.nodes.new('ShaderNodeMath')
+    room.diffuser_strength = mth.inputs[1]
+    room.set_state(1, 'dark')
+    room.set_state(1160, 'lit', ramp=12)
+    room.set_state(1250, 'dark')
+    fc = ld.animation_data.action
+    from common import fcurves
+    curve = [c for c in fcurves(fc) if c.data_path == 'energy'][0]
+    vals = {f: curve.evaluate(f) for f in (1100, 1159, 1166, 1171, 1172, 1249, 1250)}
+    ok = abs(vals[1166] - 5.2) < 0.3 and abs(vals[1159] - 0.4) < 1e-3 and abs(vals[1249] - 10.0) < 1e-3 \
+        and abs(vals[1250] - 0.4) < 1e-3
+    print('CHECK set_state', 'PASS' if ok else 'FAIL', {k: round(v, 3) for k, v in vals.items()}, flush=True)
+    _b.data.objects.remove(lo)
+    _b.data.lights.remove(ld)
+    _b.data.materials.remove(m)
+    return ok
+
+
 def room_framings(a, names):
     import env_room as R
     sc = C.new_scene(1, 1440, a.quality, a.samples)
     if a.res_scale != 1.0:
         sc.render.resolution_x = int(sc.render.resolution_x * a.res_scale)
         sc.render.resolution_y = int(sc.render.resolution_y * a.res_scale)
+    check_set_state(R)
     c0 = cpu_seconds()
     room = R.build(placeholder=True)
     R.demo_timeline(room)
@@ -317,10 +360,17 @@ def room_framings(a, names):
     times = {}
     for nm in names:
         f, cam = R.preview_camera(room, nm)
+        if not a.no_budget:
+            room.render_budget(kind=R.PREVIEW_BUDGET.get(nm, 'wide'), samples=a.samples or None,
+                               tier=None if a.res_scale == 1.0 else a.quality)
         sc.camera = cam
         sc.frame_set(f)
         room.tune_scanlines(cam)
-        times[nm] = render_to(os.path.join(os.path.abspath(a.out), f'{nm}.png'), nm)
+        c1 = cpu_seconds()
+        times[nm] = (render_to(os.path.join(os.path.abspath(a.out), f'{nm}.png'), nm), cpu_seconds() - c1)
+    print('COST (render only; CPU-s, idle 4-core estimate = CPU-s / 4)', flush=True)
+    for nm, (wall, cpu) in times.items():
+        print(f'COST {nm:18s} wall={wall:6.1f}s cpu={cpu:7.1f}s idle4~{cpu / 4:5.1f}s', flush=True)
     return times
 
 
