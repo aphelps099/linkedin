@@ -1,24 +1,30 @@
 """Preview renders of the Long Room (E2), the macro inserts (E3) and a prop contact sheet.
 
     blender -b -P tools/preview_room.py -- --out DIR [--quality proof] [--only s03_wide,props_sheet]
-                                           [--samples N] [--save-blend PATH]
+                                           [--samples N] [--save-blend PATH] [--res-scale F]
 
-Framings (film frames, from the treatment):
-    s03_wide          f300   the drop: one-point wide from the foot, printer foreground
-    s04_tabletop      f390   Kevin speaks; his padlock on the walnut, lens 3 cm above the table
-    s07_profile_lane  f650   beside the head on his right, the deferral machine; droid in the lane
-    s10_jack_macro    f950   100 mm macro of the brass socket and gold jack
-    s11_shutdown      f1030  from behind the host, the shutdown wave mid-way
-    s13_dark          f1300  dark state: slab + Pat's grey glow
+Framings (film frames, from the treatment; each swivels the chairs to its shot's
+R.SHOT_SEAT_YAW and retunes the CRT scanlines for its lens):
+    s03_wide          f300   the drop: one-point wide from behind the foot, printer + droid below
+    s04_start         f364   Kevin speaks; padlock still at home, lens 3 cm above the walnut
+    s04_tabletop      f390   riding beside the gliding padlock
+    s07_profile_lane  f650   beside the head on his right, the deferral machine
+    s09_low           f870   lens 6 cm above the walnut, 0.9 m down-table, looking back up at him
+    s10_jack_macro    f950   100 mm f/4 macro of the brass socket and gold jack (insert light kit)
+    s11_shutdown      f1030  from behind-left of the host, the shutdown wave mid-way
+    s11_pat           f1110  the dark room; Pat's grey field at the far end
+    s13_dark          f1300  dark state: the slab as top key
     props_sheet              studio contact sheet of every prop (4 x 4 tiles)
 
 Synergy is a 1.75 m grey stand-in at SYNERGY_POS. Each image is written to
-<out>/<name>.png; render times are printed as 'TIME <name> <seconds>'.
+<out>/<name>.png; render cost is printed as 'TIME <name> <wall s> cpu=<CPU s>'
+(CPU seconds of this process: divide by 4 for an idle 4-core machine).
 """
 
 import argparse
 import math
 import os
+import resource
 import sys
 import time
 
@@ -31,7 +37,8 @@ sys.path.insert(0, LIB)
 import common as C  # noqa: E402
 import props as P  # noqa: E402
 
-ALL = ['s03_wide', 's04_tabletop', 's07_profile_lane', 's10_jack_macro', 's11_shutdown', 's13_dark', 'props_sheet']
+ALL = ['s03_wide', 's04_start', 's04_tabletop', 's07_profile_lane', 's09_low', 's10_jack_macro', 's11_shutdown',
+       's11_pat', 's13_dark', 'props_sheet']
 
 
 def args():
@@ -47,13 +54,18 @@ def args():
     return p.parse_args(argv)
 
 
+def cpu_seconds():
+    r = resource.getrusage(resource.RUSAGE_SELF)
+    return r.ru_utime + r.ru_stime
+
+
 def render_to(path, label):
     sc = bpy.context.scene
     sc.render.filepath = path
-    t0 = time.time()
+    t0, c0 = time.time(), cpu_seconds()
     bpy.ops.render.render(write_still=True)
-    dt = time.time() - t0
-    print(f'TIME {label} {dt:.1f}', flush=True)
+    dt, dc = time.time() - t0, cpu_seconds() - c0
+    print(f'TIME {label} {dt:.1f} cpu={dc:.1f} idle4~{dc / 4:.1f}s', flush=True)
     return dt
 
 
@@ -195,7 +207,7 @@ def props_sheet(a):
     blk = P.box('walnut_block', (0.9, 0.6, 0.08), tuple(base + Vector((0.0, -0.3, tz - 0.04))), P.walnut(), None, 0.002)
     spos = base + Vector(R.ROOM['socket_pos'])
     sk = P.brass_socket('socket', None, tuple(spos))
-    jk = P.gold_jack('jack', None, tuple(spos))
+    jk = P.gold_jack('jack', None, tuple(spos + Vector((0.0, P.SOCKET_FACE, 0.0))))
     hb2 = P.conference_hub('hub2', None, tuple(base + Vector(R.ROOM['hub_pos'])))
     bpy.context.view_layer.update()
     mc = P.master_cord(hb2.port, jk.root, jk.tail_local, R.master_cord_mids(R.ROOM['socket_pos'], tz, base), 'mcord')
@@ -210,8 +222,9 @@ def props_sheet(a):
     k += 1
     # 15 lid macro, top-down (the S02 opening)
     cp2 = P.cup_and_lid('cup2', None, tuple(slot(k)))
-    add('lid_macro', all_children(cp2.root), aim=slot(k) + Vector((0, 0.02, 0.125)), view=(0.0, -0.25, 1.0), lens=100,
-        fill=0.9, size=(0.07, 0.05))
+    sc_ = P.CUP['slot_r']
+    add('lid_macro', all_children(cp2.root), aim=slot(k) + Vector((0, sc_, 0.131)), view=(0.0, -0.22, 1.0), lens=100,
+        fill=1.0, size=(0.075, 0.05))
     k += 1
     # 16 a coil sample (cord over a walnut edge)
     base = slot(k)
@@ -295,8 +308,10 @@ def room_framings(a, names):
     if a.res_scale != 1.0:
         sc.render.resolution_x = int(sc.render.resolution_x * a.res_scale)
         sc.render.resolution_y = int(sc.render.resolution_y * a.res_scale)
+    c0 = cpu_seconds()
     room = R.build(placeholder=True)
     R.demo_timeline(room)
+    print(f'TIME build cpu={cpu_seconds() - c0:.1f}', flush=True)
     if a.save_blend:
         bpy.ops.wm.save_as_mainfile(filepath=os.path.abspath(a.save_blend))
     times = {}
@@ -304,6 +319,7 @@ def room_framings(a, names):
         f, cam = R.preview_camera(room, nm)
         sc.camera = cam
         sc.frame_set(f)
+        room.tune_scanlines(cam)
         times[nm] = render_to(os.path.join(os.path.abspath(a.out), f'{nm}.png'), nm)
     return times
 
