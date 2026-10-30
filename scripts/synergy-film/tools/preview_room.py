@@ -2,29 +2,35 @@
 
     blender -b -P tools/preview_room.py -- --out DIR [--quality proof] [--only s03_wide,props_sheet]
                                            [--samples N] [--save-blend PATH] [--res-scale F] [--no-budget]
+                                           [--threads N] [--frames N,N,...]
 
 Framings (film frames, from the treatment; each swivels the chairs to its shot's
 R.SHOT_SEAT_YAW, shows only its insert kit, applies the room's render budget for its
 kind (R.PREVIEW_BUDGET: 'macro' for the inserts, 'wide' otherwise; an explicit --samples
 is never lowered) and retunes the CRT scanlines for its lens):
-    s02_end           f250   S02's end position, 65 mm f/2, smoked-glass head wall (colour discs)
+    s02_lid           f140   the S01/S02 match cut: 100 mm straight down on the lid ('lid' kit)
+    s02_end           f250   S02's end position, 65 mm f/2, colour discs behind him (Room.front_bokeh)
     s03_wide          f300   the drop: one-point wide from behind the foot, printer + droid below
     s04_start         f364   Kevin speaks; padlock still at home, lens 3 cm above the walnut
     s04_tabletop      f390   riding beside the gliding padlock
-    s07_profile_lane  f650   down-table of him on his right, the deferral machine
-    s09_low           f870   lens 6 cm above the walnut, 0.9 m down-table, looking back up at him
-    s10_jack_macro    f950   100 mm f/4 macro of the brass socket and gold jack (insert light kit)
+    s05_medium        f470   85 mm f/2 medium, colour discs behind him
+    s07_profile_lane  f712   from his left, down-table: him at frame right, the droid's stop at his hip
+    s09_low           f870   lens 6 cm above the walnut, 0.9 m down-table, looking back up at him (28 mm)
+    s10_jack_macro    f950   100 mm f/8 macro of the socket and gold jack from beyond the head edge
     s11_shutdown      f1030  from behind-left of the host, the shutdown wave mid-way
     s11_pat           f1110  the dark room; Pat's grey field at the far end
-    s13_dark          f1300  dark state: the slab as top key, the 'sip' kit on the cup
+    s13_dark          f1300  dark state: the slab as top key, the 'sip' kit on the cup, Pat's disc
     macro_<prop>             100 mm macros of padlock / envelope / tabs / binder / zero on the
                              walnut under the room's slab
     props_sheet              studio contact sheet of every prop (4 x 4 tiles)
 
 Synergy is a 1.75 m grey stand-in at SYNERGY_POS. Each image is written to
-<out>/<name>.png; render cost is printed as 'TIME <name> <wall s> cpu=<CPU s>'
-(CPU seconds of this process: divide by 4 for an idle 4-core machine), and a summary
-'COST' table at the end. Room.set_state is regression-checked before rendering.
+<out>/<name>.png (with --frames, <out>/<name>_fNNNN.png per frame); render cost is printed
+as 'TIME <name> <wall s> cpu=<CPU s>' and a summary 'COST' table at the end, with the load
+average before and after each render (wall time is only the idle cost when the load is
+~0; --threads 4 pins Cycles to 4 threads). Room.set_state is regression-checked before
+rendering; the S11 framings get a projection/occlusion check (every shutdown screen and
+Pat must project inside the frame and clear of a 0.75 m Synergy silhouette).
 """
 
 import argparse
@@ -44,8 +50,8 @@ import common as C  # noqa: E402
 import props as P  # noqa: E402
 
 ALL = ['s03_wide', 's04_start', 's04_tabletop', 's07_profile_lane', 's09_low', 's10_jack_macro', 's11_shutdown',
-       's11_pat', 's13_dark', 's02_end', 'macro_padlock', 'macro_envelope', 'macro_tabs', 'macro_binder',
-       'macro_zero', 'props_sheet']
+       's11_pat', 's13_dark', 's02_end', 's02_lid', 's05_medium', 'macro_padlock', 'macro_envelope', 'macro_tabs',
+       'macro_binder', 'macro_zero', 'props_sheet']
 
 
 def args():
@@ -60,6 +66,8 @@ def args():
     p.add_argument('--res-scale', type=float, default=1.0)
     p.add_argument('--no-budget', action='store_true', help="keep the tier's own settings (no room budget)")
     p.add_argument('--tiles', default='', help='props_sheet: only these tiles (comma list, e.g. padlock,envelope)')
+    p.add_argument('--threads', type=int, default=0, help='pin Cycles to N threads (wall-clock cost measurement)')
+    p.add_argument('--frames', default='', help='room framings: render these film frames instead of the default')
     return p.parse_args(argv)
 
 
@@ -68,13 +76,21 @@ def cpu_seconds():
     return r.ru_utime + r.ru_stime
 
 
+def load():
+    try:
+        return os.getloadavg()[0]
+    except OSError:
+        return -1.0
+
+
 def render_to(path, label):
     sc = bpy.context.scene
     sc.render.filepath = path
+    l0 = load()
     t0, c0 = time.time(), cpu_seconds()
     bpy.ops.render.render(write_still=True)
     dt, dc = time.time() - t0, cpu_seconds() - c0
-    print(f'TIME {label} {dt:.1f} cpu={dc:.1f} idle4~{dc / 4:.1f}s', flush=True)
+    print(f'TIME {label} {dt:.1f} cpu={dc:.1f} load={l0:.2f}->{load():.2f}', flush=True)
     return dt
 
 
@@ -344,9 +360,60 @@ def check_set_state(R):
     return ok
 
 
+def check_s11(R, room, cam, label):
+    """Projection and occlusion check for the S11 framings: each shutdown screen and Pat's
+    must project inside the frame and clear of Synergy, both an analytic 0.75 m silhouette
+    (shoulders 0.75 m wide to 1.45 m, head 0.45 m wide to 1.80 m, 0.30 m deep) and the stand-in
+    (scene ray cast). Prints one line per screen and PASS/FAIL."""
+    from bpy_extras.object_utils import world_to_camera_view
+    sc = bpy.context.scene
+    bpy.context.view_layer.update()
+    dg = bpy.context.evaluated_depsgraph_get()
+    loc = cam.matrix_world.translation
+    sp = Vector(R.SYNERGY_POS)
+    boxes = [((sp.x - 0.375, sp.y - 0.15, 0.0), (sp.x + 0.375, sp.y + 0.15, 1.45)),
+             ((sp.x - 0.225, sp.y - 0.15, 1.45), (sp.x + 0.225, sp.y + 0.15, 1.80))]
+
+    def hits_box(p0, p1, lo, hi):
+        d = p1 - p0
+        t0, t1 = 0.0, 1.0
+        for k in range(3):
+            if abs(d[k]) < 1e-12:
+                if p0[k] < lo[k] or p0[k] > hi[k]:
+                    return False
+                continue
+            a_, b_ = (lo[k] - p0[k]) / d[k], (hi[k] - p0[k]) / d[k]
+            t0, t1 = max(t0, min(a_, b_)), min(t1, max(a_, b_))
+            if t0 > t1:
+                return False
+        return True
+    ok = True
+    names = list(R.SHUTDOWN_ORDER) + ['pat']
+    for nm in names:
+        t = room.terminals[nm]
+        worst = []
+        for dx, dz in ((0.0, 0.0), (-0.13, 0.09), (0.13, 0.09), (-0.13, -0.09), (0.13, -0.09)):
+            p = t.to_world((dx, R.P.CRT['front'] - 0.005, R.P.CRT['zs'] + dz))
+            uv = world_to_camera_view(sc, cam, p)
+            inside = 0.0 <= uv.x <= 1.0 and 0.0 <= uv.y <= 1.0 and uv.z > 0
+            occl = any(hits_box(loc, p, lo, hi) for lo, hi in boxes)
+            d = (p - loc)
+            hit, hp, _, _, ob, _ = sc.ray_cast(dg, loc, d.normalized(), distance=d.length - 0.02)
+            stand = bool(hit and ob is not None and (ob.name.startswith('ph_') or ob.name.startswith('synergy')))
+            worst.append((inside, occl, stand, uv))
+        c_in, c_occ, c_st, uv = worst[0]
+        good = all(w[0] for w in worst) and not any(w[1] or w[2] for w in worst)
+        ok &= good
+        print(f'CHECK {label} {nm:10s} u={uv.x:.3f} v={uv.y:.3f} in_frame={all(w[0] for w in worst)} '
+              f'silhouette={any(w[1] for w in worst)} stand_in={any(w[2] for w in worst)} '
+              f'{"ok" if good else "BLOCKED"}', flush=True)
+    print(f'CHECK {label} projection/occlusion', 'PASS' if ok else 'FAIL', flush=True)
+    return ok
+
+
 def room_framings(a, names):
     import env_room as R
-    sc = C.new_scene(1, 1440, a.quality, a.samples)
+    sc = C.new_scene(1, 1440, a.quality, a.samples, threads=a.threads)
     if a.res_scale != 1.0:
         sc.render.resolution_x = int(sc.render.resolution_x * a.res_scale)
         sc.render.resolution_y = int(sc.render.resolution_y * a.res_scale)
@@ -360,17 +427,29 @@ def room_framings(a, names):
     times = {}
     for nm in names:
         f, cam = R.preview_camera(room, nm)
+        kind = R.PREVIEW_BUDGET.get(nm, 'macro' if nm.startswith('macro_') else 'wide')
         if not a.no_budget:
-            room.render_budget(kind=R.PREVIEW_BUDGET.get(nm, 'wide'), samples=a.samples or None,
-                               tier=None if a.res_scale == 1.0 else a.quality)
+            room.render_budget(kind=kind, samples=a.samples or None,
+                               tier=None if a.res_scale == 1.0 else a.quality, locked=nm in R.PREVIEW_LOCKED)
+        # macro inserts: the glare starts higher, so sunlit paper and brass keep their detail
+        # (the defocused screens behind still bloom)
+        room.compositor(threshold=1.6 if kind == 'macro' else 0.9)
+        sc.view_settings.exposure = R.PREVIEW_EXPOSURE.get(nm, 0.0)
         sc.camera = cam
-        sc.frame_set(f)
-        room.tune_scanlines(cam)
-        c1 = cpu_seconds()
-        times[nm] = (render_to(os.path.join(os.path.abspath(a.out), f'{nm}.png'), nm), cpu_seconds() - c1)
-    print('COST (render only; CPU-s, idle 4-core estimate = CPU-s / 4)', flush=True)
-    for nm, (wall, cpu) in times.items():
-        print(f'COST {nm:18s} wall={wall:6.1f}s cpu={cpu:7.1f}s idle4~{cpu / 4:5.1f}s', flush=True)
+        frames = [int(x) for x in a.frames.split(',') if x] or [f]
+        for fr in frames:
+            sc.frame_set(fr)
+            if nm.startswith('s11'):
+                check_s11(R, room, cam, f'{nm}@{fr}')
+            room.tune_scanlines(cam)
+            c1 = cpu_seconds()
+            out = f'{nm}.png' if not a.frames else f'{nm}_f{fr:04d}.png'
+            l0 = load()
+            wall = render_to(os.path.join(os.path.abspath(a.out), out), f'{nm}@{fr}')
+            times[f'{nm}@{fr}'] = (wall, cpu_seconds() - c1, l0, load())
+    print('COST (render only: wall-clock s, CPU-s of this process, 1-min load average before -> after)', flush=True)
+    for nm, (wall, cpu, l0, l1) in times.items():
+        print(f'COST {nm:22s} wall={wall:6.1f}s cpu={cpu:7.1f}s load={l0:5.2f}->{l1:5.2f}', flush=True)
     return times
 
 

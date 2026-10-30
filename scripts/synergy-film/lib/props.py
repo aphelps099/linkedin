@@ -60,17 +60,19 @@ TERMINAL_HEX = {
 #   AgX Medium High Contrast  strategy 26.5  arjun 15.1  keys/cobalt 10.6
 #   AgX High Contrast         strategy 22.7  arjun 12.5  keys/cobalt 10.6
 #   Khronos PBR Neutral       strategy  3.2  arjun  1.9  keys/cobalt  2.3
-# so the view transform (common.new_scene) decides whether the acid yellow can read.
+# so the view transform (common.new_scene) decides whether the acid yellow can read. Until the
+# view is changed, the acid yellow and the lime carry a small white core (crt_core) and a wider
+# bloom (crt_bloom), so they read as bright as People & Culture rather than mustard and olive.
 CRT_CAL = {
     'synthia': dict(boost=3.2, level=3.0, hue=0.015),       # dE  3.9  #EFECE1
-    'keys': dict(boost=1.4, level=0.8, hue=0.015),          # dE 10.6  #1E54D6
+    'keys': dict(boost=1.4, level=0.8, hue=0.015, pool=0.8),      # dE 10.6  #1E54D6
     'kevin': dict(boost=3.2, level=2.2, hue=0.015),         # dE  2.8  #BCD9F8
     'operations': dict(boost=2.2, level=0.8, hue=0.015),    # dE  4.2  #F17A48
     'pat': dict(boost=1.0, level=0.65, hue=0.0),            # #707070 bare; glass, bloom and the dark room lift it to ~#8A
-    'arjun': dict(boost=2.6, level=1.3, hue=0.0),           # dE 15.2  #C3DC80 (AgX gamut limit)
-    'strategy': dict(rgb=(0.9, 1.0, 0.0), level=0.62),      # dE 25.5  #B9B72D (AgX MHC floor, see below)
+    'arjun': dict(boost=2.6, level=1.3, hue=0.0, core=0.12, bloom=0.3),   # dE 15.2  #C3DC80 (AgX gamut limit)
+    'strategy': dict(rgb=(0.9, 1.0, 0.0), level=0.82, core=0.22, bloom=0.35),  # AgX MHC floor: lifted by a white core
     'people': dict(boost=3.2, level=1.3, hue=0.0),          # dE  3.9  #F3B5D5
-    'linda': dict(boost=1.4, level=0.8, hue=-0.015),        # dE  8.5  #81002C
+    'linda': dict(boost=0.72, level=0.95, hue=0.0, pool=0.45),    # burgundy (#8A2433), not pink/crimson, in the room
 }
 
 
@@ -439,24 +441,34 @@ def cached(fn):
 
 
 @cached
-def walnut(m):
+def walnut(m, axis='Y'):
     """Flat-sawn, book-matched American walnut under a glossy clearcoat (roughness ~0.08-0.12).
 
     Two 0.4 m boards a side, mirrored about the spine. Each board's growth rings are
     sliced by the surface at a height above the pith that wanders along the length,
     so the rings draw cathedral arches with irregular spacing. Colour runs from
-    purple-grey heartwood to honey streaks; pores are fine dark dashes along the
-    grain. The coat carries directional wipe marks and fingerprints, so screen
-    reflections stretch into long streaks at grazing angles."""
+    purple-grey heartwood to honey streaks (held brown, not orange, under the slab);
+    pores are 0.2-0.4 mm dark dashes along the grain that resolve in a 100 mm macro. The
+    coat carries directional wipe marks and fingerprints, so screen reflections stretch
+    into long streaks at grazing angles. End grain (faces across the grain) is darker,
+    satin, its rings irregular (+-40% spacing) with fine medullary rays and open pore dots.
+    axis: the grain direction ('Y' = the table's length; 'X' = across, the breadboard ends)."""
     g = G(m)
-    P = g.obj()
-    x, y, z = g.sep(P)
+    P0 = g.obj()
+    x0, y0, z = g.sep(P0)
+    nx0, ny0, _ = g.sep(g.geo().outputs['Normal'])
+    if axis == 'X':
+        x, y, ny = y0, x0, nx0
+    else:
+        x, y, ny = x0, y0, ny0
+    P = g.comb(x, y, z)
     ax = g.math('ABSOLUTE', x)
     bw = 0.40
     bi = g.math('FLOOR', g.math('DIVIDE', ax, bw))
     wn = g.node('ShaderNodeTexWhiteNoise', noise_dimensions='2D')
-    g._set(wn.inputs['Vector'], g.comb(g.add(g.mul(bi, 7.31), 1.7), 3.3, 0.0))
+    g._set(wn.inputs['Vector'], g.comb(g.add(g.mul(bi, 7.31), 1.7 if axis == 'Y' else 5.9), 3.3, 0.0))
     rnd = wn.outputs['Value']
+    endg = g.remap(g.math('ABSOLUTE', ny), 0.55, 0.9, smooth=True)           # 1 on end grain
     # pith position across the board and the cut height above it (wanders along y)
     xl = g.sub(g.sub(ax, g.mul(g.add(bi, 0.5), bw)), g.mul(g.sub(rnd, 0.5), 0.30))
     hn = g.noise(g.comb(g.mul(y, 0.21), g.mul(rnd, 13.0), g.mul(bi, 5.0)), 1.0, 2.0, 0.5)
@@ -469,11 +481,13 @@ def walnut(m):
     wob = g.noise(g.scale_vec(P, (6.0, 0.35, 6.0)), 1.0, 3.0, 0.55)
     r = g.add(r, g.mul(g.sub(wob, 0.5), 0.010), g.mul(g.sub(fig, 0.5), 0.045))
     grow = g.noise(g.comb(g.mul(r, 9.0), g.mul(rnd, 7.0), 0.5), 1.0, 2.0, 0.5)
-    rings = g.add(g.math('DIVIDE', r, 0.0052), g.mul(grow, 6.0))
+    # end grain: ring spacing wanders +-40% year to year (no lathe-like regularity)
+    yr = g.noise(g.comb(g.mul(r, 60.0), g.mul(rnd, 3.0), 1.5), 1.0, 2.0, 0.6)
+    spacing = g.add(1.0, g.mul(endg, g.mul(g.sub(yr, 0.5), 0.8)))
+    rings = g.add(g.math('DIVIDE', r, g.mul(spacing, 0.0052)), g.mul(grow, 6.0))
     fr = g.math('FRACT', rings)
     late = g.mul(g.remap(fr, 0.50, 0.92, smooth=True), g.remap(fr, 1.0, 0.955))   # latewood, soft edge
-    _, ny, _ = g.sep(g.geo().outputs['Normal'])
-    late = g.mul(late, g.sub(1.0, g.mul(g.math('ABSOLUTE', ny), 0.6)))           # end grain: quieter rings
+    late = g.mul(late, g.sub(1.0, g.mul(endg, 0.45)))                            # end grain: quieter rings
     late = g.mul(late, g.add(0.55, g.mul(g.noise(g.scale_vec(P, (3.0, 0.5, 3.0)), 1.0, 2.0), 0.6)))
     # colour: purple-grey heartwood <-> honey streaks, per board and along the length, plus a
     # slow drift of the whole tone over 0.3-1 m (no two metres of the table alike)
@@ -486,27 +500,45 @@ def walnut(m):
     col = g.mix(g.remap(drift, 0.35, 0.2), col, WALNUT_DARK)
     col = g.mix(g.mul(g.remap(drift, 0.62, 0.8), 0.5), col, WALNUT_LIGHT)
     col = g.mix(g.mul(late, 0.30), col, tuple(c * 0.5 for c in WALNUT_DARK))
-    # pores: 0.2-0.4 mm x 2-5 mm dark dashes along the grain
-    pn = g.noise(g.scale_vec(P, (2600.0, 230.0, 2600.0)), 1.0, 1.0, 0.5)
-    pores = g.mul(g.remap(pn, 0.69, 0.76), g.add(0.45, g.mul(late, 0.55)))
-    col = g.mix(g.mul(pores, 0.55), col, (0.006, 0.0035, 0.0025))
+    # pores: 0.2-0.4 mm x 2-5 mm dark dashes along the grain (stretched Voronoi cells),
+    # denser in the latewood; on end grain they are open round dots
+    pd, _ = g.voronoi(g.scale_vec(P, (1500.0, 150.0, 1500.0)), 1.0)
+    dash = g.remap(pd, 0.20, 0.10, smooth=True)
+    pn = g.noise(g.scale_vec(P, (300.0, 30.0, 300.0)), 1.0, 2.0, 0.5)
+    pores = g.mul(dash, g.remap(pn, 0.38, 0.58), g.add(0.45, g.mul(late, 0.55)), g.sub(1.0, endg))
+    dots, _ = g.voronoi(g.scale_vec(P, (2400.0, 2400.0, 2400.0)), 1.0)
+    pdots = g.mul(g.remap(dots, 0.24, 0.12, smooth=True), endg, g.add(0.3, g.mul(late, 0.7)))
+    # medullary rays: fine pale flecks radiating from the pith, seen on the end grain
+    ang = g.math('ARCTAN2', h, xl)
+    rays = g.remap(g.math('ABSOLUTE', g.sub(g.math('FRACT', g.add(g.mul(ang, 140.0),
+                                                                 g.mul(g.noise(g.vmath('SCALE', P, scale=40.0), 1.0, 2.0), 1.5))), 0.5)),
+                   0.47, 0.5, smooth=True)
+    col = g.mix(g.mul(rays, endg, 0.25), col, WALNUT_LIGHT)
+    col = g.mix(g.mul(g.add(pores, pdots), 0.7), col, (0.006, 0.0035, 0.0025))
     col = g.colmul(col, (0.82, 0.82, 0.82))
+    col = g.mix(g.mul(endg, 0.30), col, tuple(c * 0.55 for c in WALNUT_DARK))    # end grain drinks the finish: darker
+    # hold it brown under the slab: 30% toward its own grey and a touch darker (AgX pushes
+    # lit walnut toward terracotta)
+    bw_ = g.node('ShaderNodeRGBToBW')
+    g._set(bw_.inputs['Color'], col)
+    col = g.mix(0.30, col, g.comb(bw_.outputs['Val'], bw_.outputs['Val'], bw_.outputs['Val']))
+    col = g.colmul(col, (0.86, 0.86, 0.86))
     g.p('Base Color', col)
-    # the wood under the lacquer: a faint satin sheen combed along the table (anisotropic
-    # along Y), so screens and the slot reflect as long streaks toward a down-table lens;
-    # the clear coat on top keeps the crisp mirror
+    # the wood under the lacquer: a faint satin sheen combed along the grain (anisotropic),
+    # so screens and the slot reflect as long streaks toward a down-table lens; the clear
+    # coat on top keeps the crisp mirror
     g.p('Roughness', 0.42)
     g.p('Specular IOR Level', 0.10)
-    g.p('Anisotropic', 0.85)
-    g.p('Tangent', g.comb(0.0, 1.0, 0.0))
+    g.p('Anisotropic', g.mul(0.85, g.sub(1.0, endg)))
+    g.p('Tangent', g.comb(0.0, 1.0, 0.0) if axis == 'Y' else g.comb(1.0, 0.0, 0.0))
     g.p('Coat Weight', 1.0)
     g.p('Coat IOR', 1.52)
     wipe = g.noise(g.scale_vec(P, (34.0, 0.45, 34.0)), 1.0, 3.0, 0.6)
     swirl = g.remap(g.noise(P, 2.2, 3.0, 0.6), 0.4, 0.75)
     prints = g.fingerprints(g.coords(), 30.0)
     g.p('Coat Roughness', g.add(0.085, g.mul(g.remap(wipe, 0.35, 0.75), 0.035), g.mul(swirl, 0.02),
-                                g.mul(prints, 0.07)))
-    g.p('Normal', g.bump(g.add(g.mul(late, 0.15), g.mul(pores, 0.8)), 0.06, 0.0004))
+                                g.mul(prints, 0.07), g.mul(endg, 0.16)))
+    g.p('Normal', g.bump(g.add(g.mul(late, 0.15), g.mul(pores, 0.8), g.mul(pdots, 0.8)), 0.06, 0.0004))
     peel = g.noise(P, 140.0, 2.0, 0.5)
     g.p('Coat Normal', g.bump(g.add(peel, g.mul(wipe, 0.4)), 0.010, 0.0004))
 
@@ -530,13 +562,25 @@ def brass(m, finish='brushed'):
         g.p('Metallic', 0.85)
         g.p('Roughness', g.add(0.42, g.mul(grime, 0.2)))
         return
+    if finish == 'satin':
+        # the socket: pale, fine satin brass (turned, then grained across), clearly whiter and
+        # duller than the gold jack it holds
+        col = g.mix(g.mul(tarnish, 0.35), (0.86, 0.72, 0.47), (0.66, 0.52, 0.31))
+        g.p('Base Color', g.mix(g.mul(n, 0.15), col, (0.92, 0.80, 0.58)))
+        g.p('Metallic', 1.0)
+        g.p('Roughness', g.add(0.27, g.mul(tarnish, 0.08), g.mul(prints, 0.12)))
+        g.p('Anisotropic', 0.55)
+        tg = g.node('ShaderNodeTangent', direction_type='RADIAL', axis='Y')
+        g.p('Tangent', tg.outputs['Tangent'])
+        g.p('Normal', g.bump(g.noise(g.scale_vec(P, (1400.0, 30.0, 1400.0)), 1.0, 2.0), 0.05, 0.0002))
+        return
     if finish == 'lip':
         # the channel's flush lip: paler, whiter brass than the cords beside it, polished along
         # the channel (UV u runs down the table), so the slab and the slot draw one narrow line
         col = g.mix(g.mul(tarnish, 0.35), (0.93, 0.80, 0.56), (0.62, 0.46, 0.22))
         g.p('Base Color', col)
         g.p('Metallic', 1.0)
-        g.p('Roughness', g.add(0.13, g.mul(tarnish, 0.08), g.mul(prints, 0.1)))
+        g.p('Roughness', g.add(0.21, g.mul(tarnish, 0.08), g.mul(prints, 0.1)))
         g.p('Anisotropic', 0.85)
         tg = g.node('ShaderNodeTangent', direction_type='UV_MAP', uv_map='UVMap')
         g.p('Tangent', tg.outputs['Tangent'])
@@ -595,7 +639,11 @@ def hero_brass(m):
     patina = g.remap(g.noise(P, 35.0, 5.0, 0.65), 0.48, 0.80)
     grime = g.mul(g.remap(dface, 0.0, 0.004), g.remap(g.math('ABSOLUTE', sd), 0.0, 0.006),
                   g.remap(g.noise(P, 60.0, 3.0, 0.6), 0.45, 0.72))                     # in the faces' margins
-    col = g.mix(g.mul(patina, 0.55), (0.74, 0.54, 0.25), (0.36, 0.24, 0.10))
+    # the broad faces were polished by handling: patina lives only in their margins (near the
+    # bevels, the collars and the keyway), the open face is clean bright brass
+    face_in = g.mul(g.remap(g.math('ABSOLUTE', sd), 0.004, 0.011, smooth=True), g.remap(dface, 0.003, 0.0))
+    patina = g.mul(patina, g.sub(1.0, g.mul(face_in, 0.55)))
+    col = g.mix(g.mul(patina, 0.55), (0.80, 0.60, 0.29), (0.36, 0.24, 0.10))
     col = g.mix(g.mul(g.remap(big, 0.4, 0.7), 0.2), col, (0.86, 0.66, 0.33))
     col = g.mix(g.mul(edge, 0.8), col, (0.97, 0.79, 0.46))                              # rubbed bright
     oxide = g.math('MINIMUM', g.add(g.mul(recess, g.add(0.6, g.mul(patina, 0.4))), g.mul(grime, 0.35)), 1.0)
@@ -618,9 +666,16 @@ def hero_brass(m):
     g.p('Base Color', col)
     g.p('Metallic', g.sub(1.0, g.mul(oxide, 0.4)))
     prints = g.fingerprints(g.scale_vec(P, (1.0, 1.0, 1.6)), 55.0)
-    rough = g.add(0.24, g.mul(patina, 0.16), g.mul(prints, 0.09), g.mul(edge, -0.12), g.mul(oxide, 0.32),
-                  g.mul(sc, -0.12), g.mul(g.sub(micro, 0.5), 0.07), g.mul(pits, 0.3))
+    # scratches: shiny lines in the matte margins, scattering (rougher) lines on the polished face
+    sc_r = g.mul(sc, g.sub(g.mul(face_in, 0.22), 0.08))
+    rough = g.add(0.17, g.mul(patina, 0.18), g.mul(prints, 0.12), g.mul(edge, -0.07), g.mul(oxide, 0.32),
+                  sc_r, g.mul(g.sub(micro, 0.5), 0.06), g.mul(pits, 0.3), g.mul(face_in, -0.02))
     g.p('Roughness', g.math('MAXIMUM', rough, 0.06))
+    # micro-scratch direction: the handling strokes run across the broad faces (along X), so
+    # the face mirrors the dark room with one soft highlight band
+    g.p('Anisotropic', g.mul(face_in, 0.55))
+    tgx = g.node('ShaderNodeTangent', direction_type='RADIAL', axis='Z')
+    g.p('Tangent', tgx.outputs['Tangent'])
     dents = g.remap(g.noise(P, 90.0, 2.0), 0.62, 0.8)
     g.p('Normal', g.bump(g.add(g.mul(sc, -0.6), g.mul(dents, 0.35), g.mul(big, 0.15), g.mul(pits, -0.8),
                                g.mul(micro, 0.05)), 0.2, 0.0003))
@@ -899,31 +954,30 @@ def glass(m, tint=(0.94, 0.985, 0.975)):
 
 @cached
 def acrylic(m, color=GREEN_ACRYLIC):
-    """Polished coloured acrylic (the 'spreadsheet tabs'): half translucent so the body
-    reads as spreadsheet green (#1F9A52) rather than bottle glass, with bright polished
-    edge glints and a faint frost of handling marks on the faces."""
+    """Polished cast acrylic (the 'spreadsheet tabs'): IOR 1.49, 70% transmission so the
+    sheet shows depth and the walnut through it in green (95%), the rest a green body; glassy
+    roughness with a faint frost of handling marks; the polished edge facets carry light
+    along the sheet and glow a little brighter and more saturated (light piping)."""
     g = G(m)
     P = g.coords()
     n = g.noise(P, 90.0, 3.0)
     prints = g.fingerprints(P, 70.0)
-    # light piping: the polished edge facets (normal in the sheet's plane) glow brighter and
-    # more saturated, as the sheet carries the slab's light to its rim
     _, _, nz = g.sep(g.texco().outputs['Normal'])
     rim = g.remap(g.math('ABSOLUTE', nz), 0.45, 0.1)
     # Principled tints every refraction event: a sheet is two interfaces, so each gets the
     # square root of the sheet's colour (one sheet reads #1F9A52 over white, a stack darker)
     tint = tuple(c ** 0.5 for c in color)
-    lift = tuple(min(1.0, c * 1.12) for c in tint)
-    col = g.mix(g.mul(n, 0.25), lift, tint)
-    g.p('Base Color', g.mix(g.mul(rim, 0.5), col, tuple(min(1.0, c * 1.25) for c in tint)))
-    g.p('Transmission Weight', 0.85)
+    body = tuple(min(1.0, c * 1.25) for c in color)
+    col = g.mix(g.mul(n, 0.2), tint, tuple(min(1.0, c * 1.1) for c in tint))
+    g.p('Base Color', g.mix(g.mul(rim, 0.6), col, tuple(min(1.0, c * 1.3) for c in tint)))
+    g.p('Transmission Weight', g.sub(0.95, g.mul(rim, 0.3)))
     g.p('IOR', 1.49)
-    g.p('Roughness', g.add(0.02, g.mul(prints, 0.12)))
+    g.p('Roughness', g.add(0.008, g.mul(prints, 0.10), g.mul(g.remap(n, 0.6, 0.8), 0.02)))
+    g.p('Specular IOR Level', 0.5)
+    g.p('Coat Weight', 0.0)
     g.p('Subsurface Weight', 0.0)
-    g.p('Coat Weight', 0.6)
-    g.p('Coat Roughness', 0.02)
-    g.p('Emission Color', color)
-    g.p('Emission Strength', g.mul(rim, 0.06))
+    g.p('Emission Color', body)
+    g.p('Emission Strength', g.mul(rim, 0.6))
     m.cycles.emission_sampling = 'NONE'
 
 
@@ -935,8 +989,9 @@ COBALT_DEEP = (0.0, 0.024, 0.40)
 @cached
 def cobalt_vinyl(m):
     """Binder cover: cobalt PVC. A pebbled leather grain (1 mm cells over a 4-6 mm wobble)
-    strong enough to break the highlight up, and paler rubbed wear on the corners and the
-    spine's crown (from the edge mask the binder writes as attribute 'wear')."""
+    deep enough to break the highlight into a sparkle and to shade its own valleys darker;
+    paler, rougher rubbed wear on the corners, the open edges and the spine's crown (the
+    edge mask the binder writes as attribute 'wear'), and a few faint scuffs on the faces."""
     g = G(m)
     P = g.coords()
     grain, _ = g.voronoi(P, 950.0)
@@ -944,13 +999,19 @@ def cobalt_vinyl(m):
     wob = g.noise(P, 180.0, 3.0, 0.6)
     n = g.noise(P, 20.0, 3.0)
     wear = g.attr('wear', 'GEOMETRY').outputs['Fac']
-    wear = g.mul(wear, g.remap(g.noise(P, 120.0, 3.0, 0.6), 0.35, 0.65))
-    col = g.mix(g.mul(n, 0.1), COBALT_DEEP, (0.0, 0.018, 0.36))
-    col = g.mix(g.mul(wear, 0.4), col, (0.06, 0.14, 0.50))
+    wear = g.mul(wear, g.remap(g.noise(P, 120.0, 3.0, 0.6), 0.30, 0.60))
+    scuff = g.mul(g.remap(g.noise(g.scale_vec(g.vrot(P, 22.0), (14.0, 160.0, 14.0)), 1.0, 3.0, 0.6), 0.66, 0.80),
+                  g.remap(g.noise(P, 9.0, 2.0), 0.5, 0.7))
+    valley = g.remap(grain, 0.0, 0.45, smooth=True)            # 0 in the pits between pebbles
+    shade = g.add(0.72, g.mul(valley, 0.28))
+    col = g.mix(g.mul(n, 0.12), COBALT_DEEP, (0.0, 0.018, 0.36))
+    col = g.colmul(col, g.comb(shade, shade, shade))
+    col = g.mix(g.add(g.mul(wear, 0.55), g.mul(scuff, 0.25)), col, (0.10, 0.17, 0.46))
     g.p('Base Color', col)
-    g.p('Roughness', g.add(0.30, g.mul(grain, 0.16), g.mul(wob, 0.1), g.mul(wear, 0.15)))
-    g.p('Sheen Weight', 0.2)
-    g.p('Normal', g.bump(g.add(g.mul(grain, 0.6), g.mul(grain2, 0.5), g.mul(wob, 0.6)), 0.55, 0.0004))
+    g.p('Roughness', g.add(0.26, g.mul(grain, 0.24), g.mul(wob, 0.08), g.mul(wear, 0.22), g.mul(scuff, 0.15)))
+    g.p('Sheen Weight', 0.25)
+    g.p('Normal', g.bump(g.add(g.mul(grain, 0.8), g.mul(grain2, 0.5), g.mul(wob, 0.5), g.mul(scuff, -0.3)), 0.8,
+                         0.0007))
 
 
 @cached
@@ -998,13 +1059,14 @@ def flat(m, color=(0.5, 0.5, 0.5), rough=0.5, metal=0.0):
 
 
 @cached
-def led(m, color=LED_GREEN, strength=8.0, prop='led'):
+def led(m, color=LED_GREEN, strength=8.0, prop='led', base=None):
     """Small indicator lamp: emission scaled by the object's keyed custom property `prop` (0..1).
 
-    The lens stays visible when off (dark tinted dome)."""
+    The lens stays visible when off (dark tinted dome); base= sets its unlit grey instead
+    (the cup's slot glow: near black, so the slot reads dark when the glow is off)."""
     g = G(m)
     a = g.attr(prop)
-    g.p('Base Color', tuple(0.15 * c for c in color))
+    g.p('Base Color', tuple(0.15 * c for c in color) if base is None else (base, base, base))
     g.p('Roughness', 0.15)
     g.p('Coat Weight', 1.0)
     g.p('Emission Color', color)
@@ -1042,7 +1104,12 @@ def skylight_diffuser(m, strength=1.9, width=0.77, pitch=2.6):
     ph = g.math('FRACT', g.math('DIVIDE', y, pitch))
     bar = g.remap(g.math('ABSOLUTE', g.sub(ph, 0.5)), 0.5 - 0.010 / pitch, 0.5 - 0.004 / pitch, 1.0, 0.9)
     lp = g.node('ShaderNodeLightPath')
-    gfac = g.sub(1.0, g.mul(lp.outputs['Is Glossy Ray'], 0.6))
+    # a black flag for long glossy paths: the walnut at the table's foot mirrors the slot's
+    # far end ~30 m away as a hot patch that pulls the eye to the near edge of the wide; a
+    # glossy ray longer than ~20 m sees the slot fade out (face glass, brass, lid and padlock
+    # near the head mirror it from a few metres and keep it)
+    far = g.remap(lp.outputs['Ray Length'], 17.0, 24.0, smooth=True)
+    gfac = g.sub(1.0, g.mul(lp.outputs['Is Glossy Ray'], g.add(0.6, g.mul(far, 0.4))))
     pat = g.mul(grad, bar, gfac)
     g._set(e.inputs['Color'], bb.outputs[0])
     g._set(e.inputs['Strength'], g.math('MULTIPLY', pat, strength))
@@ -1130,9 +1197,16 @@ def crt_screen(m):
     off screen still reads as a curved tube. Phosphor bloom lives in crt_halo."""
     g = G(m)
     u, v, A, rgb, level, du, dv, hx, hy = _crt_state(g)
-    mx = g.remap(du, g.add(hx, 0.006), g.sub(hx, 0.004), smooth=True)
-    my = g.remap(dv, g.add(hy, 0.006), g.sub(hy, 0.002), smooth=True)
-    field = g.mul(mx, my)
+    # the lit raster: a rounded rectangle (corner radius 14 mm, shrinking with the field as
+    # it collapses to a line and a dot), its edge soft over ~1 mm, measured in metres on the glass
+    kx, ky = 0.93 * CRT['screen_w'], 0.91 * CRT['screen_h']
+    ax, ay = g.mul(du, kx), g.mul(dv, ky)
+    hxm, hym = g.mul(hx, kx), g.mul(hy, ky)
+    rc = g.math('MINIMUM', g.math('MINIMUM', g.mul(hxm, 0.9), g.mul(hym, 0.9)), 0.014)
+    qx = g.math('MAXIMUM', g.sub(ax, g.sub(hxm, rc)), 0.0)
+    qy = g.math('MAXIMUM', g.sub(ay, g.sub(hym, rc)), 0.0)
+    sdf = g.sub(g.math('SQRT', g.add(g.mul(qx, qx), g.mul(qy, qy))), rc)
+    field = g.remap(sdf, 0.0012, -0.0008, smooth=True)
     cam = g.node('ShaderNodeCameraData')
     vn = g.node('ShaderNodeValue', name='scan_near', label='scan_near')
     vn.outputs[0].default_value = SCAN['near']
@@ -1149,9 +1223,16 @@ def crt_screen(m):
     rip = g.remap(g.math('SINE', g.mul(v, 2 * math.pi * RASTER['lines'])), -1.0, 1.0, 0.0, 1.0)
     scan = g.mul(scan, g.sub(1.0, g.mul(rnear, g.mul(rip, RASTER['amp'] * 2.0))))
     r2 = g.add(g.mul(du, du), g.mul(dv, dv))
-    vig = g.sub(1.0, g.mul(g.math('POWER', g.mul(r2, 2.0), 2.0), 0.55))
+    # centre-weighted phosphor falloff: the beam lands obliquely and defocuses toward the
+    # corners. Brighter fields fall off harder in linear terms, so the corners read 25-35%
+    # darker on the display whatever the field's level (AgX compresses bright fields)
+    kv = g.add(1.2, g.mul(g.math('MINIMUM', level, 3.0), 0.7))
+    vig = g.math('EXPONENT', g.mul(g.mul(kv, g.math('POWER', r2, 1.5)), -1.0))
     # inner halation: the field brightens a touch toward its centre
     halo_in = g.add(0.94, g.mul(g.sub(1.0, g.math('MINIMUM', r2, 1.0)), 0.06))
+    # a small hot white core (crt_core, per screen: the acid yellow and the lime, which the
+    # view transform can only show dim and olive, get a brighter, paler centre)
+    core = g.mul(g.math('EXPONENT', g.mul(r2, -7.0)), g.attr('crt_core').outputs['Fac'])
     d = g.math('DIVIDE', g.sub(u, A['band']), 0.075)
     band = g.mul(g.math('EXPONENT', g.mul(g.mul(d, d), -1.0)), A['bamt'])
     sh = g.math('SINE', g.add(g.mul(u, 21.0), g.mul(v, 9.0), g.mul(A['deg'], 70.0)))
@@ -1159,22 +1240,26 @@ def crt_screen(m):
     g._set(hue.inputs['Hue'], g.add(0.5, g.mul(g.mul(sh, A['deg']), 0.22)))
     g._set(hue.inputs['Saturation'], g.add(1.0, g.mul(A['deg'], 0.4)))
     g._set(hue.inputs['Value'], g.add(1.0, g.mul(g.mul(sh, A['deg']), 0.35)))
-    g._set(hue.inputs['Color'], g.mix(g.add(g.mul(band, 0.55), A['white']), rgb, (1.0, 1.0, 1.0)))
+    g._set(hue.inputs['Color'], g.mix(g.add(g.mul(band, 0.55), A['white'], core), rgb, (1.0, 1.0, 1.0)))
     col = hue.outputs['Color']
     dot = g.mul(g.math('EXPONENT', g.mul(r2, -2500.0)), A['glow'])
-    inten = g.mul(field, scan, vig, halo_in, A['gain'], A['flare'], A['on'], level, g.add(1.0, g.mul(band, 0.7)))
+    inten = g.mul(field, scan, vig, halo_in, A['gain'], A['flare'], A['on'], level, g.add(1.0, g.mul(band, 0.7)),
+                  g.add(1.0, g.mul(core, 1.6)))
     e1 = g.mix(1.0, col, g.comb(inten, inten, inten), 'MULTIPLY')
     glowc = g.mix(0.5, rgb, (1.0, 1.0, 1.0))
     gd = g.mul(dot, level, 1.2)
     e2 = g.mix(1.0, glowc, g.comb(gd, gd, gd), 'MULTIPLY')
     em = g.mix(1.0, e1, e2, 'ADD')
     g.p('Base Color', (0.008, 0.010, 0.009))     # dark phosphor glass: a dead tube stays dead under a neighbour's glow
-    g.p('Roughness', 0.07)
-    g.p('Specular IOR Level', 0.55)
+    # crt_dead (static, Pat): a dusty, filmed tube whose glass no longer mirrors the screen
+    # across the table, so the dead colleague reads neutral dark grey, not a dim colour
+    dead = g.attr('crt_dead').outputs['Fac']
+    g.p('Roughness', g.add(0.07, g.mul(dead, 0.13)))
+    g.p('Specular IOR Level', g.sub(0.55, g.mul(dead, 0.27)))
     g.p('Emission Color', em)
     g.p('Emission Strength', 1.0)
-    g.p('Coat Weight', 0.5)
-    g.p('Coat Roughness', 0.03)
+    g.p('Coat Weight', g.sub(0.5, g.mul(dead, 0.2)))
+    g.p('Coat Roughness', g.add(0.03, g.mul(dead, 0.15)))
     m.cycles.emission_sampling = 'NONE'
 
 
@@ -1802,36 +1887,64 @@ class MasterCord:
     (parented), so the cord follows the hand; e['mid0'..] shape the free run over
     the walnut and the head edge, and pulled() springs them."""
 
-    def __init__(self, obj, empties, mids):
+    def __init__(self, obj, empties, mids, floor_z=None, floor_xy=None):
         self.obj = obj
         self.e = empties
         self.mids = mids            # names of the free control points, hub -> jack
+        # the walnut under the free run: control points inside floor_xy = (x0, x1, y0, y1)
+        # never go below floor_z (the coil's outer radius + 0.5 mm above the top, so the
+        # order-3 curve, which can undershoot its control polygon, stays clear of the wood)
+        self.floor_z = floor_z
+        self.floor_xy = floor_xy
+
+    def _over_floor(self, p):
+        if self.floor_z is None:
+            return False
+        if self.floor_xy is None:
+            return True
+        x0, x1, y0, y1 = self.floor_xy
+        return x0 <= p.x <= x1 and y0 <= p.y <= y1
 
     def pulled(self, frame, kick=(0.0, 0.022, 0.03), cycles=2.0, decay=3.2, dur=22, relax=(0.0, -0.006, -0.004)):
         """Spring the free run of the coil when the jack leaves the socket at `frame`:
         an overshoot along `kick` that rings `cycles` damped oscillations and settles
-        `relax` lower/looser than before (it relaxes across the walnut)."""
+        `relax` looser than before (it relaxes across the walnut).
+
+        Points over the walnut (floor_xy) bounce instead of dipping: their vertical kick is
+        |sin| (it lifts off the wood and drops back), their relax never lowers them, and
+        every key is clamped to floor_z. Only the overhang past the head edge sags."""
         n = len(self.mids)
         for k, key in enumerate(self.mids):
             e = self.e[key]
             base = Vector(e.location)
             w = (k + 1) / n                      # the end near the jack moves most
             lag = int(round(2 * (1 - w)))        # the wave runs back toward the hub
+            on_wood = self._over_floor(base)
+            if on_wood:
+                base.z = max(base.z, self.floor_z)
+                e.location = base
             e.keyframe_insert('location', frame=frame + lag - 1)
             for i in range(0, dur + 1):
                 t = i / dur
                 amp = math.exp(-decay * t) * math.sin(2 * math.pi * cycles * t + 0.35)
-                e.location = base + Vector(kick) * amp * w + Vector(relax) * C.ease(t) * w
+                d = Vector(kick) * amp * w + Vector(relax) * C.ease(t) * w
+                if on_wood:
+                    d.z = abs(kick[2] * amp * w) + max(0.0, relax[2]) * C.ease(t) * w
+                p = base + d
+                if on_wood:
+                    p.z = max(p.z, self.floor_z)
+                e.location = p
                 e.keyframe_insert('location', frame=frame + lag + i)
 
 
 def master_cord(anchor_pos, tail_obj, tail_local=(0.0, 0.0, 0.0), mid_points=(), name='MasterCord',
-                coll=None, turns=46, coil_radius=0.0042, wire_radius=0.0013):
+                coll=None, turns=46, coil_radius=0.0042, wire_radius=0.0013, floor_z=None, floor_xy=None):
     """Coiled master cord from a fixed anchor (hub port) to a moving tail (the jack).
 
     mid_points: world points (hub -> jack) the cord should pass close to; the curve is
     an order-3 NURBS so it hugs them. tail2 continues the jack's axis a little so the
-    coil leaves the strain relief straight."""
+    coil leaves the strain relief straight. floor_z / floor_xy: the table top under the
+    free run (MasterCord.pulled never sinks a control point inside floor_xy below floor_z)."""
     coll = coll or bpy.context.scene.collection
     mw = tail_obj.matrix_world
     tail_world = mw @ Vector(tail_local)
@@ -1867,7 +1980,7 @@ def master_cord(anchor_pos, tail_obj, tail_local=(0.0, 0.0, 0.0), mid_points=(),
     mod.node_group = coil_group()
     _set_mod_inputs(mod, turns=float(turns), coil_radius=coil_radius, wire_radius=wire_radius,
                     samples_per_turn=10, profile=8, material=cord_plastic())
-    return MasterCord(obj, empties, [n for n in names if n.startswith('mid')])
+    return MasterCord(obj, empties, [n for n in names if n.startswith('mid')], floor_z, floor_xy)
 
 
 # ================================================================== CRT terminal
@@ -2151,12 +2264,26 @@ class Terminal:
         self.key(f + 2, 'LINEAR', sy=1.0, gain=1.5, white=0.25, deg=1.0)
         self.key(f + 8, 'LINEAR', gain=1.0, white=0.0, deg=0.0)
 
+    def value(self, prop, frame):
+        """The keyed value of crt_<prop> at `frame` (the static value when unkeyed)."""
+        dp = f'["crt_{prop}"]'
+        ad = self.screen.animation_data
+        if ad and ad.action:
+            for fc in C.fcurves(ad.action):
+                if fc.data_path == dp:
+                    return fc.evaluate(frame)
+        return float(self.screen.get('crt_' + prop, CRT_DEFAULTS.get(prop, 0.0)))
+
     def off(self, frame=None):
-        """Dead screen: from the start (frame=None) or cut at `frame`."""
+        """Dead screen: from the start (frame=None) or cut at `frame`. The hold before the
+        cut keys the value the screen actually has there (a screen already shut down
+        stays dark: it never ramps back on)."""
         if frame is None:
             self.key_rest(1, on=0.0)
         else:
-            self.key(frame - 1, 'CONSTANT', on=1.0)
+            cur = self.value('on', frame - 1)
+            if cur > 1e-4:
+                self.key(frame - 1, 'CONSTANT', on=cur)
             self.key(frame, 'CONSTANT', on=0.0)
 
     def on(self, frame):
@@ -2191,14 +2318,17 @@ def crt_terminal(name, hexcol, coll=None, location=(0, 0, 0), rot_z=0.0, level=N
     # boosted colours oversaturated, so the halo must not use the boosted field)
     k_l = _luma(field) / max(_luma(rgb), 1e-4)
     scr['crt_hue'] = [min(4.0, c * k_l) for c in rgb]
-    scr['crt_bloom'] = 1.0 if name == 'pat' else 0.0
+    cal = CRT_CAL.get(name, {})
+    scr['crt_bloom'] = 1.0 if name == 'pat' else float(cal.get('bloom', 0.0))
+    scr['crt_core'] = float(cal.get('core', 0.0))
+    scr['crt_dead'] = 0.0 if powered else 1.0
     for k, v in CRT_DEFAULTS.items():
         scr['crt_' + k] = float(v)
     # glow light just in front of the glass, tipped down toward the walnut
     ld = bpy.data.lights.new(f'term_{name}_glow', 'AREA')
     ld.shape = 'RECTANGLE'
-    ld.size, ld.size_y = 0.30, 0.22
-    ld.spread = math.radians(115)
+    ld.size, ld.size_y = 0.40, 0.28
+    ld.spread = math.radians(165)              # no hard cut-off line where the pool meets the walnut
     mx = max(rgb)
     base = [c / mx for c in rgb]
     ld.color = base
@@ -2207,7 +2337,7 @@ def crt_terminal(name, hexcol, coll=None, location=(0, 0, 0), rot_z=0.0, level=N
     coll.objects.link(lo)
     lo.parent = rt
     lo.location = (0, CRT['front'] + 0.03, CRT['zs'] + 0.02)
-    d = Vector((0, 1.0, -0.72)).normalized()       # tipped down into a pool on the walnut in front
+    d = Vector((0, 1.0, -1.0)).normalized()        # tipped down into a pool on the walnut in front
     lo.rotation_euler = d.to_track_quat('-Z', 'Y').to_euler()
     lo.visible_camera = False
     lo.visible_glossy = False
@@ -2223,43 +2353,68 @@ def crt_terminal(name, hexcol, coll=None, location=(0, 0, 0), rot_z=0.0, level=N
 
 
 def _crt_streak_mat():
-    """Glossy-only emitter that stands in for a screen's reflection in the walnut coat (a
-    reflection-card cheat: the real screens sit too low and too far outboard for the coat
-    to mirror them toward the foot camera). Colour and strength are object attributes the
-    card's drivers copy from its terminal's screen state; soft edges, brightest mid-card."""
-    m = _get('crt_streak_card')
+    """Emitter that stands in for a screen's reflection in the walnut coat (a reflection-card
+    cheat: the real screens sit too low and too far outboard for the coat to mirror them toward
+    the foot camera). Shaped like light in a wiped coat, not a neon inlay: a Gaussian profile
+    across its width, a head that tapers in at the screen end, a tail that fades and loses
+    about 30% of its saturation toward the foot, and its strength broken up 30-50% by slow
+    wipe noise along the table (0.3-0.8 m features, a different stretch per card). Only its
+    down-facing side emits (Backfacing mask). Colour and strength are object attributes the
+    card's drivers copy from its terminal's screen state."""
+    m = _get('crt_streak_card_v3')
     if m is not None:
         return m
-    m = _new('crt_streak_card')
+    m = _new('crt_streak_card_v3')
     g = G(m, principled=False)
     u, v, _ = g.sep(g.uv())
-    across = g.remap(g.math('ABSOLUTE', g.sub(u, 0.5)), 0.5, 0.05, smooth=True)
-    # the card runs from the terminal (v = 1 end) toward the foot: bright at the screen,
-    # its tail fading down the table like a long reflection
-    along = g.mul(g.math('POWER', g.remap(v, 0.0, 0.88, smooth=True), 1.1), g.remap(v, 1.0, 0.93, smooth=True))
-    k = g.mul(across, along, g.attr('streak_k').outputs['Fac'])
+    du = g.math('DIVIDE', g.sub(u, 0.5), 0.22)
+    across = g.math('EXPONENT', g.mul(g.mul(du, du), -1.0))
+    # v = 1 at the screen end, 0 at the foot end
+    head = g.math('POWER', g.remap(v, 1.0, 0.74, smooth=True), 1.5)       # tapers in at the screen: no hard top
+    tail = g.math('POWER', g.remap(v, 0.0, 0.78, smooth=True), 1.6)
+    along = g.mul(head, tail)
+    # wipe breakup along the table: object coords (metres along the card) + a per-card offset
+    oi = g.node('ShaderNodeObjectInfo')
+    P = g.vmath('ADD', g.obj(), g.comb(g.mul(oi.outputs['Random'], 41.0), g.mul(oi.outputs['Random'], 17.0), 0.0))
+    px, py, _ = g.sep(P)
+    n1 = g.noise(g.comb(g.mul(px, 3.0), g.mul(py, 1.6), 0.5), 1.0, 2.0, 0.55)
+    n2 = g.noise(g.comb(g.mul(px, 6.0), g.mul(py, 3.4), 2.5), 1.0, 1.0, 0.5)
+    brk = g.sub(1.0, g.mul(g.remap(g.add(g.mul(n1, 0.7), g.mul(n2, 0.3)), 0.36, 0.64, smooth=True), 0.45))
+    bf = g.node('ShaderNodeNewGeometry')
+    front = g.sub(1.0, bf.outputs['Backfacing'])
+    k = g.mul(across, along, brk, front, g.attr('streak_k').outputs['Fac'])
+    rgb = g.attr('streak_rgb').outputs['Color']
+    lum = g.node('ShaderNodeRGBToBW')
+    g._set(lum.inputs['Color'], rgb)
+    sat = g.add(0.70, g.mul(g.remap(v, 0.25, 0.85, smooth=True), 0.30))
+    col = g.mix(sat, g.comb(lum.outputs['Val'], lum.outputs['Val'], lum.outputs['Val']), rgb)
     e = g.node('ShaderNodeEmission')
-    g._set(e.inputs['Color'], g.attr('streak_rgb').outputs['Color'])
+    g._set(e.inputs['Color'], col)
     g._set(e.inputs['Strength'], k)
     g.L.new(e.outputs[0], g.out.inputs['Surface'])
     m.cycles.emission_sampling = 'NONE'
     return m
 
 
-def crt_streak_card(t, name, coll, center, size=(0.18, 1.4), gain=0.55, head=0.5):
-    """Add a terminal's walnut-streak card: a thin emissive plane over the table, facing down,
+def crt_streak_card(t, name, coll, center, size=(0.28, 5.5), gain=0.55, head=0.5, y_min=None):
+    """Add a terminal's walnut-streak card: an emissive plane over the table, facing down,
     long along Y, seen ONLY by glossy rays (camera, diffuse, shadow, transmission and
     volume all off, no light sampling). Its colour is the screen's field (whitening with
     crt_white) and its strength follows crt_on/gain/flare/sx/sy/bamt, so it dies in the
-    S11 wave and pulses with speech and flares. Returns the card object."""
+    S11 wave and pulses with speech and flares. `head` m of it lies beyond the screen toward
+    the host; y_min clamps its far end (the table's foot). Light-link it to the walnut
+    (env_room does) so no other glossy surface mirrors it. Returns the card object."""
     coll = coll or bpy.context.scene.collection
     w, l = size
     bm = bmesh.new()
     uvl = bm.loops.layers.uv.new('UVMap')
     y0, y1 = -(l - head), head                 # `head` m beyond the screen toward the host, the rest toward the foot
+    if y_min is not None:
+        y0 = max(y0, y_min - center[1])
     vs = [bm.verts.new((x, y, 0.0)) for x, y in ((-w / 2, y0), (-w / 2, y1), (w / 2, y1), (w / 2, y0))]
     f = bm.faces.new(vs)                       # clockwise from above: the normal points down
-    for lp, (uu, vv) in zip(f.loops, ((0, 0), (0, 1), (1, 1), (1, 0))):
+    v0 = (y0 - y1) / l + 1.0                   # a clamped card keeps the full card's v (its tail is cut, not squeezed)
+    for lp, (uu, vv) in zip(f.loops, ((0, v0), (0, 1), (1, 1), (1, v0))):
         lp[uvl].uv = (uu, vv)
     o = to_object(bm, name, [_crt_streak_mat()], coll, smooth=None, recalc=False)
     o.location = center
@@ -2729,30 +2884,64 @@ def laser_printer(name='printer', coll=None, location=(0, 0, 0), rot_z=0.0, stac
 class Droid:
     """The paper droid towing its trolley on a rigid bar.
 
-    drive(f0, f1, path_points): the droid follows the path (eased), the trolley's
-    hitch follows the same path one bar-length behind; the bar stays rigid.
-    blink(f0, f1): the cyan dome light blinks slowly."""
+    drive(f0, f1, path_points): the droid follows the path (eased); the trolley's tongue
+    follows the trail of the droid's hitch one bar-length behind, so the bar stays rigid.
+    The hitch can be offset: `hitch_x` puts the droid's clevis on a short outrigger arm to
+    its right, `tongue_x` mounts the trolley's tongue left of the trolley's centre line, so
+    on a straight run the trolley trails hitch_x + tongue_x to the droid's right (the room's
+    droid: 0.35 m outboard, so an axial camera sees the droid clear of the reams).
+    blink(f0, f1): the cyan pinlight blinks slowly; light_off(frame) puts it out."""
 
-    BAR = 0.30           # hitch-to-hitch
-    D_HITCH = 0.16       # droid centre -> its rear hitch
-    T_HITCH = 0.36       # trolley centre -> its front hitch
+    BAR = 0.30           # hitch-to-hitch (pin centres)
+    D_HITCH = 0.16       # droid centre -> its rear hitch (along its heading)
+    T_HITCH = 0.36       # trolley centre -> its front hitch (along its heading)
 
-    def __init__(self, droid_root, trolley_root, bar, light, wheels):
+    def __init__(self, droid_root, trolley_root, bar, light, wheels, hitch_x=0.0, tongue_x=0.0):
         self.root = droid_root
         self.trolley = trolley_root
         self.bar = bar
         self.light = light
         self.wheels = wheels
+        self.hitch_x = hitch_x
+        self.tongue_x = tongue_x
+
+    @property
+    def trail_offset(self):
+        """How far right of the droid's track the trolley's centre runs on a straight."""
+        return self.hitch_x + self.tongue_x
+
+    @staticmethod
+    def _right(face):
+        return Vector((face.y, -face.x, 0.0))
+
+    def _hitch(self, pos, face):
+        return pos - face * self.D_HITCH + self._right(face) * self.hitch_x
+
+    def _trolley_pose(self, hitch, tongue):
+        tdir = (hitch - tongue)
+        tdir = tdir.normalized() if tdir.length > 1e-9 else Vector((0.0, 1.0, 0.0))
+        tc = tongue - tdir * self.T_HITCH + self._right(tdir) * self.tongue_x
+        return tc, tdir
 
     def place(self, frame, x, y, heading_deg):
         """Park droid and trolley in line at a pose (heading = direction the droid faces)."""
         h = math.radians(heading_deg)
         f = Vector((-math.sin(h), math.cos(h), 0.0))
         d = Vector((x, y, 0.0))
-        hitch = d - f * self.D_HITCH
+        hitch = self._hitch(d, f)
         tf = hitch - f * self.BAR
-        tc = tf - f * self.T_HITCH
-        self._key(frame, d, h, tc, h, hitch, tf)
+        tc, tdir = self._trolley_pose(hitch, tf)
+        self._key(frame, d, h, tc, math.atan2(-tdir.x, tdir.y), hitch, tf)
+
+    def pose_at(self, frame):
+        """(droid xy, trolley xy, binder top z) evaluated at a frame."""
+        sc = bpy.context.scene
+        cur = sc.frame_current
+        sc.frame_set(frame)
+        d = self.root.matrix_world.translation.copy()
+        t = self.trolley.matrix_world.translation.copy()
+        sc.frame_set(cur)
+        return d, t
 
     def _key(self, f, dpos, dh, tpos, th, h1, h2):
         self.root.location = dpos
@@ -2785,63 +2974,63 @@ class Droid:
             return 1.0 - v * u * u / (2 * a)
         return v * (t - a / 2)
 
-    def drive(self, f0, f1, path_points, reverse=False, ease='inout'):
+    def drive(self, f0, f1, path_points, reverse=False, ease='inout', accel=None):
         """Drive along `path_points` [(x, y), ...] from f0 to f1.
 
         ease: 'inout' (smootherstep), 'in', 'out', 'linear' or 'cruise' (a measured pace:
-        a short smooth start, constant speed, a short smooth stop). reverse=True backs up
-        along the path (the droid faces against travel and the trolley leads)."""
+        a short smooth start, constant speed, a short smooth stop; `accel` = the fraction
+        of the run spent getting up to speed, default 0.08). reverse=True backs up along
+        the path (the droid faces against travel and the trolley leads). The trolley's
+        tongue follows the trail of the droid's hitch (past the path's start it trails in
+        line with the start heading), so the bar never stretches or bends."""
         pts = [Vector((p[0], p[1], 0.0)) for p in path_points]
         dense = catmull(pts, 16) if len(pts) > 2 else pts
         path = Path(dense)
         L = path.length
-        off = self.D_HITCH + self.BAR + self.T_HITCH
+        sgn = -1.0 if reverse else 1.0
+
+        def hitch_at(s):
+            tan = path.tangent(s)
+            return self._hitch(path.pos(s), tan * sgn)
+        roll0 = getattr(self, '_rolled', 0.0)          # wheels keep turning from where the last drive left them
         for f in range(f0, f1 + 1):
             t = (f - f0) / max(1, f1 - f0)
             if ease == 'cruise':
-                s = L * self._cruise(t)
+                s = L * (self._cruise(t) if accel is None else self._cruise(t, accel))
             else:
                 s = L * (C.ease(t) if ease == 'inout' else C.ease(t, ease))
             dpos = path.pos(s)
-            tan = path.tangent(s)
-            if not reverse:
-                face = tan
-                hitch = dpos - face * self.D_HITCH
-                # trolley front hitch: the point on the path one bar length behind the droid hitch
-                sh = self._find_back(path, s, hitch, self.BAR + 0.0, -1)
-                tf = path.pos(sh)
-                tdir = (hitch - tf).normalized() if (hitch - tf).length > 1e-6 else face
-                tc = tf - tdir * self.T_HITCH
-            else:
-                face = -tan
-                hitch = dpos - face * self.D_HITCH
-                sh = self._find_back(path, s, hitch, self.BAR, +1)
-                tf = path.pos(sh)
-                tdir = (hitch - tf).normalized() if (hitch - tf).length > 1e-6 else face
-                tc = tf - tdir * self.T_HITCH
+            face = path.tangent(s) * sgn
+            hitch = hitch_at(s)
+            # the tongue: the point on the hitch's own trail exactly BAR from the hitch,
+            # behind it (forward) or ahead of it (reverse: the trolley leads)
+            sh = self._find_back(hitch_at, s, hitch, self.BAR, 1 if reverse else -1)
+            tf = hitch_at(sh)
+            tc, tdir = self._trolley_pose(hitch, tf)
             dh = math.atan2(-face.x, face.y)
             th = math.atan2(-tdir.x, tdir.y)
             self._key(f, dpos, dh, tc, th, hitch, tf)
             # wheel spin from distance travelled: about each wheel's own axle (local Z,
             # rotation mode ZYX), so they roll and never swivel
             for w in self.wheels:
-                w.rotation_euler[2] = s / w.get('wheel_r', 0.022) * (-1 if reverse else 1)
+                w.rotation_euler[2] = (roll0 + s * (-1 if reverse else 1)) / w.get('wheel_r', 0.022)
                 w.keyframe_insert('rotation_euler', index=2, frame=f)
+        self._rolled = roll0 + L * (-1 if reverse else 1)
 
     @staticmethod
-    def _find_back(path, s, hitch, dist, direction):
-        """Arc length on the path (behind if direction=-1) whose point is exactly `dist`
+    def _find_back(fn, s, hitch, dist, direction):
+        """Arc length (behind if direction=-1) whose trail point fn(s') is exactly `dist`
         from `hitch` (bracketed march, then bisection), so the bar never stretches."""
         step = 0.02 * direction
         a = s
         b = s + step
-        for _ in range(2000):
-            if (path.pos(b) - hitch).length >= dist:
+        for _ in range(4000):
+            if (fn(b) - hitch).length >= dist:
                 break
             a, b = b, b + step
         for _ in range(48):
             mid = 0.5 * (a + b)
-            if (path.pos(mid) - hitch).length >= dist:
+            if (fn(mid) - hitch).length >= dist:
                 b = mid
             else:
                 a = mid
@@ -2854,6 +3043,24 @@ class Droid:
             kprop(self.light, 'led', f, 1.0, 'LINEAR')
             kprop(self.light, 'led', f + on, 1.0, 'LINEAR')
             kprop(self.light, 'led', f + on + 3, 0.15, 'LINEAR')
+
+    def light_off(self, frame, fade=3):
+        """Put the pinlight out from `frame` (over `fade` frames) and keep it out: every
+        later blink key is removed, so it never competes with the dark room."""
+        o = self.light
+        ad = o.animation_data
+        dp = '["led"]'
+        if ad and ad.action:
+            for fc in C.fcurves(ad.action):
+                if fc.data_path == dp:
+                    v = fc.evaluate(frame)
+                    for kp in reversed(list(fc.keyframe_points)):
+                        if kp.co.x >= frame:
+                            fc.keyframe_points.remove(kp)
+                    kprop(o, 'led', frame, v, 'LINEAR')
+        else:
+            kprop(o, 'led', frame, float(o.get('led', 0.15)), 'LINEAR')
+        kprop(o, 'led', frame + fade, 0.0, 'CONSTANT')
 
 
 def ream(name='ream', coll=None, location=(0, 0, 0), rot_z=0.0, mat=None):
@@ -3051,8 +3258,15 @@ def label_window(m):
     g.p('Coat Tint', (0.92, 0.95, 0.97))
 
 
-def paper_droid(name='droid', coll=None, location=(0, 0, 0), rot_z=0.0, reams_high=11, with_binder=True):
-    """Knee-high ivory canister droid + rigid tow bar + steel trolley of reams (+ binder on top)."""
+def paper_droid(name='droid', coll=None, location=(0, 0, 0), rot_z=0.0, reams_high=11, with_binder=True,
+                trail_offset=0.0):
+    """Knee-high ivory canister droid + rigid tow bar + steel trolley of reams (+ binder on top).
+
+    Its own silhouette: a tall, narrow canister with a brushed seam band, a cobalt collar
+    with a small blue panel, a low, flattened brushed dome carrying an offset slot visor and
+    a single small cyan pinlight, on three casters. trail_offset (m) > 0 hitches the
+    trolley that far to the droid's right on a straight run: half on an outrigger arm at
+    the droid's rear, half as an offset tongue on the trolley (the bar stays straight)."""
     coll = coll or bpy.context.scene.collection
     rt = root(name, coll, location, rot_z)
     ivory = ivory_enamel()
@@ -3060,78 +3274,112 @@ def paper_droid(name='droid', coll=None, location=(0, 0, 0), rot_z=0.0, reams_hi
     silver = steel(0.22)
     parts = []
     wheels = []
-    # skirt, body, collar, dome (one lathe each)
+    hx = 0.5 * trail_offset                 # outrigger arm (droid side)
+    tx = trail_offset - hx                  # offset tongue (trolley side)
+    R0 = 0.124                              # canister radius
+    # skirt, canister (with a recessed seam groove), seam band, collar, dome
     bm = bmesh.new()
-    bm_lathe(bm, [(0.0, 0.026), (0.150, 0.026), (0.156, 0.034), (0.156, 0.066), (0.150, 0.075), (0.0, 0.075)], 64)
+    bm_lathe(bm, [(0.0, 0.026), (0.128, 0.026), (0.133, 0.033), (0.133, 0.060), (0.128, 0.068), (0.0, 0.068)], 64)
     parts.append(to_object(bm, f'{name}_skirt', [dark], coll, smooth=40.0))
-    prof = [(0.0, 0.07), (0.138, 0.07), (0.145, 0.078), (0.146, 0.215), (0.143, 0.218), (0.143, 0.224),
-            (0.146, 0.227), (0.146, 0.355), (0.141, 0.362), (0.0, 0.362)]
+    prof = [(0.0, 0.064), (0.117, 0.064), (0.123, 0.071), (R0, 0.080), (R0, 0.262), (R0 - 0.004, 0.266),
+            (R0 - 0.004, 0.282), (R0, 0.286), (R0, 0.458), (R0 - 0.004, 0.466), (0.0, 0.466)]
     bm = bmesh.new()
     bm_lathe(bm, prof, 72)
     parts.append(to_object(bm, f'{name}_body', [ivory], coll, smooth=40.0))
     bm = bmesh.new()
-    bm_lathe(bm, [(0.0, 0.358), (0.146, 0.358), (0.149, 0.362), (0.149, 0.398), (0.146, 0.402), (0.0, 0.402)], 72)
+    bm_lathe(bm, [(0.0, 0.2672), (R0 - 0.0028, 0.2672), (R0 - 0.0012, 0.2690), (R0 - 0.0012, 0.2802),
+                  (R0 - 0.0028, 0.2820), (0.0, 0.2820)], 72)
+    parts.append(to_object(bm, f'{name}_seam', [steel(0.18)], coll, smooth=40.0))
+    bm = bmesh.new()
+    bm_lathe(bm, [(0.0, 0.462), (R0 + 0.002, 0.462), (R0 + 0.004, 0.465), (R0 + 0.004, 0.492), (R0 + 0.002, 0.495),
+                  (0.0, 0.495)], 72)
     parts.append(to_object(bm, f'{name}_collar', [cobalt_paint(0.3)], coll, smooth=40.0))
-    dome = [(0.0, 0.40)]
-    R = 0.142
-    for i in range(0, 17):
-        a = math.pi / 2 * i / 16
-        dome.append((R * math.cos(a) + 1e-5 * (i == 16), 0.40 + R * math.sin(a)))
-    dome[-1] = (0.0, 0.40 + R)
+    RD, HD, ZD = R0 + 0.001, 0.058, 0.494   # flattened dome: semi-axes RD (plan) x HD (height)
+    dome = [(0.0, ZD)]
+    for i in range(0, 21):
+        a = math.pi / 2 * i / 20
+        dome.append((RD * math.cos(a) + 1e-5 * (i == 20), ZD + HD * math.sin(a)))
+    dome[-1] = (0.0, ZD + HD)
     bm = bmesh.new()
     bm_lathe(bm, dome, 72)
     parts.append(to_object(bm, f'{name}_dome', [silver], coll, smooth=50.0))
-    # offset visor: a band of dark glass on the dome, turned to one side
+
+    def on_dome(el, az, lift=0.0):
+        rr, hh = RD + lift, HD + lift
+        return (rr * math.cos(el) * math.sin(az), rr * math.cos(el) * math.cos(az), ZD + hh * math.sin(el))
+    # offset slot visor: a rounded slot of dark glass low on the dome, turned toward its right
     bm = bmesh.new()
-    rows = []
-    for i in range(7):
-        el = math.radians(14 + 26 * i / 6)
-        row = []
-        for j in range(17):
-            az = math.radians(-8 + 64 * j / 16)        # offset toward +X
-            rr = R + 0.0025
-            row.append((rr * math.cos(el) * math.sin(az), rr * math.cos(el) * math.cos(az), 0.40 + rr * math.sin(el)))
-        rows.append(row)
-    vr = [bm_ring(bm, r) for r in rows]
-    for a, b in zip(vr, vr[1:]):
-        bm_bridge(bm, b, a, 0, closed=False)
-    visor = to_object(bm, f'{name}_visor', [dark_glass(0.006, 0.03)], coll, smooth=50.0, recalc=False)
+    az0, az1, elc, elh = math.radians(-6), math.radians(58), math.radians(26), math.radians(7.5)
+    cols = []
+    nu = 25
+    for j in range(nu):
+        u = j / (nu - 1)
+        az = az0 + (az1 - az0) * u
+        k = max(0.0, 1.0 - (2 * u - 1) ** 8) ** 0.5          # rounded ends
+        col_ = []
+        for i in range(5):
+            el = elc + elh * k * (i / 4 * 2 - 1)
+            col_.append(on_dome(el, az, 0.0018))
+        cols.append(col_)
+    vr = [bm_ring(bm, c) for c in cols]
+    for a_, b_ in zip(vr, vr[1:]):
+        bm_bridge(bm, a_, b_, 0, closed=False)
+    visor = to_object(bm, f'{name}_visor', [dark_glass(0.006, 0.03)], coll, smooth=50.0, recalc=True)
     sol = visor.modifiers.new('Solidify', 'SOLIDIFY')
-    sol.thickness = 0.003
+    sol.thickness = 0.0025
     sol.offset = -1
-    soft_bevel(visor, 0.001, 2, 60)
     parts.append(visor)
     # small blue panel on the collar
-    pnl = box(f'{name}_panel', (0.05, 0.006, 0.022), (0.0, 0.149, 0.380), cobalt_paint(0.2), coll, 0.0015)
+    pnl = box(f'{name}_panel', (0.044, 0.006, 0.018), (0.0, R0 + 0.006, 0.4785), cobalt_paint(0.2), coll, 0.0015)
     parts.append(pnl)
-    pnl2 = box(f'{name}_panel_in', (0.036, 0.004, 0.012), (0.0, 0.1515, 0.380), flat(srgb('#4d8cff'), 0.25), coll, 0.001)
+    pnl2 = box(f'{name}_panel_in', (0.030, 0.004, 0.009), (0.0, R0 + 0.0085, 0.4785), flat(srgb('#4d8cff'), 0.25), coll,
+               0.001)
     parts.append(pnl2)
-    # cyan beacon on the crown
+    # single small cyan pinlight on the dome, left of the visor, in a chrome bezel
+    el_p, az_p = math.radians(34), math.radians(-34)
+    pc = Vector(on_dome(el_p, az_p, 0.0))
+    nrm = Vector((math.cos(el_p) * math.sin(az_p) / RD, math.cos(el_p) * math.cos(az_p) / RD,
+                  math.sin(el_p) / HD)).normalized()
     lt = bmesh.new()
-    bm_lathe(lt, [(0.0, 0.0), (0.016, 0.0), (0.016, 0.004), (0.013, 0.012), (0.007, 0.018), (0.0, 0.0195)], 24)
-    beacon = to_object(lt, f'{name}_beacon', [led(LED_CYAN, 10.0, 'led')], coll, smooth=50.0)
-    beacon.location = (0, 0, 0.40 + R - 0.003)
+    bm_lathe(lt, [(0.0, 0.0), (0.0042, 0.0), (0.0042, 0.0012), (0.0034, 0.0030), (0.0018, 0.0040), (0.0, 0.0043)], 20)
+    beacon = to_object(lt, f'{name}_beacon', [led(LED_CYAN, 40.0, 'led')], coll, smooth=50.0)
+    beacon.location = pc
+    beacon.rotation_euler = nrm.to_track_quat('Z', 'Y').to_euler()
     beacon['led'] = 0.15
     parts.append(beacon)
-    ring = cylinder(f'{name}_beacon_ring', 0.019, 0.004, (0, 0, 0.40 + R - 0.002), chrome(0.1), coll, 24)
+    rb = bmesh.new()
+    bm_lathe(rb, [(0.0042, -0.0008), (0.0062, -0.0008), (0.0064, 0.0006), (0.0058, 0.0012), (0.0044, 0.0012)], 24)
+    ring = to_object(rb, f'{name}_beacon_ring', [chrome(0.1)], coll, smooth=50.0)
+    ring.location = pc
+    ring.rotation_euler = beacon.rotation_euler
     parts.append(ring)
     # casters (axle = the cylinder's local Z, turned to X; they spin about local Z)
     for k in range(3):
         a = math.pi / 2 + 2 * math.pi * k / 3
-        w = cylinder(f'{name}_caster{k}', 0.022, 0.016, (0.1 * math.cos(a), 0.1 * math.sin(a), 0.022), rubber(), coll, 20)
+        w = cylinder(f'{name}_caster{k}', 0.022, 0.016, (0.09 * math.cos(a), 0.09 * math.sin(a), 0.022), rubber(), coll,
+                     20)
         w.rotation_mode = 'ZYX'
         w.rotation_euler = (0, math.pi / 2, 0)
         w['wheel_r'] = 0.022
         parts.append(w)
         wheels.append(w)
-    # rear clevis hitch: two plates either side of the bar's tongue, pin through at D_HITCH
+    # rear clevis hitch at (hx, -D_HITCH): on an outrigger arm when offset
+    hy = -Droid.D_HITCH
     for sz in (-1, 1):
-        parts.append(box(f'{name}_clevis{sz}', (0.044, 0.07, 0.006), (0, -Droid.D_HITCH + 0.012, 0.115 + sz * 0.0165),
+        parts.append(box(f'{name}_clevis{sz}', (0.044, 0.07, 0.006), (hx, hy + 0.012, 0.115 + sz * 0.0165),
                          silver, coll, 0.0018))
-    parts.append(box(f'{name}_clevis_web', (0.044, 0.012, 0.039), (0, -0.134, 0.115), silver, coll, 0.002))
+    parts.append(box(f'{name}_clevis_web', (0.044, 0.012, 0.039), (hx, hy + 0.026, 0.115), silver, coll, 0.002))
+    if hx > 0.01:
+        a0 = Vector((0.0, -0.096, 0.115))
+        a1 = Vector((hx, hy + 0.034, 0.115))
+        bm = bmesh.new()
+        bm_tube(bm, [a0, a0.lerp(a1, 0.5), a1], 0.011, 12)
+        parts.append(to_object(bm, f'{name}_arm', [silver], coll, smooth=50.0))
+        parts.append(cylinder(f'{name}_arm_boss', 0.024, 0.04, (0.0, -0.10, 0.115), silver, coll, 24, 'Y',
+                              bevel=0.003))
     for p in parts:
         p.parent = rt
-    # ---- trolley (front hitch toward +Y)
+    # ---- trolley (front hitch toward +Y, tongue at -tx from its centre line)
     tr = root(f'{name}_trolley', coll, (0, -(Droid.D_HITCH + Droid.BAR + Droid.T_HITCH), 0))
     tparts = []
     deck = box(f'{name}_deck', (0.49, 0.65, 0.025), (0, 0, 0.115), silver, coll, 0.004)
@@ -3152,10 +3400,13 @@ def paper_droid(name='droid', coll=None, location=(0, 0, 0), rot_z=0.0, reams_hi
             tparts.append(w)
             wheels.append(w)
     for sz in (-1, 1):
-        tparts.append(box(f'{name}_tclevis{sz}', (0.044, 0.07, 0.006), (0, Droid.T_HITCH - 0.012, 0.115 + sz * 0.0165),
+        tparts.append(box(f'{name}_tclevis{sz}', (0.044, 0.07, 0.006), (-tx, Droid.T_HITCH - 0.012, 0.115 + sz * 0.0165),
                           silver, coll, 0.0018))
-    tparts.append(box(f'{name}_tclevis_web', (0.044, 0.012, 0.039), (0, Droid.T_HITCH - 0.042, 0.115), silver, coll,
+    tparts.append(box(f'{name}_tclevis_web', (0.044, 0.012, 0.039), (-tx, Droid.T_HITCH - 0.042, 0.115), silver, coll,
                       0.002))
+    if tx > 0.01:            # the tongue runs back from the clevis to the deck's front edge
+        tparts.append(box(f'{name}_tongue', (0.03, 0.05, 0.02), (-tx, Droid.T_HITCH - 0.072, 0.115), silver, coll,
+                          0.003))
     rng = random.Random(7)
     wrap = ream_wrap()
     rmesh = None
@@ -3163,9 +3414,9 @@ def paper_droid(name='droid', coll=None, location=(0, 0, 0), rot_z=0.0, reams_hi
     # neighbouring reams never touch (ream 0.214 x 0.301, turned at most 0.6 deg)
     rw, rl = (A4[0] + 0.004) / 2, (A4[1] + 0.004) / 2
     amax = math.radians(0.6)
-    hx = rw * math.cos(amax) + rl * math.sin(amax)
-    hy = rl * math.cos(amax) + rw * math.sin(amax)
-    colx, coly = hx + 0.0005 + 0.001, hy + 0.0005 + 0.001
+    hxr = rw * math.cos(amax) + rl * math.sin(amax)
+    hyr = rl * math.cos(amax) + rw * math.sin(amax)
+    colx, coly = hxr + 0.0005 + 0.001, hyr + 0.0005 + 0.001
     for cx in (-1, 1):
         for cy in (-1, 1):
             for k in range(reams_high):
@@ -3199,9 +3450,10 @@ def paper_droid(name='droid', coll=None, location=(0, 0, 0), rot_z=0.0, reams_hi
         head.parent = bar
         clip = cylinder(f'{name}_pinclip{sy}', 0.0062, 0.0016, (0, sy * Droid.BAR / 2, -0.0215), steel(0.3), coll, 16)
         clip.parent = bar
-    d = Droid(rt, tr, bar, beacon, wheels)
+    d = Droid(rt, tr, bar, beacon, wheels, hx, tx)
     d.binder = bnd
     d.trolley_top = top
+    d.reams = [p for p in tparts if p.name.startswith(f'{name}_ream')]
     d.place(1, location[0], location[1], math.degrees(rot_z))
     return d
 
@@ -3221,8 +3473,8 @@ def padlock(name='padlock', coll=None, location=(0, 0, 0), rot_z=0.0, hero=True)
     body = to_object(bm, f'{name}_body', [hero_brass() if hero else brass('polished')], coll, smooth=30.0)
     soft_bevel(body, 0.0045, 4, 30)
     # keyway plug on the underside (flush: its face sits 0.1 mm proud of the base)
-    plug = cylinder(f'{name}_plug', 0.0062, 0.002, (0, 0, 0.0009), brass('polished'), coll, 32, bevel=0.0006)
-    key = box(f'{name}_keyway', (0.0016, 0.0085, 0.0012), (0, 0.0, 0.0005), black_plastic(0.6, 0.003), coll, 0.0004)
+    plug = cylinder(f'{name}_plug', 0.0062, 0.002, (0, 0, 0.0010), brass('polished'), coll, 32, bevel=0.0006)
+    key = box(f'{name}_keyway', (0.0016, 0.0085, 0.0012), (0, 0.0, 0.0006), black_plastic(0.6, 0.003), coll, 0.0004)
     # shackle: steel U with the legs sunk into the body
     leg = 0.0205
     pts = [Vector((-leg, 0, H - 0.008)), Vector((-leg, 0, H + 0.016))]
@@ -3282,28 +3534,85 @@ def glass_zero(name='glass_zero', coll=None, location=(0, 0, 0), rot_z=0.0, upri
         bm.free()
     obj.location = location
     obj.rotation_euler = (0, 0, rot_z)
+    if not upright:
+        _zero_caustic(obj, name, coll)
     return obj
 
 
 @cached
+def caustic_mat(m):
+    """The zero's focused light on the walnut: a thin bright ring just inside the tube's
+    centre circle and a faint glow in the hole (a lens cheat: Cycles' caustics are off).
+    Strength = object property 'caustic' (driven by whether the zero sits in the slab)."""
+    g = G(m, principled=False)
+    x, y, _ = g.sep(g.obj())
+    r = g.math('SQRT', g.add(g.mul(x, x), g.mul(y, y)))
+    ring = g.math('EXPONENT', g.mul(g.math('POWER', g.math('DIVIDE', g.sub(r, 0.0405), 0.0016), 2.0), -1.0))
+    halo = g.mul(g.math('EXPONENT', g.mul(g.math('POWER', g.math('DIVIDE', g.sub(r, 0.040), 0.006), 2.0), -1.0)), 0.25)
+    flick = g.add(0.85, g.mul(g.noise(g.vmath('SCALE', g.obj(), scale=90.0), 1.0, 1.0), 0.3))
+    k = g.mul(g.add(ring, halo), flick, g.attr('caustic').outputs['Fac'])
+    e = g.node('ShaderNodeEmission')
+    g._set(e.inputs['Color'], (1.0, 0.97, 0.92))
+    g._set(e.inputs['Strength'], k)
+    tr = g.node('ShaderNodeBsdfTransparent')
+    add = g.node('ShaderNodeAddShader')
+    g.L.new(tr.outputs[0], add.inputs[0])
+    g.L.new(e.outputs[0], add.inputs[1])
+    g.L.new(add.outputs[0], g.out.inputs['Surface'])
+    m.cycles.emission_sampling = 'NONE'
+
+
+def _zero_caustic(zero, name, coll, slab_half=0.375, peak=2.4):
+    """A caustic decal under a flat glass zero, parented to it; its strength follows the
+    zero's |x| (full inside the slab down the spine, gone 5 cm outside it)."""
+    bm = bmesh.new()
+    rings = []
+    for rr in (0.0, 0.028, 0.036, 0.040, 0.043, 0.046):
+        rings.append([bm.verts.new((rr * math.cos(2 * math.pi * k / 64), rr * math.sin(2 * math.pi * k / 64), 0.00025))
+                      for k in range(64)] if rr > 0 else None)
+    c = bm.verts.new((0.0, 0.0, 0.00025))
+    for k in range(64):
+        bm.faces.new((c, rings[1][k], rings[1][(k + 1) % 64]))
+    for a_, b_ in zip(rings[1:], rings[2:]):
+        bm_bridge(bm, a_, b_, 0)
+    o = to_object(bm, f'{name}_caustic', [caustic_mat()], coll, smooth=None, recalc=True)
+    o.parent = zero
+    for flag in ('visible_diffuse', 'visible_shadow', 'visible_transmission', 'visible_volume_scatter'):
+        setattr(o, flag, False)
+    o['caustic'] = 0.0
+    add_driver(o, '["caustic"]', f'{peak:.3f}*min(1.0,max(0.0,({slab_half + 0.05:.3f}-abs(x))/0.08))',
+               [('x', zero, 'location[0]')])
+    return o
+
+
+@cached
 def envelope_paper(m):
-    """Laid white envelope stock: warm off-white (albedo ~0.75 so it holds detail in the
-    slab), fibres, a fine paper tooth that breaks the sheen up, faint cockle."""
+    """Laid white envelope stock: warm off-white at albedo ~0.48 (it holds detail in the slab
+    and under the CRT pools), visible fibres (fine elongated strands in two crossing
+    directions, slightly darker than the sheet), a fine paper tooth that breaks the sheen
+    up, laid lines, and a soft cockle over a few centimetres."""
     g = G(m)
     P = g.coords()
     fib = g.noise(P, 700.0, 3.0, 0.7)
     tooth = g.noise(P, 2600.0, 2.0, 0.6)
     laid = g.remap(g.math('SINE', g.mul(g.sep(g.obj())[0], 2 * math.pi / 0.0011)), -1.0, 1.0, 0.0, 1.0)
     puff = g.noise(P, 30.0, 2.0)
-    g.p('Base Color', g.mix(g.mul(fib, 0.10), (0.68, 0.665, 0.63), (0.59, 0.575, 0.54)))
-    g.p('Roughness', g.add(0.70, g.mul(tooth, 0.1)))
+    cockle = g.noise(P, 45.0, 3.0, 0.55)
+    f1 = g.remap(g.noise(g.scale_vec(g.vrot(P, 28.0), (5200.0, 380.0, 5200.0)), 1.0, 2.0, 0.6), 0.62, 0.78)
+    f2 = g.remap(g.noise(g.scale_vec(g.vrot(P, -61.0), (4600.0, 330.0, 4600.0)), 1.0, 2.0, 0.6), 0.64, 0.80)
+    strands = g.math('MINIMUM', g.add(f1, f2), 1.0)
+    col = g.mix(g.mul(fib, 0.10), (0.49, 0.48, 0.455), (0.43, 0.42, 0.395))
+    col = g.mix(g.mul(strands, 0.10), col, (0.40, 0.39, 0.37))
+    col = g.mix(g.mul(g.remap(tooth, 0.6, 0.8), 0.05), col, (0.55, 0.54, 0.51))
+    g.p('Base Color', col)
+    g.p('Roughness', g.add(0.72, g.mul(tooth, 0.1)))
     g.p('Sheen Weight', 0.3)
     g.p('Sheen Roughness', 0.45)
     g.p('Subsurface Weight', 0.06)
     g.p('Subsurface Radius', (1.0, 0.95, 0.85))
     g.p('Subsurface Scale', 0.0015)
-    g.p('Normal', g.bump(g.add(g.mul(fib, 0.3), g.mul(tooth, 0.5), g.mul(laid, 0.08), g.mul(puff, 0.7)), 0.12,
-                         0.0005))
+    g.p('Normal', g.bump(g.add(g.mul(fib, 0.3), g.mul(tooth, 0.5), g.mul(laid, 0.08), g.mul(puff, 0.5),
+                               g.mul(cockle, 1.4), g.mul(strands, 0.35)), 0.22, 0.0005))
 
 
 @cached
@@ -3710,7 +4019,7 @@ def brass_socket(name='socket', coll=None, location=(0, 0, 0)):
     prof = [(0.0042, -0.010), (0.0042, 0.0020), (0.0048, 0.0028), (0.0086, 0.0029), (0.0094, 0.0027),
             (0.0100, 0.0022), (0.0108, 0.0014), (0.0113, 0.0007), (0.0115, 0.0), (0.0117, -0.0012)]
     _lathe_y(bm, prof, 72)
-    fl = to_object(bm, f'{name}_flange', [brass('polished')], coll, smooth=40.0, recalc=False)
+    fl = to_object(bm, f'{name}_flange', [brass('satin')], coll, smooth=40.0, recalc=False)
     # threaded bushing: a tube with fine thread ridges, chamfered mouth (face 0.3 mm behind the seat)
     BF = SOCKET_FACE - 0.0004
     prof = [(0.0030, -0.006), (0.0030, BF - 0.0003), (0.0033, BF), (0.0037, BF),
@@ -3722,7 +4031,7 @@ def brass_socket(name='socket', coll=None, location=(0, 0, 0)):
     prof += [(0.0040, 0.0010), (0.0040, -0.006)]
     bm = bmesh.new()
     _lathe_y(bm, prof, 48)
-    bush = to_object(bm, f'{name}_bushing', [brass('polished')], coll, smooth=30.0)
+    bush = to_object(bm, f'{name}_bushing', [brass('satin')], coll, smooth=30.0)
     # black insulator sleeve and the dark bore
     bm = bmesh.new()
     _lathe_y(bm, [(0.0, -0.012), (0.0019, -0.012), (0.0019, BF - 0.0008), (0.0024, BF - 0.0002),
@@ -3750,7 +4059,7 @@ def brass_socket(name='socket', coll=None, location=(0, 0, 0)):
     bm_bridge(bm, i1, i0, 0)
     bm_bridge(bm, i0, c0, 0)
     bm_bridge(bm, c0, o0, 0)
-    nut = to_object(bm, f'{name}_nut', [brass('polished')], coll, smooth=30.0)
+    nut = to_object(bm, f'{name}_nut', [brass('satin')], coll, smooth=30.0)
     for o in (fl, bush, ins, nut):
         o.parent = rt
     return rt
@@ -3950,7 +4259,7 @@ def cup_and_lid(name='cup', coll=None, location=(0, 0, 0), rot_z=0.0, hero=True)
     gbm = bmesh.new()
     outline = stadium(CUP['slot_len'] + 0.001, CUP['slot_w'] + 0.001, 12)
     bm_prism(gbm, outline, -0.0002, 0.0002)
-    glow = to_object(gbm, f'{name}_slotglow', [led(AMBER, 30.0, 'led')], coll, smooth=None)
+    glow = to_object(gbm, f'{name}_slotglow', [led(AMBER, 30.0, 'led', base=0.004)], coll, smooth=None)
     glow.location = (gx, gy, _lid_z(CUP['slot_r'], CUP['slot_theta']) - 0.0045)
     glow.rotation_euler = (0, 0, CUP['slot_theta'] + math.pi / 2)
     glow['led'] = 0.0
@@ -4276,7 +4585,11 @@ def dust_motes(name='dust', coll=None, center=(0.0, 0.0, 1.0), size=(0.8, 0.8, 0
         drift = 0.012 * np.sin(freq * t + phase) + np.array((0.0015, 0.0, -0.0025), np.float32) * t
         q = p + drift
         q = (q + half) % (2 * half) - half
-        pos[k] = K.transform_instances(tv, rot, q + cen, rad)
+        # each speck shrinks to nothing in the outer 15% of the box, so a wrap (it leaves one
+        # face and re-enters at the opposite one) happens at zero size: no jump, no blur streak
+        edge = np.clip((half - np.abs(q)) / (0.15 * half), 0.0, 1.0)
+        fade = np.prod(edge * edge * (3.0 - 2.0 * edge), axis=1).astype(np.float32)
+        pos[k] = K.transform_instances(tv, rot, q + cen, rad * fade)
     verts, faces = K.instance_mesh(tv, tf, n)
     obj = K.mesh_from(pos[0], faces, name, coll, dust_mat())
     obj.visible_shadow = False
