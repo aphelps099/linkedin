@@ -1,0 +1,59 @@
+{
+  "metadata": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 24.0,
+    "frames": 2304
+  },
+  "durationSeconds": 96,
+  "fullDecode": "pass",
+  "dialogueSilentAfterSeconds": 76.123,
+  "removedAnnouncementCaptions": "pass",
+  "audio": {
+    "input_i": "-16.78",
+    "input_tp": "-1.01",
+    "input_lra": "5.80",
+    "input_thresh": "-27.23",
+    "output_i": "-16.94",
+    "output_tp": "-1.50",
+    "output_lra": "4.80",
+    "output_thresh": "-27.22",
+    "normalization_type": "dynamic",
+    "target_offset": "0.94"
+  },
+  "preparation": {
+    "duration": 96,
+    "voiceEvents": 23,
+    "lastSpokenLine": "Just one for reception.",
+    "lastSpokenEnd": 76.1229,
+    "screenTrackingMedianError": 0.5520588755607605,
+    "sourceUpscales": "AI enhanced existing video; not new camera detail"
+  },
+  "browser": {
+    "meta": {
+      "duration": 96,
+      "width": 1920,
+      "height": 1080,
+      "readyState": 4
+    },
+    "errors": [],
+    "mobileOverflow": false,
+    "chapterSeek": 76.509135
+  },
+  "reviewFrames": [
+    1.8,
+    5,
+    10.5,
+    18.3,
+    40,
+    62,
+    78.3,
+    80.8,
+    83.5,
+    84.5,
+    88,
+    91.5
+  ],
+  "voice": "Original Synergy retained; no new speech generation",
+  "status": "Local review; not deployed"
+}

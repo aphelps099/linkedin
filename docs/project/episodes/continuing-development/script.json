@@ -1,0 +1,162 @@
+{
+  "id": "continuing-development",
+  "title": "Continuing development.",
+  "episode": "04",
+  "status": "production-draft-1",
+  "cast": [
+    "synergy",
+    "people",
+    "operations",
+    "printer"
+  ],
+  "topic": "Professional development",
+  "lines": [
+    {
+      "who": "people",
+      "text": "Can we finish in ten minutes? I’ve still got the course.",
+      "shot": "grid",
+      "gap": 0.65
+    },
+    {
+      "who": "synergy",
+      "text": "This is the learning check-in.",
+      "shot": "synergy",
+      "gap": 0.65
+    },
+    {
+      "who": "operations",
+      "text": "Does this count?",
+      "shot": "operations",
+      "gap": 1.05
+    },
+    {
+      "who": "synergy",
+      "text": "It supports the learning.",
+      "shot": "synergy",
+      "gap": 0.65
+    },
+    {
+      "who": "people",
+      "text": "It’s in the half hour we set aside for the lesson.",
+      "shot": "grid",
+      "gap": 0.65
+    },
+    {
+      "who": "synergy",
+      "text": "I wanted everyone to have protected development time.",
+      "shot": "synergy",
+      "gap": 0.65
+    },
+    {
+      "who": "operations",
+      "text": "I’ve marked mine as started.",
+      "shot": "operations",
+      "gap": 0.65
+    },
+    {
+      "who": "people",
+      "text": "Have you started it?",
+      "shot": "people",
+      "gap": 1.05
+    },
+    {
+      "who": "operations",
+      "text": "I opened the first module. Then this invitation came in.",
+      "shot": "grid",
+      "gap": 0.65
+    },
+    {
+      "who": "synergy",
+      "text": "The check-in gives us visibility of progress.",
+      "shot": "synergy",
+      "gap": 0.65
+    },
+    {
+      "who": "people",
+      "text": "I’m trying to learn the caption settings. We keep fixing them after export.",
+      "shot": "people",
+      "gap": 0.65
+    },
+    {
+      "who": "operations",
+      "text": "That would actually save me time.",
+      "shot": "operations",
+      "gap": 0.65
+    },
+    {
+      "who": "synergy",
+      "text": "Would a shared learning tracker help?",
+      "shot": "grid",
+      "gap": 0.65
+    },
+    {
+      "who": "people",
+      "text": "Twenty minutes would help.",
+      "shot": "people",
+      "gap": 0.65
+    },
+    {
+      "who": "synergy",
+      "text": "We have eighteen left.",
+      "shot": "synergy",
+      "gap": 0.65
+    },
+    {
+      "who": "operations",
+      "text": "If we leave now.",
+      "shot": "operations",
+      "gap": 1.05
+    },
+    {
+      "who": "synergy",
+      "text": "I’ll cancel next week’s check-in. Keep the learning block.",
+      "shot": "grid",
+      "gap": 0.65
+    },
+    {
+      "who": "people",
+      "text": "We can show each other something useful afterwards.",
+      "shot": "people",
+      "gap": 0.65
+    },
+    {
+      "who": "operations",
+      "text": "After we’ve learned it.",
+      "shot": "operations",
+      "gap": 0.65
+    },
+    {
+      "who": "synergy",
+      "text": "I haven’t finished my module either.",
+      "shot": "synergy",
+      "gap": 0.65
+    },
+    {
+      "who": "people",
+      "text": "You can use the time too.",
+      "shot": "grid",
+      "gap": 1.05
+    },
+    {
+      "who": "synergy",
+      "text": "Thank you. I had not put that in the plan.",
+      "shot": "synergy",
+      "gap": 0.65
+    }
+  ],
+  "ending": {
+    "kind": "learning",
+    "heading": "Caption settings · Module 1",
+    "lines": [
+      "Development time",
+      "Notifications paused",
+      "Lesson in progress"
+    ],
+    "detail": "Synergy opens his own unfinished lesson."
+  },
+  "hashtags": [
+    "AlwaysLearning",
+    "ProfessionalDevelopment"
+  ],
+  "performance": "Sincere, restrained; preserve original cast voices. New takes require listening review."
+}

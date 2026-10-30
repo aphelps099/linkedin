@@ -1,0 +1,82 @@
+{
+  "id": "new-direction",
+  "title": "A new direction.",
+  "titleLines": [
+    "A new",
+    "direction."
+  ],
+  "episode": "05",
+  "status": "production-draft-1",
+  "format": "short-meeting",
+  "minSeconds": 30,
+  "maxSeconds": 40,
+  "endingSeconds": 3,
+  "outroSeconds": 3,
+  "cast": [
+    "strategy",
+    "linda",
+    "synthia",
+    "printer"
+  ],
+  "topic": "Corporate visit · New banner",
+  "corporateVisit": true,
+  "lines": [
+    {
+      "who": "synthia",
+      "text": "Corporate has brought a new banner.",
+      "shot": "synthia",
+      "gap": 0.36
+    },
+    {
+      "who": "strategy",
+      "text": "Does this replace the previous direction?",
+      "shot": "strategy",
+      "gap": 0.36
+    },
+    {
+      "who": "synthia",
+      "text": "It makes the direction more visible.",
+      "shot": "synthia",
+      "gap": 0.36
+    },
+    {
+      "who": "linda",
+      "text": "The old one was in front of the fire exit.",
+      "shot": "linda",
+      "gap": 0.36
+    },
+    {
+      "who": "strategy",
+      "text": "This one says, move forward.",
+      "shot": "strategy",
+      "gap": 0.36
+    },
+    {
+      "who": "linda",
+      "text": "Then we should move it.",
+      "shot": "linda",
+      "gap": 0.36
+    },
+    {
+      "who": "strategy",
+      "text": "I’ll capture that as an action item.",
+      "shot": "strategy",
+      "gap": 0.8
+    }
+  ],
+  "ending": {
+    "kind": "prop",
+    "heading": "A new direction.",
+    "prop": "banner",
+    "lines": [
+      "MOVE",
+      "FORWARD."
+    ],
+    "resolution": "Clear the exit."
+  },
+  "hashtags": [
+    "MovingForward",
+    "CultureInAction"
+  ],
+  "establishingSeconds": 2
+}

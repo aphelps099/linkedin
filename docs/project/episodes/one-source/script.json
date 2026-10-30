@@ -1,0 +1,99 @@
+{
+  "id": "one-source",
+  "title": "One source of truth.",
+  "titleLines": [
+    "One source",
+    "of truth."
+  ],
+  "episode": "07",
+  "status": "production-draft-1",
+  "format": "short-meeting",
+  "minSeconds": 30,
+  "maxSeconds": 40,
+  "endingSeconds": 3,
+  "outroSeconds": 3,
+  "cast": [
+    "strategy",
+    "linda",
+    "synergy",
+    "printer"
+  ],
+  "topic": "Shared drive · Access request",
+  "corporateVisit": false,
+  "lines": [
+    {
+      "who": "strategy",
+      "text": "We need one source of truth.",
+      "shot": "strategy",
+      "gap": 0.36
+    },
+    {
+      "who": "linda",
+      "text": "It’s in the shared drive.",
+      "shot": "linda",
+      "gap": 0.36
+    },
+    {
+      "who": "strategy",
+      "text": "I mean a single, unified source.",
+      "shot": "strategy",
+      "gap": 0.36
+    },
+    {
+      "who": "linda",
+      "text": "There is one file.",
+      "shot": "linda",
+      "gap": 0.36
+    },
+    {
+      "who": "synergy",
+      "text": "I have requested access.",
+      "shot": "synergy",
+      "gap": 0.36
+    },
+    {
+      "who": "strategy",
+      "text": "We should appoint an information owner.",
+      "shot": "strategy",
+      "gap": 0.36
+    },
+    {
+      "who": "linda",
+      "text": "It’s me. I’ve approved it.",
+      "shot": "linda",
+      "gap": 0.36
+    },
+    {
+      "who": "synergy",
+      "text": "I’m in.",
+      "shot": "synergy",
+      "gap": 0.36
+    },
+    {
+      "who": "strategy",
+      "text": "Good. Now we can start consolidating.",
+      "shot": "strategy",
+      "gap": 0.36
+    },
+    {
+      "who": "linda",
+      "text": "Please don’t make another copy.",
+      "shot": "linda",
+      "gap": 0.8
+    }
+  ],
+  "ending": {
+    "kind": "prop",
+    "heading": "One source of truth.",
+    "prop": "drive",
+    "lines": [
+      "Shared drive",
+      "One file"
+    ],
+    "resolution": "Access granted"
+  },
+  "hashtags": [
+    "SingleSourceOfTruth",
+    "Alignment"
+  ]
+}

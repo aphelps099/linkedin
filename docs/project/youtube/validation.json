@@ -1,0 +1,31 @@
+{
+  "pages": [
+    {
+      "slug": "great-connecting",
+      "duration": 90,
+      "width": 1920,
+      "height": 1080,
+      "playback": true,
+      "seek": true
+    },
+    {
+      "slug": "meaningful-increase",
+      "duration": 90,
+      "width": 1920,
+      "height": 1080,
+      "playback": true,
+      "seek": true
+    },
+    {
+      "slug": "continuing-development",
+      "duration": 90,
+      "width": 1920,
+      "height": 1080,
+      "playback": true,
+      "seek": true
+    }
+  ],
+  "badLinks": [],
+  "errors": [],
+  "mobileOverflow": false
+}

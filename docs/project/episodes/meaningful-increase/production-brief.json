@@ -1,0 +1,60 @@
+{
+  "id": "meaningful-increase",
+  "episode": "03",
+  "title": "A meaningful increase.",
+  "target_seconds": 105,
+  "topic": "Social media impressions",
+  "cast": [
+    "synergy",
+    "people",
+    "accountant",
+    "printer"
+  ],
+  "premise": "The intern’s post reaches 93 impressions. While Synergy prepares the impact summary, one person asks a useful question.",
+  "tension": "Synergy wants the intern to feel recognized. Arjun needs to understand what the number measures. People & Culture wants feedback the intern can use tomorrow.",
+  "beats": [
+    "Synergy brings the intern’s 93 impressions to the meeting as a small achievement worth recognizing.",
+    "Arjun asks what an impression measures and what happened afterwards. Nobody mocks the intern or the modest result.",
+    "The meeting starts drafting a performance summary while an actual question under the post remains unanswered.",
+    "People reads the question: where can the visitor find the onboarding checklist? They identify the right public resource and reply in the story.",
+    "Synergy revises the public draft from a broad impact claim to one useful conversation. The intern gets a specific next step."
+  ],
+  "resolution": "Recognition becomes useful feedback, and the one interested person gets an answer.",
+  "ending_hashtags": [
+    "CommunityBuilding",
+    "ContinuousImprovement"
+  ],
+  "opening_dialogue": [
+    {
+      "who": "synergy",
+      "text": "The post has received ninety-three impressions."
+    },
+    {
+      "who": "accountant",
+      "text": "And what happened after the impression?"
+    },
+    {
+      "who": "people",
+      "text": "Someone asked us a question."
+    }
+  ],
+  "asset_plan": {
+    "reuse": [
+      "Approved collage and music palette",
+      "Synergy and People camera sources",
+      "Arjun listening/speaking plates",
+      "Printer compositor and established voice profiles"
+    ],
+    "prepare": [
+      "Arjun framing and attached-mouth anchors for the film template",
+      "Simple post metrics and unanswered-comment insert",
+      "Fresh dialogue takes from the existing voice profiles"
+    ],
+    "new_generated_video_required": false
+  },
+  "editorial_note": "The intern remains offscreen; do not invent a new face or voice. The metrics are fictional story props, not claims about real site analytics. Treat 93 impressions as a legitimate modest result.",
+  "status": "review-cut-ready",
+  "next_step": "Review the first picture and dialogue cut; refine performances and pacing before publication",
+  "target_seconds_is_estimate": true,
+  "opening_dialogue_status": "superseded by script.json draft 1"
+}

@@ -1,0 +1,409 @@
+{
+  "title": "A more intentional first day.",
+  "episode": "01",
+  "status": "first-scene-for-review",
+  "lines": [
+    {
+      "who": "synergy",
+      "text": "Today, I used ChatGPT to optimize our onboarding checklist.",
+      "shot": "grid",
+      "gap": 0.7
+    },
+    {
+      "who": "people",
+      "text": "What did we change?",
+      "shot": "people",
+      "gap": 0.4
+    },
+    {
+      "who": "operations",
+      "text": "We removed two duplicate steps. And named the person who approves access.",
+      "shot": "operations",
+      "gap": 0.7
+    },
+    {
+      "who": "synergy",
+      "text": "A more intentional first day.",
+      "shot": "text",
+      "gap": 0.6
+    },
+    {
+      "who": "people",
+      "text": "The draft also promised full productivity by Friday. I took that out. Maya starts on Thursday.",
+      "shot": "people",
+      "gap": 0.9
+    },
+    {
+      "who": "synergy",
+      "text": "Human review remains central to the process.",
+      "shot": "synergy",
+      "gap": 0.6
+    },
+    {
+      "who": "people",
+      "text": "Can Maya open it?",
+      "shot": "grid",
+      "gap": 0.7
+    },
+    {
+      "who": "operations",
+      "text": "She's requested access.",
+      "shot": "operations",
+      "gap": 0.6
+    },
+    {
+      "who": "synergy",
+      "text": "The new version does explain how to request access.",
+      "shot": "synergy",
+      "gap": 0.8
+    },
+    {
+      "who": "people",
+      "text": "Who gets the request?",
+      "shot": "people",
+      "gap": 0.4
+    },
+    {
+      "who": "operations",
+      "text": "Me. I'm in this meeting.",
+      "shot": "grid",
+      "gap": 1.8
+    },
+    {
+      "who": "people",
+      "text": "Could you approve it while we're here?",
+      "shot": "people",
+      "gap": 0.5
+    },
+    {
+      "who": "operations",
+      "text": "Done.",
+      "shot": "operations",
+      "gap": 0.7
+    },
+    {
+      "who": "synergy",
+      "text": "Excellent. We have removed a barrier.",
+      "shot": "synergy",
+      "gap": 0.6
+    },
+    {
+      "who": "people",
+      "text": "We should check the instructions against her actual first day.",
+      "shot": "grid",
+      "gap": 0.4
+    },
+    {
+      "who": "operations",
+      "text": "I'll ask her what was missing.",
+      "shot": "operations",
+      "gap": 0.8
+    },
+    {
+      "who": "operations",
+      "text": "Then we can update the checklist with what actually happens.",
+      "shot": "operations",
+      "gap": 0.7
+    },
+    {
+      "who": "synergy",
+      "text": "I asked ChatGPT to summarize the impact.",
+      "shot": "synergy",
+      "gap": 0.5
+    },
+    {
+      "who": "synergy",
+      "text": "Streamlined onboarding. Reduced friction. Empowered people.",
+      "shot": "text",
+      "gap": 0.8
+    },
+    {
+      "who": "people",
+      "text": "Two fewer steps. And the correct contact.",
+      "shot": "people",
+      "gap": 0.5
+    },
+    {
+      "who": "synergy",
+      "text": "I'll use that.",
+      "shot": "grid",
+      "gap": 1.8
+    },
+    {
+      "who": "operations",
+      "text": "Do we still need the printed copies?",
+      "shot": "printer",
+      "gap": 0.5
+    },
+    {
+      "who": "people",
+      "text": "Just one for reception.",
+      "shot": "printer",
+      "gap": 0.8
+    },
+    {
+      "who": "synergy",
+      "text": "I've also drafted a post about what this taught me.",
+      "shot": "synergy",
+      "gap": 0.6
+    },
+    {
+      "who": "people",
+      "text": "About onboarding?",
+      "shot": "grid",
+      "gap": 0.7
+    },
+    {
+      "who": "synergy",
+      "text": "About staying human in the age of AI.",
+      "shot": "synergy",
+      "gap": 2.5
+    }
+  ],
+  "duration": 90.0,
+  "events": [
+    {
+      "who": "synergy",
+      "text": "Today, I used ChatGPT to optimize our onboarding checklist.",
+      "shot": "grid",
+      "gap": 0.7,
+      "start": 3.1,
+      "end": 7.505,
+      "index": 0
+    },
+    {
+      "who": "people",
+      "text": "What did we change?",
+      "shot": "people",
+      "gap": 0.4,
+      "start": 8.205,
+      "end": 9.2737,
+      "index": 1
+    },
+    {
+      "who": "operations",
+      "text": "We removed two duplicate steps. And named the person who approves access.",
+      "shot": "operations",
+      "gap": 0.7,
+      "start": 9.6737,
+      "end": 14.5924,
+      "index": 2
+    },
+    {
+      "who": "synergy",
+      "text": "A more intentional first day.",
+      "shot": "text",
+      "gap": 0.6,
+      "start": 15.2924,
+      "end": 17.0792,
+      "index": 3
+    },
+    {
+      "who": "people",
+      "text": "The draft also promised full productivity by Friday. I took that out. Maya starts on Thursday.",
+      "shot": "people",
+      "gap": 0.9,
+      "start": 17.6792,
+      "end": 23.9081,
+      "index": 4
+    },
+    {
+      "who": "synergy",
+      "text": "Human review remains central to the process.",
+      "shot": "synergy",
+      "gap": 0.6,
+      "start": 24.8081,
+      "end": 27.4578,
+      "index": 5
+    },
+    {
+      "who": "people",
+      "text": "Can Maya open it?",
+      "shot": "grid",
+      "gap": 0.7,
+      "start": 28.0578,
+      "end": 29.3625,
+      "index": 6
+    },
+    {
+      "who": "operations",
+      "text": "She's requested access.",
+      "shot": "operations",
+      "gap": 0.6,
+      "start": 30.0625,
+      "end": 31.6346,
+      "index": 7
+    },
+    {
+      "who": "synergy",
+      "text": "The new version does explain how to request access.",
+      "shot": "synergy",
+      "gap": 0.8,
+      "start": 32.2346,
+      "end": 35.3089,
+      "index": 8
+    },
+    {
+      "who": "people",
+      "text": "Who gets the request?",
+      "shot": "people",
+      "gap": 0.4,
+      "start": 36.1089,
+      "end": 37.3583,
+      "index": 9
+    },
+    {
+      "who": "operations",
+      "text": "Me. I'm in this meeting.",
+      "shot": "grid",
+      "gap": 1.8,
+      "start": 37.7583,
+      "end": 39.2736,
+      "index": 10
+    },
+    {
+      "who": "people",
+      "text": "Could you approve it while we're here?",
+      "shot": "people",
+      "gap": 0.5,
+      "start": 41.0736,
+      "end": 42.7535,
+      "index": 11
+    },
+    {
+      "who": "operations",
+      "text": "Done.",
+      "shot": "operations",
+      "gap": 0.7,
+      "start": 43.2535,
+      "end": 43.9064,
+      "index": 12
+    },
+    {
+      "who": "synergy",
+      "text": "Excellent. We have removed a barrier.",
+      "shot": "synergy",
+      "gap": 0.6,
+      "start": 44.6064,
+      "end": 46.9968,
+      "index": 13
+    },
+    {
+      "who": "people",
+      "text": "We should check the instructions against her actual first day.",
+      "shot": "grid",
+      "gap": 0.4,
+      "start": 47.5968,
+      "end": 50.8856,
+      "index": 14
+    },
+    {
+      "who": "operations",
+      "text": "I'll ask her what was missing.",
+      "shot": "operations",
+      "gap": 0.8,
+      "start": 51.2856,
+      "end": 52.9919,
+      "index": 15
+    },
+    {
+      "who": "operations",
+      "text": "Then we can update the checklist with what actually happens.",
+      "shot": "operations",
+      "gap": 0.7,
+      "start": 53.7919,
+      "end": 57.1991,
+      "index": 16
+    },
+    {
+      "who": "synergy",
+      "text": "I asked ChatGPT to summarize the impact.",
+      "shot": "synergy",
+      "gap": 0.5,
+      "start": 57.8991,
+      "end": 60.8436,
+      "index": 17
+    },
+    {
+      "who": "synergy",
+      "text": "Streamlined onboarding. Reduced friction. Empowered people.",
+      "shot": "text",
+      "gap": 0.8,
+      "start": 61.3436,
+      "end": 65.5556,
+      "index": 18,
+      "phraseCuts": [
+        1.555,
+        2.995
+      ]
+    },
+    {
+      "who": "people",
+      "text": "Two fewer steps. And the correct contact.",
+      "shot": "people",
+      "gap": 0.5,
+      "start": 66.3556,
+      "end": 68.9596,
+      "index": 19
+    },
+    {
+      "who": "synergy",
+      "text": "I'll use that.",
+      "shot": "grid",
+      "gap": 1.8,
+      "start": 69.4596,
+      "end": 70.3529,
+      "index": 20
+    },
+    {
+      "who": "operations",
+      "text": "Do we still need the printed copies?",
+      "shot": "printer",
+      "gap": 0.5,
+      "start": 72.1529,
+      "end": 74.2379,
+      "index": 21
+    },
+    {
+      "who": "people",
+      "text": "Just one for reception.",
+      "shot": "printer",
+      "gap": 0.8,
+      "start": 74.7379,
+      "end": 76.1229,
+      "index": 22
+    },
+    {
+      "who": "synergy",
+      "text": "I've also drafted a post about what this taught me.",
+      "shot": "synergy",
+      "gap": 0.6,
+      "start": 76.9229,
+      "end": 79.8118,
+      "index": 23
+    },
+    {
+      "who": "people",
+      "text": "About onboarding?",
+      "shot": "grid",
+      "gap": 0.7,
+      "start": 80.4118,
+      "end": 81.4858,
+      "index": 24
+    },
+    {
+      "who": "synergy",
+      "text": "About staying human in the age of AI.",
+      "shot": "synergy",
+      "gap": 2.5,
+      "start": 82.1858,
+      "end": 84.3438,
+      "index": 25
+    }
+  ],
+  "voiceEngine": "1.52.0",
+  "scoreSource": "/Users/ap457/Projects/linkedinbeats-meeting-art/optimizing/paper-droid-song/output/tempo.wav",
+  "scoreSha256": "85dd17cb81fc6b4f04de0be0501806ef33a5a6b6b12750d614d0d939ba232302",
+  "musicBpm": 96,
+  "reviewStatus": "new scene awaiting listening and creative review"
+}

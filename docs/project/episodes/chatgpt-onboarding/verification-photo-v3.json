@@ -1,0 +1,21 @@
+{
+  "duration": 90,
+  "resolution": [
+    1280,
+    720
+  ],
+  "fps": 24,
+  "fullDecode": "passed",
+  "audioBitstreamIdenticalToVersion1": true,
+  "audioAdtsSha256": "a90d3c8bb5894e70133bace1924197d2d08739a3f1d4cf6167ce2425574cf20c",
+  "runwayCredits": 0,
+  "newImageGeneration": false,
+  "humanMouthMethod": "attached jaw mesh; amplitude-driven, not phonetic lip sync",
+  "robotFaceMethod": "screen-anchored pixel mouth and eyes",
+  "printerMethod": "existing approved feed compositor; continuous scene clock",
+  "outputBytes": 9829192,
+  "status": "review-cut-not-published",
+  "browserPlayback": "passed",
+  "browserSeekSeconds": 73,
+  "browserPageErrors": []
+}

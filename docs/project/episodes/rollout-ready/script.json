@@ -1,0 +1,94 @@
+{
+  "id": "rollout-ready",
+  "title": "Ready to roll out.",
+  "titleLines": [
+    "Ready to",
+    "roll out."
+  ],
+  "episode": "09",
+  "status": "production-draft-1",
+  "format": "short-meeting",
+  "minSeconds": 30,
+  "maxSeconds": 40,
+  "endingSeconds": 3,
+  "outroSeconds": 3,
+  "cast": [
+    "strategy",
+    "linda",
+    "synthia",
+    "printer"
+  ],
+  "topic": "Corporate visit · AI rollout",
+  "corporateVisit": true,
+  "lines": [
+    {
+      "who": "synthia",
+      "text": "We’ve brought the AI adoption playbook.",
+      "shot": "synthia",
+      "gap": 0.36
+    },
+    {
+      "who": "linda",
+      "text": "Is this the one we’re adopting?",
+      "shot": "linda",
+      "gap": 0.36
+    },
+    {
+      "who": "synthia",
+      "text": "This explains how to adopt the playbook.",
+      "shot": "synthia",
+      "gap": 0.36
+    },
+    {
+      "who": "strategy",
+      "text": "What does the first step require?",
+      "shot": "strategy",
+      "gap": 0.36
+    },
+    {
+      "who": "synthia",
+      "text": "A short alignment session with the owners.",
+      "shot": "synthia",
+      "gap": 0.36
+    },
+    {
+      "who": "linda",
+      "text": "We’re all here.",
+      "shot": "linda",
+      "gap": 0.36
+    },
+    {
+      "who": "strategy",
+      "text": "We should schedule something.",
+      "shot": "strategy",
+      "gap": 0.36
+    },
+    {
+      "who": "linda",
+      "text": "Could this be it?",
+      "shot": "linda",
+      "gap": 0.36
+    },
+    {
+      "who": "synthia",
+      "text": "I’ll update the rollout plan.",
+      "shot": "synthia",
+      "gap": 0.8
+    }
+  ],
+  "ending": {
+    "kind": "prop",
+    "heading": "Ready to roll out.",
+    "prop": "playbook",
+    "lines": [
+      "AI ADOPTION",
+      "PLAYBOOK"
+    ],
+    "resolution": "Alignment session: complete"
+  },
+  "hashtags": [
+    "AdoptionAtScale",
+    "ChangeManagement"
+  ],
+  "establishingSeconds": 2
+}

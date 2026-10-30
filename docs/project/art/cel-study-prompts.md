@@ -1,0 +1,25 @@
+# Hand drawn cast study prompts
+
+Built-in image generation. Both studies use the original sculpted cast image as an identity/composition reference. Neither is an approved animation asset.
+
+## Cel adventure study
+
+Use case: style-transfer.
+Asset: LinkedIn Beats cast exploration, a frame from a hand-drawn animated office series.
+Transform the supplied three-character image completely into traditional 2D ink-and-paint television cel animation inspired by The Flying House and the earnest hand-drawn Japanese adventure cartoons shown on Christian television in the 1980s and 1990s. Actual drawn cels over a painted background, not a 3D render with a cartoon filter.
+Preserve recognizable cast identity: left, People & Culture, adult Black woman with braided high bun, cream collared blouse, gold hoops and small necklace, black headset, patient expression; center, Synergy, angular ivory/cream faceted riveted robot head, black rectangular face screen with small green pixel eyes and a straight horizontal mouth, black headset, cream triangular armor, black lanyard, ordinary coffee cup; right, Operations, middle-aged balding man with dark eyebrows, pale blue button-down shirt, black headset, holding two drumsticks over a compact electronic drum pad.
+Draw all three with confident slightly irregular dark ink outlines, economical expressive facial drawing, flat opaque cel colors, one or two hard-edged shadow shapes, carefully simplified hair and clothes. Humans remain adults, modestly stylized long noses and brows, unmistakably animated rather than realistic. Synergy must become a drawn cel character in exactly the same medium, no metallic CGI. Preserve his angular identity, do not replace him with the robot from the reference show.
+Compose an eye-level medium ensemble shot seated at a modest wood conference table, in a hand-painted office with pale blue-grey cubicle partitions and fluorescent ceiling panels. Subdued cobalt, teal, cream, warm ochre and muted peach. Gentle vintage broadcast warmth, restrained cel grain, no fake VHS damage. Good composition with space around heads, hands and drum pad visible.
+They are listening gravely to a routine status update: entirely sincere and still, no jokes signaled, no smiles or comic shock. It should look like a beautiful actual frame from a forgotten drawn television series, with the banal office subject supplying the dry humor. Landscape. No lettering, headings, microtext, labels, watermarks or show logos. No religious imagery; the reference concerns animation craft and period only.
+
+Output: `cast-cel-adventure-v1.png`. Review: consistent drawn medium across the three characters, recognizable clothing and hair, correct headset/instrument props, warm painted-office setting. Human face proportions are interpreted and remain subject to likeness review.
+
+## Cel sitcom study
+
+Use case: style-transfer. Asset: alternative LinkedIn Beats character direction.
+Translate the supplied cast image into an original 1990s hand-drawn adult television sitcom animation still. Same three adult colleagues, same seated composition and props, but confidently simplified graphic character design: clean black contour lines, strong individualized noses and jaw shapes, compact eyes, flat solid colors, only one crisp shadow tone, minimal line detail, no painterly shading on characters. Warm slightly faded cel palette. The faces must retain distinctive identities rather than becoming interchangeable cartoons.
+Left People & Culture is an adult Black woman with a high braided bun, gold hoops, necklace, cream buttoned blouse and headset. Center Synergy has an angular faceted cream riveted head, black face screen, TWO small green pixel eyes and ONE thin straight green mouth row, headset, lanyard, triangular cream armor and coffee cup. Preserve authentic Synergy; no generic cylindrical robot. Right Operations is middle-aged, balding with dark brows and short side hair, blue office shirt, headset, two drumsticks and black electronic drum pad.
+Dry observational performance, politely attentive human woman, neutral robotic screen, man slightly weary but listening. No broad smiles or mugging. Everyone takes the meeting seriously.
+A deliberately ordinary painted background of blue-grey cubicles, beige wall, fluorescent ceiling light and a plant. Background shapes simpler than first image, with spare gouache texture. Table in foreground. Like an actual cel from a distinctive adult office sitcom, economical drawing with personality, clear silhouettes and grounded adult anatomy. No 3D, plastic, photographic texture, gradients on faces, chibi, oversized sparkle eyes, visual gags, words, labels or microtext. The drawing should be visibly simpler and more graphic than an elaborate anime illustration.
+
+Output: `cast-cel-sitcom-v1.png`. Review: simpler contours and compact face design, neutral expressions, coherent cel-style robot, retained props. Both studies are stills; no lip sync, rigs or movement are represented as complete.

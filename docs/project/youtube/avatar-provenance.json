@@ -1,0 +1,10 @@
+{
+  "date": "2026-10-29",
+  "tool": "Built-in imagegen",
+  "mode": "Identity-preserving reference edit",
+  "reference": "public/studio/season/posters/synergy-camera-v2-listening.jpg",
+  "selected_result": "exec-a9d0d9a0-9df1-4771-a900-217eec15270c.png",
+  "initial_prompt_summary": "Square YouTube host portrait of the actual faceted cream riveted Synergy, black headset and boom, green pixel face. Electric cobalt textured paper background. Close head and upper shoulders, circle-safe focal area. No hands, coffee, text or new logo. Preserve actual character proportions and material imperfections.",
+  "final_edit_prompt": "Change ONLY the green mouth line on the attached Synergy portrait. Preserve all other pixels and identity, including both eyes, framing, background, headset and metal. We want his quiet resting expression. Make the mouth ONE CONTINUOUS SOLID STRAIGHT HORIZONTAL BAR, no visible segmentation or gaps, no illuminated blocks. Its width should be about FIVE times the width of one eye; its thickness exactly ONE-HALF the height of one eye. Compared with the current thin mouth line, this means slightly thicker and about 50 percent longer. Make this whole bar very faint dark green, as if green LED lights are at 10 percent brightness, not glowing. At rest it is just a subtle full-width straight mouth baseline. No active talking highlight. No smile, lips or waveform. Keep the existing eye brightness unchanged. Do not add any text or modify the robot or background.",
+  "note": "Static art interpretation of the resting mouth. Exact pixel geometry and alpha remain implemented by src/meeting-room/synergy-display.js in animated scenes. This portrait is a channel-avatar proposal, not a new reference replacing the canonical camera image. Three imagegen attempts; no Runway generation used."
+}

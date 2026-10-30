@@ -1,0 +1,15 @@
+{
+  "id": "ai-reviewed",
+  "episode": "06",
+  "title": "Thoroughly reviewed.",
+  "status": "review-cut-ready",
+  "target_seconds": "30–40",
+  "cast": [
+    "strategy",
+    "linda",
+    "synthia",
+    "printer"
+  ],
+  "premise": "The AI reviews its own playbook. Linda volunteers to read it.",
+  "next_step": "Review the current short cut for story, voice clarity and performance"
+}

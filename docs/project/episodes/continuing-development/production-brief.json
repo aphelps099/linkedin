@@ -1,0 +1,58 @@
+{
+  "id": "continuing-development",
+  "episode": "04",
+  "title": "Continuing development.",
+  "target_seconds": 100,
+  "topic": "Professional development",
+  "cast": [
+    "synergy",
+    "people",
+    "operations",
+    "printer"
+  ],
+  "premise": "The meeting about protecting learning time has taken the time reserved for learning.",
+  "tension": "Synergy wants to make development visible and supported. People & Culture needs time to finish a lesson. Operations wants to leave but initially treats finishing the course as just another checkbox.",
+  "beats": [
+    "People asks whether the check-in can finish soon: she still has a lesson to complete.",
+    "Synergy presents the learning plan and asks each person to report progress. The discussion consumes the remaining reserved time.",
+    "Operations asks whether attendance at the check-in counts. People explains one specific thing she wants to learn, shifting the conversation away from completion metrics.",
+    "Synergy recognizes that another framework will not create more time. He cancels the recurring progress check-in and protects the learning block.",
+    "After everyone leaves, Synergy closes his draft about a learning culture and opens his own unfinished lesson. The printer quietly delivers the old agenda."
+  ],
+  "resolution": "Synergy gives people time instead of a new reporting task, and accepts the same permission for himself.",
+  "ending_hashtags": [
+    "AlwaysLearning",
+    "ProfessionalDevelopment"
+  ],
+  "opening_dialogue": [
+    {
+      "who": "people",
+      "text": "Can we finish in ten minutes? I’ve still got the course."
+    },
+    {
+      "who": "synergy",
+      "text": "This is the learning check-in."
+    },
+    {
+      "who": "operations",
+      "text": "Does this count?"
+    }
+  ],
+  "asset_plan": {
+    "reuse": [
+      "Complete approved Synergy / People / Operations film setup",
+      "Original instrument scraps, coffee insert and printer feed",
+      "96 BPM music bed and canonical voice profiles"
+    ],
+    "prepare": [
+      "Learning calendar and unfinished-lesson screen graphics",
+      "Fresh dialogue takes from the existing voice profiles"
+    ],
+    "new_generated_video_required": false
+  },
+  "editorial_note": "Let Synergy genuinely change his approach. Do not finish with another grandiose post in every episode. All calendar actions are fictional onscreen story actions.",
+  "status": "review-cut-ready",
+  "next_step": "Review the first picture and dialogue cut; refine performances and pacing before publication",
+  "target_seconds_is_estimate": true,
+  "opening_dialogue_status": "superseded by script.json draft 1"
+}
