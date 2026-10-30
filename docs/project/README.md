@@ -78,3 +78,7 @@ Sources checked October 29, 2026: [Google Analytics terms, section 7](https://ma
 ## YouTube channel kit
 
 [YouTube launch kit sources and setup](youtube/README.md). Local download hub: http://127.0.0.1:8852/youtube/. Includes Synergy avatar, mobile-safe collage banner, nine thumbnail compositions, logos, canonical cast references, art studies and channel description.
+
+## Five quick meetings · Episodes 05–09
+
+The new preferred duration is 30–40 seconds. [Production notes](episodes/production/shorts-production.md) and [shorts slate](episodes/shorts-queue.json) cover five new Strategy/Linda-led cuts, with Synthia and the banner crew handling recurring Corporate visits. Review: http://127.0.0.1:8852/shorts/.

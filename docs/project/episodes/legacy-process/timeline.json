@@ -1,0 +1,168 @@
+{
+  "id": "legacy-process",
+  "title": "The legacy process.",
+  "titleLines": [
+    "The legacy",
+    "process."
+  ],
+  "episode": "08",
+  "status": "production-draft-1",
+  "format": "short-meeting",
+  "minSeconds": 30,
+  "maxSeconds": 40,
+  "endingSeconds": 3,
+  "outroSeconds": 3,
+  "cast": [
+    "strategy",
+    "linda",
+    "synergy",
+    "printer"
+  ],
+  "topic": "Reporting · Platform transition",
+  "corporateVisit": false,
+  "lines": [
+    {
+      "who": "strategy",
+      "text": "We are retiring the legacy reporting process.",
+      "shot": "strategy",
+      "gap": 0.36
+    },
+    {
+      "who": "linda",
+      "text": "That’s my spreadsheet.",
+      "shot": "linda",
+      "gap": 0.36
+    },
+    {
+      "who": "strategy",
+      "text": "We’re moving to a single source of intelligence.",
+      "shot": "strategy",
+      "gap": 0.36
+    },
+    {
+      "who": "linda",
+      "text": "Does it still need the numbers by Friday?",
+      "shot": "linda",
+      "gap": 0.36
+    },
+    {
+      "who": "strategy",
+      "text": "The cadence remains unchanged.",
+      "shot": "strategy",
+      "gap": 0.36
+    },
+    {
+      "who": "linda",
+      "text": "So does the spreadsheet.",
+      "shot": "linda",
+      "gap": 0.36
+    },
+    {
+      "who": "synergy",
+      "text": "I have updated the file name.",
+      "shot": "synergy",
+      "gap": 0.36
+    },
+    {
+      "who": "linda",
+      "text": "Thank you. Don’t move the cells.",
+      "shot": "linda",
+      "gap": 0.8
+    }
+  ],
+  "ending": {
+    "kind": "prop",
+    "heading": "The legacy process.",
+    "prop": "sheet",
+    "lines": [
+      "Friday reporting",
+      "Intelligence platform"
+    ],
+    "resolution": "Same cells."
+  },
+  "hashtags": [
+    "DigitalTransformation",
+    "OperationalExcellence"
+  ],
+  "events": [
+    {
+      "who": "strategy",
+      "text": "We are retiring the legacy reporting process.",
+      "shot": "strategy",
+      "gap": 0.36,
+      "index": 0,
+      "start": 3.1,
+      "end": 6.0608
+    },
+    {
+      "who": "linda",
+      "text": "That’s my spreadsheet.",
+      "shot": "linda",
+      "gap": 0.36,
+      "index": 1,
+      "start": 6.4208,
+      "end": 7.9888
+    },
+    {
+      "who": "strategy",
+      "text": "We’re moving to a single source of intelligence.",
+      "shot": "strategy",
+      "gap": 0.36,
+      "index": 2,
+      "start": 8.3488,
+      "end": 11.1576
+    },
+    {
+      "who": "linda",
+      "text": "Does it still need the numbers by Friday?",
+      "shot": "linda",
+      "gap": 0.36,
+      "index": 3,
+      "start": 11.5176,
+      "end": 14.8622
+    },
+    {
+      "who": "strategy",
+      "text": "The cadence remains unchanged.",
+      "shot": "strategy",
+      "gap": 0.36,
+      "index": 4,
+      "start": 15.2222,
+      "end": 17.8783
+    },
+    {
+      "who": "linda",
+      "text": "So does the spreadsheet.",
+      "shot": "linda",
+      "gap": 0.36,
+      "index": 5,
+      "start": 18.2383,
+      "end": 19.8237
+    },
+    {
+      "who": "synergy",
+      "text": "I have updated the file name.",
+      "shot": "synergy",
+      "gap": 0.36,
+      "index": 6,
+      "start": 20.1837,
+      "end": 22.102
+    },
+    {
+      "who": "linda",
+      "text": "Thank you. Don’t move the cells.",
+      "shot": "linda",
+      "gap": 0.8,
+      "index": 7,
+      "start": 22.462,
+      "end": 24.8998
+    }
+  ],
+  "duration": 32.0,
+  "meetingEnd": 26.0,
+  "outroStart": 29.0,
+  "voiceEngine": "1.52.0",
+  "musicBpm": 96,
+  "scoreSha256": "f33d4f1240b54ad393653b3d1b93c75df379008d830d94a8d6c8abdbd7f2c627",
+  "reviewStatus": "first production cut; awaiting listening and creative review"
+}

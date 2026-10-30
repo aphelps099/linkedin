@@ -1,0 +1,62 @@
+{
+  "updated": "2026-10-29",
+  "purpose": "Five 30–40 second meetings led by Strategy and Linda, with recurring Corporate visits",
+  "status": "review-cuts-ready",
+  "episodes": [
+    {
+      "id": "new-direction",
+      "episode": "05",
+      "title": "A new direction.",
+      "status": "review-cut-ready",
+      "brief": "new-direction/production-brief.json",
+      "script": "new-direction/script.json",
+      "review_url": "http://127.0.0.1:8852/shorts/new-direction/",
+      "duration_seconds": 30.833333333333332,
+      "version": 1
+    },
+    {
+      "id": "ai-reviewed",
+      "episode": "06",
+      "title": "Thoroughly reviewed.",
+      "status": "review-cut-ready",
+      "brief": "ai-reviewed/production-brief.json",
+      "script": "ai-reviewed/script.json",
+      "review_url": "http://127.0.0.1:8852/shorts/ai-reviewed/",
+      "duration_seconds": 33.25,
+      "version": 1
+    },
+    {
+      "id": "one-source",
+      "episode": "07",
+      "title": "One source of truth.",
+      "status": "review-cut-ready",
+      "brief": "one-source/production-brief.json",
+      "script": "one-source/script.json",
+      "review_url": "http://127.0.0.1:8852/shorts/one-source/",
+      "duration_seconds": 33.583333333333336,
+      "version": 1
+    },
+    {
+      "id": "legacy-process",
+      "episode": "08",
+      "title": "The legacy process.",
+      "status": "review-cut-ready",
+      "brief": "legacy-process/production-brief.json",
+      "script": "legacy-process/script.json",
+      "review_url": "http://127.0.0.1:8852/shorts/legacy-process/",
+      "duration_seconds": 32.0,
+      "version": 1
+    },
+    {
+      "id": "rollout-ready",
+      "episode": "09",
+      "title": "Ready to roll out.",
+      "status": "review-cut-ready",
+      "brief": "rollout-ready/production-brief.json",
+      "script": "rollout-ready/script.json",
+      "review_url": "http://127.0.0.1:8852/shorts/rollout-ready/",
+      "duration_seconds": 32.875,
+      "version": 1
+    }
+  ]
+}

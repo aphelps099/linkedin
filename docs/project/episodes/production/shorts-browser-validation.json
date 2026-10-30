@@ -1,0 +1,47 @@
+{
+  "pages": [
+    {
+      "episode": "new-direction",
+      "duration": 30.833333,
+      "width": 1920,
+      "height": 1080,
+      "playback": true,
+      "seek": true
+    },
+    {
+      "episode": "ai-reviewed",
+      "duration": 33.25,
+      "width": 1920,
+      "height": 1080,
+      "playback": true,
+      "seek": true
+    },
+    {
+      "episode": "one-source",
+      "duration": 33.583333,
+      "width": 1920,
+      "height": 1080,
+      "playback": true,
+      "seek": true
+    },
+    {
+      "episode": "legacy-process",
+      "duration": 32,
+      "width": 1920,
+      "height": 1080,
+      "playback": true,
+      "seek": true
+    },
+    {
+      "episode": "rollout-ready",
+      "duration": 32.875,
+      "width": 1920,
+      "height": 1080,
+      "playback": true,
+      "seek": true
+    }
+  ],
+  "errors": [],
+  "badLinks": [],
+  "mobileOverflow": false
+}

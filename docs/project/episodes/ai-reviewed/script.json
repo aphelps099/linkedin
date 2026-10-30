@@ -1,0 +1,94 @@
+{
+  "id": "ai-reviewed",
+  "title": "Thoroughly reviewed.",
+  "titleLines": [
+    "Thoroughly",
+    "reviewed."
+  ],
+  "episode": "06",
+  "status": "production-draft-1",
+  "format": "short-meeting",
+  "minSeconds": 30,
+  "maxSeconds": 40,
+  "endingSeconds": 3,
+  "outroSeconds": 3,
+  "cast": [
+    "strategy",
+    "linda",
+    "synthia",
+    "printer"
+  ],
+  "topic": "Corporate visit · AI playbook",
+  "corporateVisit": true,
+  "lines": [
+    {
+      "who": "synthia",
+      "text": "Corporate’s AI playbook is ready.",
+      "shot": "synthia",
+      "gap": 0.36
+    },
+    {
+      "who": "linda",
+      "text": "Who wrote it?",
+      "shot": "linda",
+      "gap": 0.36
+    },
+    {
+      "who": "synthia",
+      "text": "We used AI to accelerate the first draft.",
+      "shot": "synthia",
+      "gap": 0.36
+    },
+    {
+      "who": "strategy",
+      "text": "And the review?",
+      "shot": "strategy",
+      "gap": 0.36
+    },
+    {
+      "who": "synthia",
+      "text": "We asked it to review its own recommendations.",
+      "shot": "synthia",
+      "gap": 0.36
+    },
+    {
+      "who": "linda",
+      "text": "Did it find any problems?",
+      "shot": "linda",
+      "gap": 0.36
+    },
+    {
+      "who": "synthia",
+      "text": "It described the work as comprehensive.",
+      "shot": "synthia",
+      "gap": 0.36
+    },
+    {
+      "who": "linda",
+      "text": "I’ll read page two.",
+      "shot": "linda",
+      "gap": 0.36
+    },
+    {
+      "who": "strategy",
+      "text": "Let’s capture that as human oversight.",
+      "shot": "strategy",
+      "gap": 0.8
+    }
+  ],
+  "ending": {
+    "kind": "prop",
+    "heading": "Thoroughly reviewed.",
+    "prop": "playbook",
+    "lines": [
+      "AI",
+      "PLAYBOOK"
+    ],
+    "resolution": "Human review: Linda"
+  },
+  "hashtags": [
+    "ResponsibleAI",
+    "HumanInTheLoop"
+  ],
+  "establishingSeconds": 2
+}

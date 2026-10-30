@@ -1,0 +1,28 @@
+{
+  "sources": [
+    {
+      "file": "banner-installation.mp4",
+      "catalog_id": "banner-installation-blank-plates-226c59ad",
+      "sha256": "226c59adf5c19fb7e7298f119950006f937c645aedee42e5e6a929a71a445bd8",
+      "new_generation": false
+    },
+    {
+      "file": "synthia-clean.mp4",
+      "catalog_id": "synthia-clean-face-plate-7e0cf1cc",
+      "sha256": "7e0cf1cc88e9ca0b55392eedc6054b53a69bc41c44414cd6617a0421538d6600",
+      "new_generation": false
+    },
+    {
+      "file": "public/studio/season/clips/strategy-listening.mp4",
+      "sha256": "2199c8e986f3559fd7ec6f5502bd96c70bd473ded885a00d80ba67aa5c6e8f2a",
+      "new_generation": false
+    },
+    {
+      "file": "public/studio/season/clips/linda-listening.mp4",
+      "sha256": "08e42652e2f69aa3de898574c5dcef01a3816df07d35850d1c5aa9ae3f03851d",
+      "new_generation": false
+    }
+  ],
+  "new_runway_generations": 0,
+  "human_reaction_fps": 12
+}

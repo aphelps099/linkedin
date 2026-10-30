@@ -32,6 +32,8 @@ Direction confirmed by Aaron, October 29, 2026. This document supersedes the ope
 
 ## Series format
 
+**October 29 update:** 30–40 seconds is the preferred length for the next five meetings. Give Strategy and Linda more screen time. Corporate visits recur occasionally, bringing banners and AI playbooks; Synthia acts as the established training liaison. Keep the approved real cast, original voices, restrained meeting UI, brief paper/instrument collage, horizontal Synergy EQ and 4:3 printer. Earlier 90-second cuts remain available.
+
 Episodes run 90 seconds to 4 minutes. A 2–3 second branded opening shows the actual LinkedIn Beats logo and episode title, then goes directly into a specific workplace problem. Use a small collection of storybook illustrations, spoken performances, music, precisely timed words and restrained paper animation.
 
 The characters believe the stakes. Realistic achievements stay centered on onboarding, Google Drive sharing, website updates, a social media intern’s post impressions, professional-development time and conference follow-up. The recurring “I used ChatGPT to…” framing belongs here when it supports a story. Characters review and apply the output; the script should distinguish drafting advice from actually changing files or permissions.

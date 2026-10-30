@@ -1,0 +1,15 @@
+{
+  "id": "rollout-ready",
+  "episode": "09",
+  "title": "Ready to roll out.",
+  "status": "review-cut-ready",
+  "target_seconds": "30–40",
+  "cast": [
+    "strategy",
+    "linda",
+    "synthia",
+    "printer"
+  ],
+  "premise": "The rollout playbook calls for a meeting that is already taking place.",
+  "next_step": "Review the first short cut for story, voice clarity and restrained performance"
+}

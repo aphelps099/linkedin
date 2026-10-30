@@ -1,0 +1,184 @@
+{
+  "id": "ai-reviewed",
+  "title": "Thoroughly reviewed.",
+  "titleLines": [
+    "Thoroughly",
+    "reviewed."
+  ],
+  "episode": "06",
+  "status": "production-draft-1",
+  "format": "short-meeting",
+  "minSeconds": 30,
+  "maxSeconds": 40,
+  "endingSeconds": 3,
+  "outroSeconds": 3,
+  "cast": [
+    "strategy",
+    "linda",
+    "synthia",
+    "printer"
+  ],
+  "topic": "Corporate visit · AI playbook",
+  "corporateVisit": true,
+  "lines": [
+    {
+      "who": "synthia",
+      "text": "Corporate’s AI playbook is ready.",
+      "shot": "synthia",
+      "gap": 0.36
+    },
+    {
+      "who": "linda",
+      "text": "Who wrote it?",
+      "shot": "linda",
+      "gap": 0.36
+    },
+    {
+      "who": "synthia",
+      "text": "We used AI to accelerate the first draft.",
+      "shot": "synthia",
+      "gap": 0.36
+    },
+    {
+      "who": "strategy",
+      "text": "And the review?",
+      "shot": "strategy",
+      "gap": 0.36
+    },
+    {
+      "who": "synthia",
+      "text": "We asked it to review its own recommendations.",
+      "shot": "synthia",
+      "gap": 0.36
+    },
+    {
+      "who": "linda",
+      "text": "Did it find any problems?",
+      "shot": "linda",
+      "gap": 0.36
+    },
+    {
+      "who": "synthia",
+      "text": "It described the work as comprehensive.",
+      "shot": "synthia",
+      "gap": 0.36
+    },
+    {
+      "who": "linda",
+      "text": "I’ll read page two.",
+      "shot": "linda",
+      "gap": 0.36
+    },
+    {
+      "who": "strategy",
+      "text": "Let’s capture that as human oversight.",
+      "shot": "strategy",
+      "gap": 0.8
+    }
+  ],
+  "ending": {
+    "kind": "prop",
+    "heading": "Thoroughly reviewed.",
+    "prop": "playbook",
+    "lines": [
+      "AI",
+      "PLAYBOOK"
+    ],
+    "resolution": "Human review: Linda"
+  },
+  "hashtags": [
+    "ResponsibleAI",
+    "HumanInTheLoop"
+  ],
+  "establishingSeconds": 2,
+  "events": [
+    {
+      "who": "synthia",
+      "text": "Corporate’s AI playbook is ready.",
+      "shot": "synthia",
+      "gap": 0.36,
+      "index": 0,
+      "start": 5.1,
+      "end": 7.0343
+    },
+    {
+      "who": "linda",
+      "text": "Who wrote it?",
+      "shot": "linda",
+      "gap": 0.36,
+      "index": 1,
+      "start": 7.3943,
+      "end": 8.4467
+    },
+    {
+      "who": "synthia",
+      "text": "We used AI to accelerate the first draft.",
+      "shot": "synthia",
+      "gap": 0.36,
+      "index": 2,
+      "start": 8.8067,
+      "end": 11.3729
+    },
+    {
+      "who": "strategy",
+      "text": "And the review?",
+      "shot": "strategy",
+      "gap": 0.36,
+      "index": 3,
+      "start": 11.7329,
+      "end": 12.8275
+    },
+    {
+      "who": "synthia",
+      "text": "We asked it to review its own recommendations.",
+      "shot": "synthia",
+      "gap": 0.36,
+      "index": 4,
+      "start": 13.1875,
+      "end": 15.867
+    },
+    {
+      "who": "linda",
+      "text": "Did it find any problems?",
+      "shot": "linda",
+      "gap": 0.36,
+      "index": 5,
+      "start": 16.227,
+      "end": 18.1648
+    },
+    {
+      "who": "synthia",
+      "text": "It described the work as comprehensive.",
+      "shot": "synthia",
+      "gap": 0.36,
+      "index": 6,
+      "start": 18.5248,
+      "end": 20.9146
+    },
+    {
+      "who": "linda",
+      "text": "I’ll read page two.",
+      "shot": "linda",
+      "gap": 0.36,
+      "index": 7,
+      "start": 21.2746,
+      "end": 22.9227
+    },
+    {
+      "who": "strategy",
+      "text": "Let’s capture that as human oversight.",
+      "shot": "strategy",
+      "gap": 0.8,
+      "index": 8,
+      "start": 23.2827,
+      "end": 26.1487
+    }
+  ],
+  "duration": 33.25,
+  "meetingEnd": 27.25,
+  "outroStart": 30.25,
+  "voiceEngine": "1.52.0",
+  "musicBpm": 96,
+  "scoreSha256": "f33d4f1240b54ad393653b3d1b93c75df379008d830d94a8d6c8abdbd7f2c627",
+  "reviewStatus": "first production cut; awaiting listening and creative review"
+}

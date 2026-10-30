@@ -1,0 +1,32 @@
+[
+  {
+    "episode": "new-direction",
+    "full_decode": "passed",
+    "bytes": 6422671,
+    "sha256": "2d02a9c71a37176f11f0c19849e1558b6d10f5ff9ecef540907e02f915710268"
+  },
+  {
+    "episode": "ai-reviewed",
+    "full_decode": "passed",
+    "bytes": 6879407,
+    "sha256": "24a76f491fbd33b76d4ff0435ef5bba64193c945c5e3f45a6ceda25abe707b96"
+  },
+  {
+    "episode": "one-source",
+    "full_decode": "passed",
+    "bytes": 5969576,
+    "sha256": "9a1d5b1e0f44cb4b497d8e23e6fba1472c6cf2ab30222339c56ec0a04d7ca11b"
+  },
+  {
+    "episode": "legacy-process",
+    "full_decode": "passed",
+    "bytes": 5713020,
+    "sha256": "50e26aa61fc303da864147636085fa45f1894a5ce597dd21b61ec417b65912da"
+  },
+  {
+    "episode": "rollout-ready",
+    "full_decode": "passed",
+    "bytes": 6735734,
+    "sha256": "199403b68985792fe124253849127493705b39cfdd266fb5a57dbda59d05a55e"
+  }
+]

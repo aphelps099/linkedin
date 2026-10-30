@@ -109,3 +109,7 @@ Aaron singled out the office-paper treatment as especially successful and asked 
 ## Selected miniseries direction
 
 Office paper is now the selected series treatment. Follow [the miniseries format](miniseries-format.md) for reusable states, paper meeting windows, timed typography, printer fatigue and Synergy’s coffee action. [The meeting-grid concept](art/paper-meeting-grid-v1.png) is a staging study awaiting review. Selection of the style does not imply that layered assets, rigs or episodes are already complete.
+
+## Corporate visits · October 29
+
+For episodes 05–09, Synthia serves as the visiting Corporate Enablement liaison, using her established clear Flite SLT digital voice. The existing banner crew supplies arrival and installation footage. Strategy and Linda lead all five short meetings; Linda retains practical knowledge and can solve the problem. Corporate is a fictional satirical presence, not a claim of real LinkedIn sponsorship or endorsement.
