@@ -14,6 +14,12 @@ Lighting 'office' (default): the key comes from above and camera-right like the 
 office plate (crown brightest, the wedge in half-shade), a softened 6500K overhead panel, a
 neutral floor bounce and a fill, plus two rims. A glossy-only soft-ended card is re-aimed per
 view so the face glass shows one thin reflected skylight slot near its top edge.
+
+After each render it prints MEASURE lines (skip with --no-measure): median colours at projected
+points on the cream and grey plates, the blue chip and the badge glyph (green excess), the
+luminance spread inside each visible torso plate (the oil-can sheen), and for hero.png the
+pauldron apex against the torso top line in pixels. Eye samples are only meaningful from the
+in-room frames (tools/synergy_in_room.py), not at this exposure.
 """
 
 import argparse
@@ -50,7 +56,141 @@ def args():
     p.add_argument('--quality', default='preview', help='material Bevel/AO tier (materials.set_quality)')
     p.add_argument('--exposure', type=float, default=-0.8,
                    help='view exposure; -0.7 puts lit cream near the office plate (#CBAD8C-#D9C3AC)')
+    p.add_argument('--no-measure', action='store_true', help='skip the MEASURE lines after each render')
     return p.parse_args(argv)
+
+
+# ------------------------------------------------------------------ measurement
+
+def _pixels(path):
+    img = bpy.data.images.load(path, check_existing=False)
+    w, h = img.size
+    px = list(img.pixels[:])
+    bpy.data.images.remove(img)
+    return w, h, px
+
+
+def _proj(cam, p):
+    from bpy_extras.object_utils import world_to_camera_view
+    co = world_to_camera_view(bpy.context.scene, cam, p)
+    return co if (0 <= co.x <= 1 and 0 <= co.y <= 1 and co.z > 0) else None
+
+
+def _med(px, w, h, x, y, r=2):
+    cols = []
+    for yy in range(max(0, y - r), min(h, y + r + 1)):
+        for xx in range(max(0, x - r), min(w, x + r + 1)):
+            i = (yy * w + xx) * 4
+            cols.append(px[i:i + 3])
+    if not cols:
+        return None
+    return [sorted(c[k] for c in cols)[len(cols) // 2] for k in range(3)]
+
+
+def _hex(c):
+    return '#%02X%02X%02X' % tuple(int(round(max(0.0, min(1.0, v)) * 255)) for v in c)
+
+
+def _lum(c):
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]
+
+
+def measure(name, path, rig, cam, f):
+    """Print colour samples and plate gradients for one rendered view."""
+    import colorsys
+    sc = bpy.context.scene
+    sc.frame_set(f)
+    dg = bpy.context.evaluated_depsgraph_get()
+    w, h, px = _pixels(path)
+
+    def at(p, r=2):
+        co = _proj(cam, p)
+        if co is None:
+            return None
+        return _med(px, w, h, int(co.x * w), int(co.y * h), r)
+
+    def plate_tris(o):
+        flat = list(o['plate_tris'])
+        ev = o.evaluated_get(dg)
+        Mw = ev.matrix_world
+        loc = Vector(o.location)
+        return [[Mw @ (Vector(flat[i + 3 * j:i + 3 * j + 3]) - loc) for j in range(3)] for i in range(0, len(flat), 9)]
+    out = []
+    grads = []
+    for o in rig.torso_plates + rig.head_plates:
+        if 'plate_tris' not in o or o.get('plate_kind') == 'dark':
+            continue
+        tris = plate_tris(o)
+        big = max(tris, key=lambda t: (t[1] - t[0]).cross(t[2] - t[0]).length)
+        c = sum(big, Vector()) / 3.0
+        nrm = (big[1] - big[0]).cross(big[2] - big[0]).normalized()
+        if (cam.matrix_world.translation - c).dot(nrm) <= 0:
+            continue
+        col = at(c + nrm * 0.0003)
+        if col is None:
+            continue
+        key = o.name.split('_', 1)[1]
+        out.append((key, o.get('plate_kind'), col))
+        # luminance spread across the plate: 9 points between the centre and 70% toward its corners
+        ls = []
+        for t in big:
+            for k in (0.35, 0.7):
+                q = c.lerp(t, k) + nrm * 0.0003
+                cc = at(q, 1)
+                if cc is not None:
+                    ls.append(_lum(cc))
+        if len(ls) >= 4 and key.startswith('torso_f'):
+            grads.append((key, (max(ls) - min(ls)) * 255))
+    print(f'MEASURE {name}', flush=True)
+    for key, kind, col in out:
+        hh, ll, ss = colorsys.rgb_to_hls(*[max(0.0, min(1.0, v)) for v in col])
+        print(f'    {key:22s} {kind:10s} {_hex(col)}  L{ll:.2f} S{ss:.2f} H{hh * 360:4.0f}', flush=True)
+    if grads:
+        print('    torso plate luminance spread /255: ' + ', '.join(f'{k[6:]} {g:.0f}' for k, g in grads) +
+              f'   (plates >= 12: {sum(1 for _, g in grads if g >= 12)})', flush=True)
+    chip = rig.parts.get('blue_chip')
+    if chip is not None:
+        ev = chip.evaluated_get(dg)
+        cc = at(ev.matrix_world.translation, 1)
+        if cc is not None:
+            hh, ll, ss = colorsys.rgb_to_hls(*[max(0.0, min(1.0, v)) for v in cc])
+            print(f'    blue_chip {_hex(cc)} L{ll:.2f} S{ss:.2f}', flush=True)
+    badge = rig.badge
+    if badge is not None:
+        ev = badge.evaluated_get(dg)
+        me = ev.to_mesh()
+        uvl = me.uv_layers.active
+        best = 0.0
+        if uvl is not None:
+            # the glyph: 2 x 3 cells round (0.5, 0.56) in card UV; scan points over it
+            vs = [ev.matrix_world @ v.co for v in me.vertices]
+            lo = Vector((min(v.x for v in vs), min(v.y for v in vs), min(v.z for v in vs)))
+            hi = Vector((max(v.x for v in vs), max(v.y for v in vs), max(v.z for v in vs)))
+            for i in range(-6, 7):
+                for j in range(-8, 9):
+                    q = Vector(((lo.x + hi.x) / 2 + i * 0.0015, lo.y - 0.0008, (lo.z + hi.z) / 2 + 0.004 + j * 0.0015))
+                    cc = at(q, 0)
+                    if cc is not None:
+                        best = max(best, (cc[1] - max(cc[0], cc[2])) * 255)
+        ev.to_mesh_clear()
+        print(f'    badge glyph max green excess {best:.0f}', flush=True)
+    if name == 'hero':
+        def top_px(objs):
+            ys = []
+            for o in objs:
+                ev = o.evaluated_get(dg)
+                me = ev.to_mesh()
+                for v in me.vertices:
+                    co = _proj(cam, ev.matrix_world @ v.co)
+                    if co is not None:
+                        ys.append(co.y * h)
+                ev.to_mesh_clear()
+            return max(ys) if ys else None
+        tt = top_px([o for o in rig.torso_plates if o.name.split('_', 1)[1].startswith('torso_t_')])
+        for s_ in 'LR':
+            pp = top_px([rig.parts[f'pauldron_{s_}']])
+            if tt is not None and pp is not None:
+                print(f'    pauldron_{s_} apex {pp - tt:+.0f} px vs the torso top line', flush=True)
 
 
 def cyclorama(coll):
@@ -283,6 +423,11 @@ def main():
         sc.render.filepath = os.path.join(a.out, name + '.png')
         bpy.ops.render.render(write_still=True)
         print(f'RENDERED {name} frame={f} {time.time() - t1:.1f}s', flush=True)
+        if not a.no_measure:
+            try:
+                measure(name, sc.render.filepath, rig, cam, f)
+            except Exception as e:      # measurement never blocks a render pass
+                print(f'MEASURE {name} failed: {e}', flush=True)
 
 
 main()

@@ -11,9 +11,13 @@ the headset, the cup). SYNERGY_MASK=chip|rim|rust|grime|edge|seam|crev renders a
 
 Palette and finish values come from the visual canon (visual_canon.json),
 warmed and aged per the director notes (enamel #D8BE98 with stains, grime clouds and
-edge chips to oxidised steel; galvanized grey #827D76 at metallic 0.45 / roughness 0.58;
-the head's grey plates darker and drier, #6E6860). Plate shaders read a per-plate random
-(object random plus the 'plate_rand' face attribute) for tone drift between plates.
+edge chips to oxidised steel; galvanized grey #827D76, mostly diffuse (metallic 0.16 /
+roughness 0.65) so it keeps its value in the dark Long Room; the head's grey plates darker and
+drier, #6E6860). Plate shaders read a per-plate random (object random plus the 'plate_rand'
+face attribute) for tone drift between plates, and every plate carries a low-frequency
+oil-can dome, dents and a lifted rim as a normal (Graph.plate_shape). Cable materials have
+curve variants (curve=True) without positional texture: a hooked curve's object coordinates do
+not ride its points, so any noise would slide along a wire as the neck bends.
 Rivet heads, rust blooms and tapering bleed stains are separate small decal materials.
 
 Render cost: call set_quality('proof' | 'preview' | 'final' | 'hero') before or
@@ -48,7 +52,7 @@ STEEL_BARE = srgb('#B4B0A8')
 STEEL_OXIDE = srgb('#4A443C')
 SCRATCH_DARK = srgb('#6D5A45')
 GALV = srgb('#827D76')
-GALV_HEAD = srgb('#78726A')
+GALV_HEAD = srgb('#6E6860')
 RIVET = srgb('#6E6962')
 RIVET_RUST_A = srgb('#4F2E17')
 RIVET_RUST_B = srgb('#6B4A30')
@@ -74,9 +78,9 @@ CARD = srgb('#F4F2EE')
 CUP = srgb('#F2F0EB')
 LID = srgb('#E3DFD8')
 BAND = srgb('#121212')
-BLUE_CHIP = srgb('#1F5FA8')
+BLUE_CHIP = srgb('#174E96')      # darker than the photo (#1F5D8D): AgX lifts a saturated blue
 SLOT_WELL = srgb('#080503')
-LED_INK = srgb('#2BB357')
+LED_INK = srgb('#22A84C')
 
 
 # ------------------------------------------------------------------ render-cost switch
@@ -358,6 +362,37 @@ class Graph:
             self._set(b.inputs['Normal'], normal)
         return b.outputs['Normal']
 
+    def plate_shape(self, P, dome=0.0015, wave=0.0005, dent=0.0009, lift=0.0006):
+        """Low-frequency sheet-metal shape of a riveted plate as a height (metres) for a Bump
+        node at distance 1: an oil-can dome over the whole plate (object coordinates: a plate's
+        origin is its centroid, the object property 'plate_R' its radius; ~20% of plates are
+        dished in instead), a long undulation, one to three shallow dents and a lifted, rounded
+        overlap edge (from the 'edge_w' rim band) that catches a highlight. Seeded per plate."""
+        ew = self.attr('edge_w')
+        pr = self.plate_rand()
+        rad = self.node('ShaderNodeAttribute', attribute_type='OBJECT', attribute_name='plate_R').outputs['Fac']
+        has_r = self.math('GREATER_THAN', rad, 0.001)
+        rr = self.math('DIVIDE', self.vmath('LENGTH', self.obj), self.maxf(rad, 0.01))
+        domef = self.mul(self.math('MAXIMUM', self.math('SUBTRACT', 1.0, self.mul(rr, rr)), 0.0), has_r)
+        sign = self.remap(pr, 0.18, 0.24, -0.7, 1.0)                 # a few plates dish inward
+        amp = self.mul(sign, self.add(0.55, self.mul(self.math('FRACT', self.mul(pr, 5.31)), 0.45)), dome)
+        inner = self.remap(ew, 1.0, 0.25, 0.0, 1.0, smooth=True)     # pinned flat along the riveted rim
+        Q = self.vmath('ADD', P, self.vmath('SCALE', (3.1, 1.7, 2.3), scale=pr))
+        und = self.math('SUBTRACT', self.noise(Q, 6.0, 1.5, 0.45), 0.5)
+        vd, vc = self.voronoi(Q, 21.0, rand=0.85)
+        pick = self.remap(self.red(vc), 0.30, 0.26)                    # sparse: about 1-3 dents per plate
+        dentf = self.mul(pick, self.remap(vd, 0.42, 0.0, smooth=True),
+                         self.add(0.5, self.mul(self.math('FRACT', self.mul(self.red(vc), 9.7)), 0.5)), dent)
+        body = self.add(self.mul(domef, amp), self.mul(und, wave * 2.0), self.mul(dentf, -1.0))
+        h = self.mul(body, inner)
+        dist = self.mul(self.math('SUBTRACT', 1.0, ew), EDGE_BAND)
+        rim = self.mul(self.remap(dist, 0.0, 0.003, 1.0, 0.0, smooth=True), self.math('GREATER_THAN', ew, 0.01), lift)
+        return self.add(h, rim)
+
+    def shape_normal(self, P, **kw):
+        """Normal of plate_shape (feed it to the detail bump's Normal input)."""
+        return self.bump(self.plate_shape(P, **kw), 1.0, 1.0)
+
 
 def _get(name):
     m = bpy.data.materials.get(name)
@@ -381,7 +416,7 @@ def _rust_color(g, P):
 # ------------------------------------------------------------------ painted plates
 
 
-def cream_enamel(wear=0.5, coat=0.28):
+def cream_enamel(wear=0.5, coat=0.28, head=False):
     """Aged ivory enamel on riveted steel.
 
     Everything is fixed to the plate: tone drift per plate, a mid-scale mottle and stains
@@ -391,11 +426,17 @@ def cream_enamel(wear=0.5, coat=0.28):
     clearcoat sheen. Rims come from the plates' 'edge_w' attribute (distance to the outline,
     written by the mesh builder), with the Bevel node as a fallback on non-plate parts;
     crevices are object-local AO, so nothing changes when a hand or the headset comes near.
-    coat: clearcoat weight on clean enamel."""
+    coat: clearcoat weight on clean enamel. head=True: the head's plates, a touch warmer and more
+    saturated (hue toward peach, coat 0.18) so the crown under the key reads as the same aged
+    enamel as the chest instead of a whiter material. Every plate carries a low-frequency
+    oil-can shape, dents and a lifted rim (Graph.plate_shape) under the fine wear bump."""
     wear = max(0.0, min(1.0, float(wear)))
     name = f'cream_enamel_w{int(round(wear * 100)):03d}'
     if abs(coat - 0.28) > 1e-6:
         name += f'_c{int(round(coat * 100)):02d}'
+    if head:
+        name += '_head'
+        coat = min(coat, 0.18)
     m = _get(name)
     if m:
         return m
@@ -478,6 +519,8 @@ def cream_enamel(wear=0.5, coat=0.28):
     # down-facing plates (chin, undersides) lose some saturation so warm bounce never turns
     # them mustard
     base = g.plate_variation(base, value=0.07, sat_bias=0.16, hue_bias=0.008)
+    if head:      # +0.16 saturation, ~3 deg toward peach, a hair darker (crown L <= 0.82 under the key)
+        base = g.hsv(base, hue=0.5 - 0.008, sat=1.16, val=0.95)
     base = g.hsv(base, sat=g.remap(nz, -0.25, -0.70, 1.0, 0.72))
     base = g.mix(g.mul(scratch, 0.75), base, SCRATCH_DARK)
     base = g.mix(grime, base, GRIME)
@@ -498,8 +541,10 @@ def cream_enamel(wear=0.5, coat=0.28):
     g.p('Coat Roughness', g.add(0.30, g.mul(n_mid, 0.08)))
     h = g.add(g.mul(chip, -0.60), g.mul(rim, 0.12), g.mul(n_big, 0.35), g.mul(freckle, 0.3), g.mul(scratch, -0.2),
               g.mul(g.noise(P, 900.0, 2.0), 0.05), g.mul(n_fine, 0.05), g.mul(stain, 0.06))
-    g.p('Normal', g.bump(h, 0.34, 0.0009))
-    g.debug(dict(chip=chip, rim=rim, rust=rust, grime=grime, edge=edge, seam=seam, crev=crev))
+    shape = g.plate_shape(P)
+    g.p('Normal', g.bump(h, 0.34, 0.0009, normal=g.bump(shape, 1.0, 1.0)))
+    g.debug(dict(chip=chip, rim=rim, rust=rust, grime=grime, edge=edge, seam=seam, crev=crev,
+                 shape=g.remap(shape, -0.0015, 0.0015)))
     return m
 
 
@@ -540,10 +585,12 @@ def finger_enamel():
 
 def galvanized_grey(wear=0.4, tone='torso'):
     """Recessed galvanized steel panels: fine zinc spangle, large zinc mottling, faint
-    brushing, grime in the seams and light rust. Satin metal (metallic 0.45, roughness 0.58)
-    per the director's note. tone='head' is darker and drier (#6E6860, roughness 0.65, a low
-    dielectric specular) so the head cheek reads as grey beside the screen even under a key
-    that hits the wedge head-on."""
+    brushing, grime in the seams and light rust. Weathered zinc is mostly diffuse: a dielectric
+    base #827D76 with only metallic 0.16 at roughness 0.65, the spangle and mottle carried in
+    the albedo, so the grey panels hold their value in the dark Long Room (a metallic 0.45 panel
+    mirrors the black room and the cream/grey patchwork turns into cream over black).
+    tone='head' is darker and drier (#6E6860, metallic 0.12, roughness 0.68) so the head cheek
+    reads as grey beside the screen even under a key that hits the wedge head-on."""
     head = tone == 'head'
     name = f'galvanized_grey{"_head" if head else ""}_w{int(round(wear * 100)):03d}'
     m = _get(name)
@@ -567,10 +614,10 @@ def galvanized_grey(wear=0.4, tone='torso'):
     Pb = g.vmath('MULTIPLY', P, (380.0, 380.0, 7.0))
     brush = g.noise(Pb, 1.0, 2.0, 0.5)
     gc = GALV_HEAD if head else GALV
-    base = g.mix(spang, g.colmul(gc, (0.93, 0.93, 0.93)), g.colmul(gc, (1.07, 1.07, 1.06)))
+    base = g.mix(spang, g.colmul(gc, (0.955, 0.955, 0.955)), g.colmul(gc, (1.045, 1.045, 1.04)))
     base = g.mix(g.remap(mott, 0.35, 0.65), g.colmul(base, (0.88, 0.88, 0.88)), g.colmul(base, (1.10, 1.10, 1.09)))
     base = g.plate_variation(base, value=0.05, sat=0.10)
-    base = g.mix(g.mul(g.remap(n_mid, 0.4, 0.8), 0.28), base, (0.11, 0.10, 0.09))
+    base = g.mix(g.mul(g.remap(n_mid, 0.4, 0.8), 0.22), base, (0.11, 0.10, 0.09))
     base = g.mix(g.mul(edge, 0.30), base, STEEL_BARE)
     base = g.mix(g.math('MINIMUM', g.add(g.mul(seam, 0.75), g.mul(crev, 0.35), g.mul(g.remap(n_big, 0.55, 0.9), 0.2)),
                                     0.85), base, GRIME)
@@ -584,19 +631,20 @@ def galvanized_grey(wear=0.4, tone='torso'):
     rust = g.math('MINIMUM', g.maxf(fr, g.mul(streak, 0.5)), 1.0)
     col = g.mix(rust, base, _rust_color(g, P))
     g.p('Base Color', col)
-    g.p('Metallic', g.mul(g.math('SUBTRACT', 1.0, rust), 0.35 if head else 0.45))
-    g.p('Specular IOR Level', 0.12 if head else 0.25)
-    rough = g.add(0.65 if head else 0.58, g.mul(n_mid, 0.12), g.mul(spang, 0.05), g.mul(brush, 0.05),
-                  g.mul(seam, 0.08), -0.06)
+    g.p('Metallic', g.mul(g.math('SUBTRACT', 1.0, rust), 0.12 if head else 0.16))
+    g.p('Specular IOR Level', 0.30 if head else 0.42)
+    rough = g.add(0.68 if head else 0.65, g.mul(n_mid, 0.10), g.mul(spang, 0.05), g.mul(brush, 0.04),
+                  g.mul(seam, 0.06), -0.06)
     g.p('Roughness', g.mixf(rust, rough, 0.85))
     h = g.add(g.mul(brush, 0.12), g.mul(n_big, 0.45), g.mul(spang, 0.06), g.mul(fr, 0.2))
-    g.p('Normal', g.bump(h, 0.22, 0.0008))
+    shape = g.plate_shape(P, dome=0.0010, wave=0.0004, dent=0.0007, lift=0.0)
+    g.p('Normal', g.bump(h, 0.22, 0.0008, normal=g.bump(shape, 1.0, 1.0)))
     g.debug(dict(rust=rust, grime=seam, edge=edge, crev=crev))
     return m
 
 
 def blue_chip():
-    """Flaked cobalt enamel patch (#1F5FA8) on one cream plate: satin cobalt with a few
+    """Flaked cobalt enamel patch (#174E96, reads ~#1F5D8D after AgX) on one cream plate: satin cobalt with a few
     cream and steel islands where it has flaked, fine scratches; the mesh adds a raised flake
     lip and a 0.5 mm bare-steel rim (chip_rim) around it."""
     m = _get('blue_chip')
@@ -613,13 +661,14 @@ def blue_chip():
     scr = g.remap(g.noise(Pk, 1.0, 2.0), 0.69, 0.73)
     col = g.mix(g.remap(n2, 0.3, 0.7), g.colmul(BLUE_CHIP, (0.80, 0.82, 0.86)), BLUE_CHIP)
     col = g.plate_variation(col, value=0.04, sat=0.05, hue=0.004)
-    col = g.mix(g.mul(scr, 0.5), col, CREAM)
+    col = g.mix(g.mul(scr, 0.22), col, CREAM)
     flake_under = g.mix(g.remap(n, 0.4, 0.6), CREAM, STEEL_OXIDE)
     col = g.mix(island, col, flake_under)
     g.p('Base Color', col)
-    g.p('Roughness', g.mixf(island, g.add(0.40, g.mul(n, 0.08)), 0.55))
-    g.p('Coat Weight', g.mul(g.math('SUBTRACT', 1.0, island), 0.2))
-    g.p('Coat Roughness', 0.3)
+    # dry, flat enamel: roughness 0.6, no coat and a low specular, so under the studio key it
+    # holds a deep cobalt (L <= 0.42, S >= 0.55) instead of a washed sky-blue sticker
+    g.p('Roughness', g.mixf(island, g.add(0.60, g.mul(n, 0.06)), 0.62))
+    g.p('Specular IOR Level', 0.30)
     g.p('Normal', g.bump(g.add(g.mul(n, 0.3), g.mul(island, -0.6), g.mul(scr, -0.3)), 0.3, 0.0004))
     return m
 
@@ -744,7 +793,7 @@ def chrome(satin=False):
     base = CHROME if not satin else srgb('#9C9A96')
     g.p('Base Color', g.mix(g.mul(crev, 0.7), base, GRIME))
     g.p('Metallic', 1.0)
-    r0 = 0.36 if satin else 0.12
+    r0 = 0.36 if satin else 0.18          # canon chrome roughness 0.18: highlights stay below clipping
     g.p('Roughness', g.add(r0, g.mul(smudge, 0.12), g.mul(n, 0.04), g.mul(crev, 0.2)))
     Pb = g.vmath('MULTIPLY', P, (6.0, 6.0, 900.0))
     g.p('Normal', g.bump(g.noise(Pb, 1.0, 2.0), 0.05, 0.0005))
@@ -752,7 +801,9 @@ def chrome(satin=False):
 
 
 def gunmetal(tone='inner'):
-    """Dark machined steel. tone='inner' (#2E2B28 internals) or 'plate' (#3A3631 underside plates)."""
+    """Dark machined steel. tone='inner' (#2E2B28 internals), 'plate' (#3A3631 underside plates)
+    or 'satin' (#4A4540 satin-machined hubs: metallic 0.75, roughness 0.35, bright turned
+    chamfers, so an elbow drum reads as machined steel and never as a black disc)."""
     name = f'gunmetal_{tone}'
     m = _get(name)
     if m:
@@ -761,8 +812,19 @@ def gunmetal(tone='inner'):
     m['metal_ao'] = True
     g = Graph(m)
     P = g.coords()
-    base_c = GUN_PLATE if tone == 'plate' else GUN_INNER
+    base_c = GUN_PLATE if tone == 'plate' else (srgb('#4A4540') if tone == 'satin' else GUN_INNER)
     edge = g.edge_mask(0.003)
+    if tone == 'satin':
+        n = g.noise(P, 25.0, 4.0, 0.6)
+        turn = g.math('SINE', g.mul(g.vmath('LENGTH', P), 2 * math.pi / 0.00035))      # turned rings
+        col = g.mix(g.remap(n, 0.3, 0.7), g.colmul(base_c, (0.86, 0.86, 0.86)), g.colmul(base_c, (1.12, 1.12, 1.1)))
+        col = g.mix(g.mul(edge, 0.85), col, (0.42, 0.41, 0.39))                       # lit machined chamfers
+        g.p('Base Color', col)
+        g.p('Metallic', 0.75)
+        g.p('Roughness', g.add(0.33, g.mul(n, 0.06), g.mul(edge, -0.08)))
+        g.p('Anisotropic', 0.35)
+        g.p('Normal', g.bump(g.add(g.mul(turn, 0.3), g.mul(n, 0.2)), 0.05, 0.0002))
+        return m
     crev = g.crevice_mask(0.012, 0.97, 0.6, metal=True)
     n = g.noise(P, 25.0, 4.0, 0.6)
     col = g.mix(g.remap(n, 0.3, 0.7), g.colmul(base_c, (0.8, 0.8, 0.8)), base_c)
@@ -861,12 +923,19 @@ def rivet_rust():
     return m
 
 
-def copper_wire():
-    m = _get('copper_wire')
+def copper_wire(curve=False):
+    """Copper conductor. curve=True: for hooked curve cables (no positional texture)."""
+    name = 'copper_wire_curve' if curve else 'copper_wire'
+    m = _get(name)
     if m:
         return m
-    m = _new('copper_wire')
+    m = _new(name)
     g = Graph(m)
+    if curve:     # no positional texture: a hooked curve's coordinates do not ride its points
+        g.p('Base Color', g.colmul(COPPER, (0.82, 0.78, 0.74)))
+        g.p('Metallic', 1.0)
+        g.p('Roughness', 0.30)
+        return m
     P = g.coords()
     n = g.noise(P, 80.0, 4.0)
     g.p('Base Color', g.mix(g.remap(n, 0.3, 0.7), g.colmul(COPPER, (0.6, 0.55, 0.5)), COPPER))
@@ -893,19 +962,27 @@ def dark_core():
 # ------------------------------------------------------------------ plastics and soft goods
 
 
-def black_plastic(gloss=False):
-    name = 'black_plastic_gloss' if gloss else 'black_plastic'
+def black_plastic(gloss=False, curve=False):
+    """Black plastic. curve=True: the same finish for hooked curve cables and cords, without
+    positional texture (nothing swims along a wire when its hooks move)."""
+    name = ('black_plastic_gloss' if gloss else 'black_plastic') + ('_curve' if curve else '')
     m = _get(name)
     if m:
         return m
     m = _new(name)
     g = Graph(m)
+    if curve:     # no positional texture: a hooked curve's coordinates do not ride its points
+        g.p('Base Color', BLACK_PLASTIC)
+        g.p('Roughness', 0.42 if gloss else 0.58)
+        g.p('Specular IOR Level', 0.25)
+        return m
     P = g.coords()
     n = g.noise(P, 220.0, 3.0)
+    fine = g.noise(P, 900.0, 2.0)
     g.p('Base Color', BLACK_PLASTIC)
     g.p('Roughness', g.add(0.38 if gloss else 0.55, g.mul(n, 0.08)))
     g.p('Specular IOR Level', 0.25)
-    g.p('Normal', g.bump(g.noise(P, 900.0, 2.0), 0.04, 0.0003))
+    g.p('Normal', g.bump(fine, 0.04, 0.0003))
     return m
 
 
@@ -960,12 +1037,18 @@ def mic_foam():
     return m
 
 
-def red_wire():
-    m = _get('red_wire')
+def red_wire(curve=False):
+    name = 'red_wire_curve' if curve else 'red_wire'
+    m = _get(name)
     if m:
         return m
-    m = _new('red_wire')
+    m = _new(name)
     g = Graph(m)
+    if curve:     # no positional texture: a hooked curve's coordinates do not ride its points
+        g.p('Base Color', g.colmul(RED_WIRE, (0.85, 0.85, 0.85)))
+        g.p('Roughness', 0.32)
+        g.p('Coat Weight', 0.3)
+        return m
     P = g.coords()
     n = g.noise(P, 60.0, 3.0)
     g.p('Base Color', g.mix(n, g.colmul(RED_WIRE, (0.7, 0.7, 0.7)), RED_WIRE))
@@ -1008,24 +1091,53 @@ def paper_cup():
 
 
 def cup_lid():
-    """Hero sip lid: white polystyrene #E3DFD8 (lit top ~L0.88, not clipped), satin 0.33
-    roughness with a faint orange-peel micro bump and a few greasy touch marks, a hint of
-    translucency. Used on Synergy's own cup (props' lid material elsewhere)."""
+    """Hero sip lid: white polystyrene #E3DFD8 (lit top ~L0.88, not clipped), satin ~0.33
+    roughness. Macro detail for the S02 opening (100 mm, 26 cm): a moulded orange-peel skin
+    (~0.3 mm), a little grime settled in the shoulders of the embossed rings (ring contrast
+    >= 6%), two hairline mould-parting lines, a faint value mottle, greasy touch marks and a few
+    dust specks; a hint of translucency. Object coordinates are the cup's (origin at the base
+    centre, Z up): the lid object sits at the cup root. Used on Synergy's own cup."""
     m = _get('cup_lid')
     if m:
         return m
     m = _new('cup_lid')
     g = Graph(m)
     P = g.coords()
+    x, y, z = g.sep(g.obj)
+    r = g.vmath('LENGTH', g.vmath('MULTIPLY', g.obj, (1.0, 1.0, 0.0)))
     n = g.noise(P, 200.0, 3.0)
-    peel = g.noise(P, 1400.0, 2.0, 0.5)
+    peel = g.noise(P, 3300.0, 2.0, 0.5)                        # ~0.3 mm orange peel
+    mott = g.noise(P, 70.0, 3.0, 0.6)
     smudge = g.remap(g.noise(P, 60.0, 3.0), 0.55, 0.75)
-    g.p('Base Color', g.mix(g.mul(g.remap(n, 0.4, 0.7), 0.25), LID, srgb('#DDD9D2')))
-    g.p('Roughness', g.add(0.33, g.mul(n, 0.05), g.mul(smudge, -0.10)))
+    # grime in the shoulders of the three embossed rings and at the foot of the drink-through ring
+    ring = None
+    for rc, hw in ((0.0095, 0.0010), (0.0165, 0.0011), (0.0235, 0.0012)):
+        d = g.math('ABSOLUTE', g.math('SUBTRACT', g.math('ABSOLUTE', g.math('SUBTRACT', r, rc)), hw))
+        k = g.remap(d, 0.00045, 0.0, smooth=True)
+        ring = k if ring is None else g.maxf(ring, k)
+    foot = g.remap(g.math('ABSOLUTE', g.math('SUBTRACT', r, 0.0312)), 0.0008, 0.0, smooth=True)
+    ring = g.maxf(ring, g.mul(foot, 0.8))
+    # hairline mould-parting lines: one ring on the plateau, one short radial line
+    part1 = g.remap(g.math('ABSOLUTE', g.math('SUBTRACT', r, 0.0405)), 0.00012, 0.0)
+    ang = g.math('ARCTAN2', y, x)
+    part2 = g.mul(g.remap(g.math('ABSOLUTE', g.math('SUBTRACT', ang, -0.6)), 0.0035, 0.0),
+                  g.remap(r, 0.031, 0.034), g.remap(r, 0.044, 0.042))
+    part = g.maxf(part1, part2)
+    # dust: sparse 0.1-0.3 mm specks
+    vd, vc = g.voronoi(P, 1400.0)
+    dust = g.mul(g.remap(g.red(vc), 0.035, 0.02), g.remap(vd, 0.22, 0.10))
+    col = g.mix(g.mul(g.remap(n, 0.4, 0.7), 0.25), LID, srgb('#DDD9D2'))
+    col = g.mix(g.remap(mott, 0.35, 0.65), g.colmul(col, (0.965, 0.962, 0.955)), g.colmul(col, (1.02, 1.02, 1.02)))
+    col = g.mix(g.mul(ring, 0.55), col, srgb('#B9B3A9'))
+    col = g.mix(g.mul(part, 0.35), col, srgb('#C7C2BA'))
+    col = g.mix(g.mul(dust, 0.75), col, srgb('#7A6E60'))
+    g.p('Base Color', col)
+    g.p('Roughness', g.add(0.33, g.mul(n, 0.05), g.mul(smudge, -0.10), g.mul(dust, 0.4), g.mul(ring, 0.08)))
     g.p('Subsurface Weight', 0.06)
     g.p('Subsurface Radius', (0.8, 0.8, 0.7))
     g.p('Subsurface Scale', 0.002)
-    g.p('Normal', g.bump(g.add(g.mul(peel, 0.6), g.mul(n, 0.3)), 0.06, 0.00015))
+    h = g.add(g.mul(peel, 0.5), g.mul(n, 0.2), g.mul(part, -0.6), g.mul(dust, 0.5))
+    g.p('Normal', g.bump(h, 0.10, 0.00012))
     return m
 
 
@@ -1053,7 +1165,7 @@ def lanyard_strap():
 
 def badge_card():
     """Blank white ID card with ONE small printed 2x3 green LED-eye glyph (director's note:
-    no letters, no second eye). Cells 4.2 mm wide (3.4 mm ink squares), the glyph centred
+    no letters, no second eye). Matte printed ink #2FB457; cells 5.2 mm wide (4.2 mm ink squares), the glyph centred
     across and a little above the middle of a 100 x 72 mm card.
 
     Needs UVs spanning the card face 0..1 (u left->right seen from the front)."""
@@ -1064,7 +1176,7 @@ def badge_card():
     g = Graph(m)
     P = g.coords()
     u, v, _ = g.sep(g.uv)
-    pu, pv = 0.042, 0.042 * 100.0 / 72.0
+    pu, pv = 0.052, 0.052 * 100.0 / 72.0            # 5.2 mm cells: the glyph holds at medium framings
     u0, v0 = 0.5 - 1.0 * pu, 0.56 - 1.5 * pv
     fx = g.math('DIVIDE', g.math('SUBTRACT', u, u0), pu)
     fy = g.math('DIVIDE', g.math('SUBTRACT', v, v0), pv)
@@ -1080,7 +1192,7 @@ def badge_card():
     col = g.mix(g.add(g.mul(n, 0.06), g.mul(smudge, 0.08)), CARD, (0.78, 0.76, 0.72))
     col = g.mix(ink, col, LED_INK)
     g.p('Base Color', col)
-    g.p('Roughness', g.mixf(ink, 0.55, 0.38))
+    g.p('Roughness', g.mixf(ink, 0.55, 0.50))
     g.p('Normal', g.bump(n, 0.05, 0.0003))
     return m
 

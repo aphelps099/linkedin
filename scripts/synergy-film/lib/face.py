@@ -9,7 +9,8 @@ Canon (LinkedIn Beats continuity notes and the approved camera-v2 plate):
     falling off over ~7 LEDs). It never grows vertically. Idle glow 11%.
   * blinks: middle row only (2 frames), dark (2), middle row (2), full
   * the photographed idle mouth is 7 dim dots at twice the LED pitch (about a third
-    of the eyes' brightness); speech lights the whole row (floor 16%) under the travelling wave
+    of the eyes' brightness); speech lifts the LEDs the wave head has already passed to the
+    16% floor (never one ahead of it: light only ever travels left to right)
   * expressive register (rare, earned): 3x3 eyes, 4-LED brows with the
     viewer-right brow raised a row higher, one raised mouth-corner pixel
 
@@ -220,6 +221,8 @@ class FaceTimeline:
                     span = MOUTH_N + tail
                     env = self._ramp(frame, a, b + 8, 3)
                     for c in range(MOUTH_N):
+                        if c > head:             # light only where the first wave has passed
+                            continue
                         best = 0.0
                         for k in range(10):
                             pos = head - k * span * 0.6
@@ -238,7 +241,9 @@ class FaceTimeline:
                 if 0 <= head <= MOUTH_N + tail:
                     for c in range(MOUTH_N):
                         d = head - c
-                        v = energy * (1 - d / tail) if 0 <= d <= tail else 0.0
+                        if d < 0:                # ahead of the head: untouched (idle), left->right only
+                            continue
+                        v = energy * (1 - d / tail) if d <= tail else 0.0
                         if d >= 1.0:
                             v *= k
                         mouth[c] = max(mouth[c], floor * k, v)
@@ -252,7 +257,9 @@ class FaceTimeline:
                     k = 1.0 - min(1.0, max(0.0, (t - t_stop - hold) / max(1, fade)))
                     for c in range(MOUTH_N):
                         d = head - c
-                        v = energy * (1 - d / tail) if 0 <= d <= tail else 0.0
+                        if d < 0:                # past the stall point the row stays at its idle dots
+                            continue
+                        v = energy * (1 - d / tail) if d <= tail else 0.0
                         mouth[c] = max(mouth[c], k * max(floor, v) + (1 - k) * idle * self.idle_mask[c])
             elif kind == 'fill':
                 _, f0, step, lvl, until = ev
@@ -326,7 +333,8 @@ class FaceTimeline:
 
 def screen_material(timeline, name='SynergyScreen', strength=0.95, glass_roughness=0.06,
                     unlit=0.0003, color=LED_GREEN, glass_color=(0.0080, 0.0091, 0.0044), specular=0.25,
-                    coat=0.0, eye_fill=EYE_FILL, mouth_fill=MOUTH_FILL, hot_core=0.30):
+                    coat=0.0, eye_fill=EYE_FILL, mouth_fill=MOUTH_FILL, hot_core=0.30, eye_hot_core=1.25,
+                    aspect=SCREEN_ASPECT):
     """Black glass with the LED matrix driven by `timeline`.
 
     The screen mesh's UVs must span the glass 0..1 (u left->right as seen
@@ -334,7 +342,10 @@ def screen_material(timeline, name='SynergyScreen', strength=0.95, glass_roughne
     low specular level keep the glass pure black apart from the LEDs and one
     sharp reflection of the brightest source (the skylight slot). The LEDs emit
     for camera rays only (no green spill on the chassis) and are never sampled
-    as lights.
+    as lights. eye_hot_core: extra emission at the centre of each eye/grid LED (a hot core that
+    reaches ~G 240 after AgX while the square's edge stays saturated green); the mouth dots use
+    0.6 x hot_core, so the idle row stays far dimmer than the eyes. aspect: glass width / height
+    (keeps the mouth dots square).
     """
     img = timeline.atlas(name + '_atlas')
     mat = bpy.data.materials.new(name)
@@ -422,8 +433,8 @@ def screen_material(timeline, name='SynergyScreen', strength=0.95, glass_roughne
     fx, fy = m('SUBTRACT', cx, ix), m('SUBTRACT', cy, iy)
     grid_val = lookup(ix, m('ADD', iy, vb=1.0))
     core, halo, hot = led_shape(fx, fy, eye_fill / 2, eye_fill / 2)
-    lit_shape = m('MULTIPLY', m('ADD', core, m('MULTIPLY', halo, vb=0.12)), m('ADD', m('MULTIPLY', hot, vb=hot_core),
-                                                                            vb=1.0))
+    lit_shape = m('MULTIPLY', m('ADD', core, m('MULTIPLY', halo, vb=0.12)),
+                  m('ADD', m('MULTIPLY', m('POWER', hot, vb=1.6), vb=eye_hot_core), vb=1.0))
     grid_lit = m('MULTIPLY', lit_shape, grid_val)
     grid_dim = m('MULTIPLY', core, vb=unlit)
 
@@ -437,7 +448,7 @@ def screen_material(timeline, name='SynergyScreen', strength=0.95, glass_roughne
     mix_ = m('FLOOR', mcx)
     mfx = m('SUBTRACT', mcx, mix_)
     mouth_val = lookup(mix_, N.new('ShaderNodeValue').outputs[0])
-    dot_h = mouth_fill * (MOUTH_U[1] - MOUTH_U[0]) / MOUTH_N * SCREEN_ASPECT / MOUTH_H   # in band units
+    dot_h = mouth_fill * (MOUTH_U[1] - MOUTH_U[0]) / MOUTH_N * aspect / MOUTH_H   # in band units (square dots)
     mcore, mhalo, mhot = led_shape(mfx, mv, mouth_fill / 2, dot_h / 2)
     mshape = m('MULTIPLY', m('ADD', mcore, m('MULTIPLY', mhalo, vb=0.12)), m('ADD', m('MULTIPLY', mhot, vb=hot_core * 0.6),
                                                                              vb=1.0))
