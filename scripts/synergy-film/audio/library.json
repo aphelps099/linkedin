@@ -1,7 +1,7 @@
 {
  "generated": "2026-10-29",
  "root": "scripts/synergy-film/out/audio/raw (fetch with tools/fetch_audio.py)",
- "count": 337,
+ "count": 340,
  "notes": "All files verified with ffprobe (duration > 0). analysis.peak_time_s = time of loudest sample (useful for syncing hits). Music energy_profile_4s_db = RMS per 4 s window (shows builds/drops). No sound in this library was synthesized by us; all are downloaded recordings/productions. 2026-10-29: 67 recordings appended for the Offline missing-SFX list (entries with analysis.need/rank). pending_downloads lists licensed Wikimedia Commons recordings identified but blocked by HTTP 429; fetch with scripts2/commons_slow.py then run analyze_sfx.py and append_manifest.py.",
  "files": [
   {
@@ -9530,6 +9530,104 @@
     "need": "printer",
     "rank": "LOW"
    }
+  },
+  {
+   "path": "ir/zenodo-tub-spirit-meeting-room-kemar-brir-front.wav",
+   "kind": "ir",
+   "title": "Small meeting room \"Spirit\", TU Berlin - binaural room impulse response (KEMAR, front source)",
+   "source_url": "https://doi.org/10.5281/zenodo.160751",
+   "file_url": "https://zenodo.org/api/records/160751/files/QU_KEMAR_spirit.sofa/content",
+   "license": "CC BY 4.0 (attribution required) - https://creativecommons.org/licenses/by/4.0/",
+   "attribution": "Room impulse response: \"Binaural room impulse responses recorded with KEMAR in a small meeting room\" by Hagen Wierstorf and Matthias Geier (TU Berlin / Two!Ears project), CC BY 4.0, https://doi.org/10.5281/zenodo.160751",
+   "extract": {
+    "type": "sofa",
+    "container": "QU_KEMAR_spirit.sofa",
+    "sha256": "0fc83347426206391a6cb1d4b26cd46f4c4de316dad1e57e478a8666afcabc46",
+    "index": [
+     90,
+     1
+    ],
+    "note": "Data.IR[M=90 (head azimuth 90 deg, facing the source), :, E=1 (Genelec 8250A at 0, 2 m), :]"
+   },
+   "need": "reverb_room",
+   "role": "room: the Long Room (treated boardroom) on in-room foley",
+   "duration_s": 1.0,
+   "description": "Recorded room impulse response (2 ch, 44100 Hz): T30 0.56 s, EDT 0.42 s, direct sound at 6 ms, tail floor -64.1 dB re peak. Role: room: the Long Room (treated boardroom) on in-room foley.",
+   "analysis": {
+    "sample_rate": 44100,
+    "channels": 2,
+    "samples": 44100,
+    "direct_sound_s": 0.0059,
+    "t30_s": 0.56,
+    "edt_s": 0.42,
+    "tail_floor_db_re_peak": -64.1,
+    "late_lr_correlation": -0.01
+   }
+  },
+  {
+   "path": "ir/zenodo-churchir-cremona-omni-pair-sc-ml10-mr10.wav",
+   "kind": "ir",
+   "title": "Church of Saints Marcellino and Pietro, Cremona - omni room impulse responses, spaced pair 29 m from the source",
+   "source_url": "https://doi.org/10.5281/zenodo.14901751",
+   "file_url": "https://zenodo.org/api/records/14901751/files/ChurchIR.zip/content",
+   "license": "CC BY 4.0 (attribution required) - https://creativecommons.org/licenses/by/4.0/",
+   "attribution": "Room impulse response: \"ChurchIR: A Dataset of Multichannel Church Impulse Responses for Spatial Audio Applications\" by Riccardo Giampiccolo, Sofia Parrinelli and Fabio Antonacci, CC BY 4.0, https://doi.org/10.5281/zenodo.14901751",
+   "extract": {
+    "type": "zip",
+    "container": "ChurchIR.zip",
+    "sha256": "55b131527f85c1665ff66bb581ec26e86058b759366eb4da4284c0c1f65f75c9",
+    "members": [
+     "OMNI/SC_ML_OMNI_10.wav",
+     "OMNI/SC_MR_OMNI_10.wav"
+    ],
+    "note": "two measured mono omni IRs (source SC, receivers ML_10 and MR_10, 5.4 m apart, 29 m down the nave) written as the left and right channels of one WAV; samples unaltered"
+   },
+   "need": "reverb_hall",
+   "role": "hall (large, hard): the world inside the cup by day (S01, S02/S05 far-below whooshes, S06, S08)",
+   "duration_s": 7.0,
+   "description": "Recorded room impulse response (2 ch, 48000 Hz): T30 4.5 s, EDT 3.89 s, direct sound at 77 ms, tail floor -45.8 dB re peak. Role: hall (large, hard): the world inside the cup by day (S01, S02/S05 far-below whooshes, S06, S08).",
+   "analysis": {
+    "sample_rate": 48000,
+    "channels": 2,
+    "samples": 336000,
+    "direct_sound_s": 0.0772,
+    "t30_s": 4.5,
+    "edt_s": 3.89,
+    "tail_floor_db_re_peak": -45.8,
+    "late_lr_correlation": 0.03
+   }
+  },
+  {
+   "path": "ir/zenodo-detmold-sommertheater-dummyhead-c1s1r4.wav",
+   "kind": "ir",
+   "title": "Detmold Sommertheater (300-seat theatre, curtains, seated audience area) - dummy-head room impulse response, row 11",
+   "source_url": "https://doi.org/10.5281/zenodo.4116247",
+   "file_url": "https://zenodo.org/api/records/4116247/files/DetmoldSRIR_v01.zip/content",
+   "license": "CC BY 4.0 (attribution required) - https://creativecommons.org/licenses/by/4.0/",
+   "attribution": "Room impulse response: \"Open Database of Spatial Room Impulse Responses at Detmold University of Music\" by Sebastia V. Amengual Gari, Banu Sahin, Dusty Eddy and Malte Kob, CC BY 4.0, https://doi.org/10.5281/zenodo.4116247",
+   "extract": {
+    "type": "zip",
+    "container": "DetmoldSRIR_v01.zip",
+    "sha256": "1212f79ca97c320dd219f810509d32c18a1f3a6f5bf8c28395315a32317e0d60",
+    "members": [
+     "SetA_SingleSources/Data/SommerTheater/DummyHead/C1S1R4.wav"
+    ],
+    "note": "copied byte for byte (natural room; no electronic reverb system in the Sommertheater set)"
+   },
+   "need": "reverb_soft",
+   "role": "soft (large, absorbent): Offline at night and the finale (S12, S14)",
+   "duration_s": 3.0,
+   "description": "Recorded room impulse response (2 ch, 48000 Hz): T30 1.0 s, EDT 0.75 s, direct sound at 71 ms, tail floor -58.8 dB re peak. Role: soft (large, absorbent): Offline at night and the finale (S12, S14).",
+   "analysis": {
+    "sample_rate": 48000,
+    "channels": 2,
+    "samples": 144000,
+    "direct_sound_s": 0.0707,
+    "t30_s": 1.0,
+    "edt_s": 0.75,
+    "tail_floor_db_re_peak": -58.8,
+    "late_lr_correlation": 0.14
+   }
   }
  ],
  "license_notes": {
@@ -9540,7 +9638,8 @@
   "USC CC0": "USC Cinema / Sunset Editorial sound effects (Red Library, Gold Tape, SSE Library) on the Internet Archive collection usc-sound-effect-archive: CC0 1.0 public domain dedication; no attribution required (credit optional).",
   "Wikimedia Commons": "Per-file licences logged in each entry: public domain (pdsounds.org transfers), CC0, CC BY 4.0 (credit required) or CC BY-SA (credit + share-alike; flagged per entry). Source page = source_url.",
   "OpenGameArt": "Per-file licence in each entry (CC0 or CC BY 4.0); CC BY needs the logged credit.",
-  "Rejected": "Checked and not used: OpenGameArt \"SFX - Plug In, Plug Out\" (CleytonKauffman, CC0) is a synthesized two-tone UI chime (pure 258/375 Hz partials), not a recording; soundjay.com terms forbid using its sounds as raw material for sound effects, so it was not used; Sonniss Game Audio Monthly items were skipped because their archive.org mirror carries no licence statement."
+  "Rejected": "Checked and not used: OpenGameArt \"SFX - Plug In, Plug Out\" (CleytonKauffman, CC0) is a synthesized two-tone UI chime (pure 258/375 Hz partials), not a recording; soundjay.com terms forbid using its sounds as raw material for sound effects, so it was not used; Sonniss Game Audio Monthly items were skipped because their archive.org mirror carries no licence statement.",
+  "Zenodo IRs (CC BY 4.0)": "Recorded impulse responses (kind \"ir\", folder ir/): measured rooms from Zenodo research datasets under CC BY 4.0 (credit required; strings in each entry). Extracted from their containers by tools/fetch_audio.py \"extract\" recipes. Rejected: Voxengo IMreverbs (modelled with Impulse Modeler, not recorded), EchoThief (licence forbids sync to video without a commercial licence), MIT IR Survey (no licence stated), St. Jakobus Ilmenau (file metadata says CC BY-NC-SA, conflicting with its record), Farina archive (educational use only), Detmold Konzerthaus RevC2-7 (electronic reverb enhancement)."
  },
  "pending_downloads": [
   {

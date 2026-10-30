@@ -23,10 +23,15 @@ Cue sheet (top level, all optional except "cues")
     buses           {"music": {"gain_db": -3, "automation": {...}}, "sfx": {...}, "ambience": {...}}
     lanes           named automation presets that cues and buses can reference
     reverbs         {"name": {"ir": "auto" | path, "match": "hall", "src_in": 0, "src_out": null,
+                     "fade_in_ms": 0, "fade_out_ms": 0, "channels": null,
                      "gain_db": 0, "predelay_ms": 0, "highpass_hz": null, "lowpass_hz": null,
                      "return_bus": "sfx"}}
                     "auto" searches the manifest for recorded IRs (kind "ir" or a /ir/ folder).
                     If none is found, the reverb is disabled and every send to it is skipped.
+                    src_in/src_out cut the measured IR (e.g. just after the direct sound, before
+                    the noise floor); fade_in_ms/fade_out_ms are cosine fades on that cut;
+                    channels picks IR channels (e.g. [0, 1]). The IR is energy-normalised, so
+                    gain_db and the sends set the wet level.
     master          {"lufs": -14, "true_peak_dbtp": -1.0, "normalize": true,
                      "glue": {"enabled": false, "threshold_db": -16, "ratio": 1.5, "knee_db": 6,
                               "attack_ms": 30, "release_ms": 250, "rms_ms": 5},
@@ -71,7 +76,8 @@ Cue fields
                                        "hz": f, "gain_db": g, "q": q}]
     reverb, reverb_send        reverb name (default the only one defined) and static send in dB
     automation      lanes keyed by FILM frame (or a "lanes" preset name, or {"$ref": name, ...}):
-                    gain_db (added to gain_db), lowpass_hz, highpass_hz, reverb_send (dB), pan.
+                    gain_db (added to gain_db; -120 or "off"/"mute" = exact digital silence),
+                    lowpass_hz, highpass_hz, reverb_send (dB), pan.
                     Each lane is [[frame, value], [frame, value, shape], ...] or {"frame": value}.
                     shape (of the segment arriving at that point): "lin" (default; log-frequency
                     for filters) | "smooth" | "ease_in" | "ease_out" | "step".
@@ -86,8 +92,8 @@ Buses: sum + reverb returns -> bus lanes -> bus gain -> master. Master: glue (op
 gain -> true-peak limiter at -1 dBTP, iterated until the integrated loudness hits the target
 (-14 LUFS by default) -> 24-bit PCM, rounded with no dither (nothing synthesized, not even dither).
 
-Outputs: the WAV, <out>.report.json (loudness, true peak, limiter, cue placements, hard-stop
-checks, licences and credits, warnings), <out>_beatgrid.csv (beat grid with cue events and the
+Outputs: the WAV, <out>.report.json (loudness, true peak, limiter, cue placements with each cue's
+own K-weighted loudness, hard-stop checks, licences and credits, warnings), <out>_beatgrid.csv (beat grid with cue events and the
 measured music onset per beat) and <out>_cues.csv (one row per cue). --stems DIR writes
 pre-master bus stems as float WAVs.
 """
@@ -152,6 +158,18 @@ def warn(msg):
 
 def db2lin(db):
     return 10.0 ** (np.asarray(db, dtype=np.float64) / 20.0)
+
+
+MUTE_DB = -120.0  # gain-lane value (or "off" / "mute") that means digital silence, not just -120 dB
+
+
+def gain_lin(static_db, lane_db=None):
+    """Static gain plus an optional gain lane, dB -> linear. Where the lane sits at or below
+    MUTE_DB the result is exactly 0 (a true mute), whatever the static gain."""
+    if lane_db is None:
+        return db2lin(static_db)
+    lane_db = np.asarray(lane_db, dtype=np.float64)
+    return np.where(lane_db <= MUTE_DB + 1e-9, 0.0, db2lin(static_db + lane_db))
 
 
 def lin2db(x, floor=-200.0):
@@ -773,6 +791,24 @@ def loudness_stats(y):
     return out
 
 
+def cue_loudness(y):
+    """K-weighted loudness of one cue as placed (pre-bus, pre-master): mean over its span and max momentary."""
+    if len(y) == 0 or not np.any(y):
+        return None
+    meter = pyln.Meter(SR)
+    k = np.array(y, dtype=np.float64, copy=True)
+    for f in meter._filters.values():
+        for c in range(k.shape[1]):
+            k[:, c] = f.apply_filter(k[:, c])
+    p = (k ** 2).sum(axis=1)
+    w = min(len(p), int(0.4 * SR))
+    cs = np.concatenate([[0.0], np.cumsum(p)])
+    st = np.arange(0, len(p) - w + 1, max(1, int(0.05 * SR)))
+    mom = (cs[st + w] - cs[st]) / w
+    return {'mean_lufs': round(float(-0.691 + 10 * np.log10(p.mean() + 1e-30)), 1),
+            'max_momentary_lufs': round(float(-0.691 + 10 * np.log10(mom.max() + 1e-30)), 1)}
+
+
 def lufs(y):
     try:
         return float(pyln.Meter(SR).integrated_loudness(y))
@@ -920,12 +956,13 @@ class Mixer:
             return {}
         m = json.load(open(mp))
         files = m.get('files', m if isinstance(m, list) else [])
-        return {os.path.abspath(e['path']): e for e in files if 'path' in e}
+        # keyed by real path: the library root is often reached through a symlink (out/audio/raw)
+        return {os.path.realpath(e['path']): e for e in files if 'path' in e}
 
     def credit(self, path):
         if path in self.credits:
             return self.credits[path]
-        e = self.manifest.get(path)
+        e = self.manifest.get(os.path.realpath(path))
         if e is None:
             warn(f'{path} is not in the licence manifest')
             c = {'file': path, 'license': None}
@@ -957,8 +994,19 @@ class Mixer:
             a = int(round(float(cfg.get('src_in', 0.0)) * SR))
             b = len(x) if cfg.get('src_out') is None else int(round(float(cfg['src_out']) * SR))
             ir = x[a:b].astype(np.float64)
+            if cfg.get('channels') is not None:
+                ir = ir[:, list(cfg['channels'])]
             if ir.shape[1] == 1:
                 ir = np.repeat(ir, 2, axis=1)
+            # trim fades on the measured IR (cosine), e.g. to drop the direct sound or the noise tail
+            for which in ('in', 'out'):
+                nf = int(round(float(cfg.get(f'fade_{which}_ms', 0.0)) * SR / 1000))
+                if nf > 0:
+                    nf = min(nf, len(ir))
+                    if which == 'in':
+                        ir[:nf] *= fade_curve(nf, 'cos', True)[:, None]
+                    else:
+                        ir[len(ir) - nf:] *= fade_curve(nf, 'cos', False)[:, None]
             if cfg.get('highpass_hz'):
                 ir = filter_lane(ir, 0, Lane('highpass_hz', cfg['highpass_hz'], 10 ** 9), 24)
             if cfg.get('lowpass_hz'):
@@ -1067,7 +1115,7 @@ class Mixer:
             x[total - gl:] *= fade_curve(gl, 'cos', False)[:, None]
         x = x[lo:hi]
         t = S + lo + np.arange(hi - lo, dtype=np.float64)
-        g = db2lin(float(cue.get('gain_db', 0.0)) + (lanes['gain_db'].eval(t) if 'gain_db' in lanes else 0.0))
+        g = gain_lin(float(cue.get('gain_db', 0.0)), lanes['gain_db'].eval(t) if 'gain_db' in lanes else None)
         # width / pan
         nch = x.shape[1]
         if nch == 2 and cue.get('width') is not None:
@@ -1111,7 +1159,8 @@ class Mixer:
         info = {'id': cid, 'bus': bus, 'file': path, 'license': lic.get('license'), 'at_frame': cue['at_frame'],
                 'anchor_sample': T0, 'anchor_offset_in_cue_samples': int(A), 'start_sample': int(S),
                 'end_sample': int(E_eff), 'hard_stop_sample': hard, 'guard_samples': guard, 'loop': loop,
-                'rate': rate, 'peak_dbfs': float(lin2db(pk)), 'first_nonzero_sample': int(nz[0] + a0) if len(nz) else None,
+                'rate': rate, 'peak_dbfs': float(lin2db(pk)), 'loudness': cue_loudness(out),
+                'first_nonzero_sample': int(nz[0] + a0) if len(nz) else None,
                 'last_nonzero_sample': int(nz[-1] + a0) if len(nz) else None,
                 'last_audible_sample_-40db': int(aud[-1] + a0) if len(aud) else None,
                 'measured_onset_ms_re_anchor': onset, 'processing': pinfo, 'reverb': send_info,
@@ -1173,7 +1222,7 @@ class Mixer:
                 y = filter_lane(y, 0, lanes['lowpass_hz'], int(cfg.get('lowpass_slope', 24)))
             gdb = float(cfg.get('gain_db', 0.0))
             if 'gain_db' in lanes:
-                y = y * db2lin(gdb + lanes['gain_db'].eval(np.arange(self.N, dtype=np.float64)))[:, None]
+                y = y * gain_lin(gdb, lanes['gain_db'].eval(np.arange(self.N, dtype=np.float64)))[:, None]
             else:
                 y = y * db2lin(gdb)
             bus_out[b] = y
