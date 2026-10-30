@@ -26,6 +26,7 @@ import hashlib
 import io
 import json
 import os
+import ssl
 import sys
 import time
 import urllib.request
@@ -86,11 +87,21 @@ def extract(e, dest, containers):
     return True
 
 
+def ssl_context():
+    """Trust certifi's CA bundle when available (python.org builds on macOS ship without system CAs)."""
+    try:
+        import certifi
+    except ImportError:
+        return None
+    return ssl.create_default_context(cafile=certifi.where())
+
+
 def fetch(url, dest, tries=4):
+    ctx = ssl_context()
     for attempt in range(tries):
         try:
             req = urllib.request.Request(url, headers={'User-Agent': 'synergy-film/1.0'})
-            with urllib.request.urlopen(req, timeout=120) as r, open(dest + '.part', 'wb') as fh:
+            with urllib.request.urlopen(req, timeout=120, context=ctx) as r, open(dest + '.part', 'wb') as fh:
                 while True:
                     chunk = r.read(1 << 16)
                     if not chunk:

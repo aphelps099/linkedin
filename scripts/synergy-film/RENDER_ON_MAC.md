@@ -12,29 +12,47 @@ git pull origin claude/clever-maxwell-psvch4
 cd scripts/synergy-film
 ```
 
-## 2. Install Blender 4.5 LTS (Apple Silicon)
+## 2. Install Blender 4.5 LTS (Apple Silicon), next to any newer Blender
+
+The film is written against the 4.5 API: Blender 5.x changed the compositor,
+geometry nodes and the animation system, and every script exits with a clear
+message on any version other than 4.5. Keep your newer Blender. Install 4.5
+under its own name and point `BLENDER` at it:
 
 ```sh
-curl -L -o /tmp/blender.dmg https://download.blender.org/release/Blender4.5/blender-4.5.15-macos-arm64.dmg
-hdiutil attach /tmp/blender.dmg -nobrowse -mountpoint /tmp/blender_dmg
-mkdir -p ~/Applications && cp -R /tmp/blender_dmg/Blender.app ~/Applications/
-hdiutil detach /tmp/blender_dmg
-export BLENDER=~/Applications/Blender.app/Contents/MacOS/Blender
-$BLENDER --version
+curl -L -o /tmp/blender45.dmg https://download.blender.org/release/Blender4.5/blender-4.5.15-macos-arm64.dmg
+hdiutil attach /tmp/blender45.dmg -nobrowse -mountpoint /tmp/blender45
+mkdir -p ~/Applications && cp -R /tmp/blender45/Blender.app ~/Applications/Blender-4.5.app
+hdiutil detach /tmp/blender45
+export BLENDER=~/Applications/Blender-4.5.app/Contents/MacOS/Blender
+$BLENDER --version          # must say 4.5.15
 ```
+
+`curl` downloads are not quarantined, so Gatekeeper leaves this copy alone.
+Set `BLENDER` again in any new terminal, or add the export line to `~/.zshrc`.
 
 ## 3. Python packages and ffmpeg
 
 ```sh
-python3 -m pip install --user numpy scipy soundfile pyloudnorm numba h5py
-brew install ffmpeg        # if Homebrew is not installed: https://brew.sh
+python3 -m pip install --user numpy scipy soundfile pyloudnorm numba h5py certifi
+brew install ffmpeg
 ```
+
+If ffmpeg came from a downloaded zip and macOS blocks it ("cannot be opened
+because the developer cannot be verified"), either use Homebrew's ffmpeg
+instead, or clear the quarantine flag on that binary:
+`xattr -d com.apple.quarantine /path/to/ffmpeg`.
 
 ## 4. Sound library (about 2.5 GB, licensed recordings)
 
 ```sh
 python3 tools/fetch_audio.py
 ```
+
+The fetcher uses `certifi`'s certificate bundle, which fixes the
+`CERTIFICATE_VERIFY_FAILED` errors from python.org builds of Python on macOS.
+If they persist, run `/Applications/Python\ 3.*/Install\ Certificates.command`
+once.
 
 ## 5. Check the GPU on one frame
 

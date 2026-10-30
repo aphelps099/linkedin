@@ -34,8 +34,16 @@ QUALITY = {
 
 # ---------------------------------------------------------------- arguments
 
+def require_blender_45():
+    """The film is written against the Blender 4.5 LTS Python API; stop early on anything else."""
+    if tuple(bpy.app.version[:2]) != (4, 5):
+        sys.exit(f'This film needs Blender 4.5 LTS; this is Blender {bpy.app.version_string}. '
+                 'Install 4.5.15 alongside it and set BLENDER to it (see RENDER_ON_MAC.md).')
+
+
 def shot_args():
     """Parse the arguments after `--` on the Blender command line."""
+    require_blender_45()
     argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
     p = argparse.ArgumentParser()
     p.add_argument('--quality', default='preview', choices=sorted(QUALITY))
