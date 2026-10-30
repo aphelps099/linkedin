@@ -16,11 +16,36 @@
  },
  "buses": {
   "music": {
-   "gain_db": -4.0
+   "gain_db": -4.0,
+   "automation": {
+    "highpass_hz": 20,
+    "gain_db": [
+     [
+      1,
+      0
+     ],
+     [
+      960.976,
+      "mute",
+      "step"
+     ],
+     [
+      1152.5,
+      0,
+      "step"
+     ],
+     [
+      1408.976,
+      "mute",
+      "step"
+     ]
+    ]
+   }
   },
   "amb": {
    "gain_db": 0.0,
    "automation": {
+    "highpass_hz": 20,
     "gain_db": [
      [
       1,
@@ -39,22 +64,75 @@
       256.976,
       0,
       "step"
+     ],
+     [
+      1408.976,
+      "mute",
+      "step"
      ]
     ]
    }
   },
   "fx": {
-   "gain_db": 0.0
+   "gain_db": 0.0,
+   "automation": {
+    "highpass_hz": 20,
+    "gain_db": [
+     [
+      1,
+      0
+     ],
+     [
+      1408.976,
+      "mute",
+      "step"
+     ]
+    ]
+   }
   },
   "foley": {
-   "gain_db": 0.0
+   "gain_db": 0.0,
+   "automation": {
+    "highpass_hz": 20,
+    "gain_db": [
+     [
+      1,
+      0
+     ],
+     [
+      1408.976,
+      "mute",
+      "step"
+     ]
+    ]
+   }
   },
   "sync": {
-   "gain_db": 0.0
+   "gain_db": 0.0,
+   "automation": {
+    "highpass_hz": 20,
+    "gain_db": [
+     [
+      1,
+      0
+     ],
+     [
+      1408.976,
+      "mute",
+      "step"
+     ],
+     [
+      1417.5,
+      0,
+      "step"
+     ]
+    ]
+   }
   },
   "verb_room": {
    "gain_db": 0.0,
    "automation": {
+    "highpass_hz": 20,
     "gain_db": [
      [
       1,
@@ -119,6 +197,7 @@
   "verb_hall": {
    "gain_db": 0.0,
    "automation": {
+    "highpass_hz": 20,
     "gain_db": [
      [
       1,
@@ -170,9 +249,26 @@
   "verb_soft": {
    "gain_db": 0.0,
    "automation": {
+    "highpass_hz": 20,
     "gain_db": [
      [
       1,
+      0
+     ],
+     [
+      1249,
+      0
+     ],
+     [
+      1251,
+      "mute"
+     ],
+     [
+      1343,
+      "mute"
+     ],
+     [
+      1345,
       0
      ],
      [
@@ -186,6 +282,7 @@
   "verb_black": {
    "gain_db": 0.0,
    "automation": {
+    "highpass_hz": 20,
     "gain_db": [
      [
       1,
@@ -219,22 +316,22 @@
      "open"
     ],
     [
-     529,
+     528.8,
      600,
      "step"
     ],
     [
-     609,
+     608.8,
      "open",
      "step"
     ],
     [
-     753,
+     752.8,
      600,
      "step"
     ],
     [
-     833,
+     832.8,
      5000,
      "step"
     ],
@@ -244,7 +341,7 @@
      "step"
     ],
     [
-     1249,
+     1248.8,
      600,
      "step"
     ],
@@ -253,16 +350,16 @@
      600
     ],
     [
-     1297,
+     1296,
      3000,
      "smooth"
     ],
     [
-     1345,
+     1356,
      3000
     ],
     [
-     1361,
+     1362,
      "open",
      "smooth"
     ]
@@ -271,6 +368,24 @@
     [
      1,
      0
+    ],
+    [
+     204.42000000000002,
+     0.0
+    ],
+    [
+     205.0,
+     -1.0,
+     "smooth"
+    ],
+    [
+     206.12,
+     -1.0
+    ],
+    [
+     208.12,
+     0.0,
+     "smooth"
     ],
     [
      250,
@@ -283,8 +398,71 @@
     ],
     [
      256.976,
-     0,
+     -2.5,
      "step"
+    ],
+    [
+     258.09,
+     -2.5
+    ],
+    [
+     260.09,
+     0.0,
+     "smooth"
+    ],
+    [
+     268.41,
+     0.0
+    ],
+    [
+     268.99,
+     -1.5,
+     "smooth"
+    ],
+    [
+     270.11,
+     -1.5
+    ],
+    [
+     272.11,
+     0.0,
+     "smooth"
+    ],
+    [
+     308.24,
+     0.0
+    ],
+    [
+     308.82,
+     -1.1,
+     "smooth"
+    ],
+    [
+     309.94,
+     -1.1
+    ],
+    [
+     311.94,
+     0.0,
+     "smooth"
+    ],
+    [
+     320.69,
+     0.0
+    ],
+    [
+     321.27,
+     -0.7,
+     "smooth"
+    ],
+    [
+     322.39,
+     -0.7
+    ],
+    [
+     324.39,
+     0.0,
+     "smooth"
     ],
     [
      352,
@@ -292,49 +470,274 @@
     ],
     [
      353,
-     -1.5,
-     "smooth"
-    ],
-    [
-     529,
-     -7.5,
-     "step"
-    ],
-    [
-     609,
-     -1.5,
-     "step"
-    ],
-    [
-     700,
-     -1.5
-    ],
-    [
-     705,
      -4.5,
      "smooth"
     ],
     [
-     752,
+     428,
      -4.5
     ],
     [
-     753,
+     432,
+     -1.5,
+     "smooth"
+    ],
+    [
+     505,
+     -1.5
+    ],
+    [
+     508,
+     -4,
+     "smooth"
+    ],
+    [
+     519,
+     -4
+    ],
+    [
+     526,
+     -1.5,
+     "smooth"
+    ],
+    [
+     528.8,
      -7.5,
      "step"
     ],
     [
-     833,
+     552.3,
+     -7.5
+    ],
+    [
+     552.88,
+     -13.5,
+     "smooth"
+    ],
+    [
+     554.0,
+     -13.5
+    ],
+    [
+     556.0,
+     -7.5,
+     "smooth"
+    ],
+    [
+     608.8,
+     -3,
+     "step"
+    ],
+    [
+     624.4,
+     -3.0
+    ],
+    [
+     624.98,
+     -4.5,
+     "smooth"
+    ],
+    [
+     626.1,
+     -4.5
+    ],
+    [
+     628.1,
+     -3.0,
+     "smooth"
+    ],
+    [
+     640.4,
+     -3.0
+    ],
+    [
+     640.98,
+     -4.5,
+     "smooth"
+    ],
+    [
+     642.1,
+     -4.5
+    ],
+    [
+     644.1,
+     -3.0,
+     "smooth"
+    ],
+    [
+     652.42,
+     -3.0
+    ],
+    [
+     653.0,
+     -3.5,
+     "smooth"
+    ],
+    [
+     654.12,
+     -3.5
+    ],
+    [
+     656.12,
+     -3.0,
+     "smooth"
+    ],
+    [
+     656.4,
+     -3.0
+    ],
+    [
+     656.98,
+     -4.5,
+     "smooth"
+    ],
+    [
+     658.1,
+     -4.5
+    ],
+    [
+     660.1,
+     -3.0,
+     "smooth"
+    ],
+    [
+     672.4,
+     -3.0
+    ],
+    [
+     672.98,
+     -4.5,
+     "smooth"
+    ],
+    [
+     674.1,
+     -4.5
+    ],
+    [
+     676.1,
+     -3.0,
+     "smooth"
+    ],
+    [
+     680.4,
+     -3.0
+    ],
+    [
+     680.98,
+     -4.5,
+     "smooth"
+    ],
+    [
+     682.1,
+     -4.5
+    ],
+    [
+     684.1,
+     -3.0,
+     "smooth"
+    ],
+    [
+     688.4,
+     -3.0
+    ],
+    [
+     688.98,
+     -4.5,
+     "smooth"
+    ],
+    [
+     690.1,
+     -4.5
+    ],
+    [
+     692.1,
+     -3.0,
+     "smooth"
+    ],
+    [
+     696.4,
+     -3.0
+    ],
+    [
+     696.98,
+     -4.5,
+     "smooth"
+    ],
+    [
+     698.1,
+     -4.5
+    ],
+    [
+     700.1,
+     -3.003,
+     "smooth"
+    ],
+    [
+     704.4,
+     -5.89
+    ],
+    [
+     704.98,
+     -7.5,
+     "smooth"
+    ],
+    [
+     706.1,
+     -7.5
+    ],
+    [
+     708.1,
+     -6.0,
+     "smooth"
+    ],
+    [
+     719,
+     -6
+    ],
+    [
+     722,
+     -7,
+     "smooth"
+    ],
+    [
+     746,
+     -7
+    ],
+    [
+     749,
+     -6,
+     "smooth"
+    ],
+    [
+     752.8,
+     -7.5,
+     "step"
+    ],
+    [
+     832.8,
      -5.5,
      "step"
     ],
     [
+     943,
+     -5.5
+    ],
+    [
+     956,
+     -3,
+     "smooth"
+    ],
+    [
+     960,
+     -3
+    ],
+    [
      1153,
-     -9,
+     -9.5,
      "step"
     ],
     [
-     1249,
+     1248.8,
      -14,
      "step"
     ],
@@ -343,22 +746,73 @@
      -14
     ],
     [
-     1297,
+     1296,
      -8,
      "smooth"
     ],
     [
-     1345,
+     1296.6,
      -8
     ],
     [
-     1361,
+     1297.4,
+     -10,
+     "smooth"
+    ],
+    [
+     1310,
+     -10
+    ],
+    [
+     1316,
+     -8,
+     "smooth"
+    ],
+    [
+     1356,
+     -8
+    ],
+    [
+     1362,
      -1,
      "smooth"
     ],
     [
      1409,
      -1
+    ]
+   ],
+   "pan": [
+    [
+     1,
+     0
+    ],
+    [
+     701,
+     0
+    ],
+    [
+     705,
+     -0.08,
+     "smooth"
+    ],
+    [
+     765,
+     -0.08
+    ],
+    [
+     769,
+     -0.15,
+     "smooth"
+    ],
+    [
+     960,
+     -0.15
+    ],
+    [
+     1153,
+     0,
+     "step"
     ]
    ]
   }
@@ -443,12 +897,150 @@
    "src_in": 0.0,
    "src_out": 34.666667,
    "at_frame": 129,
-   "end_frame": 961,
+   "end_frame": 257.0,
    "fade_in_samples": 12,
+   "fade_out_samples": 1000,
+   "guard_samples": 0,
+   "automation": "music_main",
+   "_comment": "music edit segment M2, piece 1/8 (plain): file 0.0000 s on f129, sample-aligned with the rest of the segment; linear crossfades at the hand-overs",
+   "fade_shape": "lin"
+  },
+  {
+   "id": "music-M2-printer-f257",
+   "file": "music_lofi/mixkit-970-night-sky-hip-hop.mp3",
+   "bus": "music",
+   "src_in": 5.3125,
+   "src_out": 34.666667,
+   "at_frame": 256.5,
+   "end_frame": 261.6,
+   "fade_in_samples": 1000,
+   "fade_out_samples": 2000,
+   "guard_samples": 0,
+   "automation": "music_main",
+   "_comment": "music edit segment M2, piece 2/8 (with a 3 dB dip at 1.5-4 kHz for the 150 ms after the drop, under the printer feed): file 5.3125 s on f256.5, sample-aligned with the rest of the segment; linear crossfades at the hand-overs",
+   "fade_shape": "lin",
+   "eq": [
+    {
+     "type": "peak",
+     "hz": 2400,
+     "gain_db": -3.0,
+     "q": 0.8
+    }
+   ]
+  },
+  {
+   "id": "music-M2-2",
+   "file": "music_lofi/mixkit-970-night-sky-hip-hop.mp3",
+   "bus": "music",
+   "src_in": 5.483333333333334,
+   "src_out": 34.666667,
+   "at_frame": 260.6,
+   "end_frame": 321.0,
+   "fade_in_samples": 2000,
+   "fade_out_samples": 1000,
+   "guard_samples": 0,
+   "automation": "music_main",
+   "_comment": "music edit segment M2, piece 3/8 (plain): file 5.4833 s on f260.6, sample-aligned with the rest of the segment; linear crossfades at the hand-overs",
+   "fade_shape": "lin"
+  },
+  {
+   "id": "music-M2-printer-f321",
+   "file": "music_lofi/mixkit-970-night-sky-hip-hop.mp3",
+   "bus": "music",
+   "src_in": 7.979166666666667,
+   "src_out": 34.666667,
+   "at_frame": 320.5,
+   "end_frame": 325.6,
+   "fade_in_samples": 1000,
+   "fade_out_samples": 2000,
+   "guard_samples": 0,
+   "automation": "music_main",
+   "_comment": "music edit segment M2, piece 4/8 (with a 3 dB dip at 1.5-4 kHz for the 150 ms after f321, under the printer feed): file 7.9792 s on f320.5, sample-aligned with the rest of the segment; linear crossfades at the hand-overs",
+   "fade_shape": "lin",
+   "eq": [
+    {
+     "type": "peak",
+     "hz": 2400,
+     "gain_db": -3.0,
+     "q": 0.8
+    }
+   ]
+  },
+  {
+   "id": "music-M2-3",
+   "file": "music_lofi/mixkit-970-night-sky-hip-hop.mp3",
+   "bus": "music",
+   "src_in": 8.15,
+   "src_out": 34.666667,
+   "at_frame": 324.6,
+   "end_frame": 705.0,
+   "fade_in_samples": 2000,
+   "fade_out_samples": 1000,
+   "guard_samples": 0,
+   "automation": "music_main",
+   "_comment": "music edit segment M2, piece 5/8 (plain): file 8.1500 s on f324.6, sample-aligned with the rest of the segment; linear crossfades at the hand-overs",
+   "fade_shape": "lin"
+  },
+  {
+   "id": "music-M2-post8",
+   "file": "music_lofi/mixkit-970-night-sky-hip-hop.mp3",
+   "bus": "music",
+   "src_in": 23.979166666666668,
+   "src_out": 34.666667,
+   "at_frame": 704.5,
+   "end_frame": 710.5,
+   "fade_in_samples": 1000,
+   "fade_out_samples": 2000,
+   "guard_samples": 0,
+   "automation": "music_main",
+   "_comment": "music edit segment M2, piece 6/8 (with a 6 dB notch at 1245 Hz (Q 1.5) for the 150 ms of the Eb6 post on f705, the melody's top note): file 23.9792 s on f704.5, sample-aligned with the rest of the segment; linear crossfades at the hand-overs",
+   "fade_shape": "lin",
+   "eq": [
+    {
+     "type": "peak",
+     "hz": 1245,
+     "gain_db": -6.0,
+     "q": 1.5
+    }
+   ]
+  },
+  {
+   "id": "music-M2-4",
+   "file": "music_lofi/mixkit-970-night-sky-hip-hop.mp3",
+   "bus": "music",
+   "src_in": 24.1875,
+   "src_out": 34.666667,
+   "at_frame": 709.5,
+   "end_frame": 929.24,
+   "fade_in_samples": 2000,
+   "fade_out_samples": 480,
+   "guard_samples": 0,
+   "automation": "music_main",
+   "_comment": "music edit segment M2, piece 7/8 (plain): file 24.1875 s on f709.5, sample-aligned with the rest of the segment; linear crossfades at the hand-overs",
+   "fade_shape": "lin"
+  },
+  {
+   "id": "music-M2-S10",
+   "file": "music_lofi/mixkit-970-night-sky-hip-hop.mp3",
+   "bus": "music",
+   "src_in": 33.333333333333336,
+   "src_out": 34.666667,
+   "at_frame": 929,
+   "end_frame": 961,
+   "fade_in_samples": 480,
    "fade_out_samples": 192,
    "guard_samples": 48,
    "automation": "music_main",
-   "_comment": "music edit segment M2: intro pass 2 + groove (S02-S10); file 0.0000-34.6667 s on frames 129-960, sample-exact butt edits (12-sample fade in, 4 ms fade out, 1 ms guard)"
+   "_comment": "music edit segment M2, piece 8/8 (with a 3 dB dip at 2-4 kHz (peak 3 kHz, Q 1) for the finger, grip and knuckle foley, from the cut): file 33.3333 s on f929, sample-aligned with the rest of the segment; linear crossfades at the hand-overs; hard stop on f961 (4 ms fade out, 1 ms guard)",
+   "fade_shape": "lin",
+   "eq": [
+    {
+     "type": "peak",
+     "hz": 3000,
+     "gain_db": -3.0,
+     "q": 1.0
+    }
+   ]
   },
   {
    "id": "music-M3",
@@ -457,12 +1049,74 @@
    "src_in": 0.0,
    "src_out": 10.666667,
    "at_frame": 1153,
-   "end_frame": 1409,
+   "end_frame": 1305.0,
    "fade_in_samples": 12,
+   "fade_out_samples": 2000,
+   "guard_samples": 0,
+   "automation": "music_main",
+   "_comment": "music edit segment M3, piece 1/4 (plain): file 0.0000 s on f1153, sample-aligned with the rest of the segment; linear crossfades at the hand-overs",
+   "fade_shape": "lin"
+  },
+  {
+   "id": "music-M3-tilt",
+   "file": "music_lofi/mixkit-970-night-sky-hip-hop.mp3",
+   "bus": "music",
+   "src_in": 6.291666666666667,
+   "src_out": 10.666667,
+   "at_frame": 1304,
+   "end_frame": 1324.0,
+   "fade_in_samples": 2000,
+   "fade_out_samples": 4000,
+   "guard_samples": 0,
+   "automation": "music_main",
+   "_comment": "music edit segment M3, piece 2/4 (with a 4 dB dip at 100-400 Hz (peak 200 Hz, Q 1) under the tilt creak, f1304-1322): file 6.2917 s on f1304, sample-aligned with the rest of the segment; linear crossfades at the hand-overs",
+   "fade_shape": "lin",
+   "eq": [
+    {
+     "type": "peak",
+     "hz": 200,
+     "gain_db": -4.0,
+     "q": 1.0
+    }
+   ]
+  },
+  {
+   "id": "music-M3-2",
+   "file": "music_lofi/mixkit-970-night-sky-hip-hop.mp3",
+   "bus": "music",
+   "src_in": 7.041666666666667,
+   "src_out": 10.666667,
+   "at_frame": 1322,
+   "end_frame": 1367.0,
+   "fade_in_samples": 4000,
+   "fade_out_samples": 8000,
+   "guard_samples": 0,
+   "automation": "music_main",
+   "_comment": "music edit segment M3, piece 3/4 (plain): file 7.0417 s on f1322, sample-aligned with the rest of the segment; linear crossfades at the hand-overs",
+   "fade_shape": "lin"
+  },
+  {
+   "id": "music-M3-S14",
+   "file": "music_lofi/mixkit-970-night-sky-hip-hop.mp3",
+   "bus": "music",
+   "src_in": 8.75,
+   "src_out": 10.666667,
+   "at_frame": 1363,
+   "end_frame": 1409,
+   "fade_in_samples": 8000,
    "fade_out_samples": 192,
    "guard_samples": 48,
    "automation": "music_main",
-   "_comment": "music edit segment M3: offline return (S12-S14); file 0.0000-10.6667 s on frames 1153-1408, sample-exact butt edits (12-sample fade in, 4 ms fade out, 1 ms guard)"
+   "_comment": "music edit segment M3, piece 4/4 (with a 2.5 dB dip at 150-300 Hz (peak 200 Hz, Q 1) under the hull creak, faded in over 4 frames): file 8.7500 s on f1363, sample-aligned with the rest of the segment; linear crossfades at the hand-overs; hard stop on f1409 (4 ms fade out, 1 ms guard)",
+   "fade_shape": "lin",
+   "eq": [
+    {
+     "type": "peak",
+     "hz": 200,
+     "gain_db": -2.5,
+     "q": 1.0
+    }
+   ]
   },
   {
    "id": "s01-world-breath",
@@ -473,15 +1127,24 @@
    "src_out": 30.0,
    "pitch_mode": "tape",
    "pitch_semitones": -12,
-   "highpass_hz": 28,
+   "highpass_hz": 35,
+   "highpass_slope": 48,
    "lowpass_hz": 900,
    "loop": true,
    "loop_xfade_ms": 600,
    "end_frame": 129,
    "fade_in": 20,
    "fade_out": 1.5,
-   "gain_db": -2,
-   "_comment": "S01: the world breathing: HVAC drone loop, tape -12 st, high-passed at 28 Hz (its sub-30 Hz content is dropped)"
+   "gain_db": -4,
+   "eq": [
+    {
+     "type": "lowshelf",
+     "hz": 50,
+     "gain_db": -3.0,
+     "q": 0.707
+    }
+   ],
+   "_comment": "S01: the world breathing: HVAC drone loop, tape -12 st, high-passed at 35 Hz / 48 dB per octave (no infrasound), 3 dB low shelf below 50 Hz"
   },
   {
    "id": "s01-lapping",
@@ -495,7 +1158,59 @@
    "end_frame": 129,
    "fade_in": 20,
    "fade_out": 1.5,
-   "gain_db": 0,
+   "gain_db": 5,
+   "automation": {
+    "gain_db": [
+     [
+      1,
+      0
+     ],
+     [
+      24,
+      0
+     ],
+     [
+      28,
+      -5,
+      "smooth"
+     ],
+     [
+      58,
+      -5
+     ],
+     [
+      62,
+      0,
+      "smooth"
+     ],
+     [
+      76,
+      0
+     ],
+     [
+      80,
+      -5,
+      "smooth"
+     ],
+     [
+      108,
+      -5
+     ],
+     [
+      112,
+      0,
+      "smooth"
+     ]
+    ]
+   },
+   "eq": [
+    {
+     "type": "peak",
+     "hz": 3500,
+     "gain_db": 3.0,
+     "q": 0.7
+    }
+   ],
    "_comment": "S01: espresso lapping on stone: quiet stream, tape -5 st (slower, larger)"
   },
   {
@@ -505,11 +1220,19 @@
    "at_frame": 1,
    "src_in": 20.0,
    "highpass_hz": 80,
-   "lowpass_hz": 3000,
+   "lowpass_hz": 4500,
    "end_frame": 129,
    "fade_in": 20,
    "fade_out": 1.5,
-   "gain_db": -27,
+   "gain_db": -24,
+   "eq": [
+    {
+     "type": "peak",
+     "hz": 3500,
+     "gain_db": 3.0,
+     "q": 0.7
+    }
+   ],
    "_comment": "S01: soft air in the cup"
   },
   {
@@ -521,16 +1244,17 @@
    "src_out": 4.75,
    "pitch_mode": "tape",
    "pitch_semitones": -24,
-   "lowpass_hz": 1800,
-   "highpass_hz": 40,
+   "lowpass_hz": 3000,
+   "highpass_hz": 90,
+   "highpass_slope": 48,
    "fade_in": 3,
    "fade_out": 6,
-   "gain_db": -14,
+   "gain_db": -5,
    "reverb": "hall",
    "reverb_send": -16,
    "pan": -0.25,
    "end_frame": 129,
-   "_comment": "S01: a paper cup squeezed, two octaves down: the cliffs creak (cardboard-box creak take, tape -24 st)"
+   "_comment": "S01: a paper cup squeezed, two octaves down: the cliffs creak (cardboard-box creak take, tape -24 st); low-passed at 3 kHz so the fibrous crackle sits above the 400 Hz music"
   },
   {
    "id": "s01-cup-creak-2",
@@ -541,33 +1265,36 @@
    "src_out": 10.45,
    "pitch_mode": "tape",
    "pitch_semitones": -24,
-   "lowpass_hz": 1800,
-   "highpass_hz": 40,
+   "lowpass_hz": 3000,
+   "highpass_hz": 90,
+   "highpass_slope": 48,
    "fade_in": 3,
    "fade_out": 6,
-   "gain_db": -14,
+   "gain_db": -5,
    "reverb": "hall",
    "reverb_send": -16,
    "pan": 0.25,
    "end_frame": 129,
-   "_comment": "S01: a paper cup squeezed, two octaves down: the cliffs creak (cardboard-box creak take, tape -24 st)"
+   "_comment": "S01: a paper cup squeezed, two octaves down: the cliffs creak (cardboard-box creak take, tape -24 st); low-passed at 3 kHz so the fibrous crackle sits above the 400 Hz music"
   },
   {
    "id": "s01-eclipse-whoosh",
-   "file": "sfx/whoosh/mixkit-2604-deep-air-woosh.wav",
+   "file": "sfx/whoosh/berklee-v8-swoosh1.wav",
    "bus": "fx",
    "at_frame": 104,
-   "src_in": 0.0,
+   "src_in": 0.05,
+   "anchor_s": 0.12,
    "pitch_mode": "tape",
-   "pitch_semitones": -5,
-   "anchor_s": 0.0838,
-   "lowpass_hz": 2200,
-   "gain_db": -23,
+   "pitch_semitones": -9,
+   "lowpass_hz": 1800,
+   "highpass_hz": 30,
+   "gain_db": -14.5,
    "fade_out": 2,
    "end_frame": 129,
    "reverb": "hall",
-   "reverb_send": -16,
-   "_comment": "S01: eclipse at f104: long soft deep-air whoosh, tape -5 st; cut on the match cut"
+   "reverb_send": -14,
+   "_comment": "S01: eclipse at f104: a long, soft, deep air whoosh (Berklee swoosh1, tape -9 st, low-passed at 1.8 kHz); cut on the match cut",
+   "fade_in_ms": 2.0
   },
   {
    "id": "s02-s05-roomtone",
@@ -578,9 +1305,26 @@
    "end_frame": 529,
    "fade_in": 0.5,
    "fade_out": 1.5,
-   "gain_db": -10,
+   "gain_db": -6.8,
+   "highpass_hz": 120,
+   "width": 0.3,
+   "pan": 0.0,
+   "_comment": "S02-S05: Long Room tone: office heater tone above 120 Hz at width 0.3 (its L/R are slightly anti-correlated, so at full width it cancelled on mono speakers); +3.2 dB restores the per-channel level"
+  },
+  {
+   "id": "s02-s05-roomtone-lf",
+   "file": "ambience/sonniss2017-detunized-room-tones-office-building--rt-office-heater-tone-2.flac",
+   "bus": "amb",
+   "at_frame": 129,
+   "src_in": 10.0,
+   "end_frame": 529,
+   "fade_in": 0.5,
+   "fade_out": 1.5,
+   "gain_db": -4,
    "highpass_hz": 30,
-   "_comment": "S02-S05: Long Room tone: office heater tone"
+   "lowpass_hz": 120,
+   "channels": "mono",
+   "_comment": "S02-S05: Long Room tone: the same take below 120 Hz, folded to mono (+6 dB: its L/R are uncorrelated, so the fold and the centre pan each cost 3 dB)"
   },
   {
    "id": "s02-s05-meeting-hum",
@@ -607,7 +1351,9 @@
    "gain_db": -17,
    "pan": 0.05,
    "lowpass_hz": 9000,
-   "_comment": "S02: plastic lid tick under the fingertip (close mouse click)"
+   "_comment": "S02: plastic lid tick under the fingertip (close mouse click)",
+   "fade_in_ms": 1.0,
+   "fade_out_ms": 2.0
   },
   {
    "id": "s02-envelope-rustle",
@@ -618,7 +1364,9 @@
    "gain_db": -19,
    "highpass_hz": 250,
    "pan": 0.05,
-   "_comment": "S02: envelope paper slides into the slot (peak on f142)"
+   "_comment": "S02: envelope paper slides into the slot (peak on f142)",
+   "fade_in_ms": 2.0,
+   "fade_out_ms": 2.0
   },
   {
    "id": "s02-plip",
@@ -631,7 +1379,8 @@
    "gain_db": -15,
    "lowpass_hz": 7000,
    "fade_out": 4,
-   "_comment": "S02: tiny wet plip as it vanishes (water drop, close and quiet)"
+   "_comment": "S02: tiny wet plip as it vanishes (water drop, close and quiet)",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s02-far-below-whoosh",
@@ -642,11 +1391,12 @@
    "pitch_mode": "tape",
    "pitch_semitones": -7,
    "lowpass_hz": 1400,
-   "gain_db": -32,
+   "gain_db": -21,
    "reverb": "hall",
    "reverb_send": 0,
    "fade_in": 2,
-   "_comment": "S02: far below, a faint long whoosh (organic swoosh, tape -7 st, mostly the hall)"
+   "_comment": "S02: far below, a faint long whoosh (organic swoosh, tape -7 st, mostly the hall)",
+   "fade_out_ms": 2.0
   },
   {
    "id": "s02-neck-servo",
@@ -660,7 +1410,7 @@
    "end_frame": 233,
    "fade_in": 8,
    "fade_out": 10,
-   "gain_db": -21,
+   "gain_db": -7,
    "lowpass_hz": 3500,
    "_comment": "S02: low neck-servo whirr under the pull-back (real servo motors, tape -5 st)"
   },
@@ -669,12 +1419,14 @@
    "file": "sfx/foley_misc/sonniss2015-eiravaein-works-start-select-startselect-ui-set57-camera-mechanics-servo-clicks-clacks-meaty-opera.wav",
    "bus": "foley",
    "at_frame": 240,
-   "src_in": 0.06,
-   "src_out": 0.32,
-   "anchor_s": "onset",
-   "gain_db": -23,
-   "lowpass_hz": 8000,
-   "_comment": "S02: dry relay tick on the blink"
+   "src_in": 0.1405,
+   "src_out": 0.2,
+   "anchor_s": 0.1466,
+   "fade_in_ms": 1,
+   "fade_out_ms": 15,
+   "gain_db": -7,
+   "lowpass_hz": 14000,
+   "_comment": "S02: dry relay tick on the blink (one click, on f240)"
   },
   {
    "id": "s03-crt-whine",
@@ -684,10 +1436,11 @@
    "src_in": 5.0,
    "end_frame": 529,
    "fade_out": 1.5,
-   "gain_db": -11,
+   "gain_db": -5,
    "highpass_hz": 4000,
    "highpass_slope": 48,
-   "_comment": "S03-S05: bed of high-frequency CRT whine: streetlight buzz, high-passed"
+   "_comment": "S03-S05: bed of high-frequency CRT whine: streetlight buzz, high-passed",
+   "fade_in_ms": 2.0
   },
   {
    "id": "s03-printer-f257",
@@ -697,11 +1450,21 @@
    "src_in": 0.01,
    "fade_in_ms": 3,
    "anchor_s": 0.0139,
-   "gain_db": -15,
+   "gain_db": -8.5,
    "pan": -0.05,
+   "highpass_hz": 250,
+   "eq": [
+    {
+     "type": "highshelf",
+     "hz": 2000,
+     "gain_db": 3.0,
+     "q": 0.707
+    }
+   ],
    "reverb": "room",
    "reverb_send": -14,
-   "_comment": "S03: printer sheet feed on the downbeat f257 (pickup transient on the beat)"
+   "_comment": "S03: printer sheet feed on the downbeat f257 (pickup transient on the beat)",
+   "fade_out_ms": 2.0
   },
   {
    "id": "s03-printer-f321",
@@ -711,11 +1474,21 @@
    "src_in": 0.01,
    "fade_in_ms": 3,
    "anchor_s": 0.0139,
-   "gain_db": -15,
+   "gain_db": -7.0,
    "pan": -0.05,
+   "highpass_hz": 250,
+   "eq": [
+    {
+     "type": "highshelf",
+     "hz": 2000,
+     "gain_db": 3.0,
+     "q": 0.707
+    }
+   ],
    "reverb": "room",
    "reverb_send": -14,
-   "_comment": "S03: printer sheet feed on the downbeat f321 (pickup transient on the beat)"
+   "_comment": "S03: printer sheet feed on the downbeat f321 (pickup transient on the beat)",
+   "fade_out_ms": 2.0
   },
   {
    "id": "s03-chair-creak",
@@ -725,7 +1498,7 @@
    "src_in": 3.9,
    "src_out": 4.9,
    "anchor_s": "peak",
-   "gain_db": -20,
+   "gain_db": -12,
    "pan": 0.4,
    "fade_in": 2,
    "fade_out": 4,
@@ -746,7 +1519,7 @@
    "end_frame": 353,
    "fade_in": 4,
    "fade_out": 1.5,
-   "gain_db": -25,
+   "gain_db": -9,
    "automation": {
     "pan": [
      [
@@ -793,7 +1566,7 @@
    "end_frame": 353,
    "fade_in": 3,
    "fade_out": 1.5,
-   "gain_db": -8,
+   "gain_db": 8,
    "channels": "mono",
    "automation": {
     "pan": [
@@ -841,7 +1614,7 @@
    "end_frame": 353,
    "fade_in": 4,
    "fade_out": 1.5,
-   "gain_db": -14,
+   "gain_db": 2,
    "lowpass_hz": 6000,
    "automation": {
     "pan": [
@@ -994,7 +1767,7 @@
    "pitch_semitones": -3,
    "highpass_hz": 180,
    "lowpass_hz": 6500,
-   "gain_db": -17,
+   "gain_db": -14,
    "reverb": "room",
    "reverb_send": -16,
    "_comment": "S04: long hiss of brass dragging on lacquered wood (metal-box drag, tape -3 st); no Doppler, we ride with it"
@@ -1009,7 +1782,9 @@
    "anchor_s": "onset",
    "gain_db": -30,
    "pan": 0.25,
-   "_comment": "S04: bronze fingertip rests on the walnut"
+   "fade_out_ms": 4,
+   "_comment": "S04: bronze fingertip rests on the walnut",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s04-knock-metal",
@@ -1019,11 +1794,13 @@
    "src_in": 0.085,
    "src_out": 0.5,
    "anchor_s": 0.0948,
-   "gain_db": -15,
+   "gain_db": -10.5,
    "pan": 0.1,
    "reverb": "room",
    "reverb_send": -16,
-   "_comment": "S04: precise knock as it stops (gear lock tap) f424"
+   "_comment": "S04: precise knock as it stops (gear lock tap) f424",
+   "fade_in_ms": 2.0,
+   "fade_out_ms": 2.0
   },
   {
    "id": "s04-knock-wood",
@@ -1033,9 +1810,11 @@
    "src_in": 5.57,
    "src_out": 5.95,
    "anchor_s": 5.591,
-   "gain_db": -12,
+   "gain_db": -11,
    "pan": 0.1,
-   "_comment": "S04: the walnut under it (cup set down on a wooden table, low thud)"
+   "_comment": "S04: the walnut under it (cup set down on a wooden table, low thud)",
+   "fade_in_ms": 2.0,
+   "fade_out_ms": 2.0
   },
   {
    "id": "s05-head-servo",
@@ -1045,10 +1824,11 @@
    "src_in": 0.05,
    "src_out": 0.62,
    "anchor_s": "onset",
-   "gain_db": -22,
+   "gain_db": -8,
    "fade_out": 3,
    "pan": 0.05,
-   "_comment": "S05: small servo whirr on the head tilt"
+   "_comment": "S05: small servo whirr on the head tilt",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s05-piston-hiss",
@@ -1059,7 +1839,7 @@
    "src_out": 1.52,
    "fade_in": 2,
    "fade_out": 4,
-   "gain_db": -28,
+   "gain_db": -9,
    "highpass_hz": 900,
    "pan": 0.12,
    "_comment": "S05: short pneumatic hiss from the neck pistons (pressure release, trimmed)"
@@ -1074,10 +1854,11 @@
    "anchor_s": "onset",
    "pitch_mode": "tape",
    "pitch_semitones": -2,
-   "gain_db": -28,
+   "gain_db": -22,
    "fade_out": 3,
    "pan": 0.05,
-   "_comment": "S05: head returns to neutral"
+   "_comment": "S05: head returns to neutral",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s05-lid-contact",
@@ -1087,27 +1868,30 @@
    "src_in": 0.12,
    "src_out": 0.4,
    "anchor_s": "onset",
-   "gain_db": -28,
+   "gain_db": -16,
    "pan": 0.1,
-   "_comment": "S05: padlock touches the lid"
+   "_comment": "S05: padlock touches the lid",
+   "fade_in_ms": 1.0,
+   "fade_out_ms": 2.0
   },
   {
    "id": "s05-plip",
    "file": "sfx/cup_drop/usc-gold-tape-53-54-water-g54-34-metallic-drops.wav",
    "bus": "sync",
    "at_frame": 512,
-   "src_in": 10.69,
-   "src_out": 11.55,
+   "src_in": 10.715,
+   "src_out": 10.85,
    "anchor_s": 10.7187,
    "pitch_mode": "tape",
-   "pitch_semitones": -2.4,
-   "gain_db": -15,
-   "fade_out": 4,
-   "lowpass_hz": 7000,
+   "pitch_semitones": -2.42,
+   "gain_db": -3,
+   "fade_in_ms": 2,
+   "fade_out_ms": 45,
+   "lowpass_hz": 9000,
    "reverb": "room",
    "reverb_send": -18,
    "pan": 0.1,
-   "_comment": "S05: wet plip into the cup at f512 (water drop into a vessel, tuned to Eb)"
+   "_comment": "S05: wet plip into the cup at f512: ONE water drop into a vessel (10.715-10.850 s), tuned to Eb5"
   },
   {
    "id": "s05-far-below-whoosh",
@@ -1118,7 +1902,7 @@
    "pitch_mode": "tape",
    "pitch_semitones": -7,
    "lowpass_hz": 1200,
-   "gain_db": -40,
+   "gain_db": -14,
    "reverb": "hall",
    "reverb_send": 0,
    "end_frame": 529,
@@ -1135,7 +1919,8 @@
    "src_out": 38.0,
    "pitch_mode": "tape",
    "pitch_semitones": -12,
-   "highpass_hz": 28,
+   "highpass_hz": 35,
+   "highpass_slope": 48,
    "lowpass_hz": 900,
    "loop": true,
    "loop_xfade_ms": 600,
@@ -1143,7 +1928,15 @@
    "fade_in": 1,
    "fade_out": 1.5,
    "gain_db": -4,
-   "_comment": "S06: the world breathing: HVAC drone loop, tape -12 st, high-passed at 28 Hz (its sub-30 Hz content is dropped)"
+   "eq": [
+    {
+     "type": "lowshelf",
+     "hz": 50,
+     "gain_db": -3.0,
+     "q": 0.707
+    }
+   ],
+   "_comment": "S06: the world breathing: HVAC drone loop, tape -12 st, high-passed at 35 Hz / 48 dB per octave (no infrasound), 3 dB low shelf below 50 Hz"
   },
   {
    "id": "s06-lapping",
@@ -1157,7 +1950,41 @@
    "end_frame": 609,
    "fade_in": 1,
    "fade_out": 1.5,
-   "gain_db": 0,
+   "gain_db": 3,
+   "automation": {
+    "gain_db": [
+     [
+      529,
+      0
+     ],
+     [
+      550,
+      0
+     ],
+     [
+      552.8,
+      -8,
+      "smooth"
+     ],
+     [
+      560,
+      -8
+     ],
+     [
+      576,
+      0,
+      "smooth"
+     ]
+    ]
+   },
+   "eq": [
+    {
+     "type": "peak",
+     "hz": 3500,
+     "gain_db": 3.0,
+     "q": 0.7
+    }
+   ],
    "_comment": "S06: espresso lapping on stone: quiet stream, tape -5 st (slower, larger)"
   },
   {
@@ -1167,11 +1994,45 @@
    "at_frame": 529,
    "src_in": 30.0,
    "highpass_hz": 80,
-   "lowpass_hz": 3000,
+   "lowpass_hz": 4500,
    "end_frame": 609,
    "fade_in": 1,
    "fade_out": 1.5,
-   "gain_db": -24,
+   "gain_db": -21,
+   "automation": {
+    "gain_db": [
+     [
+      529,
+      0
+     ],
+     [
+      550,
+      0
+     ],
+     [
+      552.8,
+      -8,
+      "smooth"
+     ],
+     [
+      560,
+      -8
+     ],
+     [
+      576,
+      0,
+      "smooth"
+     ]
+    ]
+   },
+   "eq": [
+    {
+     "type": "peak",
+     "hz": 3500,
+     "gain_db": 3.0,
+     "q": 0.7
+    }
+   ],
    "_comment": "S06: soft air in the cup"
   },
   {
@@ -1185,59 +2046,132 @@
    "pitch_semitones": -5,
    "lowpass_hz": 6000,
    "gain_db": -22,
-   "end_frame": 556,
+   "end_frame": 552.8,
    "fade_out": 3,
    "reverb": "hall",
    "reverb_send": -16,
-   "_comment": "S06: windy whoosh as the padlock falls (peak just before the landing)"
+   "_comment": "S06: windy whoosh as the padlock falls (peak f551), sucked out just before the landing so f553 starts clean",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s06-impact-metal",
    "file": "sfx/impact/sonniss2016-3maze-high-impact--long-metal-005.wav",
    "bus": "fx",
    "at_frame": 553,
-   "src_in": 0.12,
-   "anchor_s": 0.1604,
+   "src_in": 0.0395,
+   "anchor_s": 0.0405,
    "pitch_mode": "tape",
    "pitch_semitones": -12,
    "lowpass_hz": 2200,
+   "highpass_hz": 30,
+   "highpass_slope": 48,
    "gain_db": -12,
    "end_frame": 609,
    "fade_out": 4,
+   "eq": [
+    {
+     "type": "lowshelf",
+     "hz": 50,
+     "gain_db": -3.0,
+     "q": 0.707
+    }
+   ],
    "reverb": "hall",
    "reverb_send": -12,
-   "_comment": "S06: f553: deep metal impact an octave down (long metal impact)"
+   "automation": {
+    "gain_db": [
+     [
+      553,
+      0
+     ],
+     [
+      570,
+      0
+     ],
+     [
+      584,
+      -5,
+      "smooth"
+     ],
+     [
+      609,
+      -5
+     ]
+    ]
+   },
+   "_comment": "S06: f553: deep metal impact an octave down (long metal impact); the region starts at the file's own attack (0.040 s, on f553, no pre-roll), and its ring swell is ridden 5 dB down from f570 so the pines read",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s06-impact-bulkhead",
    "file": "sfx/impact/sonniss2016-alexander-kopeikin-sci-fi-metal-elements--sci-fi-metal-impact-steel-bulkhead-hit-low-01.wav",
    "bus": "sync",
    "at_frame": 553,
-   "src_in": 0.06,
-   "anchor_s": 0.1013,
-   "lowpass_hz": 1600,
+   "src_in": 0.1115,
+   "fade_in_ms": 1,
+   "anchor_s": 0.1125,
+   "lowpass_hz": 3000,
+   "highpass_hz": 35,
+   "highpass_slope": 48,
    "gain_db": -16,
+   "end_frame": 609,
+   "fade_out": 4,
+   "eq": [
+    {
+     "type": "lowshelf",
+     "hz": 60,
+     "gain_db": -4.0,
+     "q": 0.707
+    }
+   ],
+   "reverb": "hall",
+   "reverb_send": -14,
+   "_comment": "S06: layered steel bulkhead hit"
+  },
+  {
+   "id": "s06-impact-ring",
+   "file": "sfx/impact/sonniss2016-alexander-kopeikin-sci-fi-metal-elements--sci-fi-metal-impact-steel-bulkhead-hit-low-01.wav",
+   "bus": "fx",
+   "at_frame": 553,
+   "src_in": 0.1115,
+   "fade_in_ms": 1,
+   "anchor_s": 0.1125,
+   "highpass_hz": 1000,
+   "lowpass_hz": 3500,
+   "gain_db": -19,
    "end_frame": 609,
    "fade_out": 4,
    "reverb": "hall",
    "reverb_send": -14,
-   "_comment": "S06: layered steel bulkhead hit"
+   "_comment": "S06: the bulkhead's own 1-3.5 kHz ring, about 7 dB under it, so the landing survives a phone speaker"
   },
   {
    "id": "s06-impact-thud",
    "file": "sfx/foley_misc/usc-red-library-foley-props-2-r19-11-set-cup-down-on-table.wav",
    "bus": "fx",
    "at_frame": 553,
-   "src_in": 5.57,
+   "src_in": 5.588,
    "src_out": 5.95,
    "anchor_s": 5.591,
+   "fade_in_ms": 10,
    "pitch_mode": "tape",
    "pitch_semitones": -24,
    "lowpass_hz": 500,
+   "highpass_hz": 30,
+   "highpass_slope": 48,
    "gain_db": -10,
+   "eq": [
+    {
+     "type": "lowshelf",
+     "hz": 50,
+     "gain_db": -3.0,
+     "q": 0.707
+    }
+   ],
    "reverb": "hall",
    "reverb_send": -16,
-   "_comment": "S06: low thud: the wooden cup-down thud two octaves down"
+   "_comment": "S06: low thud: the wooden cup-down thud two octaves down (3 dB low shelf below 50 Hz)",
+   "fade_out_ms": 2.0
   },
   {
    "id": "s06-scree-metal",
@@ -1250,12 +2184,23 @@
    "pitch_mode": "tape",
    "pitch_semitones": -19,
    "lowpass_hz": 3200,
+   "highpass_hz": 30,
+   "highpass_slope": 48,
    "gain_db": -15,
    "fade_out": 6,
+   "eq": [
+    {
+     "type": "peak",
+     "hz": 3500,
+     "gain_db": 3.0,
+     "q": 0.7
+    }
+   ],
    "reverb": "hall",
    "reverb_send": -16,
    "pan": -0.15,
-   "_comment": "S06: scree slide of old padlocks: coins into a metal drawer, tape -19 st"
+   "_comment": "S06: scree slide of old padlocks: coins into a metal drawer, tape -19 st",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s06-scree-stone",
@@ -1267,27 +2212,49 @@
    "pitch_mode": "tape",
    "pitch_semitones": -24,
    "lowpass_hz": 2600,
+   "highpass_hz": 30,
+   "highpass_slope": 48,
    "gain_db": -17,
    "fade_out": 8,
    "end_frame": 600,
+   "eq": [
+    {
+     "type": "peak",
+     "hz": 3500,
+     "gain_db": 3.0,
+     "q": 0.7
+    }
+   ],
    "reverb": "hall",
    "reverb_send": -16,
    "pan": 0.15,
-   "_comment": "S06: stone and grit under it: peas into glass, tape -24 st"
+   "_comment": "S06: stone and grit under it: peas into glass, tape -24 st",
+   "fade_in_ms": 2.0
   },
   {
    "id": "s06-bounce",
    "file": "sfx/impact/sonniss2016-alexander-kopeikin-sci-fi-metal-elements--sci-fi-metal-impact-steel-bulkhead-hit-low-01.wav",
    "bus": "fx",
    "at_frame": 566,
-   "src_in": 0.06,
-   "anchor_s": 0.1013,
+   "src_in": 0.1115,
+   "fade_in_ms": 1,
+   "anchor_s": 0.1125,
    "pitch_mode": "tape",
    "pitch_semitones": -3,
    "lowpass_hz": 1400,
+   "highpass_hz": 30,
+   "highpass_slope": 48,
    "gain_db": -22,
    "end_frame": 609,
    "fade_out": 4,
+   "eq": [
+    {
+     "type": "lowshelf",
+     "hz": 60,
+     "gain_db": -4.0,
+     "q": 0.707
+    }
+   ],
    "reverb": "hall",
    "reverb_send": -14,
    "_comment": "S06: the single bounce (f566)"
@@ -1301,7 +2268,7 @@
    "end_frame": 609,
    "fade_in": 22,
    "fade_out": 1.5,
-   "gain_db": -11,
+   "gain_db": -8,
    "highpass_hz": 250,
    "_comment": "S06: wind through pine needles at the crest as we tilt up"
   },
@@ -1314,9 +2281,26 @@
    "end_frame": 753,
    "fade_in": 0.5,
    "fade_out": 1.5,
-   "gain_db": -10,
+   "gain_db": -6.8,
+   "highpass_hz": 120,
+   "width": 0.3,
+   "pan": 0.0,
+   "_comment": "S07: Long Room tone: office heater tone above 120 Hz at width 0.3 (its L/R are slightly anti-correlated, so at full width it cancelled on mono speakers); +3.2 dB restores the per-channel level"
+  },
+  {
+   "id": "s07-roomtone-lf",
+   "file": "ambience/sonniss2017-detunized-room-tones-office-building--rt-office-heater-tone-2.flac",
+   "bus": "amb",
+   "at_frame": 609,
+   "src_in": 40.0,
+   "end_frame": 753,
+   "fade_in": 0.5,
+   "fade_out": 1.5,
+   "gain_db": -4,
    "highpass_hz": 30,
-   "_comment": "S07: Long Room tone: office heater tone"
+   "lowpass_hz": 120,
+   "channels": "mono",
+   "_comment": "S07: Long Room tone: the same take below 120 Hz, folded to mono (+6 dB: its L/R are uncorrelated, so the fold and the centre pan each cost 3 dB)"
   },
   {
    "id": "s07-meeting-hum",
@@ -1343,22 +2327,24 @@
    "gain_db": -11,
    "highpass_hz": 4000,
    "highpass_slope": 48,
-   "_comment": "S07: CRT whine bed"
+   "_comment": "S07: CRT whine bed",
+   "fade_in_ms": 2.0
   },
   {
    "id": "s07-arrive-1-glass",
    "file": "sfx/liquid/berklee-v10-glass_cup_1.wav",
    "bus": "foley",
    "at_frame": 609,
-   "src_in": 0.0,
+   "src_in": 0.066,
    "src_out": 0.2,
-   "anchor_s": "onset",
-   "gain_db": -17,
+   "anchor_s": 0.0725,
+   "fade_in_ms": 1,
+   "gain_db": -8,
    "pan": 0.3,
-   "lowpass_hz": 9000,
    "reverb": "room",
    "reverb_send": -16,
-   "_comment": "S07: f609 Linda's glass zero arrives on the cut: glass on lacquered wood, stopped by a finger"
+   "_comment": "S07: f609 Linda's glass zero arrives on the cut: glass on lacquered wood, stopped by a finger",
+   "fade_out_ms": 2.0
   },
   {
    "id": "s07-slide-2-paper",
@@ -1366,16 +2352,16 @@
    "bus": "foley",
    "at_frame": 625,
    "anchor_s": 0.4222,
-   "src_in": 0.15,
+   "src_in": 0.3,
    "src_out": 0.62,
-   "fade_in": 2,
+   "fade_in": 1,
    "fade_out": 2,
-   "gain_db": -18,
+   "gain_db": -14,
    "highpass_hz": 300,
    "automation": {
     "pan": [
      [
-      611,
+      622,
       -0.25
      ],
      [
@@ -1386,7 +2372,7 @@
    },
    "reverb": "room",
    "reverb_send": -16,
-   "_comment": "S07: f625 envelope spins up the table and stops (paper on wood)"
+   "_comment": "S07: f625 envelope spins up the table and stops on the beat (paper on wood)"
   },
   {
    "id": "s07-arrive-3-acrylic",
@@ -1395,13 +2381,15 @@
    "at_frame": 641,
    "src_in": 0.1,
    "src_out": 0.32,
-   "anchor_s": "onset",
-   "gain_db": -17,
+   "anchor_s": 0.131,
+   "gain_db": -13,
    "pan": 0.3,
    "lowpass_hz": 10000,
    "reverb": "room",
    "reverb_send": -16,
-   "_comment": "S07: f641 green acrylic tabs stop with an acrylic tick"
+   "_comment": "S07: f641 green acrylic tabs stop with an acrylic tick",
+   "fade_in_ms": 2.0,
+   "fade_out_ms": 2.0
   },
   {
    "id": "s07-slide-4-paper",
@@ -1409,16 +2397,16 @@
    "bus": "foley",
    "at_frame": 657,
    "anchor_s": 0.4222,
-   "src_in": 0.15,
+   "src_in": 0.3,
    "src_out": 0.62,
-   "fade_in": 2,
+   "fade_in": 1,
    "fade_out": 2,
-   "gain_db": -18,
+   "gain_db": -14,
    "highpass_hz": 300,
    "automation": {
     "pan": [
      [
-      643,
+      654,
       -0.25
      ],
      [
@@ -1429,7 +2417,7 @@
    },
    "reverb": "room",
    "reverb_send": -16,
-   "_comment": "S07: f657 envelope spins up the table and stops (paper on wood)"
+   "_comment": "S07: f657 envelope spins up the table and stops on the beat (paper on wood)"
   },
   {
    "id": "s07-arrive-5-acrylic",
@@ -1438,30 +2426,32 @@
    "at_frame": 673,
    "src_in": 0.1,
    "src_out": 0.32,
-   "anchor_s": "onset",
-   "gain_db": -17,
+   "anchor_s": 0.131,
+   "gain_db": -13,
    "pan": 0.3,
    "lowpass_hz": 10000,
    "reverb": "room",
    "reverb_send": -16,
-   "_comment": "S07: f673 green acrylic tabs stop with an acrylic tick"
+   "_comment": "S07: f673 green acrylic tabs stop with an acrylic tick",
+   "fade_in_ms": 2.0,
+   "fade_out_ms": 2.0
   },
   {
    "id": "s07-slide-6-paper",
    "file": "sfx/paper/mixkit-2380-paper-quick-movement.wav",
    "bus": "foley",
    "at_frame": 681,
-   "anchor_s": 0.5022,
+   "anchor_s": 0.4222,
    "src_in": 0.3,
    "src_out": 0.62,
-   "fade_in": 2,
+   "fade_in": 1,
    "fade_out": 2,
-   "gain_db": -18,
+   "gain_db": -14,
    "highpass_hz": 300,
    "automation": {
     "pan": [
      [
-      673,
+      678,
       -0.25
      ],
      [
@@ -1472,24 +2462,24 @@
    },
    "reverb": "room",
    "reverb_send": -16,
-   "_comment": "S07: f681 envelope spins up the table and stops (paper on wood)"
+   "_comment": "S07: f681 envelope spins up the table and stops on the beat (paper on wood)"
   },
   {
    "id": "s07-slide-7-paper",
    "file": "sfx/paper/mixkit-2380-paper-quick-movement.wav",
    "bus": "foley",
    "at_frame": 689,
-   "anchor_s": 0.5022,
+   "anchor_s": 0.4222,
    "src_in": 0.3,
    "src_out": 0.62,
-   "fade_in": 2,
+   "fade_in": 1,
    "fade_out": 2,
-   "gain_db": -18,
+   "gain_db": -14,
    "highpass_hz": 300,
    "automation": {
     "pan": [
      [
-      681,
+      686,
       -0.25
      ],
      [
@@ -1500,7 +2490,7 @@
    },
    "reverb": "room",
    "reverb_send": -16,
-   "_comment": "S07: f689 envelope spins up the table and stops (paper on wood)"
+   "_comment": "S07: f689 envelope spins up the table and stops on the beat (paper on wood)"
   },
   {
    "id": "s07-arrive-8-acrylic",
@@ -1509,157 +2499,239 @@
    "at_frame": 697,
    "src_in": 0.1,
    "src_out": 0.32,
-   "anchor_s": "onset",
-   "gain_db": -17,
+   "anchor_s": 0.131,
+   "gain_db": -13,
    "pan": 0.3,
    "lowpass_hz": 10000,
    "reverb": "room",
    "reverb_send": -16,
-   "_comment": "S07: f697 green acrylic tabs stop with an acrylic tick"
+   "_comment": "S07: f697 green acrylic tabs stop with an acrylic tick",
+   "fade_in_ms": 2.0,
+   "fade_out_ms": 2.0
   },
   {
    "id": "s07-post-1-Db5",
-   "file": "sfx/cup_drop/sonniss2019-the-sound-pack-tree-marbles-247405-small-marble-throw-in-05.wav",
+   "file": "sfx/cup_drop/usc-gold-tape-53-54-water-g54-36-wooden-drops.wav",
    "bus": "foley",
    "at_frame": 625,
-   "src_in": 0.0,
-   "src_out": 0.8,
-   "anchor_s": "onset",
+   "src_in": 24.0836,
+   "src_out": 24.2346,
+   "anchor_s": 24.0916,
    "pitch_mode": "tape",
-   "pitch_semitones": 0.3,
-   "gain_db": -14,
-   "fade_out": 3,
-   "lowpass_hz": 6500,
+   "pitch_semitones": 1.55,
+   "gain_db": 9.2,
+   "fade_in_ms": 1.5,
+   "fade_out_ms": 40,
+   "highpass_hz": 150,
+   "lowpass_hz": 9000,
+   "eq": [
+    {
+     "type": "highshelf",
+     "hz": 4000,
+     "gain_db": 3,
+     "q": 0.707
+    }
+   ],
    "pan": 0.38,
    "reverb": "room",
    "reverb_send": -18,
-   "_comment": "S07: post 1 on f625: glass zero: a marble into the cup, tuned to Db5"
+   "_comment": "S07: post 1 on f625: glass zero: a hollow drop (wood_drops 24.086 s, one drop), tape +1.55 st to Db5"
   },
   {
    "id": "s07-post-2-Gb5",
    "file": "sfx/cup_drop/usc-gold-tape-53-54-water-g54-34-metallic-drops.wav",
    "bus": "foley",
    "at_frame": 641,
-   "src_in": 3.995,
-   "src_out": 4.5,
-   "anchor_s": "onset",
+   "src_in": 22.1883,
+   "src_out": 22.3341,
+   "anchor_s": 22.1911,
    "pitch_mode": "tape",
-   "pitch_semitones": -1.09,
-   "gain_db": -4,
-   "fade_out": 3,
-   "lowpass_hz": 6500,
+   "pitch_semitones": 1.05,
+   "gain_db": -7.3,
+   "fade_in_ms": 1.5,
+   "fade_out_ms": 40,
+   "highpass_hz": 150,
+   "lowpass_hz": 9000,
+   "eq": [
+    {
+     "type": "highshelf",
+     "hz": 4000,
+     "gain_db": 3,
+     "q": 0.707
+    }
+   ],
    "pan": 0.38,
    "reverb": "room",
    "reverb_send": -18,
-   "_comment": "S07: post 2 on f641: envelope: water plip, tuned to Gb5"
+   "_comment": "S07: post 2 on f641: envelope: a water plip into a metal vessel (metal_drops 22.190 s, one drop), tape +1.05 st to Gb5"
   },
   {
    "id": "s07-post-3-Bb4",
    "file": "sfx/cup_drop/usc-gold-tape-53-54-water-g54-36-wooden-drops.wav",
    "bus": "foley",
    "at_frame": 657,
-   "src_in": 10.09,
-   "src_out": 10.4,
-   "anchor_s": "onset",
+   "src_in": 34.8269,
+   "src_out": 34.9726,
+   "anchor_s": 34.8296,
    "pitch_mode": "tape",
-   "pitch_semitones": -0.68,
-   "gain_db": -12,
-   "fade_out": 3,
-   "lowpass_hz": 6500,
+   "pitch_semitones": -0.1,
+   "gain_db": -3.5,
+   "fade_in_ms": 1.5,
+   "fade_out_ms": 40,
+   "highpass_hz": 150,
+   "lowpass_hz": 9000,
+   "eq": [
+    {
+     "type": "highshelf",
+     "hz": 4000,
+     "gain_db": 3,
+     "q": 0.707
+    }
+   ],
    "pan": 0.38,
    "reverb": "room",
    "reverb_send": -18,
-   "_comment": "S07: post 3 on f657: tabs: hollow wooden drop, tuned to Bb4"
+   "_comment": "S07: post 3 on f657: tabs: a heavy wooden drop (wood_drops 34.829 s, one drop), tape -0.10 st to Bb4"
   },
   {
    "id": "s07-post-4-Eb5",
-   "file": "sfx/cup_drop/usc-gold-tape-53-54-water-g54-34-metallic-drops.wav",
+   "file": "sfx/cup_drop/usc-gold-tape-53-54-water-g54-36-wooden-drops.wav",
    "bus": "foley",
    "at_frame": 673,
-   "src_in": 2.41,
-   "src_out": 3.1,
-   "anchor_s": "onset",
+   "src_in": 13.9806,
+   "src_out": 14.1238,
+   "anchor_s": 13.9808,
    "pitch_mode": "tape",
-   "pitch_semitones": -1.75,
-   "gain_db": -9,
-   "fade_out": 3,
-   "lowpass_hz": 6500,
+   "pitch_semitones": -0.23,
+   "gain_db": 11.7,
+   "fade_in_ms": 1.5,
+   "fade_out_ms": 40,
+   "highpass_hz": 150,
+   "lowpass_hz": 9000,
+   "eq": [
+    {
+     "type": "highshelf",
+     "hz": 4000,
+     "gain_db": 3,
+     "q": 0.707
+    }
+   ],
    "pan": 0.38,
    "reverb": "room",
    "reverb_send": -18,
-   "_comment": "S07: post 4 on f673: envelope: water plip, tuned to Eb5"
+   "_comment": "S07: post 4 on f673: envelope: a small drop (wood_drops 13.983 s, one drop), tape -0.23 st to Eb5"
   },
   {
    "id": "s07-post-5-Gb5",
    "file": "sfx/cup_drop/usc-gold-tape-53-54-water-g54-36-wooden-drops.wav",
    "bus": "foley",
    "at_frame": 681,
-   "src_in": 11.9,
-   "src_out": 12.4,
-   "anchor_s": "onset",
+   "src_in": 20.0016,
+   "src_out": 20.146,
+   "anchor_s": 20.003,
    "pitch_mode": "tape",
-   "pitch_semitones": 1.58,
-   "gain_db": -5,
-   "fade_out": 3,
-   "lowpass_hz": 6500,
+   "pitch_semitones": -0.47,
+   "gain_db": 15.5,
+   "fade_in_ms": 1.5,
+   "fade_out_ms": 40,
+   "highpass_hz": 150,
+   "lowpass_hz": 9000,
+   "eq": [
+    {
+     "type": "highshelf",
+     "hz": 4000,
+     "gain_db": 3,
+     "q": 0.707
+    }
+   ],
    "pan": 0.38,
    "reverb": "room",
    "reverb_send": -18,
-   "_comment": "S07: post 5 on f681: tabs: hollow wooden drop, tuned to Gb5"
+   "_comment": "S07: post 5 on f681: tabs: a bubble plip (rising chirp) (wood_drops 20.004 s, one drop), tape -0.47 st to Gb5"
   },
   {
    "id": "s07-post-6-Ab5",
    "file": "sfx/cup_drop/usc-gold-tape-53-54-water-g54-34-metallic-drops.wav",
    "bus": "foley",
    "at_frame": 689,
-   "src_in": 13.16,
-   "src_out": 13.8,
-   "anchor_s": "onset",
+   "src_in": 3.6519,
+   "src_out": 3.7951,
+   "anchor_s": 3.6521,
    "pitch_mode": "tape",
-   "pitch_semitones": 1.55,
-   "gain_db": -4,
-   "fade_out": 3,
-   "lowpass_hz": 6500,
+   "pitch_semitones": -1.53,
+   "gain_db": 9.8,
+   "fade_in_ms": 1.5,
+   "fade_out_ms": 70,
+   "highpass_hz": 150,
+   "lowpass_hz": 9000,
+   "eq": [
+    {
+     "type": "highshelf",
+     "hz": 4000,
+     "gain_db": 3,
+     "q": 0.707
+    }
+   ],
    "pan": 0.38,
    "reverb": "room",
    "reverb_send": -18,
-   "_comment": "S07: post 6 on f689: envelope: water plip, tuned to Ab5"
+   "_comment": "S07: post 6 on f689: envelope: a water plip into a metal vessel (metal_drops 3.654 s, one drop), tape -1.53 st to Ab5"
   },
   {
    "id": "s07-post-7-Bb5",
-   "file": "sfx/cup_drop/usc-gold-tape-53-54-water-g54-34-metallic-drops.wav",
+   "file": "sfx/cup_drop/usc-gold-tape-53-54-water-g54-36-wooden-drops.wav",
    "bus": "foley",
    "at_frame": 697,
-   "src_in": 15.28,
-   "src_out": 15.9,
-   "anchor_s": "onset",
+   "src_in": 18.9097,
+   "src_out": 19.054,
+   "anchor_s": 18.911,
    "pitch_mode": "tape",
-   "pitch_semitones": 4.67,
-   "gain_db": -6,
-   "fade_out": 3,
-   "lowpass_hz": 6500,
+   "pitch_semitones": -0.2,
+   "gain_db": 4.7,
+   "fade_in_ms": 1.5,
+   "fade_out_ms": 40,
+   "highpass_hz": 150,
+   "lowpass_hz": 9000,
+   "eq": [
+    {
+     "type": "highshelf",
+     "hz": 4000,
+     "gain_db": 3,
+     "q": 0.707
+    }
+   ],
    "pan": 0.38,
    "reverb": "room",
    "reverb_send": -18,
-   "_comment": "S07: post 7 on f697: envelope: water plip, tuned to Bb5"
+   "_comment": "S07: post 7 on f697: envelope: a clear bubble plip (wood_drops 18.912 s, one drop), tape -0.20 st to Bb5"
   },
   {
    "id": "s07-post-8-Eb6",
    "file": "sfx/cup_drop/usc-gold-tape-53-54-water-g54-36-wooden-drops.wav",
    "bus": "foley",
    "at_frame": 705,
-   "src_in": 5.56,
-   "src_out": 6.05,
-   "anchor_s": "onset",
+   "src_in": 19.72,
+   "src_out": 19.8703,
+   "anchor_s": 19.7273,
    "pitch_mode": "tape",
-   "pitch_semitones": -3.27,
-   "gain_db": -6,
-   "fade_out": 3,
-   "lowpass_hz": 6500,
+   "pitch_semitones": 0.98,
+   "gain_db": 1.6,
+   "fade_in_ms": 1.5,
+   "fade_out_ms": 40,
+   "highpass_hz": 150,
+   "lowpass_hz": 9000,
+   "eq": [
+    {
+     "type": "highshelf",
+     "hz": 4000,
+     "gain_db": 3,
+     "q": 0.707
+    }
+   ],
    "pan": 0.38,
    "reverb": "room",
    "reverb_send": -18,
-   "_comment": "S07: post 8 on f705: tabs: hollow wooden drop, tuned to Eb6"
+   "_comment": "S07: post 8 on f705: tabs: a high bubble plip (wood_drops 19.722 s, one drop), tape +0.98 st to Eb6"
   },
   {
    "id": "s07-droid-in-motor",
@@ -1673,7 +2745,7 @@
    "end_frame": 713,
    "fade_in": 6,
    "fade_out": 2,
-   "gain_db": -23,
+   "gain_db": -17,
    "pan": 0.25,
    "reverb": "room",
    "reverb_send": -12,
@@ -1683,18 +2755,18 @@
    "id": "s07-droid-caster-stop",
    "file": "sfx/caster_motor/usc-red-library-foley-props-1-r09-08-chair-with-metal-wheels.wav",
    "bus": "fx",
-   "at_frame": 712,
-   "src_in": 1.2,
+   "at_frame": 711,
+   "src_in": 1.5,
    "src_out": 1.95,
-   "anchor_s": 1.89,
-   "fade_in": 4,
-   "fade_out": 3,
-   "gain_db": -16,
+   "anchor_s": 1.6257,
+   "fade_in": 2,
+   "fade_out": 4,
+   "gain_db": 0,
    "pan": 0.25,
    "lowpass_hz": 7000,
    "reverb": "room",
    "reverb_send": -12,
-   "_comment": "S07: measured caster stop at f712 (chair with metal wheels)"
+   "_comment": "S07: measured caster stop: the casters' last roll (its peak on f711) settling to rest (chair with metal wheels)"
   },
   {
    "id": "s07-binder-lift",
@@ -1704,10 +2776,11 @@
    "src_in": 1.15,
    "src_out": 1.5,
    "anchor_s": "onset",
-   "gain_db": -19,
+   "gain_db": -2,
    "pan": 0.35,
    "fade_out": 3,
-   "_comment": "S07: f721 binder lift: the arm takes the weight (metal joint creak)"
+   "_comment": "S07: f721 binder lift: the arm takes the weight (metal joint creak)",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s07-binder-crunch",
@@ -1718,13 +2791,15 @@
    "src_out": 1.55,
    "pitch_mode": "tape",
    "pitch_semitones": -4,
-   "gain_db": -17,
+   "gain_db": -5,
    "fade_out": 4,
    "end_frame": 746,
+   "lowpass_hz": 6000,
    "pan": 0.35,
    "reverb": "room",
    "reverb_send": -16,
-   "_comment": "S07: f729-744 the binder squeezes through: deep paper crunch (paper crumble, close, tape -4 st)"
+   "_comment": "S07: f729-744 the binder squeezes through: deep paper crunch (paper crumble, close, tape -4 st)",
+   "fade_in_ms": 2.0
   },
   {
    "id": "s07-binder-cardboard",
@@ -1735,7 +2810,7 @@
    "src_out": 6.7,
    "pitch_mode": "tape",
    "pitch_semitones": -5,
-   "gain_db": -18,
+   "gain_db": -0.5,
    "fade_in": 1,
    "fade_out": 4,
    "end_frame": 746,
@@ -1749,7 +2824,7 @@
    "at_frame": 735,
    "src_in": 0.95,
    "src_out": 1.4,
-   "gain_db": -18,
+   "gain_db": -8.5,
    "fade_in": 1,
    "fade_out": 3,
    "pan": 0.35,
@@ -1764,12 +2839,13 @@
    "src_in": 0.13,
    "src_out": 1.2,
    "anchor_s": "onset",
-   "gain_db": -10,
+   "gain_db": -2,
    "fade_out": 6,
    "end_frame": 753,
    "lowpass_hz": 4000,
    "pan": 0.38,
-   "_comment": "S07: and it is gone: a deep plop (Bb3)"
+   "_comment": "S07: and it is gone: a deep plop (Bb3)",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s07-droid-out-motor",
@@ -1846,8 +2922,17 @@
    "src_in": 0.01,
    "fade_in_ms": 3,
    "anchor_s": 0.0139,
-   "gain_db": -28,
+   "gain_db": -8,
    "lowpass_hz": 4000,
+   "highpass_hz": 250,
+   "eq": [
+    {
+     "type": "highshelf",
+     "hz": 2000,
+     "gain_db": 3.0,
+     "q": 0.707
+    }
+   ],
    "pan": -0.2,
    "reverb": "room",
    "reverb_send": -4,
@@ -1864,15 +2949,24 @@
    "src_out": 48.0,
    "pitch_mode": "tape",
    "pitch_semitones": -12,
-   "highpass_hz": 28,
+   "highpass_hz": 35,
+   "highpass_slope": 48,
    "lowpass_hz": 900,
    "loop": true,
    "loop_xfade_ms": 600,
    "end_frame": 833,
    "fade_in": 1,
    "fade_out": 1.5,
-   "gain_db": -4,
-   "_comment": "S08: the world breathing: HVAC drone loop, tape -12 st, high-passed at 28 Hz (its sub-30 Hz content is dropped)"
+   "gain_db": -8,
+   "eq": [
+    {
+     "type": "lowshelf",
+     "hz": 50,
+     "gain_db": -3.0,
+     "q": 0.707
+    }
+   ],
+   "_comment": "S08: the world breathing: HVAC drone loop, tape -12 st, high-passed at 35 Hz / 48 dB per octave (no infrasound), 3 dB low shelf below 50 Hz"
   },
   {
    "id": "s08-lapping",
@@ -1886,7 +2980,32 @@
    "end_frame": 833,
    "fade_in": 1,
    "fade_out": 1.5,
-   "gain_db": -4,
+   "gain_db": -1,
+   "automation": {
+    "gain_db": [
+     [
+      753,
+      0
+     ],
+     [
+      790,
+      -11,
+      "smooth"
+     ],
+     [
+      833,
+      -11
+     ]
+    ]
+   },
+   "eq": [
+    {
+     "type": "peak",
+     "hz": 3500,
+     "gain_db": 3.0,
+     "q": 0.7
+    }
+   ],
    "_comment": "S08: espresso lapping on stone: quiet stream, tape -5 st (slower, larger)"
   },
   {
@@ -1896,11 +3015,19 @@
    "at_frame": 753,
    "src_in": 40.0,
    "highpass_hz": 80,
-   "lowpass_hz": 3000,
+   "lowpass_hz": 4500,
    "end_frame": 833,
    "fade_in": 1,
    "fade_out": 1.5,
-   "gain_db": -24,
+   "gain_db": -21,
+   "eq": [
+    {
+     "type": "peak",
+     "hz": 3500,
+     "gain_db": 3.0,
+     "q": 0.7
+    }
+   ],
    "_comment": "S08: soft air in the cup"
   },
   {
@@ -1912,7 +3039,7 @@
    "end_frame": 833,
    "fade_in": 1,
    "fade_out": 1.5,
-   "gain_db": -18,
+   "gain_db": -13,
    "lowpass_hz": 2600,
    "highpass_hz": 80,
    "reverb": "hall",
@@ -1924,12 +3051,21 @@
       -4
      ],
      [
+      774,
+      -2.9
+     ],
+     [
+      780,
+      -5.9,
+      "smooth"
+     ],
+     [
       832,
-      0
+      -4
      ]
     ]
    },
-   "_comment": "S08: the paper falls: big waterfall roar, far cliff"
+   "_comment": "S08: the paper falls: big waterfall roar, far cliff; ducked 3 dB under the murmuration from f774"
   },
   {
    "id": "s08-falls-paper",
@@ -1940,12 +3076,33 @@
    "end_frame": 833,
    "fade_in": 1,
    "fade_out": 1.5,
-   "gain_db": -24,
-   "lowpass_hz": 6000,
+   "gain_db": -14,
+   "lowpass_hz": 8000,
    "highpass_hz": 400,
    "reverb": "hall",
    "reverb_send": -20,
-   "_comment": "S08: massed paper riffle in the falls (shuffling paper)"
+   "automation": {
+    "gain_db": [
+     [
+      753,
+      0
+     ],
+     [
+      774,
+      0
+     ],
+     [
+      780,
+      -3,
+      "smooth"
+     ],
+     [
+      832,
+      -3
+     ]
+    ]
+   },
+   "_comment": "S08: massed paper riffle in the falls (shuffling paper, open to 8 kHz); ducked 3 dB with the falls from f774"
   },
   {
    "id": "s08-falls-wind-papers",
@@ -1968,12 +3125,14 @@
    "bus": "foley",
    "at_frame": 772,
    "anchor_s": 0.3237,
-   "gain_db": -20,
+   "gain_db": -12,
    "pan": -0.12,
    "highpass_hz": 300,
    "reverb": "hall",
    "reverb_send": -16,
-   "_comment": "S08: soft paper unfold on the foreground envelope-bird"
+   "_comment": "S08: soft paper unfold on the foreground envelope-bird",
+   "fade_in_ms": 2.0,
+   "fade_out_ms": 2.0
   },
   {
    "id": "s08-wings-01",
@@ -1984,14 +3143,15 @@
    "anchor_s": "onset",
    "pitch_mode": "tape",
    "pitch_semitones": -2,
-   "gain_db": -14,
-   "pan": -0.6,
+   "gain_db": -6,
+   "pan": -0.8,
    "lowpass_hz": 6000,
    "end_frame": 833,
    "fade_out": 1.5,
    "reverb": "hall",
    "reverb_send": -18,
-   "_comment": "S08: murmuration wing roar, layer 1/12 (bird flying away, tape -2 st)"
+   "_comment": "S08: murmuration wing roar, layer 1/12 (bird flying away, tape -2 st)",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s08-wings-02",
@@ -2002,14 +3162,15 @@
    "anchor_s": "onset",
    "pitch_mode": "tape",
    "pitch_semitones": -5,
-   "gain_db": -16,
-   "pan": 0.5,
+   "gain_db": -8,
+   "pan": 0.65,
    "lowpass_hz": 6000,
    "end_frame": 833,
    "fade_out": 1.5,
    "reverb": "hall",
    "reverb_send": -18,
-   "_comment": "S08: murmuration wing roar, layer 2/12 (bird flying away, tape -5 st)"
+   "_comment": "S08: murmuration wing roar, layer 2/12 (bird flying away, tape -5 st)",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s08-wings-03",
@@ -2020,14 +3181,15 @@
    "anchor_s": "onset",
    "pitch_mode": "tape",
    "pitch_semitones": -3,
-   "gain_db": -18,
-   "pan": -0.2,
+   "gain_db": -10,
+   "pan": -0.3,
    "lowpass_hz": 6000,
    "end_frame": 833,
    "fade_out": 1.5,
    "reverb": "hall",
    "reverb_send": -18,
-   "_comment": "S08: murmuration wing roar, layer 3/12 (bird flying away, tape -3 st)"
+   "_comment": "S08: murmuration wing roar, layer 3/12 (bird flying away, tape -3 st)",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s08-wings-04",
@@ -2038,14 +3200,15 @@
    "anchor_s": "onset",
    "pitch_mode": "tape",
    "pitch_semitones": -7,
-   "gain_db": -14,
-   "pan": 0.7,
+   "gain_db": -6,
+   "pan": 0.8,
    "lowpass_hz": 6000,
    "end_frame": 833,
    "fade_out": 1.5,
    "reverb": "hall",
    "reverb_send": -18,
-   "_comment": "S08: murmuration wing roar, layer 4/12 (bird flying away, tape -7 st)"
+   "_comment": "S08: murmuration wing roar, layer 4/12 (bird flying away, tape -7 st)",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s08-wings-05",
@@ -2056,14 +3219,15 @@
    "anchor_s": "onset",
    "pitch_mode": "tape",
    "pitch_semitones": -4,
-   "gain_db": -16,
-   "pan": -0.45,
+   "gain_db": -8,
+   "pan": -0.55,
    "lowpass_hz": 6000,
    "end_frame": 833,
    "fade_out": 1.5,
    "reverb": "hall",
    "reverb_send": -18,
-   "_comment": "S08: murmuration wing roar, layer 5/12 (bird flying away, tape -4 st)"
+   "_comment": "S08: murmuration wing roar, layer 5/12 (bird flying away, tape -4 st)",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s08-wings-06",
@@ -2074,14 +3238,15 @@
    "anchor_s": "onset",
    "pitch_mode": "tape",
    "pitch_semitones": -8,
-   "gain_db": -18,
-   "pan": 0.25,
+   "gain_db": -10,
+   "pan": 0.35,
    "lowpass_hz": 6000,
    "end_frame": 833,
    "fade_out": 1.5,
    "reverb": "hall",
    "reverb_send": -18,
-   "_comment": "S08: murmuration wing roar, layer 6/12 (bird flying away, tape -8 st)"
+   "_comment": "S08: murmuration wing roar, layer 6/12 (bird flying away, tape -8 st)",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s08-wings-07",
@@ -2092,14 +3257,15 @@
    "anchor_s": "onset",
    "pitch_mode": "tape",
    "pitch_semitones": -6,
-   "gain_db": -14,
-   "pan": -0.7,
+   "gain_db": -6,
+   "pan": -0.8,
    "lowpass_hz": 6000,
    "end_frame": 833,
    "fade_out": 1.5,
    "reverb": "hall",
    "reverb_send": -18,
-   "_comment": "S08: murmuration wing roar, layer 7/12 (bird flying away, tape -6 st)"
+   "_comment": "S08: murmuration wing roar, layer 7/12 (bird flying away, tape -6 st)",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s08-wings-08",
@@ -2110,14 +3276,15 @@
    "anchor_s": "onset",
    "pitch_mode": "tape",
    "pitch_semitones": -3,
-   "gain_db": -16,
-   "pan": 0.4,
+   "gain_db": -8,
+   "pan": 0.5,
    "lowpass_hz": 6000,
    "end_frame": 833,
    "fade_out": 1.5,
    "reverb": "hall",
    "reverb_send": -18,
-   "_comment": "S08: murmuration wing roar, layer 8/12 (bird flying away, tape -3 st)"
+   "_comment": "S08: murmuration wing roar, layer 8/12 (bird flying away, tape -3 st)",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s08-wings-09",
@@ -2128,14 +3295,15 @@
    "anchor_s": "onset",
    "pitch_mode": "tape",
    "pitch_semitones": -9,
-   "gain_db": -18,
-   "pan": 0.0,
+   "gain_db": -10,
+   "pan": 0.05,
    "lowpass_hz": 6000,
    "end_frame": 833,
    "fade_out": 1.5,
    "reverb": "hall",
    "reverb_send": -18,
-   "_comment": "S08: murmuration wing roar, layer 9/12 (bird flying away, tape -9 st)"
+   "_comment": "S08: murmuration wing roar, layer 9/12 (bird flying away, tape -9 st)",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s08-wings-10",
@@ -2146,14 +3314,15 @@
    "anchor_s": "onset",
    "pitch_mode": "tape",
    "pitch_semitones": -5,
-   "gain_db": -14,
-   "pan": -0.3,
+   "gain_db": -6,
+   "pan": -0.4,
    "lowpass_hz": 6000,
    "end_frame": 833,
    "fade_out": 1.5,
    "reverb": "hall",
    "reverb_send": -18,
-   "_comment": "S08: murmuration wing roar, layer 10/12 (bird flying away, tape -5 st)"
+   "_comment": "S08: murmuration wing roar, layer 10/12 (bird flying away, tape -5 st)",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s08-wings-11",
@@ -2164,14 +3333,15 @@
    "anchor_s": "onset",
    "pitch_mode": "tape",
    "pitch_semitones": -7,
-   "gain_db": -16,
-   "pan": 0.6,
+   "gain_db": -8,
+   "pan": 0.75,
    "lowpass_hz": 6000,
    "end_frame": 833,
    "fade_out": 1.5,
    "reverb": "hall",
    "reverb_send": -18,
-   "_comment": "S08: murmuration wing roar, layer 11/12 (bird flying away, tape -7 st)"
+   "_comment": "S08: murmuration wing roar, layer 11/12 (bird flying away, tape -7 st)",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s08-wings-12",
@@ -2182,14 +3352,15 @@
    "anchor_s": "onset",
    "pitch_mode": "tape",
    "pitch_semitones": -4,
-   "gain_db": -18,
-   "pan": -0.1,
+   "gain_db": -10,
+   "pan": -0.15,
    "lowpass_hz": 6000,
    "end_frame": 833,
    "fade_out": 1.5,
    "reverb": "hall",
    "reverb_send": -18,
-   "_comment": "S08: murmuration wing roar, layer 12/12 (bird flying away, tape -4 st)"
+   "_comment": "S08: murmuration wing roar, layer 12/12 (bird flying away, tape -4 st)",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s08-wings-paper-edge",
@@ -2204,22 +3375,100 @@
    "end_frame": 833,
    "fade_out": 1.5,
    "highpass_hz": 500,
+   "eq": [
+    {
+     "type": "peak",
+     "hz": 3500,
+     "gain_db": 3.0,
+     "q": 0.7
+    }
+   ],
    "reverb": "hall",
    "reverb_send": -18,
-   "_comment": "S08: paper-flutter edge on the wings"
+   "_comment": "S08: paper-flutter edge on the wings",
+   "fade_in_ms": 2.0
   },
   {
-   "id": "s09-s11-roomtone",
+   "id": "s09-s10-roomtone",
    "file": "ambience/sonniss2017-detunized-room-tones-office-building--rt-office-heater-tone-2.flac",
    "bus": "amb",
    "at_frame": 833,
    "src_in": 70.0,
-   "end_frame": 1153,
+   "end_frame": 993.24,
    "fade_in": 0.5,
-   "fade_out": 1.5,
-   "gain_db": -10,
+   "fade_out": 0.24,
+   "gain_db": -6.8,
+   "highpass_hz": 120,
+   "width": 0.3,
+   "pan": 0.0,
+   "_comment": "S09-S10: Long Room tone: office heater tone above 120 Hz at width 0.3 (its L/R are slightly anti-correlated, so at full width it cancelled on mono speakers); +3.2 dB restores the per-channel level"
+  },
+  {
+   "id": "s09-s10-roomtone-lf",
+   "file": "ambience/sonniss2017-detunized-room-tones-office-building--rt-office-heater-tone-2.flac",
+   "bus": "amb",
+   "at_frame": 833,
+   "src_in": 70.0,
+   "end_frame": 993.24,
+   "fade_in": 0.5,
+   "fade_out": 0.24,
+   "gain_db": -4,
    "highpass_hz": 30,
-   "_comment": "S09-S11: Long Room tone: office heater tone"
+   "lowpass_hz": 120,
+   "channels": "mono",
+   "_comment": "S09-S10: Long Room tone: the same take below 120 Hz, folded to mono (+6 dB: its L/R are uncorrelated, so the fold and the centre pan each cost 3 dB)"
+  },
+  {
+   "id": "s11-roomtone",
+   "file": "ambience/sonniss2017-detunized-room-tones-office-building--rt-office-heater-tone-2.flac",
+   "bus": "amb",
+   "at_frame": 993,
+   "src_in": 76.66666666666667,
+   "end_frame": 1153,
+   "fade_in": 0.24,
+   "fade_out": 1.5,
+   "gain_db": -2.8,
+   "highpass_hz": 120,
+   "width": 0.3,
+   "pan": 0.0,
+   "eq": [
+    {
+     "type": "peak",
+     "hz": 1700,
+     "gain_db": 3.0,
+     "q": 0.8
+    }
+   ],
+   "_comment": "S11: Long Room tone: office heater tone above 120 Hz at width 0.3 (its L/R are slightly anti-correlated, so at full width it cancelled on mono speakers); +3.2 dB restores the per-channel level; +3 dB at 1-3 kHz (rev2 tilt)"
+  },
+  {
+   "id": "s11-roomtone-lf",
+   "file": "ambience/sonniss2017-detunized-room-tones-office-building--rt-office-heater-tone-2.flac",
+   "bus": "amb",
+   "at_frame": 993,
+   "src_in": 76.66666666666667,
+   "end_frame": 1153,
+   "fade_in": 0.24,
+   "fade_out": 1.5,
+   "gain_db": -4,
+   "highpass_hz": 30,
+   "lowpass_hz": 120,
+   "channels": "mono",
+   "eq": [
+    {
+     "type": "lowshelf",
+     "hz": 80,
+     "gain_db": -4.0,
+     "q": 0.707
+    },
+    {
+     "type": "peak",
+     "hz": 60,
+     "gain_db": -4.0,
+     "q": 4.0
+    }
+   ],
+   "_comment": "S11: Long Room tone: the same take below 120 Hz, folded to mono (+6 dB: its L/R are uncorrelated, so the fold and the centre pan each cost 3 dB); -4 dB low shelf at 80 Hz, 60 Hz hum notched 4 dB (rev2 tilt)"
   },
   {
    "id": "s09-meeting-hum",
@@ -2245,42 +3494,42 @@
      ],
      [
       961,
-      -10,
-      "step"
-     ],
-     [
-      1001.5,
-      -12,
-      "step"
-     ],
-     [
-      1006.5,
-      -14,
-      "step"
-     ],
-     [
-      1011.5,
-      -16,
-      "step"
-     ],
-     [
-      1016.5,
-      -18,
-      "step"
-     ],
-     [
-      1021.5,
       -20,
       "step"
      ],
      [
-      1026.5,
+      1001.5,
       -22,
       "step"
      ],
      [
-      1031.5,
+      1006.5,
       -24,
+      "step"
+     ],
+     [
+      1011.5,
+      -26,
+      "step"
+     ],
+     [
+      1016.5,
+      -28,
+      "step"
+     ],
+     [
+      1021.5,
+      -30,
+      "step"
+     ],
+     [
+      1026.5,
+      -32,
+      "step"
+     ],
+     [
+      1031.5,
+      -34,
       "step"
      ],
      [
@@ -2290,7 +3539,7 @@
      ]
     ]
    },
-   "_comment": "S09-S11: meeting hum: drops 10 dB on the click (f961), then steps down with each terminal (f1001-1036)"
+   "_comment": "S09-S11: meeting hum: drops 20 dB on the click (f961), so S10 ends on room tone and the cord, then steps down with each terminal (f1001-1036)"
   },
   {
    "id": "s09-crt-whine",
@@ -2315,42 +3564,42 @@
      ],
      [
       961,
-      -10,
-      "step"
-     ],
-     [
-      1001.5,
-      -12,
-      "step"
-     ],
-     [
-      1006.5,
-      -14,
-      "step"
-     ],
-     [
-      1011.5,
-      -16,
-      "step"
-     ],
-     [
-      1016.5,
-      -18,
-      "step"
-     ],
-     [
-      1021.5,
       -20,
       "step"
      ],
      [
-      1026.5,
+      1001.5,
       -22,
       "step"
      ],
      [
-      1031.5,
+      1006.5,
       -24,
+      "step"
+     ],
+     [
+      1011.5,
+      -26,
+      "step"
+     ],
+     [
+      1016.5,
+      -28,
+      "step"
+     ],
+     [
+      1021.5,
+      -30,
+      "step"
+     ],
+     [
+      1026.5,
+      -32,
+      "step"
+     ],
+     [
+      1031.5,
+      -34,
       "step"
      ],
      [
@@ -2360,7 +3609,8 @@
      ]
     ]
    },
-   "_comment": "S09-S11: CRT whine: drops on the click, dies with the terminals"
+   "_comment": "S09-S11: CRT whine: drops 20 dB on the click, dies with the terminals",
+   "fade_in_ms": 2.0
   },
   {
    "id": "s09-kevin-murmur-1",
@@ -2372,7 +3622,7 @@
    "channels": "mono",
    "pan": 0.0,
    "highpass_hz": 300,
-   "lowpass_hz": 2800,
+   "lowpass_hz": 3000,
    "lowpass_slope": 24,
    "eq": [
     {
@@ -2399,7 +3649,7 @@
    "channels": "mono",
    "pan": 0.0,
    "highpass_hz": 300,
-   "lowpass_hz": 2800,
+   "lowpass_hz": 3000,
    "lowpass_slope": 24,
    "eq": [
     {
@@ -2426,7 +3676,7 @@
    "channels": "mono",
    "pan": 0.0,
    "highpass_hz": 300,
-   "lowpass_hz": 2800,
+   "lowpass_hz": 3000,
    "lowpass_slope": 24,
    "eq": [
     {
@@ -2469,7 +3719,7 @@
    "pitch_semitones": -3,
    "highpass_hz": 180,
    "lowpass_hz": 6500,
-   "gain_db": -17,
+   "gain_db": -14,
    "reverb": "room",
    "reverb_send": -16,
    "_comment": "S09: the same drag hiss: the identical sample segment that ended S04's glide"
@@ -2482,11 +3732,13 @@
    "src_in": 0.085,
    "src_out": 0.5,
    "anchor_s": 0.0948,
-   "gain_db": -15,
+   "gain_db": -10.5,
    "pan": 0.1,
    "reverb": "room",
    "reverb_send": -16,
-   "_comment": "S09: precise knock as it stops (gear lock tap) f852"
+   "_comment": "S09: precise knock as it stops (gear lock tap) f852",
+   "fade_in_ms": 2.0,
+   "fade_out_ms": 2.0
   },
   {
    "id": "s09-knock-wood",
@@ -2496,19 +3748,23 @@
    "src_in": 5.57,
    "src_out": 5.95,
    "anchor_s": 5.591,
-   "gain_db": -12,
+   "gain_db": -11,
    "pan": 0.1,
-   "_comment": "S09: the walnut under it (cup set down on a wooden table, low thud)"
+   "_comment": "S09: the walnut under it (cup set down on a wooden table, low thud)",
+   "fade_in_ms": 2.0,
+   "fade_out_ms": 2.0
   },
   {
    "id": "s09-lookdown-tick",
    "file": "sfx/foley_misc/sonniss2015-eiravaein-works-start-select-startselect-ui-set57-camera-mechanics-servo-clicks-clacks-meaty-opera.wav",
    "bus": "foley",
    "at_frame": 857,
-   "src_in": 0.38,
-   "src_out": 0.7,
-   "anchor_s": "onset",
-   "gain_db": -21,
+   "src_in": 0.41,
+   "src_out": 0.45,
+   "anchor_s": 0.4154,
+   "fade_in_ms": 1,
+   "fade_out_ms": 12,
+   "gain_db": -9,
    "lowpass_hz": 9000,
    "_comment": "S09: a single servo tick on the look-down (f857)"
   },
@@ -2517,10 +3773,12 @@
    "file": "sfx/foley_misc/sonniss2015-eiravaein-works-start-select-startselect-ui-set57-camera-mechanics-servo-clicks-clacks-meaty-opera.wav",
    "bus": "foley",
    "at_frame": 917,
-   "src_in": 0.06,
-   "src_out": 0.32,
-   "anchor_s": "onset",
-   "gain_db": -25,
+   "src_in": 0.1405,
+   "src_out": 0.2,
+   "anchor_s": 0.1466,
+   "fade_in_ms": 1,
+   "fade_out_ms": 15,
+   "gain_db": -12,
    "lowpass_hz": 8000,
    "_comment": "S09: dry tick on the slow blink"
   },
@@ -2536,7 +3794,8 @@
    "pitch_semitones": -3,
    "gain_db": -31,
    "fade_out": 3,
-   "_comment": "S09: the head lifts back to level (barely)"
+   "_comment": "S09: the head lifts back to level (barely)",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s10-live-line",
@@ -2561,12 +3820,13 @@
    "src_in": 0.45,
    "src_out": 0.54,
    "anchor_s": "onset",
-   "gain_db": -14,
+   "gain_db": 2,
    "pitch_mode": "tape",
    "pitch_semitones": 0,
    "fade_out": 1,
    "pan": 0.05,
-   "_comment": "S10: finger-joint servo as the index finger closes (f937)"
+   "_comment": "S10: finger-joint servo as the index finger closes (f937)",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s10-finger-middle",
@@ -2576,12 +3836,13 @@
    "src_in": 2.67,
    "src_out": 2.76,
    "anchor_s": "onset",
-   "gain_db": -14,
+   "gain_db": 2,
    "pitch_mode": "tape",
    "pitch_semitones": 2,
    "fade_out": 1,
    "pan": 0.05,
-   "_comment": "S10: finger-joint servo as the middle finger closes (f939)"
+   "_comment": "S10: finger-joint servo as the middle finger closes (f939)",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s10-finger-thumb",
@@ -2591,12 +3852,13 @@
    "src_in": 0.45,
    "src_out": 0.54,
    "anchor_s": "onset",
-   "gain_db": -14,
+   "gain_db": 2,
    "pitch_mode": "tape",
    "pitch_semitones": -2,
    "fade_out": 1,
    "pan": 0.05,
-   "_comment": "S10: finger-joint servo as the thumb finger closes (f941)"
+   "_comment": "S10: finger-joint servo as the thumb finger closes (f941)",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s10-grip",
@@ -2606,9 +3868,11 @@
    "src_in": 12.68,
    "src_out": 12.8,
    "anchor_s": "onset",
-   "gain_db": -30,
+   "gain_db": -11,
    "lowpass_hz": 6000,
-   "_comment": "S10: the grip on the knurled barrel (f945)"
+   "_comment": "S10: the grip on the knurled barrel (f945)",
+   "fade_in_ms": 1.0,
+   "fade_out_ms": 2.0
   },
   {
    "id": "s10-knuckle",
@@ -2618,8 +3882,10 @@
    "src_in": 2.12,
    "src_out": 2.17,
    "anchor_s": "onset",
-   "gain_db": -17,
-   "_comment": "S10: one knuckle flexes 1 degree: resolve (f953)"
+   "gain_db": -1,
+   "fade_out_ms": 4,
+   "_comment": "S10: one knuckle flexes 1 degree: resolve (f953)",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s10-jack-click",
@@ -2633,7 +3899,8 @@
    "fade_out": 2,
    "reverb": "room",
    "reverb_send": -20,
-   "_comment": "S10: f961: crisp close-miked 3.5 mm jack click (TRS patch cable), the music hard-stops on this frame"
+   "_comment": "S10: f961: crisp close-miked 3.5 mm jack click (TRS patch cable), the music hard-stops on this frame",
+   "fade_in_ms": 2.0
   },
   {
    "id": "s10-jack-tick",
@@ -2645,7 +3912,9 @@
    "anchor_s": 15.84,
    "gain_db": -15,
    "highpass_hz": 1500,
-   "_comment": "S10: layer: a tiny metal tick"
+   "_comment": "S10: layer: a tiny metal tick",
+   "fade_in_ms": 2.0,
+   "fade_out_ms": 2.0
   },
   {
    "id": "s10-cord-rattle-1",
@@ -2685,7 +3954,9 @@
    "anchor_s": "onset",
    "gain_db": -22,
    "pan": -0.05,
-   "_comment": "S11: f995 the jack drops to the walnut"
+   "_comment": "S11: f995 the jack drops to the walnut",
+   "fade_in_ms": 1.0,
+   "fade_out_ms": 2.0
   },
   {
    "id": "s11-jack-drop-wood",
@@ -2697,7 +3968,9 @@
    "anchor_s": "onset",
    "gain_db": -24,
    "pan": -0.05,
-   "_comment": "S11: the walnut under it"
+   "fade_out_ms": 4,
+   "_comment": "S11: the walnut under it",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s11-jack-bounce",
@@ -2709,7 +3982,9 @@
    "anchor_s": "onset",
    "gain_db": -34,
    "pan": -0.05,
-   "_comment": "S11: small bounce"
+   "_comment": "S11: small bounce",
+   "fade_in_ms": 1.0,
+   "fade_out_ms": 2.0
   },
   {
    "id": "s11-crt-off-1-synthia",
@@ -2721,13 +3996,15 @@
    "anchor_s": "onset",
    "pitch_mode": "tape",
    "pitch_semitones": 3,
-   "gain_db": -1.0,
+   "gain_db": 2.0,
    "pan": 0.55,
+   "channels": "mono",
    "lowpass_hz": 10860,
    "fade_out": 3,
    "reverb": "room",
-   "reverb_send": -12.9,
-   "_comment": "S11: f1001 synthia powers off (3 m): real office power switch and fan run-down, tape +3 st"
+   "reverb_send": -16.9,
+   "_comment": "S11: f1001 synthia powers off (3 m): real office power switch and fan run-down, tape +3 st",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s11-crt-off-2-keys",
@@ -2739,13 +4016,15 @@
    "anchor_s": "onset",
    "pitch_mode": "tape",
    "pitch_semitones": 1,
-   "gain_db": -15.1,
+   "gain_db": -12.1,
    "pan": 0.42,
+   "channels": "mono",
    "lowpass_hz": 8960,
    "fade_out": 3,
    "reverb": "room",
-   "reverb_send": -11.2,
-   "_comment": "S11: f1006 keys powers off (8 m): real office power switch and fan run-down, tape +1 st"
+   "reverb_send": -15.2,
+   "_comment": "S11: f1006 keys powers off (8 m): real office power switch and fan run-down, tape +1 st",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s11-crt-off-3-arjun",
@@ -2757,13 +4036,15 @@
    "anchor_s": "onset",
    "pitch_mode": "tape",
    "pitch_semitones": -1,
-   "gain_db": -5.1,
+   "gain_db": -2.1,
    "pan": -0.42,
+   "channels": "mono",
    "lowpass_hz": 8960,
    "fade_out": 3,
    "reverb": "room",
-   "reverb_send": -11.2,
-   "_comment": "S11: f1011 arjun powers off (8 m): real office power switch and fan run-down, tape -1 st"
+   "reverb_send": -15.2,
+   "_comment": "S11: f1011 arjun powers off (8 m): real office power switch and fan run-down, tape -1 st",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s11-crt-off-4-kevin",
@@ -2775,13 +4056,15 @@
    "anchor_s": "onset",
    "pitch_mode": "tape",
    "pitch_semitones": 2,
-   "gain_db": -18.6,
+   "gain_db": -10.1,
    "pan": 0.3,
+   "channels": "mono",
    "lowpass_hz": 7060,
    "fade_out": 3,
    "reverb": "room",
-   "reverb_send": -9.4,
-   "_comment": "S11: f1016 kevin powers off (13 m): real office power switch and fan run-down, tape +2 st"
+   "reverb_send": -13.4,
+   "_comment": "S11: f1016 kevin powers off (13 m): real office power switch and fan run-down, tape +2 st",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s11-crt-off-5-strategy",
@@ -2793,13 +4076,15 @@
    "anchor_s": "onset",
    "pitch_mode": "tape",
    "pitch_semitones": 0,
-   "gain_db": -7.6,
+   "gain_db": -4.6,
    "pan": -0.3,
+   "channels": "mono",
    "lowpass_hz": 7060,
    "fade_out": 3,
    "reverb": "room",
-   "reverb_send": -9.4,
-   "_comment": "S11: f1021 strategy powers off (13 m): real office power switch and fan run-down, tape +0 st"
+   "reverb_send": -13.4,
+   "_comment": "S11: f1021 strategy powers off (13 m): real office power switch and fan run-down, tape +0 st",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s11-crt-off-6-operations",
@@ -2811,13 +4096,15 @@
    "anchor_s": "onset",
    "pitch_mode": "tape",
    "pitch_semitones": -2,
-   "gain_db": -9.8,
+   "gain_db": -3.8,
    "pan": 0.2,
+   "channels": "mono",
    "lowpass_hz": 5160,
    "fade_out": 3,
    "reverb": "room",
-   "reverb_send": -7.7,
-   "_comment": "S11: f1026 operations powers off (18 m): real office power switch and fan run-down, tape -2 st"
+   "reverb_send": -11.7,
+   "_comment": "S11: f1026 operations powers off (18 m): real office power switch and fan run-down, tape -2 st",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s11-crt-off-7-people-culture",
@@ -2829,13 +4116,15 @@
    "anchor_s": "onset",
    "pitch_mode": "tape",
    "pitch_semitones": 1,
-   "gain_db": -13.3,
+   "gain_db": -7.3,
    "pan": -0.2,
+   "channels": "mono",
    "lowpass_hz": 5160,
    "fade_out": 3,
    "reverb": "room",
-   "reverb_send": -7.7,
-   "_comment": "S11: f1031 people-culture powers off (18 m): real office power switch and fan run-down, tape +1 st"
+   "reverb_send": -11.7,
+   "_comment": "S11: f1031 people-culture powers off (18 m): real office power switch and fan run-down, tape +1 st",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s11-crt-off-8-linda",
@@ -2847,42 +4136,55 @@
    "anchor_s": "onset",
    "pitch_mode": "tape",
    "pitch_semitones": -3,
-   "gain_db": -23.6,
+   "gain_db": -20.6,
    "pan": -0.12,
+   "channels": "mono",
    "lowpass_hz": 3260,
    "fade_out": 3,
    "reverb": "room",
-   "reverb_send": -6.0,
-   "_comment": "S11: f1036 linda powers off (23 m): real office power switch and fan run-down, tape -3 st"
+   "reverb_send": -10.0,
+   "_comment": "S11: f1036 linda powers off (23 m): real office power switch and fan run-down, tape -3 st",
+   "fade_in_ms": 1.0
   },
   {
-   "id": "s11-printer-wind-down",
-   "file": "sfx/printer/sonniss2017-chris-skyes-vintage-dot-matrix-printer-sfx-dot-matrix-vintage-printer-servo-47.wav",
+   "id": "s11-printer-stop",
+   "file": "sfx/office/sonniss2015-robert-cordova-base--printer-02.wav",
    "bus": "fx",
-   "at_frame": 1049,
-   "src_in": 1.4,
-   "src_out": 2.36,
+   "at_frame": 1059,
+   "src_in": 0.7,
+   "src_out": 1.162,
+   "anchor_s": 1.0635,
    "pitch_mode": "tape",
-   "pitch_semitones": -5,
-   "gain_db": -8,
+   "pitch_semitones": -2,
+   "gain_db": -23,
    "fade_in": 2,
+   "end_frame": 1061,
+   "fade_out_ms": 30,
+   "guard_ms": 0,
    "lowpass_hz": 5000,
+   "highpass_hz": 70,
+   "channels": "mono",
    "pan": -0.05,
    "reverb": "room",
    "reverb_send": -6,
    "automation": {
-    "gain_db": [
+    "lowpass_hz": [
      [
       1049,
-      0
+      5000
      ],
      [
-      1058,
-      -4
+      1057,
+      5000
+     ],
+     [
+      1059,
+      3200,
+      "smooth"
      ]
     ]
    },
-   "_comment": "S11: f1049-1060 the printer motor winds down mid-sheet: stepper whirr to a stop thump (dot-matrix feed, tape -5 st)"
+   "_comment": "S11: f1049-1060 the printer at the foot stops mid-feed: Printer 02's whirr, spin-down and stop chunk in one continuous piece (tape -2 st), the stop on f1059; dead by f1061"
   },
   {
    "id": "s11-pat-thoom",
@@ -2896,8 +4198,9 @@
    "gain_db": -26,
    "lowpass_hz": 1800,
    "pan": 0.18,
+   "channels": "mono",
    "reverb": "room",
-   "reverb_send": -3,
+   "reverb_send": -6,
    "_comment": "S11: f1085 far away, Pat's CRT powers on: degauss hum burst (real electrical hum, distant)"
   },
   {
@@ -2913,9 +4216,11 @@
    "highpass_hz": 200,
    "fade_out": 8,
    "pan": 0.18,
+   "channels": "mono",
    "reverb": "room",
-   "reverb_send": -3,
-   "_comment": "S11: degauss buzz (electricity static power-up, distant)"
+   "reverb_send": -6,
+   "_comment": "S11: degauss buzz (electricity static power-up, distant)",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s11-pat-glow",
@@ -2937,10 +4242,12 @@
    "file": "sfx/foley_misc/sonniss2015-eiravaein-works-start-select-startselect-ui-set57-camera-mechanics-servo-clicks-clacks-meaty-opera.wav",
    "bus": "foley",
    "at_frame": 1097,
-   "src_in": 0.06,
-   "src_out": 0.32,
-   "anchor_s": "onset",
-   "gain_db": -29,
+   "src_in": 0.1405,
+   "src_out": 0.2,
+   "anchor_s": 0.1466,
+   "fade_in_ms": 1,
+   "fade_out_ms": 15,
+   "gain_db": -19,
    "lowpass_hz": 8000,
    "_comment": "S11: tiny servo tick for the head turn (f1097)"
   },
@@ -2949,10 +4256,12 @@
    "file": "sfx/foley_misc/sonniss2015-eiravaein-works-start-select-startselect-ui-set57-camera-mechanics-servo-clicks-clacks-meaty-opera.wav",
    "bus": "foley",
    "at_frame": 1109,
-   "src_in": 0.38,
-   "src_out": 0.7,
-   "anchor_s": "onset",
-   "gain_db": -28,
+   "src_in": 0.41,
+   "src_out": 0.45,
+   "anchor_s": 0.4154,
+   "fade_in_ms": 1,
+   "fade_out_ms": 12,
+   "gain_db": -22,
    "lowpass_hz": 8000,
    "_comment": "S11: tiny servo tick for the only head dip in the film (f1109)"
   },
@@ -2963,7 +4272,7 @@
    "at_frame": 1129,
    "src_in": 0.0,
    "src_out": 1.6,
-   "gain_db": -24,
+   "gain_db": -18,
    "lowpass_hz": 7000,
    "fade_in": 1,
    "fade_out": 6,
@@ -2981,8 +4290,10 @@
    "anchor_s": "onset",
    "gain_db": -20,
    "pan": -0.3,
-   "fade_out": 2,
-   "_comment": "S11: f1150 a soft plastic headset set down on wood: plastic half"
+   "end_frame": 1153,
+   "fade_out_ms": 10,
+   "_comment": "S11: f1150 a soft plastic headset set down on wood: plastic half (ends with the shot)",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s11-headset-wood",
@@ -2994,10 +4305,12 @@
    "anchor_s": "onset",
    "gain_db": -21,
    "pan": -0.3,
-   "fade_out": 2,
+   "end_frame": 1153,
+   "fade_out_ms": 10,
    "reverb": "room",
    "reverb_send": -14,
-   "_comment": "S11: wood half"
+   "_comment": "S11: wood half (ends with the shot)",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s12-night",
@@ -3008,7 +4321,7 @@
    "end_frame": 1249,
    "fade_in": 2,
    "fade_out": 1.5,
-   "gain_db": -17,
+   "gain_db": -18,
    "_comment": "S12: real night ambience: summer night in the forest (crickets, insects)"
   },
   {
@@ -3043,6 +4356,25 @@
    "_comment": "S12: night air"
   },
   {
+   "id": "s12-frog",
+   "file": "ambience/mixkit-1241-forest-ambience-with-croaking-frogs.wav",
+   "bus": "amb",
+   "at_frame": 1153,
+   "src_in": 45.8,
+   "src_out": 50.2,
+   "end_frame": 1249,
+   "fade_in": 3,
+   "fade_out": 1.5,
+   "channels": "mono",
+   "pan": 0.35,
+   "highpass_hz": 300,
+   "lowpass_hz": 3000,
+   "gain_db": -16,
+   "reverb": "soft",
+   "reverb_send": -6,
+   "_comment": "S12: a distant frog across the terraces (forest ambience with croaking frogs, its frog section)"
+  },
+  {
    "id": "s13-s14-roomtone",
    "file": "ambience/sonniss2017-detunized-room-tones-office-building--rt-office-heater-tone-2.flac",
    "bus": "amb",
@@ -3051,9 +4383,26 @@
    "end_frame": 1363,
    "fade_in": 0.5,
    "fade_out": 3,
-   "gain_db": -10,
+   "gain_db": -6.8,
+   "highpass_hz": 120,
+   "width": 0.3,
+   "pan": 0.0,
+   "_comment": "S13-S14: Long Room tone: office heater tone above 120 Hz at width 0.3 (its L/R are slightly anti-correlated, so at full width it cancelled on mono speakers); +3.2 dB restores the per-channel level"
+  },
+  {
+   "id": "s13-s14-roomtone-lf",
+   "file": "ambience/sonniss2017-detunized-room-tones-office-building--rt-office-heater-tone-2.flac",
+   "bus": "amb",
+   "at_frame": 1249,
+   "src_in": 100.0,
+   "end_frame": 1363,
+   "fade_in": 0.5,
+   "fade_out": 3,
+   "gain_db": -4,
    "highpass_hz": 30,
-   "_comment": "S13-S14: Long Room tone: office heater tone"
+   "lowpass_hz": 120,
+   "channels": "mono",
+   "_comment": "S13-S14: Long Room tone: the same take below 120 Hz, folded to mono (+6 dB: its L/R are uncorrelated, so the fold and the centre pan each cost 3 dB)"
   },
   {
    "id": "s13-pat-whine",
@@ -3075,9 +4424,9 @@
    "file": "sfx/robot_mech/sonniss2015-thelibrarybyemptysea-robobiotics--thelibrarybymtc-robo-servo-powerwindow-035.wav",
    "bus": "foley",
    "at_frame": 1249,
-   "src_in": 0.07,
+   "src_in": 0.109,
    "src_out": 0.52,
-   "anchor_s": 0.109,
+   "fade_in_ms": 3,
    "pitch_mode": "tape",
    "pitch_semitones": 0,
    "gain_db": -19,
@@ -3086,16 +4435,16 @@
    "lowpass_hz": 7000,
    "reverb": "room",
    "reverb_send": -16,
-   "_comment": "S13: actuator step 1 on the beat f1249 (power-window servo)"
+   "_comment": "S13: actuator step 1 on the beat f1249 (power-window servo, tape +0 st)"
   },
   {
    "id": "s13-actuator-2",
    "file": "sfx/robot_mech/sonniss2015-thelibrarybyemptysea-robobiotics--thelibrarybymtc-robo-servo-powerwindow-035.wav",
    "bus": "foley",
    "at_frame": 1265,
-   "src_in": 0.07,
+   "src_in": 0.109,
    "src_out": 0.52,
-   "anchor_s": 0.109,
+   "fade_in_ms": 3,
    "pitch_mode": "tape",
    "pitch_semitones": 1,
    "gain_db": -18,
@@ -3104,43 +4453,45 @@
    "lowpass_hz": 7000,
    "reverb": "room",
    "reverb_send": -16,
-   "_comment": "S13: actuator step 2 on the beat f1265 (power-window servo)"
+   "_comment": "S13: actuator step 2 on the beat f1265 (power-window servo, tape +1 st)"
   },
   {
    "id": "s13-actuator-3",
    "file": "sfx/robot_mech/sonniss2015-thelibrarybyemptysea-robobiotics--thelibrarybymtc-robo-servo-powerwindow-035.wav",
    "bus": "foley",
    "at_frame": 1281,
-   "src_in": 0.07,
+   "src_in": 0.109,
    "src_out": 0.52,
-   "anchor_s": 0.109,
+   "fade_in_ms": 3,
    "pitch_mode": "tape",
    "pitch_semitones": 2,
-   "gain_db": -17,
+   "gain_db": -12,
    "fade_out": 3,
    "pan": 0.1,
    "lowpass_hz": 7000,
    "reverb": "room",
    "reverb_send": -16,
-   "_comment": "S13: actuator step 3 on the beat f1281 (power-window servo)"
+   "highpass_hz": 300,
+   "_comment": "S13: actuator step 3 on the beat f1281 (power-window servo, tape +2 st)"
   },
   {
    "id": "s13-actuator-4",
    "file": "sfx/robot_mech/sonniss2015-thelibrarybyemptysea-robobiotics--thelibrarybymtc-robo-servo-powerwindow-035.wav",
    "bus": "foley",
    "at_frame": 1297,
-   "src_in": 0.07,
+   "src_in": 0.109,
    "src_out": 0.52,
-   "anchor_s": 0.109,
+   "fade_in_ms": 3,
    "pitch_mode": "tape",
    "pitch_semitones": 3,
-   "gain_db": -16,
+   "gain_db": -19,
    "fade_out": 3,
    "pan": 0.1,
    "lowpass_hz": 7000,
    "reverb": "room",
    "reverb_send": -16,
-   "_comment": "S13: actuator step 4 on the beat f1297 (power-window servo)"
+   "highpass_hz": 300,
+   "_comment": "S13: actuator step 4 on the beat f1297 (power-window servo, tape +3 st), under the sip"
   },
   {
    "id": "s13-spout-contact",
@@ -3152,7 +4503,9 @@
    "anchor_s": 0.1256,
    "gain_db": -27,
    "pan": 0.05,
-   "_comment": "S13: the spout touches the chin plate (f1297)"
+   "_comment": "S13: the spout touches the chin plate (f1297)",
+   "fade_in_ms": 2.0,
+   "fade_out_ms": 2.0
   },
   {
    "id": "s13-sip",
@@ -3163,12 +4516,43 @@
    "src_out": 2.5,
    "anchor_s": 1.1171,
    "fade_in_ms": 40,
-   "gain_db": 3.5,
+   "gain_db": 6.5,
    "fade_out": 6,
+   "eq": [
+    {
+     "type": "peak",
+     "hz": 300,
+     "gain_db": -3.0,
+     "q": 1.0
+    },
+    {
+     "type": "highshelf",
+     "hz": 3000,
+     "gain_db": 3.0,
+     "q": 0.707
+    }
+   ],
+   "automation": {
+    "gain_db": [
+     [
+      1297,
+      0
+     ],
+     [
+      1300,
+      0
+     ],
+     [
+      1302,
+      -3.5,
+      "smooth"
+     ]
+    ]
+   },
    "pan": 0.05,
    "reverb": "room",
    "reverb_send": -20,
-   "_comment": "S13: f1297: soft, real, close-miked sip of a hot drink (the lip-and-liquid draw lands on f1297)"
+   "_comment": "S13: f1297: soft, real, close-miked sip of a hot drink: its onset transient on f1297; the draw peaks about 130 ms later"
   },
   {
    "id": "s13-tilt-creak",
@@ -3180,27 +4564,42 @@
    "anchor_s": "onset",
    "pitch_mode": "tape",
    "pitch_semitones": -5,
-   "gain_db": -12,
-   "lowpass_hz": 1600,
+   "gain_db": -6.0,
+   "lowpass_hz": 2600,
+   "highpass_hz": 35,
+   "highpass_slope": 48,
+   "fade_in": 8,
    "reverb": "room",
+   "eq": [
+    {
+     "type": "peak",
+     "hz": 200,
+     "gain_db": 3.0,
+     "q": 0.7
+    }
+   ],
    "reverb_send": -10,
    "end_frame": 1409,
    "fade_out_ms": 3,
    "guard_ms": 0,
-   "_comment": "S13: f1305 a deep wooden structural creak as the tilt begins (large wooden ship, tape -5 st)"
+   "_comment": "S13: f1305 a deep wooden structural creak as the tilt begins (large wooden ship, tape -5 st), fading in over 8 frames so the sip keeps its tail"
   },
   {
    "id": "s13-tilt-sub",
-   "file": "sfx/ship_creak/mixkit-3076-ship-hull-creak.wav",
+   "file": "sfx/ship_creak/usc-gold-tape-27-creaks-g27-11-ship-creaks.wav",
    "bus": "fx",
    "at_frame": 1305,
-   "src_in": 0.4,
-   "src_out": 4.5,
+   "src_in": 0.37,
+   "src_out": 1.66,
+   "pitch_mode": "tape",
+   "pitch_semitones": -12,
    "gain_db": -19,
-   "fade_in": 4,
-   "fade_out": 8,
+   "fade_in": 6,
+   "fade_out": 10,
    "lowpass_hz": 250,
-   "_comment": "S13: felt sub groan under it (ship-hull creak)"
+   "highpass_hz": 30,
+   "highpass_slope": 48,
+   "_comment": "S13: felt groan under it: the big low groan of a real ship creak (USC G27-11), an octave down, low-passed at 250 Hz"
   },
   {
    "id": "s13-headset-slide",
@@ -3241,29 +4640,36 @@
    "anchor_s": "onset",
    "pitch_mode": "tape",
    "pitch_semitones": -7,
-   "gain_db": -12,
+   "gain_db": -5,
    "lowpass_hz": 1400,
+   "highpass_hz": 35,
+   "highpass_slope": 48,
    "reverb": "soft",
    "reverb_send": -8,
    "end_frame": 1409,
    "fade_out_ms": 3,
    "guard_ms": 0,
-   "_comment": "S14: a deep ship-hull creak as the world tilts (large wooden ship, tape -7 st)"
+   "_comment": "S14: a deep ship-hull creak as the world tilts (large wooden ship, tape -7 st)",
+   "fade_in_ms": 1.0
   },
   {
    "id": "s14-hull-sub",
-   "file": "sfx/ship_creak/mixkit-3076-ship-hull-creak.wav",
+   "file": "sfx/ship_creak/usc-red-library-creaks-r28-03-large-wood-ship-creaking.wav",
    "bus": "fx",
    "at_frame": 1351,
-   "src_in": 4.9,
-   "src_out": 7.4,
+   "src_in": 38.2,
+   "src_out": 39.4,
+   "pitch_mode": "tape",
+   "pitch_semitones": -14,
    "gain_db": -17,
    "fade_in": 6,
    "lowpass_hz": 250,
+   "highpass_hz": 30,
+   "highpass_slope": 48,
    "end_frame": 1409,
    "fade_out_ms": 3,
    "guard_ms": 0,
-   "_comment": "S14: sub groan of the tilting world"
+   "_comment": "S14: sub groan of the tilting world: a timber groan of the large wooden ship (USC R28-03), tape -14 st, low-passed"
   },
   {
    "id": "s14-swell",
@@ -3315,21 +4721,23 @@
   },
   {
    "id": "s14-rise-deep",
-   "file": "sfx/whoosh/mixkit-2604-deep-air-woosh.wav",
+   "file": "sfx/whoosh/berklee-v8-swoosh1.wav",
    "bus": "fx",
-   "at_frame": 1384,
-   "src_in": 0.0,
-   "anchor_s": 0.4883,
+   "at_frame": 1392,
+   "src_in": 0.05,
+   "anchor_s": 0.62,
    "pitch_mode": "tape",
-   "pitch_semitones": -3,
-   "gain_db": -21,
+   "pitch_semitones": -7,
+   "gain_db": -14,
    "highpass_hz": 60,
+   "lowpass_hz": 3000,
+   "fade_in": 2,
    "reverb": "soft",
    "reverb_send": -12,
    "end_frame": 1409,
    "fade_out_ms": 3,
    "guard_ms": 0,
-   "_comment": "S14: rising air toward the slot (deep air woosh)"
+   "_comment": "S14: rising air toward the slot (Berklee swoosh1, tape -7 st, its body on f1392; replaces the unverifiable Mixkit deep air woosh)"
   },
   {
    "id": "s14-rise-swoosh",
@@ -3344,7 +4752,8 @@
    "end_frame": 1409,
    "fade_out_ms": 3,
    "guard_ms": 0,
-   "_comment": "S14: a rising flying swoosh into the white; cut dead on f1409"
+   "_comment": "S14: a rising flying swoosh into the white; cut dead on f1409",
+   "fade_in_ms": 2.0
   },
   {
    "id": "s14-printer-over-black",
@@ -3353,31 +4762,34 @@
    "at_frame": 1418,
    "src_in": 0.01,
    "fade_in_ms": 3,
-   "src_out": 0.66,
+   "src_out": 0.69,
    "anchor_s": 0.0139,
-   "gain_db": -18,
-   "pan": -0.05,
-   "fade_out": 2,
+   "gain_db": -14.5,
+   "pan": 0.0,
+   "channels": "mono",
+   "highpass_hz": 70,
+   "fade_out_ms": 25,
    "reverb": "room_black",
    "reverb_send": -12,
-   "_comment": "S14: f1418 over black: one printer sheet feed, the whirr (pickup transient on f1418, then the feed run)"
+   "_comment": "S14: f1418 over black: one printer sheet feed: the pickup clunk on f1418, then the feed whirr"
   },
   {
-   "id": "s14-printer-chunk",
-   "file": "sfx/printer/sonniss2017-chris-skyes-vintage-dot-matrix-printer-sfx-dot-matrix-vintage-printer-servo-47.wav",
-   "bus": "foley",
-   "at_frame": 1434,
-   "src_in": 1.86,
-   "src_out": 2.3,
-   "anchor_s": 2.039,
-   "gain_db": -2,
-   "pan": -0.05,
-   "fade_in": 0.5,
-   "end_frame": 1441,
-   "fade_out": 3,
+   "id": "s14-printer-stop",
+   "file": "sfx/office/sonniss2015-robert-cordova-base--printer-02.wav",
+   "bus": "sync",
+   "at_frame": 1435.8,
+   "src_in": 1.0,
+   "src_out": 1.162,
+   "anchor_s": 1.0635,
+   "gain_db": -14.5,
+   "pan": 0.0,
+   "channels": "mono",
+   "highpass_hz": 70,
+   "fade_in_ms": 25,
+   "fade_out_ms": 10,
    "reverb": "room_black",
    "reverb_send": -12,
-   "_comment": "S14: ...then the chunk (dot-matrix feed stop thump), settling by the last frame"
+   "_comment": "S14: ...then, spliced from the end of the same take, its spin-down and stop chunk (on f1436)"
   }
  ]
 }

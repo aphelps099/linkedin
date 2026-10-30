@@ -1,7 +1,7 @@
 {
  "generated": "2026-10-29",
  "root": "scripts/synergy-film/out/audio/raw (fetch with tools/fetch_audio.py)",
- "count": 340,
+ "count": 341,
  "notes": "All files verified with ffprobe (duration > 0). analysis.peak_time_s = time of loudest sample (useful for syncing hits). Music energy_profile_4s_db = RMS per 4 s window (shows builds/drops). No sound in this library was synthesized by us; all are downloaded recordings/productions. 2026-10-29: 67 recordings appended for the Offline missing-SFX list (entries with analysis.need/rank). pending_downloads lists licensed Wikimedia Commons recordings identified but blocked by HTTP 429; fetch with scripts2/commons_slow.py then run analyze_sfx.py and append_manifest.py.",
  "files": [
   {
@@ -9627,6 +9627,22 @@
     "edt_s": 0.75,
     "tail_floor_db_re_peak": -58.8,
     "late_lr_correlation": 0.14
+   }
+  },
+  {
+   "path": "ambience/mixkit-1241-forest-ambience-with-croaking-frogs.wav",
+   "kind": "ambience",
+   "title": "Forest ambience with croaking frogs",
+   "source_url": "https://mixkit.co/free-sound-effects/frog/",
+   "file_url": "https://assets.mixkit.co/active_storage/sfx/1241/1241.wav",
+   "license": "Mixkit SFX Free License (mixkit.co/license/#sfxFree; no attribution required)",
+   "attribution": "Mixkit SFX #1241 (credit optional)",
+   "duration_s": 113.81,
+   "description": "Night forest ambience with rhythmic frog croaks (~114 s, 44.1 kHz 16-bit stereo). Birds and insects 0-40 s and 68-114 s; a frog chorus 40-66 s (croak pulse trains 300 Hz-2.7 kHz; clear single croaks at 45.9, 46.3, 47.5, 49.3 and 49.8 s). Added 2026-10-30 (sound rev2) for the S12 \"distant frog\". (peak at 64.639s, -13.5 dBFS)",
+   "analysis": {
+    "peak_dbfs": -13.5,
+    "peak_time_s": 64.639,
+    "rms_dbfs": -39.4
    }
   }
  ],

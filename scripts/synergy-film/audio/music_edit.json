@@ -279,9 +279,9 @@
    "event": "DROP: S03 cut, first full-kit downbeat, crash + bass (printer feed)",
    "music": {
     "file_s": 5.3333,
-    "file_beat": 7,
-    "file_bar": 1,
-    "beat_in_bar": 4
+    "file_beat": 8,
+    "file_bar": 2,
+    "beat_in_bar": 1
    }
   },
   {
@@ -301,9 +301,9 @@
    "event": "S04 cut",
    "music": {
     "file_s": 9.3333,
-    "file_beat": 13,
+    "file_beat": 14,
     "file_bar": 3,
-    "beat_in_bar": 2
+    "beat_in_bar": 3
    }
   },
   {
@@ -326,7 +326,7 @@
     "file_beat": 23,
     "file_bar": 5,
     "beat_in_bar": 4,
-    "off_grid_beats": 0.9375
+    "off_grid_beats": 0.9374
    }
   },
   {
@@ -424,9 +424,9 @@
    "event": "S09 cut (-4 dB, 5 kHz LPF)",
    "music": {
     "file_s": 29.3333,
-    "file_beat": 43,
-    "file_bar": 10,
-    "beat_in_bar": 4
+    "file_beat": 44,
+    "file_bar": 11,
+    "beat_in_bar": 1
    }
   },
   {
@@ -435,9 +435,9 @@
    "event": "S10 cut",
    "music": {
     "file_s": 33.3333,
-    "file_beat": 49,
+    "file_beat": 50,
     "file_bar": 12,
-    "beat_in_bar": 2
+    "beat_in_bar": 3
    }
   },
   {
@@ -486,9 +486,9 @@
    "event": "full kit re-enters (bar 20), muffled",
    "music": {
     "file_s": 5.3333,
-    "file_beat": 7,
-    "file_bar": 1,
-    "beat_in_bar": 4
+    "file_beat": 8,
+    "file_bar": 2,
+    "beat_in_bar": 1
    }
   },
   {
