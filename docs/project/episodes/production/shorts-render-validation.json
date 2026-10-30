@@ -8,8 +8,9 @@
   {
     "episode": "ai-reviewed",
     "full_decode": "passed",
-    "bytes": 6879407,
-    "sha256": "24a76f491fbd33b76d4ff0435ef5bba64193c945c5e3f45a6ceda25abe707b96"
+    "bytes": 7602621,
+    "sha256": "de13ea23b7f36c9825f8a21db10378a47b176babd8fc3ec9a0f7b6b7d16c4ef7",
+    "version": 2
   },
   {
     "episode": "one-source",

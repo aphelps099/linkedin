@@ -22,8 +22,8 @@
       "brief": "ai-reviewed/production-brief.json",
       "script": "ai-reviewed/script.json",
       "review_url": "http://127.0.0.1:8852/shorts/ai-reviewed/",
-      "duration_seconds": 33.25,
-      "version": 1
+      "duration_seconds": 34.958333333333336,
+      "version": 2
     },
     {
       "id": "one-source",

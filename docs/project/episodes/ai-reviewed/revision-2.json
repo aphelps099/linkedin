@@ -1,0 +1,34 @@
+{
+  "revision": 2,
+  "changes": [
+    "All four camera views use identical visible 4:3 apertures above the name strip, with equal black sides.",
+    "Linda covers her mouth and coughs after comprehensive, then resumes deadpan listening.",
+    "Strategy abruptly declares HUMAN OVERSIGHT! in existing Kokoro identity with more level, compressed timbre and momentary music duck."
+  ],
+  "performance": {
+    "taskId": "5697cbce-6a32-49f7-853b-5cb76b173e87",
+    "source": "../optimizing/shorts/ai-reviewed/source/linda-cough-original.mp4",
+    "sourceSha256": "9bb7742d90ee29ca89c890f7540b773fc27c7eab50da2afd46ced2837011599a",
+    "sourceSeconds": 8,
+    "in": 1.6,
+    "out": 4.4,
+    "nativeAudio": true,
+    "newVideoGenerations": 1
+  },
+  "originalCut": "../optimizing/shorts/ai-reviewed/archive/v1",
+  "strategyPerformance": {
+    "taskId": "e3200d6b-8e03-4f35-a93a-28115e376e10",
+    "source": "../optimizing/shorts/ai-reviewed/source/strategy-outburst-original.mp4",
+    "sourceSha256": "a3d5125e1a8925f396c4265b51f2f74aebb0f1040c4a7cf062934f3a1a0f500e",
+    "in": 0.9,
+    "out": 3.3,
+    "audio": "Original Kokoro am_onyx, 1.05 speed, existing voice identity. Generated audio discarded.",
+    "timing": "Picture retimed to the canonical vocal take."
+  },
+  "newVideoGenerations": 2,
+  "audioValidation": {
+    "integratedLufs": -15.07,
+    "truePeakDbtp": -1.5,
+    "dialogueOutburstGainDb": 3.4
+  }
+}

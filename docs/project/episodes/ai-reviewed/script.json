@@ -6,7 +6,7 @@
     "reviewed."
   ],
   "episode": "06",
-  "status": "production-draft-1",
+  "status": "revision-2",
   "format": "short-meeting",
   "minSeconds": 30,
   "maxSeconds": 40,
@@ -65,15 +65,28 @@
     },
     {
       "who": "linda",
+      "text": "[Linda coughs]",
+      "action": "cough",
+      "audioFile": "linda-cough.wav",
+      "framesDir": "linda-cough",
+      "shot": "linda",
+      "gap": 0.45
+    },
+    {
+      "who": "linda",
       "text": "I’ll read page two.",
       "shot": "linda",
       "gap": 0.36
     },
     {
       "who": "strategy",
-      "text": "Let’s capture that as human oversight.",
+      "text": "HUMAN OVERSIGHT!",
       "shot": "strategy",
-      "gap": 0.8
+      "gap": 0.9,
+      "speechText": "HUMAN OVERSIGHT!",
+      "speed": 1.05,
+      "delivery": "outburst",
+      "framesDir": "strategy-outburst"
     }
   ],
   "ending": {
@@ -90,5 +103,6 @@
     "ResponsibleAI",
     "HumanInTheLoop"
   ],
-  "establishingSeconds": 2
+  "establishingSeconds": 2,
+  "revision": 2
 }

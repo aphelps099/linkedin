@@ -6,7 +6,7 @@
     "reviewed."
   ],
   "episode": "06",
-  "status": "production-draft-1",
+  "status": "revision-2",
   "format": "short-meeting",
   "minSeconds": 30,
   "maxSeconds": 40,
@@ -65,15 +65,28 @@
     },
     {
       "who": "linda",
+      "text": "[Linda coughs]",
+      "action": "cough",
+      "audioFile": "linda-cough.wav",
+      "framesDir": "linda-cough",
+      "shot": "linda",
+      "gap": 0.45
+    },
+    {
+      "who": "linda",
       "text": "I’ll read page two.",
       "shot": "linda",
       "gap": 0.36
     },
     {
       "who": "strategy",
-      "text": "Let’s capture that as human oversight.",
+      "text": "HUMAN OVERSIGHT!",
       "shot": "strategy",
-      "gap": 0.8
+      "gap": 0.9,
+      "speechText": "HUMAN OVERSIGHT!",
+      "speed": 1.05,
+      "delivery": "outburst",
+      "framesDir": "strategy-outburst"
     }
   ],
   "ending": {
@@ -91,6 +104,7 @@
     "HumanInTheLoop"
   ],
   "establishingSeconds": 2,
+  "revision": 2,
   "events": [
     {
       "who": "synthia",
@@ -157,28 +171,44 @@
     },
     {
       "who": "linda",
+      "text": "[Linda coughs]",
+      "action": "cough",
+      "audioFile": "linda-cough.wav",
+      "framesDir": "linda-cough",
+      "shot": "linda",
+      "gap": 0.45,
+      "index": 7,
+      "start": 21.2746,
+      "end": 24.0746
+    },
+    {
+      "who": "linda",
       "text": "I’ll read page two.",
       "shot": "linda",
       "gap": 0.36,
-      "index": 7,
-      "start": 21.2746,
-      "end": 22.9227
+      "index": 8,
+      "start": 24.5246,
+      "end": 26.1727
     },
     {
       "who": "strategy",
-      "text": "Let’s capture that as human oversight.",
+      "text": "HUMAN OVERSIGHT!",
       "shot": "strategy",
-      "gap": 0.8,
-      "index": 8,
-      "start": 23.2827,
-      "end": 26.1487
+      "gap": 0.9,
+      "speechText": "HUMAN OVERSIGHT!",
+      "speed": 1.05,
+      "delivery": "outburst",
+      "framesDir": "strategy-outburst",
+      "index": 9,
+      "start": 26.5327,
+      "end": 27.8145
     }
   ],
-  "duration": 33.25,
-  "meetingEnd": 27.25,
-  "outroStart": 30.25,
+  "duration": 34.958333333333336,
+  "meetingEnd": 28.916666666666668,
+  "outroStart": 31.958333333333336,
   "voiceEngine": "1.52.0",
   "musicBpm": 96,
   "scoreSha256": "f33d4f1240b54ad393653b3d1b93c75df379008d830d94a8d6c8abdbd7f2c627",
-  "reviewStatus": "first production cut; awaiting listening and creative review"
+  "reviewStatus": "revision 2; awaiting listening and creative review"
 }

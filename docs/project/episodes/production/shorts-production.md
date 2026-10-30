@@ -47,3 +47,9 @@ Then `python3 docs/project/episodes/production/build-short-reviews.py` creates t
 ## Cost scope
 
 Zero new Runway generations for these five cuts. Reused catalog footage, local voices, original score and local compositing. This is a statement about this production batch, not an account-wide credit balance.
+
+## Thoroughly reviewed · revision 2
+
+All camera pictures now use a common 4:3 aperture **above** the name strip. Human source plates have their baked-in sidebars/labels removed before framing. Synthia and the printer use the same aperture dimensions; the participant tile and active-speaker outline retain the site layout.
+
+Linda coughs after “comprehensive,” using a new filmed reaction and its synchronized native cough audio. Strategy's final line becomes the abrupt “HUMAN OVERSIGHT!” with a corresponding facial performance, his established Kokoro voice, a 3.4 dB dialogue-stem increase and a brief music dip. The first cut is archived locally. Only episode 06 is re-rendered for this revision; future renders inherit the common camera geometry. Revision media generation is separate from the original batch's zero-generation cost scope.
