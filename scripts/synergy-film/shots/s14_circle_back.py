@@ -1,41 +1,49 @@
 """S14 · f1345-1440 · 56.00-60.00 s · E2_LONG_ROOM (dark) to E1_OFFLINE (night, tilting): circle back.
 
-    blender -b --factory-startup -P shots/s14_circle_back.py -- --quality proof --only 1345,1356,1357,1361,1363,1377,1382,1393,1397,1408,1409,1440
+    blender -b --factory-startup -P shots/s14_circle_back.py -- --quality proof --only 1345,1356,1357,1360,1362,1363,1377,1380,1393,1397,1404,1408,1409,1418,1440
     blender -b --factory-startup -P shots/s14_circle_back.py -- --quality animatic --step 8
     blender -b --factory-startup -P shots/s14_circle_back.py -- --quality final
 
-Two renders stitched inside a white flare, then black. One process builds what the requested frames
-need: the dark Long Room for f1345-1359, Offline at night for f1361-1403; pure white and pure black
-frames are written directly (no scene).
+Two renders stitched inside a white flare, then black. One process builds only what the requested
+frames need: the dark Long Room for f1345-1359, Offline at night for f1361-1404. Pure white frames
+(f1360, f1405-1408) and the black (f1409-1440) are written directly as flat PNGs (no scene).
 
 Beats (film frames; 90 BPM = 16 frames a beat):
-  f1345-1356  the dark room from straight above, 24 mm, deep focus: his faceted crown, the cup raised
-              to his chin in his right hand (S13's contact pose, held: he is still sipping), the
-              headset on the walnut beside the hub, the skylight slab down the table's spine. The lens
-              starts 2 m over his crown and rises straight up, eased in (slow off the mark, then fast),
-              toward the slot-shaped skylight. He is motionless; the room keeps tilting (the slab slides
-              on across the walnut; gravity carries on from S13's 4 deg).
-  f1357-1362  the 6-frame white flare: the room blows out from its brightest light (exposure ramp, then
-              white) as the lens reaches the skylight (f1357-1359); f1360 is pure white; Offline comes
-              up out of the white (f1361-1362). The stitch is hidden in it.
-  f1361-1380  outside, at night: the lens rises along the moon-silver beam's axis toward the sip hole,
-              looking back down the beam, holding the dark box and its glowing slot at frame centre for
-              20 frames as it shrinks below (an exponential rise: the box shrinks at a constant rate). The
-              island sits in the silver pool; the fireflies flash in unison on the beat (f1377), doubled in
-              the terrace mirrors and the sea; the arch, the atoll and the paper falls' thin night
-              trickle stand around it. The world is tilting: the sea (and its floes, glints and foam
-              line) turns on the gravity rig, 4 -> 12 deg over f1345-1408, still S13's curve at the cut.
-  f1381-1398  the lens tilts up toward the slot (a 180 deg eased tilt, top of frame leading, while it
-              keeps rising up the beam): over the island and the arch (crest fireflies flash on f1393,
-              doubled in the sea), up the slot-side cliff past the tilted horizon of the sea, to the lid
-              and the slot burning in it, its long axis rolled level, as S01 opened on it.
-  f1397-1403  the slot fills the frame (the lens is inside 60 m of it at f1401) and blooms to pure white.
-  f1404-1408  pure white.
+  f1345-1356  the dark room from straight above, 24 mm, deep focus: his faceted crown, the cup raised to
+              his chin in his right hand (S13's contact pose, held: he is still sipping), the headset on
+              the walnut beside the hub, the skylight slab down the table's spine and its brass channel,
+              Synthia's dead CRT at the top-left corner. The lens starts 2 m over his crown and rises
+              straight up (eased in) toward the slot-shaped skylight. He is motionless; the room keeps
+              tilting (the slab slides on across the walnut: gravity carries on from S13's 4 deg).
+  f1357-1362  the 6-frame white flare: the slab and the hub's glint bloom first, the dark lifts, white
+              (f1357-1359); f1360 pure white; Offline comes up out of the white (f1361-1362). The stitch
+              is hidden in it.
+  f1361-1380  outside, at night: the lens keeps rising up the moon-silver beam toward the sip hole,
+              looking back down at the dark box and its glowing slot, held at frame centre for 20 frames
+              as it shrinks below (the box shrinks at a near-constant rate). It starts on the beam's axis
+              (inside the beam: a faint silver veil) and drifts off it toward the slot's own normal, so
+              from ~f1371 the beam itself eases into view as a silver column pouring down from the top
+              of the frame onto the box in its pool. The island, the atoll, the arch, the terraces: the
+              fireflies flash in unison on the beat over the terraces (f1377). The world is tilting: the
+              sea (and its floes and glints) turns on the gravity rig, 7 -> 12 deg over the exterior
+              (S13's curve carried on: 4 deg at the cut, 12 deg by the white).
+  f1380-1402  the lens tilts up toward the slot: it turns in the plane of the beam, sweeping up along the
+              silver column (the falls' thin night trickle and its ledge pass through it) to the slot
+              burning in the ribbed lid with the beam pouring out of it; its long axis is rolled level
+              on the way, as S01 opened on it. (f1393's flash happens below the frame.)
+  f1397-1404  the slot fills the frame (a rush: 18 -> 85 mm, from 330 m, where the hole is still the
+              clean rounded oblong) and blooms to white.
+  f1405-1408  pure white.
   f1409-1440  hard cut to black (the music stops dead on the kick), held to the end. In the black the
               printer feeds one more sheet (f1418, sound only).
 
-Camera: interior 24 mm (treatment), exterior 18 mm (accepted lens change: env_offline S14_RISE), deep
-focus, no shake. Both renders move on every frame: animated sampling seed (no screen-fixed noise).
+Camera: interior 24 mm (treatment), exterior 18 mm (accepted lens change: env_offline S14_RISE) with the
+final rush; deep focus, no shake. Both renders move on every frame: animated sampling seed (no
+screen-fixed noise); the exterior's motion-blur shutter is a quarter frame (the tilt peaks ~11 deg/frame).
+Light: the room's dark state; for the top-down, the walnut takes the slab from its own sun only and the
+coat does not mirror the skylight (seen straight down they veil it grey), a dim slot-shaped daylight
+spill under the skylight's head end, and the rig owner's warm walnut bounce. Offline: the env night state
+and the s14_box framing's levels (moon top 0.22, firefly light 30), the shaft at 0.7.
 """
 
 import copy
@@ -55,8 +63,6 @@ from mathutils import Matrix, Quaternion, Vector  # noqa: E402
 
 import common as C  # noqa: E402
 
-V3 = Vector
-
 SHOT = 's14'
 INFO = next(s for s in json.load(open(os.path.join(HERE, 'shots.json'))) if s['id'] == SHOT)
 START, END = INFO['start'], INFO['end']
@@ -66,26 +72,26 @@ INSIDE = (START, 1359)       # rendered in the Long Room (f1360 is pure white)
 FLARE = (1357, 1362)         # the white flare that hides the stitch
 OUTSIDE = (1361, 1408)       # rendered in Offline (frames that are pure white are written directly)
 HOLD_END = 1380              # the box held at frame centre f1361-1380 (20 frames)
-TILT_UP = (1380, 1400)       # the tilt up toward the slot (eased)
+TILT_UP = (1380, 1402)       # the tilt up toward the slot (eased: smoothstep, peak 1.5x the mean rate)
 FLASHES = (1377, 1393)       # firefly unison flashes (env_offline's clock: every beat from f1217)
-BLOOM = (1397, 1403)         # the slot fills the frame and blooms to white; white held to f1408
+BLOOM = (1397, 1404)         # the slot fills the frame and blooms to white; white held to f1408
 BLACK = 1409                 # hard cut to black, held to f1440
 PRINTER_FEED = 1418          # over black: sound only
 
 # ---------------------------------------------------------------- the flare
 # Light floods the lens. Per frame (EV, bloom, veil): the exposure ramps; a veiling glare grows out of the
-# brightest light (a wide soft blur of the exposed frame, 2 stops up, added at `bloom` 0..1), so the hot
+# brightest light (a wide soft blur of the exposed frame, a stop up, added at `bloom` 0..1), so the hot
 # light spreads before the dark lifts; a white veil (scene-linear: AgX shows ~0.5 at 0.18, ~0.8 at 1, ~0.97
 # at 10) takes the last frames to white. A veil of 1e9 means pure white: such frames are written directly.
 FLARE_CURVE = {
-    1355: (0.05, 0.05, 0.0), 1356: (0.2, 0.15, 0.0), 1357: (0.6, 0.5, 0.0), 1358: (1.2, 1.0, 0.1),
+    1355: (0.05, 0.03, 0.0), 1356: (0.2, 0.1, 0.0), 1357: (0.6, 0.35, 0.0), 1358: (1.2, 0.8, 0.1),
     1359: (2.2, 1.0, 2.0), 1360: (0.0, 0.0, 1.0e9),
-    1361: (3.0, 1.0, 0.5), 1362: (1.2, 0.6, 0.02), 1363: (0.3, 0.2, 0.0), 1364: (0.0, 0.05, 0.0),
-    1397: (0.2, 0.15, 0.0), 1398: (0.4, 0.3, 0.0), 1399: (0.8, 0.5, 0.0), 1400: (1.4, 0.8, 0.01),
-    1401: (2.2, 1.0, 0.08), 1402: (3.5, 1.0, 0.6), 1403: (5.5, 1.0, 5.0),
+    1361: (3.0, 1.0, 0.5), 1362: (1.2, 0.5, 0.02), 1363: (0.0, 0.0, 0.0),
+    1397: (0.1, 0.04, 0.0), 1398: (0.2, 0.08, 0.0), 1399: (0.4, 0.15, 0.0), 1400: (0.8, 0.28, 0.0),
+    1401: (1.4, 0.45, 0.01), 1402: (2.2, 0.7, 0.08), 1403: (3.5, 1.0, 0.6), 1404: (5.5, 1.0, 5.0),
 }
 FLARE_BLUR = 0.12            # radius of the veiling glare, of the frame size
-FLARE_GAIN = 2.0             # stops the glare branch sits above the frame
+FLARE_GAIN = 1.0             # stops the glare branch sits above the frame
 
 # ---------------------------------------------------------------- gravity (degrees; the room's frame / the cup's)
 TILT_S13 = (1305, 1344, 4.0)  # S13: 4 deg by its cut, eased in (t^2), still accelerating
@@ -101,7 +107,7 @@ ROLL_IN = 90.0               # deg: frame top = his right (-X); the table runs t
 SHIFT_IN = (-0.14, 0.0)      # lens shift: he sits right of centre, the walnut runs out to frame left
 EXPOSURE_IN = -0.7           # the slab-lit crown and the walnut, not the carpet's cobalt, set the level
 SUN_TABLE_IN = None          # W/m2 of the walnut-only slab sun (env LIGHT['sun_table'] = 6.0); None keeps it
-WALNUT_SUN_IN = 6.5          # W/m2: the walnut takes the slab from its own sun only, at this level (the main sun is
+WALNUT_SUN_IN = 3.0          # W/m2: the walnut takes the slab from its own sun only, at this level (the main sun is
                              # light-linked off it): seen straight down the coat is lit square-on, so the slab on
                              # the walnut needs less than him; None keeps the room's two-sun slab
 DIFFUSER_GLOSSY_IN = False   # False: the walnut coat does not mirror the skylight or its sunlit well (seen
@@ -128,13 +134,14 @@ EXPOSURE_OUT = None          # None: env look's own exposure
 TOP_LEVEL = None             # override the framing's moon top fill scale
 GLINT_NIGHT = None           # scale of the env's silver sea-glint lamp (None keeps the framing's)
 FIREFLY_VIEW = 1377          # the firefly points are sized (>= 1.4 px) for the lens on this frame: the unison flash
-LENS_ZOOM = (1395, 1403, 85.0)  # the rush into the light: 18 mm eases (in) to this over these frames, so the slot
+LENS_ZOOM = (1397, 1404, 85.0)  # the rush into the light: 18 mm eases (in) to this over these frames, so the slot
                                 # fills the frame from 300+ m, where the hole still reads as a clean rounded oblong
 VEIL = True                  # inside the beam's prism the lens sees it as a silver veil (env look inside_beam);
                              # where the path leaves the prism the veil eases off and the shaft eases on
 REVEAL = 6                   # frames for that hand-over
-SHUTTER_OUT = 0.25           # motion-blur shutter outside (frames): the tilt sweeps ~14 deg a frame at its peak;
-                             # a half-frame shutter smeared every frame of it
+SHUTTER_OUT = 0.15           # motion-blur shutter outside (frames): the tilt peaks ~11 deg a frame; a half-frame
+                             # shutter smeared every frame of it into mush (A/B on f1386 at 0.02 / 0.25 / 1.0)
+BOX_SKYLIGHT = 12.0          # the box's roof slot (env night 24): it glows softly, warm-white, under the beam
 SHAFT_LEVEL = 0.7            # the shaft's strength for this shot (x env nominal): the lens rides right beside it
 
 DIAG = bool(os.environ.get('S14_DIAG'))
@@ -148,6 +155,11 @@ for _k, _v in _opts.items():
 def smoother(t):
     t = min(1.0, max(0.0, t))
     return t * t * t * (t * (6 * t - 15) + 10)
+
+
+def smooth3(t):
+    t = min(1.0, max(0.0, t))
+    return t * t * (3.0 - 2.0 * t)
 
 
 def hermite(t, s0, s1):
@@ -220,7 +232,6 @@ def flare_nodes(sc, frames):
     blur.name = 'S14_FlareGlare'
     blur.filter_type = 'FAST_GAUSS'
     w = sc.render.resolution_x * sc.render.resolution_percentage / 100.0
-    h = sc.render.resolution_y * sc.render.resolution_percentage / 100.0
     if 'Size' in blur.inputs:
         blur.inputs['Size'].default_value = (FLARE_BLUR * w, FLARE_BLUR * w)
     else:
@@ -444,6 +455,7 @@ def inside_lights(R):
         sp_ = C.area_light('s14_skylight_spill', (0.0, y1 - 0.5 * SPILL_LEN, z), (0.0, y1 - 0.5 * SPILL_LEN, 0.0),
                            SPILL_IN, R.ROOM['skylight_w'], SPILL_LEN, color=(0.92, 0.95, 1.0), coll=coll)
         sp_.data.shape = 'RECTANGLE'
+        sp_.rotation_euler = (0.0, 0.0, 0.0)          # straight down; its length along the slot (Y)
         sp_.visible_camera = False
         sp_.visible_glossy = False
     return b
@@ -543,14 +555,14 @@ def pchip(xs, ys):
 
 
 class Rise:
-    """The exterior lens. It rides the beam's axis up from the box's roof (D(f) m, RISE_KEYS), looking
-    back down the beam at the box (frame centre, the far side of the world at frame top) until the
-    tilt; the path bends off the beam's axis onto the slot's own normal for the last few hundred metres
-    (NORMAL_BLEND), so the hole it flies into is the clean rounded oblong S01 opened on. The tilt up
-    (TILT_UP) turns the lens 180 deg about its own horizontal axis, top of frame leading: over the far
-    terraces, up the far cliff past the tilted sea's horizon, through the lid's dome overhead and on to
-    the slot. The up vector is carried along by parallel transport (no roll of its own); a roll eased
-    in over the tilt lays the slot's long axis level at the end."""
+    """The exterior lens. It rises from the box's roof (D(f) m up the path, RISE_KEYS) toward the slot,
+    looking back down at the box (frame centre) until the tilt. The path starts on the beam's axis and
+    bends off it onto the slot's own normal (NORMAL_BLEND, by distance from the slot), so the beam shows
+    beside the lens as a column and the hole it ends on is the clean rounded oblong S01 opened on (seen
+    from closer than ~300 m the hole's mask reads sheared and notched). The tilt up (TILT_UP) turns the
+    lens in the plane of the beam's axis and the slot's normal, which holds the path, the box and the
+    slot: the frame's top leads up along the beam to the slot (about 150 deg). A roll eased in over the
+    tilt lays the slot's long axis level at the end."""
 
     def __init__(self, E):
         self.E = E
@@ -594,7 +606,7 @@ class Rise:
             P = self.location(f)
             Fb = (self.T - P).normalized()
             Fs = (self.SC - P).normalized()
-            e = smoother((f - a) / float(b - a))
+            e = smooth3((f - a) / float(b - a))
             if e <= 0.0:
                 F = Fb
             elif e >= 1.0:
@@ -619,7 +631,7 @@ class Rise:
 
     def roll(self, f):
         a, b = TILT_UP
-        return self.roll_hold + (self.roll_end - self.roll_hold) * smoother((f - a) / float(b - a))
+        return self.roll_hold + (self.roll_end - self.roll_hold) * smooth3((f - a) / float(b - a))
 
     def quat(self, f):
         P, F, U = self.frames[f]
@@ -703,9 +715,6 @@ def beam_reveal(E, h, rise):
             k = 0.0 if inside[f] else 1.0
         else:
             k = smoother((f - exit_f + 1) / float(REVEAL))
-        if not VEIL:
-            k = 1.0 if exit_f is None else k
-        m = {key: (veil[key] if not isinstance(veil[key], tuple) else veil[key]) for key in ('start', 'amount')}
         if VEIL:
             sc.world.mist_settings.start = veil['start'] + (clear['start'] - veil['start']) * k
             sc.world.keyframe_insert('mist_settings.start', frame=f)
@@ -753,6 +762,8 @@ def build_outside(args):
     if GLINT_NIGHT is not None:
         lv['glint_night'] = GLINT_NIGHT
     E.apply_light_levels(h, lv)
+    if BOX_SKYLIGHT is not None:
+        E.apply_values(h, {'skylight': {'SkylightStrength': BOX_SKYLIGHT}})
     cam = outside_camera(E, rise)
     key_lens(cam)
     look = dict(fr.get('look', {}))
@@ -766,7 +777,8 @@ def build_outside(args):
     animated_seed(sc)
     flare_nodes(sc, OUTSIDE)
     sc.frame_set(OUTSIDE[0])
-    report_outside(E, h, cam, rise)
+    if DIAG:
+        report_outside(E, h, cam, rise)
     print(f'S14 BUILD outside: {time.time() - t0:.1f}s (camera inside the beam: {inside})', flush=True)
     return dict(h=h, cam=cam, rise=rise)
 

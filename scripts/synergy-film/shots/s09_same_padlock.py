@@ -4,28 +4,40 @@
     blender -b --factory-startup -P shots/s09_same_padlock.py -- --quality final
 
 The beats (film frames, 90 BPM = 16 frames a beat; TREATMENT.md S09):
-  f833-868  Kevin speaks again (identical rhythm to S04: seed 7): his sky-blue key, behind the
-            camera, pulses across Synergy's face plate, chest and the walnut, then holds steady.
-  f836-852  the same hero padlock, still gliding from Kevin's place, is revealed behind the lens;
-            it enters frame on f841 (large and soft, passing the lens), decelerates at a constant
-            rate and meets his left index tip still moving on f852: it stops dead (the knock).
-  f857-868  his head pitches DOWN 12 deg (neck 4 + head 8, both A-frame pistons closing
-            together), one mechanical move eased in and out.
-  f857-872  rack focus from the padlock to his face screen.
+  f833-856  Kevin speaks again, S04's three murmur bursts exactly (S04 f353/361/369 + 480 = f833/
+            841/849, 8 frames each, the cue sheet's s09-kevin-murmur-1/2/3): his screen plays S04's
+            kevin_speaks grammar, and his sky-blue key from behind the lens swells once per burst
+            (a smooth raised-cosine envelope, rest 1.0, peak 1.4, no one-frame steps) across the
+            face plate and upper chest, with a sky sheen across the walnut; steady from f857.
+  f833-852  the same hero padlock, still gliding from Kevin's place (in the scene from f833, 1.9 m
+            down-table behind the lens, so nothing switches on mid-shot), enters frame on f841
+            (large and soft, passing the lens), decelerates at a constant rate and meets his left
+            index tip still moving at S04's 0.30 m/s on f852: it stops dead (the knock). Its line
+            runs 22 mm to his right of the tip, so the brass meets the bronze tip with its
+            camera-right shoulder and the tip stays visible beside it.
+  f857-868  his head pitches DOWN 12 deg (neck 4 + head 8, both A-frame pistons closing together)
+            and turns 8 deg to his left, toward the padlock, in one mechanical move eased in and
+            out; the eyes drop two LEDs and shift two LEDs to his left (at the padlock) on f857.
+  f857-872  rack focus from the padlock to his face screen (f/1.6 for this shot, so it reads).
   f869-884  absolute stillness.
   f885-897  the praise wave leaves LED 1 at canon speed and stops dead at LED 9 on f897;
   f897-912  frozen; f913-920 it fades back to the 11% idle.
   f917-924  one slow blink (middle row, off, middle row, full).
-  f921-928  his head lifts back to level.
+  f921-928  his head lifts back to level (the eyes return inside the blink).
 The cup never moves (right hand, chest height); no head dip; he never walks; locked camera.
 
 Camera: the director's approved s09_low framing (env_room.preview_camera): lens 6 cm above
-the walnut, 0.9 m down-table of the stop, 24 mm f/2.8, looking back up at him; panned ~5 deg
+the walnut, 0.9 m down-table of the stop, 24 mm, looking back up at him; panned ~5 deg
 (same lens, same position) so the padlock-to-face vertical sits on the frame's centre line.
-Light: the room as built, plus Kevin's sky-blue key from behind the lens (driven by his screen,
-so it pulses ~30% with the murmur and holds after f869), the slab's warm bounce off the walnut
-(his lower torso), the skylight's spill off the head wall as a cool rim, the padlock kit's warm
-card re-aimed for this lens, and Room.front_bokeh's colleague discs in the void behind him.
+Opened from f/2.8 to f/1.6 for this shot so the rack focus registers.
+Light: the room as built, plus Kevin's saturated sky-blue key from behind the lens (narrow,
+aimed at his screen and upper chest so it falls off down the torso), a glossy-only sky card
+light-linked to the walnut (the sky sheen across the coat, same envelope), the slab's warm
+bounce off the walnut on his lower torso (about a stop under the head), the skylight's spill
+off the head wall as a cool rim, the padlock kit's warm card re-aimed for this lens, and
+Room.front_bokeh's colleague discs set on one band at his eye line (Kevin's own disc is
+dropped: his screen is behind the camera). The hub's mic LEDs are hidden from this lens.
+Compositor: the house look plus a soft glare on the LED (emission) pass alone.
 """
 
 import json
@@ -51,27 +63,51 @@ INFO = next(s for s in json.load(open(os.path.join(HERE, 'shots.json'))) if s['i
 START, END = INFO['start'], INFO['end']
 
 # ---------------------------------------------------------------- the beats (film frames)
-SPEAK = (833, 869)          # Kevin's murmur: the same seed as S04, so the same rhythm
-SLIDE = (836, 852)          # padlock: revealed behind the lens a beat before the knock (f852)
+SYLLABLES = ((833, 8), (841, 8), (849, 8))   # S04's (353/361/369) + 480: the same murmur bursts
+SPEAK_PULSE = 0.25          # S04: the whole field pulses this much brighter and dimmer
+SPEAK_BAND = 1.5            # S04: band strength
+SLIDE = (START, 852)        # padlock keyed from the cut (behind the lens) to the knock on f852
 ENTER = 841                 # first frame any of it is in frame
-V_KNOCK = 0.012             # m per frame (0.3 m/s): still moving when it meets the fingertip
-LOOK = (857, 868)           # head pitches down 12 deg
-RACK = (857, 872)           # focus padlock -> face screen
+V_KNOCK = 0.0125            # m per frame (0.30 m/s) when it meets the fingertip: S04's knock exactly
+SLIDE_OFFSET = 0.022        # the slide line runs this far to his right (-X, frame left) of the tip
+LOOK = (857, 868)           # head pitches down 12 deg (keyed f856 -> f868: moves on f857-868)
+RACK = (856, 872)           # focus padlock -> face screen (keyed f856 -> f872: moves from f857)
 STALL = (885, 897)          # wave head leaves LED 1 / stops dead at LED 9
 HOLD_END = 912              # frozen until here, fades f913-920
 BLINK = (917, 924)          # middle row, off, middle row, full
-LIFT = (921, 928)           # head back to level
+LIFT = (920, 928)           # head back to level (keyed f920 -> f928: moves on f921-928, the servo cue)
 LOOK_DOWN = 12.0            # degrees, split between neck and head
 NECK_SHARE = 4.0
+LOOK_TURN = 8.0             # degrees toward his left (the padlock), head only, in the same move
+EYES = (2, 2)               # (dx, dy) LEDs the eyes shift during the look: toward his left, down (one LED
+                            # each way read as a look into the lens from this low frontal camera)
+
+# camera
+FSTOP = 1.6                 # approved lens and position; aperture opened so the rack focus registers
 
 # light and look (tuned on proof renders)
-KEVIN_E = 34.0              # Kevin's sky-blue key (W, at speaking rest level)
-KEVIN_SAT = 1.0             # saturation push on Kevin's hue for the key
-BOUNCE_E = 3.0              # the slab's warm bounce off the walnut
+KEVIN_E = 12.0              # Kevin's sky-blue key (W, at the envelope's rest level 1.0)
+KEVIN_SAT = 1.7             # saturation push on Kevin's #b8d7fb for the key (1 = his pale screen colour)
+KEVIN_GREEN = 0.78          # and its green pulled down a touch: on the warm enamel the product stays sky blue,
+                            # not the cyan-green a pure saturation push gives
+KEVIN_PEAK = 0.40           # envelope peak over rest at each murmur burst (raised cosine; <= ~4% a frame)
+KEVIN_SIZE = (0.30, 0.24)   # the key's area (m)
+KEVIN_SPREAD = 20.0         # degrees: a narrow fan, aimed at his screen and upper chest
+KEVIN_AIM_DZ = -0.06        # aim this far below the screen centre
+SKY_E = 2.4                 # the glossy-only sky card over the walnut (W at rest)
+SKY_POS = (0.10, 0.65, 0.12)   # its centre: off his position (x, y) and above the walnut (z)
+SKY_SIZE = (2.6, 1.4)       # across the table, along it
+BOUNCE_E = 3.5              # the slab's warm bounce off the walnut (lower torso)
+BOUNCE_AIM_Z = 0.98         # bounce aimed at his pelvis plate, not the badge
 RIM_E = (90.0, 60.0)        # the skylight's spill off the head wall, high behind him (his left, his right)
 CARD_E, CARD_DIST, CARD_UP = 4.0, 0.55, 0.20     # the padlock's warm face card
-BOKEH = dict(seed=8, region=(0.06, 0.88, 0.70, 0.93))   # Room.front_bokeh layout: clear of his head and the edges
-EYES_DOWN = 1               # LEDs the eyes glance down during the look (0 = none)
+BOKEH_SEED = 8
+BOKEH_ORDER = (('operations', 0.10), ('keys', 0.20), ('synthia', 0.30),      # his right: frame left
+               ('arjun', 0.70), ('strategy', 0.80), ('people', 0.90))         # his left: frame right
+BOKEH_PX = (60.0, 64.0)     # disc widths at 1600 px (similar sizes)
+BOKEH_BEHIND = (8.0, 8.6)   # metres beyond him (similar depths)
+LED_GLOW = 0.45             # extra fog-glow strength on the emission pass (LEDs, bokeh), 0 = off
+LED_GLOW_THRESHOLD = 1.2
 PAN_GAIN = 1.0              # 1 = the padlock/face axis exactly on the centre line, 0 = as approved
 
 HAND_L = ['hand_L'] + [f'{n}_{i}_L' for n in ('index', 'middle', 'ring', 'pinky') for i in (1, 2, 3)] + \
@@ -82,15 +118,58 @@ def face_timeline():
     tl = F.FaceTimeline(START, END)
     # the praise starts and stalls halfway: head on LED 9 at f897, frozen to f912, fade f913-920
     tl.stall(STALL[0], stop_led=9, hold=HOLD_END - STALL[1], fade=8, stop_frame=STALL[1])
-    # the eyes drop one LED as the head starts down (he looks AT it), back up as it lifts
-    if EYES_DOWN:
-        tl.look(LOOK[0], LIFT[0] - 1, dx=0, dy=EYES_DOWN)
+    # the eyes go to the padlock (down, toward his left) as the head starts down; they come back
+    # inside the blink, before the lift
+    tl.look(LOOK[0], LIFT[0], dx=EYES[0], dy=EYES[1])
     # one slow blink, f917-924: middle row (2), dark (3), middle row (2), full on f924
     b0 = BLINK[0]
     tl.eyes_rows(b0, b0 + 1, (1,), close=1)
     tl.eyes_rows(b0 + 2, b0 + 4, (), close=1)
     tl.eyes_rows(b0 + 5, b0 + 6, (1,), close=1)
     return tl
+
+
+def kevin_speaks(t):
+    """S04's kevin_speaks, shifted to S09's bursts: three pale bands sweep left to right across
+    Kevin's field, one per murmur burst, while the whole field pulses about +-25%. His screen is
+    behind the lens here, so this drives his own walnut pool (off screen); the key and the sky
+    card on Synergy follow the smoothed envelope (kevin_env) instead of these keys."""
+    lo, hi = 1.0 - SPEAK_PULSE, 1.0 + SPEAK_PULSE
+    f0 = SYLLABLES[0][0]
+    t.key(f0 - 1, 'LINEAR', band=-0.3, bamt=0.0, gain=1.0)
+    for f, dur in SYLLABLES:
+        t.key(f, 'LINEAR', band=-0.15, bamt=0.0, gain=lo)
+        t.key(f + 1, 'LINEAR', bamt=SPEAK_BAND)
+        t.key(f + dur // 2, 'LINEAR', gain=hi)
+        t.key(f + dur - 2, 'LINEAR', bamt=0.9 * SPEAK_BAND)
+        t.key(f + dur - 1, 'CONSTANT', band=1.15, bamt=0.0, gain=lo)
+    fe = SYLLABLES[-1][0] + SYLLABLES[-1][1]
+    t.key(fe, 'LINEAR', band=-0.3, bamt=0.0, gain=1.0)
+
+
+def kevin_env(f):
+    """Kevin's light on Synergy: rest 1.0, one raised-cosine swell per murmur burst (peak
+    1 + KEVIN_PEAK mid-burst, back to rest exactly at the burst's end), so it reads as speech
+    and never as a one-frame flicker."""
+    v = 1.0
+    for f0, dur in SYLLABLES:
+        u = (f - f0) / float(dur)
+        if 0.0 <= u <= 1.0:
+            v += KEVIN_PEAK * 0.5 * (1.0 - math.cos(2.0 * math.pi * u))
+    return v
+
+
+def key_env(light, base):
+    """Key light.data.energy = base * kevin_env(f) on every frame of the speech (LINEAR), held
+    at base before and after."""
+    f0 = SYLLABLES[0][0] - 1
+    f1 = SYLLABLES[-1][0] + SYLLABLES[-1][1] + 1
+    for f in [START - 1] + list(range(f0, f1 + 1)) + [END]:
+        light.data.energy = base * kevin_env(f)
+        light.data.keyframe_insert('energy', frame=f)
+    for fc in C.fcurves(light.data.animation_data.action):
+        for kp in fc.keyframe_points:
+            kp.interpolation = 'LINEAR'
 
 
 def room_timeline(room):
@@ -112,8 +191,8 @@ def room_timeline(room):
     # S07's objects were all posted: none is left on the walnut (Pat's envelope never moved)
     for nm, i, f, dbl in R.S07_ARRIVALS:
         room.key_visible(room.props[nm][i], f + (8 if dbl else 16), False)
-    # Kevin again: the same murmur (same seed, same syllables as S04's f353)
-    room.terminals['kevin'].speak(SPEAK[0], SPEAK[1], seed=7)
+    # Kevin again: S04's murmur, burst for burst (the identical sample is the joke)
+    kevin_speaks(room.terminals['kevin'])
 
 
 def stage_synergy(tl):
@@ -123,7 +202,7 @@ def stage_synergy(tl):
     # fingertip_L contract), the canon 4 deg head roll
     rig.apply_preset(START, 'reach_L', k)
     level = dict(neck=(0.0, 0.0, 0.0), head=S.CANON_HEAD)
-    down = dict(neck=(NECK_SHARE, 0.0, 0.0), head=(LOOK_DOWN - NECK_SHARE, S.CANON_HEAD[1], 0.0))
+    down = dict(neck=(NECK_SHARE, 0.0, 0.0), head=(LOOK_DOWN - NECK_SHARE, S.CANON_HEAD[1], LOOK_TURN))
     for f, pose in ((LOOK[0] - 1, level), (LOOK[1], down), (LIFT[0], down), (LIFT[1], level)):
         rig.pose(f, k, **pose)
     return rig
@@ -131,18 +210,26 @@ def stage_synergy(tl):
 
 def padlock_slide(room, rig, cam):
     """The hero padlock slides in from behind the lens and stops dead against the real index tip
-    (zero overlap, 1.5 mm short of contact) on the knock."""
+    (zero overlap, 1.5 mm short of contact) on the knock. Its line is parallel to the glide from
+    Kevin's place but SLIDE_OFFSET to his right, so it meets the tip with its camera-right
+    shoulder and the bronze tip shows beside the brass."""
     pad = room.props['kevin'][0]
     sc = bpy.context.scene
     sc.frame_set(SLIDE[1])
     home = Vector(R.prop_home('kevin'))
     contract = Vector(R.stop_for('padlock', obj=pad, start=tuple(home)))
     dirn = (contract - home).normalized()
-    stop = Vector(R.stop_for('padlock', obj=pad, start=tuple(contract - dirn * 1.6),
+    side = Vector((-dirn.y, dirn.x))                 # perpendicular in plan, toward -X (his right)
+    if side.x > 0:
+        side = -side
+    off = side * SLIDE_OFFSET
+    tip = Vector(R.ROOM['fingertip_L'][:2]) + off    # the tip's line moved over: the sweep stays parallel
+    start = contract - dirn * 1.6 + off
+    stop = Vector(R.stop_for('padlock', obj=pad, start=(start.x, start.y), tip=(tip.x, tip.y),
                              hand=rig.parts_on_bones(HAND_L)))
-    # it has been gliding since it left Kevin (S04's glide): revealed a beat before the knock
-    # behind the lens, it enters frame exactly on ENTER, R_enter short of the stop (the largest
-    # R that shows any of it on ENTER and none on ENTER - 1), and decelerates at a constant rate
+    # it has been gliding since it left Kevin (S04's glide): in the scene from the cut, behind
+    # the lens, it enters frame exactly on ENTER, R_enter short of the stop (the largest R that
+    # shows any of it on ENTER and none on ENTER - 1), and decelerates at a constant rate
     for k in range(0, 25):
         r_enter = 0.95 - 0.025 * k
         key_glide(pad, stop, dirn, r_enter)
@@ -150,12 +237,14 @@ def padlock_slide(room, rig, cam):
             break
     if in_frame(pad, cam, ENTER - 1):
         print('S09 WARNING: the padlock shows before ENTER', flush=True)
-    # held at the stop to the cut (the frame_set probes above left the f840 values in .location)
+    # held at the stop to the cut (the frame_set probes above left other values in .location)
     pad.location = (stop.x, stop.y, pad.location.z)
     pad.keyframe_insert('location', frame=END)
     v0 = 2.0 * r_enter / (SLIDE[1] - ENTER) - V_KNOCK
+    a = (v0 - V_KNOCK) / (SLIDE[1] - ENTER)
+    t0 = SLIDE[1] - START
     print(f'S09 padlock glide: {r_enter:.3f} m short of the stop on f{ENTER}, entering at {v0 * C.FPS:.2f} m/s, '
-          f'knock at {V_KNOCK * C.FPS:.2f} m/s', flush=True)
+          f'knock at {V_KNOCK * C.FPS:.2f} m/s; {V_KNOCK * t0 + 0.5 * a * t0 * t0:.2f} m short on f{START}', flush=True)
     return pad, stop
 
 
@@ -181,35 +270,59 @@ def key_glide(pad, stop, dirn, r_enter):
 
 
 def kevin_key(room, rig):
-    """Kevin's screen is behind the lens: a sky-blue key from the camera side across his face
-    plate and chest (and the walnut, the padlock), driven by Kevin's screen state so it pulses
-    in the speech rhythm and holds steady after. Not seen by the camera."""
+    """Kevin's screen is behind the lens: a saturated sky-blue key from the camera side, a narrow
+    fan aimed at his face screen and upper chest (it falls off down the torso), swelling once per
+    murmur burst on the smoothed envelope and steady after. Not seen by the camera, no sheen."""
     t = room.terminals['kevin']
-    scr = t.screen
     bpy.context.scene.frame_set(START)
     face = rig.screen_point(0.5, 0.45)
     src = t.to_world((0.0, P.CRT['front'], P.CRT['zs']))
     d = (src - face).normalized()
     pos = face + d * 2.4
-    # Kevin's pale #b8d7fb is pushed in saturation so it still reads as sky blue on the warm enamel
-    col = tuple(1.0 - (1.0 - c) * KEVIN_SAT for c in t.light.data.color)
-    lt = C.area_light('s09_kevin_key', tuple(pos), tuple(face + Vector((0.0, 0.0, -0.18))), 1.0, 0.55, 0.40,
-                      color=col, coll=C.collection('S09_light'))
+    col = kevin_colour(t)
+    lt = C.area_light('s09_kevin_key', tuple(pos), tuple(face + Vector((0.0, 0.0, KEVIN_AIM_DZ))), 1.0,
+                      KEVIN_SIZE[0], KEVIN_SIZE[1], color=col, coll=C.collection('S09_light'))
     lt.visible_camera = False
-    lt.visible_glossy = False           # no broad grey sheen across the walnut coat
-    lt.data.spread = math.radians(70)
-    E = KEVIN_E
-    v = [('on', scr, '["crt_on"]'), ('gain', scr, '["crt_gain"]'), ('sx', scr, '["crt_sx"]'),
-         ('sy', scr, '["crt_sy"]'), ('bamt', scr, '["crt_bamt"]'), ('flare', scr, '["crt_flare"]')]
-    P.add_driver(lt.data, 'energy', f'{E:.3f}*on*gain*flare*(0.12+0.88*sx*sy)*(1+0.3*bamt)', v)
+    lt.visible_glossy = False           # no broad grey sheen across the enamel or the coat
+    lt.data.spread = math.radians(KEVIN_SPREAD)
+    key_env(lt, KEVIN_E)
+    return lt
+
+
+def kevin_colour(t):
+    """Kevin's pale #b8d7fb pushed in saturation (1 - (1 - c) * KEVIN_SAT) and its green eased
+    (KEVIN_GREEN), so it reads as sky blue on the warm enamel under AgX."""
+    r, g, b = (max(0.0, 1.0 - (1.0 - c) * KEVIN_SAT) for c in t.light.data.color)
+    return (r, g * KEVIN_GREEN, b)
+
+
+def walnut_sky(room, rig):
+    """Kevin's sky light on the walnut: a glossy-only card in his colour over the head of the
+    table, facing down and light-linked to the walnut alone, placed where this low lens sees it
+    mirrored in the coat (a sky sheen across the foreground walnut, his reflection dark in it).
+    Same envelope as the key."""
+    t = room.terminals['kevin']
+    sp = Vector(R.SYNERGY_POS)
+    c = Vector((sp.x + SKY_POS[0], sp.y + SKY_POS[1], R.TABLE_TOP + SKY_POS[2]))
+    lt = C.area_light('s09_walnut_sky', tuple(c), tuple(c - Vector((0.0, 0.0, 1.0))), 1.0, SKY_SIZE[0], SKY_SIZE[1],
+                      color=kevin_colour(t), coll=C.collection('S09_light'))
+    lt.rotation_euler = (0.0, 0.0, 0.0)                 # facing straight down, its long side across the table
+    lt.visible_camera = False
+    lt.visible_diffuse = False
+    lt.visible_transmission = False
+    lt.visible_volume_scatter = False
+    lt.visible_glossy = True
+    R._link_light(lt, R.walnut_objects(room), 'S09_walnut_sky_receivers')
+    key_env(lt, SKY_E)
     return lt
 
 
 def walnut_bounce():
     """The slab's warm bounce off the walnut in front of him (rig owner's note: the room gives his
-    lower torso no light): lower torso, arms, the cup and the back of the left hand."""
+    lower torso no light): lower torso and pelvis plate, about a stop under the head; arms, the
+    cup and the back of the left hand take a little."""
     sp = Vector(R.SYNERGY_POS)
-    lt = C.area_light('s09_walnut_bounce', (sp.x, sp.y - 0.80, R.TABLE_TOP + 0.02), (sp.x, sp.y - 0.05, 1.22),
+    lt = C.area_light('s09_walnut_bounce', (sp.x, sp.y - 0.80, R.TABLE_TOP + 0.02), (sp.x, sp.y - 0.05, BOUNCE_AIM_Z),
                       BOUNCE_E, 1.1, 0.5, color=(1.0, 0.84, 0.70), coll=C.collection('S09_light'))
     lt.visible_camera = False
     lt.visible_glossy = False
@@ -291,6 +404,7 @@ def centre_axis(cam, rig):
 
 def rack_focus(cam, rig, stop):
     """Locked off; the rack focus from the padlock to his face screen, eased in and out."""
+    cam.data.dof.aperture_fstop = FSTOP
     foc = cam.data.dof.focus_object
     sc = bpy.context.scene
     sc.frame_set(LOOK[1])
@@ -300,9 +414,79 @@ def rack_focus(cam, rig, stop):
         C.key(foc, 'location', f, tuple(p))
 
 
+def bokeh_band(room, cam, rig):
+    """Room.front_bokeh's colleague discs, laid out on the room's rigid grid: one band at his eye
+    line, three each side at even steps, symmetric about the frame's centre line, similar sizes
+    and depths, every disc well clear of the frame edges, his head and the cup. Kevin's own disc
+    is dropped (his screen is behind the camera: he lights Synergy, he is not behind him)."""
+    from bpy_extras.object_utils import world_to_camera_view
+    sc = bpy.context.scene
+    discs = room.front_bokeh(cam, frame=LOOK[1], n=8, seed=BOKEH_SEED, disc_px=BOKEH_PX, behind=BOKEH_BEHIND)
+    sc.frame_set(START)
+    y = world_to_camera_view(sc, cam, rig.screen_point(0.5, 0.62)).y      # his eye line
+    cd = cam.data
+    res_x = sc.render.resolution_x * sc.render.resolution_percentage / 100.0
+    res_y = sc.render.resolution_y * sc.render.resolution_percentage / 100.0
+    sw, lens = cd.sensor_width, cd.lens
+    sh = sw * res_y / res_x
+    mw = cam.matrix_world
+    loc, rot = mw.translation, mw.to_3x3()
+    place = dict(BOKEH_ORDER)
+    for o in discs:
+        nm = o.get('bokeh_terminal')
+        if nm not in place:
+            o.hide_render = True
+            o.hide_viewport = True
+            continue
+        x = place[nm]
+        D = (o.location - loc).length
+        dirc = Vector(((x - 0.5 + cd.shift_x) * sw / lens, (y - 0.5) * sh / lens + cd.shift_y * sw / lens, -1.0))
+        dw = (rot @ dirc).normalized()
+        o.location = loc + dw * D
+        o.rotation_euler = (-dw).to_track_quat('Z', 'Y').to_euler()
+    return discs
+
+
+def led_glow(strength=LED_GLOW, threshold=LED_GLOW_THRESHOLD):
+    """The treatment's LED-only glare: a soft fog glow from the emission pass alone (the face's
+    LEDs; the soft bokeh discs sit under the threshold), added to the image ahead of the house
+    look. Image-space only: no green ever lands on the chassis."""
+    if strength <= 0:
+        return None
+    sc = bpy.context.scene
+    sc.view_layers[0].use_pass_emit = True
+    nt = sc.node_tree
+    rl = next(n for n in nt.nodes if n.type == 'R_LAYERS')
+    users = [(l.to_node, l.to_socket) for l in nt.links if l.from_socket == rl.outputs['Image']]
+    g = nt.nodes.new('CompositorNodeGlare')
+    g.glare_type = 'FOG_GLOW'
+    g.quality = 'MEDIUM'
+    nt.links.new(rl.outputs['Emit'], g.inputs['Image'])
+    if 'Strength' in g.inputs:
+        g.inputs['Threshold'].default_value = threshold
+        g.inputs['Strength'].default_value = strength
+        g.inputs['Size'].default_value = 0.55
+    glow = g.outputs['Glare'] if 'Glare' in g.outputs else None
+    if glow is None:                       # older node: glare + input; subtract the input back out
+        sub = nt.nodes.new('CompositorNodeMixRGB')
+        sub.blend_type = 'SUBTRACT'
+        sub.inputs['Fac'].default_value = 1.0
+        nt.links.new(g.outputs['Image'], sub.inputs[1])
+        nt.links.new(rl.outputs['Emit'], sub.inputs[2])
+        glow = sub.outputs[0]
+    add = nt.nodes.new('CompositorNodeMixRGB')
+    add.blend_type = 'ADD'
+    add.inputs['Fac'].default_value = 1.0
+    nt.links.new(rl.outputs['Image'], add.inputs[1])
+    nt.links.new(glow, add.inputs[2])
+    for node, sock in users:
+        nt.links.new(add.outputs[0], sock)
+    return g
+
+
 def glint(rig, cam):
     """The reflected skylight slot on the face glass, re-aimed through the head moves."""
-    keys = sorted({START, LOOK[0] - 1, *range(LOOK[0], LOOK[1] + 1), LIFT[0], *range(LIFT[0], LIFT[1] + 1), END})
+    keys = sorted({START, *range(LOOK[0] - 1, LOOK[1] + 1), *range(LIFT[0], LIFT[1] + 1), END})
     for f in keys:
         rig.glass_glint(cam, f)
 
@@ -317,6 +501,8 @@ def report(rig, cam, pad, stop):
         sc.frame_set(f)
         q = world_to_camera_view(sc, cam, rig.screen_point(0.5, 0.5))
         print(f'S09 f{f} face screen centre at image ({q.x:.3f}, {q.y:.3f})', flush=True)
+    env = ' '.join(f'{kevin_env(f):.3f}' for f in range(SYLLABLES[0][0], SYLLABLES[-1][0] + SYLLABLES[-1][1] + 2))
+    print(f'S09 Kevin envelope f{SYLLABLES[0][0]}..: {env}', flush=True)
 
 
 def build(args):
@@ -326,8 +512,7 @@ def build(args):
     room_timeline(room)
     rig = stage_synergy(face_timeline())
     pad = room.props['kevin'][0]
-    room.key_visible(pad, START, False)          # posted in S05: gone until it comes back
-    room.key_visible(pad, SLIDE[0], True)
+    room.key_visible(pad, START, True)           # in the scene from the cut (behind the lens): no mid-shot switch
     _, cam = R.preview_camera(room, 's09_low')    # the approved framing (and the padlock kit)
     sc.camera = cam
     centre_axis(cam, rig)
@@ -335,12 +520,16 @@ def build(args):
     padlock_card(room, pad, cam)
     rack_focus(cam, rig, stop)
     kevin_key(room, rig)
+    walnut_sky(room, rig)
     walnut_bounce()
     crown_rim()
     glint(rig, cam)
-    room.front_bokeh(cam, frame=LOOK[1], **BOKEH)
+    room.hub.leds.visible_camera = False          # its mic LEDs: the only stray green in this frame
+    room.hub.leds.visible_glossy = False
+    bokeh_band(room, cam, rig)
     room.render_budget(kind='macro', samples=args.samples or None, locked=True)
     room.compositor(threshold=1.6)
+    led_glow()
     room.tune_scanlines(cam)
     sc.view_settings.exposure = 0.0
     report(rig, cam, pad, stop)
