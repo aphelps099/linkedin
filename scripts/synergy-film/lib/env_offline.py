@@ -6,23 +6,29 @@ units are metres, Z up, the cup axis is the world Z axis and the espresso sea
 is z = 0. Everything a shot needs to place a camera is in OFFLINE.
 
     import env_offline as E
-    h = E.build_offline('day', include={'cup', 'lid', 'sea', 'arch'}, frames=(529, 608))
+    h = E.build_offline('day', include={'cup', 'lid', 'sea', 'arch', 'hero_padlock'}, frames=(529, 608))
+    E.tune_render(bpy.context.scene, 'final')        # Offline's bounces and sample budget
     E.animate_hero_padlock(h, 529, 553, 566, 578)
-    C.compositor(**E.look('day'))
+    E.apply_look('day')
 
 build_offline() returns a Handles dict: every built object, material control
 and light is reachable by name so shot scripts can animate it. Parts are
 opt-in through `include` so a shot only pays for what it sees.
 
-Lighting model (cheap, clean and physically motivated):
+Lighting model (pre-lit cup: cheap, clean and physically motivated):
+  * the paper wall and the lid are lit from outside, so what the camera sees on
+    them is transmitted light: both are pure emission (backlight field x paper
+    transmittance, colour blooms as Gaussian glows in the paper), never sampled
+    as lights. They light the world by bounce, like a sky;
   * the slot is a real hole in the lid (a shader mask: transparent for camera
     and shadow rays), so the SUN lamp aimed down the shaft only lands where a
     real sunbeam through a sip hole would: a slot-shaped pool on the island;
-  * the paper wall and the lid are translucent; large area lights outside them
-    (warm 3200K ring, a neutral top light and the attendee colour blooms) glow
-    through the paper for camera rays and, via shadow linking that ignores the
-    cup, light the interior directly, so the world is lit by its own walls;
-  * aerial haze is the compositor mist pass (look()), never a volume.
+  * three helper lamps: a soft warm 'key' standing in for the hot slot-side
+    paper (diffuse only), a 'top' disc (the moon dome fill at night) and a
+    narrow 'glint' strip seen only by glossy rays (the glitter path);
+  * the shaft is a surface with a volumetric profile (no volumes, no ovals);
+  * aerial haze is the compositor mist pass (look()): linear, from 150 m;
+  * tune_render() sets Offline's bounces, samples and camera culling.
 
 Crowds (paper falls, murmuration, fireflies) are simulated in numpy and played
 back from PC2 point caches (cache.py), so they are deterministic, need no
@@ -35,7 +41,7 @@ import sys
 
 import bpy
 import numpy as np
-from mathutils import Matrix, Vector
+from mathutils import Euler, Matrix, Quaternion, Vector
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import cache as PC  # noqa: E402
@@ -105,7 +111,7 @@ SLOT_C = _pol(_SLOT_AZ, _SLOT_R, float(lid_z(_SLOT_R)))
 ARCH_C = Vector((-130.0, 40.0, 0.0))
 _u = (ARCH_C - SLOT_C).to_2d().normalized()
 CAM_S01 = Vector((ARCH_C.x + 236.0 * _u.x, ARCH_C.y + 236.0 * _u.y, 1.5))    # glide end (f128)
-CAM_S06 = Vector((ARCH_C.x + 34.0 * _u.x, ARCH_C.y + 34.0 * _u.y, 2.0))
+CAM_S06 = Vector((ARCH_C.x + 55.0 * _u.x, ARCH_C.y + 55.0 * _u.y, 2.0))    # S06 end of tilt: 50 mm, slot in the arch
 SLOT_N = (CAM_S01 - SLOT_C).normalized()           # into the cup, toward the S01 camera
 _slot_x = Vector((-_u.y, _u.x, 0.0)).normalized()  # long axis: horizontal, square to the S01 view
 if _slot_x.dot(Vector((1, 0, 0))) < 0:
@@ -354,14 +360,35 @@ def grid_faces(nu, nv, wrap_u=False):
     return np.stack([a, b, c, d], axis=-1).reshape(-1, 4)
 
 
-def heightfield(name, cx, cy, half_w, half_h, step, fn, coll=None, mat=None):
-    """Grid mesh over [cx-hw, cx+hw] x [cy-hh, cy+hh]; z = fn(X, Y) in world metres."""
+def grid_skirt(V, nx, ny, z):
+    """Extra verts/faces that close a (ny, nx) grid's border with a vertical wall down to z."""
+    ring = np.concatenate([np.arange(nx), np.arange(1, ny) * nx + nx - 1, (ny - 1) * nx + np.arange(nx - 2, -1, -1),
+                           np.arange(ny - 2, 0, -1) * nx])
+    base = len(V)
+    low = V[ring].copy()
+    low[:, 2] = np.minimum(z, low[:, 2] - 1.0)
+    k = np.arange(len(ring))
+    F = np.stack([ring, ring[(k + 1) % len(ring)], base + (k + 1) % len(ring), base + k], 1)
+    return low, F
+
+
+def heightfield(name, cx, cy, half_w, half_h, step, fn, coll=None, mat=None, skirt=None):
+    """Grid mesh over [cx-hw, cx+hw] x [cy-hh, cy+hh]; z = fn(X, Y) in world metres.
+
+    skirt: close the border with a wall down to this z, so a tilted sea (S14)
+    never shows an open edge or the underside.
+    """
     xs = np.arange(-half_w, half_w + 1e-6, step) + cx
     ys = np.arange(-half_h, half_h + 1e-6, step) + cy
     X, Y = np.meshgrid(xs, ys)
     Z = fn(X, Y)
     verts = np.stack([X, Y, Z], axis=-1).reshape(-1, 3)
-    obj = np_mesh(name, verts, grid_faces(len(xs), len(ys)), coll=coll, mat=mat)
+    faces = [grid_faces(len(xs), len(ys))]
+    if skirt is not None:
+        low, Fs = grid_skirt(verts, len(xs), len(ys), skirt)
+        verts = np.vstack([verts, low])
+        faces.append(Fs)
+    obj = np_mesh(name, verts, faces, coll=coll, mat=mat)
     return obj, X, Y, Z
 
 
@@ -792,83 +819,131 @@ def _ring_band(g, z, h, width, amp, below=14.0):
     return g.mul(g.add(line, g.mul(wash, 0.35)), amp)
 
 
-def mat_paper_wall():
-    """Translucent paper-cup wall at kilometre scale.
+DAY_BLOOMS = ('keys', 'strategy', 'people', 'kevin', 'operations', 'linda', 'arjun', 'synthia')
 
-    Three octaves of paper structure in the unrolled (arc length, height) plane:
-    formation flocs (~100 m), fibre bundles (~10 m) and single fibres (~1 m),
-    criss-crossed at several angles. The overlap seam (double thickness) reads
-    as a darker vertical band; coffee tide lines record years of evaporation;
-    below the waterline the paper is soaked brown. Light comes from behind
-    (translucency) from the area lights outside the cup.
+# The paper is lit from outside, so what the camera sees on the cliffs and the lid is light
+# transmitted through them. Both are pre-lit: pure emission = backlight field x transmittance.
+# glow: radiance of the hottest (upper, slot-side) paper; col: its tint (3200K held at low
+# saturation); bloom: Bloom_<name> value when that attendee's exterior bloom is on.
+WALL_STATE = {
+    'day': dict(glow=1.65, col=(1.0, 0.72, 0.45), bloom=1.25, lid=1.45, lid_col=(1.0, 0.97, 0.93)),
+    'night': dict(glow=0.07, col=(0.74, 0.78, 0.88), bloom=0.12, lid=0.05, lid_col=(0.8, 0.86, 0.97)),
+}
+BLOOM_SIGMA = (62.0, 56.0)          # arc / vertical extent (m) of one exterior colour bloom
+
+
+def bloom_names(state, blooms=None):
+    """Attendee blooms that are on: `blooms` if given, else the state's default (night: Pat only)."""
+    if blooms is not None:
+        return tuple(blooms)
+    return DAY_BLOOMS if state == 'day' else ('pat',)
+
+
+def _bloom_centre(name):
+    hx, az, zc = ATTENDEES[name]
+    return _pol(az, float(cup_radius(zc)), zc)
+
+
+def mat_paper_wall(state='day', blooms=None):
+    """Backlit paper-cup wall at kilometre scale (pre-lit: emission only, never sampled as a light).
+
+    Transmittance comes from three octaves of paper structure in the unrolled
+    (arc length, height) plane: formation clouds (~150 m), flocs (~35 m) and
+    fibres, plus vertical flutes; the overlap seam (double paper) and the glue
+    line read darker, tide lines and the soaked lower 0-70 m band stain it
+    brown. The backlight field is hottest on the slot side and high up. The
+    attendee colour blooms are Gaussian glows in the paper (one keyable value
+    node 'Bloom_<name>' each). Large-scale relief comes from the geometry's
+    folds and flutes, shaded against a light above the cup centre.
     """
+    st = WALL_STATE[state]
+    on = set(bloom_names(state, blooms))
     m = new_mat('OFF_PaperWall')
     g = G(m)
     p = g.texco('Object')
     x, y, z = g.sep(p)
-    # azimuth rotated so the atan2 cut sits exactly on the paper seam
     a0 = math.radians(SEAM_AZ)
     xr = g.add(g.mul(x, math.cos(a0)), g.mul(y, math.sin(a0)))
     yr = g.math('SUBTRACT', g.mul(y, math.cos(a0)), g.mul(x, math.sin(a0)))
     th = g.math('ARCTAN2', yr, xr)                      # 0 at the seam, +-pi opposite
     s = g.mul(th, 340.0)                                # arc length (m)
     uv = g.comb(s, z, 0.0)
-    # formation: flocs (~35 m) inside clouds (~140 m): the mottling you see in backlit paper
-    flocs = g.remap(g.noise(g.mapping(uv, scale=(1 / 34.0, 1 / 30.0, 1)), 1.0, 3.0, 0.55, dims='2D'), 0.25, 0.75)
-    clouds = g.remap(g.noise(g.mapping(uv, scale=(1 / 150.0, 1 / 120.0, 1), loc=(7, 2, 0)), 1.0, 3.0, 0.55, dims='2D'), 0.3, 0.7)
-    # fibres: thin wandering lines (isolines of stretched noise), three orientations and sizes
-    fib = None
-    for rot, sc_, w, seed_loc in ((24, (1 / 26.0, 1 / 7.0), 0.03, (3, 1)), (-52, (1 / 18.0, 1 / 5.0), 0.028, (11, 7)),
-                                 (83, (1 / 9.0, 1 / 2.4), 0.035, (2, 13))):
-        n = g.noise(g.mapping(uv, rot=(0, 0, math.radians(rot)), scale=(sc_[0], sc_[1], 1), loc=(*seed_loc, 0)),
-                    1.0, 1.0, 0.5, dims='2D')
-        line = g.remap(g.math('ABSOLUTE', g.math('SUBTRACT', n, 0.5)), w, 0.0)
-        fib = line if fib is None else g.math('MAXIMUM', fib, line)
-    bund = fib
-    thick = g.add(g.mul(flocs, 0.3), g.mul(clouds, 0.45), g.mul(fib, 0.25))
+    # formation: fibrous flocs (grainy fBm with a little warp) inside large clouds
+    flocs = g.remap(g.noise(g.mapping(uv, scale=(1 / 22.0, 1 / 19.0, 1)), 1.0, 5.0, 0.68, distortion=0.25, dims='2D'), 0.34, 0.66)
+    clouds = g.remap(g.noise(g.mapping(uv, scale=(1 / 210.0, 1 / 160.0, 1), loc=(7, 2, 0)), 1.0, 1.0, 0.5, dims='2D'), 0.3, 0.7)
+    flutes = g.remap(g.noise(g.mapping(uv, scale=(1 / 18.0, 1 / 320.0, 1), loc=(5, 3, 0)), 1.0, 2.0, 0.6, dims='2D'), 0.3, 0.7)
+    # fibre bundles: short wandering flecks (isolines of stretched noise), visible only up close
+    n = g.noise(g.mapping(uv, rot=(0, 0, math.radians(24)), scale=(1 / 14.0, 1 / 3.0, 1), loc=(3, 1, 0)), 1.0, 1.0, 0.5, dims='2D')
+    fib = g.mul(g.remap(g.math('ABSOLUTE', g.math('SUBTRACT', n, 0.5)), 0.04, 0.0), g.remap(flocs, 0.3, 0.7))
+    thick = g.add(g.mul(flocs, 0.62), g.mul(clouds, 0.16), g.mul(flutes, 0.1), g.mul(fib, 0.12))
+    trans = g.remap(thick, 0.0, 1.0, 1.3, 0.58)
     # overlap seam: a 64 m band of double paper starting at the seam edge, glue line inside it
     band = g.mul(g.remap(s, -1.5, 0.5, 0.0, 1.0), g.remap(s, 62.0, 64.0, 1.0, 0.0))
     glue = g.mul(g.remap(s, 4.0, 5.0, 0.0, 1.0), g.remap(s, 11.0, 12.5, 1.0, 0.0))
     edge = g.remap(g.math('ABSOLUTE', s), 1.6, 0.0)
-    # tide lines (slightly wavy where the paper wicked unevenly)
-    zw = g.add(z, g.mul(g.math('SUBTRACT', g.noise(g.mapping(uv, scale=(1 / 160.0, 1 / 160.0, 1)), 1.0, 2.0, 0.5, dims='2D'), 0.5), 3.0))
+    trans = g.mul(trans, g.math('SUBTRACT', 1.0, g.add(g.mul(band, 0.25), g.mul(glue, 0.2), g.mul(edge, 0.35))))
+    # tide lines (slightly wavy where the paper wicked unevenly) and the soaked lower band
+    zw = g.add(z, g.mul(g.math('SUBTRACT', g.noise(g.mapping(uv, scale=(1 / 160.0, 1 / 160.0, 1)), 1.0, 1.0, 0.5, dims='2D'), 0.5), 6.0))
     stain = g.add(
-        _ring_band(g, zw, 7.0, 1.2, 0.6, 9.0),
-        _ring_band(g, zw, 24.0, 1.0, 0.36, 16.0),
-        _ring_band(g, zw, 63.0, 0.9, 0.2, 26.0),
-        _ring_band(g, zw, 141.0, 0.8, 0.1, 34.0),
+        _ring_band(g, zw, 7.0, 1.2, 0.5, 9.0),
+        _ring_band(g, zw, 24.0, 1.0, 0.34, 16.0),
+        _ring_band(g, zw, 63.0, 0.9, 0.22, 26.0),
+        _ring_band(g, zw, 141.0, 0.8, 0.12, 34.0),
     )
-    wet = g.remap(zw, 2.5, -0.5)
     # the falls keep a long wet streak on the cliff below the ledge (spray soaks the paper)
     s_f = math.radians((FALLS_AZ - SEAM_AZ + 540.0) % 360.0 - 180.0) * 340.0
-    half_w = g.add(34.0, g.mul(g.math('MAXIMUM', g.math('SUBTRACT', FALLS_Z, z), 0.0), 0.16))
+    half_w = g.add(30.0, g.mul(g.math('MAXIMUM', g.math('SUBTRACT', FALLS_Z, z), 0.0), 0.12))
     ds = g.math('DIVIDE', g.math('SUBTRACT', s, s_f), half_w)
     streak = g.mul(g.math('EXPONENT', g.mul(g.math('POWER', g.math('ABSOLUTE', ds), 2.0), -1.0)),
-                   g.remap(z, FALLS_Z + 8.0, FALLS_Z - 30.0), 0.75)
-    stain = g.math('MINIMUM', g.add(stain, wet, streak), 1.0)
-    trans = g.mix(thick, (1.24, 1.12, 0.9), (0.62, 0.52, 0.38))
-    trans = g.cmul(trans, PAPER)
-    trans = g.mix(g.mul(band, 0.42), trans, g.cmul(trans, (0.55, 0.5, 0.44)))
-    trans = g.mix(g.mul(glue, 0.35), trans, g.cmul(trans, (0.75, 0.62, 0.45)))
-    trans = g.mix(stain, trans, g.cmul(trans, (0.42, 0.2, 0.07)))
-    trans = g.mix(g.mul(edge, 0.6), trans, g.cmul(trans, (0.45, 0.42, 0.38)))
-    diff = g.mix(stain, PAPER, (0.32, 0.17, 0.08))
-    nrm = g.bump(g.add(g.mul(fib, 0.5), g.mul(flocs, 0.5)), strength=0.08, distance=1.0)
-    s_tr = g.bsdf('Translucent', Color=trans, Normal=nrm)
-    s_df = g.bsdf('Diffuse', Color=diff, Roughness=0.7, Normal=nrm)
-    return g.output(g.mixs(0.22, s_tr, s_df))
+                   g.remap(z, FALLS_Z + 6.0, FALLS_Z - 40.0), 0.8)
+    stain = g.math('MINIMUM', g.add(stain, streak), 1.0)
+    soak = g.remap(zw, -4.0, 70.0, 0.05, 1.0, smooth=True)
+    # backlight field: the sun stands outside the slot side, light builds up toward the rim
+    r = g.vmath('LENGTH', g.comb(x, y, 0.0))
+    sa = math.radians(_SLOT_AZ)
+    c = g.math('DIVIDE', g.add(g.mul(x, math.cos(sa)), g.mul(y, math.sin(sa))), g.math('MAXIMUM', r, 1.0))
+    side = g.add(0.45, g.mul(g.math('POWER', g.add(0.5, g.mul(c, 0.5)), 2.0), 0.55))
+    hgt = g.add(0.42, g.mul(g.math('POWER', g.remap(z, 20.0, 600.0, 0.0, 1.0, smooth=True), 2.2), 1.3))
+    # relief: folds and flutes in the geometry, shaded against a light above the cup centre
+    L = g.vmath('NORMALIZE', g.comb(g.mul(x, -1.0), g.mul(y, -1.0), g.math('SUBTRACT', 640.0, z)))
+    lam = g.add(0.62, g.mul(g.math('MAXIMUM', g.vmath('DOT_PRODUCT', g.geo('Normal'), L), 0.0), 0.45))
+    glow_v = g.value(st['glow'], 'WallGlow')
+    field = g.mul(glow_v.outputs[0], side, hgt, soak, lam, trans)
+    # exterior colour blooms glowing through the paper; where one glows, it outshines the warm base
+    ps = g.mapping(p, scale=(1 / BLOOM_SIGMA[0], 1 / BLOOM_SIGMA[0], 1 / BLOOM_SIGMA[1]))
+    bl, cover = None, None
+    for name in ATTENDEES:
+        b = _bloom_centre(name)
+        bs = (b.x / BLOOM_SIGMA[0], b.y / BLOOM_SIGMA[0], b.z / BLOOM_SIGMA[1])
+        d2 = g.math('POWER', g.vmath('DISTANCE', ps, bs), 2.0)
+        bv = g.value(st['bloom'] if name in on else 0.0, 'Bloom_' + name)
+        gs = g.mul(g.math('EXPONENT', g.mul(d2, -1.0)), bv.outputs[0])
+        term = g.vmath('SCALE', srgb(ATTENDEES[name][0]), scale=g.mul(gs, trans))
+        bl = term if bl is None else g.vmath('ADD', bl, term)
+        cover = gs if cover is None else g.add(cover, gs)
+    keep = g.math('SUBTRACT', 1.0, g.mul(g.math('MINIMUM', cover, 1.0), 0.5))
+    # thicker paper absorbs blue first: thick flocs glow warmer, thin voids whiter
+    tint = g.comb(1.0, g.math('POWER', trans, 0.3), g.math('POWER', trans, 0.75))
+    warm = g.vmath('MULTIPLY', st['col'], tint)
+    col = g.vmath('ADD', g.vmath('SCALE', warm, scale=g.mul(field, keep)), bl)
+    col = g.mix(stain, col, g.cmul(col, (0.42, 0.21, 0.08)))
+    m.cycles.emission_sampling = 'NONE'
+    return g.output(g.emission(col, 1.0))
 
 
 def mat_lid(slot_frame, state='day'):
-    """White polystyrene lid, seen from inside: translucent, ribbed, with the slot cut out.
+    """White polystyrene lid seen from inside, backlit by the sky: pre-lit emission, ribs read by value.
 
     The slot is a stadium-shaped mask in the slot frame (projected along the
     slot normal, so from the S01 camera it is a perfect rounded oblong). Inside
     the mask the lid is transparent to every ray type: the S01 camera sees the
     sky emitter through it, and the sun lamp casts a real slot-shaped pool.
-    The cut edge and the plastic around the hole glow (light scattering in the
-    polystyrene), keyed by the 'SlotGlow' value.
+    Only a thin rim at the cut edge glows (light scattering in the cut
+    polystyrene), keyed by the 'SlotGlow' value; the plastic around it does not
+    halo, so the S01/S02 match cut stays crisp. The embossed rib walls are
+    thinner plastic and read brighter; the plug ring at the rim reads darker.
     """
+    st = WALL_STATE[state]
     m = new_mat('OFF_Lid')
     g = G(m)
     sp = g.texco('Object', slot_frame)
@@ -876,19 +951,25 @@ def mat_lid(slot_frame, state='day'):
     ax = g.math('MAXIMUM', g.math('SUBTRACT', g.math('ABSOLUTE', sx), 45.0), 0.0)
     d = g.math('SUBTRACT', g.vmath('LENGTH', g.comb(ax, sy, 0.0)), 22.5)     # stadium SDF (m)
     near = g.remap(g.math('ABSOLUTE', sz), 90.0, 75.0)          # the slope crosses the frame plane steeply
-    hole = g.mul(g.remap(d, 0.35, -0.35), near)
+    hole = g.mul(g.remap(d, 0.3, -0.3), near)
     glow_v = g.value(1.0, 'SlotGlow')
     col = kelvin(7000) if state == 'day' else kelvin(9000)
-    lip = g.mul(g.remap(d, 3.2, 0.2), g.remap(d, 0.0, 0.5), near)
-    halo = g.mul(g.math('EXPONENT', g.mul(g.math('MAXIMUM', d, 0.0), -1 / 22.0)), near, 0.25)
-    em = g.emission(col, g.mul(g.add(g.mul(lip, 14.0), g.mul(halo, 0.9)), glow_v.outputs[0]))
+    lip = g.mul(g.remap(d, 0.0, 0.25, 0.0, 1.0), g.remap(d, 0.25, 1.1, 1.0, 0.0), near)
+    em_lip = g.emission(col, g.mul(lip, 4.0 if state == 'day' else 1.5, glow_v.outputs[0]))
     p = g.texco('Object')
-    mott = g.noise(p, 1 / 9.0, 3.0, 0.6)
-    rough = g.remap(mott, 0.3, 0.7, 0.3, 0.42)
-    nrm = g.bump(g.noise(p, 1 / 2.2, 2.0, 0.5), strength=0.04, distance=1.0)
-    base = g.principled(Base_Color=LID_WHITE, Roughness=rough, Normal=nrm)
-    tr = g.bsdf('Translucent', Color=g.mix(mott, (0.95, 0.94, 0.92), (0.82, 0.8, 0.77)), Normal=nrm)
-    lid = g.adds(g.mixs(0.4, base, tr), em)
+    px, py, pz = g.sep(p)
+    rr = g.vmath('LENGTH', g.comb(px, py, 0.0))
+    mott = g.remap(g.noise(p, 1 / 11.0, 2.0, 0.55), 0.3, 0.7, 0.93, 1.05)
+    tn = g.geo('True Normal')
+    nx_, ny_, nz_ = g.sep(tn)
+    flank = g.math('DIVIDE', g.add(g.mul(nx_, px), g.mul(ny_, py)), g.math('MAXIMUM', rr, 1.0))
+    flank = g.mul(flank, g.math('SIGN', nz_))
+    rib = g.add(0.9, g.mul(flank, 1.25), g.mul(g.math('SUBTRACT', 1.0, g.math('ABSOLUTE', nz_)), 0.8))
+    plug = g.remap(rr, 352.0, 402.0, 1.0, 0.42, smooth=True)
+    lid_v = g.value(st['lid'], 'LidGlow')
+    em = g.emission(st['lid_col'], g.mul(lid_v.outputs[0], rib, plug, mott))
+    lid = g.adds(em, em_lip)
+    m.cycles.emission_sampling = 'NONE'
     return g.output(g.mixs(hole, lid, g.bsdf('Transparent', Color=(1, 1, 1))))
 
 
@@ -897,30 +978,57 @@ def mat_slot_sky(state='day'):
     g = G(m)
     v = g.value(45.0 if state == 'day' else 9.0, 'SkyStrength')
     col = g.mix(0.25, kelvin(7500), kelvin(4800)) if state == 'day' else g.mix(0.6, kelvin(5500), (0.8, 0.84, 0.9))
+    m.cycles.emission_sampling = 'NONE'
     return g.output(g.emission(col, v.outputs[0]))
 
 
-def mat_shaft(length, state='day'):
-    """Additive light shaft: transparent + emission, brightest along the core.
+SHAFT_HALF = (67.5, 22.5)            # semi-axes (m) of the ellipse that stands in for the stadium section
 
-    Object space: local -Z runs down the beam from the slot. Edge falloff from
-    the facing ratio, length falloff, and fine striations along the beam (dust
-    and turbulence) so it never reads as a solid tube.
+
+def mat_shaft(length, state='day'):
+    """Light shaft as a surface with a volumetric profile (no volumes, no ovals).
+
+    Object space: local -Z runs down the beam from the slot. For each camera
+    or reflection ray that enters the prism, the shader finds how close that
+    ray's line passes to the beam axis (in units of the stadium's half-widths)
+    and emits the chord integral of a soft (1 - r^2) density: brightest
+    through the core, exactly zero at the prism wall, so the beam has no edge
+    and no footprint. Only the entry face emits (the exit face is plain
+    transparent). If the camera sits inside the prism (S14) the first face it
+    sees is a back face: it then emits a faint, even veil that grows with the
+    ray length instead. The strength fades to zero over the last 30% of the
+    length, and the prism runs on below the island, so no end cap is ever
+    seen. Soft striations run along the beam.
     """
     m = new_mat('OFF_Shaft')
     g = G(m)
     p = g.texco('Object')
-    x, y, z = g.sep(p)
-    face = g.node('ShaderNodeLayerWeight', inputs={'Blend': 0.5}).outputs['Facing']
-    core = g.math('POWER', g.math('SUBTRACT', 1.0, face), 3.2)
-    along = g.add(0.3, g.mul(g.math('EXPONENT', g.mul(g.math('ABSOLUTE', z), -1 / 380.0)), 0.7))
-    tail = g.remap(g.math('ABSOLUTE', z), length - 60.0, length, 1.0, 0.25)
-    head = g.remap(g.math('ABSOLUTE', z), 0.0, 25.0, 0.0, 1.0)
-    streak = g.noise(g.mapping(p, scale=(1 / 7.0, 1 / 7.0, 1 / 600.0)), 1.0, 3.0, 0.6)
-    streak = g.remap(streak, 0.32, 0.72, 0.15, 1.45)
-    v = g.value(0.42 if state == 'day' else 0.16, 'ShaftStrength')
+    px, py, pz = g.sep(p)
+    vt = g.node('ShaderNodeVectorTransform', vector_type='VECTOR', convert_from='WORLD', convert_to='OBJECT')
+    g._set(vt.inputs[0], g.geo('Incoming'))
+    dx, dy, dz = g.sep(vt.outputs[0])
+    depth = g.math('ABSOLUTE', pz)
+    spread = g.add(1.0, g.mul(depth, 0.00022))
+    hx = g.mul(spread, SHAFT_HALF[0])
+    hy = g.mul(spread, SHAFT_HALF[1])
+    X, Y = g.math('DIVIDE', px, hx), g.math('DIVIDE', py, hy)
+    DX, DY = g.math('DIVIDE', dx, hx), g.math('DIVIDE', dy, hy)
+    cross = g.math('ABSOLUTE', g.math('SUBTRACT', g.mul(X, DY), g.mul(Y, DX)))
+    dn = g.math('MAXIMUM', g.vmath('LENGTH', g.comb(DX, DY, 0.0)), 1e-6)
+    q = g.math('DIVIDE', cross, dn)
+    prof = g.math('POWER', g.math('MAXIMUM', g.math('SUBTRACT', 1.0, g.mul(q, q)), 0.0), 1.5)
+    # a grazing look along the beam passes through more of it
+    klen = g.math('MINIMUM', g.math('DIVIDE', 1.0, g.math('MAXIMUM', g.vmath('LENGTH', g.comb(dx, dy, 0.0)), 0.05)), 2.0)
+    bf = g.geo('Backfacing')
+    front = g.mul(prof, klen, g.math('SUBTRACT', 1.0, bf))
+    along = g.add(0.55, g.mul(g.math('EXPONENT', g.mul(depth, -1 / 420.0)), 0.45))
+    head = g.remap(depth, 0.0, 30.0, 0.0, 1.0)
+    tail = g.remap(depth, 0.78 * length, 1.04 * length, 1.0, 0.0, smooth=True)
+    streak = g.remap(g.noise(g.mapping(p, scale=(1 / 20.0, 1 / 20.0, 1 / 300.0)), 1.0, 2.0, 0.55), 0.3, 0.7, 0.72, 1.18)
+    v = g.value(1.5 if state == 'day' else 0.5, 'ShaftStrength')
     col = g.mix(0.35, kelvin(6200), kelvin(3600)) if state == 'day' else g.mix(0.7, kelvin(6000), (0.78, 0.83, 0.92))
-    strength = g.mul(core, along, tail, head, streak, v.outputs[0])
+    strength = g.mul(front, along, head, tail, streak, v.outputs[0])
+    m.cycles.emission_sampling = 'NONE'
     return g.output(g.adds(g.bsdf('Transparent', Color=(1, 1, 1)), g.emission(col, strength)))
 
 
@@ -928,7 +1036,8 @@ def shore_image(name, mask_fn, x0, y0, size, res=2048, cache_path=None):
     """Rasterise land masks into an RGBA float image over [x0, x0+size] x [y0, y0+size].
 
     mask_fn(X, Y) -> (land, lagoon, shelf) arrays in [0,1]. R = shallows (wide blur of
-    the land, plus submerged reef shelves), G = shoreline foam band, B = lagoon, A = 1.
+    the land, plus submerged reef shelves), G = shoreline foam band, B = lagoon glow
+    (already depth-graded by the mask function), A = 1.
     """
     if cache_path and os.path.exists(cache_path):
         rgba = np.load(cache_path)
@@ -955,83 +1064,105 @@ def shore_image(name, mask_fn, x0, y0, size, res=2048, cache_path=None):
 
 
 def mat_sea(shore_img, x0, y0, size, state='day'):
-    """Espresso: near-black, glossy, capillary ripples, amber shallows, crema foam.
+    """Espresso: near-black, nearly mirror-smooth, capillary ripples, amber shallows, broken crema.
 
     The shore image (sea object space) gives shallows, island foam lines and the
-    atoll lagoon. The crema band at the cliff foot is computed from world
-    position against the true wall radius, so it follows the wall even when the
-    gravity rig tilts the sea.
+    depth-graded atoll lagoon. The crema band at the cliff foot is computed from
+    world position against the true wall radius, so it follows the wall even
+    when the gravity rig tilts the sea. The foam is broken by lace noise at two
+    scales and its width varies 0.3-3x along the shore; at night it is
+    desaturated and darker. Roughness stays at 0.01-0.02: the capillary normals
+    break the reflections into glitter.
     """
+    night = state == 'night'
     m = new_mat('OFF_Sea')
     g = G(m)
     p = g.texco('Object')
-    x, y, z = g.sep(p)
-    uv = g.comb(g.mul(g.math('SUBTRACT', x, x0), 1.0 / size), g.mul(g.math('SUBTRACT', y, y0), 1.0 / size), 0.0)
+    uv = g.comb(g.mul(g.math('SUBTRACT', g.sep(p)[0], x0), 1.0 / size), g.mul(g.math('SUBTRACT', g.sep(p)[1], y0), 1.0 / size), 0.0)
     tex = g.node('ShaderNodeTexImage', interpolation='Linear', extension='EXTEND')
     tex.image = shore_img
     g._set(tex.inputs['Vector'], uv)
-    sh = g.sep(tex.outputs['Color'])
-    shallow, foam_i, lagoon = sh
+    shallow, foam_i, lagoon = g.sep(tex.outputs['Color'])
     wp = g.geo('Position')
     wx, wy, wz = g.sep(wp)
     rw = g.add(R_SEA, g.mul(wz, TAPER))
     dwall = g.math('SUBTRACT', rw, g.vmath('LENGTH', g.comb(wx, wy, 0.0)))
-    brk = g.noise(g.mapping(wp, scale=(1 / 18.0, 1 / 18.0, 1 / 18.0)), 1.0, 3.0, 0.6)
-    wall_foam = g.mul(g.remap(dwall, 15.0, 3.0), g.remap(brk, 0.3, 0.6, 0.45, 1.0))
-    wall_foam = g.math('MAXIMUM', wall_foam, g.remap(dwall, 4.0, 1.0))
-    bub = g.voronoi(g.mapping(p, scale=(1 / 1.6, 1 / 1.6, 1)), 1.0, out='Distance')
-    lace = g.noise(g.mapping(p, scale=(1 / 6.0, 1 / 6.0, 1)), 1.0, 4.0, 0.62)
-    foam = g.math('MAXIMUM', g.mul(foam_i, g.remap(lace, 0.35, 0.6, 0.3, 1.0)), wall_foam)
-    foam = g.mul(foam, g.remap(bub, 0.05, 0.45, 1.0, 0.55))
-    foam = g.remap(foam, 0.18, 0.55)
-    base = g.mix(g.mul(g.math('POWER', shallow, 2.2), 0.65), ESPRESSO, AMBER)
-    base = g.mix(g.mul(lagoon, 0.9), base, CARAMEL)
-    base = g.mix(foam, base, g.mix(lace, CREMA, CREMA_LIGHT))
-    cap1 = g.noise(g.mapping(p, scale=(1 / 0.9, 1 / 0.9, 1)), 1.0, 3.0, 0.55)
-    cap2 = g.noise(g.mapping(p, scale=(1 / 6.5, 1 / 6.5, 1), loc=(3, 7, 0)), 1.0, 2.0, 0.5)
-    swell = g.noise(g.mapping(p, scale=(1 / 40.0, 1 / 95.0, 1)), 1.0, 1.0, 0.5)
-    h = g.add(g.mul(cap1, 0.35), g.mul(cap2, 0.5), g.mul(swell, 0.6))
-    nrm = g.bump(h, strength=g.remap(foam, 0.0, 1.0, 0.22, 0.05), distance=0.6)
-    rough = g.add(0.035, g.mul(g.noise(g.mapping(p, scale=(1 / 30.0, 1 / 30.0, 1)), 1.0, 2.0, 0.5), 0.05))
+    width = g.noise(g.mapping(wp, scale=(1 / 45.0, 1 / 45.0, 1 / 45.0)), 1.0, 1.0, 0.5, dims='2D')   # band width 0.3-3x
+    lace = g.noise(g.mapping(p, scale=(1 / 6.0, 1 / 6.0, 1)), 1.0, 3.0, 0.62, dims='2D')
+    lace2 = g.noise(g.mapping(p, scale=(1 / 1.7, 1 / 1.7, 1), loc=(5, 2, 0)), 1.0, 2.0, 0.6, dims='2D')
+    wall_w = g.remap(width, 0.3, 0.7, 2.5, 16.0)
+    wall_foam = g.remap(g.math('DIVIDE', dwall, wall_w), 1.0, 0.25)
+    thr = g.remap(width, 0.3, 0.7, 0.62, 0.12)
+    shore_foam = g.remap(g.math('SUBTRACT', foam_i, thr), 0.0, 0.2)
+    foam = g.math('MAXIMUM', shore_foam, wall_foam)
+    brk = g.mul(g.remap(lace, 0.38, 0.6), g.remap(lace2, 0.3, 0.55, 0.35, 1.0))
+    foam = g.mul(foam, brk)
+    foam = g.remap(foam, 0.12, 0.5)
+    base = g.mix(g.mul(g.math('POWER', shallow, 2.2), 0.55), ESPRESSO, AMBER)
+    lag = g.mul(lagoon, g.remap(g.noise(g.mapping(p, scale=(1 / 2.2, 1 / 7.0, 1)), 1.0, 1.0, 0.5, dims='2D'), 0.35, 0.65, 0.75, 1.15))
+    base = g.mix(g.mul(lag, 0.8), base, CARAMEL)
+    crema = g.mix(lace2, CREMA, CREMA_LIGHT)
+    if night:
+        crema = g.mix(0.75, crema, (0.16, 0.16, 0.17))
+    base = g.mix(g.mul(foam, g.remap(lace2, 0.45, 0.6), 0.5) if night else g.mul(foam, 0.85), base, crema)
+    cap1 = g.noise(g.mapping(p, scale=(1 / 0.9, 1 / 0.9, 1)), 1.0, 1.0, 0.55, dims='2D')
+    chop = g.noise(g.mapping(p, scale=(1 / 3.6, 1 / 2.9, 1), loc=(9, 1, 0)), 1.0, 3.0, 0.62, dims='2D')
+    swell = g.noise(g.mapping(p, scale=(1 / 40.0, 1 / 95.0, 1)), 1.0, 0.0, 0.5, dims='2D')
+    h = g.add(g.mul(cap1, 0.25), g.mul(chop, 1.0), g.mul(swell, 0.6))
+    nrm = g.bump(h, strength=g.remap(foam, 0.0, 1.0, 0.35, 0.05), distance=1.0)
+    rough = g.add(0.01, g.mul(g.noise(g.mapping(p, scale=(1 / 30.0, 1 / 30.0, 1)), 1.0, 0.0, 0.5, dims='2D'), 0.012))
     rough = g.mixf(foam, rough, 0.75)
-    lag_v = g.value(1.0 if state == 'day' else 0.05, 'LagoonGlow')
-    em_s = g.mul(lagoon, lag_v.outputs[0], g.remap(foam, 0.0, 0.5, 1.0, 0.0), 0.9)
-    sea = g.principled(Base_Color=base, Roughness=rough, IOR=1.34, Normal=nrm,
-                       Emission_Color=CARAMEL, Emission_Strength=em_s)
+    lag_v = g.value(0.6 if state == 'day' else 0.02, 'LagoonGlow')
+    em_s = g.mul(lag, lag_v.outputs[0], g.remap(foam, 0.0, 0.5, 1.0, 0.0))
+    spec = g.mixf(foam, 0.26, 0.5)
+    sea = g.principled(Base_Color=base, Roughness=rough, IOR=1.34, Normal=nrm, Specular_IOR_Level=spec,
+                       Specular_Tint=(0.92, 0.74, 0.55), Emission_Color=CARAMEL, Emission_Strength=em_s)
+    m.cycles.emission_sampling = 'NONE'
     return g.output(sea)
 
 
-def mat_foam():
+def mat_foam(state='day'):
+    """Crema floes: lacy, bubbly, broken (espresso shows through the lace)."""
     m = new_mat('OFF_Foam')
     g = G(m)
     p = g.texco('Object')
-    bub = g.voronoi(g.mapping(p, scale=(1 / 0.7, 1 / 0.7, 1 / 0.7)), 1.0)
-    big = g.voronoi(g.mapping(p, scale=(1 / 3.0, 1 / 3.0, 1 / 3.0)), 1.0)
-    n = g.noise(p, 1 / 4.0, 3.0, 0.6)
-    col = g.mix(g.remap(n, 0.35, 0.65), g.cmul(CREMA, (0.62, 0.55, 0.48)), g.cmul(CREMA_LIGHT, (0.8, 0.75, 0.68)))
-    col = g.mix(g.remap(big, 0.0, 0.25, 0.35, 0.0), col, g.cmul(col, (0.6, 0.45, 0.32)))
-    nrm = g.bump(g.add(g.mul(bub, -1.0), g.mul(big, -0.5)), strength=0.5, distance=0.4)
-    return g.output(g.principled(Base_Color=col, Roughness=0.7, Normal=nrm,
-                                 Subsurface_Weight=0.25, Subsurface_Radius=(0.6, 0.4, 0.25), Subsurface_Scale=0.5))
+    bub = g.voronoi(g.mapping(p, scale=(1 / 0.5, 1 / 0.5, 1 / 0.5)), 1.0)
+    big = g.voronoi(g.mapping(p, scale=(1 / 2.2, 1 / 2.2, 1 / 2.2)), 1.0)
+    lace = g.noise(g.mapping(p, scale=(1 / 1.4, 1 / 1.4, 1)), 1.0, 3.0, 0.6)
+    col = g.mix(g.remap(lace, 0.4, 0.7), g.cmul(CREMA, (0.8, 0.74, 0.66)), CREMA)
+    col = g.mix(g.remap(big, 0.0, 0.22, 0.45, 0.0), col, g.cmul(col, (0.6, 0.45, 0.32)))
+    holes = g.math('MAXIMUM', g.remap(lace, 0.42, 0.34), g.remap(g.attr('rim', 'GEOMETRY', 'Fac'), 0.45, 0.0))
+    col = g.mix(holes, col, ESPRESSO)
+    if state == 'night':
+        col = g.mix(0.7, col, (0.12, 0.12, 0.13))
+    nrm = g.bump(g.add(g.mul(bub, -1.0), g.mul(big, -0.5)), strength=0.45, distance=0.3)
+    return g.output(g.principled(Base_Color=col, Roughness=g.mixf(holes, 0.7, 0.04), Normal=nrm))
 
 
-def mat_stone(name='OFF_Stone', tint=STONE, lichen=0.0, wet_line=True):
-    """Weathered stone; darker and stained at the waterline; optional lichen crust."""
+def mat_stone(name='OFF_Stone', tint=STONE, lichen=0.0, wet_line=True, wet=0.0):
+    """Weathered stone; darker and stained at the waterline; optional lichen crust.
+
+    Lichen comes as frost-grey rosettes (#c9cec9) with chartreuse dots (#e5ff8d)
+    at small scale, so a lichen-crusted surface still shows the stone's form.
+    wet: 0..1 soaks the whole surface (darker, glossy, with puddled hollows).
+    """
+    wetness = wet
     m = new_mat(name)
     g = G(m)
     p = g.texco('Object')
     wp = g.geo('Position')
-    n1 = g.noise(g.mapping(p, scale=(1 / 9.0,) * 3), 1.0, 5.0, 0.6)
+    n1 = g.noise(g.mapping(p, scale=(1 / 9.0,) * 3), 1.0, 4.0, 0.6)
     n2 = g.noise(g.mapping(p, scale=(1 / 1.3,) * 3), 1.0, 3.0, 0.55)
     strata = g.noise(g.mapping(p, scale=(1 / 40.0, 1 / 40.0, 1 / 2.5)), 1.0, 2.0, 0.5)
     col = g.mix(g.remap(n1, 0.3, 0.7), g.cmul(tint, (0.7, 0.66, 0.62)), g.cmul(tint, (1.25, 1.2, 1.12)))
     col = g.mix(g.mul(g.remap(strata, 0.45, 0.6), 0.4), col, g.cmul(col, (0.75, 0.68, 0.6)))
     rough = 0.82
     if lichen > 0:
-        lp = g.noise(g.mapping(p, scale=(1 / 3.5,) * 3), 1.0, 4.0, 0.65)
-        lm = g.mul(g.remap(lp, 0.52, 0.58), lichen)
-        fp = g.noise(g.mapping(p, scale=(1 / 2.2,) * 3, loc=(9, 1, 4)), 1.0, 4.0, 0.65)
-        fm = g.mul(g.remap(fp, 0.55, 0.6), lichen)
+        ros = g.voronoi(g.mapping(p, scale=(1 / 1.6,) * 3, loc=(9, 1, 4)), 1.0, out='Distance')
+        lp = g.noise(g.mapping(p, scale=(1 / 6.0,) * 3), 1.0, 2.0, 0.6)
+        fm = g.mul(g.remap(ros, 0.42, 0.3), g.remap(lp, 0.4, 0.55), lichen)
+        dots = g.voronoi(g.mapping(p, scale=(1 / 0.35,) * 3, loc=(3, 3, 1)), 1.0, out='Distance')
+        lm = g.mul(g.remap(dots, 0.22, 0.12), g.remap(lp, 0.48, 0.62), lichen)
         col = g.mix(fm, col, FROST)
         col = g.mix(lm, col, g.mix(n2, LICHEN, (0.62, 0.78, 0.25)))
     if wet_line:
@@ -1039,53 +1170,81 @@ def mat_stone(name='OFF_Stone', tint=STONE, lichen=0.0, wet_line=True):
         wet = g.remap(wz, 1.6, -0.3)
         band = g.mul(g.remap(wz, 3.5, 1.2), g.remap(wz, 1.2, 0.6, 1.0, 0.0))
         col = g.mix(g.math('MAXIMUM', wet, g.mul(band, 0.6)), col, g.cmul(col, (0.32, 0.2, 0.12)))
-        rough = g.mixf(wet, 0.82, 0.25)
+        rough = g.mixf(wet, 0.82, 0.22)
+    if wetness > 0:
+        pud = g.remap(g.noise(g.mapping(p, scale=(1 / 2.5,) * 3, loc=(2, 5, 1)), 1.0, 3.0, 0.6), 0.42, 0.6)
+        col = g.mix(wetness, col, g.cmul(col, (0.5, 0.45, 0.4)))
+        rough = g.mixf(g.mul(pud, wetness), rough, 0.06)
+        rough = g.mixf(wetness * 0.6, rough, 0.3)
     nrm = g.bump(g.add(g.mul(n1, 0.6), g.mul(n2, 0.4)), strength=0.45, distance=0.5)
     return g.output(g.principled(Base_Color=col, Roughness=rough, Normal=nrm))
 
 
+VERDIGRIS_CHALK = srgb('#80cfc4')     # pale, chalky verdigris (lands near hue 160 under the warm glow)
+STONE_GREY = srgb('#8c8a84')
+
+
 def mat_padlock(age=None):
-    """Ageing padlock: brass -> brown patina -> verdigris #43a08a -> lichen-crusted stone.
+    """Ageing padlock: brass -> brown patina -> chalky verdigris -> lichen-crusted stone.
 
     age: None reads the per-instance 'age' attribute (INSTANCER); a float fixes it
-    (the hero padlock). The stages arrive in patches (verdigris in hollows first),
-    so the transition reads as weather, not as a gradient.
+    (the hero padlock). Verdigris arrives in the recesses first (where the
+    shackle enters the body, the lower edge, the body's sides) and as vertical
+    drip streaks down each body, with dark brown patina showing through; it is
+    pale, chalky and rough. The oldest stage is stone: grey, with frost-grey
+    lichen rosettes and small chartreuse dots laid on top in patches, so the
+    padlock silhouette survives at every age. Young brass is anisotropic and
+    fairly glossy (roughness 0.18-0.25) so it throws gold glints.
     """
     m = new_mat('OFF_Padlock' if age is None else f'OFF_Padlock_{age:.2f}')
     g = G(m)
     p = g.texco('Object')
+    px, py, pz = g.sep(p)
     rnd = g.node('ShaderNodeObjectInfo').outputs['Random']
     q = g.add(p, g.comb(g.mul(rnd, 37.0), g.mul(rnd, 11.0), g.mul(rnd, 5.0)))
+    wp = g.geo('Position')
     a = g.attr('age', 'INSTANCER') if age is None else age
-    n1 = g.noise(g.mapping(q, scale=(2.2,) * 3), 1.0, 4.0, 0.6)
-    n2 = g.noise(g.mapping(q, scale=(5.0,) * 3, loc=(3, 1, 7)), 1.0, 4.0, 0.62)
-    n3 = g.noise(g.mapping(q, scale=(1.4,) * 3, loc=(8, 2, 1)), 1.0, 3.0, 0.6)
-    scr = g.noise(g.mapping(q, scale=(60.0, 1.2, 60.0)), 1.0, 2.0, 0.5)
-    scratch = g.remap(scr, 0.62, 0.7)
-    m_pat = g.remap(g.add(a, g.mul(g.math('SUBTRACT', n1, 0.5), 0.35)), 0.16, 0.3)
-    m_ver = g.remap(g.add(a, g.mul(g.math('SUBTRACT', n2, 0.5), 0.5)), 0.42, 0.52)
-    m_sto = g.remap(g.add(a, g.mul(g.math('SUBTRACT', n3, 0.5), 0.4)), 0.68, 0.78)
-    brass = g.mix(g.remap(n2, 0.3, 0.7), g.cmul(BRASS, (0.85, 0.82, 0.75)), g.cmul(BRASS, (1.1, 1.05, 0.95)))
-    brass = g.mix(g.mul(scratch, 0.6), brass, (0.95, 0.85, 0.6))
-    patina = g.mix(n1, PATINA, g.cmul(PATINA, (0.55, 0.45, 0.4)))
-    verd = g.mix(g.remap(n3, 0.35, 0.65), g.cmul(VERDIGRIS, (0.75, 0.85, 0.85)), g.cmul(VERDIGRIS, (1.25, 1.15, 1.05)))
-    stone = g.mix(n2, (0.33, 0.33, 0.31), (0.5, 0.5, 0.47))
-    lp = g.noise(g.mapping(q, scale=(0.9,) * 3, loc=(4, 4, 4)), 1.0, 4.0, 0.7)
-    lich = g.mul(g.remap(lp, 0.5, 0.56), m_sto)
-    fp = g.noise(g.mapping(q, scale=(1.3,) * 3, loc=(1, 9, 3)), 1.0, 4.0, 0.7)
-    frost = g.mul(g.remap(fp, 0.52, 0.58), m_sto)
+    n1 = g.noise(g.mapping(q, scale=(2.2,) * 3), 1.0, 1.0, 0.6)
+    n2 = g.noise(g.mapping(q, scale=(5.0,) * 3, loc=(3, 1, 7)), 1.0, 1.0, 0.62)
+    # recesses in template space (body top seam, lower edge, the flanks) and world-down drip streaks
+    seam = g.remap(g.math('ABSOLUTE', g.math('SUBTRACT', pz, 0.5)), 0.08, 0.0)
+    low = g.remap(pz, 0.1, 0.0)
+    flank = g.remap(g.math('ABSOLUTE', px), 0.2, 0.3)
+    rec = g.math('MAXIMUM', g.math('MAXIMUM', seam, low), g.mul(flank, 0.7))
+    drip = g.noise(g.mapping(wp, scale=(1 / 0.45, 1 / 0.45, 1 / 5.0), loc=(2, 9, 0)), 1.0, 1.0, 0.55)
+    drip = g.remap(drip, 0.52, 0.66)
+    j1 = g.mul(g.math('SUBTRACT', n1, 0.5), 0.3)
+    m_pat = g.remap(g.add(a, j1), 0.12, 0.26)
+    m_ver = g.remap(g.add(a, g.mul(rec, 0.22), g.mul(drip, 0.2), g.mul(g.math('SUBTRACT', n2, 0.5), 0.3)), 0.4, 0.52)
+    m_sto = g.remap(g.add(a, j1), 0.7, 0.82)
+    brass = g.mix(g.remap(n2, 0.3, 0.7), g.cmul(BRASS, (0.85, 0.8, 0.7)), g.cmul(BRASS, (1.12, 1.06, 0.95)))
+    patina = g.mix(n1, PATINA, g.cmul(PATINA, (0.5, 0.42, 0.36)))
+    chalk = g.mix(g.remap(n2, 0.35, 0.7), g.cmul(VERDIGRIS_CHALK, (0.78, 0.86, 0.86)), VERDIGRIS_CHALK)
+    chalk = g.mix(rnd, g.cmul(chalk, (0.8, 0.86, 0.8)), g.cmul(chalk, (1.08, 1.04, 1.1)))   # per-padlock variation
+    verd = g.mix(g.mul(g.remap(n1, 0.6, 0.45), 0.4), chalk, patina)          # brown shows through
+    verd = g.mix(g.mul(drip, 0.55), verd, g.cmul(verd, (0.45, 0.5, 0.48)))       # dark run-off streaks
+    verd = g.mix(g.mul(g.remap(n2, 0.62, 0.75), 0.6), verd, (0.62, 0.8, 0.76))   # chalky blooms
+    ros = g.voronoi(g.mapping(q, scale=(6.0,) * 3, loc=(1, 9, 3)), 1.0, out='Distance')
+    stone = g.mix(n2, g.cmul(STONE_GREY, (0.8, 0.8, 0.8)), g.cmul(STONE_GREY, (1.1, 1.1, 1.08)))
+    frost = g.mul(g.remap(ros, 0.4, 0.28), m_sto)
+    chart = g.mul(g.remap(ros, 0.12, 0.05), g.remap(n1, 0.45, 0.6), m_sto)       # chartreuse cores in the rosettes
+    # worn edges: the crust rubs off convex edges, showing dark bronze (Cycles pointiness)
+    wear = g.mul(g.remap(g.geo('Pointiness'), 0.53, 0.62), g.remap(n2, 0.35, 0.6))
     col = g.mix(m_pat, brass, patina)
-    col = g.mix(m_ver, col, verd)
+    col = g.mix(g.mul(m_ver, g.math('SUBTRACT', 1.0, g.mul(wear, 0.8))), col, verd)
     col = g.mix(m_sto, col, stone)
     col = g.mix(frost, col, FROST)
-    col = g.mix(lich, col, g.mix(n1, LICHEN, (0.6, 0.75, 0.3)))
-    metal = g.math('SUBTRACT', 1.0, g.math('MAXIMUM', m_ver, g.mul(m_pat, 0.45)))
-    rough = g.mixf(m_pat, g.add(0.22, g.mul(scratch, 0.15)), 0.5)
-    rough = g.mixf(m_ver, rough, 0.85)
-    rough = g.mixf(m_sto, rough, 0.92)
-    crust = g.mul(g.add(m_ver, m_sto), g.add(g.mul(n2, 0.6), g.mul(lp, 0.4)))
-    nrm = g.bump(g.add(crust, g.mul(scratch, -0.15)), strength=g.add(0.12, g.mul(m_sto, 0.5)), distance=0.08)
-    return g.output(g.principled(Base_Color=col, Metallic=metal, Roughness=rough, Normal=nrm))
+    col = g.mix(chart, col, LICHEN)
+    metal = g.mul(g.math('SUBTRACT', 1.0, g.math('MAXIMUM', g.mul(m_ver, 0.8), m_sto)),
+                  g.math('SUBTRACT', 1.0, g.mul(m_pat, 0.35)))
+    rough = g.mixf(m_pat, g.add(0.18, g.mul(n2, 0.1)), 0.48)
+    rough = g.mixf(m_ver, rough, 0.9)
+    rough = g.mixf(m_sto, rough, 0.88)
+    # crust relief: one cheap noise under the bump, its strength masked by age (evaluated once)
+    grain = g.noise(g.mapping(q, scale=(9.0,) * 3, loc=(5, 5, 2)), 1.0, 0.0, 0.5)
+    nrm = g.bump(grain, strength=g.add(0.06, g.mul(g.math('MAXIMUM', m_ver, m_sto), 0.4)), distance=0.08)
+    aniso = g.mul(g.math('SUBTRACT', 1.0, m_pat), 0.55)
+    return g.output(g.principled(Base_Color=col, Metallic=metal, Roughness=rough, Normal=nrm, Anisotropic=aniso))
 
 
 def mat_foliage(name, dark=DEEP_GREEN, light=LIME, attr='tip', trans=0.3):
@@ -1128,12 +1287,20 @@ def mat_sand():
 
 
 def mat_paddy():
-    """Terrace water: black mirror (roughness 0.02) with a faint green tint."""
+    """Terrace water: black mirror (roughness 0.02) with a faint green tint.
+
+    Its base normal is a 'WaterUp' Combine XYZ node: build_offline drives it from
+    the gravity rig, so in S14 the paddies mirror the world like tilted water
+    although their surfaces stay where they are.
+    """
     m = new_mat('OFF_Paddy')
     g = G(m)
     p = g.texco('Object')
+    up = g.node('ShaderNodeCombineXYZ')
+    up.name = up.label = 'WaterUp'
+    up.inputs[2].default_value = 1.0
     rip = g.noise(g.mapping(p, scale=(1 / 0.6,) * 3), 1.0, 2.0, 0.5)
-    nrm = g.bump(rip, strength=0.015, distance=0.2)
+    nrm = g.bump(rip, strength=0.015, distance=0.2, normal=up.outputs[0])
     return g.output(g.principled(Base_Color=(0.006, 0.01, 0.008), Roughness=0.02, IOR=1.33, Normal=nrm))
 
 
@@ -1158,20 +1325,22 @@ def mat_paper_sheet(name='OFF_Sheet', glow=0.0):
     g = G(m)
     rnd = g.attr('tint', 'GEOMETRY', 'Fac')
     col = g.mix(rnd, PAPER, (0.93, 0.9, 0.84))
-    s = g.mixs(0.25, g.principled(Base_Color=col, Roughness=0.55), g.bsdf('Translucent', Color=g.cmul(col, (1.0, 0.95, 0.85))))
+    s = g.mixs(0.3, g.bsdf('Diffuse', Color=col), g.bsdf('Translucent', Color=g.cmul(col, (1.0, 0.95, 0.85))))
     if glow > 0:
         s = g.adds(s, g.emission(col, glow))
+    m.cycles.emission_sampling = 'NONE'
     return g.output(s)
 
 
 def mat_bird():
-    """Origami paper bird: white, translucent, with a faint glowing edge."""
+    """Origami paper bird: white paper (0.88 of PAPER), backlit translucency, a 3600K glowing edge."""
     m = new_mat('OFF_Bird')
     g = G(m)
-    fres = g.node('ShaderNodeLayerWeight', inputs={'Blend': 0.15}).outputs['Fresnel']
-    edge = g.value(1.4, 'BirdEdgeGlow')
-    s = g.mixs(0.12, g.principled(Base_Color=g.cmul(PAPER, (0.42, 0.41, 0.4)), Roughness=0.55),
-               g.bsdf('Translucent', Color=(0.95, 0.9, 0.82)))
+    fres = g.node('ShaderNodeLayerWeight', inputs={'Blend': 0.12}).outputs['Fresnel']
+    edge = g.value(0.9, 'BirdEdgeGlow')
+    s = g.mixs(0.38, g.bsdf('Diffuse', Color=g.cmul(PAPER, (0.88, 0.87, 0.85))),
+               g.bsdf('Translucent', Color=(0.95, 0.88, 0.78)))
+    m.cycles.emission_sampling = 'NONE'
     return g.output(g.adds(s, g.emission(kelvin(3600), g.mul(fres, edge.outputs[0]))))
 
 
@@ -1184,15 +1353,20 @@ def mat_envelope():
     return m0, m1
 
 
+FIREFLY_PEAK = 9.0           # emission at the flash peak: hue survives AgX; glare makes the halo
+FIREFLY_BASE = 0.1           # between flashes, as a fraction of the peak
+
+
 def mat_firefly(clock_node_name='FireflyClock'):
     """Firefly emission computed in-shader from a keyed frame clock.
 
     Per-instance attributes: ff_phase (0..1), ff_freq (natural frequency detune),
     ff_grey (1 for Pat's grey firefly), ff_col (colour). The phase of every
     firefly is pulled to the common clock by a coupling term that ramps up
-    between f1150 and f1192 (Kuramoto-style convergence); Pat's firefly keeps a
-    lag of 4 frames at f1185 and 2 at f1201 and locks at f1217. Flash shape: a
-    2-frame rise into the beat, then a 10-frame decay.
+    between f1150 and f1192 (Kuramoto-style convergence). Pat's firefly keeps a
+    piecewise lag on the beat grid: 4 frames late on the f1185 beat (peak f1189),
+    2 late on f1201 (peak f1203), locked from f1217. Flash shape: a 2-frame
+    rise into the beat, then a 10-frame decay, over a faint base glow.
     """
     m = new_mat('OFF_Firefly')
     g = G(m)
@@ -1206,8 +1380,7 @@ def mat_firefly(clock_node_name='FireflyClock'):
     dt = g.math('SUBTRACT', t, float(FIREFLY_T0))
     coupling = g.remap(t, 1150.0, 1192.0, 0.0, 1.0, smooth=True)
     drift = g.mul(g.add(phi, g.mul(eps, g.math('DIVIDE', dt, P))), g.math('SUBTRACT', 1.0, coupling))
-    # Pat: 4 frames late at 1185, 2 at 1201, 0 at 1217 (piecewise linear), random before.
-    lag = g.remap(t, 1185.0, 1217.0, 4.0, 0.0)
+    lag = g.math('SUBTRACT', 4.0, g.mul(2.0, g.add(g.math('GREATER_THAN', t, 1195.5), g.math('GREATER_THAN', t, 1211.5))))
     grey_drift = g.mul(g.add(0.37, g.mul(0.11, g.math('DIVIDE', dt, P))), g.remap(t, 1150.0, 1180.0, 1.0, 0.0, smooth=True))
     ph_n = g.add(g.math('DIVIDE', dt, P), drift)
     ph_g = g.add(g.math('DIVIDE', g.math('SUBTRACT', dt, lag), P), grey_drift)
@@ -1215,9 +1388,9 @@ def mat_firefly(clock_node_name='FireflyClock'):
     u = g.mul(g.math('FRACT', ph), P)                  # frames since the last flash peak
     rise = g.remap(u, P - 2.0, P, 0.0, 1.0)
     decay = g.math('POWER', g.remap(u, 0.0, 10.0, 1.0, 0.0), 2.0)
-    b = g.add(g.math('MAXIMUM', rise, decay), 0.025)
+    b = g.add(g.math('MAXIMUM', rise, decay), FIREFLY_BASE)
     lvl = g.value(1.0, 'FireflyLevel')
-    k = g.value(120.0, 'FireflyStrength')
+    k = g.value(FIREFLY_PEAK, 'FireflyStrength')
     return g.output(g.emission(col, g.mul(b, k.outputs[0], lvl.outputs[0])))
 
 
@@ -1233,12 +1406,12 @@ def mat_box():
 def mat_skylight(state='day'):
     m = new_mat('OFF_BoxSkylight')
     g = G(m)
-    v = g.value(9.0 if state == 'day' else 5.0, 'SkylightStrength')
-    return g.output(g.emission(kelvin(6000), v.outputs[0]))
+    v = g.value(9.0 if state == 'day' else 24.0, 'SkylightStrength')
+    return g.output(g.emission(kelvin(6000) if state == 'day' else kelvin(4600), v.outputs[0]))
 
 
 def mat_mist(name='OFF_Mist', strength=0.35):
-    """Soft spray card: transparent with a noisy emissive veil (alpha falloff to the edges)."""
+    """Soft spray card (kept for API compatibility; Offline no longer uses cards)."""
     m = new_mat(name)
     g = G(m)
     uv = g.texco('UV')
@@ -1249,8 +1422,8 @@ def mat_mist(name='OFF_Mist', strength=0.35):
     lvl = g.value(strength, 'MistStrength')
     em = g.emission((0.95, 0.9, 0.82), g.mul(a, lvl.outputs[0]))
     tr = g.bsdf('Transparent', Color=(1, 1, 1))
-    veil = g.mixs(g.mul(a, 0.35), tr, g.bsdf('Translucent', Color=(0.9, 0.86, 0.8)))
-    return g.output(g.adds(veil, em))
+    m.cycles.emission_sampling = 'NONE'
+    return g.output(g.adds(tr, em))
 
 
 def mat_dust():
@@ -1267,35 +1440,44 @@ def mat_dust():
                            g.principled(Base_Color=(0.55, 0.47, 0.38), Roughness=1.0)))
 
 
+def mat_silhouette():
+    """The S01 eclipse: fingertips and envelope seen against the sky, a near-black matte."""
+    m = new_mat('OFF_Silhouette')
+    g = G(m)
+    return g.output(g.principled(Base_Color=(0.012, 0.011, 0.01), Roughness=0.9))
+
+
 # ================================================================== cup, lid, slot, shaft
 
 def build_cup_wall(coll, mat):
     """Tapered interior wall from below the sea to the lid, one overlap seam.
 
     The inner paper layer's cut edge stands 2.8 m proud at the seam azimuth
-    (paper is 0.3 mm thick: 2.7 m at this scale); low-frequency waviness gives
-    the cliffs their slow relief.
+    (paper is 0.3 mm thick: 2.7 m at this scale). Slow folds (~95 m) and
+    vertical fibre flutes (~25 m) give the cliffs relief that the pre-lit
+    shader reads as light and shadow at kilometre distance.
     """
-    nseg = 900
+    nseg = 480
     az = np.radians(SEAM_AZ) + np.linspace(0, 2 * np.pi, nseg, endpoint=False)
-    zs = np.concatenate([np.linspace(-170, -10, 12), np.linspace(-8, 30, 30), np.linspace(32, 580, 120),
-                         np.linspace(583, 615, 9)])
+    zs = np.concatenate([np.linspace(-170, -12, 6), np.linspace(-8, 30, 14), np.linspace(34, 580, 92),
+                         np.linspace(586, 615, 5)])
     A, Z = np.meshgrid(az, zs)
     R = cup_radius(Z)
     s = (A - A[0, 0]) * R                                  # arc length from the seam edge
     inset = np.where(s < 64.0, 2.8 * smoothstep(0.0, 2.6, s), 2.8 * (1 - smoothstep(64.0, 74.0, s)))
-    wav = 1.4 * fbm2(s / 95.0, Z / 150.0, 3, seed=11) + 0.5 * fbm2(s / 22.0, Z / 60.0, 2, seed=12)
-    R = R - inset + wav
+    wav = 1.6 * fbm2(s / 95.0, Z / 150.0, 3, seed=11) + 0.5 * fbm2(s / 22.0, Z / 60.0, 2, seed=12)
+    flute = 1.3 * fbm2(s / 26.0, Z / 420.0, 2, seed=13) * smoothstep(20.0, 120.0, Z)
+    R = R - inset + wav + flute
     V = np.stack([R * np.cos(A), R * np.sin(A), Z], axis=-1).reshape(-1, 3)
     F = grid_faces(nseg, len(zs), wrap_u=True)[:, ::-1]      # normals face the axis
     return np_mesh('OFF_CupWall', V, F, coll=coll, mat=mat)
 
 
 def build_lid(coll, mat):
-    """Lid underside as a polar mesh (dense where the ribs and the slot are)."""
-    nseg = 900
-    r = np.unique(np.concatenate([np.linspace(1.5, 280, 200), np.linspace(280, 300, 14),
-                                  np.linspace(300, 372, 110), np.linspace(372, 412, 28)]))
+    """Lid underside as a polar mesh (dense where the ribs are; the slot is a shader mask)."""
+    nseg = 512
+    r = np.unique(np.concatenate([np.linspace(1.5, 280, 124), np.linspace(280, 300, 10),
+                                  np.linspace(300, 372, 56), np.linspace(372, 412, 16)]))
     az = np.linspace(0, 2 * np.pi, nseg, endpoint=False)
     A, Rr = np.meshgrid(az, r)
     Z = lid_z(Rr)
@@ -1355,14 +1537,17 @@ def build_slot(coll, state):
     return frame, sky
 
 
+SHAFT_OVERRUN = 70.0          # the prism runs on this far past the island top, into the ground
+
+
 def build_shaft(coll, state):
-    """Emissive prism from the slot to the island (cross-section = the slot, slight spread)."""
-    rows = 48
-    outline = stadium(64)
+    """Emissive prism from the slot down past the island (cross-section = the slot, slight spread)."""
+    rows = 40
+    outline = stadium(48)
     X, Y = Vector(_slot_x), (-SLOT_N).cross(_slot_x).normalized()
     end = Vector((ISLAND_C.x, ISLAND_C.y, _BOX_Z + 1.0))
     length = (end - SLOT_C).dot(SHAFT_DIR) / max(1e-3, SHAFT_DIR.dot(SHAFT_DIR))
-    ts = np.linspace(0.0, length, rows) ** 1.0
+    ts = np.linspace(0.0, length + SHAFT_OVERRUN, rows)
     zl = -SHAFT_DIR
     xl = Vector(X - zl * X.dot(zl)).normalized()
     yl = zl.cross(xl)
@@ -1387,8 +1572,32 @@ def build_shaft(coll, state):
     return obj, length
 
 
+def camera_in_shaft(location, margin=1.0):
+    """True if a camera at `location` sits inside the shaft prism (S14 rises up the beam)."""
+    v = Vector(location) - SLOT_C
+    t = v.dot(SHAFT_DIR)
+    if t < 0:
+        return False
+    xl = Vector(_slot_x - SHAFT_DIR * _slot_x.dot(SHAFT_DIR)).normalized()
+    yl = SHAFT_DIR.cross(xl)
+    sp = 1.0 + 0.00022 * t
+    x, y = abs(v.dot(xl)) / sp, abs(v.dot(yl)) / sp
+    ax = max(x - 45.0, 0.0)
+    return math.hypot(ax, y) < 22.5 * margin
+
+
+def set_shaft_camera(h, visible):
+    """Show or hide the shaft surface to camera (and reflection) rays. Hide it while the
+    camera is inside the prism (it would read as a tunnel, also in the sea's mirror);
+    look(state, inside_beam=True) adds the beam's glow as a silver veil from the mist pass."""
+    sh = h['objects'].get('shaft')
+    if sh is not None:
+        sh.visible_camera = bool(visible)
+        sh.visible_glossy = bool(visible)
+
+
 def _blockers(objs):
-    """Shadow-link collection that lets fill lights pass straight through the cup."""
+    """Shadow-link collection (kept for API compatibility; the pre-lit cup needs no linking)."""
     coll = bpy.data.collections.get('OFF_PassThrough') or bpy.data.collections.new('OFF_PassThrough')
     for o in objs:
         if o is not None and o.name not in coll.objects:
@@ -1398,97 +1607,107 @@ def _blockers(objs):
     return coll
 
 
-def build_lights(coll, state, pass_coll):
-    """Sun down the shaft, the warm wall ring, the top light, and the colour blooms."""
+def _light_vis(L, camera=False, diffuse=True, glossy=True, transmission=True):
+    L.visible_camera = camera
+    L.visible_diffuse = diffuse
+    L.visible_glossy = glossy
+    L.visible_transmission = transmission
+    L.visible_volume_scatter = False
+    return L
+
+
+def build_lights(coll, state, pass_coll=None):
+    """Three lamps; the cup itself (wall and lid) is pre-lit and lights the world by bounce.
+
+    sun:   down the shaft; the lid blocks it except at the hole (a real slot-shaped pool)
+    key:   a soft warm area lamp standing in for the hot slot-side paper (diffuse only:
+           modelling and lower noise on the landforms, no blob in the sea)
+    top:   a broad disc under the lid centre; the moon dome fill at night
+    glint: a tall narrow strip on the slot-side cliff, seen only by glossy rays, so the
+           espresso, the paddies and the brass carry a glitter path under the shaft
+    """
     lights = {}
     sun = C.sun_light('OFF_Sun', (0, 0, 0), energy=1.0, angle_deg=0.9, coll=coll)
     sun.rotation_euler = (-SHAFT_DIR).to_track_quat('Z', 'Y').to_euler()
+    _light_vis(sun)
     lights['sun'] = sun
-    ring = []
-    nring = 10
-    for k in range(nring):
-        az = 360.0 * (k + 0.5) / nring
-        zc = 300.0
-        rr = float(cup_radius(zc)) + 80.0
-        pos = _pol(az, rr, zc)
-        L = C.area_light(f'OFF_WallLight_{k}', pos, target=_pol(az, 0, zc + 0.0), energy=1.0,
-                         size=2 * np.pi * rr / nring * 1.08, size_y=800.0, coll=coll)
-        ring.append(L)
-    lights['ring'] = ring
-    top = C.area_light('OFF_TopLight', (0, 0, 900.0), target=(0, 0, 0), energy=1.0, size=880.0, shape='DISK', coll=coll)
+    zk = 270.0
+    key = C.area_light('OFF_Key', _pol(_SLOT_AZ + 8.0, float(cup_radius(zk)) - 45.0, zk), target=(ISLAND_C.x * 0.4, ISLAND_C.y * 0.4, 0.0),
+                       energy=1.0, size=300.0, size_y=240.0, shape='ELLIPSE', coll=coll)
+    _light_vis(key, glossy=False)
+    lights['key'] = key
+    top = C.area_light('OFF_TopLight', (0, 0, 640.0), target=(0, 0, 0), energy=1.0, size=520.0, shape='DISK', coll=coll)
+    _light_vis(top, glossy=False)
     lights['top'] = top
-    blooms = {}
-    for name, (hx, az, zc) in ATTENDEES.items():
-        # a lamp ~90 m behind the paper: a soft, peaked bloom ~150 m across
-        rr = float(cup_radius(zc)) + 90.0
-        L = C.point_light(f'OFF_Bloom_{name}', _pol(az, rr, zc), energy=0.0, radius=30.0, color=srgb(hx), coll=coll)
-        blooms[name] = L
-    lights['blooms'] = blooms
-    for L in ring + [top] + list(blooms.values()):
-        L.light_linking.blocker_collection = pass_coll
-    # the sun only exists inside the cup as the beam through the hole: the paper and the
-    # lid do not receive it (their glow comes from the ring, top and bloom lights)
-    sun.light_linking.receiver_collection = pass_coll
-    for L in [sun] + ring + [top] + list(blooms.values()):
-        L.data.cycles.max_bounces = 6 if L is sun else 3
+    zg = 150.0
+    gpos = _pol(_SLOT_AZ - 6.0, float(cup_radius(zg)) - 14.0, zg)
+    glint = C.area_light('OFF_Glint', gpos, target=(gpos.x * 0.2, gpos.y * 0.2, zg - 40.0), energy=1.0, size=10.0, size_y=200.0,
+                         coll=coll)
+    _light_vis(glint, diffuse=False, transmission=False)
+    lights['glint'] = glint
+    lights['ring'] = []
+    lights['blooms'] = {}
+    for L in (sun, key, top, glint):
+        L.data.cycles.max_bounces = 4
     return lights
 
 
-# Energies: area-light watts are set so the irradiance through the paper is ~3 W/m2
-# (ring), ~2 (top) and ~5 (blooms) against a 7 W/m2 sun pool.
-DAY_LIGHT = dict(sun=4.6, sun_col=kelvin(5400), ring=4.4e5, ring_col=kelvin(3400), top=2.6e5, top_col=kelvin(5200),
-                 bloom=4.5e5)
-NIGHT_LIGHT = dict(sun=1.1, sun_col=(0.78, 0.84, 0.95), ring=0.0, ring_col=kelvin(3100), top=6.0e4,
-                   top_col=(0.55, 0.62, 0.8), bloom=1.6e5)
-DAY_BLOOMS = ('keys', 'strategy', 'people', 'kevin', 'operations', 'linda', 'arjun', 'synthia')
+# Sun: W/m2 in the pool. Area lamps: watts. The wall and lid glow is in WALL_STATE.
+DAY_LIGHT = dict(sun=4.6, sun_col=kelvin(5600), key=3.2e5, key_col=kelvin(3500), top=6.0e4, top_col=kelvin(5000),
+                 glint=2.2e6, glint_col=kelvin(2900), bloom=WALL_STATE['day']['bloom'])
+NIGHT_LIGHT = dict(sun=1.15, sun_col=(0.78, 0.84, 0.95), key=0.0, key_col=kelvin(3100), top=5.0e5,
+                   top_col=(0.62, 0.7, 0.88), glint=4.0e5, glint_col=(0.75, 0.82, 0.95), bloom=WALL_STATE['night']['bloom'])
 
 
 def apply_light_state(h, state, blooms=None):
-    """Set energies/colours for 'day' or 'night'. blooms: names switched on (default per state)."""
+    """Set lamp energies/colours and the wall's bloom values for 'day' or 'night'.
+
+    blooms: attendee names whose exterior bloom glows in the paper (None = the
+    state's default: all but Pat by day, Pat alone by night; () = none).
+    """
     L = h['lights']
     p = DAY_LIGHT if state == 'day' else NIGHT_LIGHT
     L['sun'].data.energy = p['sun']
     L['sun'].data.color = p['sun_col']
-    for r in L['ring']:
-        # the sun is outside the slot side: that wall is backlit hardest, the far wall least
-        az = math.atan2(r.location.y, r.location.x)
-        k = 0.1 + 0.9 * (0.5 + 0.5 * math.cos(az - math.radians(_SLOT_AZ))) ** 2.2
-        r.data.energy = p['ring'] * k
-        r.data.color = p['ring_col']
-    L['top'].data.energy = p['top']
-    L['top'].data.color = p['top_col']
-    on = set(blooms if blooms is not None else (DAY_BLOOMS if state == 'day' else ('pat',)))
-    for name, b in L['blooms'].items():
-        b.data.energy = p['bloom'] if name in on else 0.0
-        if state == 'night' and name == 'pat':
-            b.data.energy = p['bloom']
+    for k in ('key', 'top', 'glint'):
+        if k in L:
+            L[k].data.energy = p[k]
+            L[k].data.color = p[k + '_col']
+    on = set(bloom_names(state, blooms))
+    for name, node in h.get('bloom_nodes', {}).items():
+        node.outputs[0].default_value = p['bloom'] if name in on else 0.0
 
 
 def key_bloom(h, name, frame, on, interp='CONSTANT'):
-    """Key one attendee bloom on/off (S11 switches them off one by one)."""
-    b = h['lights']['blooms'][name]
-    b.data.energy = (DAY_LIGHT['bloom'] if on else 0.0) if not isinstance(on, (int, float)) or isinstance(on, bool) else on
-    b.data.keyframe_insert('energy', frame=frame)
-    for fc in C.fcurves(b.data.animation_data.action):
-        for kp in fc.keyframe_points:
-            kp.interpolation = interp
+    """Key one attendee's colour bloom in the paper on/off (or to a level, 1 = nominal)."""
+    node = h['bloom_nodes'][name]
+    nominal = (DAY_LIGHT if h['state'] == 'day' else NIGHT_LIGHT)['bloom']
+    if isinstance(on, bool):
+        v = nominal if on else 0.0
+    else:
+        v = nominal * float(on)
+    key_value(node, frame, v, interp)
 
 
 def key_slot(h, frame, level, interp='BEZIER'):
-    """Key the slot-sun brightness (1 = nominal). Drives the sun, sky, lid glow and shaft together.
+    """Key the slot-sun brightness (1 = nominal). Drives the sun, sky, lid rim and shaft together.
 
-    S01 eclipse: key_slot(h, 104, 1.0); key_slot(h, 124, 0.4).
+    S01 eclipse: key_slot(h, 104, 1.0); key_slot(h, 124, 0.4) (build_eclipse does this).
     """
     st = h['state']
     base = DAY_LIGHT if st == 'day' else NIGHT_LIGHT
     sun = h['lights']['sun']
     sun.data.energy = base['sun'] * level
     sun.data.keyframe_insert('energy', frame=frame)
+    for fc in C.fcurves(sun.data.animation_data.action):
+        for kp in fc.keyframe_points:
+            if abs(kp.co.x - frame) < 1e-4:
+                kp.interpolation = interp
     for mat, node, nominal in ((h['mats'].get('lid'), 'SlotGlow', 1.0),
                                (h['mats'].get('shaft'), 'ShaftStrength', h['nominal']['shaft']),
                                (h['mats'].get('sky'), 'SkyStrength', h['nominal']['sky'])):
         if mat is not None:
-            key_value(mat.node_tree.nodes[node], frame, nominal * level, 'BEZIER')
+            key_value(mat.node_tree.nodes[node], frame, nominal * level, interp)
 
 
 # ================================================================== sea
@@ -1532,6 +1751,7 @@ def build_sea(coll, state, focus, shore_img, img_box):
     oc.wave_alignment = 0.4
     oc.wave_direction = math.radians(40)
     oc.random_seed = 7
+    obj.cycles.use_deform_motion = False      # the swell moves ~1 cm per shutter: blur only the rig's tilt
     oc.time = 0.0
     oc.keyframe_insert('time', frame=0)
     oc.time = 1440 / 24.0 * 0.55
@@ -1543,13 +1763,51 @@ def build_sea(coll, state, focus, shore_img, img_box):
     return obj
 
 
-def build_floes(coll, mat, land_fn, seed=3, n=160):
-    """Crema foam floes: flat lacy blobs, denser near shores and the cliff foot."""
-    rng = np.random.default_rng(seed)
-    verts, faces = [], []
+def _floe_blob(rng, x, y, size, seed, m=16):
+    """One lacy floe: an irregular fan, sometimes broken into 2-4 drifting pieces."""
+    pieces = 1 if size < 0.8 or rng.uniform() < 0.55 else int(rng.integers(2, 5))
+    verts, faces, rim = [], [], []
     base = 0
-    placed = 0
-    tries = 0
+    for k in range(pieces):
+        s = size * (1.0 if pieces == 1 else rng.uniform(0.35, 0.7))
+        ox, oy = (0.0, 0.0) if k == 0 else rng.normal(0, size * 0.6, 2)
+        ang = np.linspace(0, 2 * np.pi, m, endpoint=False)
+        rad = s * (0.72 + 0.38 * vnoise2(np.cos(ang) * 1.7 + seed * 3.1 + k, np.sin(ang) * 1.7, seed=seed))
+        rad *= np.where(rng.uniform(size=m) < 0.25, 0.62, 1.0)
+        ring = np.stack([x + ox + rad * np.cos(ang), y + oy + rad * np.sin(ang), np.full(m, 0.25)], axis=1)
+        verts.append([[x + ox, y + oy, 0.3 + 0.05 * s]])
+        verts.append(ring)
+        rim.append(np.r_[1.0, np.zeros(m)])
+        kk = np.arange(m)
+        faces.append(np.stack([np.full(m, base), base + 1 + kk, base + 1 + (kk + 1) % m], axis=1))
+        base += m + 1
+    return np.vstack(verts), np.vstack(faces), np.concatenate(rim)
+
+
+def build_floes(coll, mat, land_fn, seed=3, n=70, near=None, near_n=0, near_r=(2.0, 80.0)):
+    """Crema foam floes: lacy blobs, denser near shores and the cliff foot.
+
+    near: optional camera path, a list of (x, y) points; near_n extra floes of
+    0.3-4 m are scattered within near_r metres of it, so a lens at human scale
+    has foam drifting past it (S01 glide, the S08 foreground).
+    """
+    rng = np.random.default_rng(seed)
+    verts, faces, rims = [], [], []
+    base = 0
+
+    def ok(x, y):
+        lm = land_fn(np.array([x]), np.array([y]))
+        return lm[0][0] <= 0.02 and lm[2][0] <= 0.6 and math.hypot(x, y) < R_SEA - 1.0
+
+    def add(x, y, size, i):
+        nonlocal base
+        V, F, rm = _floe_blob(rng, x, y, size, i)
+        verts.append(V)
+        rims.append(rm)
+        faces.append(F + base)
+        base += len(V)
+
+    placed = tries = 0
     while placed < n and tries < n * 20:
         tries += 1
         r = R_SEA * math.sqrt(rng.uniform(0.0, 1.0))
@@ -1557,23 +1815,25 @@ def build_floes(coll, mat, land_fn, seed=3, n=160):
             r = R_SEA - rng.exponential(18.0) - 4.0
         a = rng.uniform(0, 2 * np.pi)
         x, y = r * math.cos(a), r * math.sin(a)
-        lm = land_fn(np.array([x]), np.array([y]))
-        if lm[0][0] > 0.02 or lm[2][0] > 0.6:
+        if not ok(x, y):
             continue
-        size = float(np.clip(rng.lognormal(0.7, 0.75), 0.6, 11.0))
-        m = 18
-        ang = np.linspace(0, 2 * np.pi, m, endpoint=False)
-        rad = size * (0.75 + 0.35 * vnoise2(np.cos(ang) * 1.7 + placed * 3.1, np.sin(ang) * 1.7, seed=placed))
-        rad *= np.where(rng.uniform(size=m) < 0.2, 0.7, 1.0)
-        ring = np.stack([x + rad * np.cos(ang), y + rad * np.sin(ang), np.full(m, 0.25)], axis=1)
-        verts.append([[x, y, 0.55]])
-        verts.append(ring)
-        k = np.arange(m)
-        faces.append(np.stack([np.full(m, base), base + 1 + k, base + 1 + (k + 1) % m], axis=1))
-        base += m + 1
+        add(x, y, float(np.clip(rng.lognormal(0.4, 0.6), 0.6, 5.0)), placed)
         placed += 1
-    V = np.vstack(verts)
-    obj = np_mesh('OFF_Floes', V, [np.vstack(faces)], coll=coll, mat=mat)
+    if near is not None and near_n > 0:
+        path = np.asarray(near, dtype=float).reshape(-1, 2)
+        placed = tries = 0
+        while placed < near_n and tries < near_n * 20:
+            tries += 1
+            c = path[rng.integers(0, len(path))]
+            rr = math.sqrt(rng.uniform(near_r[0] ** 2, near_r[1] ** 2))
+            a = rng.uniform(0, 2 * np.pi)
+            x, y = c[0] + rr * math.cos(a), c[1] + rr * math.sin(a)
+            if not ok(x, y):
+                continue
+            add(x, y, float(np.clip(rng.lognormal(-0.1, 0.7), 0.3, 4.0)), 10000 + placed)
+            placed += 1
+    obj = np_mesh('OFF_Floes', np.vstack(verts), [np.vstack(faces)], coll=coll, mat=mat)
+    set_attr(obj.data, 'rim', np.concatenate(rims))
     return obj
 
 
@@ -1687,22 +1947,29 @@ def _boxed(X, Y, fn, c, r, fill):
     return out
 
 
-def land_masks(X, Y, parts):
-    """(land, lagoon, shelf) masks over world arrays for the parts that are present."""
+def land_masks(X, Y, parts, shelf=None):
+    """(land, lagoon, shelf) masks over world arrays for the parts that are present.
+
+    The lagoon mask is depth-graded: bright over the shallow sand inside the ring,
+    dark over the deep centre.
+    """
     X = np.asarray(X, dtype=float)
     Y = np.asarray(Y, dtype=float)
     land = np.zeros(X.shape)
     lag = np.zeros(X.shape)
-    shelf = np.zeros(X.shape)
+    reef = np.zeros(X.shape)
     if 'island' in parts:
         h = _boxed(X, Y, island_h, ISLAND_C, 78.0, -10.0)
         land = np.maximum(land, np.clip(h / 0.4, 0, 1))
-        shelf = np.maximum(shelf, np.clip((h + 4.0) / 4.0, 0, 1))
+        reef = np.maximum(reef, np.clip((h + 4.0) / 4.0, 0, 1))
     if 'atoll' in parts:
         h = _boxed(X, Y, lambda x, y: atoll_h(x, y)[0], ATOLL_C, 118.0, -10.0)
         lg = _boxed(X, Y, lambda x, y: atoll_h(x, y)[1], ATOLL_C, 118.0, 0.0)
+        dd = np.hypot(X - ATOLL_C.x, Y - ATOLL_C.y)
+        R0 = OFFLINE['atoll_radius']
+        lg = lg * (0.1 + 0.9 * smoothstep(R0 - 52.0, R0 - 16.0, dd) ** 1.4)
         land = np.maximum(land, np.clip(h / 0.4, 0, 1))
-        shelf = np.maximum(shelf, np.clip((h + 4.5) / 4.5, 0, 1) * 0.8)
+        reef = np.maximum(reef, np.clip((h + 4.5) / 4.5, 0, 1) * 0.8)
         lag = np.maximum(lag, lg)
     if 'terraces' in parts:
         h = _boxed(X, Y, lambda x, y: terrace_fields(x, y)[0], TERRACE_C, 128.0, -10.0)
@@ -1714,7 +1981,10 @@ def land_masks(X, Y, parts):
     if 'falls' in parts:
         h = _boxed(X, Y, heap_h, falls_base_pos(), 58.0, -10.0)
         land = np.maximum(land, np.clip(h / 0.4, 0, 1))
-    return land, lag, shelf
+    if shelf is not None:
+        h = _boxed(X, Y, lambda x, y: shelf_h(x, y, shelf), shelf[:2], shelf[2] * 1.1, -10.0)
+        land = np.maximum(land, np.clip(h / 0.4, 0, 1))
+    return land, lag, reef
 
 
 # ================================================================== templates
@@ -1749,25 +2019,47 @@ def _rounded_box(hx, hy, hz, rad, n=8, z0=0.0):
     return V, np.vstack(faces)
 
 
-def padlock_template(open_shackle=False):
-    """Padlock about 1 unit tall: rounded brass body, steel-thick shackle, keyway boss."""
-    Vb, Fb = _rounded_box(0.31, 0.13, 0.26, 0.07, n=7)
+# body half extents (x, y, z), corner radius, shackle half-width, shackle top (z), wire radius, open angle (deg)
+PADLOCK_VARIANTS = (
+    (0.31, 0.13, 0.26, 0.07, 0.19, 0.75, 0.048, 0.0),     # classic
+    (0.25, 0.12, 0.31, 0.06, 0.15, 0.84, 0.042, 0.0),     # tall, narrow
+    (0.36, 0.14, 0.21, 0.08, 0.22, 0.62, 0.054, 0.0),     # wide, squat, heavy shackle
+    (0.28, 0.12, 0.25, 0.07, 0.17, 0.96, 0.040, 0.0),     # long shackle
+    (0.31, 0.13, 0.26, 0.07, 0.19, 0.75, 0.048, 38.0),    # classic, shackle sprung open
+    (0.34, 0.14, 0.22, 0.08, 0.21, 0.66, 0.052, 75.0),    # squat, shackle swung open
+)
+
+
+def padlock_template(open_shackle=False, variant=0):
+    """Padlock about 1 unit tall, origin at the body's bottom centre, keyhole-free.
+
+    A rounded brass body (broad faces along +-Y) and a round-section U shackle
+    rising out of its top. variant picks body proportions, shackle height and
+    open angle from PADLOCK_VARIANTS; open_shackle=True swings a closed variant
+    75 degrees open. The faces are plain: no keyway, no boss, nothing that can
+    read as a glyph.
+    """
+    hx, hy, hz, rad, sw, top, wr, open_deg = PADLOCK_VARIANTS[variant % len(PADLOCK_VARIANTS)]
+    if open_shackle and not open_deg:
+        open_deg = 75.0
+    Vb, Fb = _rounded_box(hx, hy, hz, rad, n=7)
     t = np.linspace(0, 1, 34)
-    # U path: up the left leg, over the top, down the right leg
+    leg0 = 2 * hz - 0.1
+    straight = top - leg0
     pts = []
     for s in t:
         if s < 0.3:
-            pts.append((-0.19, 0.0, 0.42 + (s / 0.3) * 0.33))
+            pts.append((-sw, 0.0, leg0 + (s / 0.3) * straight))
         elif s < 0.7:
             a = np.pi * (1 - (s - 0.3) / 0.4)
-            pts.append((0.19 * np.cos(a), 0.0, 0.75 + 0.19 * np.sin(a)))
+            pts.append((sw * np.cos(a), 0.0, top + sw * np.sin(a)))
         else:
-            pts.append((0.19, 0.0, 0.75 - ((s - 0.7) / 0.3) * 0.33))
+            pts.append((sw, 0.0, top - ((s - 0.7) / 0.3) * straight))
     P = np.array(pts)
-    if open_shackle:
-        P[:, 2] += 0.14
-        ang = math.radians(75)
-        pv = np.array([-0.19, 0.0])
+    if open_deg:
+        P[:, 2] += 0.12
+        ang = math.radians(open_deg)
+        pv = np.array([-sw, 0.0])
         xy = P[:, [0, 1]] - pv
         P[:, 0] = pv[0] + xy[:, 0] * math.cos(ang) - xy[:, 1] * math.sin(ang)
         P[:, 1] = pv[1] + xy[:, 0] * math.sin(ang) + xy[:, 1] * math.cos(ang)
@@ -1779,23 +2071,17 @@ def padlock_template(open_shackle=False):
     sides = 12
     ang = np.linspace(0, 2 * np.pi, sides, endpoint=False)
     ring = np.cos(ang)[None, :, None] * N1[:, None] + np.sin(ang)[None, :, None] * N2[:, None]
-    Vs = (P[:, None] + ring * 0.048).reshape(-1, 3)
+    Vs = (P[:, None] + ring * wr).reshape(-1, 3)
     Fs = grid_faces(sides, len(P), wrap_u=True) + len(Vb)
-    # keyway boss on the front face
-    m = 16
-    a = np.linspace(0, 2 * np.pi, m, endpoint=False)
-    c = np.array([0.0, 0.132, 0.16])
-    rim = np.stack([0.055 * np.cos(a), np.zeros(m), 0.055 * np.sin(a)], axis=1) + c
-    top = rim + [0, 0.012, 0]
-    hole = np.stack([0.02 * np.cos(a), np.zeros(m), 0.02 * np.sin(a)], axis=1) + c + [0, 0.008, 0]
-    base = len(Vb) + len(Vs)
-    Vk = np.vstack([rim, top, hole])
-    k = np.arange(m)
-    Fk = np.vstack([np.stack([k, (k + 1) % m, m + (k + 1) % m, m + k], 1),
-                    np.stack([m + k, m + (k + 1) % m, 2 * m + (k + 1) % m, 2 * m + k], 1)]) + base
-    V = np.vstack([Vb, Vs, Vk])
-    me_obj = np_mesh('PadlockT', V, [Fb, Fs, Fk[:, ::-1]])
-    return me_obj
+    c0 = len(Vb) + len(Vs)
+    k = np.arange(sides)
+    caps = np.vstack([np.stack([np.full(sides, c0), len(Vb) + (k + 1) % sides, len(Vb) + k], 1),
+                      np.stack([np.full(sides, c0 + 1), len(Vb) + (len(P) - 1) * sides + k,
+                                len(Vb) + (len(P) - 1) * sides + (k + 1) % sides], 1)])
+    V = np.vstack([Vb, Vs, P[0] - T[0] * wr * 0.6, P[-1] + T[-1] * wr * 0.6])
+    obj = np_mesh('PadlockT', V, [Fb, Fs, caps])
+    obj['padlock_variant'] = variant
+    return obj
 
 
 def pine_template(seed=0, whorls=8):
@@ -1933,7 +2219,7 @@ def grass_template(seed=0, blades=5):
 
 def build_island(coll, mats):
     obj, X, Y, Z = heightfield('OFF_Island', ISLAND_C.x, ISLAND_C.y, 72.0, 72.0, 0.5,
-                               lambda X, Y: island_h(X, Y), coll=coll, mat=mats['stone'])
+                               lambda X, Y: island_h(X, Y), coll=coll, mat=mats['stone'], skirt=-70.0)
     return obj
 
 
@@ -1946,7 +2232,7 @@ def build_box(coll, state):
     # skylight: a stadium inset 1 m wide, 23 m long, in the roof
     out = stadium(48, half_len=10.8, radius=0.7)
     m = len(out)
-    V = np.vstack([np.c_[out, np.full(m, 5.0)], np.c_[out * 0.94, np.full(m, 4.86)], [[0, 0, 4.86]]])
+    V = np.vstack([np.c_[out, np.full(m, 5.16)], np.c_[out * 0.94, np.full(m, 5.06)], [[0, 0, 5.06]]])   # sits on the roof
     k = np.arange(m)
     F = [np.stack([k, (k + 1) % m, m + (k + 1) % m, m + k], 1)[:, ::-1],
          np.stack([np.full(m, 2 * m), m + k, m + (k + 1) % m], 1)[:, ::-1]]
@@ -1989,61 +2275,180 @@ def arch_curve(step=1.0):
     return world, radius, t
 
 
-def build_arch(coll, mats, seed=5):
-    """~600 fused padlocks on a stone core, scree mounds at its feet, pines on the crest."""
+def _arch_frames(P):
+    """Tangent and two normals along the arch centreline (N1 horizontal, N2 = T x N1)."""
+    tang = np.gradient(P, axis=0)
+    tang /= np.linalg.norm(tang, axis=1, keepdims=True)
+    N1 = np.cross(tang, [0, 0, 1.0])
+    N1 /= np.maximum(np.linalg.norm(N1, axis=1, keepdims=True), 1e-6)
+    N2 = np.cross(tang, N1)
+    return tang, N1, N2
+
+
+def _core_radius(R, P):
+    return R * (0.68 + 0.2 * smoothstep(0.62, 0.95, P[:, 2] / 121.0))
+
+
+def padlock_shell(seed=5, period=1.72, layers=((0.0, 0.0), (0.5, 0.11))):
+    """Instance placement for the arch's shell of interlocked padlocks.
+
+    Padlocks lie flat on the stone core in rows that run along the arch. Along
+    a row they alternate shackle-up / shackle-down so neighbouring shackles
+    overlap and link like a chain (vertebrae), the broad faces face outward,
+    and a second, staggered layer sits over the joints. Returns arrays: pts,
+    rotation matrices, scale, age, variant.
+    """
+    rng = np.random.default_rng(seed)
+    P, R, T = arch_curve(0.5)
+    core_r = _core_radius(R, P)
+    tang, N1, N2 = _arch_frames(P)
+    seg = np.linalg.norm(np.diff(P, axis=0), axis=1)
+    S = np.concatenate([[0], np.cumsum(seg)])
+    crest_s = S[int(np.argmax(P[:, 2]))]
+    pts, rots, scl, age, var = [], [], [], [], []
+    for li, (s_off, lift) in enumerate(layers):
+        n_rows = 11 if li == 0 else 10
+        for row in range(n_rows):
+            a_row = 2 * np.pi * (row + 0.5 * li) / n_rows + rng.uniform(-0.12, 0.12)
+            s = rng.uniform(0, 6.0) + s_off * 9.5
+            k = 0
+            while s < S[-1]:
+                sc = rng.uniform(8.5, 13.5)
+                i = int(np.searchsorted(S, s).clip(0, len(S) - 1))
+                a = a_row + rng.normal(0, 0.06)
+                radial = np.cos(a) * N1[i] + np.sin(a) * N2[i]
+                z_here = P[i, 2]
+                hn = float(np.clip(z_here / 122.0, 0, 1))
+                ag = float(np.clip(hn * 1.05 + 0.1 * vnoise3(P[i, 0] / 25, P[i, 1] / 25, P[i, 2] / 25, 7)
+                                   + rng.uniform(-0.06, 0.06) - 0.03, 0, 1))
+                fuse = smoothstep(0.72, 0.95, ag)              # the oldest sink into the stone
+                up = 1.0 if (k % 2 == 0) == (s < crest_s) else -1.0
+                # shackle along the arch, leaning out; alternate pairs face each other
+                lean = math.radians(rng.uniform(0, 8) + (5 if k % 2 else 0) + 6 * smoothstep(0.75, 0.95, hn))
+                zdir = tang[i] * up * math.cos(lean) + radial * math.sin(lean)
+                roll = rng.normal(0, 0.12)
+                side = np.cross(radial, zdir)
+                ydir = radial * math.cos(roll) + side * math.sin(roll)
+                ydir = ydir - zdir * np.dot(ydir, zdir)
+                Rm = frame_from(zdir[None], ydir[None])[0]
+                hz_body = 0.26 * sc
+                centre = P[i] + radial * (core_r[i] + (0.12 + lift - 0.13 * fuse) * sc * 1.0)
+                origin = centre - zdir * hz_body                  # template origin is the body's bottom
+                if origin[2] > -4.0:
+                    pts.append(origin)
+                    rots.append(Rm)
+                    scl.append(sc)
+                    age.append(ag)
+                    var.append(int(rng.integers(0, 4)) if rng.uniform() < 0.9 else int(rng.integers(4, len(PADLOCK_VARIANTS))))
+                # advance: half a pair period per padlock (pairs interlock at the shackles)
+                s += period * sc * 0.5 * rng.uniform(0.92, 1.08)
+                k += 1
+    return np.array(pts), np.array(rots), np.array(scl), np.array(age), np.array(var)
+
+
+def _template_tris(obj):
+    me = obj.data
+    V = np.zeros(len(me.vertices) * 3)
+    me.vertices.foreach_get('co', V)
+    V = V.reshape(-1, 3)
+    tris = []
+    for p in me.polygons:
+        vs = list(p.vertices)
+        for j in range(1, len(vs) - 1):
+            tris.append((vs[0], vs[j], vs[j + 1]))
+    return V, np.array(tris)
+
+
+def crest_surface(core_obj, tmpl_objs, pts, rots, scl, var, n=200, seed=43, zmin=93.0):
+    """Points (n,3) and normals on the arch's top surface (core + padlock shell), by ray casting."""
+    from mathutils.bvhtree import BVHTree
+    rng = np.random.default_rng(seed)
+    me = core_obj.data
+    Vc = np.zeros(len(me.vertices) * 3)
+    me.vertices.foreach_get('co', Vc)
+    Vc = Vc.reshape(-1, 3)
+    Mw = np.array(core_obj.matrix_world)
+    Vc = Vc @ Mw[:3, :3].T + Mw[:3, 3]
+    Vs, Fs = [Vc], [np.array([list(p.vertices) for p in me.polygons if len(p.vertices) == 4])]
+    tri_faces = [np.array([list(p.vertices) for p in me.polygons if len(p.vertices) == 3])]
+    base = len(Vc)
+    tm = [_template_tris(o) for o in tmpl_objs]
+    sel = np.nonzero(pts[:, 2] > zmin - 25.0)[0]
+    tri_list = []
+    for i in sel:
+        V, F = tm[int(var[i]) % len(tm)]
+        W = (V * scl[i]) @ rots[i].T + pts[i]
+        Vs.append(W)
+        tri_list.append(F + base)
+        base += len(W)
+    verts = np.vstack(Vs)
+    polys = [list(f) for f in Fs[0]] + [list(f) for f in tri_faces[0] if len(tri_faces[0])] + \
+        [list(f) for F in tri_list for f in F]
+    bvh = BVHTree.FromPolygons([tuple(v) for v in verts], polys)
+    P, R, T = arch_curve(0.5)
+    core_r = _core_radius(R, P)
+    tang, N1, N2 = _arch_frames(P)
+    top = np.nonzero(P[:, 2] > zmin)[0]
+    out_p, out_n = [], []
+    tries = 0
+    while len(out_p) < n and tries < n * 30:
+        tries += 1
+        i = int(rng.choice(top))
+        lat = rng.normal(0, 0.42) * core_r[i]
+        q = P[i] + N1[i] * lat
+        hit = bvh.ray_cast(Vector((q[0], q[1], P[i, 2] + 60.0)), Vector((0, 0, -1.0)), 120.0)
+        if hit[0] is None:
+            continue
+        nrm = np.array(hit[1])
+        if nrm[2] < 0.45:
+            continue
+        out_p.append(np.array(hit[0]))
+        out_n.append(nrm)
+    return np.array(out_p), np.array(out_n)
+
+
+def pine_templates(mats):
+    """The shared pine template collection, always with needle and bark materials."""
+    coll = bpy.data.collections.get('OFF_PineTmpl')
+    if coll is not None and len(coll.objects):
+        return coll
+    coll = template_collection('OFF_PineTmpl', [pine_template(s) for s in range(3)])
+    for o in coll.objects:
+        o.data.materials.append(mats['pine'])
+        o.data.materials.append(mats['bark'])
+        for poly in o.data.polygons[:6]:
+            poly.material_index = 1                    # the trunk ring
+    return coll
+
+
+def build_arch(coll, mats, seed=5, n_pines=200):
+    """~600 interlocked padlocks on a stone core, scree mounds at its feet, pines on the crest."""
     rng = np.random.default_rng(seed)
     out = {}
     P, R, T = arch_curve(1.0)
-    world_c = np.array(ARCH_C)
 
     def core_disp(V, ring):
         n = fbm3(V[..., 0] / 9.0, V[..., 1] / 9.0, V[..., 2] / 9.0, 3, seed=91)
         return ring * (2.6 * n)[..., None]
 
-    core_r = R * (0.68 + 0.2 * smoothstep(0.62, 0.95, P[:, 2] / 121.0))
+    core_r = _core_radius(R, P)
     out['core'] = tube_along(P, core_r, sides=40, name='OFF_ArchCore', coll=coll, mat=mats['arch_stone'], disp=core_disp)
-    # vertebrae: rings of padlocks around the curve, shackles pointing up toward the crest
-    Pst, Rst, Tst = arch_curve(5.9)
-    tang = np.gradient(Pst, axis=0)
-    tang /= np.linalg.norm(tang, axis=1, keepdims=True)
-    crest_i = int(np.argmax(Pst[:, 2]))
-    up_dir = np.where((np.arange(len(Pst)) <= crest_i)[:, None], tang, -tang)
-    N1 = np.cross(tang, [0, 0, 1.0])
-    N1 /= np.maximum(np.linalg.norm(N1, axis=1, keepdims=True), 1e-6)
-    N2 = np.cross(tang, N1)
-    pts, zax, yax, scl, age, var = [], [], [], [], [], []
-    for i in range(len(Pst)):
-        for layer, (rf, dens) in enumerate(((0.84, 7.0), (0.46, 15.0))):
-            k = max(3, int(round(2 * np.pi * rf * Rst[i] / dens)))
-            off = rng.uniform(0, 2 * np.pi)
-            for j in range(k):
-                a = off + 2 * np.pi * j / k + rng.uniform(-0.2, 0.2)
-                radial = np.cos(a) * N1[i] + np.sin(a) * N2[i]
-                p = Pst[i] + radial * Rst[i] * rf * rng.uniform(0.9, 1.08) + tang[i] * rng.uniform(-2.0, 2.0)
-                if p[2] < -6:
-                    continue
-                z = up_dir[i] + rng.normal(0, 0.28, 3)
-                pts.append(p)
-                zax.append(z)
-                yax.append(radial + rng.normal(0, 0.2, 3))
-                scl.append(rng.uniform(8.0, 14.0) * (0.85 if layer else 1.0))
-                hn = np.clip(p[2] / 122.0, 0, 1)
-                age.append(np.clip(hn * 1.05 + 0.1 * vnoise3(p[0] / 25, p[1] / 25, p[2] / 25, 7) + rng.uniform(-0.06, 0.06) - 0.03, 0, 1))
-                var.append(1 if rng.uniform() < 0.12 else 0)
-    Rm = frame_from(np.array(zax), np.array(yax))
-    tmpl = template_collection('OFF_PadlockTmpl', [padlock_template(False), padlock_template(True)])
+    pts, rots, scl, age, var = padlock_shell(seed)
+    tobjs = [padlock_template(False, v) for v in range(len(PADLOCK_VARIANTS))]
+    tmpl = template_collection('OFF_PadlockTmpl', tobjs)
     for o in tmpl.objects:
         o.data.materials.append(mats['padlock'])
         for poly in o.data.polygons:
             poly.use_smooth = True
-    out['padlocks'] = instancer('OFF_ArchPadlocks', pts, tmpl, rot=Rm, scl=np.array(scl), var=var,
-                                attrs={'age': np.array(age)}, coll=coll)
+    out['padlocks'] = instancer('OFF_ArchPadlocks', pts, tmpl, rot=rots, scl=scl, var=var,
+                                attrs={'age': age}, coll=coll)
     out['n_padlocks'] = len(pts)
     # scree mounds and loose padlocks at the feet
     fl, fr = arch_feet()
     mounds = []
     for c, w in ((fl, 62.0), (fr, 48.0)):
-        o, X, Y, Z = heightfield('OFF_ArchScree', c.x, c.y, w, w, 0.7, lambda X, Y: mound_h(X, Y), coll=coll, mat=mats['scree'])
+        o, X, Y, Z = heightfield('OFF_ArchScree', c.x, c.y, w, w, 0.7, lambda X, Y: mound_h(X, Y), coll=coll,
+                                 mat=mats['scree'], skirt=-70.0)
         mounds.append(o)
     out['mounds'] = mounds
     sp, sz, sy, ss, sa, sv = [], [], [], [], [], []
@@ -2054,54 +2459,44 @@ def build_arch(coll, mats, seed=5):
             hz = float(mound_h(np.array([x]), np.array([y]))[0])
             if hz < 0.2:
                 continue
-            sp.append((x, y, hz - rng.uniform(0.5, 2.5)))
+            sp.append((x, y, hz - rng.uniform(0.6, 2.2)))
             sz.append(rng.normal(0, 1, 3) + [0, 0, 0.3])
             sy.append(rng.normal(0, 1, 3))
             ss.append(rng.uniform(5.0, 11.5))
             sa.append(rng.uniform(0.0, 0.42) if rng.uniform() < 0.85 else rng.uniform(0.4, 0.75))
-            sv.append(int(rng.uniform() < 0.2))
+            sv.append(int(rng.integers(0, len(PADLOCK_VARIANTS))))
             cnt += 1
     out['scree'] = instancer('OFF_ScreePadlocks', sp, tmpl, rot=frame_from(np.array(sz), np.array(sy)),
                              scl=np.array(ss), var=sv, attrs={'age': np.array(sa)}, coll=coll)
-    # pines on the crest: on top of the core, where the arch is old
-    pp, ps, pr, pv = [], [], [], []
-    for i in range(len(P)):
-        if P[i, 2] < 96 or rng.uniform() > 0.42:
-            continue
-        side = rng.normal(0, 0.45)
-        tn = np.gradient(P, axis=0)[i]
-        tn /= np.linalg.norm(tn)
-        lat = np.cross(tn, [0, 0, 1.0])
-        lat /= max(np.linalg.norm(lat), 1e-6)
-        q = P[i] + lat * side * core_r[i] * 0.7
-        q[2] = P[i, 2] + core_r[i] * math.sqrt(max(0.05, 1 - side * side * 0.5)) * 0.92 - 0.8
-        pp.append(q)
-        ps.append(rng.uniform(5.5, 13.0))
-        pr.append((rng.normal(0, 0.06), rng.normal(0, 0.06), rng.uniform(0, 2 * np.pi)))
-        pv.append(int(rng.integers(0, 3)))
-    ptm = template_collection('OFF_PineTmpl', [pine_template(s) for s in range(3)])
-    for o in ptm.objects:
-        o.data.materials.append(mats['pine'])
-        o.data.materials.append(mats['bark'])
-        for poly in o.data.polygons[:6]:
-            poly.material_index = 1                    # the trunk ring
-    out['pines'] = instancer('OFF_ArchPines', pp, ptm, rot=np.array(pr), scl=np.array(ps), var=pv, coll=coll)
+    # pines on the crest: ray cast onto the core and the padlock shell, standing up from the surface
+    cp, cn = crest_surface(out['core'], tobjs, pts, rots, scl, var, n=n_pines, seed=seed + 40)
+    ptm = pine_templates(mats)
+    k = len(cp)
+    tilt = cn * 0.25 + np.array([0, 0, 1.0])
+    pr = frame_from(tilt, np.c_[np.cos(rng.uniform(0, 6.3, k)), np.sin(rng.uniform(0, 6.3, k)), np.zeros(k)])
+    psz = np.clip(rng.lognormal(math.log(4.8), 0.3, k), 3.0, 8.0)
+    out['pines'] = instancer('OFF_ArchPines', cp - np.array([0, 0, 0.25]), ptm, rot=pr, scl=psz,
+                             var=rng.integers(0, 3, k), coll=coll)
     out['crest'] = Vector(P[int(np.argmax(P[:, 2]))]) + Vector((0, 0, core_r[int(np.argmax(P[:, 2]))]))
+    out['crest_surface'] = (cp, cn)
     out['pine_tmpl'] = ptm
     out['padlock_tmpl'] = tmpl
     return out
 
 
 def hero_padlock_rest():
-    """Where the S06 padlock comes to rest: on the big scree slope, toward the S06 camera."""
+    """Where the S06 padlock comes to rest: on the big scree slope, in the S06 opening frame."""
     fl, _ = arch_feet()
-    p = fl + ARCH_FACE * 22.0 + ARCH_SPAN * 10.0
+    p = fl - ARCH_FACE * 6.0 + ARCH_FACE * 15.0 + ARCH_SPAN * 9.0
     z = float(mound_h(np.array([p.x]), np.array([p.y]))[0])
     return Vector((p.x, p.y, z + 0.6))
 
 
+HERO_SCALE = 11.0
+
+
 def build_hero_padlock(coll, tmpl_obj=None):
-    src = padlock_template(False)
+    src = padlock_template(False, 0)
     src.name = 'OFF_HeroPadlock'
     for poly in src.data.polygons:
         poly.use_smooth = True
@@ -2109,11 +2504,30 @@ def build_hero_padlock(coll, tmpl_obj=None):
     for c in src.users_collection:
         c.objects.unlink(src)
     coll.objects.link(src)
-    src.scale = (11.0, 11.0, 11.0)
+    src.scale = (HERO_SCALE,) * 3
+    src.rotation_mode = 'QUATERNION'
+    src.rotation_quaternion = Euler((math.radians(84), math.radians(8), math.atan2(ARCH_FACE.y, ARCH_FACE.x) + 0.5)).to_quaternion()
     src.location = hero_padlock_rest()
-    src.rotation_euler = (math.radians(84), math.radians(8), math.atan2(ARCH_FACE.y, ARCH_FACE.x) + 0.5)
+    _sit_on_scree(src, src.location, src.rotation_quaternion)
     C.bevel(src, width=0.004, segments=2, angle=50)
     return src
+
+
+def _hero_local_verts(obj):
+    me = obj.data
+    V = np.zeros(len(me.vertices) * 3)
+    me.vertices.foreach_get('co', V)
+    return V.reshape(-1, 3) * np.array(obj.scale)
+
+
+def _sit_on_scree(obj, loc, quat, lift=0.0):
+    """Set obj.location so its lowest vertex (at orientation quat) rests on the scree at loc.xy."""
+    V = _hero_local_verts(obj) @ np.array(quat.to_matrix()).T
+    j = int(np.argmin(V[:, 2]))
+    cx, cy = loc.x + V[j, 0], loc.y + V[j, 1]
+    ground = float(np.maximum(mound_h(np.array([cx]), np.array([cy]))[0], 0.0))
+    obj.location = Vector((loc.x, loc.y, ground - V[j, 2] + lift))
+    return obj.location.copy()
 
 
 def build_dust(coll, at):
@@ -2133,50 +2547,65 @@ def build_dust(coll, at):
     return cards, mat
 
 
-def animate_hero_padlock(h, f_start=529, f_land=553, f_bounce=566, f_settle=578, start=None):
-    """Keyframe the S06 hero padlock: tumbling fall out of the slot-sun, one bounce, slide, settle.
+def animate_hero_padlock(h, f_start=529, f_land=553, f_bounce=566, f_settle=578, start=None, impact_speed=85.0):
+    """Keyframe the S06 hero padlock: the last second of a long fall, one hop, slide, settle.
 
-    It falls along the line of sight from the S06 camera to the slot (so it
-    reads as dropping out of the sun), flashing as it turns, lands on the
-    scree, hops once and slides to its rest pose. A dust puff fires on landing.
+    A padlock the size of a three-storey building dropped from the lid falls
+    for about nine seconds; the shot sees the last (f_land - f_start) frames of
+    it, arriving at `impact_speed` m/s (so it reads as huge, not as a toy). It
+    tumbles about one axis (1.5 turns, so it flashes gold as it turns), lands
+    on the scree in an orientation near its rest pose, hops once (~3 m), slides
+    and settles. Orientation is keyed as quaternions (no Euler unwinding) and
+    every key after the landing is solved against the scree so the lowest
+    vertex sits on the surface. start: optional position at f_start (default:
+    straight above the landing, drifting in from the slot side). A dust puff
+    fires on landing.
     """
     hp = h['objects']['hero_padlock']
-    rest = hero_padlock_rest()
-    rest_rot = hp.rotation_euler.copy()
+    hp.rotation_mode = 'QUATERNION'
+    rest_loc = hero_padlock_rest()
+    rest_q = Euler((math.radians(84), math.radians(8), math.atan2(ARCH_FACE.y, ARCH_FACE.x) + 0.5)).to_quaternion()
+    land_xy = rest_loc + ARCH_SPAN * 6.0 + ARCH_FACE * 5.0
+    tilt_axis = Vector(ARCH_SPAN).cross(Vector((0, 0, 1))).normalized()
+    land_q = Quaternion(tilt_axis, 0.55) @ rest_q
+    tumble_axis = (Vector(ARCH_SPAN) * 0.8 + Vector((0, 0, 0.35))).normalized()
+    g = 9.81
+    T = (f_land - f_start) / 24.0
+    v0 = impact_speed - g * T
+    drop = v0 * T + 0.5 * g * T * T
+    probe = hp.location.copy()
+    land = _sit_on_scree(hp, land_xy, land_q)
+    hp.location = probe
     if start is None:
-        view = (SLOT_C - CAM_S06).normalized()
-        start = CAM_S06 + view * ((SLOT_C - CAM_S06).length * 0.62)
+        start = land + Vector((0, 0, drop)) - ARCH_FACE * (0.1 * drop)
     start = Vector(start)
-    land = rest + ARCH_SPAN * -6.0 + ARCH_FACE * -5.0 + Vector((0, 0, 1.0))
-    n = f_land - f_start
-    for i in range(n + 1):
-        f = f_start + i
-        t = i / n
-        e = t * t                                     # accelerating fall
-        pos = start.lerp(land, e)
-        hp.location = pos
-        hp.rotation_euler = (rest_rot.x + 4.2 * math.pi * (1 - (1 - t) ** 1.5), rest_rot.y + 0.9 * t, rest_rot.z - 1.3 * t)
-        hp.keyframe_insert('location', frame=f)
-        hp.keyframe_insert('rotation_euler', frame=f)
-    land_rot = hp.rotation_euler.copy()
-    # one bounce: a 9 m hop toward the rest pose, then slide and settle
+    turns = 1.5 * 2 * math.pi
+    for i in range(f_land - f_start + 1):
+        t = i / (f_land - f_start)
+        tt = t * T
+        e = (v0 * tt + 0.5 * g * tt * tt) / drop
+        hp.location = start.lerp(land, e)
+        hp.rotation_quaternion = Quaternion(tumble_axis, -turns * (1.0 - t) ** 1.15) @ land_q
+        hp.keyframe_insert('location', frame=f_start + i)
+        hp.keyframe_insert('rotation_quaternion', frame=f_start + i)
+    # one hop toward the rest pose, then slide and settle; every key sits on the scree
+    mid = rest_loc + ARCH_SPAN * 2.0
     for i in range(1, f_bounce - f_land + 1):
         t = i / (f_bounce - f_land)
-        pos = land.lerp(rest + ARCH_SPAN * -2.0, t)
-        pos.z += 9.0 * 4 * t * (1 - t)
-        hp.location = pos
-        hp.rotation_euler = land_rot.copy()
-        hp.rotation_euler.x += (rest_rot.x - land_rot.x) * t * 0.7
-        hp.rotation_euler.z += (rest_rot.z - land_rot.z) * t * 0.7
+        q = land_q.slerp(rest_q, 0.65 * t)
+        xy = land.lerp(mid, t)
+        _sit_on_scree(hp, xy, q, lift=3.2 * 4 * t * (1 - t))
+        hp.rotation_quaternion = q
         hp.keyframe_insert('location', frame=f_land + i)
-        hp.keyframe_insert('rotation_euler', frame=f_land + i)
+        hp.keyframe_insert('rotation_quaternion', frame=f_land + i)
+    q_mid = land_q.slerp(rest_q, 0.65)
     for i in range(1, f_settle - f_bounce + 1):
         t = C.ease(i / (f_settle - f_bounce), 'out')
-        hp.location = (rest + ARCH_SPAN * -2.0).lerp(rest, t)
-        r0 = Vector(land_rot) + (Vector(rest_rot) - Vector(land_rot)) * 0.7
-        hp.rotation_euler = Vector(r0).lerp(Vector(rest_rot), t)
+        q = q_mid.slerp(rest_q, t)
+        _sit_on_scree(hp, mid.lerp(rest_loc, t), q)
+        hp.rotation_quaternion = q
         hp.keyframe_insert('location', frame=f_bounce + i)
-        hp.keyframe_insert('rotation_euler', frame=f_bounce + i)
+        hp.keyframe_insert('rotation_quaternion', frame=f_bounce + i)
     for fc in C.fcurves(hp.animation_data.action):
         for kp in fc.keyframe_points:
             kp.interpolation = 'LINEAR'
@@ -2206,7 +2635,7 @@ def build_atoll(coll, mats, seed=7):
     rng = np.random.default_rng(seed)
     out = {}
     obj, X, Y, Z = heightfield('OFF_Atoll', ATOLL_C.x, ATOLL_C.y, 112.0, 112.0, 0.7,
-                               lambda X, Y: atoll_h(X, Y)[0], coll=coll, mat=mats['sand'])
+                               lambda X, Y: atoll_h(X, Y)[0], coll=coll, mat=mats['sand'], skirt=-70.0)
     out['ground'] = obj
     land = Z > 1.3
     ys, xs = np.nonzero(land)
@@ -2253,11 +2682,11 @@ def build_terraces(coll, mats, seed=9, grass_count=52000):
     grass = np.where(Hh < 0.4, 0.0, grass)
     V = np.stack([X, Y, Hh], -1).reshape(-1, 3)
     F = grid_faces(len(xs), len(ys))
-    ground = np_mesh('OFF_Terraces', V, F, coll=coll, mat=mats['terrace_ground'])
-    set_attr(ground.data, 'grass', grass.ravel())
+    low, Fs = grid_skirt(V, len(xs), len(ys), -70.0)
+    ground = np_mesh('OFF_Terraces', np.vstack([V, low]), [F, Fs], coll=coll, mat=mats['terrace_ground'])
+    set_attr(ground.data, 'grass', np.concatenate([grass.ravel(), np.zeros(len(low))]))
     out['ground'] = ground
     # water mirrors: one flat face per grid cell inside a paddy, at that paddy's water level
-    nx = len(xs)
     cell_e = E[:-1, :-1]
     cell_fr = FR[:-1, :-1]
     inside = (cell_e > 0.0) & (cell_fr < 0.9)
@@ -2273,7 +2702,7 @@ def build_terraces(coll, mats, seed=9, grass_count=52000):
     out['water'] = water
     # rice grass on bunds, risers and the skirt
     gy, gx = np.nonzero(grass[:-1, :-1] > 0.5)
-    pick = rng.choice(len(gx), size=min(grass_count, len(gx)), replace=len(gx) < grass_count)
+    pick = rng.choice(len(gx), size=grass_count, replace=grass_count > len(gx))
     jx = rng.uniform(0, step, len(pick))
     jy = rng.uniform(0, step, len(pick))
     px = X[gy[pick], gx[pick]] + jx
@@ -2290,8 +2719,7 @@ def build_terraces(coll, mats, seed=9, grass_count=52000):
     if len(top[0]):
         sel = rng.choice(len(top[0]), size=min(9, len(top[0])), replace=False)
         tp = np.stack([X[top][sel], Y[top][sel], Hh[top][sel] - 0.2], 1)
-        out['summit_pines'] = instancer('OFF_SummitPines', tp, bpy.data.collections['OFF_PineTmpl'] if 'OFF_PineTmpl' in bpy.data.collections else
-                                        template_collection('OFF_PineTmpl', [pine_template(s) for s in range(3)]),
+        out['summit_pines'] = instancer('OFF_SummitPines', tp, pine_templates(mats),
                                         rot=np.c_[np.zeros((len(tp), 2)), rng.uniform(0, 6.3, len(tp))],
                                         scl=rng.uniform(7, 12, len(tp)), var=rng.integers(0, 3, len(tp)), coll=coll)
     out['levels'] = [(float(TERRACE_BASE + TERRACE_STEP * k + 0.45)) for k in range(7)]
@@ -2314,31 +2742,45 @@ def _rodrigues(axis, ang):
 
 FALLS_CYCLE = 8.6
 SHEET_QUAD = np.array([[-1.6, -1.13, 0], [1.6, -1.13, 0], [1.6, 1.13, 0], [-1.6, 1.13, 0]])   # A4 proportions, ~3 m
+FALLS_HALF = 40.0                     # half-width (m) of the day curtain at the lip
+FADE_S = 0.16                         # sheets grow in / shrink out over this long (s): no motion-blur streaks
+
+
+def falls_lip(u):
+    """Lip height (m) of the torn ledge edge at lateral offset u (m)."""
+    u = np.asarray(u, dtype=float)
+    return FALLS_Z - 5.0 + 5.5 * fbm2(u / 11.0, 0.37 * np.ones_like(u), 3, seed=27) - 0.0025 * u * u
 
 
 def falls_positions(n, frames, seed=21, night=False):
     """Closed-form ballistic stream of n looping sheets; returns (len(frames), n*4, 3) float32.
 
-    Each sheet slides off the ledge lip, carries outward with drag, falls toward
-    a 68 m/s terminal speed, fans out with curl-like flutter that grows with the
-    drop, and tumbles about its own axis. Sheets that reach the heap collapse to
-    a point inside the mist (they are recycled on the loop).
+    Each sheet slides off the torn lip with an outward throw, arcs away from the
+    cliff with drag, falls toward a 68 m/s terminal speed, fans out with
+    flutter that grows with the drop, and tumbles about its own axis. The
+    curtain breaks into lanes of uneven weight with real gaps between them.
+    Every sheet grows from zero size over its first FADE_S seconds and shrinks
+    back to zero just before it lands, where it stays (zero size) until it
+    loops: a wrap goes from a zero quad to a zero quad, so motion blur never
+    draws a streak and nothing collapses to the heap centre.
     """
     rng = np.random.default_rng(seed)
     az = math.radians(FALLS_AZ)
     radial = np.array([math.cos(az), math.sin(az), 0.0])
     inward = -radial
     tang = np.array([-math.sin(az), math.cos(az), 0.0])
-    lip = np.array(_pol(FALLS_AZ, float(cup_radius(FALLS_Z)) - 27.0, FALLS_Z - 5.0))
-    half = 7.0 if night else 40.0
-    # rivulets: the sheet-flow breaks into a few lanes of uneven weight, like water over a lip
-    lanes = rng.uniform(-half * 0.85, half * 0.85, 7)
-    lane_w = rng.uniform(1.5, 6.0, 7)
-    pick = rng.choice(7, size=n, p=(lambda w: w / w.sum())(rng.uniform(0.4, 1.0, 7)))
-    u0 = np.where(rng.uniform(size=n) < 0.8, lanes[pick] + rng.normal(0, 1, n) * lane_w[pick],
+    lip0 = np.array(_pol(FALLS_AZ, float(cup_radius(FALLS_Z)) - 27.0, 0.0))
+    half = 7.0 if night else FALLS_HALF
+    nl = 3 if night else 9
+    lanes = np.sort(rng.uniform(-half * 0.9, half * 0.9, nl))
+    lane_w = rng.uniform(1.2, 4.5, nl)
+    weight = rng.uniform(0.2, 1.0, nl) ** 1.6
+    pick = rng.choice(nl, size=n, p=weight / weight.sum())
+    u0 = np.where(rng.uniform(size=n) < 0.9, lanes[pick] + rng.normal(0, 1, n) * lane_w[pick],
                   rng.uniform(-half, half, n))
-    v0 = rng.uniform(5.0, 13.0, n)
-    vz = rng.uniform(-3.0, 0.5, n)
+    lz = falls_lip(u0)
+    v0 = rng.uniform(7.0, 15.0, n)
+    vz = rng.uniform(-2.0, 2.5, n)
     phase = rng.uniform(0, FALLS_CYCLE, n)
     amp = np.clip(rng.lognormal(-0.9, 0.7, n), 0.08, 2.2)        # most sheets ride the core, a few fly wide
     w = rng.uniform(0.8, 2.6, (n, 3))
@@ -2347,44 +2789,83 @@ def falls_positions(n, frames, seed=21, night=False):
     ax /= np.linalg.norm(ax, axis=1, keepdims=True)
     spin = rng.uniform(2.0, 8.0, n) * np.where(rng.uniform(size=n) < 0.5, -1, 1)
     sz = rng.uniform(0.85, 1.15, n)
-    quad = SHEET_QUAD
     vt, tz, th = 68.0, 2.4, 2.6
+
+    def drop_at(t):
+        return vt * (t - tz * (1 - np.exp(-t / tz))) - vz * t
+
+    # landing time per sheet (the heap surface is ~3 m above the sea): Newton on drop(t) = lz - 3
+    target = lz - 3.0
+    tl = np.full(n, 6.0)
+    for _ in range(8):
+        f = drop_at(tl) - target
+        df = vt * (1 - np.exp(-tl / tz)) - vz
+        tl = np.clip(tl - f / np.maximum(df, 1.0), 0.3, FALLS_CYCLE - 0.05)
     out = np.empty((len(frames), n * 4, 3), np.float32)
-    heap = np.array(falls_base_pos()) + np.array([0, 0, 2.0])
     base_rot = frame_from(np.tile([0, 0, 1.0], (n, 1)), np.tile(inward, (n, 1)))
     for fi, f in enumerate(frames):
         t = np.mod(f / 24.0 + phase, FALLS_CYCLE)
-        drop = vt * (t - tz * (1 - np.exp(-t / tz))) - vz * t
-        out_d = v0 * th * (1 - np.exp(-t / th))
-        A = (0.4 + 0.075 * drop) * amp
-        lat = u0 * (1 + 0.0025 * drop) + A * (np.sin(w[:, 0] * t + ph[:, 0]) + 0.5 * np.sin(2.3 * w[:, 1] * t + ph[:, 1]))
-        rad = out_d + 0.6 * A * np.sin(w[:, 2] * t + ph[:, 2])
-        pos = lip[None] + inward[None] * rad[:, None] + tang[None] * lat[:, None]
-        pos[:, 2] = lip[2] - drop
-        ang = spin * np.maximum(t - 0.25, 0) ** 1.15
+        te = np.minimum(t, tl)                               # landed sheets stay where they landed
+        drop = drop_at(te)
+        out_d = v0 * th * (1 - np.exp(-te / th))
+        A = (0.35 + 0.07 * drop) * amp
+        lat = u0 * (1 + 0.0025 * drop) + A * (np.sin(w[:, 0] * te + ph[:, 0]) + 0.5 * np.sin(2.3 * w[:, 1] * te + ph[:, 1]))
+        rad = out_d + 0.6 * A * np.sin(w[:, 2] * te + ph[:, 2])
+        pos = lip0[None] + inward[None] * rad[:, None] + tang[None] * lat[:, None]
+        pos[:, 2] = lz - drop
+        ang = spin * np.maximum(te - 0.25, 0) ** 1.15
         R = _rodrigues(ax, ang) @ base_rot
-        corners = np.einsum('nij,kj->nki', R, quad) * sz[:, None, None]
-        dead = pos[:, 2] < 3.0
-        corners[dead] = 0.0
-        pos[dead] = heap
+        grow = smoothstep(0.0, FADE_S, t) * (1 - smoothstep(tl - FADE_S, tl, t))
+        corners = np.einsum('nij,kj->nki', R, SHEET_QUAD) * (sz * grow)[:, None, None]
+        out[fi] = (corners + pos[:, None, :]).reshape(-1, 3)
+    return out
+
+
+SPRAY_CYCLE = 2.6
+
+
+def spray_positions(n, frames, seed=25, scale=0.45):
+    """Paper spray at the falls' base: small sheets thrown up and out of the heap, looping, fading in/out."""
+    rng = np.random.default_rng(seed)
+    c = np.array(falls_base_pos())
+    az = rng.uniform(0, 2 * np.pi, n)
+    r0 = np.abs(rng.normal(0, 12.0, n))
+    vh = rng.uniform(3.0, 11.0, n)
+    vz = rng.uniform(6.0, 17.0, n)
+    phase = rng.uniform(0, SPRAY_CYCLE, n)
+    dur = rng.uniform(1.4, SPRAY_CYCLE - 0.1, n)
+    ax = rng.normal(0, 1, (n, 3))
+    ax /= np.linalg.norm(ax, axis=1, keepdims=True)
+    spin = rng.uniform(4.0, 12.0, n)
+    dirs = np.stack([np.cos(az), np.sin(az), np.zeros(n)], 1)
+    out = np.empty((len(frames), n * 4, 3), np.float32)
+    for fi, f in enumerate(frames):
+        t = np.minimum(np.mod(f / 24.0 + phase, SPRAY_CYCLE), dur)
+        h = r0 + vh * 1.8 * (1 - np.exp(-t / 1.8))
+        z = 6.0 + vz * 1.2 * (1 - np.exp(-t / 1.2)) - 4.5 * t * t
+        pos = c[None] + dirs * h[:, None]
+        pos[:, 2] = np.maximum(z, 1.0)
+        grow = smoothstep(0.0, FADE_S, t) * (1 - smoothstep(dur - FADE_S, dur, t))
+        R = _rodrigues(ax, spin * t)
+        corners = np.einsum('nij,kj->nki', R, SHEET_QUAD * scale) * grow[:, None, None]
         out[fi] = (corners + pos[:, None, :]).reshape(-1, 3)
     return out
 
 
 def build_falls(coll, mats, state, frames, cache_dir, seed=21):
-    """The binder's pages: ledge, falling sheets (PC2), heap of sheets, spray cards."""
+    """The binder's pages: torn ledge, falling sheets (PC2), heap of sheets, paper spray at the base."""
     out = {}
     az = math.radians(FALLS_AZ)
     radial = Vector((math.cos(az), math.sin(az), 0))
     tang = Vector((-math.sin(az), math.cos(az), 0))
-    # ledge: a drooping paper shelf with a torn lip
-    ws = np.linspace(-36, 36, 73)
+    # ledge: a drooping paper shelf with a torn lip that the sheets pour over
+    ws = np.linspace(-46, 46, 93)
     ds = np.linspace(-6, 30, 37)
     W, D = np.meshgrid(ws, ds)
     rw = float(cup_radius(FALLS_Z))
-    lipn = 2.5 * fbm2(W / 6.0, 0.0 * W, 2, seed=29)
-    D2 = np.minimum(D, 28.0 + lipn - 6.0 * (np.abs(W) / 36.0) ** 2)
-    Zl = FALLS_Z - 0.17 * np.clip(D2, 0, None) - 0.004 * W ** 2 + 0.6 * fbm2(W / 5.0, D2 / 5.0, 2, seed=28)
+    lipn = 2.5 * fbm2(W / 6.0, 0.0 * W, 2, seed=29) + 1.2 * fbm2(W / 1.7, 0.0 * W + 3, 2, seed=30)
+    D2 = np.minimum(D, 28.0 + lipn - 6.0 * (np.abs(W) / 46.0) ** 2)
+    Zl = FALLS_Z - 0.17 * np.clip(D2, 0, None) - 0.003 * W ** 2 + 0.6 * fbm2(W / 5.0, D2 / 5.0, 2, seed=28)
     P = (np.array(radial)[None, None] * (rw - D2)[..., None] + np.array(tang)[None, None] * W[..., None])
     V = np.dstack([P[..., 0], P[..., 1], Zl]).reshape(-1, 3)
     ledge = np_mesh('OFF_FallsLedge', V, grid_faces(len(ws), len(ds))[:, ::-1], coll=coll, mat=mats['sheet'])
@@ -2392,24 +2873,22 @@ def build_falls(coll, mats, state, frames, cache_dir, seed=21):
     sol.thickness = 2.6
     out['ledge'] = ledge
     # falling sheets
-    n = 500 if state == 'night' else 24000
+    n = 500 if state == 'night' else 22000
     a, b = frames
     fr = list(range(a - 2, b + 3))
     # closed form and cheap: always rebuilt, so parameter changes can never meet a stale cache
     path = os.path.join(cache_dir, f'falls_{state}_{n}_{seed}_{fr[0]}_{fr[-1]}.pc2')
     PC.write_pc2(path, falls_positions(n, fr, seed, night=(state == 'night')), start=fr[0])
-    quad = SHEET_QUAD
-    Vt = np.tile(quad, (n, 1)) + np.repeat(np.array(_pol(FALLS_AZ, rw, FALLS_Z))[None], n * 4, 0)
+    Vt = np.tile(SHEET_QUAD, (n, 1)) + np.repeat(np.array(_pol(FALLS_AZ, rw, FALLS_Z))[None], n * 4, 0)
     Ft = np.arange(n * 4).reshape(-1, 4)
     sheets = np_mesh('OFF_FallsSheets', Vt, Ft, coll=coll, mat=mats['sheet_falls'], smooth=False)
-    tint = np.repeat(np.random.default_rng(seed + 1).uniform(0, 1, n), 4)
-    set_attr(sheets.data, 'tint', tint)
+    set_attr(sheets.data, 'tint', np.repeat(np.random.default_rng(seed + 1).uniform(0, 1, n), 4))
     PC.attach_pc2(sheets, path, fr[0])
     out['sheets'] = sheets
     # heap at the base: a white mound under a few thousand resting sheets
     c = falls_base_pos()
     hob, X, Y, Z = heightfield('OFF_FallsHeapMound', c.x, c.y, 50.0, 50.0, 1.0, lambda X, Y: heap_h(X, Y),
-                               coll=coll, mat=mats['sheet'])
+                               coll=coll, mat=mats['sheet'], skirt=-70.0)
     out['heap_mound'] = hob
     rng = np.random.default_rng(seed + 2)
     m = 3200
@@ -2421,38 +2900,47 @@ def build_falls(coll, mats, state, frames, cache_dir, seed=21):
     k = len(hx)
     nrm = np.c_[rng.normal(0, 0.45, (k, 2)), np.ones(k)]
     R = frame_from(nrm, rng.normal(0, 1, (k, 3)))
-    corners = np.einsum('nij,kj->nki', R, quad * 1.0) + np.stack([hx, hy, hz], 1)[:, None]
+    corners = np.einsum('nij,kj->nki', R, SHEET_QUAD * 1.0) + np.stack([hx, hy, hz], 1)[:, None]
     heap = np_mesh('OFF_FallsHeap', corners.reshape(-1, 3), np.arange(k * 4).reshape(-1, 4), coll=coll,
                    mat=mats['sheet'], smooth=False)
     set_attr(heap.data, 'tint', np.repeat(rng.uniform(0, 1, k), 4))
     out['heap'] = heap
-    # spray: soft cards at the base, square to the cup centre
-    mist = mat_mist('OFF_FallsMist', 0.45 if state == 'day' else 0.08)
-    cards = []
-    for i in range(9):
-        wv = rng.uniform(55, 110)
-        hv = rng.uniform(35, 80)
-        Vc = np.array([[-wv / 2, 0, 0], [wv / 2, 0, 0], [wv / 2, 0, hv], [-wv / 2, 0, hv]])
-        uv = np.array([[0, 0], [1, 0], [1, 1], [0, 1]], float)
-        o = np_mesh(f'OFF_FallsMist_{i}', Vc, np.array([[0, 1, 2, 3]]), coll=coll, mat=mist, uv=uv)
-        o.location = c - radial * rng.uniform(0, 45) + tang * rng.uniform(-35, 35) + Vector((0, 0, rng.uniform(-6, 18 + 30 * (i > 6))))
-        o.rotation_euler = (0, 0, math.atan2(radial.y, radial.x) + math.pi / 2 + rng.uniform(-0.6, 0.6))
-        hide_from(o, camera=True, diffuse=False, glossy=True, transmission=True, shadow=False)
-        cards.append(o)
-    out['mist'] = cards
+    # spray: small sheets thrown up out of the heap (no translucent cards)
+    ns = 70 if state == 'night' else 900
+    spath = os.path.join(cache_dir, f'spray_{state}_{ns}_{seed}_{fr[0]}_{fr[-1]}.pc2')
+    PC.write_pc2(spath, spray_positions(ns, fr, seed + 4), start=fr[0])
+    Vs = np.tile(SHEET_QUAD * 0.45, (ns, 1)) + np.repeat(np.array(c)[None], ns * 4, 0)
+    spray = np_mesh('OFF_FallsSpray', Vs, np.arange(ns * 4).reshape(-1, 4), coll=coll, mat=mats['sheet_falls'], smooth=False)
+    set_attr(spray.data, 'tint', np.repeat(rng.uniform(0, 1, ns), 4))
+    PC.attach_pc2(spray, spath, fr[0])
+    out['spray'] = spray
+    out['mist'] = []                      # the old spray cards are gone (they read as ovals)
     return out
 
 
 # ================================================================== origami birds
 
-# 7-vertex origami bird: keel, head, tail, shoulders, wing tips (+Y forward, +Z up, ~6 m span)
+BIRD_SCALE = 0.7              # ~4.2 m span: small against the cliffs, a particulate ribbon
 BIRD = np.array([[0.0, 0.0, -0.35], [0.0, 2.7, 0.35], [0.0, -2.5, 0.25], [0.55, 0.9, 0.0], [-0.55, 0.9, 0.0],
-                 [3.0, -0.7, 0.3], [-3.0, -0.7, 0.3]])
+                 [3.0, -0.7, 0.3], [-3.0, -0.7, 0.3]]) * BIRD_SCALE
 BIRD_F = np.array([[0, 1, 3], [0, 3, 5], [0, 5, 2], [0, 2, 6], [0, 6, 4], [0, 4, 1]])
 BIRD_ROOST = np.array([[0.0, 0.0, -0.35], [0.0, 2.2, 0.75], [0.0, -2.3, 0.15], [0.45, 0.6, 0.1], [-0.45, 0.6, 0.1],
-                       [0.9, -1.4, 1.5], [-0.9, -1.4, 1.5]])
+                       [0.9, -1.4, 1.5], [-0.9, -1.4, 1.5]]) * BIRD_SCALE
 ENVELOPE = np.array([[0.0, 0.0, 0.22], [0.0, 1.55, 0.05], [0.0, -1.55, 0.05], [2.2, 1.55, 0.0], [-2.2, 1.55, 0.0],
                      [2.2, -1.55, 0.0], [-2.2, -1.55, 0.0]])
+
+
+def _src_hash(*objs):
+    """Short digest of functions' source and values, for cache file names that cannot go stale."""
+    import hashlib
+    import inspect
+    h = hashlib.sha1()
+    for o in objs:
+        try:
+            h.update(inspect.getsource(o).encode())
+        except (TypeError, OSError):
+            h.update(repr(o).encode())
+    return h.hexdigest()[:10]
 
 
 def bird_shape(flap):
@@ -2464,7 +2952,7 @@ def bird_shape(flap):
         V[:, tip, 0] = sgn * abs(x) * np.cos(flap)
         V[:, tip, 2] = BIRD[tip, 2] + abs(x) * np.sin(flap)
     for sh, sgn in ((3, 1), (4, -1)):
-        V[:, sh, 2] = BIRD[sh, 2] + 0.25 * np.sin(flap)
+        V[:, sh, 2] = BIRD[sh, 2] + 0.25 * BIRD_SCALE * np.sin(flap)
     return V
 
 
@@ -2482,38 +2970,44 @@ def _knn(P, k=7, chunk=500):
 
 
 FLOCK_WINDOW = (640, 900)
+FLOCK_TRAIL = 2.4             # seconds of path the ribbon spreads over
 
 
 def flock_target(t):
-    """Moving attractor (world) for the murmuration, t in seconds of film time.
+    """Moving attractor (world) for the murmuration, t in seconds of film time (scalar or array).
 
     During S08 (31.4-34.7 s) it sweeps across the bright north-west cliff, above
     the arch as seen from the poster camera, so the birds read dark on the glow.
     """
-    u = min(1.5, max(-0.2, (t - 31.4) / 3.3))
+    t = np.asarray(t, dtype=float)
+    u = np.clip((t - 31.4) / 3.3, -0.2, 1.5)
     a = np.array([-255.0, -50.0, 240.0])
     b = np.array([-185.0, 115.0, 300.0])
-    wob = np.array([25 * math.sin(2.1 * t), 25 * math.cos(1.7 * t), 18 * math.sin(2.9 * t)])
-    return a + (b - a) * u + wob
+    wob = np.stack([25 * np.sin(2.1 * t), 25 * np.cos(1.7 * t), 18 * np.sin(2.9 * t)], -1)
+    return a + (b - a) * u[..., None] + wob
 
 
 def simulate_flock(n, f0=FLOCK_WINDOW[0], f1=FLOCK_WINDOW[1], seed=31, cache_dir=CACHE_DIR):
     """Boids (each bird follows its 7 nearest neighbours), cached to .npz.
 
     Alignment and cohesion over the 7 nearest (topological, as starlings do),
-    short-range separation, a moving attractor, a sweeping 'predator' that sends
-    waves through the flock, and soft containment inside the cup. Two substeps
-    per frame; neighbours are refreshed every substep pair. Returns positions
-    and velocities, both (frames, n, 3) float32, for film frames f0..f1.
+    short-range separation, a moving attractor that each bird follows with its
+    own delay (so the flock pours along the path as a ribbon), a sweeping
+    'predator' that sends waves through it, and soft containment inside the
+    cup. Two substeps per frame. The cache name hashes this code, so edits can
+    never replay a stale flock. Returns positions and velocities, both
+    (frames, n, 3) float32, for film frames f0..f1.
     """
     os.makedirs(cache_dir, exist_ok=True)
-    path = os.path.join(cache_dir, f'flock_v3_{n}_{seed}_{f0}_{f1}.npz')
+    tag = _src_hash(simulate_flock, flock_target, FLOCK_TRAIL, R_SEA, TAPER)
+    path = os.path.join(cache_dir, f'flock_{tag}_{n}_{seed}_{f0}_{f1}.npz')
     if os.path.exists(path):
         d = np.load(path)
         return d['P'], d['V']
     rng = np.random.default_rng(seed)
-    c = flock_target(f0 / 24.0)
-    P = (c + rng.normal(0, 1, (n, 3)) * np.array([80.0, 40.0, 22.0])).astype(np.float32)
+    lag = (rng.uniform(0, 1, n) ** 1.3 * FLOCK_TRAIL)[:, None]
+    c = flock_target(f0 / 24.0 - lag[:, 0])
+    P = (c + rng.normal(0, 1, (n, 3)) * np.array([30.0, 18.0, 12.0])).astype(np.float32)
     Vv = (np.tile([12.0, 36.0, 4.0], (n, 1)) + rng.normal(0, 4, (n, 3))).astype(np.float32)
     frames = f1 - f0 + 1
     out_p = np.empty((frames, n, 3), np.float32)
@@ -2528,11 +3022,11 @@ def simulate_flock(n, f0=FLOCK_WINDOW[0], f1=FLOCK_WINDOW[1], seed=31, cache_dir
             mv = Vv[idx].mean(1)
             dv = P[:, None, :] - nbp
             dd = np.maximum(np.linalg.norm(dv, axis=-1, keepdims=True), 0.5)
-            sep = (dv / dd ** 2 * (dd < 9.0)).sum(1)
-            acc = 2.4 * (mv - Vv) + 0.55 * (mp - P) + 120.0 * sep
-            tgt = flock_target(t)
-            acc += 0.11 * (tgt - P)
-            pr = tgt + np.array([110 * math.sin(t * 2.1), 70 * math.cos(t * 1.7), 25 * math.sin(t * 2.9)])
+            sep = (dv / dd ** 2 * (dd < 7.0)).sum(1)
+            acc = 2.4 * (mv - Vv) + 0.55 * (mp - P) + 80.0 * sep
+            tgt = flock_target(t - lag[:, 0])
+            acc += 0.16 * (tgt - P)
+            pr = flock_target(t - FLOCK_TRAIL * 0.5) + np.array([110 * math.sin(t * 2.1), 70 * math.cos(t * 1.7), 25 * math.sin(t * 2.9)])
             dp = P - pr
             dpl = np.maximum(np.linalg.norm(dp, axis=1, keepdims=True), 1.0)
             acc += 2.2e4 * dp / dpl ** 3 * (dpl < 70)
@@ -2592,19 +3086,26 @@ def build_murmuration(coll, mat, frames, cache_dir, n=4000, seed=31):
     return obj, (P, Vv, f0)
 
 
-def build_roost(coll, mat, seed=41, n=260):
-    """Night: origami birds roosting along the arch crest, wings folded."""
+def build_roost(coll, mat, seed=41, n=260, surface=None):
+    """Night: origami birds roosting along the arch crest, wings folded, sitting on the surface.
+
+    surface: (points, normals) on the crest (build_arch's ray-cast crest surface);
+    without it the birds sit on the core's nominal top.
+    """
     rng = np.random.default_rng(seed)
-    P, R, T = arch_curve(0.7)
-    top = np.nonzero(P[:, 2] > 92)[0]
-    pick = rng.choice(top, size=n, replace=True)
-    core = R * (0.68 + 0.2 * smoothstep(0.62, 0.95, P[:, 2] / 121.0))
-    tn = np.gradient(P, axis=0)
-    tn /= np.linalg.norm(tn, axis=1, keepdims=True)
-    pts = P[pick] + np.c_[rng.normal(0, 3.0, (n, 2)), np.zeros(n)]
-    pts[:, 2] = P[pick, 2] + core[pick] * 0.95 + rng.uniform(1.0, 3.0, n)
-    fwd = tn[pick] * np.where(rng.uniform(size=n) < 0.5, 1, -1)[:, None] + rng.normal(0, 0.4, (n, 3))
-    fwd[:, 2] = 0
+    if surface is not None and len(surface[0]):
+        sp, sn = surface
+        pick = rng.choice(len(sp), size=n, replace=True)
+        pts = sp[pick] + np.c_[rng.normal(0, 0.8, (n, 2)), np.zeros(n)]
+        pts[:, 2] = sp[pick, 2] + 0.25 * BIRD_SCALE
+    else:
+        P, R, T = arch_curve(0.7)
+        top = np.nonzero(P[:, 2] > 92)[0]
+        pick = rng.choice(top, size=n, replace=True)
+        core = _core_radius(R, P)
+        pts = P[pick] + np.c_[rng.normal(0, 3.0, (n, 2)), np.zeros(n)]
+        pts[:, 2] = P[pick, 2] + core[pick] * 0.95 + rng.uniform(1.0, 3.0, n)
+    fwd = np.c_[rng.normal(0, 1, (n, 2)), np.zeros(n)]
     Rm = frame_from(np.tile([0, 0, 1.0], (n, 1)), fwd)
     s = rng.uniform(0.8, 1.1, n)
     V = (np.einsum('nij,kj->nki', Rm, BIRD_ROOST) * s[:, None, None] + pts[:, None]).reshape(-1, 3)
@@ -2696,28 +3197,51 @@ def firefly_layout(n=1500, seed=61):
     return np.array(pts), np.array(ground)
 
 
+def _terrain_floor(x, y):
+    """Highest solid or water surface under (x, y) on the terraces (sea level elsewhere)."""
+    h, e, lv, fr, w = terrace_fields(x, y)
+    return np.where(e > -0.12, np.maximum(h, np.where(e > 0, w, 0.0)), 0.0)
+
+
 def firefly_positions(home, ground, frames, seed=63):
-    """Rise from the grass (f1150-1190), then hover and wander. (frames, n, 3)."""
+    """Rise from the grass (f1150-1190), then hover and wander, never below the terrain. (frames, n, 3)."""
     rng = np.random.default_rng(seed)
     n = len(home)
     t_rise = rng.uniform(1148, 1186, n)
     amp = rng.uniform(1.0, 3.5, (n, 3)) * np.array([1, 1, 0.5])
     w = rng.uniform(0.25, 0.8, (n, 3))
     ph = rng.uniform(0, 2 * np.pi, (n, 3))
+    terr = np.linalg.norm(home[:, :2] - np.array(TERRACE_C)[:2], axis=1) < 160.0
     out = np.empty((len(frames), n, 3), np.float32)
     for i, f in enumerate(frames):
         r = smoothstep(0.0, 1.0, (f - t_rise) / 34.0)
         z = ground + 0.5 + (home[:, 2] - ground - 0.5) * r
         t = f / 24.0
         wob = amp * np.sin(w * t + ph)
-        out[i] = np.c_[home[:, 0] + wob[:, 0], home[:, 1] + wob[:, 1], z + wob[:, 2]]
+        x, y = home[:, 0] + wob[:, 0], home[:, 1] + wob[:, 1]
+        z = z + wob[:, 2]
+        floor = np.where(terr, _terrain_floor(x, y), -1e9)
+        out[i] = np.c_[x, y, np.maximum(z, floor + 0.5)]
     return out
 
 
-def build_fireflies(coll, frames, cache_dir, n=1500, radius=0.16, grey_near=None, seed=61):
+def build_fireflies(coll, frames, cache_dir, n=1500, radius=0.012, grey_near=None, seed=61, view=None, near_keep=4):
+    """Firefly points (PC2) with the in-shader Kuramoto clock.
+
+    view: optional dict(location, lens, res_x) of the camera; each firefly's
+    radius is then raised to at least ~0.8 px at its distance, so distant ones
+    stay crisp 1.5-2 px points instead of sparkling sub-pixel noise, while near
+    ones keep the true small size (and bloom only through depth of field).
+    """
     home, ground = firefly_layout(n, seed)
+    if view is not None:            # only a few fireflies bloom into bokeh right at the lens
+        d = np.linalg.norm(home - np.array(view['location']), axis=1)
+        near = np.nonzero(d < 12.0)[0]
+        drop = near[np.argsort(d[near])][::-1][near_keep:] if len(near) > near_keep else []
+        keep = np.setdiff1d(np.arange(len(home)), drop)
+        home, ground = home[keep], ground[keep]
     n = len(home)
-    bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2, radius=radius)
+    bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2, radius=1.0)
     ico = bpy.context.object
     tv = np.zeros(len(ico.data.vertices) * 3)
     ico.data.vertices.foreach_get('co', tv)
@@ -2736,8 +3260,13 @@ def build_fireflies(coll, frames, cache_dir, n=1500, radius=0.16, grey_near=None
     a, b = frames
     fr = list(range(a - 2, b + 3))
     P = firefly_positions(home, ground, fr, seed + 2)
-    pos = (P[:, :, None, :] + tv[None, None]).reshape(len(fr), n * k, 3)
-    path = os.path.join(cache_dir, f'fireflies_{n}_{seed}_{fr[0]}_{fr[-1]}.pc2')
+    rad = np.full(n, radius)
+    if view is not None:
+        d = np.linalg.norm(home - np.array(view['location']), axis=1)
+        px = d * (36.0 / view['lens']) / view.get('res_x', 1600)
+        rad = np.clip(1.1 * px, radius, 60 * radius)
+    pos = (P[:, :, None, :] + tv[None, None] * rad[None, :, None, None]).reshape(len(fr), n * k, 3)
+    path = os.path.join(cache_dir, f'fireflies_{n}_{seed}_{fr[0]}_{fr[-1]}_{_src_hash(tuple(np.round(rad, 3)))}.pc2')
     PC.write_pc2(path, pos, start=fr[0])
     F = (tf[None] + k * np.arange(n)[:, None, None]).reshape(-1, 3)
     obj = np_mesh('OFF_Fireflies', pos[0], F, coll=coll, mat=mat_firefly(), smooth=True)
@@ -2805,7 +3334,7 @@ def set_gravity(h, frame, degrees, interp='BEZIER', beam=None):
 # ================================================================== assembly
 
 PARTS = ('cup', 'lid', 'shaft', 'sea', 'floes', 'island', 'box', 'arch', 'hero_padlock', 'atoll', 'terraces',
-         'falls', 'murmuration', 'hero_envelope', 'fireflies', 'roost', 'blooms', 'gravity')
+         'falls', 'murmuration', 'hero_envelope', 'fireflies', 'roost', 'blooms', 'gravity', 'shelf')
 DEFAULT_PARTS = {
     'day': {'cup', 'lid', 'shaft', 'sea', 'floes', 'island', 'box', 'arch', 'atoll', 'terraces', 'falls',
             'murmuration', 'blooms', 'gravity'},
@@ -2813,12 +3342,65 @@ DEFAULT_PARTS = {
               'fireflies', 'roost', 'blooms', 'gravity'},
 }
 
+# Offline render budget (samples, adaptive threshold) per quality tier; see tune_render().
+OFFLINE_SPP = {'animatic': (6, 0.1), 'proof': (10, 0.07), 'preview': (12, 0.06), 'final': (12, 0.05),
+               'hero': (28, 0.035)}
+
+
+def tune_render(sc=None, quality=None, samples=0):
+    """Offline's render settings, set on the scene (common.py stays untouched).
+
+    Always: max 4 bounces (diffuse 2, glossy 2, transmission 2, transparent 8),
+    no volumes, indirect clamp 6, and Cycles camera culling (Simplify) so the
+    instanced small stuff the lens cannot see (grass, palms, shrubs, pines,
+    scree) is not synced. With `quality`, also the sample budget from
+    OFFLINE_SPP (`samples` overrides it): the pre-lit cup converges fast, so
+    final quality needs ~12 spp, adaptive 0.05, with OIDN.
+    """
+    sc = sc or bpy.context.scene
+    cy = sc.cycles
+    cy.max_bounces = 4
+    cy.diffuse_bounces = 2
+    cy.glossy_bounces = 2
+    cy.transmission_bounces = 2
+    cy.transparent_max_bounces = 8
+    cy.volume_bounces = 0
+    cy.sample_clamp_indirect = 6.0
+    cy.use_light_tree = True
+    sc.render.use_simplify = True
+    sc.render.simplify_subdivision_render = 6
+    sc.render.simplify_child_particles_render = 1.0
+    cy.use_camera_cull = True
+    cy.camera_cull_margin = 0.1
+    if quality:
+        spp, thr = OFFLINE_SPP[quality]
+        cy.samples = samples or spp
+        cy.adaptive_threshold = thr
+        cy.adaptive_min_samples = max(4, cy.samples // 3)
+    return sc
+
+
+def _cull(objs):
+    """Let Cycles camera culling drop these (and, for instancers, their template objects)."""
+    for o in objs:
+        if o is None:
+            continue
+        o.cycles.use_camera_cull = True
+        for m in o.modifiers:
+            if m.type == 'NODES':
+                for k in m.keys():
+                    v = m[k]
+                    if isinstance(v, bpy.types.Collection):
+                        for t in v.objects:
+                            t.cycles.use_camera_cull = True
+
 
 def _mats(state):
     return {
         'stone': mat_stone('OFF_IslandStone', srgb('#4d4741')),
-        'arch_stone': mat_stone('OFF_ArchStone', (0.36, 0.35, 0.33), lichen=1.0, wet_line=True),
-        'scree': mat_stone('OFF_Scree', (0.3, 0.26, 0.2)),
+        'arch_stone': mat_stone('OFF_ArchStone', STONE_GREY, lichen=1.0, wet_line=True),
+        'scree': mat_stone('OFF_Scree', (0.17, 0.15, 0.13), wet=0.3),
+        'shelf': mat_stone('OFF_ShelfStone', srgb('#4a423b'), wet=1.0),
         'padlock': mat_padlock(),
         'pine': mat_foliage('OFF_Pine', DEEP_GREEN, LIME, trans=0.2),
         'bark': mat_bark('OFF_PineBark'),
@@ -2830,24 +3412,45 @@ def _mats(state):
         'terrace_ground': mat_terrace_ground(),
         'grass': mat_foliage('OFF_Grass', srgb('#2f5a2c'), LIME, trans=0.45),
         'sheet': mat_paper_sheet('OFF_Sheet'),
-        'sheet_falls': mat_paper_sheet('OFF_SheetFalls', glow=0.35 if state == 'day' else 0.05),
+        'sheet_falls': mat_paper_sheet('OFF_SheetFalls', glow=0.12 if state == 'day' else 0.02),
         'bird': mat_bird(),
-        'foam': mat_foam(),
+        'foam': mat_foam(state),
     }
 
 
+def shelf_h(X, Y, shelf):
+    """A low wet-stone shelf (x, y, radius, height): the S08 foreground at human scale."""
+    cx, cy, r0, hh = shelf
+    d = np.hypot(X - cx, (Y - cy) * 1.25) * (1 + 0.22 * fbm2(X / 9.0, Y / 9.0, 3, seed=97))
+    top = hh * (1 - smoothstep(0.55, 1.0, d / r0)) + 0.7 * fbm2(X / 2.2, Y / 2.2, 3, seed=98) \
+        + 1.4 * fbm2(X / 7.0, Y / 7.0, 2, seed=99)
+    return top - 1.5
+
+
+def build_shelf(coll, mats, shelf):
+    cx, cy, r0, hh = shelf
+    obj, X, Y, Z = heightfield('OFF_Shelf', cx, cy, r0 * 1.1, r0 * 1.1, 0.25, lambda X, Y: shelf_h(X, Y, shelf),
+                               coll=coll, mat=mats['shelf'], skirt=-20.0)
+    return obj
+
+
 def build_offline(state='day', include=None, frames=None, sea_focus=None, cache_dir=None, blooms=None,
-                  grass_count=52000, falls_count=None, flock_count=4000, firefly_count=1500, grey_near=None):
+                  grass_count=52000, falls_count=None, flock_count=4000, firefly_count=1500, grey_near=None,
+                  view=None, floes_near=None, shelf=None, tune=True):
     """Build E1_OFFLINE into the current scene and return a handles dict.
 
     state: 'day' | 'night'. include: subset of PARTS (default: DEFAULT_PARTS[state]).
     frames: (a, b) film frames to bake crowd caches for (default: the current scene range).
     sea_focus: (x, y) where the sea mesh is densest (put it under the camera).
-    blooms: attendee names whose exterior colour bloom is on (default by state).
+    blooms: attendee names whose colour bloom glows in the paper (default by state).
+    view: dict(location, lens, res_x) of the (mean) camera: sizes fireflies to stay crisp points.
+    floes_near: camera path [(x, y), ...]: scatter human-scale foam floes along it.
+    shelf: (x, y, radius, height) of a foreground wet-stone shelf (part 'shelf').
+    tune: apply tune_render() bounces and camera culling to the scene.
 
-    Handles: h['objects'][name], h['mats'][name], h['lights'] (sun, ring, top, blooms),
-    h['offline'] (= OFFLINE), plus helpers key_slot(), key_bloom(), set_gravity(),
-    animate_hero_padlock() that take h.
+    Handles: h['objects'][name], h['mats'][name], h['lights'] (sun, key, top, glint),
+    h['bloom_nodes'][name], h['offline'] (= OFFLINE), plus helpers key_slot(),
+    key_bloom(), set_gravity(), animate_hero_padlock(), build_eclipse() that take h.
     """
     assert state in ('day', 'night')
     parts = set(DEFAULT_PARTS[state] if include is None else include)
@@ -2856,16 +3459,20 @@ def build_offline(state='day', include=None, frames=None, sea_focus=None, cache_
         frames = (sc.frame_start, sc.frame_end)
     cache_dir = cache_dir or CACHE_DIR
     os.makedirs(cache_dir, exist_ok=True)
+    if tune:
+        tune_render(sc)
     root = C.collection('OFFLINE')
     h = {'state': state, 'parts': parts, 'objects': {}, 'mats': {}, 'lights': {}, 'offline': OFFLINE,
          'nominal': {}, 'frames': frames}
     O = h['objects']
     mats = _mats(state)
     h['mats'].update(mats)
+    on_blooms = bloom_names(state, blooms) if 'blooms' in parts else ()
 
-    # the cup world is always there: wall, lid with the slot, sky beyond the slot, lights
-    wall_mat = mat_paper_wall()
+    # the cup world is always there: wall, lid with the slot, sky beyond the slot, lamps
+    wall_mat = mat_paper_wall(state, on_blooms)
     h['mats']['wall'] = wall_mat
+    h['bloom_nodes'] = {n: wall_mat.node_tree.nodes['Bloom_' + n] for n in ATTENDEES}
     O['wall'] = build_cup_wall(root, wall_mat)
     frame, sky = build_slot(root, state)
     O['slot_frame'], O['slot_sky'] = frame, sky
@@ -2874,9 +3481,8 @@ def build_offline(state='day', include=None, frames=None, sea_focus=None, cache_
     lid_mat = mat_lid(frame, state)
     h['mats']['lid'] = lid_mat
     O['lid'] = build_lid(root, lid_mat)
-    pass_coll = _blockers([O['wall'], O['lid']])
-    h['lights'] = build_lights(root, state, pass_coll)
-    apply_light_state(h, state, blooms if 'blooms' in parts else ())
+    h['lights'] = build_lights(root, state)
+    apply_light_state(h, state, on_blooms)
 
     if 'shaft' in parts:
         O['shaft'], length = build_shaft(root, state)
@@ -2890,6 +3496,7 @@ def build_offline(state='day', include=None, frames=None, sea_focus=None, cache_
     if 'box' in parts:
         O['box'], O['box_skylight'] = build_box(root, state)
         h['mats']['skylight'] = O['box_skylight'].active_material
+    arch = None
     if 'arch' in parts:
         arch = build_arch(root, mats)
         O['arch_core'] = arch['core']
@@ -2899,63 +3506,149 @@ def build_offline(state='day', include=None, frames=None, sea_focus=None, cache_
         O['arch_pines'] = arch['pines']
         h['n_padlocks'] = arch['n_padlocks']
         OFFLINE['arch_crest'] = tuple(arch['crest'])
+        _cull([arch['pines'], arch['scree']])
     if 'hero_padlock' in parts:
         O['hero_padlock'] = build_hero_padlock(root)
         O['dust'], h['mats']['dust'] = build_dust(root, hero_padlock_rest())
     if 'atoll' in parts:
         at = build_atoll(root, mats)
         O['atoll'], O['palms'], O['shrubs'] = at['ground'], at['palms'], at['shrubs']
+        _cull([at['palms'], at['shrubs']])
     if 'terraces' in parts:
         tr = build_terraces(root, mats, grass_count=grass_count)
         O['terraces'], O['paddies'], O['rice_grass'] = tr['ground'], tr['water'], tr['grass']
         if 'summit_pines' in tr:
             O['summit_pines'] = tr['summit_pines']
         OFFLINE['terrace_water_levels'] = tr['levels']
+        _cull([tr['grass'], tr.get('summit_pines')])
+    if 'shelf' in parts and shelf is not None:
+        O['shelf'] = build_shelf(root, mats, shelf)
     if 'sea' in parts:
         box = (-460.0, -460.0, 920.0)
-        tag = '-'.join(sorted(p for p in parts if p in ('island', 'atoll', 'terraces', 'arch', 'falls')))
-        img = shore_image('OFF_ShoreMap', lambda X, Y: land_masks(X, Y, parts), box[0], box[1], box[2], res=2048,
-                          cache_path=os.path.join(cache_dir, f'shore_v1_{tag or "none"}.npy'))
+        land_parts = tuple(sorted(p for p in parts if p in ('island', 'atoll', 'terraces', 'arch', 'falls')))
+        tag = _src_hash(land_masks, island_h, atoll_h, terrace_fields, mound_h, heap_h, arch_feet, falls_base_pos,
+                        shore_image, land_parts)
+        sh = shelf if 'shelf' in parts else None
+        tag = tag + _src_hash(shelf_h, sh)
+        img = shore_image('OFF_ShoreMap', lambda X, Y: land_masks(X, Y, parts, shelf=sh), box[0], box[1], box[2], res=2048,
+                          cache_path=os.path.join(cache_dir, f'shore_{tag}.npy'))
         O['sea'] = build_sea(root, state, sea_focus or (ISLAND_C.x * 0.3, ISLAND_C.y * 0.3), img, box)
         h['mats']['sea'] = O['sea'].active_material
     if 'floes' in parts:
-        O['floes'] = build_floes(root, mats['foam'], lambda X, Y: land_masks(X, Y, parts))
+        land = lambda X, Y: land_masks(X, Y, parts, shelf=shelf if 'shelf' in parts else None)  # noqa: E731
+        O['floes'] = build_floes(root, mats['foam'], land, near=floes_near, near_n=520 if floes_near else 0,
+                                 near_r=(2.0, 140.0))
     if 'falls' in parts:
         fl = build_falls(root, mats, state, frames, cache_dir)
         O['falls_ledge'], O['falls_sheets'] = fl['ledge'], fl['sheets']
         O['falls_heap'], O['falls_heap_mound'], O['falls_mist'] = fl['heap'], fl['heap_mound'], fl['mist']
+        O['falls_spray'] = fl['spray']
     flock = None
     if 'murmuration' in parts:
         O['murmuration'], flock = build_murmuration(root, mats['bird'], frames, cache_dir, n=flock_count)
     if 'hero_envelope' in parts:
         O['hero_envelope'] = build_hero_envelope(root, frames, cache_dir, flock=flock)
     if 'roost' in parts:
-        O['roost'] = build_roost(root, mats['bird'])
+        O['roost'] = build_roost(root, mats['bird'], surface=arch['crest_surface'] if arch else None)
     if 'fireflies' in parts:
-        O['fireflies'], home, gi = build_fireflies(root, frames, cache_dir, n=firefly_count, grey_near=grey_near)
+        O['fireflies'], home, gi = build_fireflies(root, frames, cache_dir, n=firefly_count, grey_near=grey_near,
+                                                   view=view)
         h['mats']['firefly'] = O['fireflies'].active_material
         h['grey_firefly'] = tuple(home[gi])
 
     # gravity rig: the loose world tilts, the cup stays
     pivot, grav, beam = build_gravity(root)
     O['gravity_pivot'], O['gravity'], O['beam_pivot'] = pivot, grav, beam
-    for name in ('sea', 'floes', 'fireflies', 'falls_sheets', 'murmuration', 'hero_envelope', 'roost'):
+    for name in ('sea', 'floes', 'fireflies', 'falls_sheets', 'falls_spray', 'murmuration', 'hero_envelope', 'roost'):
         if name in O:
             parent_keep(O[name], grav)
     for name in ('shaft',):
         if name in O:
             parent_keep(O[name], beam)
     parent_keep(h['lights']['sun'], beam)
+    if 'paddies' in O:
+        _paddies_follow_gravity(mats['paddy'], grav, pivot)
     return h
 
 
-def look(state='day'):
-    """Compositor settings (common.compositor kwargs) for the state: glare, vignette, aerial mist."""
+def _paddies_follow_gravity(mat, grav, pivot):
+    """Drive the paddy material's 'WaterUp' normal from the rig: world up of the tilted sea."""
+    node = mat.node_tree.nodes['WaterUp']
+    yaw = pivot.rotation_euler.z
+    exprs = (f'sin({yaw:.6f}) * sin(t)', f'-cos({yaw:.6f}) * sin(t)', 'cos(t)')
+    for i, ex in enumerate(exprs):
+        fc = node.inputs[i].driver_add('default_value')
+        drv = fc.driver
+        drv.type = 'SCRIPTED'
+        v = drv.variables.new()
+        v.name = 't'
+        v.type = 'TRANSFORMS'
+        v.targets[0].id = grav
+        v.targets[0].transform_type = 'ROT_X'
+        v.targets[0].transform_space = 'LOCAL_SPACE'
+        drv.expression = ex
+
+
+def build_eclipse(h, f0=104, f1=124, level=0.4, travel=330.0):
+    """S01 eclipse: fingertips pinching a folded envelope slide across the slot from frame left.
+
+    Real silhouette geometry (not a fade) between the lid and the sky disc, in
+    the slot frame, visible to camera and shadow rays, so it also cuts the sun
+    pool. It moves in one straight, mechanical line (linear keys) from fully
+    off the slot at f0 to covering it at f1, leaving a thin bright rim; the
+    sun, sky, lid rim and shaft are keyed down to `level` with key_slot().
+    Returns the silhouette root (an empty parented to the slot frame).
+    """
+    frame = h['objects']['slot_frame']
+    root = C.collection('OFFLINE')
+    mat = mat_silhouette()
+    rig = C.empty('OFF_Eclipse', root, display='ARROWS', size=30.0)
+    rig.parent = frame
+    rig.matrix_parent_inverse = Matrix.Identity(4)
+    parts_ = []
+    # clear of the lid (the slope crosses the slot plane at up to ~90 m); 120 m out, seen from the
+    # S01 end camera, a 144 x 42 m envelope covers the 135 x 45 m slot but for a thin bright rim
+    Vb, Fb = _rounded_box(72.0, 21.0, 1.6, 1.4, n=4)
+    env = np_mesh('OFF_EclipseEnvelope', Vb + np.array([0, 0, 120.0]), Fb, coll=root, mat=mat)
+    parts_.append(env)
+    for sgn, zc, r in ((1, 132.0, 17.0), (-1, 146.0, 19.0)):   # index above, thumb below the envelope edge
+        x = np.linspace(-260.0, -40.0, 24)
+        pts = np.stack([x, np.full_like(x, sgn * (14.0 + 0.04 * (x + 40.0))), zc - 0.12 * (x + 40.0)], 1)
+        rad = r * np.sqrt(np.clip((-40.0 - x) / r + 0.15, 0.0, 1.0))
+        tube = tube_along(pts, rad, sides=16, name=f'OFF_EclipseFinger_{sgn:+d}', coll=root, mat=mat)
+        parts_.append(tube)
+    for o in parts_:
+        o.parent = rig
+        o.matrix_parent_inverse = Matrix.Identity(4)
+    rig.location = (-travel, 0.0, 0.0)
+    rig.keyframe_insert('location', frame=f0)
+    rig.location = (0.0, 0.0, 0.0)
+    rig.keyframe_insert('location', frame=f1)
+    for fc in C.fcurves(rig.animation_data.action):
+        for kp in fc.keyframe_points:
+            kp.interpolation = 'LINEAR'
+    key_slot(h, f0, 1.0)
+    key_slot(h, f1, level)
+    h['objects']['eclipse'] = rig
+    return rig
+
+
+def look(state='day', inside_beam=False):
+    """Compositor settings (common.compositor kwargs) for the state: glare, vignette, aerial mist.
+
+    The mist is LINEAR from 150 m and reaches ~12% at the far cliff (600 m), in a
+    neutral warm grey, so aerial perspective acts only at real distance. Glare
+    starts above the paper's brightest glow: only the slot, specks and the
+    fireflies bloom.
+    """
     if state == 'day':
-        return dict(glare=0.32, glare_threshold=1.6, glare_size=8, vignette=0.22,
-                    mist=dict(color=(0.5, 0.4, 0.29), start=60.0, depth=1500.0, amount=0.42, falloff='QUADRATIC'))
-    return dict(glare=0.55, glare_threshold=0.9, glare_size=7, vignette=0.3,
-                mist=dict(color=(0.010, 0.012, 0.017), start=40.0, depth=1300.0, amount=0.35, falloff='QUADRATIC'))
+        return dict(glare=0.22, glare_threshold=6.0, glare_size=3, glare_rel_size=0.14, vignette=0.2,
+                    mist=dict(color=(0.6, 0.53, 0.45), start=150.0, depth=750.0, amount=0.16, falloff='LINEAR'))
+    if inside_beam:          # S14: the camera rises inside the moon-silver beam: its glow is a depth veil
+        return dict(glare=0.25, glare_threshold=2.5, glare_size=2, glare_rel_size=0.12, vignette=0.28,
+                    mist=dict(color=(0.1, 0.11, 0.13), start=30.0, depth=900.0, amount=0.28, falloff='LINEAR'))
+    return dict(glare=0.25, glare_threshold=2.5, glare_size=2, glare_rel_size=0.12, vignette=0.28,
+                mist=dict(color=(0.012, 0.014, 0.02), start=150.0, depth=900.0, amount=0.15, falloff='LINEAR'))
 
 
 def apply_look(state='day', **over):
@@ -2963,15 +3656,18 @@ def apply_look(state='day', **over):
 
     In Blender 4.5 the Glare node's threshold/size/mix moved to input sockets,
     so the legacy attributes common.compositor() sets are ignored; this keeps
-    the intended threshold and strength and uses a relative bloom size.
+    the intended threshold, strength and relative bloom size.
     """
-    kw = look(state)
+    kw = look(state, over.pop('inside_beam', False))
     kw.update(over)
+    rel = kw.pop('glare_rel_size', None)
     nt = C.compositor(**kw)
     for n in nt.nodes:
         if n.bl_idname == 'CompositorNodeGlare' and 'Threshold' in n.inputs:
             n.inputs['Threshold'].default_value = kw.get('glare_threshold', 1.0)
             n.inputs['Strength'].default_value = kw.get('glare', 0.3)
+            if rel is not None and 'Size' in n.inputs:
+                n.inputs['Size'].default_value = rel
             if 'Smoothness' in n.inputs:
                 n.inputs['Smoothness'].default_value = 0.35
     return nt
@@ -2991,7 +3687,8 @@ def slot_match_camera(frac=0.20, aspect=16 / 9, height=1.5, location=None):
     """Camera that frames the slot centred, long axis horizontal, `frac` of the frame width.
 
     Default: lens 1.5 m above the water on the slot normal (the S01 end
-    position), lens length solved for the width. Returns (location, lens).
+    position), lens length solved for the width (43.7 mm: the S01 glide's 21 mm
+    must zoom to it during the tilt, see OFFLINE['s01']). Returns (location, lens).
     """
     loc = Vector(location) if location is not None else CAM_S01.copy()
     if location is None:
@@ -3001,56 +3698,92 @@ def slot_match_camera(frac=0.20, aspect=16 / 9, height=1.5, location=None):
     return loc, lens
 
 
+def _yaw_pitch_target(loc, yaw_deg, pitch_deg, dist=100.0):
+    a, p = math.radians(yaw_deg), math.radians(pitch_deg)
+    return Vector(loc) + Vector((math.cos(a) * math.cos(p), math.sin(a) * math.cos(p), math.sin(p))) * dist
+
+
+_s01_end, _s01_lens = slot_match_camera()
+OFFLINE['s01'] = {
+    'glide_lens': 21.0,
+    'end_location': tuple(_s01_end),
+    'end_lens': round(_s01_lens, 2),
+    'end_pitch_deg': round(math.degrees(math.asin((SLOT_C - _s01_end).normalized().z)), 2),
+    'note': 'glide on 21 mm, zoom to end_lens during the f81-128 tilt (eased); slot = 20% of frame width',
+}
+CAM_S06_START = Vector((ARCH_C.x + 75.0 * _u.x, ARCH_C.y + 75.0 * _u.y, 2.0))
+OFFLINE['cam_s06_start'] = tuple(CAM_S06_START)
+CAM_S08 = Vector((math.cos(math.radians(232.0)) * 312.0, math.sin(math.radians(232.0)) * 312.0, 32.0))
+OFFLINE['cam_s08'] = tuple(CAM_S08)
+CAM_S12 = Vector((232.0, 78.0, 16.2))
+OFFLINE['cam_s12'] = tuple(CAM_S12)
+
+
 def s12_camera():
-    """A point 1.5 m above a mid-level terrace mirror on the arch side of the hill."""
-    d = (ARCH_C - TERRACE_C).to_2d().normalized()
-    for r in np.arange(10.0, 140.0, 0.5):
-        x, y = TERRACE_C.x + d.x * r, TERRACE_C.y + d.y * r
-        h, e, lv, fr, w = terrace_fields(np.array([x]), np.array([y]))
-        if lv[0] == 2 and 0.35 < fr[0] < 0.55:
-            return Vector((x, y, float(w[0]) + 1.5))
-    return Vector((TERRACE_C.x + d.x * 60, TERRACE_C.y + d.y * 60, 16.0))
+    """The S12 lens: 1.5 m above a level-2 paddy on the terraces' north flank, lower paddies in front."""
+    return CAM_S12.copy()
 
 
 def framing(name):
     """Preview/starting camera for a named framing: dict(frame, state, lens, location, target, include, ...)."""
     if name == 's01_glide':
-        loc = CAM_S01 - Vector((_u.x, _u.y, 0)) * 7.0
+        loc = CAM_S01 + Vector((_u.x, _u.y, 0)) * 7.0
         loc.z = 1.5
         fwd = (ARCH_C - loc).to_2d().normalized()
-        yaw_off = math.radians(-5.0)                        # arch slightly right of centre
-        fx = fwd.x * math.cos(yaw_off) - fwd.y * math.sin(yaw_off)
-        fy = fwd.x * math.sin(yaw_off) + fwd.y * math.cos(yaw_off)
-        tgt = loc + Vector((fx, fy, math.tan(math.radians(10.8)))) * 100.0
-        return dict(frame=60, state='day', lens=21.0, location=loc, target=tgt, fstop=0.0,
-                    include={'cup', 'lid', 'shaft', 'sea', 'floes', 'island', 'box', 'arch', 'blooms', 'gravity'},
-                    blooms=('keys', 'strategy', 'people'), sea_focus=(loc.x, loc.y))
+        yaw = math.degrees(math.atan2(fwd.y, fwd.x)) + 3.0          # arch a little right of centre, box out of frame
+        path = [tuple((CAM_S01 + Vector((_u.x, _u.y, 0)) * d).to_2d()) for d in np.linspace(-2.0, 16.0, 10)]
+        return dict(frame=60, state='day', lens=21.0, location=loc, target=_yaw_pitch_target(loc, yaw, 8.0), fstop=0.0,
+                    include={'cup', 'lid', 'shaft', 'sea', 'floes', 'arch', 'blooms', 'gravity'},
+                    blooms=('keys', 'strategy', 'people'), sea_focus=(loc.x, loc.y), floes_near=path)
     if name == 's01_slot':
         loc, lens = slot_match_camera()
         return dict(frame=128, state='day', lens=lens, location=loc, target=SLOT_C, fstop=0.0,
-                    include={'cup', 'lid', 'shaft', 'sea', 'island', 'box', 'arch', 'blooms', 'gravity'},
+                    include={'cup', 'lid', 'shaft', 'sea', 'arch', 'blooms', 'gravity'},
                     blooms=('keys', 'strategy', 'people'), sea_focus=(loc.x, loc.y))
     if name == 's06_arch':
         loc = CAM_S06.copy()
-        tgt = SLOT_C.copy()
-        return dict(frame=600, state='day', lens=16.0, location=loc, target=tgt, fstop=0.0,
-                    include={'cup', 'lid', 'shaft', 'sea', 'floes', 'island', 'box', 'arch', 'hero_padlock',
-                             'blooms', 'gravity'}, sea_focus=(loc.x, loc.y))
+        return dict(frame=600, state='day', lens=50.0, location=loc, target=SLOT_C.copy(), fstop=0.0,
+                    include={'cup', 'lid', 'shaft', 'sea', 'floes', 'arch', 'hero_padlock', 'blooms', 'gravity'},
+                    sea_focus=(loc.x, loc.y))
+    if name == 's06_land':
+        loc = CAM_S06_START.copy()
+        aim = hero_padlock_rest() + ARCH_SPAN * 4.0
+        d = (aim - loc).to_2d().normalized()
+        el = math.degrees(math.atan2(aim.z - loc.z, (aim - loc).to_2d().length))
+        return dict(frame=556, state='day', lens=50.0, location=loc,
+                    target=_yaw_pitch_target(loc, math.degrees(math.atan2(d.y, d.x)), el + 6.0), fstop=0.0,
+                    include={'cup', 'lid', 'shaft', 'sea', 'floes', 'arch', 'hero_padlock', 'blooms', 'gravity'},
+                    sea_focus=(loc.x, loc.y), floes_near=[tuple(loc.to_2d())])
     if name == 's08_poster':
-        loc = Vector((40.0, -300.0, 220.0))
-        tgt = Vector((0.0, 150.0, 120.0))
-        return dict(frame=832, state='day', lens=16.0, location=loc, target=tgt, fstop=0.0,
-                    include=DEFAULT_PARTS['day'] | {'hero_envelope'}, sea_focus=(20.0, -40.0))
+        loc = CAM_S08.copy()
+        yaw, pitch = 60.0, 8.0
+        fwd = Vector((math.cos(math.radians(yaw)), math.sin(math.radians(yaw)), 0.0))
+        side = Vector((fwd.y, -fwd.x, 0.0))
+        sh = loc + fwd * 118.0 - side * 46.0
+        return dict(frame=832, state='day', lens=22.0, location=loc, target=_yaw_pitch_target(loc, yaw, pitch),
+                    fstop=0.0, include=DEFAULT_PARTS['day'] | {'hero_envelope', 'shelf'}, sea_focus=(loc.x, loc.y),
+                    floes_near=[tuple((loc + fwd * d).to_2d()) for d in (60.0, 110.0, 170.0)],
+                    shelf=(sh.x, sh.y, 34.0, 8.0))
     if name == 's12_fireflies':
         loc = s12_camera()
-        d = (ARCH_C - loc).to_2d().normalized()
-        tgt = loc + Vector((d.x, d.y, math.tan(math.radians(12.0)))) * 100.0
-        return dict(frame=1217, state='night', lens=35.0, location=loc, target=tgt, fstop=2.8,
-                    focus=60.0, include=DEFAULT_PARTS['night'], sea_focus=(loc.x, loc.y),
-                    grey_near=tuple(loc + Vector((d.x, d.y, 0)) * 35.0 + Vector((0, 0, 4.0))))
+        crest = Vector((ARCH_C.x, ARCH_C.y, 0.0)) + ARCH_FACE * (math.tan(math.radians(ARCH_LEAN)) * 121.0)
+        d = (crest - loc).to_2d().normalized()
+        yaw = math.degrees(math.atan2(d.y, d.x))
+        return dict(frame=1217, state='night', lens=35.0, location=loc, target=_yaw_pitch_target(loc, yaw, 7.0),
+                    fstop=4.0, focus=116.0, include=DEFAULT_PARTS['night'], sea_focus=(loc.x, loc.y),
+                    grey_near=tuple(loc + Vector((d.x, d.y, 0)) * 70.0 + Vector((0, 0, 8.0))),
+                    view=dict(location=tuple(loc), lens=35.0, res_x=1600))
     if name == 's14_box':
         tgt = BOX_C.copy()
         loc = BOX_C - SHAFT_DIR * 230.0
-        return dict(frame=1390, state='night', lens=24.0, location=loc, target=tgt, fstop=0.0,
-                    include=DEFAULT_PARTS['night'], sea_focus=(ISLAND_C.x, ISLAND_C.y), gravity=(1345, 4.0, 1408, 12.0))
+        return dict(frame=1393, state='night', lens=24.0, location=loc, target=tgt, fstop=0.0,
+                    include=DEFAULT_PARTS['night'], sea_focus=(ISLAND_C.x, ISLAND_C.y), gravity=(1345, 4.0, 1408, 12.0),
+                    view=dict(location=tuple(loc), lens=24.0, res_x=1600), shaft_camera=not camera_in_shaft(loc),
+                    look=dict(inside_beam=camera_in_shaft(loc)))
     raise KeyError(name)
+
+
+def build_kwargs(fr):
+    """build_offline() keyword arguments carried by a framing() dict."""
+    keys = ('sea_focus', 'blooms', 'grey_near', 'view', 'floes_near', 'shelf')
+    return {k: fr[k] for k in keys if k in fr}
