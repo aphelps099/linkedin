@@ -4,13 +4,13 @@
     blender -b -P tools/preview_offline.py -- --quality final --shots s08_poster --out DIR --profile
 
 Framings (film frame in brackets):
-    s01_glide (60)      low glide over the espresso toward the arch, 21 mm, foam floes past the lens
+    s01_glide (60)      low glide over the espresso toward the backlit arch, 21 mm, foam floes past the lens
     s01_slot (128)      slot centred, long axis horizontal, 20% of frame width (S02 match cut), 43.7 mm
     s06_land (556)      50 mm, 75 m out: the hero padlock just landed on the scree, dust rising
     s06_arch (600)      50 mm, 55 m out, end of the tilt: the slot-sun inside the padlock arch
-    s08_poster (832)    the whole world from a low shore camera, 20 mm: arch, atoll, island, terraces, falls
-    s12_fireflies (1217) night, 1.5 m above the lowest paddy, 35 mm f/4: the unison flash
-    s14_box (1393)      night, on the beam above the box, world tilted ~10 degrees, on a firefly flash
+    s08_poster (832)    the whole world from the south shore, 30 m up, 18 mm: arch, atoll, island, terraces, falls
+    s12_fireflies (1217) night, 1.5 m above a low paddy (south-west flank), 35 mm f/2.8: the unison flash
+    s14_box (1393)      night, 340 m up the beam above the box, 21 mm, world tilted ~10 degrees, on a firefly flash
 
 Each framing is built from nothing in its own scene (only the parts it sees)
 and written to <out>/<name>.png. Samples follow env_offline.OFFLINE_SPP for
@@ -111,7 +111,9 @@ def render_one(name, a):
         E.set_gravity(h, fb, db)
     if 'hero_padlock' in h['objects']:
         E.animate_hero_padlock(h)
-    E.camera_offline(fr['lens'], fr['location'], fr['target'], fstop=fr.get('fstop', 0.0), focus=fr.get('focus'))
+    E.apply_fills(h, fr.get('fills'))
+    E.camera_offline(fr['lens'], fr['location'], fr['target'], fstop=fr.get('fstop', 0.0), focus=fr.get('focus'),
+                     roll=fr.get('roll', 0.0))
     E.set_shaft_camera(h, fr.get('shaft_camera', True))
     E.apply_look(fr['state'], **fr.get('look', {}))
     sc.frame_set(f)
