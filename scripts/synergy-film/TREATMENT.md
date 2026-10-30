@@ -120,7 +120,7 @@ f9-80: a low forward glide across a still espresso sea toward a natural arch sta
 
 f81-128: the glide eases out while the camera tilts up the shaft to the slot. It settles with the slot centred, long axis horizontal, at about 20% of frame width.
 
-f104-124: a giant dark silhouette slides in from frame left across the slot and eclipses it: fingertips pinching the edge of a folded envelope. The world dims about 60% and the shaft thins.
+f104-124: a giant dark silhouette slides in from frame right across the slot and eclipses it: fingertips pinching the edge of a folded envelope. (From frame right because the cut flips the frame vertically and keeps left and right, and S02's fingers enter from frame right.) The world dims about 60% and the shaft thins.
 
 f125-128: the slot is a thin bright rim around the silhouette. We do not know yet that we are inside his coffee.
 
@@ -128,11 +128,11 @@ f125-128: the slot is a thin bright rim around the silhouette. We do not know ye
 
 **Camera.**
 
-21mm, deep focus (f/11 equivalent), lens 1.5 m above the water at world scale.
+19mm (accepted change from 21mm), deep focus (f/11 equivalent), lens 1.5 m above the water at world scale.
 
-f9-80: forward dolly at 3 m/s, level, horizon on the lower third, arch slightly right of centre.
+f9-80: forward dolly at 3 m/s, level, horizon on the lower third (pitch +10 degrees), arch just left of centre.
 
-f81-128: decelerate to a stop while tilting up from +3 to about +62 degrees to centre the slot, eased in and out. No roll, no shake. The last frame must match S02's first frame: slot centred, same size, same orientation.
+f81-128: decelerate to a stop while tilting up from +10 to about +56 degrees to centre the slot, and zooming from 19mm to about 39mm so the slot reaches its match-cut size, eased in and out. No roll, no shake. The last frame must match S02's first frame: slot centred, same size, same orientation.
 
 **Light.** One key: the emissive slot (7500K, very hot) and its shaft, built as an emissive gradient cone with soft alpha falloff and no volumetrics. The cliffs use a translucent fibre shader backlit at 3200K by area lights outside the cup wall, plus three large soft coloured area lights outside (cobalt #0757ec, acid yellow #fff349, pink #ffb9dc) blooming through the paper. The sea is near-black espresso #2a160b with fine capillary normals, amber in the shallows, with a gold glitter path under the shaft. Warm-grey depth haze from the mist pass puts the cliffs at 400 m at about 50% contrast. Filmic, high dynamic range. The eclipse is the real silhouette geometry occluding the slot, not a fade.
 

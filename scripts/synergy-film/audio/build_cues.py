@@ -736,15 +736,19 @@ cue('S12', 's12-frog', 'frog', 1153, 'amb', src_in=45.8, src_out=50.2, end_frame
 room_tone('S13-S14', 1249, 1363, fade_in=0.5, fade_out=3, src=100.0)
 cue('S13', 's13-pat-whine', 'buzz', 1249, 'amb', src_in=44.0, end_frame=1363, fade_in=0.5, fade_out=3, gain_db=-28,
     highpass_hz=5000, highpass_slope=48, pan=0.2, note='Pat\'s faint screen across the dark room')
-# four steps on the four beats (rev2): each region starts at the step's attack (0.109 s, 3 ms fade-in), so the whirr
-# starts ON the frame (was 39 ms early, from a region already 9 dB up). Step 3 meets the kit's re-entry: +5 dB and
-# high-passed at 300 Hz so it clears the kick; step 4 lands with the sip on f1297, 3 dB down, high-passed the same way
-for k, f in enumerate((1249, 1265, 1281, 1297)):
-    cue('S13', f's13-actuator-{k + 1}', 'power_window', f, 'foley', src_in=0.109, src_out=0.52, fade_in_ms=3,
-        pitch_mode='tape', pitch_semitones=k, gain_db=-19 + k + (5 if k == 2 else 0) - (3 if k == 3 else 0), fade_out=3,
+# four steps (rev2): each region starts at the step's attack (0.109 s, 3 ms fade-in), so the whirr starts ON the
+# frame (was 39 ms early, from a region already 9 dB up). Step 3 meets the kit's re-entry: +5 dB and high-passed at
+# 300 Hz so it clears the kick. Steps 1-3 start with their moves on the beats; step 4 (S13 crit) starts with the
+# final rise on f1293 and runs its 4 frames into the spout tick and the sip on f1297 (a short whirr: source to
+# 0.30 s, a 1-frame fade), 3 dB down, high-passed the same way, so it no longer plays over the arm at rest
+for k, f in enumerate((1249, 1265, 1281, 1293)):
+    cue('S13', f's13-actuator-{k + 1}', 'power_window', f, 'foley', src_in=0.109, src_out=0.52 if k < 3 else 0.30,
+        fade_in_ms=3, pitch_mode='tape', pitch_semitones=k,
+        gain_db=-19 + k + (5 if k == 2 else 0) - (3 if k == 3 else 0), fade_out=3 if k < 3 else 1,
         pan=0.1, lowpass_hz=7000, reverb='room', reverb_send=-16, **({'highpass_hz': 300} if k >= 2 else {}),
-        note=f'actuator step {k + 1} on the beat f{f} (power-window servo, tape +{k} st)'
-             + (', under the sip' if k == 3 else ''))
+        note=(f'actuator step {k + 1} on the beat f{f} (power-window servo, tape +{k} st)' if k < 3 else
+              f'actuator step 4 with the final rise f{f}-1297 (power-window servo, tape +{k} st), into the spout '
+              'tick and the sip'))
 cue('S13', 's13-spout-contact', 'plastic_hit', 1296.6, 'foley', src_in=0.10, src_out=0.30, anchor_s=0.1256,
     gain_db=-27, pan=0.05, note='the spout touches the chin plate (f1297)')
 # the sip's onset transient lands on f1297 (+3 ms) and its first 120 ms keep their level; from f1300 its body (the

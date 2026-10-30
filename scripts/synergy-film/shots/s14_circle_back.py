@@ -338,8 +338,8 @@ def stage_synergy(R, S, F):
 
 
 def headset_on_walnut(rig, R):
-    """Where S13 left it: on the walnut beside the hub on his left, standing on its earcups, slid
-    3.5 cm downhill (S13 f1318-1334). Motionless. (S13's workaround for the cord hooks: the cord wraps
+    """Where S13 left it: S11's rest on the walnut beside the hub on his left, standing on its earcups,
+    slid 3.5 cm downhill (S13 f1318-1334). Motionless. (S13's workaround for the cord hooks: the cord wraps
     the left earcup instead of hanging in the air beside his ear.)"""
     hs = rig.headset
     if hs is None:
@@ -347,22 +347,17 @@ def headset_on_walnut(rig, R):
     sc = bpy.context.scene
     rig.detach_headset(START - 30)
     sc.frame_set(START - 30)
+    # S11's set-down (S11.HEADSET_REST: the headset empty's world location and rotation, standing on its
+    # earcups 0.4 mm over the walnut), plus S13's slide (HEADSET_DX, +X), done
+    if HERE not in sys.path:
+        sys.path.insert(0, HERE)
+    import s11_shutdown as S11
+    loc, q = S11.HEADSET_REST
     hs.rotation_mode = 'QUATERNION'
-    hs.location = (0.34, -0.12, 0.9)
-    hs.rotation_quaternion = Matrix.Rotation(math.radians(-90), 4, 'Y').to_quaternion()
+    hs.location = Vector(loc) + Vector((0.035, 0.0, 0.0))
+    hs.rotation_quaternion = Quaternion(q)
     hs.keyframe_insert('location', frame=START - 20)
     hs.keyframe_insert('rotation_quaternion', frame=START - 20)
-    sc.frame_set(START - 20)
-    dg = bpy.context.evaluated_depsgraph_get()
-    zmin = 9.0
-    for o in hs.children_recursive:
-        if o.type != 'MESH':
-            continue
-        ev = o.evaluated_get(dg)
-        zmin = min(zmin, min((ev.matrix_world @ Vector(c)).z for c in ev.bound_box))
-    hs.location.z += R.TABLE_TOP + 0.0005 - zmin
-    hs.location.x += 0.035                       # S13's slide, done
-    hs.keyframe_insert('location', frame=START - 20)
     for e in rig.cord_hooks:
         for cn, v in (('worn', 0.0), ('route', 0.0), ('unplugged', 1.0)):
             if cn in e.constraints:

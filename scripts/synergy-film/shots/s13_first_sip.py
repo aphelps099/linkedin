@@ -5,7 +5,9 @@
     blender -b --factory-startup -P shots/s13_first_sip.py -- --quality final
 
 The beats (film frames, 90 BPM = 16 frames a beat; TREATMENT.md S13):
-  f1249-1259  stage 1: the cup rises, level, from the chest to the sternum (hold to f1265)
+  f1249       S11's last pose: the head yawed 6 deg toward Pat (S11 holds it to its cut)
+  f1249-1259  stage 1: the cup rises, level, from the chest to the sternum, and on the same step his face
+              turns back from Pat to the cup (yaw -6 -> 0; hold to f1265)
   f1265-1275  stage 2: to the collar (hold to f1281)
   f1281-1291  stage 3: to chin level (hold)
   f1293-1297  the final rise: on f1297 the lid's spout meets the chin plate just under the
@@ -18,25 +20,34 @@ The beats (film frames, 90 BPM = 16 frames a beat; TREATMENT.md S13):
   f1305-1344  the room begins to tilt: gravity turns toward his left (+X, frame right) in the room's
               frame, 4 deg by the cut (still accelerating into S14); the skylight slab slides 20 cm
               across the walnut and its edge travels over him; the badge swings on its clip after the
-              new gravity; off screen the headset slides a few centimetres on the walnut (f1318)
+              new gravity; dust motes hanging in the slab in front of him drift toward frame right on the
+              tilt's curve (the gravity cue in frame from the creak on); off screen the headset slides
+              3.5 cm on the walnut from S11's set-down (S11.HEADSET_REST) over f1318-1334
   f1333-1336  the eyes reopen (middle row back f1333, top row f1335) to the full 2x3
 He stays upright and deadpan; the cup stays at his chin through the cut. No head dip, no walking.
 
 Camera: env_room's approved 's13_dark' framing: 65 mm f/2.8 at 1.35 m, 1.9 m from him, 8 deg toward
 his right, aimed at his head; fixed to the room (it does not compensate for the tilt), locked off
-with a 2% linear push. Focus on the face glass (the LEDs carry the shot).
-Light: the room's dark state (fills down, the slab stays) is the hard top key; the 'sip' insert kit
-(a small neutral card and a thin rim for the white lid); the slab's warm bounce off the walnut in
-front of him (rig owner's note: the room gives his lower torso no light); a faint cool backlight
-(the slab's spill off the head wall) so the faceted crown and shoulders separate from the void.
-Room.front_bokeh puts the colleagues' discs behind him: in the dark only Pat's grey one is alive.
+with a 2% linear push; the crown's apex 7.5% of the frame height under the top edge. Focus on the
+face glass (the LEDs carry the shot).
+Light (chiaroscuro): the room's dark state (fills down, the slab stays) is the hard top key; the 'sip'
+insert kit (a small neutral card and a thin rim for the white lid); the slab's warm bounce off the
+walnut in front of him (rig owner's note: the room gives his lower torso no light); a faint cool
+backlight (the slab's spill off the head wall) so the faceted crown and shoulders separate from the
+void. A flag over his chest (light linking): the slab and the bounce reach the breastplate and his
+left shoulder at a quarter strength, two stops under the head, so the head, the raised arm, the hand
+and the white cup carry the frame. The skylight's reflected line on the face glass (rig.glass_glint)
+is strong enough to read at the shot's exposure.
+Room.front_bokeh puts the colleagues' discs behind him: in the dark only Pat's grey one is alive,
+enlarged to a soft ~55 px glow (at 1600).
 
 Not in frame (geometry, reported to the director): the treatment's headset 'in the soft lower-right
 foreground', the badge and the far printer sheet. From 1.35 m a 65 mm frame's lower edge runs 6.8 deg
 below the lens axis, so the walnut (0.6 m under the lens, the headset ~1.3 m away, ~24 deg down) is
 never in it, the badge hangs under the frame's bottom edge, and the printer is 31 m behind the lens.
-The headset's slide and the badge's swing are still keyed (continuity for S14); the gravity cue on
-screen is the slab's edge sliding off his right shoulder, arm and head wedge from f1305.
+The headset's slide and the badge's swing are still keyed (continuity for S14); the gravity cues on
+screen are the dust motes' drift (from ~f1310) and the slab's edge sliding off his right shoulder, arm
+and head wedge (from ~f1325).
 """
 
 import json
@@ -47,15 +58,18 @@ import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(os.path.dirname(HERE), 'lib'))
+sys.path.insert(0, HERE)
 
 import bpy  # noqa: E402
-from mathutils import Matrix, Vector  # noqa: E402
+from mathutils import Quaternion, Vector  # noqa: E402
 
 import common as C  # noqa: E402
 import env_room as R  # noqa: E402
 import face as F  # noqa: E402
 import materials as M  # noqa: E402
+import props as P  # noqa: E402
 import synergy as S  # noqa: E402
+import s11_shutdown as S11  # noqa: E402  (hand-overs: HEADSET_REST, the head's yaw toward Pat)
 
 V3 = Vector
 
@@ -73,16 +87,36 @@ TILT = (1305, 1344)         # gravity turns in the room's frame (into S14)
 TILT_DEG = 4.0              # by the cut
 SLAB_DX = 0.20              # the slab's slide across the walnut by the cut (m)
 HEADSET_SLIDE = (1318, 1334)  # off screen: it breaks loose and slides a few cm downhill
-HEADSET_DX = 0.035
+HEADSET_DX = 0.035            # +X: downhill, away from the hub (S14 holds S11.HEADSET_REST + this)
+# S11 holds his head yawed toward Pat to its cut; he turns back to the cup on the first step (f1249-1259)
+HEAD_IN = (0.0, S.CANON_HEAD[1], S11.YAW_DEG)
 
 # ---------------------------------------------------------------- camera
 PUSH = 0.02                 # of the 1.9 m distance, linear over the shot
-TOP_MARGIN = 0.03           # head apex this far (of the frame height) under the top edge
+TOP_MARGIN = 0.075          # head apex this far (of the frame height) under the top edge
 
 # ---------------------------------------------------------------- light (tuned on proof renders)
 BOUNCE_E = 0.5
 RIM_E = 26.0
-EXPOSURE = -0.3            # the dark room: the slab-lit head is the brightest thing in frame
+# the flag: the slab reaches the breastplate (torso plates, blue chip, core) at this fraction of its
+# strength, so the chest falls 2 stops under the head (light-linked: the head, arm, hand and cup keep
+# the full slab, and the plates keep their own shadows and the slab edge's slide)
+TORSO_SUN = 0.25
+TORSO_BOUNCE = 0.25        # the walnut bounce on the same plates, of BOUNCE_E
+EXPOSURE = 0.0             # the dark room: the slab-lit head is the brightest thing in frame
+GLINT_E = 24.0             # rig.glass_glint strength (default 7): the skylight line just reads on the glass
+PAT_DISC_PX = 72.0         # Pat's disc geometry, px across at 1600 (soft profile: ~55 px at half brightness)
+PAT_GAIN = 0.7             # Pat's disc brightness, of front_bokeh's (it stays a faint grey)
+# the second gravity cue: dust motes in the slab between the lens and him drift toward +X on the tilt
+# A thin layer just in front of his face plane (1.6-1.75 m from the lens, inside the depth of field, so
+# each mote is a steady sharp glint: defocused ones sample into blotches at 12 spp), in two boxes either
+# side of the face glass, the left one ending DUST_DX + 3 cm short of it, so no mote ever crosses the
+# black glass, where it would read as a stray LED.
+DUST = [dict(name='s13_dust_l', center=(-0.58, 0.11, 1.46), size=(0.54, 0.18, 0.70), n=140, seed=13,
+             radius=(0.0008, 0.0014)),
+        dict(name='s13_dust_r', center=(0.36, 0.11, 1.46), size=(0.48, 0.18, 0.70), n=120, seed=14,
+             radius=(0.0008, 0.0014))]
+DUST_DX = 0.15             # their drift by the cut (m), on tilt_at's curve
 VIGNETTE = dict(position=(0.5, 0.62), size=(1.0, 0.9), amount=0.5)   # centred on his face
 BOKEH = dict(seed=5)
 PAT_DISC = (0.85, 0.74)      # Pat's disc in the image (0..1, y up)
@@ -176,7 +210,7 @@ def stage_synergy(tl):
     k = 'CONSTANT'
     rig.rest(START - 1, k)
     rig.apply_preset(START - 1, 'idle_cup', k)
-    rig.pose(START - 1, k, root_loc=tuple(sp), root_rot=0.0, head=S.CANON_HEAD, neck=(0, 0, 0), badge=(0, 0, 0))
+    rig.pose(START - 1, k, root_loc=tuple(sp), root_rot=0.0, head=HEAD_IN, neck=(0, 0, 0), badge=(0, 0, 0))
     smooth_sip(rig)
     rig.bake_pauldrons(START - 1, END + 2)
     return rig
@@ -250,6 +284,10 @@ def smooth_sip(rig):
         interp = 'CONSTANT' if kf['last'] and kf['seg'] < 3 else 'LINEAR'
         rig.place_arm(f, 'R', kf['wrist'], kf['u'], kf['w'], kf['pole'], interp, shoulder=kf['shoulder'])
         rig.pose(f, interp, fingers_R='grip', thumb_R='grip')
+        if kf['seg'] == 0:
+            # the first step also turns his face back from Pat (S11's yaw) to the cup, on the same easing
+            hk = tuple(HEAD_IN[j] + (S.CANON_HEAD[j] - HEAD_IN[j]) * kf['e'] for j in range(3))
+            rig.pose(f, interp, head=hk, neck=(0, 0, 0))
         if kf['seg'] == 3:
             hk = tuple(S.CANON_HEAD[j] + (head[j] - S.CANON_HEAD[j]) * kf['e'] for j in range(3))
             rig.pose(f, 'LINEAR', head=hk, neck=(0, 0, 0))
@@ -272,29 +310,22 @@ def smooth_sip(rig):
 
 
 def headset_on_walnut(rig):
-    """The headset as S11 left it: on the walnut beside the hub on his left, standing on its
-    earcups (synergy_in_room's rest); off screen it slides a few cm downhill from f1318."""
+    """The headset exactly as S11 set it down (S11.HEADSET_REST, the headset empty's world location
+    and rotation from f1150: standing on its earcups on the walnut beside the hub, 0.4 mm clear);
+    off screen it breaks loose and slides HEADSET_DX downhill (+X, away from the hub) over
+    f1318-1334. S14 holds the slid rest."""
     hs = rig.headset
     if hs is None:
         return None
     sc = bpy.context.scene
     rig.detach_headset(START - 20)
-    sc.frame_set(START - 20)
+    loc, q = S11.HEADSET_REST
+    rest = Vector(loc)
     hs.rotation_mode = 'QUATERNION'
-    hs.location = (0.34, -0.12, 0.9)
-    hs.rotation_quaternion = Matrix.Rotation(math.radians(-90), 4, 'Y').to_quaternion()
+    hs.location = rest
+    hs.rotation_quaternion = Quaternion(q)
     hs.keyframe_insert('location', frame=START - 10)
     hs.keyframe_insert('rotation_quaternion', frame=START - 10)
-    sc.frame_set(START - 10)
-    dg = bpy.context.evaluated_depsgraph_get()
-    zmin = 9.0
-    for o in hs.children_recursive:
-        if o.type != 'MESH':
-            continue
-        ev = o.evaluated_get(dg)
-        zmin = min(zmin, min((ev.matrix_world @ Vector(c)).z for c in ev.bound_box))
-    hs.location.z += R.TABLE_TOP + 0.0005 - zmin
-    rest = hs.location.copy()
     # library workaround: Rig._key_cord leaves every cord hook at (worn, route, unplugged) =
     # (1, 1, 1); the three Child Of constraints compound, so once the headset is far from his head
     # the cord hangs in the air beside his ear (f1249: hooks at z 1.43-1.58, the headset on the
@@ -317,6 +348,21 @@ def headset_on_walnut(rig):
         hs.location = rest + Vector((HEADSET_DX * (1 - (1 - t) ** 2), 0.0, 0.0))   # breaks loose, friction stops it
         hs.keyframe_insert('location', frame=f)
     linear_keys(hs, HEADSET_SLIDE[0], HEADSET_SLIDE[1])
+    sc.frame_set(START)
+    dg = bpy.context.evaluated_depsgraph_get()
+    low = (9.0, None)
+    for o in [hs] + list(hs.children_recursive):
+        if o.type != 'MESH' or 'cord' in o.name:
+            continue
+        ev = o.evaluated_get(dg)
+        me = ev.to_mesh()
+        if len(me.vertices):
+            z = min((ev.matrix_world @ v.co).z for v in me.vertices)
+            if z < low[0]:
+                low = (z, o.name)
+        ev.to_mesh_clear()
+    print(f'S13 HEADSET at S11.HEADSET_REST {tuple(round(c, 4) for c in rest)}: lowest vertex '
+          f'{(low[0] - R.TABLE_TOP) * 1000:+.1f} mm over the walnut ({low[1]})', flush=True)
     return hs
 
 
@@ -358,7 +404,7 @@ def camera(room, rig):
     # focus on the face glass (the LEDs), held there through the head's 5 deg ease back
     sc.frame_set(START)
     foc = C.empty('s13_focus', None, tuple(rig.screen_point(0.5, 0.45, START)))
-    for fr in (START, CONTACT - 4, CONTACT, END):
+    for fr in (START, LIFT + 5, LIFT + 10, CONTACT - 4, CONTACT, END):
         foc.location = rig.screen_point(0.5, 0.45, fr)
         foc.keyframe_insert('location', frame=fr)
     cam.data.dof.focus_object = foc
@@ -412,9 +458,32 @@ def linear_extrap(obj):
 
 
 def glint(rig, cam):
-    """The reflected skylight slot on the face glass, re-aimed through the head's ease back."""
-    for f in sorted({START, *range(CONTACT - 5, CONTACT + 1), END}):
-        rig.glass_glint(cam, f)
+    """The reflected skylight slot on the face glass, re-aimed through the head's turn back from
+    Pat (f1249-1259) and its ease back (f1293-1297). GLINT_E: a thin skylight line that just reads
+    along the top of the black glass at the shot's exposure (the card is built on the first call)."""
+    for f in sorted({START, *range(LIFT, LIFT + 11), *range(CONTACT - 5, CONTACT + 1), END}):
+        rig.glass_glint(cam, f, strength=GLINT_E)
+
+
+def _soft_disc_mat():
+    """Pat's disc: front_bokeh's emitter (its colour and level drivers) with a soft profile, full at
+    the centre and smoothly to nothing at the rim: a distant screen's glow out of focus."""
+    m = bpy.data.materials.new('s13_pat_disc')
+    g = P.G(m, principled=False)
+    u, v, _ = g.sep(g.uv())
+    du, dv = g.sub(u, 0.5), g.sub(v, 0.5)
+    r = g.mul(g.math('SQRT', g.add(g.mul(du, du), g.mul(dv, dv))), 2.0)
+    prof = g.remap(r, 1.0, 0.30, smooth=True)
+    e = g.node('ShaderNodeEmission')
+    g._set(e.inputs['Color'], g.attr('bokeh_rgb').outputs['Color'])
+    g._set(e.inputs['Strength'], g.mul(prof, g.attr('bokeh_k').outputs['Fac']))
+    tr = g.node('ShaderNodeBsdfTransparent')
+    add = g.node('ShaderNodeAddShader')
+    g.L.new(tr.outputs[0], add.inputs[0])
+    g.L.new(e.outputs[0], add.inputs[1])
+    g.L.new(add.outputs[0], g.out.inputs['Surface'])
+    m.cycles.emission_sampling = 'NONE'
+    return m
 
 
 def bokeh(room, cam):
@@ -439,10 +508,104 @@ def bokeh(room, cam):
         dw = (mw.to_3x3() @ d).normalized()
         o.location = loc + dw * D
         o.rotation_euler = (-dw).to_track_quat('Z', 'Y').to_euler()
+        # a distant defocused screen, not a speck: PAT_DISC_PX across at 1600, its own profile falling off
+        # softly from the centre (no bokeh rim), plus this lens's defocus (~32 px): ~55 px at half brightness
+        xs = [v.co.x for v in o.data.vertices]
+        diam = max(xs) - min(xs)
+        fpx = cd.lens / sw * 1600.0
+        fl, fs = cd.lens / 1000.0, cd.dof.aperture_fstop
+        Fd = (cd.dof.focus_object.matrix_world.translation - loc).length if cd.dof.focus_object else cd.dof.focus_distance
+        blur = (fl * fl / (fs * max(Fd - fl, 1e-3))) * abs(D - Fd) / D / (sw / 1000.0) * 1600.0
+        g_old = diam / D * fpx
+        g_new = PAT_DISC_PX
+        o.scale = (g_new / g_old,) * 3
+        o.data.materials[0] = _soft_disc_mat()
+        if PAT_GAIN != 1.0 and o.animation_data:
+            for dr in o.animation_data.drivers:
+                dr.driver.expression = f'{PAT_GAIN:.4f}*({dr.driver.expression})'
+        print(f'S13 PAT disc: {D:.1f} m out, geometry {g_old:.0f} -> {g_new:.0f} px, defocus {blur:.0f} px '
+              f'(at 1600)', flush=True)
     return discs
 
 
+def dust(room):
+    """The second gravity cue, in frame from the creak on: dust motes hanging in the slab between
+    the lens and him (props.dust_motes: lit only where the slab catches them) on an empty that
+    carries them toward +X (his left, frame right: downhill) on the tilt's own curve from f1305,
+    DUST_DX by the cut. The boxes reach past the frame's edges, so it stays full of motes after the drift."""
+    coll = C.collection('S13_dust')
+    root = C.empty('s13_dust_drift', coll, (0.0, 0.0, 0.0))
+    out = []
+    for b in DUST:
+        d = P.dust_motes(b['name'], coll, center=b['center'], size=b['size'], n=b['n'], f0=START - 4, f1=END + 4,
+                         seed=b['seed'], radius=b['radius'])
+        d.parent = root
+        out.append(d)
+    for f in range(TILT[0] - 1, END + 3):
+        root.location = (DUST_DX * tilt_at(f), 0.0, 0.0)
+        root.keyframe_insert('location', frame=f)
+    linear_keys(root)
+    return out
+
+
 # ---------------------------------------------------------------- light
+
+def torso_parts(rig):
+    """The breastplate in this frame: the torso plates, the blue chip and the torso core (the parts
+    on the chest and spine bones that are not the neck's A-frame, the collar, the lanyard or the
+    badge, which hang in front of it and keep the full light), and his left shoulder (pauldron, hub,
+    upper arm: the bottom right corner). The right arm, raised with the cup, keeps the full slab."""
+    keep = ('neck', 'collar', 'lanyard', 'badge', 'clip', 'cable', 'piston', 'pauldron', 'shoulder')
+    out = []
+    for o in rig.parts_on_bones(['chest', 'spine']):
+        if o.type == 'MESH' and not any(k in o.name.lower() for k in keep):
+            out.append(o)
+    for o in rig.parts_on_bones(['pauldron_L', 'shoulder_L', 'upperarm_L']):
+        if o.type == 'MESH' and o not in out:
+            out.append(o)
+    for o in list(rig.torso_plates) + [rig.parts.get('blue_chip') if hasattr(rig, 'parts') else None]:
+        if o is not None and o.type == 'MESH' and o not in out:
+            out.append(o)
+    return out
+
+
+def _link(light, objs, name, state):
+    coll = bpy.data.collections.new(name)
+    for o in objs:
+        coll.objects.link(o)
+    for co in coll.collection_objects:
+        co.light_linking.link_state = state
+    light.light_linking.receiver_collection = coll
+    return coll
+
+
+def flag(room, rig, bounce, coll):
+    """The flag over his chest (the treatment's chiaroscuro: the hard top light carves the head,
+    darkness everywhere else): light linking, unseen and exact. The room's slab and the walnut
+    bounce leave the breastplate out; a twin of each, at TORSO_SUN / TORSO_BOUNCE of its strength
+    and on the same heading (the sun's twin follows its tilt every frame), lights only the
+    breastplate. So the plates keep their shading, their shadows (the arm, the cup, the head's)
+    and the slab edge's slide, two stops under the head; the head, arm, hand and cup are untouched."""
+    parts = torso_parts(rig)
+    print('S13 FLAG: ' + ', '.join(sorted(o.name for o in parts)), flush=True)
+    _link(room.sun, parts, 'S13_sun_not_torso', 'EXCLUDE')
+    twin = bpy.data.objects.new('s13_sun_torso', room.sun.data.copy())
+    twin.data.energy = room.sun.data.energy * TORSO_SUN
+    coll.objects.link(twin)
+    twin.rotation_mode = room.sun.rotation_mode
+    cn = twin.constraints.new('COPY_TRANSFORMS')
+    cn.target = room.sun
+    _link(twin, parts, 'S13_sun_torso_only', 'INCLUDE')
+    _link(bounce, parts, 'S13_bounce_not_torso', 'EXCLUDE')
+    bt = bpy.data.objects.new('s13_walnut_bounce_torso', bounce.data.copy())
+    bt.data.energy = bounce.data.energy * TORSO_BOUNCE
+    coll.objects.link(bt)
+    bt.matrix_world = bounce.matrix_world.copy()
+    for a in ('visible_camera', 'visible_glossy'):
+        setattr(bt, a, getattr(bounce, a))
+    _link(bt, parts, 'S13_bounce_torso_only', 'INCLUDE')
+    return parts
+
 
 def lights(room, rig):
     coll = C.collection('S13_light')
@@ -452,6 +615,8 @@ def lights(room, rig):
                      BOUNCE_E, 1.1, 0.5, color=(1.0, 0.84, 0.70), coll=coll)
     b.visible_camera = False
     b.visible_glossy = False
+    bpy.context.view_layer.update()
+    flag(room, rig, b, coll)
     # the slab's spill off the head wall behind him: crown, shoulder caps, the lid's far edge
     rim = C.area_light('s13_rim', (sp.x + 0.30, sp.y + 1.05, 2.45), (sp.x, sp.y, 1.50), RIM_E, 0.9, 0.35,
                        color=(0.86, 0.91, 1.0), coll=coll)
@@ -512,6 +677,7 @@ def build(args):
     cam = camera(room, rig)
     glint(rig, cam)
     lights(room, rig)
+    dust(room)
     bokeh(room, cam)
     room.render_budget(kind='wide', samples=args.samples or None, locked=True)
     room.compositor()
