@@ -20,8 +20,9 @@ Beats (film frames; 90 BPM, 16 frames a beat; TREATMENT.md S07). B = the arrival
       B+2        the mouth sweep starts (1.8 LEDs a frame: the head reaches LED 22 on B+14)
       B+3        the pinch closes on the problem's near edge; B+3..B+10 it is lifted, carried and
                  brought straight down the slot axis on one eased curve, turning in the fingers from
-                 flat to hanging (face to the lens) and, from B+5, shrinking in them so all of it
-                 clears the lid: contact on B+10
+                 flat to hanging and, from B+5, shrinking in them as far as the lid needs: contact on
+                 B+10, the pinch 4 cm over the slot, the hand turned so the problem hangs face-on to
+                 the lens, out over the front of the cup against the dark room
       B+10..B+15 released at contact, it contracts toward the slot (staying over the lid) and
                  drops in; gone on B+16 (the plip, the next beat), the amber pulse in the slot
       B+10..B+15 the empty hand goes back down; the index is planted again on B+15
@@ -35,12 +36,15 @@ Beats (film frames; 90 BPM, 16 frames a beat; TREATMENT.md S07). B = the arrival
               and makes its measured stop on f712 (env_room's path: up its lane, round behind the
               head of the table, down to the hand-off), the cobalt binder on its reams
     f713-720  the hand goes to the binder: a claw over its near edge, the curled tips on the cover
+              (the trolley's binder sits just beyond a palm-down reach)
     f721      he lifts it with one hand (the hand copy replaces the trolley's binder), f722-723 the
-              arm sags 3 cm with the weight, then up and over the cup by f729 (a half turn on the
-              way); one slow full sweep of the mouth, 1 LED a frame, f722-744
+              arm sags 3 cm with the weight, then out in front and up over the cup by f729 (a half
+              turn on the way), flat, the palm on its cover by the edge he holds, the wrist under his
+              face screen; one slow full sweep of the mouth, 1 LED a frame, f722-744
     f729-737  it folds like a concertina (a lattice, 4 crisp pleats rising from its underside),
               closing onto the slot; the hand rides the edge it holds, squeezing it shut
-    f738-744  he lets go; the closed block contracts into the slot; gone on f745 (the plop)
+    f737-744  he lets go and lifts away; the closed block contracts into the slot; gone on f745
+              (the plop)
     f737-752  the droid reverses out the way it came; f745-752 the hand goes to rest, mouth idle
 The colleague whose problem it is flares 60% for 8 frames as it glides in (B-6..B+2) and lights him
 in its own colour (a soft card on the line from his chest to the screen, driven by the screen):
@@ -67,6 +71,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(HERE), 'lib'))
 
 import bpy  # noqa: E402
 from mathutils import Matrix, Quaternion, Vector  # noqa: E402
+from mathutils.bvhtree import BVHTree  # noqa: E402
 
 import common as C  # noqa: E402
 import env_room as R  # noqa: E402
@@ -86,11 +91,13 @@ OBJECTS = [('linda', 0, 'zero', 609, False), ('keys', 0, 'envelope', 625, False)
            ('strategy', 0, 'tabs', 641, False), ('people', 0, 'envelope', 657, False),
            ('arjun', 0, 'tabs', 673, True), ('operations', 0, 'envelope', 681, True),
            ('synthia', 0, 'envelope', 689, True), ('strategy', 1, 'tabs', 697, True)]
-# cycle offsets from the arrival B: (grip, lift end, contact, gone, next plant)
-NORMAL = dict(grip=3, lift=7, contact=10, gone=16, plant=15, sweep=2, sweep_speed=43.2, sweep_end=16)
-DOUBLE = dict(grip=1, lift=2, contact=4, gone=8, plant=7, sweep=1, sweep_speed=88.0, sweep_end=8)
+# cycle offsets from the arrival B: the pinch closes, contact with the slot, gone (the plip), the index
+# planted again for the next; the mouth sweep's start, speed (LEDs/s) and end (back at idle)
+NORMAL = dict(grip=3, contact=10, gone=16, plant=15, sweep=2, sweep_speed=43.2, sweep_end=16)
+DOUBLE = dict(grip=1, contact=4, gone=8, plant=7, sweep=1, sweep_speed=88.0, sweep_end=8)
 FLARE_LEAD = 6                  # a colleague flares from B-6 for 8 frames (rims him as its problem glides in)
-SPIN = {'keys': 540.0}          # the frisbee: turns 1.5 times flat on its glide
+SPIN = {'keys': 540.0}          # the frisbee: spins flat on its glide, the whole turns nearest 540 deg that
+                                # still land its long edge first (1.26 turns)
 GLIDE_SPEED = 7.0               # m/s cruise up the walnut
 ARRIVE_SPEED = 1.2              # m/s left when it meets the finger: it is stopped, it does not coast to rest
 APPROACH_RUN = 1.4              # metres of straight run up the stop's lane at the end of every glide
@@ -106,15 +113,17 @@ HAND_REST = (745, 752)
 DROID_STOP = 712
 WAIT_WRIST = (0.27, -0.33, 0.93)   # chest-rest space: the hand waits beside his left hip, in front of the trolley
 BINDER_IN = 0.05                # he takes the binder this far in from its edge
-BINDER_CURL = 0.45              # a claw: fingers over the edge, the curled tips on the cover
-BINDER_PITCH = 0.9              # the fingers reach over the edge this steeply (tan of the angle down)
-BINDER_LIFT_OFF = 0.004         # the palm's underside this far over the cover
-BINDER_CHEST = 0.21             # world y of the binder's far edge over the cup (his chest plates start ~0.25)
+BINDER_CURL = 0.35              # a claw: fingers over the edge, the curled tips on the cover
+BINDER_PITCH = 0.5              # the fingers reach over the edge this steeply (tan of the angle down)
+FLAT_CURL = 0.08                # over the cup the palm lies flat on the cover
+BINDER_CHEST = 0.17             # world y of the binder's far edge over the cup (his chest plates start ~0.25)
+BINDER_EDGE_X = 0.10            # world x of the edge he holds over the cup (toward his left: the arm need not
+                                # cross his chest; the far edge still overhangs the slot)
 BINDER_CLEAR = 0.004            # its underside over the slot
 ACCORDION_PANELS = 4            # pleats across the binder (big ones: they read at this distance)
 ACCORDION_CLOSE = 0.24          # the bellows close to this fraction of the width
 ACCORDION_FRAMES = 8            # f729-737 the folds close
-BINDER_RELEASE = 738            # he lets go of the closed concertina over the slot
+BINDER_RELEASE = 737            # he lets go of the closed concertina over the slot, before it drains
 DROID_OUT = 737
 
 # ---------------------------------------------------------------- held objects
@@ -144,6 +153,8 @@ SINK = 0.006                    # the shrink converges this far under the slot p
 GRIP_RAISE = 0.010              # the pinch closes this far above the object's near edge on the walnut
 CORNER_IN = 0.018               # a corner grip sits this far in from the corner
 
+CAP_MARGIN = 0.010              # the shoulder cap keeps this clear of the chest hull (the plates bulge past it)
+
 # ---------------------------------------------------------------- camera
 # env_room's approved 's07_profile_lane' sits at (2.85, -1.75, 1.72), 26 mm, yaw 163, pitch -13; this
 # shot keeps its position and side, at the treatment's 1.55 m and 35 mm, so he and the posting read
@@ -155,9 +166,11 @@ LENS, FSTOP, FOCUS = 35.0, 5.6, 3.4
 # ---------------------------------------------------------------- light
 BOUNCE_E = 3.5
 BACK_E = (55.0, 35.0)
-RIM_E, RIM_BASE, RIM_DIST, RIM_Z, RIM_SIZE = 24.0, 0.04, 2.4, 1.35, 0.6
+RIM_E, RIM_BASE, RIM_DIST, RIM_Z, RIM_SIZE = 19.0, 0.04, 2.4, 1.35, 0.6
+RIM_TINT = {'linda': (1.0, 0.10, 0.32)}   # burgundy keeps its blue: on warm enamel a pure deep red reads orange
 AMBER_E = 1.0
-BOKEH = dict(seed=5, n=8, region=(0.03, 0.97, 0.58, 0.95), disc_px=(36.0, 110.0))
+BOKEH = dict(n=8, region=(0.03, 0.97, 0.58, 0.95), disc_px=(36.0, 110.0))
+BOKEH_SEEDS = range(1, 41)      # layouts tried: the one that keeps every disc clearest of his head wins
 BOKEH_FRAME = 681               # the discs are placed for the camera mid-arc (clear of his head at both ends)
 
 DIAG = bool(os.environ.get('S07_DIAG'))
@@ -317,10 +330,6 @@ def hand_D(rig, f):
     return ae.matrix_world @ ae.pose.bones['hand_L'].matrix @ rig._rest['hand_L'].inverted()
 
 
-def rig_to_world(rig):
-    return Matrix.Translation(V(R.SYNERGY_POS))
-
-
 class Hand:
     """The left hand's performance, keyed every frame from a few solved anchor poses: the wrist
     travels on eased curves, the hand frame slerps, the elbow pole and shoulder offsets blend."""
@@ -350,7 +359,7 @@ class Hand:
         th = rig._builder_hulls.get('torso')
         if th is not None:
             for q in rig._pauldron_pts.get('L', ()):
-                dq = th.sdf(Dp @ q) - 0.003
+                dq = th.sdf(Dp @ q) - CAP_MARGIN
                 if dq < 0:
                     pen += dq * dq * 10.0
         return pen
@@ -579,7 +588,6 @@ class Machine:
         middle, or near either corner), hanging in the direction (in the plane across the pinch,
         never more than HANG_MAX from straight down) that keeps it clear of the fingers, leaning
         toward the lens."""
-        from mathutils.bvhtree import BVHTree
         rig = self.rig
         h = HOLD[kind]
         pin = rig.thumb_pinch('L', gap=h['gap'])
@@ -660,6 +668,57 @@ class Machine:
         self.log_hang = best[3:]
         return best[1], best[2], best[8]
 
+    def hand_tree(self, f):
+        """BVH of the left hand's meshes as posed at frame f."""
+        sc = bpy.context.scene
+        sc.frame_set(f)
+        dg = bpy.context.evaluated_depsgraph_get()
+        hv, hp = [], []
+        for o in self.rig.parts_on_bones(HAND_L):
+            if o.type != 'MESH':
+                continue
+            ev = o.evaluated_get(dg)
+            me = ev.to_mesh()
+            k = len(hv)
+            hv += [ev.matrix_world @ v.co for v in me.vertices]
+            hp += [tuple(i + k for i in p.vertices) for p in me.polygons]
+            ev.to_mesh_clear()
+        return BVHTree.FromPolygons(hv, hp)
+
+    def turn_way(self, f0, f1, lT, rT, lC, rC, mesh):
+        """The problem turns in the pinch from flat (rT) to hanging (rC): the short way round or the
+        long way, whichever passes clear of the hand (BVH pairs summed over the in-between frames)."""
+        rig = self.rig
+        sc = bpy.context.scene
+        vs, ps = mesh
+        n = f1 - f0
+        trees = {}
+        for f in range(f0 + 1, f1):
+            sc.frame_set(f)
+            dg = bpy.context.evaluated_depsgraph_get()
+            hv, hp = [], []
+            for o in rig.parts_on_bones(HAND_L):
+                if o.type != 'MESH':
+                    continue
+                ev = o.evaluated_get(dg)
+                me = ev.to_mesh()
+                k = len(hv)
+                hv += [ev.matrix_world @ v.co for v in me.vertices]
+                hp += [tuple(i + k for i in p.vertices) for p in me.polygons]
+                ev.to_mesh_clear()
+            trees[f] = (BVHTree.FromPolygons(hv, hp), hand_D(rig, f))
+        best = None
+        for cand in (rC, -rC):
+            pairs = 0
+            for f, (tree, D_f) in trees.items():
+                k = smoother(min(1.0, (f - f0) / n * 1.25))
+                rel = Matrix.Translation(lT.lerp(lC, k)) @ rT.slerp(cand, k).to_matrix().to_4x4()
+                Mw = D_f @ rel
+                pairs += len(tree.overlap(BVHTree.FromPolygons([Mw @ v for v in vs], ps)))
+            if best is None or pairs < best[0]:
+                best = (pairs, cand)
+        return best[1]
+
     # ---- one problem
     def cycle(self, obj, o, nm, kind, B, dbl, cam_pos, nxt):
         rig, room = self.rig, self.room
@@ -667,7 +726,7 @@ class Machine:
         h = HOLD[kind]
         gap = h['gap']
         pts, M_T = o['pts'], o['M_T']
-        f_grip, f_lift, f_con, f_gone = B + c['grip'], B + c['lift'], B + c['contact'], B + c['gone']
+        f_grip, f_con, f_gone = B + c['grip'], B + c['contact'], B + c['gone']
         Rp = self.reach_pose()
         # planted: B-1 .. grip-1 (the object stops against the index on B)
         for f in sorted({B - 1, f_grip - 1}):
@@ -706,6 +765,7 @@ class Machine:
         lC, rC, _ = rel_C.decompose()
         if rT.dot(rC) < 0:
             rC.negate()
+        rC = self.turn_way(f_grip, f_con, lT, rT, lC, rC, o['mesh'])
         hP = ((D_c @ pin['point']) - pos).dot(ax_c)
         lowC = min(((M_C @ p) - pos).dot(ax_c) for p in pts)
         s_c = s_hang
@@ -716,29 +776,43 @@ class Machine:
         prev = None
         n = f_con - f_grip
         Mw = M_T
+        k_prev = 0.0
         for f in range(f_grip, f_con + 1):
             t = (f - f_grip) / n
-            k = smoother(min(1.0, t * 1.25))
+            k_nom = smoother(min(1.0, t * 1.25))
             D_f = hand_D(rig, f)
             Pf = D_f @ pin['point']
-            ss = 1.0 if f <= f_sh else s_c ** smoother((f - f_sh) / (f_con - f_sh))
-            for _ in range(10):
-                rel = Matrix.Translation(lT.lerp(lC, k)) @ rT.slerp(rC, k).to_matrix().to_4x4()
-                M0 = D_f @ rel
-                Mw = Matrix.Translation(Pf) @ Matrix.Diagonal((ss, ss, ss, 1.0)) @ Matrix.Translation(-Pf) @ M0
-                wp = [Mw @ p for p in pts]
-                bad = min(p.z for p in wp) < R.TABLE_TOP + 0.0005 and k > 0.0
-                # over the cup: nothing below the slot plane + POST_CLEAR
-                near = [p for p in wp if ((p - pos) - ax_c * (p - pos).dot(ax_c)).length < 0.075]
-                if near and min((p - pos).dot(ax_c) for p in near) < POST_CLEAR - 1e-4:
-                    ss *= 0.75
-                    continue
-                if bad:
-                    k *= 0.6
-                    continue
-                break
+            ss0 = 1.0 if f <= f_sh else s_c ** smoother((f - f_sh) / (f_con - f_sh))
             if f == f_grip:
                 Mw = M_T
+            else:
+                # how far it has turned in the fingers: near the nominal, never backward, chosen
+                # to keep it out of the hand (and out of the walnut and the lid)
+                if f == f_con:
+                    ks = [1.0]
+                else:
+                    ks = sorted({max(k_prev, k_nom)} | {k_prev + (1.0 - k_prev) * a for a in (0.0, 0.25, 0.5, 0.75, 1.0)})
+                tree = self.hand_tree(f)
+                best = None
+                for k in ks:
+                    ss = ss0
+                    for _ in range(12):
+                        rel = Matrix.Translation(lT.lerp(lC, k)) @ rT.slerp(rC, k).to_matrix().to_4x4()
+                        M0 = D_f @ rel
+                        Mk = Matrix.Translation(Pf) @ Matrix.Diagonal((ss, ss, ss, 1.0)) @ Matrix.Translation(-Pf) @ M0
+                        wp = [Mk @ p for p in pts]
+                        near = [p for p in wp if ((p - pos) - ax_c * (p - pos).dot(ax_c)).length < 0.075]
+                        if near and min((p - pos).dot(ax_c) for p in near) < POST_CLEAR - 1e-4:
+                            ss *= 0.8                     # over the cup: nothing below the slot plane
+                            continue
+                        break
+                    under = max(0.0, R.TABLE_TOP + 0.0005 - min(p.z for p in wp))
+                    vs, ps = o['mesh']
+                    pairs = len(tree.overlap(BVHTree.FromPolygons([Mk @ v for v in vs], ps)))
+                    score = pairs + abs(k - k_nom) * 30.0 + under * 1e5 + (1.0 - ss / ss0) * 20.0
+                    if best is None or score < best[0]:
+                        best = (score, Mk, k, pairs)
+                Mw, k_prev = best[1], best[2]
             prev = key_matrix(obj, f, Mw, prev)
         M_con = Mw
         low = min(((M_con @ p) - pos).dot(ax_c) for p in pts)
@@ -755,7 +829,6 @@ class Machine:
             drop = ax_c * (-(low + SINK) * smoother((t - 0.55) / 0.45))
             Mw = Matrix.Translation(cc + drop) @ Matrix.Diagonal((s, s, s, 1.0)) @ Matrix.Translation(-cc) @ M_con
             prev = key_matrix(obj, f, Mw, prev)
-        ext = s_c
         room.key_visible(obj, f_gone, False)
         cau = bpy.data.objects.get(obj.name + '_caustic')
         if cau is not None:                         # the walnut's caustic stays on the walnut
@@ -833,6 +906,15 @@ class Machine:
             w_ = (dn - u_ * dn.dot(u_)).normalized()
             Rt_ = S.frame3(u_, w_) @ S.frame3(hd['u'], hd['w']).transposed()
             return u_, w_, self.chest(target_world) - Rt_ @ (tip_l - hd['W'])
+        def flat(e_world, target_world):
+            """Over the cup: the palm flat on the cover by the edge he holds, fingers across it, the
+            wrist low (so the forearm stays under his face screen)."""
+            eh = V((e_world.x, e_world.y, 0.0)).normalized()
+            u_ = -eh
+            w_ = V((0.0, 0.0, -1.0))
+            Rt_ = S.frame3(u_, w_) @ S.frame3(hd['u'], hd['w']).transposed()
+            palm = hd['W'] + hd['u'] * 0.055 + hd['w'] * 0.017            # the palm's underside
+            return u_, w_, self.chest(target_world + V((0.0, 0.0, 0.003))) - Rt_ @ (palm - hd['W'])
         u, w, wrist = claw(e_w, g_w)
         sol_g = rig.place_arm_clear(BINDER_REACH[1], 'L', wrist, u, w, V((0.8, 0.2, -0.6)), 'LINEAR',
                                     fingers=ang)
@@ -856,18 +938,19 @@ class Machine:
         zmin = min(p.z for p in wpts)
         ymax = max(p.y for p in wpts)
         xs = [p.x for p in wpts]
-        cx = 0.5 * (min(xs) + max(xs))
         cy_ = 0.5 * (min(p.y for p in wpts) + ymax)
-        # far edge (toward his chest) at y = BINDER_CHEST; x centred on the slot
-        tx = pos.x - cx
+        # the edge he holds at x = BINDER_EDGE_X (its far edge overhangs the slot), the side toward his
+        # chest at y = BINDER_CHEST at most
+        tx = BINDER_EDGE_X - max(xs)
         ty = min(pos.y - cy_, BINDER_CHEST - ymax)
         tz = pos.z + BINDER_CLEAR - zmin
         M_lid = Matrix.Translation((tx, ty, tz)) @ Ml
-        g_lid = M_lid @ grip_l
+        palm_l = e_l * (half - BINDER_IN) + V((0.0, 0.0, top))
+        g_lid = M_lid @ palm_l
         e_lid = (M_lid.to_3x3() @ e_l).normalized()
-        u_l, w_l, wrist_l = claw(e_lid, g_lid)
-        sol_l = rig.place_arm_clear(BINDER_AT_LID, 'L', wrist_l, u_l, w_l, V((0.9, -0.2, -0.4)), 'LINEAR',
-                                    fingers=ang)
+        u_l, w_l, wrist_l = flat(e_lid, g_lid)
+        sol_l = rig.place_arm_clear(BINDER_AT_LID, 'L', wrist_l, u_l, w_l, V((0.9, -0.2, -0.8)), 'LINEAR',
+                                    fingers=FLAT_CURL)
         Lp = sol_pose(sol_l)
         print(f'S07 binder at the lid: reach miss {sol_l["reach"] * 1000:.1f} mm pen {sol_l["pen"]:.4f}', flush=True)
         # f721: a quick lift off the reams; f722-723 the arm sags 3 cm with the weight; then up and
@@ -878,11 +961,11 @@ class Machine:
         self.hand.move(BINDER_REACH[1], BINDER_LIFT, Gp, L1, ease=lambda t: t)
         self.hand.move(BINDER_LIFT, BINDER_LIFT + 2, L1, L2)
         a0, a3 = L2[0], Lp[0]
-        a1 = a0 + V((0.0, 0.0, 0.25))
-        a2 = a3 + V((0.12, -0.06, 0.10))
+        a1 = a0 + V((0.10, -0.14, 0.25))                     # out in front of his hip, clear of his side
+        a2 = a3 + V((0.16, -0.16, 0.06))
         self.hand.move(BINDER_LIFT + 2, BINDER_AT_LID, L2, Lp, path=lambda e: bezier(a0, a1, a2, a3, e),
                        rot_ease=smoother)
-        self.hand.fingers(BINDER_AT_LID, ang, 0.35)
+        self.hand.fingers(BINDER_AT_LID, FLAT_CURL, 0.3)
         # the binder rides under the palm f720-729
         D0 = hand_D(rig, BINDER_REACH[1])
         rel = D0.inverted() @ Mb0
@@ -898,16 +981,16 @@ class Machine:
             relf = Matrix.Translation(l0.lerp(l1, k)) @ r0.slerp(r1, k).to_matrix().to_4x4()
             prev = key_matrix(b, f, hand_D(rig, f) @ relf, prev)
         self.binder_obj = (b, M_lid, pos, ax, pts)
-        edge = self.accordion(b, M_lid, pos, ax, pts, e_l, grip_l, prev)
+        edge = self.accordion(b, M_lid, pos, ax, pts, e_l, palm_l, prev)
         # the hand rides the near edge in as the bellows close (it squeezes the concertina shut),
         # then lets go over the slot
         prevp = Lp
         for f in range(BINDER_AT_LID + 1, BINDER_RELEASE + 1):
-            uu, ww, wr = claw(e_lid, edge[f])
+            uu, ww, wr = flat(e_lid, edge[f])
             pose = (wr, uu, ww, prevp[3], prevp[4])
             self.hand.put(f, *pose)
             prevp = self.hand.keys[f]
-        self.hand.fingers(BINDER_RELEASE, ang, 0.35)
+        self.hand.fingers(BINDER_RELEASE, FLAT_CURL, 0.3)
         self.release = prevp
         return b
 
@@ -935,7 +1018,10 @@ class Machine:
         C.collection('S07_props').objects.link(lat)
         lat.parent = b
         lat.location = ctr
-        lat.scale = size
+        # a lattice's points sit one unit apart (n points span n - 1 units): scale each axis so
+        # the lattice spans the binder exactly
+        npts = (lat_d.points_u, lat_d.points_v, lat_d.points_w)
+        lat.scale = tuple(size[j] / max(1, npts[j] - 1) for j in range(3))
         lat.hide_render = True
         # the slot, in lattice units along the fold axis: the concertina closes onto it
         sl = M_lid.inverted() @ pos
@@ -950,7 +1036,9 @@ class Machine:
             iv = (i // lat_d.points_u) % lat_d.points_v
             k = iu if fold_x else iv
             co = V(pt.co)
-            co[ai] = c_a + (co[ai] - c_a) * ACCORDION_CLOSE
+            na = npts[ai] - 1
+            t_ = co[ai] / na                              # -0.5 .. 0.5 across the binder
+            co[ai] = (c_a + (t_ - c_a) * ACCORDION_CLOSE) * na
             co.z = co.z + amp * (k % 2)
             key.data[i].co = co
         for o in b.children_recursive:
@@ -1085,7 +1173,7 @@ def build(args):
     print(f'S07 binder {time.time() - t1:.1f}s', flush=True)
     # the hand lets go over the folding binder, hovers, then goes to rest
     Lp = mc.release
-    Hv = (Lp[0] + V((0.05, -0.03, 0.05)), Lp[1], Lp[2], Lp[3], Lp[4])
+    Hv = (Lp[0] + V((0.07, -0.06, 0.03)), Lp[1], Lp[2], Lp[3], Lp[4])      # up off the binder, out, clear of his face
     mc.hand.move(BINDER_RELEASE, BINDER_RELEASE + 4, Lp, Hv)
     mc.hand.fingers(BINDER_RELEASE + 4, 'relaxed', 0.3)
     mc.hand.put(HAND_REST[0], *Hv)
@@ -1101,7 +1189,7 @@ def build(args):
     glint(rig, cam)
     room.insert_lights('zero', target=room.props['linda'][0])
     room.use_kits('zero')
-    room.front_bokeh(cam, frame=BOKEH_FRAME, **BOKEH)
+    choose_bokeh(room, rig, cam)
     room.hide_from_camera('head', 'left')       # the colleagues' discs hang in the dark beyond the far wall too
     room.render_budget(kind='wide', samples=args.samples or None)
     room.compositor()
@@ -1211,11 +1299,11 @@ def lights(room, rig, cam):
         dirn = V((dv.x, dv.y, 0.0)).normalized()
         pos = centre + dirn * RIM_DIST
         pos.z = RIM_Z
-        col = V(t.light.data.color)
+        col = V(RIM_TINT.get(nm, t.light.data.color))
         mx = max(col)
         col = col / mx if mx > 0 else col
         lum = 0.2126 * col.x + 0.7152 * col.y + 0.0722 * col.z
-        E = RIM_E * min(1.8, max(0.8, (0.45 / max(lum, 1e-3)) ** 0.5))
+        E = RIM_E * min(1.5, max(0.8, (0.45 / max(lum, 1e-3)) ** 0.25))
         lt = C.area_light(f's07_rim_{nm}', tuple(pos), tuple(centre), 1.0, RIM_SIZE, RIM_SIZE, color=tuple(col), coll=coll)
         lt.visible_camera = False
         lt.data.spread = math.radians(90)
@@ -1230,6 +1318,45 @@ def lights(room, rig, cam):
     amb.parent = rig.cup
     amb.matrix_parent_inverse = rig.cup.matrix_world.inverted()
     P.add_driver(amb.data, 'energy', f'{AMBER_E:.4f}*led', [('led', rig.cup_handle.glow, '["led"]')])
+
+
+def choose_bokeh(room, rig, cam):
+    """Room.front_bokeh's colleague discs, laid out with the seed whose discs stay clearest of his
+    head (and of each other) all along the camera's arc."""
+    from bpy_extras.object_utils import world_to_camera_view
+    sc = bpy.context.scene
+    aspect = sc.render.resolution_y / sc.render.resolution_x
+    frames = (START, (START + END) // 2, END)
+    heads = {}
+    for f in frames:
+        sc.frame_set(f)
+        c = rig.screen_point(0.5, 0.6, f)
+        q = world_to_camera_view(sc, cam, c)
+        r = 0.24 / max(0.5, q.z) * cam.data.lens / cam.data.sensor_width
+        heads[f] = (V((q.x, q.y * aspect)), r)
+    best = None
+    for seed in BOKEH_SEEDS:
+        discs = room.front_bokeh(cam, frame=BOKEH_FRAME, seed=seed, **BOKEH)
+        worst = 9.0
+        for f in frames:
+            sc.frame_set(f)
+            pts = []
+            for o in discs:
+                if o.get('bokeh_terminal') == 'pat':
+                    continue
+                q = world_to_camera_view(sc, cam, o.matrix_world.translation)
+                rd = o.dimensions.x * 0.5 / max(0.5, q.z) * cam.data.lens / cam.data.sensor_width
+                pts.append((V((q.x, q.y * aspect)), rd))
+            hp, hr = heads[f]
+            for p, rd in pts:
+                worst = min(worst, (p - hp).length - hr - rd)
+            for i in range(len(pts)):
+                for j in range(i + 1, len(pts)):
+                    worst = min(worst, (pts[i][0] - pts[j][0]).length - pts[i][1] - pts[j][1] + 0.02)
+        if best is None or worst > best[0]:
+            best = (worst, seed)
+    room.front_bokeh(cam, frame=BOKEH_FRAME, seed=best[1], **BOKEH)
+    print(f'S07 bokeh: seed {best[1]}, clearance {best[0]:.3f} of the frame width', flush=True)
 
 
 def glint(rig, cam):
@@ -1258,7 +1385,6 @@ def diagnostics(mc, cam, frames=None):
     """Per frame: the left arm against his body, cup and headset; the held problem against the
     hand and the cup; the hand's lowest point against the walnut; gliding problems against the hub."""
     rig, room = mc.rig, mc.room
-    sc = bpy.context.scene
     arm = rig.parts_on_bones(ARM_L + ['pauldron_L'])
     hand = rig.parts_on_bones(HAND_L)
     body = rig.parts_on_bones(['chest', 'neck', 'head', 'spine', 'pelvis', 'badge', 'upperarm_R', 'forearm_R',
@@ -1270,7 +1396,6 @@ def diagnostics(mc, cam, frames=None):
     hub = _meshes(room.hub.root)
     objs = {nm: room.props[nm][i] for nm, i, k, B, d in OBJECTS}
     sched = {room.props[nm][i].name: (B, B + (DOUBLE if d else NORMAL)['gone']) for nm, i, k, B, d in OBJECTS}
-    worst = {}
     for f in frames or range(START, END + 1):
         out = []
         r = {k: v for k, v in rig.overlap_report(f, arm, body + hs + cup).items() if _real(*k)}
