@@ -13,6 +13,15 @@ all along.
 
 Full shot list, frame-accurate on a 90 BPM grid: [`TREATMENT.md`](TREATMENT.md).
 
+## Current state (31 Oct 2026)
+
+This supersedes the status below, which records the 29 Oct pause.
+
+- **Built and committed:** all 14 shot scripts, the robot, both environments, and soundtrack v2.
+- **Rendered:** the first full cut, all 1,440 frames on an Apple Silicon Mac at 6.4 s a frame. See [`RENDER_ON_MAC.md`](RENDER_ON_MAC.md).
+- **To change scenes:** follow [`EDITING.md`](EDITING.md).
+- **Open notes:** the critics' remaining notes per shot are in `docs/research/shot-critiques.json`.
+
 ## Status
 
 | Part | State | Where |
