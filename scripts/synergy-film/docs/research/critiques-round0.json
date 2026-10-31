@@ -1,0 +1,100 @@
+{
+ "wf_afe05022-dfa": [
+  {
+   "verdict": "revise",
+   "score": 3.5,
+   "fixes": [
+    {
+     "priority": "blocker",
+     "part": "galvanized_grey() / grey plates (head + torso)",
+     "problem": "Grey plates come out about as bright as the cream, so the cream/grey patchwork that identifies him disappears. Head grey cheek panel renders #A9A198 and the crown band #CDC7C0, next to cream at #EBE2D8. In the reference the cheek is #6A6257 and the crown band #A99D94, against cream at #E2C9B1/#B0906E. In the hero frame the cheek panel reads WHITE because it reflects the key. On the torso the grey is a mirror-like gradient with std 58 (ref std 4-6) and turns brown (#53473A) where it reflects the cyc. Chin_l, chin_left and crown_band are in the plate list, but all three read as cream.",
+     "fix": "Metallic 0.78 -> 0.45. Roughness 0.40 -> 0.58, with +/-0.08 noise. Keep the albedo neutral at #827D76 (S < 0.06). Raise spangle cell size to 5-15 mm (voronoi scale 26 -> 110) at +/-6% value, and add zinc mottling with noise scale 8 at +/-10% value. Acceptance test in the turnaround: lit grey L = 0.50-0.60x the neighbouring cream, std < 15 inside one plate, head cheek panel sampling #6A6257 to #7C766E, torso grey #7C766E to #867E75."
+    },
+    {
+     "priority": "blocker",
+     "part": "cream_enamel() base colour",
+     "problem": "The cream is near-white and cool, which looks like plastic. Lit head crown renders #EBE2D8 (S 0.08, L 0.89) against ref #E2C9B1 (S 0.22). Torso cream renders #DFD2C3 (L 0.82) against ref #CBAD8C (S 0.38, L 0.67). Every plate has the same tone, while the reference varies from plate to plate.",
+     "fix": "CREAM #E3D2B4 -> #D8BE98 and CREAM_WARM #CDB28B -> #B8976E. Widen the patina remap so 35-45% of the area reaches the warm tone. Add per-plate variation from ObjectInfo.Random: +/-6% value and +/-12% saturation. Target lit cream #CBAD8C to #D9C3AC under the turnaround key, with shade around #AE8C69."
+    },
+    {
+     "priority": "blocker",
+     "part": "cream_enamel() wear: chips, freckles, streaks, grime, scratches",
+     "problem": "The wear looks like evenly spread polka dots, not age. (1) Edge chips expose #B4B0A8, which is about as bright as the cream, so no chipping shows anywhere; in the reference, edges read DARK brown. (2) Freckles have a baseline density (0.015 plus a cluster term), so they scatter evenly across open plate areas at a near-constant ~2 mm size and look like measles, and they also cover the fingers. (3) Vertical noise streaks are almost invisible, and none start at rivets. (4) Seam grime is only 1-2 px wide (AO distance 0.016). (5) Scratches come from P*(650,20,20), so they all run parallel to object X and are lighter than the cream. Reference scratches are dark lines in random directions.",
+     "fix": "Chip colour -> dark oxidised steel #4A443C mixed 40% with RUST_CORE, plus a 0.5 mm bright steel rim at the very edge for glints. Chip band 2-6 mm (Bevel radius 0.006, chip remap 0.58-0.68). Freckles: baseline density 0, so 75% or more sit within 12 mm of a rivet or edge. Use two voronoi layers (scales 190 and 60) to cover 0.5-6 mm sizes, cores #4F2E17, orange halo at 25% opacity. Streaks: at build time, add decal quads offset 0.15 mm under 25-35% of rivets and along lower seams (4-7 mm wide, 20-40 mm long, #A0643A fading to transparent, max opacity 0.6). Rivet positions are already in rivet_reg. Grime: AO distance 0.035, remap 0.99 -> 0.70, broken up with noise, giving a 3-6 mm falloff along seams. Scratches: three rotated layers (0, 60, 120 deg) in dark #6D5A45, 0.3-0.6 mm wide, gated to about 20% of the area."
+    },
+    {
+     "priority": "blocker",
+     "part": "face.screen_material + turnaround lighting (LED face)",
+     "problem": "(1) The mouth row is far too bright: at idle it reaches p90 #48A45A while the eyes' p10 is #61B470, because AgX compresses the 10x emission difference to about 1.5x, so it reads as a bold dash instead of a dim row. (2) Eye cores blow out to pale mint #CBEFCF; ref median is #4DB062 with cores at #8BEDA4. (3) The unlit 22x16 grid shows across the whole glass like graph paper; the references show none. (4) The glass is dead black, #11140C with p90 #13190E, and reflects nothing. Ref is olive #1D1E0E with p90 #927966 from fluorescent reflections.",
+     "fix": "Strength 3.2 -> 1.5, glare threshold 1.2 -> 0.8, glare mix 0.25 -> 0.4, so mid pixels read #4DB062 and only the cores reach #90E5A9. Effective mouth idle 0.11 -> 0.035 (or map idle^1.6) so the row reads around #1E3A22. Talking peaks are unchanged. Unlit 0.0015 -> 0.0003, and remove the darker inter-cell lines from the glass base. Glass albedo -> #16180E, roughness 0.06. In turnaround.py, add a 1.6 x 0.5 m emissive card at about (0, -2.6, 2.3), visible to glossy rays only, strength about 3, so a soft reflection band crosses the top 25-35% of the glass at #2A2613-#4A4436."
+    },
+    {
+     "priority": "blocker",
+     "part": "torso plate layout and flank holes",
+     "problem": "plate() splits any quad warped by more than 1.5 mm into two separate triangle plates, each with its own 1.3 mm seam and rivet row. The breastplate ends up as a grid of about 20 small equal triangles, like a geodesic dome. The reference has about 10 large irregular plates, with the big grey trapezoid and the grey quad under the chip reading as single panels. The upper flanks (T0-M0-M0b-T0b) are also left open, which shows as black triangular holes at x = +/-0.28, z = 1.24 in the hero, full_front and full_back34 renders. That breaks the 'no gaps' rule.",
+     "fix": "When a warped quad splits, build both triangles into ONE plate object: shared fold edge, no gap, no rivets on the fold, only a 0.5 mm crease bevel so it reads as a bent sheet. Close the flank opening with a cream side plate, leaving only a 3-4 cm armpit slot under the pauldron. Alternatively, fill it with lit chrome rods and cables at least 4 cm forward of the core so it reads as mechanics, not a hole."
+    },
+    {
+     "priority": "major",
+     "part": "rivets (rivet_points / rivet_steel)",
+     "problem": "Rivets are undersized and all look alike. Edge rivets are 6.2 mm and vertex rivets 7.6 mm, which become 5.9 and 7.2 mm after the 0.95 head scale; canon is 7-9 mm and 10 mm. The renders show mostly clean light steel domes. Reference rivets are larger, many have dark rusty heads, and some holes are empty black dots (clear in head_closeup_team-master).",
+     "fix": "Edge rivet diameter 8.5 mm, vertex 10.5 mm, height 2.6 mm, random +/-12% size. Mix: about 30% dark rusted heads (#4F2E17-#6B4A30), about 12% missing rivets rendered as 4 mm dark holes (instead of simply skipping the 18%), and the remaining 58% dull steel, half of those with a rust ring at 2.2x the head diameter."
+    },
+    {
+     "priority": "major",
+     "part": "plate construction (thickness, bevel, warp, overlap)",
+     "problem": "The plates are perfect flat ngons: 0.9 mm bevel, constant 1.3 mm gaps, no oil-canning. At 960 px the bevel never catches the bright edge highlight that outlines every plate in the reference. Grey plates are recessed 1.5 mm but separated by the same gap, so the canon detail where cream overlaps grey never shows.",
+     "fix": "Bevel 1.5 mm with 3 segments. Grid-fill the top face (at least 6x6) and displace it +/-1 mm with low-frequency noise. Lift one corner by 2-4 mm on about 15% of plates. Cream plates that border grey should extend 3-4 mm over the recessed grey with no gap, so a 1.5 mm step shadow line reads."
+    },
+    {
+     "priority": "major",
+     "part": "blue_chip()",
+     "problem": "Colour and shape are wrong. It renders #3F89B6 (L 0.48, H 203) against ref #245F8D (L 0.35, H 206), about 35% too bright and slightly cyan. The shape is a smooth heart-like blob with three white scratch lines. The reference patch is ragged, with cream and steel islands and raised flake edges.",
+     "fix": "Base #1A4F8C, roughness 0.45, so it renders about #1A5F94 to #245F8D. Give it a ragged boundary: noise-thresholded alpha with 2-4 satellite flakes of 3-8 mm. Show cream or steel islands across 10-20% of the patch area. Add a 0.3 mm raised flake lip through bump on the boundary. Keep the size at about 60 x 35 mm."
+    },
+    {
+     "priority": "major",
+     "part": "headset materials (black_plastic gloss, brass, mic_foam, leatherette)",
+     "problem": "The boom rod (black_gloss, roughness 0.22) reads as a chrome rod. The headband shows a silver gradient. The earcup shell has a p90 highlight of #DDD0C2; ref is matte at #343430, p90 #6A6966. The brass rim is multiplied by 1.6, so it reads as a bright orange line. Mic foam renders as a smooth #2A2722 rubber egg (ref #1B1D1C, porous).",
+     "fix": "Boom: rubber-coated matte, roughness 0.55, Specular IOR Level 0.3. Headband outer roughness 0.35. Earcup shell roughness 0.48, plus a fine concentric machining bump at 0.3 mm pitch. Brass: drop the 1.6/1.5/1.3 brightening, roughness 0.4. Foam: base #121212, voronoi 350/m and noise bump strength 0.8, sheen weight 0.6 with roughness 1.0, for a fuzzy, porous silhouette. Leatherette: add 3-5 radial wrinkle creases where the cushion meets the head."
+    },
+    {
+     "priority": "major",
+     "part": "badge, clip and vinyl sleeve",
+     "problem": "The badge looks like it floats. The lanyard ends in a chrome O-ring roughly 20-30 mm above the card, linked only by a clear strap you cannot see in the hero or thumbs_up renders. The vinyl sleeve is invisible too: no edge, no highlight, no thickness, sharp card corners. The canon calls for a J-hook/lobster clip.",
+     "fix": "Use a 25 mm chrome J-hook or lobster clip. Make the strap clip frosted (alpha about 0.6, with an edge highlight) so the connection reads, and keep any visible gap at or under 3 mm. Sleeve: 105 x 80 mm, 0.4 mm thick, 3 mm rounded corners, top slot punch, 2-3 mm curl at the lower corners, specular streak from the fresnel mix. Keep the blank card and the 2x3 green glyph as they are."
+    },
+    {
+     "priority": "major",
+     "part": "paper_cup / cup_lid",
+     "problem": "In hand_cup.png you cannot see where the lid meets the cup; it reads as a single yogurt tub. Both pieces are near-identical matte white, and the 2.6 mm overhang casts no shadow line. The seam sits on the hidden side.",
+     "fix": "Lid overhang 3.5 mm with a 3 mm vertical skirt and a 0.8 mm dark gap line where it meets the cup. Lid roughness 0.25 in a cooler #F5F5F2; cup a warmer #F0EDE6 at roughness 0.6. Recess the top 4 mm and add a dark sip slot. Rotate the seam (angle 2.6 rad) toward the hero camera and show the rolled rim bead just under the lid skirt."
+    },
+    {
+     "priority": "major",
+     "part": "finger segments",
+     "problem": "The fingers look like smooth, evenly lit capsules: cream std 8 in the render against 43 in hand_cup_closeup, with no chamfer highlights. They also get the plate freckles, which look like measles at 7 mm radius.",
+     "fix": "Flatten the cross-section to an aspect of about 0.85, with 1 mm chamfered edges and coat 0.35, so each segment shows crisp specular breaks. Fingers use cream_enamel(0.3), with freckles allowed only within 3 mm of the black bands, and a dark grime ring at each band."
+    },
+    {
+     "priority": "minor",
+     "part": "turnaround studio lighting",
+     "problem": "The down-facing lower torso facets go muddy: #5E5142 (L 0.31) against a reference cream that stays at L 0.68. This makes the lower chest look dirty, not worn.",
+     "fix": "Fill 80 W -> 180 W, or add a 2 x 1 m bounce card at about (0, -1.5, 0.4) aimed up at the chest. Check that the lower torso cream samples at L 0.55 or above."
+    },
+    {
+     "priority": "minor",
+     "part": "right earcup placement (identity silhouette)",
+     "problem": "The right earcup on the character's side shows as a full disc below the wedge tip in the hero and head renders. Canon says only its dark lower edge should peek out under the wedge, and in the reference it is effectively hidden.",
+     "fix": "Move the cupR seat 3-4 cm further back (+Y) and up under the wedge, so at most a 1 cm dark crescent shows in the hero frame."
+    },
+    {
+     "priority": "minor",
+     "part": "materials on hooked cables",
+     "problem": "The cable curves are deformed by hooks, so Object texture coordinates follow the evaluated vertices, and any noise or wear will swim as cables move.",
+     "fix": "Drive cable textures from the curve's UV or length parameter (use_uv_as_generated) or from a rest-position attribute, instead of Object coordinates."
+    }
+   ]
+  }
+ ]
+}
