@@ -38,10 +38,25 @@ python3 -m pip install --user numpy scipy soundfile pyloudnorm numba h5py certif
 brew install ffmpeg
 ```
 
-If ffmpeg came from a downloaded zip and macOS blocks it ("cannot be opened
-because the developer cannot be verified"), either use Homebrew's ffmpeg
-instead, or clear the quarantine flag on that binary:
-`xattr -d com.apple.quarantine /path/to/ffmpeg`.
+No Homebrew? Install native Apple Silicon builds of ffmpeg and ffprobe from
+Terminal. `curl` downloads are not quarantined, so Gatekeeper lets them run:
+
+```sh
+mkdir -p ~/bin && cd ~/bin
+for t in ffmpeg ffprobe; do
+  curl -L -o $t.zip https://ffmpeg.martin-riedl.de/redirect/latest/macos/arm64/snapshot/$t.zip
+  unzip -o $t.zip && rm $t.zip && chmod +x $t
+done
+export PATH="$HOME/bin:$PATH"
+file ~/bin/ffmpeg            # must say: Mach-O 64-bit executable arm64
+ffmpeg -version | head -1
+```
+
+Do not use an Intel (x86_64) ffmpeg downloaded in a browser. macOS kills it,
+and `audio/mix.py` and `tools/assemble.py` then hang. Make sure no such copy
+comes first on your `PATH` (e.g. remove `~/Downloads` from it). The mix needs
+no rubberband: every pitch change in `audio/cues.json` is tape-style
+resampling.
 
 ## 4. Sound library (about 2.5 GB, licensed recordings)
 
