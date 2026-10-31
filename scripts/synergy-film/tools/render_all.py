@@ -3,6 +3,7 @@
 
     python3 tools/render_all.py --quality final                 # every shot
     python3 tools/render_all.py --quality animatic --shots s03,s04 --step 2
+    python3 tools/render_all.py --quality final --shots-json episodes/ep02/shots.json --out out/episodes/ep02
 
 Frames land in <out>/<quality>/<shot>/NNNN.png on the film timeline. A frame
 that already exists is skipped, so the queue can be stopped and restarted.
@@ -20,7 +21,7 @@ import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
-SHOTS = json.load(open(os.path.join(ROOT, 'shots', 'shots.json')))
+DEFAULT_SHOTS = os.path.join(ROOT, 'shots', 'shots.json')
 
 
 def missing_frames(out_dir, start, end, step):
@@ -38,7 +39,11 @@ def main():
     p.add_argument('--out', default=os.environ.get('SYNERGY_OUT', os.path.join(ROOT, 'out')))
     p.add_argument('--blender', default=os.environ.get('BLENDER', 'blender'))
     p.add_argument('--chunk', type=int, default=48, help='frames per Blender process')
+    p.add_argument('--shots-json', default=DEFAULT_SHOTS,
+                   help='shot list of the film or episode to render (scripts live next to it)')
     args = p.parse_args()
+    shots_dir = os.path.dirname(os.path.abspath(args.shots_json))
+    SHOTS = json.load(open(args.shots_json))
 
     wanted = [s for s in args.shots.split(',') if s] or [s['id'] for s in SHOTS]
     log_path = os.path.join(args.out, args.quality, 'render_log.jsonl')
@@ -51,7 +56,7 @@ def main():
         if not todo:
             print(f"{shot['id']}: complete", flush=True)
             continue
-        script = os.path.join(ROOT, 'shots', shot['script'])
+        script = os.path.join(shots_dir, shot['script'])
         for i in range(0, len(todo), args.chunk):
             batch = todo[i:i + args.chunk]
             cmd = [args.blender, '-b', '--factory-startup', '-P', script, '--',

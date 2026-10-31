@@ -18,7 +18,7 @@ import tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
-SHOTS = json.load(open(os.path.join(ROOT, 'shots', 'shots.json')))
+DEFAULT_SHOTS = os.path.join(ROOT, 'shots', 'shots.json')
 TIERS = ('hero', 'final', 'preview', 'proof', 'animatic')
 
 
@@ -39,9 +39,12 @@ def main():
     p.add_argument('--grain', type=float, default=3.0, help='0 disables grain')
     p.add_argument('--crf', type=int, default=14)
     p.add_argument('--start', type=int, default=1)
-    p.add_argument('--end', type=int, default=1440)
+    p.add_argument('--end', type=int, default=0, help='last frame (default: the end of the last shot)')
+    p.add_argument('--shots-json', default=DEFAULT_SHOTS, help='shot list of the film or episode to cut')
     p.add_argument('--hold', action='store_true', help='fill missing frames with the last available frame')
     args = p.parse_args()
+    SHOTS = json.load(open(args.shots_json))
+    args.end = args.end or max(s['end'] for s in SHOTS)
 
     tiers = [t for t in args.tiers.split(',') if t]
     tmp = tempfile.mkdtemp(prefix='synergy_seq_')

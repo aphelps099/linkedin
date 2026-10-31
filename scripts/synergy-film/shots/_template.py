@@ -13,7 +13,10 @@ import os
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(os.path.dirname(HERE), 'lib'))
+_root = HERE
+while not os.path.exists(os.path.join(_root, 'lib', 'common.py')):
+    _root = os.path.dirname(_root)   # shots/ or episodes/<name>/ both find scripts/synergy-film/lib
+sys.path.insert(0, os.path.join(_root, 'lib'))
 
 import common as C  # noqa: E402
 import face as F  # noqa: E402
