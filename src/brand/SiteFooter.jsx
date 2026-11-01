@@ -101,6 +101,10 @@ export const SiteFooter = memo(function SiteFooter({base='/'}) {
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.049c.476-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 1 1 0-4.124 2.062 2.062 0 0 1 0 4.124zM7.119 20.452H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0z"/></svg>
             <span>LinkedIn</span>
           </a>
+          <a className="lb-linkedin" href="https://www.youtube.com/channel/UCek60SLgrY7-XX03sz1A_fg" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M23 7s-.22-1.55-.89-2.23c-.85-.9-1.8-.9-2.24-.95C16.74 3.6 12 3.6 12 3.6h-.01s-4.73 0-7.86.22c-.44.05-1.39.05-2.24.95C1.22 5.45 1 7 1 7S.78 8.82.78 10.64v1.71C.78 14.18 1 16 1 16s.22 1.55.89 2.23c.85.9 1.97.87 2.47.97 1.79.17 7.64.22 7.64.22s4.74-.01 7.87-.23c.44-.05 1.39-.05 2.24-.95C22.78 17.55 23 16 23 16s.22-1.82.22-3.65v-1.71C23.22 8.82 23 7 23 7ZM9.69 14.43V8.12l6.07 3.16-6.07 3.15Z" clipRule="evenodd"/></svg>
+            <span>YouTube</span>
+          </a>
           <p>Professional nonsense.<br/>Now in your feed.</p>
         </section>
       </div>
