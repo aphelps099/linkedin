@@ -105,7 +105,7 @@ export const SiteFooter = memo(function SiteFooter({base='/'}) {
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M23 7s-.22-1.55-.89-2.23c-.85-.9-1.8-.9-2.24-.95C16.74 3.6 12 3.6 12 3.6h-.01s-4.73 0-7.86.22c-.44.05-1.39.05-2.24.95C1.22 5.45 1 7 1 7S.78 8.82.78 10.64v1.71C.78 14.18 1 16 1 16s.22 1.55.89 2.23c.85.9 1.97.87 2.47.97 1.79.17 7.64.22 7.64.22s4.74-.01 7.87-.23c.44-.05 1.39-.05 2.24-.95C22.78 17.55 23 16 23 16s.22-1.82.22-3.65v-1.71C23.22 8.82 23 7 23 7ZM9.69 14.43V8.12l6.07 3.16-6.07 3.15Z" clipRule="evenodd"/></svg>
             <span>YouTube</span>
           </a>
-          <p>Professional nonsense.<br/>Now in your feed.</p>
+          <p>Professional development.<br/>Now in your feed.</p>
         </section>
       </div>
       <section className="lb-fineprint" aria-labelledby={fineprint}>
