@@ -17,6 +17,8 @@ import {YouTubeArtwork} from '../youtube/YouTubeArtwork.jsx';
 const params=new URLSearchParams(window.location.search);
 const storyId=params.get('story');
 const story=ARCHIVE_ITEMS.find(item=>item.id===storyId);
+const primaryCategories=[['all','All'],['shorts','Shorts'],['youtube','Videos']];
+const otherCategories=CATEGORIES.filter(([key])=>!primaryCategories.some(([primary])=>primary===key));
 const selectedCategory=CATEGORIES.some(([key])=>key===params.get('category'))?params.get('category'):'all';
 const actions={feature:'Explore', video:'Watch film', song:'Listen now', press:'Read release', post:'Read post', blog:'Read story', roast:'Read the roast'};
 const storyHref=item=>item.type==='youtube'?videoUrl(item):item.href?`/${item.href}`:`?story=${item.id}`;
@@ -60,12 +62,19 @@ function Archives() {
   return <div className="archive-page"><SiteHeader onRadio={()=>player.current?.toggle()} playing={state.playing} loading={state.loading} radioError={state.error}/>
     <main id="main-content">
       {story?<Story item={story} state={state} player={player}/>:<>
-        <section className="archive-heading"><p className="archive-kicker">On the record. For the record.</p><h1>The archives<span>.</span></h1><p>Shorts, films, and other company updates.<br/>Filed under: humbled to share.</p><a href={CHANNEL_URL} target="_blank" rel="noopener noreferrer">Visit us on YouTube <ArrowUpRight size={18}/></a></section>
+        <header className="archive-heading"><h1>Archives</h1><a href={CHANNEL_URL} target="_blank" rel="noopener noreferrer">YouTube <ArrowUpRight size={16}/></a></header>
         {storyId&&<p className="archive-missing" role="status">That story isn’t in the archives. Explore the collection below.</p>}
         <section className="archive-collection" aria-label="Archive collection">
-          <div className="archive-tools"><nav aria-label="Archive categories">{CATEGORIES.map(([key,label])=><a key={key} href={`?category=${key}${query?`&q=${encodeURIComponent(query)}`:''}`} aria-current={selectedCategory===key?'page':undefined}>{label}</a>)}</nav><label className="archive-search"><Search size={18}/><input type="search" placeholder="Search the archives" aria-label="Search the archives" value={query} onChange={e=>setQuery(e.target.value)}/></label></div>
+          <div className="archive-tools">
+            <nav aria-label="Archive categories">
+              {primaryCategories.map(([key,label])=><a key={key} href={`?category=${key}${query?`&q=${encodeURIComponent(query)}`:''}`} aria-current={selectedCategory===key?'page':undefined}>{label}</a>)}
+              <select aria-label="More archive categories" value={otherCategories.some(([key])=>key===selectedCategory)?selectedCategory:''} onChange={event=>{window.location.href=`?category=${event.target.value}${query?`&q=${encodeURIComponent(query)}`:''}`;}}>
+                <option value="" disabled>More</option>{otherCategories.map(([key,label])=><option key={key} value={key}>{label}</option>)}
+              </select>
+            </nav>
+            <div className="archive-search-group"><span className="archive-count" role="status">{items.length} {items.length===1?'entry':'entries'}</span><label className="archive-search"><Search size={17} aria-hidden="true"/><input type="search" placeholder="Search" aria-label="Search the archives" value={query} onChange={e=>setQuery(e.target.value)}/></label></div>
+          </div>
           {feed.stale&&<p className="archive-feed-note" role="status">Showing saved uploads while YouTube reconnects. <a href={CHANNEL_URL} target="_blank" rel="noopener noreferrer">Visit the channel for the latest.</a></p>}
-          <p className="archive-count" role="status">{items.length} {items.length===1?'entry':'entries'}{query&&` matching “${query}”`}</p>
           <div className="archive-grid">{items.map((item,index)=><article className="archive-card" key={item.id} style={{'--upload-color':['#21ceff','#fff000','#ff5fbd','#c5ff20','#a47aff'][index%5]}}><a href={storyHref(item)} target={item.type==='youtube'?'_blank':undefined} rel={item.type==='youtube'?'noopener noreferrer':undefined}><Artwork item={item}/><div className="archive-card-copy"><p className="archive-kicker">{item.label}</p><h2>{item.title}</h2><span>{item.type==='youtube'?'Watch on YouTube':actions[item.type]}<ArrowUpRight size={18}/></span></div></a></article>)}</div>
           {!items.length&&<div className="archive-empty"><h2>No paperwork found.</h2><p>Try another search or browse everything.</p><a href="/archives/">Show all entries</a></div>}
         </section>
