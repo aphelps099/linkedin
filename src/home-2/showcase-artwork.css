@@ -22,3 +22,9 @@
 .msa-film-art{aspect-ratio:16/9}.msa-film-art .msa-glyph{bottom:11%;left:7%;width:8cqw;height:8cqw;background:#faf8eff0}.msa-film-art .msa-glyph svg,.msa-circle .msa-glyph svg{fill:currentColor;stroke:none}
 .msa-welcome{background:#f3e69b}.msa-auth{background:#0757ec}.msa-coffee{background:#e6bdce}.msa-coffee .msa-glyph{left:auto;right:7%}
 .msa-circle{background:#e5e8e5}.msa-circle .msa-tile-grid{grid-template-columns:repeat(3,1fr);grid-template-rows:1fr 1fr;gap:2%}.msa-circle .msa-tile img{transform:scale(1.24)}
+
+/* Saturated frames keep the mixed-format rail bright and consistent. */
+.msa-room-scale{background:#21ceff}.msa-welcome{background:#fff000}
+.msa-synergy{background:#c5ff20}.msa-linda{background:#a47aff}
+.msa-windows{background:#ff8c36;background-image:none}.msa-coffee{background:#ff5fbd}
+.msa-circle{background:#21ceff}

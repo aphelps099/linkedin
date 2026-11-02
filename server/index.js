@@ -1,4 +1,5 @@
 import express from 'express';
+import {createYouTubeRouter} from './youtube.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { generateVoiceClips } from './voice-service.js';
@@ -63,6 +64,7 @@ app.post('/api/store/webhook', express.raw({type:'application/json'}), async (re
   res.json({received:true});
 });
 
+app.use('/api/youtube', createYouTubeRouter());
 app.use('/api/cutting-room', createCuttingRoomRouter());
 app.use('/cutting-room', (_req,res,next)=>{res.set('X-Robots-Tag','noindex, nofollow, noarchive');next();});
 app.use(createBeatVideoRouter());

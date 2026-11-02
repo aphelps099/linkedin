@@ -11,15 +11,18 @@ import '../brand/fonts.css';
 import '../home-2/concept.css';
 import '../brand/type-system.css';
 import './archives.css';
+import {useYouTubeFeed, videoUrl, CHANNEL_URL} from '../youtube/feed.js';
+import {YouTubeArtwork} from '../youtube/YouTubeArtwork.jsx';
 
 const params=new URLSearchParams(window.location.search);
 const storyId=params.get('story');
 const story=ARCHIVE_ITEMS.find(item=>item.id===storyId);
 const selectedCategory=CATEGORIES.some(([key])=>key===params.get('category'))?params.get('category'):'all';
 const actions={feature:'Explore', video:'Watch film', song:'Listen now', press:'Read release', post:'Read post', blog:'Read story', roast:'Read the roast'};
-const storyHref=item=>item.href?`/${item.href}`:`?story=${item.id}`;
+const storyHref=item=>item.type==='youtube'?videoUrl(item):item.href?`/${item.href}`:`?story=${item.id}`;
 
 function Artwork({item}) {
+  if(item.type==='youtube') return <YouTubeArtwork item={item}/>;
   return <div className={`archive-art archive-art--${item.shape}`} aria-hidden="true">
     {item.artwork?<CarouselArtwork artwork={item.artwork}/>:<div className="archive-roast-art"><span>THE HALL OF FAME / {item.exhibit.no}</span><strong>“{item.exhibit.quote.text}”</strong><span>{item.exhibit.quote.by}</span></div>}
   </div>;
@@ -46,21 +49,24 @@ function Story({item, state, player}) {
   </article>;
 }
 function Archives() {
+  const feed=useYouTubeFeed();
+  const uploads=feed.items.map(item=>({...item,type:'youtube',category:item.kind==='short'?'shorts':'youtube',label:item.kind==='short'?'YouTube Short':'YouTube video'}));
   const [query,setQuery]=useState(params.get('q')||'');
   const [state,setState]=useState({index:story?.track??0,playing:false,loading:false,elapsed:0,error:''});
   const player=useRef(null);
   useEffect(()=>{const radio=createRadio({phraseBase:'/phrases/',initialIndex:story?.track??0,onState:setState});player.current=radio;return()=>radio.dispose();},[]);
   useEffect(()=>{document.title=story?`${story.title} — LinkedIn Beats Archives`:'The Archives — LinkedIn Beats';},[]);
-  const items=filterArchive(selectedCategory,query);
+  const items=filterArchive(selectedCategory,query,[...uploads,...ARCHIVE_ITEMS]);
   return <div className="archive-page"><SiteHeader onRadio={()=>player.current?.toggle()} playing={state.playing} loading={state.loading} radioError={state.error}/>
     <main id="main-content">
       {story?<Story item={story} state={state} player={player}/>:<>
-        <section className="archive-heading"><p className="archive-kicker">On the record. For the record.</p><h1>The archives<span>.</span></h1><p>Press releases, field notes, and career-defining nonsense.<br/>Filed under: humbled to share.</p><a href="/studio/#meetings">Looking for the meetings? Watch them all <ArrowUpRight size={18}/></a></section>
+        <section className="archive-heading"><p className="archive-kicker">On the record. For the record.</p><h1>The archives<span>.</span></h1><p>Shorts, films, and other company updates.<br/>Filed under: humbled to share.</p><a href={CHANNEL_URL} target="_blank" rel="noopener noreferrer">Visit us on YouTube <ArrowUpRight size={18}/></a></section>
         {storyId&&<p className="archive-missing" role="status">That story isn’t in the archives. Explore the collection below.</p>}
         <section className="archive-collection" aria-label="Archive collection">
           <div className="archive-tools"><nav aria-label="Archive categories">{CATEGORIES.map(([key,label])=><a key={key} href={`?category=${key}${query?`&q=${encodeURIComponent(query)}`:''}`} aria-current={selectedCategory===key?'page':undefined}>{label}</a>)}</nav><label className="archive-search"><Search size={18}/><input type="search" placeholder="Search the archives" aria-label="Search the archives" value={query} onChange={e=>setQuery(e.target.value)}/></label></div>
+          {feed.stale&&<p className="archive-feed-note" role="status">Showing saved uploads while YouTube reconnects. <a href={CHANNEL_URL} target="_blank" rel="noopener noreferrer">Visit the channel for the latest.</a></p>}
           <p className="archive-count" role="status">{items.length} {items.length===1?'entry':'entries'}{query&&` matching “${query}”`}</p>
-          <div className="archive-grid">{items.map(item=><article className="archive-card" key={item.id}><a href={storyHref(item)}><Artwork item={item}/><div className="archive-card-copy"><p className="archive-kicker">{item.label}</p><h2>{item.title}</h2><span>{actions[item.type]}<ArrowUpRight size={18}/></span></div></a></article>)}</div>
+          <div className="archive-grid">{items.map((item,index)=><article className="archive-card" key={item.id} style={{'--upload-color':['#21ceff','#fff000','#ff5fbd','#c5ff20','#a47aff'][index%5]}}><a href={storyHref(item)} target={item.type==='youtube'?'_blank':undefined} rel={item.type==='youtube'?'noopener noreferrer':undefined}><Artwork item={item}/><div className="archive-card-copy"><p className="archive-kicker">{item.label}</p><h2>{item.title}</h2><span>{item.type==='youtube'?'Watch on YouTube':actions[item.type]}<ArrowUpRight size={18}/></span></div></a></article>)}</div>
           {!items.length&&<div className="archive-empty"><h2>No paperwork found.</h2><p>Try another search or browse everything.</p><a href="/archives/">Show all entries</a></div>}
         </section>
       </>}

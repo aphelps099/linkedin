@@ -2,7 +2,7 @@ import {DISPATCHES} from '../home-2/dispatches.js';
 import {EXHIBITS} from '../museum/exhibits.js';
 
 export const CATEGORIES = [
-  ['all', 'Everything'], ['press', 'Press releases'], ['posts', 'Posts & notes'],
+  ['all', 'Everything'], ['shorts', 'Shorts'], ['youtube', 'YouTube videos'], ['press', 'Press releases'], ['posts', 'Posts & notes'],
   ['roasts', 'Hall of Fame'], ['films', 'Films'], ['music', 'Music'], ['features', 'Features'],
 ];
 const categoryFor = {press:'press', post:'posts', blog:'posts', video:'films', song:'music', feature:'features'};
@@ -14,8 +14,8 @@ export const ARCHIVE_ITEMS = [
     description:exhibit.plaque, body:exhibit.body.split('\n\n'),
   })),
 ];
-export function filterArchive(category, query='') {
+export function filterArchive(category, query='', items=ARCHIVE_ITEMS) {
   const needle=query.trim().toLowerCase();
-  return ARCHIVE_ITEMS.filter(item => (category==='all'||item.category===category) &&
+  return items.filter(item => (category==='all'||item.category===category) &&
     [item.title,item.label,item.description,...(item.body||[])].filter(Boolean).join(' ').toLowerCase().includes(needle));
 }
