@@ -1,0 +1,266 @@
+// One arrangement, two clocks: the live AudioContext and the offline render
+// share buildGraph() and scheduleStep(), so the download is the performance.
+import {BAR_STEPS, PATTERNS, hatVelocity, shakerVelocity, stepTime, STEP} from './song.js';
+import * as I from './instruments.js';
+import {createVocoder} from './vocoder.js';
+import {createMobileAudio} from '../audio-session.js';
+
+export const STEMS = ['drums', 'bass', 'keys', 'guitar', 'voice'];
+export const VOICE_MODES = {sung:{vocoder:1, dry:.06}, spoken:{vocoder:0, dry:.9}, both:{vocoder:.85, dry:.42}};
+
+function stem(ctx, master, sends, {duck = 0, under = 1, reverb = 0, delay = 0, level = 1, pan = 0} = {}) {
+  const input = I.amp(ctx, 1), mute = I.amp(ctx, 1), ducker = I.amp(ctx, 1), voiced = I.amp(ctx, 1), out = I.amp(ctx, level), meter = ctx.createAnalyser();
+  meter.fftSize = 512;
+  input.connect(mute); mute.connect(ducker); ducker.connect(voiced); voiced.connect(out); out.connect(meter);
+  if (pan) { const p = ctx.createStereoPanner(); p.pan.value = pan; out.connect(p); p.connect(master); } else out.connect(master);
+  if (reverb) { const s = I.amp(ctx, reverb); out.connect(s); s.connect(sends.reverb); }
+  if (delay) { const s = I.amp(ctx, delay); out.connect(s); s.connect(sends.delay); }
+  return {input, mute, ducker, voiced, out, meter, duck, under};
+}
+
+export function buildGraph(ctx, {mode = 'sung', muted = {}, tune = {}} = {}) {
+  const master = I.amp(ctx, 1);
+  const glue = ctx.createDynamicsCompressor();
+  glue.threshold.value = -12; glue.ratio.value = 2; glue.knee.value = 6; glue.attack.value = .03; glue.release.value = .16;
+  const limiter = ctx.createDynamicsCompressor();
+  limiter.threshold.value = -2; limiter.ratio.value = 20; limiter.knee.value = 0; limiter.attack.value = .001; limiter.release.value = .09;
+  const output = I.amp(ctx, .92), analyser = ctx.createAnalyser();
+  analyser.fftSize = 1024; analyser.smoothingTimeConstant = .72;
+  // tune.raw skips the bus compressor and limiter, for measuring stem balance.
+  if (tune.raw) master.connect(output); else { master.connect(glue); glue.connect(limiter); limiter.connect(output); }
+  // Last word on peaks: transparent below -2 dB, a gentle shoulder above.
+  const clip = ctx.createWaveShaper(), curve = new Float32Array(2048);
+  for (let i = 0; i < curve.length; i++) { const x = i / 1023.5 - 1, a = Math.abs(x); curve[i] = a < .8 ? x : Math.sign(x) * (.8 + .19 * Math.tanh((a - .8) / .19)); }
+  clip.curve = curve;
+  output.connect(clip); clip.connect(analyser); clip.connect(ctx.destination);
+
+  const reverb = ctx.createConvolver(); reverb.buffer = I.impulse(ctx);
+  const reverbIn = I.biquad(ctx, 'highpass', 280), reverbOut = I.amp(ctx, .55);
+  reverbIn.connect(reverb); reverb.connect(reverbOut); reverbOut.connect(master);
+  const delayIn = I.biquad(ctx, 'highpass', 350), delay = ctx.createDelay(2), feedback = I.amp(ctx, .34), damp = I.biquad(ctx, 'lowpass', 3200), delayOut = I.amp(ctx, .5);
+  delay.delayTime.value = STEP * 6;                                     // dotted eighth
+  delayIn.connect(delay); delay.connect(damp); damp.connect(feedback); feedback.connect(delay); damp.connect(delayOut); delayOut.connect(master);
+  const sends = {reverb:reverbIn, delay:delayIn};
+
+  const stems = {
+    drums:stem(ctx, master, sends, {reverb:.12, level:1}),
+    bass:stem(ctx, master, sends, {duck:.12, level:.55}),
+    keys:stem(ctx, master, sends, {duck:.28, under:.6, reverb:.38, delay:.16, level:2.3}),
+    guitar:stem(ctx, master, sends, {duck:.45, under:.6, reverb:.2, delay:.1, level:5.6, pan:.38}),
+    voice:stem(ctx, master, sends, {duck:.88, reverb:.2, delay:.24, level:1.35}),
+  };
+  // Stabs and pad stay out of the bass's way: everything under ~200 Hz belongs to Pat.
+  const keysFilter = I.biquad(ctx, 'lowpass', 3000, .9), padFilter = I.biquad(ctx, 'lowpass', 1100, .8);
+  const keysHp = I.biquad(ctx, 'highpass', 210, .6), padHp = I.biquad(ctx, 'highpass', 180, .6);
+  keysFilter.connect(keysHp); keysHp.connect(stems.keys.input); padFilter.connect(padHp); padHp.connect(stems.keys.input);
+
+  // Synergy: speech into the vocoder; a saw choir as the carrier.
+  const vocoder = createVocoder(ctx, tune.vocoder), words = I.amp(ctx, 1), dry = I.amp(ctx, tune.dry ?? VOICE_MODES[mode].dry), sung = I.amp(ctx, VOICE_MODES[mode].vocoder);
+  const voiceHp = I.biquad(ctx, 'highpass', 130), voiceComp = ctx.createDynamicsCompressor();
+  voiceComp.threshold.value = -28; voiceComp.ratio.value = 5; voiceComp.attack.value = .003; voiceComp.release.value = .12;
+  const voiceGain = I.amp(ctx, 2.1);
+  words.connect(vocoder.input); words.connect(dry); dry.connect(voiceHp);
+  vocoder.output.connect(sung); sung.connect(voiceHp);
+  voiceHp.connect(voiceComp); voiceComp.connect(voiceGain); voiceGain.connect(stems.voice.input);
+
+  const lead = [], harmony = [];
+  const carrierMix = I.amp(ctx, 1);
+  carrierMix.connect(vocoder.carrier);
+  [[0, .5], [7, .32], [-1200, .26]].forEach(([detune, level]) => {
+    const o = ctx.createOscillator(), g = I.amp(ctx, level); o.type = 'sawtooth'; o.frequency.value = 220; o.detune.value = detune; o.connect(g); g.connect(carrierMix); lead.push(o);
+  });
+  for (let i = 0; i < 4; i++) {
+    const o = ctx.createOscillator(), g = I.amp(ctx, 0); o.type = 'sawtooth'; o.frequency.value = 220; o.connect(g); g.connect(carrierMix); harmony.push({o, g});
+  }
+  const hiss = ctx.createBufferSource(), hissHp = I.biquad(ctx, 'highpass', 3800), hissGain = I.amp(ctx, .16);
+  hiss.buffer = I.noiseBuffer(ctx); hiss.loop = true; hiss.connect(hissHp); hissHp.connect(hissGain); hissGain.connect(carrierMix);
+  const oscillators = [...lead, ...harmony.map(h => h.o), hiss];
+
+  const graph = {ctx, master, output, analyser, stems, keysFilter, padFilter, words, dry, sung, vocoder, lead, harmony, oscillators, sources:new Set()};
+  if (tune.voiceLevel) stems.voice.out.gain.value = tune.voiceLevel;
+  if (tune.under !== undefined) ['keys', 'guitar'].forEach(n => { stems[n].under = tune.under; });
+  setMuted(graph, muted, 0);
+  return graph;
+}
+
+export function setMuted(graph, muted, ramp = .015) {
+  const t = graph.ctx.currentTime;
+  for (const name of STEMS) graph.stems[name].mute.gain.setTargetAtTime(muted[name] ? 0 : 1, t, ramp || .0001);
+}
+
+export function setVoiceMode(graph, mode) {
+  const m = VOICE_MODES[mode] || VOICE_MODES.sung, t = graph.ctx.currentTime;
+  graph.dry.gain.setTargetAtTime(m.dry, t, .02); graph.sung.gain.setTargetAtTime(m.vocoder, t, .02);
+}
+
+// Index the plan's vocal events by step, once.
+export function prepare(plan, buffers) {
+  const at = new Map(), push = (step, key, value) => { if (!at.has(step)) at.set(step, {words:[], notes:[], stutters:[]}); at.get(step)[key].push(value); };
+  plan.words.forEach(w => { if (buffers.get(w.word)) push(w.at, 'words', w); w.notes.forEach(n => push(n.at, 'notes', n)); });
+  plan.stutters.forEach(s => { if (buffers.get(s.word)) push(s.at, 'stutters', s); });
+  const harmonyBars = new Set(plan.words.filter(w => w.harmony).map(w => Math.floor(w.at / BAR_STEPS)));
+  return {plan, buffers, at, harmonyBars};
+}
+
+function duck(graph, t) {
+  for (const name of STEMS) {
+    const s = graph.stems[name];
+    if (!s.duck) continue;
+    const g = s.ducker.gain;
+    g.setValueAtTime(1, t); g.linearRampToValueAtTime(s.duck, t + .008); g.setTargetAtTime(1, t + .03, .075);
+  }
+}
+
+// Keys and guitar step back while Synergy is mid-word, then return.
+function makeRoom(graph, t, length) {
+  for (const name of STEMS) {
+    const s = graph.stems[name];
+    if (s.under === 1) continue;
+    s.voiced.gain.setTargetAtTime(s.under, t - .01, .015); s.voiced.gain.setTargetAtTime(1, t + length, .09);
+  }
+}
+
+function playWord(graph, buffer, t, {offset = 0, rate = 1, gate}) {
+  const {ctx} = graph, s = ctx.createBufferSource(), g = I.amp(ctx);
+  s.buffer = buffer.audio; s.playbackRate.value = rate;
+  const start = buffer.lead + offset, available = (buffer.audio.duration - start) / rate, length = Math.min(gate, available);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(1, t + .004);
+  g.gain.setValueAtTime(1, t + Math.max(.005, length - .022)); g.gain.linearRampToValueAtTime(0, t + length);
+  s.connect(g); g.connect(graph.words);
+  s.start(t, start, length * rate + .01);
+  makeRoom(graph, t, length);
+  graph.sources.add(s); s.onended = () => { graph.sources.delete(s); s.disconnect(); g.disconnect(); };
+}
+
+function note(graph, t, midi) {
+  const f = I.mtof(midi);
+  graph.lead.forEach(o => o.frequency.setTargetAtTime(f, t, .007));
+}
+
+export function scheduleStep(graph, song, step, t0) {
+  const {ctx, stems} = graph, {plan, buffers, at, harmonyBars} = song;
+  const bar = Math.floor(step / BAR_STEPS), s = step % BAR_STEPS, t = t0 + stepTime(step);
+  const D = stems.drums.input;
+  if (bar >= plan.bars.length) {
+    if (step === plan.totalSteps) {
+      const last = plan.bars[0].chord;
+      I.kick(ctx, D, t, 1); duck(graph, t); I.crash(ctx, D, t, .45); I.impact(ctx, D, t, .7);
+      I.stab(ctx, graph.keysFilter, t, last.notes, 2.2, 1, 2600); I.pad(ctx, graph.padFilter, t, last.notes, 2.4, 1.1);
+      I.bass(ctx, stems.bass.input, t, last.root, 1.4, .9);
+    }
+    return;
+  }
+  const b = plan.bars[bar], L = b.layers, chord = b.chord;
+  if (s === 0) {
+    const barEnd = t0 + stepTime(step + BAR_STEPS);
+    graph.keysFilter.frequency.setValueAtTime(b.cutoff.keys[0], t); graph.keysFilter.frequency.exponentialRampToValueAtTime(b.cutoff.keys[1], barEnd);
+    graph.padFilter.frequency.setValueAtTime(b.cutoff.pad[0], t); graph.padFilter.frequency.exponentialRampToValueAtTime(b.cutoff.pad[1], barEnd);
+    const choir = harmonyBars.has(bar);
+    graph.harmony.forEach((h, i) => { h.o.frequency.setValueAtTime(I.mtof(chord.notes[i]), t); h.g.gain.setTargetAtTime(choir ? .2 : 0, t, .03); });
+    if (L.pad) I.pad(ctx, graph.padFilter, t, chord.notes, barEnd - t, b.section === 'Drop' ? .55 : 1);
+    if (L.crash) I.crash(ctx, D, t, .42);
+    if (L.riser && bar === 14) I.riser(ctx, D, t, stepTime(step + 2 * BAR_STEPS) - stepTime(step));
+    if (bar === 16) I.impact(ctx, D, t, .8);
+  }
+  const fillOut = bar === 11 && s >= 12;                                   // the room holds its breath
+  if (L.kick && !fillOut && PATTERNS.kick.includes(s)) { I.kick(ctx, D, t, 1); duck(graph, t); }
+  if (L.clap && PATTERNS.clap.includes(s)) I.clap(ctx, D, t, .62);
+  if (bar === 11 && (s === 14 || s === 15)) I.clap(ctx, D, t, s === 14 ? .35 : .5);
+  if (L.roll) { if (s % 2 === 0 || s >= 8) I.clap(ctx, D, t, .18 + .5 * s / 15); }
+  if (L.hats) {
+    const breakdown = b.section === 'Breakdown';
+    const v = breakdown ? (s % 2 === 0 ? .2 + .05 * (bar - 14) * 4 : 0) : hatVelocity(s);
+    if (v) I.hat(ctx, D, t, v * .55);
+  }
+  if (L.open && PATTERNS.open.includes(s)) I.openHat(ctx, D, t, .2);
+  if (L.shaker) I.shaker(ctx, D, t, shakerVelocity(s) * .5);
+  if (L.rim && PATTERNS.rim.includes(s)) I.rim(ctx, D, t, .16);
+  if (L.bass) for (const [at, interval, length] of PATTERNS.bass) if (at === s) I.bass(ctx, stems.bass.input, t, chord.root + interval, length * STEP * .7, .85);
+  if (L.stabs) for (const [at, length, v] of PATTERNS.stabs) if (at === s) I.stab(ctx, graph.keysFilter, t, chord.notes, length * STEP * .95, v * (b.section === 'Verse' ? .85 : 1), 2800);
+  if (L.guitar) for (const [at, v] of PATTERNS.guitar) if (at === s) I.chop(ctx, stems.guitar.input, t, chord.notes.slice(1).map(m => m + 12), v);
+
+  const events = at.get(step);
+  if (!events) return;
+  events.notes.forEach(n => note(graph, t, n.midi));
+  events.words.forEach(w => playWord(graph, buffers.get(w.word), t, {rate:w.rate, gate:w.gate}));
+  events.stutters.forEach(x => { note(graph, t, x.midi); playWord(graph, buffers.get(x.word), t, {rate:1, gate:STEP * .8}); });
+}
+
+export function wav(buffer) {
+  const n = buffer.length, channels = buffer.numberOfChannels, out = new ArrayBuffer(44 + n * channels * 2), v = new DataView(out);
+  const str = (at, s) => [...s].forEach((c, i) => v.setUint8(at + i, c.charCodeAt(0)));
+  str(0, 'RIFF'); v.setUint32(4, out.byteLength - 8, true); str(8, 'WAVE'); str(12, 'fmt '); v.setUint32(16, 16, true);
+  v.setUint16(20, 1, true); v.setUint16(22, channels, true); v.setUint32(24, buffer.sampleRate, true);
+  v.setUint32(28, buffer.sampleRate * channels * 2, true); v.setUint16(32, channels * 2, true); v.setUint16(34, 16, true);
+  str(36, 'data'); v.setUint32(40, n * channels * 2, true);
+  const data = Array.from({length:channels}, (_, i) => buffer.getChannelData(i));
+  for (let i = 0; i < n; i++) for (let c = 0; c < channels; c++) { const x = Math.max(-1, Math.min(1, data[c][i])); v.setInt16(44 + (i * channels + c) * 2, x < 0 ? x * 32768 : x * 32767, true); }
+  return new Blob([out], {type:'audio/wav'});
+}
+
+// bars: [from, to) renders an excerpt, for quick listening tests.
+export async function render(plan, buffers, options = {}) {
+  const [from, to] = options.bars || [0, plan.bars.length + 1];
+  const first = from * BAR_STEPS, last = Math.min(plan.totalSteps, to * BAR_STEPS);
+  const t0 = .05 - stepTime(first), duration = last >= plan.totalSteps ? plan.duration - stepTime(first) : stepTime(last) - stepTime(first) + 1.5;
+  const ctx = new OfflineAudioContext(2, Math.ceil(duration * 44100), 44100);
+  const graph = buildGraph(ctx, options), song = prepare(plan, buffers);
+  graph.oscillators.forEach(o => o.start(0));
+  for (let step = first; step <= last; step++) scheduleStep(graph, song, step, t0);
+  return ctx.startRendering();
+}
+
+export class Performance {
+  constructor() { this.running = false; }
+  async unlock() {
+    if (!this.ctx) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) throw Error('This browser cannot play audio. Open the page in Safari or Chrome.');
+      this.ctx = new AudioContext({latencyHint:'playback'});
+      this.mobile = createMobileAudio(this.ctx);
+    }
+    return this.mobile.resume();
+  }
+  start(plan, buffers, options, onEnd) {
+    this.stop(true);
+    const ctx = this.ctx, graph = this.graph = buildGraph(ctx, options), song = prepare(plan, buffers);
+    const t0 = this.t0 = ctx.currentTime + .12;
+    graph.oscillators.forEach(o => o.start(t0));
+    this.plan = plan; this.running = true;
+    let next = 0;
+    const tick = () => {
+      if (!this.running) return;
+      while (next <= plan.totalSteps && t0 + stepTime(next) < ctx.currentTime + .3) scheduleStep(graph, song, next++, t0);
+      if (ctx.currentTime > t0 + plan.duration) { this.stop(); onEnd?.(); }
+    };
+    tick(); this.timer = setInterval(tick, 30);
+  }
+  position() { return this.running && this.ctx ? this.ctx.currentTime - this.t0 - (this.ctx.outputLatency || 0) : -1; }
+  levels() {
+    if (!this.running || !this.graph) return null;
+    const data = new Float32Array(512), out = {};
+    for (const name of STEMS) {
+      this.graph.stems[name].meter.getFloatTimeDomainData(data);
+      let sum = 0; for (let i = 0; i < data.length; i++) sum += data[i] * data[i];
+      out[name] = Math.sqrt(sum / data.length);
+    }
+    return out;
+  }
+  spectrum() {
+    if (!this.running || !this.graph) return null;
+    const bins = new Uint8Array(this.graph.analyser.frequencyBinCount); this.graph.analyser.getByteFrequencyData(bins); return bins;
+  }
+  mute(muted) { if (this.graph) setMuted(this.graph, muted); }
+  voice(mode) { if (this.graph) setVoiceMode(this.graph, mode); }
+  stop(keepSession = false) {
+    this.running = false; clearInterval(this.timer);
+    if (this.graph) {
+      const {output, oscillators, sources} = this.graph, t = this.ctx.currentTime;
+      output.gain.setTargetAtTime(0, t, .02);
+      setTimeout(() => { oscillators.forEach(o => { try { o.stop(); } catch {} }); sources.forEach(s => { try { s.stop(); } catch {} }); output.disconnect(); }, 120);
+      this.graph = null;
+    }
+    if (!keepSession) this.mobile?.pause();
+  }
+  close() { this.stop(); this.mobile?.dispose(); this.ctx?.close(); }
+}

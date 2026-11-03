@@ -644,3 +644,14 @@ implemented in this restoration. Text is kept in component memory only.
 
 Validation: `npm run check:roast`, production build, browser generation/copy/PNG
 export checks and responsive viewport inspection.
+
+## All Hands sound check (`/allhands/`)
+
+Phase 0 of the meeting-band project. Unlisted and `noindex`. Synergy sings a
+pasted post in key through a browser vocoder, over a 120 BPM house band
+synthesized live: Operations on drums, Pat on bass, Keys, and Kevin's muted
+guitar. It answers one question before any video work: would you play this at
+a party? `POST /api/allhands/voice` renders Synergy's words with the same
+eSpeak NG install the Docker image already ships. Details, measurements and
+the render script are in `src/allhands/README.md`. Run
+`npm run check:allhands`.

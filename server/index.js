@@ -16,6 +16,7 @@ import { createBeatVideoRouter, beatVideoStore } from './beat-video-service.js';
 import { createMeetingShareRouter } from './meeting-share.js';
 import { createShowcaseShareRouter } from './showcase-share.js';
 import { createLinkedInRouter } from './linkedin.js';
+import { createAllHandsVoice } from './allhands-voice.js';
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
@@ -71,6 +72,8 @@ app.use(createBeatVideoRouter());
 app.use(express.json({limit:'32kb'}));
 app.use('/api/newsletter', newsletter.router);
 app.use('/api/post-beat/voices', postBeat.router);
+app.use('/api/allhands/voice', createAllHandsVoice().router);
+app.use('/allhands', (_req,res,next)=>{res.set('X-Robots-Tag','noindex, nofollow');next();});
 
 app.post('/api/checkout', async (req, res)=>{
   try{
