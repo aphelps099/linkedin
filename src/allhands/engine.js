@@ -72,7 +72,18 @@ export function buildGraph(ctx, {mode = 'sung', muted = {}, tune = {}} = {}) {
   const trim = I.amp(ctx, tune.trim ?? .4); post.connect(trim);
   if (tune.raw) trim.connect(output); else { trim.connect(glue); glue.connect(limiter); limiter.connect(output); }
   const clip = softClip(ctx);
-  output.connect(clip); clip.connect(analyser); clip.connect(ctx.destination);
+  const eqAnalyser = ctx.createAnalyser(); eqAnalyser.fftSize = 4096; eqAnalyser.smoothingTimeConstant = 0;
+  output.connect(clip); clip.connect(analyser); clip.connect(eqAnalyser);
+  // tune.stems: an offline render with every stem on its own channel after the
+  // stereo master (channels 0-1 master, then one mono channel per stem), so an
+  // export can compute the scene equalizer frame-exactly.
+  let merger = null;
+  if (tune.stems) {
+    merger = ctx.createChannelMerger(2 + STEMS.length);
+    const split = ctx.createChannelSplitter(2), stereo = I.amp(ctx, 1);
+    stereo.channelCount = 2; stereo.channelCountMode = 'explicit';          // a mono master fills both sides
+    clip.connect(stereo); stereo.connect(split); split.connect(merger, 0, 0); split.connect(merger, 1, 1); merger.connect(ctx.destination);
+  } else clip.connect(ctx.destination);
 
   const reverb = ctx.createConvolver(); reverb.buffer = I.impulse(ctx);
   const reverbIn = I.biquad(ctx, 'highpass', 280), reverbOut = I.amp(ctx, .55);
@@ -121,7 +132,17 @@ export function buildGraph(ctx, {mode = 'sung', muted = {}, tune = {}} = {}) {
   hiss.buffer = I.noiseBuffer(ctx); hiss.loop = true; hiss.connect(hissHp); hissHp.connect(hissGain); hissGain.connect(carrierMix);
   const oscillators = [...lead, ...harmony.map(h => h.o), hiss];
 
-  const graph = {ctx, master, output, analyser, stems, keysFilter, padFilter, drumHp, voiceLp, words, dry, sung, vocoder, ladySend, lead, harmony, oscillators, sources:new Set(),
+  // The scene equalizer hears each stem through a tap the choke also closes
+  // (so nothing moves in the silence); the lady's tap adds her post-choke tag
+  // and her deep voice. 2048-point analysers: the level meters' 86 Hz bins are
+  // too coarse under 250 Hz. A tune.stems render puts the same taps on channels.
+  const eqTap = {};
+  for (const name of STEMS) { eqTap[name] = I.amp(ctx, 1); stems[name].out.connect(eqTap[name]); }
+  const ladyEq = I.amp(ctx, 1); eqTap.lady.connect(ladyEq); tag.connect(ladyEq); deep.connect(ladyEq);
+  const eqSource = {...eqTap, lady:ladyEq};
+  const spectra = Object.fromEntries(STEMS.map(name => { const a = ctx.createAnalyser(); a.fftSize = 2048; a.smoothingTimeConstant = 0; eqSource[name].connect(a); return [name, a]; }));
+  if (merger) STEMS.forEach((name, i) => eqSource[name].connect(merger, 0, 2 + i));
+  const graph = {ctx, master, output, analyser, eqAnalyser, eqTap, spectra, stems, keysFilter, padFilter, drumHp, voiceLp, words, dry, sung, vocoder, ladySend, lead, harmony, oscillators, sources:new Set(),
     full, call, callGap, energy, choke, tag, deep, tapeDry, tapeWet, tapeDelay, tapeLp, reverbOut, delayOut, feedback};
   if (tune.voiceLevel) stems.voice.out.gain.value = tune.voiceLevel;
   if (tune.under !== undefined) ['keys', 'guitar'].forEach(n => { stems[n].under = tune.under; });
@@ -227,7 +248,8 @@ function playLady(graph, song, e, t) {
     d.buffer = deep; d.connect(dg); dg.connect(graph.deep);
     const room = e.role === 'sink' ? 2 : deep.duration;
     dg.gain.setValueAtTime(gain * e.deep, at + room - .03); dg.gain.linearRampToValueAtTime(0, at + room);
-    d.start(at); d.stop(at + room + .01); nodes.push(d, dg);
+    // Its own lifetime: it may start after the dry word has ended (BACK.'s echo).
+    d.start(at); d.stop(at + room + .01); d.onended = () => { d.disconnect(); dg.disconnect(); };
   }
   graph.sources.add(s); s.onended = () => { graph.sources.delete(s); nodes.forEach(n => n.disconnect()); };
 }
@@ -271,12 +293,12 @@ function songEvents(graph, plan, step, T) {
   if (plan.choke) {
     if (step === plan.choke.at) {
       // Everything stops in 6 ms, returns included, so the silence is silent.
-      graph.choke.gain.setValueAtTime(1, t); graph.choke.gain.linearRampToValueAtTime(0, t + .006);
+      for (const g of [graph.choke.gain, ...STEMS.map(n => graph.eqTap[n].gain)]) { g.setValueAtTime(1, t); g.linearRampToValueAtTime(0, t + .006); }
       graph.feedback.gain.setValueAtTime(0, t);
       graph.reverbOut.gain.setValueAtTime(.55, t); graph.reverbOut.gain.linearRampToValueAtTime(0, t + .006);
     }
     if (step === plan.choke.until) {
-      graph.choke.gain.setValueAtTime(1, t);
+      for (const g of [graph.choke.gain, ...STEMS.map(n => graph.eqTap[n].gain)]) g.setValueAtTime(1, t);
       graph.feedback.gain.setValueAtTime(.34, t);
       graph.reverbOut.gain.setValueAtTime(0, t); graph.reverbOut.gain.linearRampToValueAtTime(.55, t + .4);
     }
@@ -394,8 +416,8 @@ function lady(graph, song, events, T) {
   for (const e of events.lady) playLady(graph, song, e, T(Math.floor(e.at)) + (e.at - Math.floor(e.at)) * STEP);
 }
 
-export function wav(buffer) {
-  const n = buffer.length, channels = buffer.numberOfChannels, out = new ArrayBuffer(44 + n * channels * 2), v = new DataView(out);
+export function wav(buffer, channels = Math.min(2, buffer.numberOfChannels)) {
+  const n = buffer.length, out = new ArrayBuffer(44 + n * channels * 2), v = new DataView(out);
   const str = (at, s) => [...s].forEach((c, i) => v.setUint8(at + i, c.charCodeAt(0)));
   str(0, 'RIFF'); v.setUint32(4, out.byteLength - 8, true); str(8, 'WAVE'); str(12, 'fmt '); v.setUint32(16, 16, true);
   v.setUint16(20, 1, true); v.setUint16(22, channels, true); v.setUint32(24, buffer.sampleRate, true);
@@ -408,13 +430,17 @@ export function wav(buffer) {
 
 export const RENDER_OFFSET = .05;   // renders start 50 ms in, so the first transient is whole
 
+// The stems of a tune.stems render, by name: Float32Array per stem, after the master's two channels.
+export const stemChannels = audio => Object.fromEntries(STEMS.map((name, i) => [name, audio.getChannelData(2 + i)]));
+
 // bars: [from, to) renders an excerpt, for quick listening tests.
 export async function render(plan, buffers, options = {}, lady) {
   const [from, to] = options.bars || [0, plan.bars.length + 1];
   const first = from * BAR_STEPS, last = Math.min(plan.totalSteps, to * BAR_STEPS);
   const t0 = RENDER_OFFSET - plan.timing[first];
   const duration = last >= plan.totalSteps ? plan.duration - plan.timing[first] : plan.timing[last] - plan.timing[first] + 1.5;
-  const ctx = new OfflineAudioContext(2, Math.ceil(duration * 44100), 44100);
+  const stems = !!options.tune?.stems, ctx = new OfflineAudioContext(stems ? 2 + STEMS.length : 2, Math.ceil(duration * 44100), 44100);
+  if (stems) { ctx.destination.channelCount = 2 + STEMS.length; ctx.destination.channelInterpretation = 'discrete'; }
   const graph = buildGraph(ctx, options), song = prepare(plan, buffers, lady);
   graph.oscillators.forEach(o => o.start(0));
   // Song-level state (call, choke, tape) must be right even when starting mid-song.
@@ -454,13 +480,18 @@ export class Performance {
   position() { return this.running && this.ctx ? this.ctx.currentTime - this.t0 - (this.ctx.outputLatency || 0) : -1; }
   levels() {
     if (!this.running || !this.graph) return null;
-    const data = new Float32Array(512), out = {};
+    const data = this.levelBuffer ||= new Float32Array(512), out = {};
     for (const name of STEMS) {
       this.graph.stems[name].meter.getFloatTimeDomainData(data);
       let sum = 0; for (let i = 0; i < data.length; i++) sum += data[i] * data[i];
       out[name] = Math.sqrt(sum / data.length);
     }
     return out;
+  }
+  // Per-stem analysers for the scene equalizer (2048-point, unsmoothed) and the master's 4096.
+  analysers() {
+    if (!this.running || !this.graph) return null;
+    return {master:this.graph.eqAnalyser, ...this.graph.spectra};
   }
   spectrum() {
     if (!this.running || !this.graph) return null;

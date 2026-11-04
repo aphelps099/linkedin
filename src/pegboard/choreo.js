@@ -1,0 +1,290 @@
+// What the Peg Board shows, for any moment of a song. A plan becomes a list of
+// screens (a line of type with timed words, a reveal, a release, a tone); then
+// paint(board, t) lights the pegs for time t. Pure: the same plan and time
+// always light the same pegs, so preview, scrubbing and export agree.
+//
+// Times are song seconds (plan.timing[step]); renders add their own offset.
+import {clearBoard, light, PALETTE} from './board.js';
+
+const STEP = .125, BEAT = .5;
+const FRAME = 1 / 24;
+const T = (plan, step) => plan.timing[Math.max(0, Math.min(plan.timing.length - 1, Math.floor(step)))] + (step % 1) * STEP;
+
+// Seeded per-peg randomness: the same peg always gets the same number.
+function hash2(x, y, salt = 0) {
+  let h = Math.imul(x + 1013, 2654435761) ^ Math.imul(y + 7919, 1597334677) ^ Math.imul(salt + 31, 362437);
+  h = Math.imul(h ^ (h >>> 15), 2246822519); h = Math.imul(h ^ (h >>> 13), 3266489917);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+}
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const ease = u => 1 - (1 - clamp(u)) ** 3;
+
+// Split a word's letters into as many groups as it has notes: vowel groups
+// first, merged or split evenly until the counts match.
+export function syllableSpans(display, count) {
+  const letters = [...display];
+  if (count <= 1 || letters.length <= 1) return [[0, letters.length]];
+  const cuts = [];
+  for (let i = 1; i < letters.length; i++) if (/[aeiouy]/i.test(letters[i - 1]) && !/[aeiouy]/i.test(letters[i]) && i < letters.length - 1) cuts.push(i + 1 < letters.length ? i + 1 : i);
+  let bounds = [0, ...cuts.filter((c, i, a) => c > 0 && c < letters.length && c !== a[i - 1]), letters.length];
+  while (bounds.length - 1 > count) bounds.splice(bounds.length - 2, 1);
+  if (bounds.length - 1 < count) bounds = Array.from({length:count + 1}, (_, i) => Math.round(i * letters.length / count));
+  return bounds.slice(0, -1).map((b, i) => [b, bounds[i + 1]]).filter(([a, b]) => b > a);
+}
+
+// ---- screens -----------------------------------------------------------------
+
+function wordsOfLine(plan, line, half) {
+  return line.words.filter(w => !!w.repeat === half).map(w => {
+    const start = T(plan, w.at), end = start + Math.min(w.gate, w.steps * STEP);
+    const spans = syllableSpans(w.display, w.notes.length);
+    return {text:w.display, start, end, units:spans.map(([a, b], i) => ({chars:[a, b], start:T(plan, w.notes[i]?.at ?? w.at)}))};
+  });
+}
+
+// The lady's words inside one event, from her recording's measured boundaries.
+function ladyWords(plan, e, table) {
+  const t0 = T(plan, e.at), entry = table?.[e.file];
+  const inside = entry ? entry.words.filter(w => w.end > e.from + 1e-6 && w.start < e.to - 1e-6) : [];
+  const shown = e.display.split(' ');
+  if (inside.length === shown.length) {
+    return shown.map((text, i) => {
+      const w = inside[i], start = t0 + Math.max(0, w.start - e.from) / e.rate;
+      return {text, start, end:Math.min(t0 + e.gate, t0 + (w.end - e.from) / e.rate), units:[{chars:[0, text.length], start}]};
+    });
+  }
+  const per = e.gate / shown.length;
+  return shown.map((text, i) => ({text, start:t0 + i * per, end:t0 + (i + 1) * per, units:[{chars:[0, text.length], start:t0 + i * per}]}));
+}
+
+const STYLE = {host:'typewriter', verse:'scanline', hook:'wipe', answer:'pop', repeat:'pop'};
+
+export function buildScreens(plan, {table} = {}) {
+  const screens = [], drop = plan.form === 'drop60', section = t => plan.sections.find(s => t >= T(plan, s.from * 16) && t < T(plan, s.to * 16))?.name;
+  const add = s => { screens.push({k:1, tone:'blue', release:'cut', fx:{}, ...s}); };
+  for (const line of plan.lines) {
+    for (const half of [false, true]) {
+      const words = wordsOfLine(plan, line, half);
+      if (!words.length) continue;
+      const from = words[0].start - BEAT * .5, sec = section(words[0].start) || '';
+      const kind = half ? 'repeat' : line.kind;
+      const accent = (line.kind === 'hook') ? words.length - 1 : -1;
+      const reveal = /^Drop/.test(sec) ? 'pop' : STYLE[kind] || 'pop';
+      add({kind, voice:'synergy', from, to:words.at(-1).end + BEAT, text:words.map(w => w.text).join(' '), words, accent, reveal,
+        tone:line.kind === 'host' ? 'white' : 'blue', release:line.kind === 'host' ? 'afterglow' : 'cut'});
+    }
+  }
+  // Words Synergy sings outside a line (his answers in the build).
+  for (const w of plan.words.filter(x => x.line === -1)) {
+    const start = T(plan, w.at);
+    add({kind:'answer', voice:'synergy', from:start, to:start + w.steps * STEP, text:w.display, words:[{text:w.display, start, end:start + w.gate, units:[{chars:[0, w.display.length], start}]}], reveal:'pop', tone:'white', k:1});
+  }
+  // His stammer: the first three letters and a dash, on its own 16th. Where the
+  // lady's ladder owns the board (the drop's bar 18) it is heard, not shown.
+  const ladderSteps = new Set((plan.lady || []).filter(e => e.role === 'ladder').map(e => Math.floor(e.at / 16)));
+  for (const s of plan.stutters) {
+    if (ladderSteps.has(Math.floor(s.at / 16))) continue;
+    const start = T(plan, s.at), text = s.word.split(' ')[0].slice(0, 3).toUpperCase() + '-';
+    add({kind:'stammer', voice:'synergy', from:start, to:start + STEP, text, words:[{text, start, end:start + STEP * .9, units:[{chars:[0, text.length], start}]}], reveal:'pop', tone:'white', k:drop ? 2 : 1});
+  }
+  // The lady.
+  for (const e of plan.lady || []) {
+    const words = ladyWords(plan, e, table), t0 = T(plan, e.at);
+    const base = {kind:e.role, voice:'lady', from:t0, to:t0 + Math.max(e.gate, STEP), text:e.display, words, accent:-1, tone:'white', reveal:'pop', k:1};
+    if (e.role === 'ladder') {
+      // The visual ladder is the audio ladder: each retrigger re-cuts the board.
+      // Up to two pops a second are fine; from the quarter-note rung on, a
+      // retrigger moves the letters (a row shift, a size kick) instead of
+      // flashing them, so the climax never strobes.
+      const r = e.rung, k = [1, 1, 1, 1, 2, 3, 3, 4][r] ?? 1;
+      add({...base, reveal:r < 2 ? 'typewriter' : r < 4 ? 'pop' : 'steady', k, tone:r >= 2 && r < 4 && Math.round(e.at * 2) % 4 >= 2 ? 'white' : 'blue',
+        fx:{rowShift:r >= 4 ? [0, -1, 0, 1][Math.round(e.at * 2) % 4] : 0, sparkle:r === 7 ? clamp((e.at % 16) / 8) : 0}});
+    } else if (e.role === 'tag') add({...base, reveal:'typewriter', tone:'white', sockets:0});
+    else if (e.role === 'impact') add({...base, to:t0 + 2.6 * BEAT, reveal:'centre', k:3, tone:'white', fx:{outline:true}, ignite:true});
+    else if (e.role === 'sink') add({...base, to:T(plan, 24 * 16), reveal:'sparkle', k:2, tone:'deep', fx:{slow:true, tape:true}});
+    else if (e.role === 'stop') add({...base, to:t0 + 1.2, reveal:'typewriter', tone:'white', fx:{stop:true}});
+    else add({...base, fx:e.bend ? {detune:e.bend.cents} : e.lift ? {lift:true} : {}});
+  }
+  // The muted intro: YOU'RE ON MUTE, then the tease of the drop that comes later.
+  if (drop) {
+    add({kind:'title', voice:'board', from:T(plan, 8), to:T(plan, 28), text:"YOU'RE ON MUTE", words:[{text:"YOU'RE", start:T(plan, 8), end:T(plan, 28), units:[{chars:[0, 6], start:T(plan, 8)}]}, {text:'ON', start:T(plan, 10), end:T(plan, 28), units:[{chars:[0, 2], start:T(plan, 10)}]}, {text:'MUTE', start:T(plan, 12), end:T(plan, 28), units:[{chars:[0, 4], start:T(plan, 12)}]}], reveal:'typewriter', tone:'white', release:'cut'});
+    add({kind:'tease', voice:'board', from:T(plan, 28), to:T(plan, 32), text:'BA', words:[{text:'BA', start:T(plan, 28), end:T(plan, 32), units:[{chars:[0, 1], start:T(plan, 28)}, {chars:[1, 2], start:T(plan, 30)}]}], reveal:'pop', k:3, tone:'blue'});
+  }
+  screens.sort((a, b) => a.from - b.from);
+  // One screen at a time: a screen ends when the next begins. Synergy's lines
+  // arrive half a beat early as read-ahead ghosts, but they never take the
+  // board from the lady before his first word is actually sung.
+  for (let i = 0; i < screens.length - 1; i++) {
+    const cur = screens[i], next = screens[i + 1];
+    // A ladder hit holds the board until the next one: the letters stay lit
+    // between retriggers instead of blinking at the retrigger rate.
+    if (cur.kind === 'ladder' && next.kind === 'ladder') cur.to = next.from;
+    if (next.voice === 'synergy' && cur.voice !== 'synergy') next.from = Math.max(next.from, Math.min(cur.to, next.words[0].start));
+    cur.to = Math.min(cur.to, next.from);
+  }
+  screens.sort((a, b) => a.from - b.from);
+  return screens.filter(s => s.to > s.from);
+}
+
+// ---- board-level light: power, blackout, ignition, breakdown ------------------
+
+export function boardState(plan, t) {
+  const state = {sockets:1, exposure:1, bloom:1, ignite:-1};
+  if (plan.form !== 'drop60') {
+    state.sockets = clamp(t / BEAT);
+    return state;
+  }
+  const choke = T(plan, plan.choke.at), impact = T(plan, plan.choke.until), sinkFrom = T(plan, 23 * 16), sinkTo = T(plan, 24 * 16);
+  state.sockets = clamp(t / BEAT);                                        // power on over 1 beat
+  if (t >= T(plan, 12 * 16) && t < T(plan, 16 * 16)) state.exposure = .55;  // the build starts dim
+  else if (t >= T(plan, 16 * 16) && t < choke) state.exposure = .55 + .45 * clamp((t - T(plan, 16 * 16)) / (choke - T(plan, 16 * 16)));
+  if (t >= choke + .49 && t < impact) { state.sockets = 0; state.exposure = 0; }   // true black
+  if (t >= impact && t < impact + 2.6 * BEAT) state.ignite = t - impact;
+  if (t >= sinkFrom && t < sinkTo) state.bloom = 1.6;
+  const stop = plan.tape?.find(x => x.kind === 'stop');
+  if (stop) { const s = T(plan, stop.from); if (t >= s) state.exposure *= clamp(1 - (t - s) / (stop.seconds + .2)); }
+  return state;
+}
+
+// ---- reveals -------------------------------------------------------------------
+
+// Intensity and peg life for one lit peg of a word, given its reveal.
+function pegLight(screen, word, unit, peg, t, ctx) {
+  const {x, y, i, n, row, rows} = peg;
+  const since = t - unit.start;
+  let delay = 0;
+  switch (screen.reveal) {
+    case 'typewriter': delay = ctx.letterDelay; break;
+    case 'scanline': delay = rows > 1 ? (row / (rows - 1)) * STEP : 0; break;
+    case 'wipe': delay = ctx.wipeDelay; break;
+    case 'sparkle': delay = hash2(x, y, 7) ** .6 * BEAT; break;
+    case 'centre': delay = Math.hypot(x - ctx.cx, y - ctx.cy) * .008; break;
+    case 'stroke': delay = n > 1 ? i / (n - 1) * STEP : 0; break;
+    default: delay = 0;
+  }
+  const age = since - delay;
+  if (age < -FRAME * .5) return null;
+  // Pop: 1.6 white-hot, settling to 1.0 in ~60 ms; the peg springs to 1.25 and settles.
+  if (screen.reveal === 'steady') return {I:1.15, white:0, size:1 + .12 * Math.exp(-Math.max(0, age) * 14)};
+  // The white-hot overshoot needs room: syllables closer than ~0.37 s apart
+  // glow instead of strobing (full pop at 0.37 s, none at 0.12 s).
+  const room = clamp((ctx.gap - .12) / .25);
+  const hot = Math.exp(-Math.max(0, age) / .06) * room;
+  const spring = 1 + .25 * Math.exp(-Math.max(0, age) * 9) * Math.cos(Math.max(0, age) * 2 * Math.PI * 6);
+  const sparkle = screen.reveal === 'sparkle' ? Math.exp(-Math.max(0, age) / .12) : 0;
+  return {I:1 + .6 * hot, white:Math.max(hot * .9, sparkle), size:screen.reveal === 'pop' || screen.reveal === 'centre' ? spring : 1};
+}
+
+// ---- paint ---------------------------------------------------------------------
+
+// layout(screen) -> {pages:[{lines:[{chars:[{index, word, pegs:Int16Array}]}]}], width, height}
+// (font.js layoutText), cached per screen. place(screen, layout) -> {x, y} board origin.
+export function paint(board, screens, t, {plan, layoutOf, place, eq, reduced = false} = {}) {
+  clearBoard(board);
+  const state = plan ? boardState(plan, t) : {sockets:1, exposure:1, bloom:1, ignite:-1};
+  board.sockets = state.sockets; board.exposure = state.exposure; board.bloom = state.bloom;
+  if (state.exposure <= 0) return board;
+  const screen = activeScreen(screens, t);
+  if (eq) eq(board, t, screen);
+  if (state.ignite >= 0) ignite(board, state.ignite);
+  if (screen) drawScreen(board, screen, t, {layoutOf, place, reduced, igniting:state.ignite >= 0});
+  return board;
+}
+
+export function activeScreen(screens, t) {
+  let lo = 0, hi = screens.length - 1, found = null;
+  while (lo <= hi) { const mid = (lo + hi) >> 1; if (screens[mid].from <= t) { found = mid; lo = mid + 1; } else hi = mid - 1; }
+  const s = found === null ? null : screens[found];
+  return s && t < s.to + releaseTime(s) ? s : null;
+}
+const releaseTime = s => s.release === 'afterglow' ? .3 : s.release === 'dissolve' ? BEAT : 0;
+
+// The drop: the whole board burns for one frame, then settles from the centre out.
+function ignite(board, age) {
+  const {cols, rows} = board, cx = (cols - 1) / 2, cy = (rows - 1) / 2, reach = Math.hypot(cx, cy);
+  const settle = 2.6 * BEAT * .5;
+  for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
+    const d = Math.hypot(x - cx, y - cy) / reach, local = age - d * settle;
+    const I = age < FRAME ? 1.4 : local < 0 ? .9 : .9 * Math.exp(-local / .18);
+    if (I > .03) light(board, x, y, I * (.85 + .15 * hash2(x, y, 3)), {tone:PALETTE.blue.id, white:age < FRAME ? 1 : 0});
+  }
+}
+
+function drawScreen(board, screen, t, {layoutOf, place, reduced, igniting}) {
+  const layout = layoutOf(screen);
+  if (!layout?.pages?.length) return;
+  // Paging: each page appears when its first word is heard.
+  let page = layout.pages[0];
+  for (const p of layout.pages) { const first = p.lines[0]?.chars[0]; if (first && screen.words[first.word]?.start <= t + .001) page = p; }
+  const origin = place(screen, layout, page);
+  const releaseAge = t - screen.to, fade = releaseAge > 0 ? (screen.release === 'afterglow' ? clamp(1 - releaseAge / .3) : screen.release === 'dissolve' ? clamp(1 - releaseAge / BEAT) : 0) : 1;
+  if (fade <= 0) return;
+  const tone = PALETTE[screen.tone]?.id ?? 0, accentTone = PALETTE.signal.id;
+  const rows = Math.max(1, ...page.lines.flatMap(l => l.chars.map(c => c.h || 9))) || 9;
+  const cx = origin.x + layout.width / 2, cy = origin.y + layout.height / 2;
+  let letterIndex = 0;
+  const allChars = page.lines.flatMap(l => l.chars);
+  const minX = Math.min(...allChars.map(c => c.x)), maxX = Math.max(...allChars.map(c => c.x + c.w));
+  for (const line of page.lines) for (const ch of line.chars) {
+    const word = screen.words[ch.word];
+    if (!word) continue;
+    const charInWord = ch.index - (screen.wordStarts?.[ch.word] ?? 0);
+    const unit = word.units.find(u => charInWord >= u.chars[0] && charInWord < u.chars[1]) || word.units[0];
+    // Typewriter: letters follow the voice, but never slower than 80 ms each
+    // (50 ms for the board's own titles), and never faster than one frame.
+    const letters = word.text.length, cap = screen.voice === 'board' ? .05 : .08;
+    const span = Math.max(FRAME, Math.min(cap, (word.end - word.start) / Math.max(1, letters)));
+    const ctx = {letterDelay:Math.max(0, charInWord - unit.chars[0]) * span, wipeDelay:((ch.x - minX) / Math.max(1, maxX - minX)) * 16 * STEP - (unit.start - screen.words[0].start),
+      cx, cy, gap:gapAfter(screen, unit)};
+    letterIndex++;
+    const sung = t >= unit.start, ended = t > word.end;
+    const pegs = ch.pegs, n = pegs.length / 2;
+    for (let i = 0; i < n; i++) {
+      const px = pegs[2 * i], py = pegs[2 * i + 1], x = origin.x + px, y = origin.y + py + (screen.fx.rowShift || 0);
+      let I, white = 0, size = 1, dx = 0, dy = 0, peg = tone;
+      if (screen.voice === 'synergy' && !sung && screen.reveal !== 'wipe') { I = .1; }        // ghost: read ahead on mute
+      else {
+        const l = reduced ? {I:clamp((t - unit.start) / .2), white:0, size:1} : pegLight(screen, word, unit, {x, y, i, n, row:py - (ch.y || 0), rows:ch.h || rows}, t, ctx);
+        if (!l) { if (screen.voice === 'synergy') I = .1; else continue; }
+        else { I = l.I; white = l.white; size = l.size; }
+        if (ended && screen.voice === 'synergy') I = Math.min(I, .72);                          // sung: still readable
+      }
+      if (screen.accent === ch.word) peg = accentTone;
+      if (screen.fx.detune && sung) { const c = clamp(screen.fx.detune / 100, -1, 1); dy = -c * .5; dx = (hash2(px, py, 11) < .5 ? -1 : 1) * Math.abs(c) * .4; }
+      if (screen.fx.lift && sung) dy = -clamp((t - word.start) / Math.max(.05, word.end - word.start)) * .8;
+      if (screen.fx.stop) { const age = t - word.start; dy = clamp(age / 1.2) * .9; I *= clamp(1 - age / 1.4); }
+      if (screen.fx.tape && sung) dy = clamp((t - screen.from) / 2) * .6;
+      if (screen.fx.sparkle) { if (hash2(x, y, Math.floor(t * 32)) > 1 - screen.fx.sparkle * .8) { white = 1; I = 1.5; } }
+      light(board, x, y, I * fade, {tone:peg, white, size, dx, dy});
+    }
+    // Drop words wear a 1-peg outline of dark pegs, so the ignition never swallows them.
+    if (screen.fx.outline || igniting) outline(board, ch, origin);
+  }
+}
+
+// Seconds from a unit's onset to the next onset on this screen (or a full beat).
+function gapAfter(screen, unit) {
+  let next = Infinity;
+  for (const w of screen.words) for (const u of w.units) if (u.start > unit.start + 1e-6 && u.start < next) next = u.start;
+  return Number.isFinite(next) ? next - unit.start : BEAT;
+}
+
+function outline(board, ch, origin) {
+  const pegs = ch.pegs, lit = new Set();
+  for (let i = 0; i < pegs.length; i += 2) lit.add(`${origin.x + pegs[i]},${origin.y + pegs[i + 1]}`);
+  for (const key of lit) {
+    const [x, y] = key.split(',').map(Number);
+    for (let oy = -1; oy <= 1; oy++) for (let ox = -1; ox <= 1; ox++) {
+      const nx = x + ox, ny = y + oy;
+      if (lit.has(`${nx},${ny}`) || nx < 0 || ny < 0 || nx >= board.cols || ny >= board.rows) continue;
+      const j = ny * board.cols + nx; board.I[j] = 0;
+    }
+  }
+}
+
+// Each word's first character index within the screen text, so a layout's
+// per-character `index` maps to the right word unit.
+export function indexWords(screen) {
+  let at = 0; screen.wordStarts = screen.words.map(w => { const s = at; at += w.text.length + 1; return s; });
+  return screen;
+}

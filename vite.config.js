@@ -104,6 +104,8 @@ export default defineConfig({
         synth: fileURLToPath(new URL('./synth/index.html', import.meta.url)),
         // Phase 0 sound check for the meeting band. Unlisted and noindex.
         allhands: fileURLToPath(new URL('./allhands/index.html', import.meta.url)),
+        // The Peg Board type specimen, for sign-off. Unlisted and noindex.
+        pixelType: fileURLToPath(new URL('./pixel-type/index.html', import.meta.url)),
         sectionArchive: fileURLToPath(new URL('./archive/sections/index.html', import.meta.url)),
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
         identity: fileURLToPath(new URL('./brand/afterbeat/index.html', import.meta.url)),

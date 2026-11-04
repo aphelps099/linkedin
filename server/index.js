@@ -74,6 +74,7 @@ app.use('/api/newsletter', newsletter.router);
 app.use('/api/post-beat/voices', postBeat.router);
 app.use('/api/allhands/voice', createAllHandsVoice().router);
 app.use('/allhands', (_req,res,next)=>{res.set('X-Robots-Tag','noindex, nofollow');next();});
+app.use('/pixel-type', (_req,res,next)=>{res.set('X-Robots-Tag','noindex, nofollow');next();});
 
 app.post('/api/checkout', async (req, res)=>{
   try{

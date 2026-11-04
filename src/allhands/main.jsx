@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import {SAMPLE_POST, lyricsFromPost} from './lyrics.js';
 import {BAR_STEPS, STEP, BPM, KEY} from './song.js';
@@ -7,6 +7,8 @@ import {loadWords} from './voice.js';
 import {prepareLady} from './lady.js';
 import {Performance, render, wav, STEMS, RENDER_OFFSET} from './engine.js';
 import {planToCues, toPixelProject} from './pixel-export.js';
+import {LADY_TABLE} from './lady-table.js';
+import {createStage} from '../pegboard/stage.js';
 import {claimAudio, onAudioFocus} from '../brand/audio-focus.js';
 import './allhands.css';
 
@@ -39,65 +41,20 @@ function cueAt(plan, step) {
   return {word, line, stutter, lady, bar, section:plan.sections.find(s => bar >= s.from && bar < s.to)?.name || 'Outro'};
 }
 
-// The post, as weather. Its own letters fill the room; the band decides how many.
-function useAscii(canvas, text, perf, section) {
+// The Peg Board on the stage: rebuilt when the song changes, resized with the
+// stage, drawn from the audio clock while playing and as a still otherwise.
+function usePegStage(canvas, plan) {
+  const stage = useRef(null), [ready, setReady] = useState(0);
   useEffect(() => {
-    const el = canvas.current; if (!el) return;
-    const g = el.getContext('2d'), chars = (text.toUpperCase().replace(/[^A-Z0-9]/g, '') || 'ALLHANDS');
-    let frame = 0, last = 0, w = 0, h = 0, dpr = 1, cell = 14;
-    const resize = () => {
-      dpr = Math.min(2, window.devicePixelRatio || 1); w = el.clientWidth; h = el.clientHeight;
-      el.width = w * dpr; el.height = h * dpr; cell = w < 640 ? 10 : 14;
-    };
+    const el = canvas.current; if (!el || !plan) return;
+    const s = createStage(el, {plan, table:LADY_TABLE, reduced:reduced()});
+    stage.current = s;
+    const resize = () => { s.resize(el.clientWidth, el.clientHeight); setReady(n => n + 1); };
     resize();
     const ro = new ResizeObserver(resize); ro.observe(el);
-    const draw = now => {
-      frame = requestAnimationFrame(draw);
-      if (document.hidden || now - last < 33) return;
-      last = now;
-      const spectrum = perf.spectrum(), still = reduced();
-      const cols = Math.ceil(w / (cell * .62)), rows = Math.ceil(h / (cell * 1.25)), mid = (rows - 1) / 2;
-      g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
-      g.font = `500 ${cell}px "AH Mono", ui-monospace, monospace`; g.textBaseline = 'top';
-      const t = still ? 0 : now / 1000, energy = new Float32Array(cols);
-      for (let c = 0; c < cols; c++) {
-        const x = Math.abs(c - cols / 2) / (cols / 2), bin = Math.floor(2 * (180 / 2) ** (1 - x));
-        energy[c] = spectrum ? (spectrum[bin] || 0) / 255 : .5 + .12 * Math.sin(c * .31 + t * .4) - x * .2;
-      }
-      const drop = /^Drop/.test(section.current);
-      for (let r = 0; r < rows; r++) {
-        const horizon = 1 - Math.abs(r - mid) / (mid + 1);
-        let line = '', sum = 0;
-        for (let c = 0; c < cols; c++) {
-          const v = energy[c] ** 1.4 * (.35 + horizon * 1.1) + .05 * Math.sin(r * .7 + c * .23 + t * 1.3);
-          if (v > .42) { line += chars[(r * 7 + c + Math.floor(t * 6)) % chars.length]; sum += v; } else line += ' ';
-        }
-        const alpha = Math.min(drop ? .34 : .2, .03 + sum / cols * (drop ? .7 : .45));
-        g.fillStyle = drop ? `rgba(255,255,255,${alpha})` : `rgba(242,238,230,${alpha})`;
-        g.fillText(line, 0, r * cell * 1.25);
-      }
-    };
-    frame = requestAnimationFrame(draw);
-    return () => { cancelAnimationFrame(frame); ro.disconnect(); };
-  }, [canvas, text, perf, section]);
-}
-
-// Set the word as large as the stage allows, measured in the real face.
-function Headline({text, kind, pulse}) {
-  const box = useRef(null), [size, setSize] = useState(120);
-  useLayoutEffect(() => {
-    const el = box.current; if (!el) return;
-    const fit = () => {
-      const g = document.createElement('canvas').getContext('2d');
-      g.font = '800 100px "AH Display", Impact, sans-serif';
-      const width = g.measureText(text.toUpperCase()).width || 100, room = el.clientWidth * .9, tall = el.clientHeight * .9;
-      setSize(Math.max(28, Math.min(tall / .82, room / width * 100)));
-    };
-    fit(); document.fonts?.ready.then(fit);
-    const ro = new ResizeObserver(fit); ro.observe(el);
-    return () => ro.disconnect();
-  }, [text]);
-  return <div className="ah-headline" ref={box} aria-hidden="true"><span key={pulse} className={`ah-word ah-word-${kind}`} style={{fontSize:size}}>{text}</span></div>;
+    return () => { ro.disconnect(); s.dispose(); if (stage.current === s) stage.current = null; };
+  }, [canvas, plan]);
+  return [stage, ready];
 }
 
 function App() {
@@ -106,8 +63,9 @@ function App() {
   const [song, setSong] = useState(null), [error, setError] = useState(''), [status, setStatus] = useState('loading');
   const [mode, setMode] = useState('sung'), [muted, setMuted] = useState({}), [cue, setCue] = useState(null), [elapsed, setElapsed] = useState(0);
   const [rendering, setRendering] = useState(false), [form, setForm] = useState(DEFAULT_FORM);
-  const canvas = useRef(null), section = useRef('Intro'), meters = useRef({}), cueKey = useRef('');
+  const canvas = useRef(null), section = useRef('Intro'), meters = useRef({}), cueKey = useRef(''), labels = useRef(null), labelKey = useRef('');
   const lyrics = useMemo(() => { try { return lyricsFromPost(post); } catch { return null; } }, [post]);
+  const [stage, stageReady] = usePegStage(canvas, song?.plan);
 
   // Prepare the voice before anyone presses Play: a decode-only context needs no gesture.
   useEffect(() => {
@@ -164,12 +122,26 @@ function App() {
       setElapsed(e => Math.floor(seconds * 4) !== Math.floor(e * 4) ? seconds : e);
       const levels = perf.levels();
       if (levels) for (const name of STEMS) { const m = meters.current[name]; if (m) m.style.transform = `scaleY(${Math.min(1, levels[name] * 3.2).toFixed(3)})`; }
+      const board = stage.current;
+      if (board) { board.draw(seconds, {analysers:perf.analysers()}); chartLabels(board.chartLabels()); }
     };
     frame = requestAnimationFrame(tick);
-    return () => { cancelAnimationFrame(frame); for (const m of Object.values(meters.current)) if (m) m.style.transform = 'scaleY(0)'; };
-  }, [status, song, perf]);
+    return () => { cancelAnimationFrame(frame); chartLabels([]); for (const m of Object.values(meters.current)) if (m) m.style.transform = 'scaleY(0)'; };
+  }, [status, song, perf, stage]);
 
-  useAscii(canvas, post, perf, section);
+  // The chart's department names, in type under its pegs. Only touched when they change.
+  function chartLabels(list) {
+    const key = list.map(l => `${l.label}@${l.x}`).join('|');
+    if (!labels.current || key === labelKey.current) return;
+    labelKey.current = key;
+    labels.current.replaceChildren(...list.map(l => { const el = document.createElement('span'); el.textContent = l.label; el.style.left = `${l.x}px`; el.style.top = `${l.y}px`; el.style.width = `${l.width}px`; return el; }));
+  }
+
+  // Between performances the board holds a title.
+  useEffect(() => {
+    if (status === 'playing' || !stage.current) return;
+    stage.current.still(status === 'ended' ? 'ADJOURNED.' : status === 'loading' ? 'WARMING UP' : 'ALL HANDS', {k:2, tone:status === 'loading' ? 'blue' : 'white'});
+  }, [status, stage, stageReady]);
 
   function toggle(name) { const next = {...muted, [name]:!muted[name]}; setMuted(next); perf.mute(next); }
   function chooseMode(next) { setMode(next); perf.voice(next); }
@@ -202,9 +174,6 @@ function App() {
   const current = playing ? cue : null;
   const stammer = current?.stutter ? current.stutter.word.split(' ')[0].slice(0, 3).toUpperCase() + '–' : null;
   const ladyLine = current?.lady ? current.lady.display : null;
-  const display = !playing ? (status === 'ended' ? 'Adjourned.' : 'All hands')
-    : stammer || ladyLine || (current?.word ? current.word.display.replace(/[.,!?]+$/, '') : '·');
-  const kind = !playing ? 'rest' : stammer ? 'stammer' : ladyLine ? 'lady' : current?.word?.kind || 'rest';
   const sections = plan?.sections || FORMS[form].sections;
   const sectionName = playing ? current?.section || 'Intro' : status === 'ended' ? 'Adjourned' : 'Waiting room';
   const progress = plan ? Math.min(1, Math.max(0, elapsed) / plan.duration) : 0;
@@ -217,9 +186,9 @@ function App() {
     </header>
 
     <section className="ah-stage" aria-label="Performance">
-      <canvas ref={canvas} className="ah-weather" aria-hidden="true"/>
+      <canvas ref={canvas} className="ah-board" aria-hidden="true"/>
+      <div className="ah-chart-labels" ref={labels} aria-hidden="true"/>
       <div className="ah-stage-meta"><span>{sectionName}</span><span>{playing && current ? `Bar ${String(current.bar + 1).padStart(2, '0')} / ${plan.bars.length}` : `${BPM} BPM · ${KEY}`}</span></div>
-      <Headline text={display} kind={kind} pulse={reduced() ? 0 : `${current?.word?.at}-${current?.stutter?.at}-${current?.lady?.at}`}/>
       <p className="ah-line" aria-live="polite"><span className={`ah-caption ${playing && !current?.line && !ladyLine ? 'empty' : ''}`}>
         {playing && ladyLine && !stammer ? <span className="sung">{current.lady.display}</span>
           : playing && current?.line ? current.line.words.filter(w => !!w.repeat === (current.word?.line === current.line.id && !!current.word.repeat)).map((w, i) => <span key={i} className={current.word && w.at <= current.word.at ? 'sung' : ''}>{w.display} </span>)
