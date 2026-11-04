@@ -73,7 +73,7 @@ Ears still decide. These numbers only rule out the obvious failures.
   song offline to WAV through the page itself. Options:
   - `--mode spoken`, `--mute drums,bass`, `--post post.txt`;
   - `--bars 16-20`, for a quick excerpt.
-- Local development needs `espeak-ng` on the PATH. The Railway Docker image
+- Local development needs `espeak-ng` on the PATH. The production Docker image (Render)
   already installs it for the LinkedInifier's robot voice.
 - The page's **Download WAV** is the same offline render, mutes included.
 
