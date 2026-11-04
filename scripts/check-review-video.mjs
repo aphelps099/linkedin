@@ -29,10 +29,10 @@ import {castSong} from '../src/allhands/casting.js';
 import {TRACK_ORDER} from '../src/allhands/songbook/index.js';
 import {compile, shotIndex, invert, apply, TRACKING} from '../src/videostudio/edl/compile.js';
 import {audioLatency, hitFrame, chokeFrames, stopFrames, TAG_TAIL} from '../src/videostudio/edl/anchors.js';
-import {paint, STOP_DIM} from '../src/pegboard/choreo.js';
+import {paint, STOP_DIM, activeScreen} from '../src/pegboard/choreo.js';
 import {boardGrid, boardPitch, safeSpan} from '../src/videostudio/gl/board-layer.js';
 import {boardScreens, boardTimeOf} from '../src/videostudio/gl/compositor.js';
-import {SAFE} from '../src/videostudio/layouts.js';
+import {SAFE, HOME, FULL_BOARD, sameRect} from '../src/videostudio/layouts.js';
 import {FX} from '../src/videostudio/edl/schema.js';
 import {drop60Draft, GHOST, CLAP} from '../src/videostudio/treatments/drop60-draft.js';
 import {captions} from '../src/videostudio/render/export.js';
@@ -91,6 +91,21 @@ for (const track of TRACK_ORDER) {
     ok(black && p.frame(B - 1).board.rect && ign.layers.some(l => l.fx.some(x => x.type === 'pegVideo')) && ign.board.screen >= 0, `${label}: the black tile from the choke, the board dark from frame ${B} (her tag heard to ${(plan.choke.tagEnd + audioLatency(plan)).toFixed(4)} s, ${(plan.choke.tagEnd + TAG_TAIL + audioLatency(plan)).toFixed(4)} s through a codec), the ignition on frame ${I}`);
     const f0 = p.frame(0);
     ok(f0.transport?.kind === 'jump' && f0.transport.sound === 'copied' && f0.layers.some(l => l.fx.some(x => x.type === 'pegVideo')) && p.board.screens[f0.board.screen]?.kind === 'impact' && p.transports.some(t => t.kind === 'rewind' && t.sound === 'reversed'), `${label}: the cold open: frame 0 is the impact (its sound copied there), then the rewind with its sound reversed`);
+    // The cold open's sound is the impact without Synergy (engine.js coldSourcePlan): the board shows
+    // only what is heard. No frame of the copied jump has one of his screens up (his Drop A "LET'S"
+    // read ahead or lit); the board holds on BACK. instead, as the compositor paints it (boardTimeOf).
+    const jump = p.all.filter(x => x.transport?.kind === 'jump' && x.transport.sound === 'copied');
+    const his = jump.filter(x => [x.board.screen, p.board.screens.indexOf(activeScreen(boardScreens(p.board.screens), boardTimeOf(x)))].some(i => p.board.screens[i]?.voice === 'synergy'));
+    const held = jump.filter((x, i) => i && x.board.time === jump[i - 1].board.time).length;
+    ok(jump.length >= 17 && !his.length && jump.every(x => p.board.screens[x.board.screen]?.kind === 'impact'), `${label}: the cold open's board shows only what is heard: BACK. on all ${jump.length} copied frames, none of Synergy's words (held for the last ${held})${his.length ? `; his on f${his.map(x => x.f).join(', f')}` : ''}`);
+    // A steady board: every call layout keeps it at the format's home; it changes only inside the
+    // draft's board moves (each at least 3 frames, no frame taking half of the change), never on a cut.
+    const offHome = p.all.filter(x => x.layout && x.layout !== 'full' && !FULL_BOARD.includes(x.layout) && x.board.rect && !x.board.move && !sameRect(x.board.rect, HOME[format]));
+    const moving = p.all.filter(x => x.board.move), jumps = [];
+    for (let f = 1; f < p.frames; f++) { const a = p.frame(f - 1).board, b = p.frame(f).board; if (a.rect && b.rect && !sameRect(a.rect, b.rect) && !p.boardMoves.some(m => f >= m.from && f < m.to)) jumps.push(f); }
+    const steps = p.boardMoves.map(m => { const r = f => p.frame(f).board.rect, ar = x => x ? x.w * x.h : 0, all = Math.abs(ar(r(m.to - 1)) - ar(r(m.from - 1))); let worst = 0; for (let f = m.from; f < m.to; f++) worst = Math.max(worst, Math.abs(ar(r(f)) - ar(r(f - 1)))); return all ? worst / all : 0; });
+    ok(!offHome.length && p.boardMoves.length >= 5 && p.boardMoves.every(m => m.to - m.from >= 3) && moving.length > 0 && Math.max(...steps) < .5 && !jumps.length && p.lint.errors.every(e => e.rule !== 'G14'),
+      `${label}: the board holds its home in every call layout and moves only in ${p.boardMoves.length} eased board moves of ${[...new Set(p.boardMoves.map(m => m.to - m.from))].join('/')} frames (largest step ${(100 * Math.max(...steps)).toFixed(0)} % of a move; ${jumps.length} jumps, ${offHome.length} frames off home)`);
   }
 }
 

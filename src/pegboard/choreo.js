@@ -91,10 +91,11 @@ export function ladderPhrase(plan, e) {
   const list = (plan?.lady || []).filter(x => x.role === 'ladder' && x.file === e.file).map(x => x.display);
   return list.reduce((a, b) => b.replace(/-$/, '').length > a.replace(/-$/, '').length ? b : a, e.display);
 }
-// A ladder hit's whole words, or null when it plays the whole phrase (nothing to fill in).
+// A ladder hit's whole words, or null when it plays whole words already (nothing to fill in;
+// a cut-off mark goes too: "DROP A-" shows DROP A).
 export function ladderWhole(plan, e) {
   const whole = wholeWords(e.display, ladderPhrase(plan, e));
-  return whole && whole.some(w => w.lit < w.text.length) ? whole : null;
+  return whole && (whole.some(w => w.lit < w.text.length) || /-$/.test(e.display)) ? whole : null;
 }
 
 export function buildScreens(plan, {table} = {}) {
@@ -328,11 +329,13 @@ function drawScreen(board, screen, t, {layoutOf, place, reduced, igniting}) {
     for (let i = 0; i < n; i++) {
       const px = pegs[2 * i], py = pegs[2 * i + 1], x = origin.x + px, y = origin.y + py + (screen.fx.rowShift || 0);
       if (screen.ghost) { light(board, x, y, screen.ghost * fade, {tone}); continue; }
-      if (ghostLetter) { light(board, x, y, FRAGMENT_GHOST * fade, {tone}); continue; }
+      if (ghostLetter || (word.lit !== undefined && screen.voice === 'synergy' && !sung)) { light(board, x, y, FRAGMENT_GHOST * fade, {tone}); continue; }
       let I, white = 0, size = 1, dx = 0, dy = 0, peg = tone;
       if (screen.voice === 'synergy' && !sung && screen.reveal !== 'wipe') { I = .1; }        // ghost: read ahead on mute
       else {
         const l = reduced ? {I:clamp((t - unit.start) / .2), white:0, size:1} : pegLight(screen, word, unit, {x, y, i, n, row:py - (ch.y || 0), rows:ch.h || rows}, t, ctx);
+        // (A fragment's letters that have not sounded yet wait as its ghost, so the word never has a hole.)
+        if (!l && word.lit !== undefined) { light(board, x, y, FRAGMENT_GHOST * fade, {tone}); continue; }
         if (!l) { if (screen.voice === 'synergy') I = .1; else continue; }
         else { I = l.I; white = l.white; size = l.size; }
         if (ended && screen.voice === 'synergy') I = Math.min(I, .72);                          // sung: still readable

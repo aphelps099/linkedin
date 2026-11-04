@@ -229,4 +229,21 @@ export default {
   sound:{},
   band,
   kicksOf,
+  // The composition constitution (CONSTITUTION.md; constitution.js lintTrack).
+  references:{
+    'daft-punk':"The spine: a filtered French-house shuffle on a 909, the offbeat saw bass and Kevin's muted chops, Synergy's vocoder lead, the kick pumping the stabs and the bass, the stabs' filter opening and closing the song.",
+    kraftwerk:'The machine: her phrase cut to the grid from one bar down to a 32nd, the robot voice, clarity over size.',
+    'washed-out':'The warmth as an event: Sink In at half speed, the tape stop under "Full stop."',
+  },
+  palette:{
+    synth:"Synergy's 28-band vocoder on a saw choir; detuned saw stabs; the saw riser into the choke.",
+    keys:'Detuned saw stabs through a low-pass that opens across the intro and closes across the outro; a pad under the build and the drops.',
+    drums:'A 909-style kit: kick on the four, claps on two and four, closed and open hats, a rim, the printer as the shaker; half-time in Drop A.',
+    bass:'Pat: an offbeat saw bass, a wobble in Drop A, held under Sink In, ducked by every kick.',
+    guitar:"Kevin: muted funk chops in Drop B. Never a solo.",
+  },
+  story:{
+    synergy:'Simple and a little stiff: the post on a nine-note pentatonic table, the first word of the hook as his answers in the build, a stammer on the odd 16ths of bar 18, the hook with the choir in the drops.',
+    synthia:null,
+  },
 };

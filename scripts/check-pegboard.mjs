@@ -27,7 +27,7 @@ function rig(plan, cols = 120, rows = 53) {
   const layoutOf = s => {
     if (cache.has(s)) return cache.get(s);
     let out = null;
-    for (const f of ['peg9', 'peg5']) { for (let k = s.k; k >= 1 && !out; k--) { const l = layoutText(s.text, {font:faces[f], k, maxCols:cols - 4, maxLines:s.k > 1 ? 1 : 3}); if (l.width <= cols - 4 && l.height <= textRows) out = l; } if (out) break; }
+    for (const f of ['peg9', 'peg5']) { for (let k = s.k; k >= 1 && !out; k--) { const l = layoutText(s.text, {font:faces[f], k, maxCols:cols - 4, maxLines:s.lines ?? (s.k > 1 ? 1 : 3)}); if (l.width <= cols - 4 && l.height <= textRows) out = l; } if (out) break; }
     cache.set(s, out); return out;
   };
   const place = (s, l, page) => ({x:Math.floor((cols - Math.max(...page.lines.map(x => x.width))) / 2), y:Math.max(1, Math.floor((textRows - l.height) / 2))});
@@ -131,7 +131,7 @@ for (const id of ['drop60', 'soundcheck']) for (const track of TRACK_ORDER.filte
     const frag = screens.filter(s => s.fragment);
     const bad = frag.filter(s => {
       const sounding = s.words.map(lit).join(' '), whole = s.words.map(w => w.text).join(' ');
-      return sounding !== s.fragment.replace(/-$/, '') || whole !== s.text || !(s.kind === 'ladder' ? phrase.toUpperCase().startsWith(whole.toUpperCase()) : whole.toUpperCase().startsWith(sounding.toUpperCase())) || whole === sounding;
+      return sounding !== s.fragment.replace(/-$/, '') || whole !== s.text || !(s.kind === 'ladder' ? phrase.toUpperCase().startsWith(whole.toUpperCase()) : whole.toUpperCase().startsWith(sounding.toUpperCase())) || /-$/.test(whole);
     });
     const partial = shown.filter(s => !s.fragment && !phrase.toUpperCase().startsWith(s.text.toUpperCase()));
     ok(frag.length > 0 && !bad.length && !partial.length && (form !== 'drop60' || frag.some(s => s.kind === 'tease' && s.text.startsWith('BACK') ? s.fragment === 'BA' : s.kind === 'tease')),
@@ -140,6 +140,7 @@ for (const id of ['drop60', 'soundcheck']) for (const track of TRACK_ORDER.filte
     let wrong = 0;
     for (const s of frag) {
       const layout = layoutOf(s), page = layout.pages[0], o = place(s, layout, page), units = s.words.flatMap(w => w.units.map(u => u.start));
+      if (layout.pages.length !== 1) { wrong++; continue; }   // the whole words are on the board at once
       const u0 = Math.max(s.from, ...units), t = u0 + Math.min(FRAME, (s.to - u0) / 2);
       if (activeScreen(screens, t) !== s) continue;
       at(t);
@@ -150,9 +151,12 @@ for (const id of ['drop60', 'soundcheck']) for (const track of TRACK_ORDER.filte
       }
       for (const [j, on] of want) if (on ? !(board.I[j] > .5) : Math.abs(board.I[j] - FRAGMENT_GHOST) > 1e-6) wrong++;
       for (let j = 0; j < board.I.length; j++) if (board.I[j] > 0 && !want.has(j)) wrong++;
+      // And from its first frame, before every letter has sounded: the whole word, never a hole.
+      const t0 = s.from + Math.min(FRAME * .25, (s.to - s.from) / 2);
+      if (activeScreen(screens, t0) === s) { at(t0); for (const j of want.keys()) if (board.I[j] < FRAGMENT_GHOST - 1e-6) wrong++; }
       screensSeen++; pegsSeen += want.size;
     }
-    ok(wrong === 0, `${label}: on the board every fragment's sounding letters light at full and the rest of its word is a ghost at ${FRAGMENT_GHOST} (${wrong} pegs wrong)`);
+    ok(wrong === 0, `${label}: on the board every fragment's sounding letters light at full and the rest of its word is a ghost at ${FRAGMENT_GHOST}, the whole word up from its first frame (${wrong} pegs wrong)`);
     // The stutter still shows: on every retrigger of a fragment the lit letters pop (size or heat) and settle before the next.
     const ladderFrag = frag.filter(s => s.kind === 'ladder');
     for (let i = 0; i + 1 < ladderFrag.length; i++) {

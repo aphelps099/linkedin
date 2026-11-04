@@ -98,6 +98,7 @@ export function studioFilm(plan, shots, {format = '9:16', features, seed = 7} = 
     m('leaveMeeting', {id:'leave', at:bar(28), len:bar(2), pool:[CAST.synergyClose, CAST.kevin, CAST.keysPlay, CAST.synthia, CAST.people, PAT, CAST.arjun], scene:'leave'}),
     m('tapeStop', {len:4}),
     c('tail', plan.totalSteps - 4, 4, 'full', 'gen:color:#000000', {scene:'leave'}),
+    c('tail.l1', plan.totalSteps - 4, 4, 'L1.0', 'gen:color:#000000', {scene:'leave'}),   // the call goes dark, its board with it (no jump to the frame)
   ];
   const edl = merge(createEDL({format, loop:true, seed}), ...patches);
   for (const clip of edl.clips) {

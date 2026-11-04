@@ -56,7 +56,8 @@ const M = GUTTER;
 // between 54 and 1026), so the song's words always have somewhere to light:
 //   9:16  the home is the strip y 1098-1440, the bottom of the safe band: tiles above it
 //         (y 12-1086) and a row below it (y 1452-1908, under the platform caption).
-//   1:1   the home is y 588-840: tiles above it (y 12-576) and a row below it (y 852-1068).
+//   1:1   the home is y 588-828, under Synergy's mouth in an L1 close-up: tiles above it (y 12-576)
+//         and a row below it (y 840-1068, tall enough for the applause tile to hold a whole face).
 //   16:9  the home is the column on the right, x 1422-1908, y 54-1026; the call fills the left 1398 px.
 // L1 keeps the whole frame for its picture; its board is the home laid over the picture
 // (boardOver), below the face. Only the full-board moments leave the home, and they grow out of
@@ -67,7 +68,7 @@ const M = GUTTER;
 //   BOARD is full bleed: its type is centred, inside the safe band.
 export const HOME = Object.freeze({
   '9:16':Object.freeze(rect(M, 1098, 1056, 342)),
-  '1:1':Object.freeze(rect(M, 588, 1056, 252)),
+  '1:1':Object.freeze(rect(M, 588, 1056, 240)),
   '16:9':Object.freeze(rect(1422, 54, 486, 972)),
 });
 const GEOMETRY = {
@@ -83,13 +84,13 @@ const GEOMETRY = {
   },
   '1:1':{
     L1:{cells:[rect(M, M, 1056, 1056)], board:HOME['1:1'], boardOver:true},
-    split:{cells:[rect(M, M, 1056, 564), rect(M, 852, 1056, 216)], board:HOME['1:1']},
-    stack3:{cells:[rect(M, M, 1056, 276), rect(M, 300, 1056, 276), rect(M, 852, 1056, 216)], board:HOME['1:1']},
-    G4:{cells:[...block(M, M, 2, 1, 522, 564), ...block(M, 852, 2, 1, 522, 216)], board:HOME['1:1']},
-    G6:{cells:[...block(M, M, 3, 1, 344, 564), ...block(M, 852, 3, 1, 344, 216)], board:HOME['1:1']},
-    G9:{cells:[...block(M, M, 3, 2, 344, 276), ...block(M, 852, 3, 1, 344, 216)], board:HOME['1:1']},
+    split:{cells:[rect(M, M, 1056, 564), rect(M, 840, 1056, 228)], board:HOME['1:1']},
+    stack3:{cells:[rect(M, M, 1056, 276), rect(M, 300, 1056, 276), rect(M, 840, 1056, 228)], board:HOME['1:1']},
+    G4:{cells:[...block(M, M, 2, 1, 522, 564), ...block(M, 840, 2, 1, 522, 228)], board:HOME['1:1']},
+    G6:{cells:[...block(M, M, 3, 1, 344, 564), ...block(M, 840, 3, 1, 344, 228)], board:HOME['1:1']},
+    G9:{cells:[...block(M, M, 3, 2, 344, 276), ...block(M, 840, 3, 1, 344, 228)], board:HOME['1:1']},
     BOARD:{cells:[rect(0, 0, 1080, 1080)], board:rect(0, 0, 1080, 1080), radius:0},
-    'BOARD+STRIP':{cells:block(M, 852, 3, 1, 344, 216), board:rect(M, 72, 1056, 768), banner:rect(M, M, 1056, 48)},
+    'BOARD+STRIP':{cells:block(M, 840, 3, 1, 344, 228), board:rect(M, 72, 1056, 756), banner:rect(M, M, 1056, 48)},
   },
   '16:9':{
     L1:{cells:[rect(M, M, 1896, 1056)], board:HOME['16:9'], boardOver:true},

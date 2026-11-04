@@ -192,10 +192,11 @@ let page = await freshPage();
 {
   const before = checks;
   const res = await page.evaluate(async () => {
-    // One 522 px wide tile (G4.0, 522×766) carries every single-layer effect.
-    const cell = T.cellRect('9:16', 'G4.0'), R = {x:cell.x + 16, y:cell.y + 16, w:cell.w - 32, h:cell.h - 80};
+    // One 522 px wide tile (G6.4, 522×456, under the board's home; an even height, so the 2×2 tile's
+    // centre line falls between two rows) carries every single-layer effect.
+    const FXCELL = 'G6.4', cell = T.cellRect('9:16', FXCELL), R = {x:cell.x + 16, y:cell.y + 16, w:cell.w - 32, h:cell.h - 80};
     const one = async (fx, extra = {}, f = 6) => {
-      const p = T.program([{id:'x', at:0, len:16, cell:'G4.0', asset:'shot:card', time:{in:1}, ...(fx ? {fx} : {}), ...extra}], extra.programOpts || {});
+      const p = T.program([{id:'x', at:0, len:16, cell:FXCELL, asset:'shot:card', time:{in:1}, ...(fx ? {fx} : {}), ...extra}], extra.programOpts || {});
       return (await T.render(p, f)).img;
     };
     const ref = await one(null), out = {pngs:{}};
@@ -237,7 +238,7 @@ let page = await freshPage();
     img = await one([{type:'scanline', amount:.6, period:8}]); keep('scanline-0.6', img);
     out.scan = (() => { let a = 0, b = 0; for (let k = 4; k < 40; k++) { const y0 = cell.y + k * 8; T.region(img, {x:R.x, y:y0 + 1, w:R.w, h:2}, p => { a += T.luma(p); }); T.region(img, {x:R.x, y:y0 + 5, w:R.w, h:2}, p => { b += T.luma(p); }); } return b / a; })();
     // opacity: half a white tile over the background
-    { const p = T.program([{id:'w', at:0, len:16, cell:'G4.0', asset:'gen:white', frame:{opacity:.5}, chrome:{name:''}}]); img = (await T.render(p, 6)).img; out.opacity = T.px(img, cell.x + cell.w / 2, cell.y + cell.h / 2); keep('opacity-0.5', img); }
+    { const p = T.program([{id:'w', at:0, len:16, cell:FXCELL, asset:'gen:white', frame:{opacity:.5}, chrome:{name:''}}]); img = (await T.render(p, 6)).img; out.opacity = T.px(img, cell.x + cell.w / 2, cell.y + cell.h / 2); keep('opacity-0.5', img); }
     // echo: a tile sliding right leaves trail copies of its earlier positions
     // (in stack3.0, a wide tile whose crop spans the card's whole width, so a slide uncovers background)
     { const ec = T.cellRect('9:16', 'stack3.0'), move = {frame:{dx:[[0, 0], [16, 260]]}};
@@ -250,10 +251,12 @@ let page = await freshPage();
       const r = await T.render(p, 6); img = r.img; keep('droste-1', img);
       const fb = T.cellRect('9:16', 'G6.0'), at = (P) => [fb.x + fb.w / 2 + (P[0] - 540) * .3, fb.y + fb.h / 2 + (P[1] - 960) * .3];
       const c1 = T.cellRect('9:16', 'G6.3'), c5 = T.cellRect('9:16', 'G6.5');
-      out.droste = {red:T.px(img, ...at([c5.x + c5.w / 2, c5.y + c5.h / 2])), white:T.px(img, ...at([c1.x + c1.w / 2, c1.y + c1.h / 2])), levels:r.stats.droste}; }
+      // (Sampled off the tiles' centres, at .8 across and .2 down, so the mini frame's samples clear Pat's card and name bar.)
+      out.droste = {red:T.px(img, ...at([c5.x + c5.w * .8, c5.y + c5.h * .2])), white:T.px(img, ...at([c1.x + c1.w * .8, c1.y + c1.h * .2])), levels:r.stats.droste}; }
     // the composite camera: zoom 2 about the centre
-    { const p = T.program([{id:'red', at:0, len:16, cell:'G6.3', asset:'gen:color:#ff0000', chrome:{name:''}}], {camera:[{id:'cam', at:0, len:16, zoom:2, cx:.5, cy:.5}]});
-      img = (await T.render(p, 6)).img; const c3 = T.cellRect('9:16', 'G6.3'); out.camera = {moved:T.px(img, 540 + (c3.x + 40 - 540) * 2, 960 + (c3.y + 40 - 960) * 2), old:T.px(img, c3.x + 14, c3.y + c3.h - 16)}; }
+    // (A quarter of G6.3, 255×259: small enough that its lower corner moves off the tile under the zoom.)
+    { const p = T.program([{id:'red', at:0, len:16, cell:'G6.3>g2x2.0', asset:'gen:color:#ff0000', chrome:{name:''}}], {camera:[{id:'cam', at:0, len:16, zoom:2, cx:.5, cy:.5}]});
+      img = (await T.render(p, 6)).img; const c3 = T.cellRect('9:16', 'G6.3>g2x2.0'); out.camera = {moved:T.px(img, 540 + (c3.x + 40 - 540) * 2, 960 + (c3.y + 40 - 960) * 2), old:T.px(img, c3.x + 14, c3.y + c3.h - 16)}; }
     return out;
   });
   for (const [k, v] of Object.entries(res.pngs)) savePng(`fx-${k}.png`, v);
@@ -378,8 +381,8 @@ let page = await freshPage();
     const strip = T.layout('G6', '9:16').board, out = {on, st, choke, impact, strip};
     const lit = (img, r, s) => { let n = 0; T.region(img, {x:r.x * s, y:r.y * s, w:r.w * s, h:r.h * s}, q => { if (q[2] > 150 && T.luma(q) > 90) n++; }); return n; };
     const lum = (img, r, s) => { let a = 0, n = 0; T.region(img, {x:r.x * s, y:r.y * s, w:r.w * s, h:r.h * s}, q => { a += T.luma(q); n++; }); return a / n; };
-    let x = await T.render(p, on, {scale:.5}); out.png1 = T.png(x.img); out.stripOn = lit(x.img, strip, .5); out.tile = lit(x.img, T.cellRect('9:16', 'G6.3'), .5); out.above = lit(x.img, {x:0, y:0, w:1080, h:280}, .5); out.stats = x.stats; out.screen = p.board.screens[p.frame(on).board.screen].text;
-    // stack3 at its first frame with a word lit: the board between its second and third tile.
+    let x = await T.render(p, on, {scale:.5}); out.png1 = T.png(x.img); out.stripOn = lit(x.img, strip, .5); out.tile = lit(x.img, T.cellRect('9:16', 'G6.3'), .5); out.stats = x.stats; out.screen = p.board.screens[p.frame(on).board.screen].text;
+    // stack3 at its first frame with a word lit: the board at the same home, between its second and third tile.
     const st3 = [...Array(p.frames).keys()].find(f => p.frame(f).layout === 'stack3' && p.frame(f).board.screen >= 0 && p.board.screens[p.frame(f).board.screen].words.some(w => w.start + .1 <= f / 24 && w.end > f / 24)) ?? st;
     x = await T.render(p, st3, {scale:.5}); out.png2 = T.png(x.img); out.st = st3; out.stripStack = lit(x.img, T.layout('stack3', '9:16').board, .5); out.boardRect = p.frame(st3).board.rect; out.stackScreen = p.board.screens[p.frame(st3).board.screen]?.text;
     x = await T.render(p, impact - 1, {scale:.5}); out.png3 = T.png(x.img); out.black = (() => { let m = 0; T.region(x.img, {x:0, y:0, w:540, h:960}, q => { m = Math.max(m, T.luma(q)); }); return m; })();
@@ -388,9 +391,9 @@ let page = await freshPage();
     return out;
   });
   ['board-strip', 'board-stack3', 'board-true-black', 'board-ignition', 'board-tag'].forEach((n, i) => savePng(`${n}.png`, r[`png${i + 1}`]));
-  ok(r.stripOn > 400 && r.above === 0, `G6 at frame ${r.on}: "${r.screen}" lit in the board strip y ${r.strip.y}-${r.strip.y + r.strip.h} (${r.stripOn} lit px at half size), nothing above the tiles`);
+  ok(r.stripOn > 400 && r.strip.y === 1098 && r.strip.h === 342, `G6 at frame ${r.on}: "${r.screen}" lit in the board's home y ${r.strip.y}-${r.strip.y + r.strip.h} (${r.stripOn} lit px at half size)`);
   ok(r.tile > 100, `gen:board: the same screen inside its tile G6.3 (${r.tile} lit px)`);
-  ok(r.boardRect && r.boardRect.y === 1048 && r.boardRect.y + r.boardRect.h <= 1440 && r.stripStack > 200, `stack3 at frame ${r.st}: "${r.stackScreen}" lit in its board region y ${r.boardRect?.y}-${r.boardRect ? r.boardRect.y + r.boardRect.h : ''}, inside the platform-safe band (${r.stripStack} lit px)`);
+  ok(r.boardRect && r.boardRect.y === r.strip.y && r.boardRect.h === r.strip.h && r.boardRect.y + r.boardRect.h <= 1440 && r.stripStack > 200, `stack3 at frame ${r.st}: "${r.stackScreen}" lit in the same home as G6, y ${r.boardRect?.y}-${r.boardRect ? r.boardRect.y + r.boardRect.h : ''}, inside the platform-safe band (${r.stripStack} lit px)`);
   ok(r.black <= 6, `frame ${r.impact - 1}: true black, sockets off (max luma ${r.black.toFixed(1)})`);
   ok(r.ignite > 60, `frame ${r.impact}: the board ignites over the whole frame (mean luma ${r.ignite.toFixed(0)})`);
   ok(r.tag > 300 && /CIRCLE/i.test(r.tagScreen || ''), `after the choke: "${r.tagScreen}" on bare sockets over black (${r.tag} lit px)`);

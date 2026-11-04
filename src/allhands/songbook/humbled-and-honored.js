@@ -261,4 +261,26 @@ export default {
   band,
   kicksOf:kickPattern,
   backbeatLate:LATE,   // the video studio lands its punch-ins on the backbeat as it sounds
+  // The composition constitution (CONSTITUTION.md; constitution.js lintTrack).
+  references:{
+    air:'The lounge: an FM electric piano on ninths, room to breathe at 92 BPM, the vocoder melancholy over it.',
+    'washed-out':'The warmth: a walking tempo, soft pads under the build, the room wide and slow; tape for Sink In and the stop.',
+    'daft-punk':'The spine, worn lightly: the vocoder lead, a gentler pump on the pads and bass, the drop on a half-time bounce.',
+  },
+  palette:{
+    synth:"Synergy's vocoder on a saw choir; a saw riser climbing to the dominant.",
+    keys:'Keys: a two-operator FM electric piano with tremolo pan, comping the verse, held under the build, stabs an octave up in Drop A.',
+    drums:'Finger snaps and a sidestick 18 ms behind the beat, a round tuned kick, a clap and a snare on the bounce, ghost rims, the printer as the shaker.',
+    bass:'Pat: a round finger bass, a gliding 808 under Drop A, ducked by the kick.',
+    guitar:'Kevin: clean double-stops on the "and" of two, falling fills. Never a solo.',
+  },
+  story:{
+    synergy:'Simple and a little stiff: fewer lines at 92 BPM, two answers in bar 9, a stammer in bar 11, the hook with the choir from BACK. on.',
+    synthia:null,
+  },
+  // A haze song (Washed Out) may live in major: E-flat, the meeting's I-vi-ii-V; the
+  // drop falls to the relative minor and Drop B comes home. The other ten percent:
+  breaks:{
+    'swing.light':"Neo-soul's lazy 16ths: .24 in the verse, .18 in the drops. The ladder still tightens to straight.",
+  },
 };

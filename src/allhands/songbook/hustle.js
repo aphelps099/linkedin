@@ -272,4 +272,24 @@ export default {
   sound:{dropKick:{top:240, knee:56, settle:43.65}, subDrop:{from:87.31, to:21.83}, sawRiser:[53, 77]},
   band,
   kicksOf:kickPattern,
+  // The composition constitution (CONSTITUTION.md; constitution.js lintTrack).
+  references:{
+    'daft-punk':'The spine: Drop B goes four-on-the-floor with a sidechain that pumps bass, keys and pad; filter sweeps on the organ; the vocoder lead.',
+    kraftwerk:'The machine: her ladder on a straight grid down to the 32nd, the robot voice, every hit clean.',
+  },
+  palette:{
+    synth:"Synergy's vocoder on a saw choir; a saw riser into the choke.",
+    keys:'House organ stabs with drawbar harmonics and a key click, kept under 2 kHz in the verse, a riff an octave up in Drop A.',
+    drums:'A shuffled 2-step kit: kick on one and the "and" of three, snare and clap on two and four, ghost snares, skipping hats, open hats on the off-beats, the printer as the shaker; four-on-the-floor in Drop B.',
+    bass:'Pat: a speed-garage reese jumping octaves, its filter growling open and shut in Drop A, pumped by the kick in Drop B.',
+    guitar:"Kevin: muted chops answering the snare, a pickup every other bar. Never a solo.",
+  },
+  story:{
+    synergy:'Simple and a little stiff: short words at 130 BPM, answers in bars 14 and 15, a stammer in bar 17, the hook read again after her "Read that again."',
+    synthia:null,
+  },
+  // The other ten percent: this track breaks one rule on purpose.
+  breaks:{
+    'swing.light':"UK garage's 2-step shuffle needs .2 of a 16th; Drop B tightens to .14 and the ladder to straight.",
+  },
 };

@@ -83,11 +83,12 @@ POSTS.forEach((post, i) => {
       const plan = settleCast(FORMS.drop60.arrange, lyrics, d, {track, cast:c.cast}).plan, s = silenceOf(plan);
       const isToday = c.cast.tag.file === '06.wav' && json(c.cast.tag.words) === '[0,1]';
       ok(isToday ? Math.abs(s - today) < 1e-9 : inGap(s), `${label(i)} ${track}: the post's tag "${c.cast.tag.display}" ends ${s.toFixed(3)} s before BACK.`);
-      // ---- 5. Every lady event has its own Peg Board screen, on time, with her words
+      // ---- 5. Every lady event has its own Peg Board screen, on time, with her words (a fragment of
+      // her ladder shows the whole words it comes from, its own letters lit: screen.fragment)
       const screens = buildScreens(plan, {table:LADY_TABLE});
       for (const e of plan.lady) {
         const t0 = plan.timing[Math.floor(e.at)] + (e.at - Math.floor(e.at)) * plan.step;
-        ok(screens.some(x => x.voice === 'lady' && Math.abs(x.from - t0) < 1e-6 && x.text === e.display), `${label(i)} ${track}: a Peg Board screen for ${e.role} "${e.display}" at ${t0.toFixed(3)} s`);
+        ok(screens.some(x => x.voice === 'lady' && Math.abs(x.from - t0) < 1e-6 && (x.fragment ?? x.text) === e.display), `${label(i)} ${track}: a Peg Board screen for ${e.role} "${e.display}" at ${t0.toFixed(3)} s`);
       }
     }
   }

@@ -286,7 +286,7 @@ export function arrangeDrop(lyrics, durations, table = LADY_TABLE, options) {
   const kicks = [];
   bars.forEach(b => { const own = tr.kicksOf(b.index, b.layers); if (b.layers.impact && !own.includes(0)) own.unshift(0); own.forEach(s => kicks.push(b.index * 16 + s)); });
   const energyTrim = roomTrim(tr, words, timing);
-  // Her stop phrase: it starts with the tape-stop and is routed after the tape, so it outlasts it.
+  // Her stop phrase: it starts with the tape-stop (or leads it: D.stop.lead) and is routed after the tape, so it outlasts it.
   const stopStep = D.stop.bar * BAR_STEPS + D.stop.step, stopEvent = lady.find(e => e.role === 'stop'), stopLine = stopEvent ? ladyClock(timing, STEP, stopEvent.at) : null;
   const plan = {form:'drop60', title:'Drop edition', bpm:tr.bpm, step:STEP, swing:tr.swing, key:tr.key, sections:D.sections, bars, lines, words, stutters, lady,
     call:{until:D.unmute * BAR_STEPS, dropouts:dropouts(hash(lyrics.hook), D.unmute * BAR_STEPS)},

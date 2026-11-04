@@ -329,10 +329,17 @@ section('6. layouts', () => {
       for (const sc of screens) { const b = boardTypeBounds(r.w, r.h, sc, g); if (!b) continue; laid++; if (r.x + b.x < safe.x - 1e-9 || r.x + b.x + b.w > safe.x + safe.w + 1e-9) wide.push(`${cls} ${sc.text} k${sc.k} x ${r.x + b.x}-${r.x + b.x + b.w}`); }
     }
     ok(laid > 1000 && wide.length === 0, `${format}: ${laid} screens laid out in every class's board region keep their type inside the safe area x ${safe.x}-${safe.x + safe.w} (${wide.slice(0, 3).join('; ')})`);
+    // A stutter's whole words (choreo: "LET'S" with LE lit, "LET'S BUILD." with LET'S BU lit) are on
+    // the board at once, in the home, the share and the full board alike, at a size a phone reads.
+    const frags = screens.filter(sc => sc.fragment);
+    for (const r of [HOME[format], layout('BOARD+STRIP', format).board, layout('BOARD', format).board]) {
+      const g = boardGrid(r.w, r.h, undefined, safeSpan(r, safe)), outs = frags.map(sc => ({sc, l:g.layoutOf(sc)}));
+      ok(frags.length >= 20 && outs.every(x => x.l && x.l.pages.length === 1 && x.l.height * g.pitch >= (format === '16:9' ? 50 : 60)), `${format} ${r.w}×${r.h}: ${frags.length} fragment screens lay out whole on one page, at least ${format === '16:9' ? 50 : 60} px tall`);
+    }
   }
-  // The homes: 9:16 the strip y 1098-1440 with tiles above it and a row under it; 1:1 y 588-840;
+  // The homes: 9:16 the strip y 1098-1440 with tiles above it and a row under it; 1:1 y 588-828;
   // 16:9 the column x 1422-1908. The 9:16 grids fill the frame (the last review found 30-45 % black).
-  ok(sameRect(HOME['9:16'], {x:12, y:1098, w:1056, h:342}) && sameRect(HOME['1:1'], {x:12, y:588, w:1056, h:252}) && sameRect(HOME['16:9'], {x:1422, y:54, w:486, h:972}), 'the homes: 9:16 y 1098-1440, 1:1 y 588-840, 16:9 x 1422-1908');
+  ok(sameRect(HOME['9:16'], {x:12, y:1098, w:1056, h:342}) && sameRect(HOME['1:1'], {x:12, y:588, w:1056, h:240}) && sameRect(HOME['16:9'], {x:1422, y:54, w:486, h:972}), 'the homes: 9:16 y 1098-1440, 1:1 y 588-828, 16:9 x 1422-1908');
   const rows = cls => [...new Set(layout(cls, '9:16').cells.map(c => `${c.y}+${c.h}`))].join(' ');
   ok(rows('G9') === '12+531 555+531 1452+456' && rows('G6') === rows('G9') && layout('G9', '9:16').cells.every(c => c.w === 344) && layout('G6', '9:16').cells.every(c => c.w === 522), '9:16 G6 and G9: two rows of 531 above the home, one of 456 under it (2 and 3 across)');
   ok(rows('stack3') === rows('G9') && rows('G4') === rows('G9') && rows('split') === '12+1074 1452+456' && layout('L1', '9:16').boardOver, '9:16 stack3 and G4 share those rows; split is the frame above the home and the row under it; L1 lays the home over its picture');

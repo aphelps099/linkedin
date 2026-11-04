@@ -21,6 +21,9 @@
 //   5. P6, on the same 366 plans: her tag ends 0.37-0.42 s before BACK. (drop.js IMPACT_GAP,
 //      Circle Back's 0.392 s the reference), nothing else sounds from the choke to the impact,
 //      and her stop line ends at least 60 ms before the film's last two frames (the ghost BACK.).
+//   6. The composition constitution (songbook/CONSTITUTION.md as constitution.js): every track
+//      and every plan of that corpus keeps it, warnings aside (each printed); the lint bites
+//      on charts, plans and measured renders that break it.
 // Optional, with a dev server: --url http://localhost:5321 --baseline take.wav
 // renders Circle Back's Drop Edition through the page and compares it with a
 // render made by the old code: the difference must stay within the renderer's
@@ -33,6 +36,7 @@ import {lyricsFromPost, SAMPLE_POST, syllables, tokens} from '../src/allhands/ly
 import {castSong, settleCast} from '../src/allhands/casting.js';
 import {ladyLength, IMPACT_GAP} from '../src/allhands/drop.js';
 import {stopFrames} from '../src/videostudio/edl/anchors.js';
+import {lintTrack, lintPlan, describe, REFERENCES, BAND} from '../src/allhands/songbook/constitution.js';
 import {FORMS} from '../src/allhands/forms.js';
 import {TRACKS, TRACK_ORDER} from '../src/allhands/songbook/index.js';
 import * as E from '../src/allhands/engine.js';
@@ -247,6 +251,54 @@ for (const track of TRACK_ORDER) for (const post of [SAMPLE_POST, ...fixtures.sl
   console.log(`P6 gap from her tag to BACK. (${n} plans): ${TRACK_ORDER.map(t => `${TRACKS[t].title} ${Math.min(...gaps[t]).toFixed(4)}-${Math.max(...gaps[t]).toFixed(4)} s`).join(', ')}`);
   console.log(`P6 her stop line, least room before the ghost BACK.: ${TRACK_ORDER.map(t => `${TRACKS[t].title} ${(seams[t] * 1000).toFixed(1)} ms`).join(', ')}`);
   console.log(`real durations: ${n} plans, one word at a time (${joins} back-to-back joins, ${gated} words gated at the next word's onset), ${given} lines run into a slot that gives way`);
+}
+
+// ---- 6. The composition constitution (songbook/CONSTITUTION.md, constitution.js)
+{
+  for (const id of TRACK_ORDER) {
+    const v = lintTrack(id), errors = v.filter(x => x.level === 'error');
+    console.log(`constitution, ${TRACKS[id].title}: ${errors.length} errors, ${v.length - errors.length} warnings`);
+    for (const line of describe(v)) console.log(`  ${line}`);
+    ok(!errors.length, `${id}: keeps the constitution (warnings aside)${errors.length ? `: ${describe(errors).join('; ')}` : ''}`);
+    ok(Object.keys(TRACKS[id].references).every(k => REFERENCES[k]) && TRACKS[id].references['daft-punk'] && BAND.every(r => TRACKS[id].palette[r]) && TRACKS[id].story.synergy, `${id}: declares its references, its palette and the story`);
+    // No track has a Synthia part yet: a warning that says what is missing, never an error.
+    const syn = v.find(x => x.rule === 'story.synthia');
+    ok(TRACKS[id].story.synthia === null && syn?.level === 'warning' && /no Synthia part yet/.test(syn.reason), `${id}: no Synthia part yet, reported as a warning`);
+    // Every break a track declares is a rule it really breaks.
+    ok(Object.keys(TRACKS[id].breaks || {}).every(rule => v.some(x => x.rule === rule && x.declared)), `${id}: every declared break is one it takes`);
+  }
+  // The lint bites: a chart that breaks rules without saying so fails.
+  const cb = TRACKS['circle-back'], rules = t => lintTrack(t).filter(x => x.level === 'error').map(x => x.rule);
+  ok(rules({...cb, bpm:140}).includes('tempo.range'), 'lint: 140 BPM is an error');
+  ok(rules({...TRACKS.hustle, breaks:{}}).includes('swing.light'), 'lint: Hustle\'s swing without its declared break is an error');
+  ok(rules({...cb, palette:{...cb.palette, guitar:undefined}}).includes('band.roles'), 'lint: a band without Kevin is an error');
+  ok(rules({...cb, references:{kraftwerk:'the grid'}}).includes('references'), 'lint: no Daft Punk is an error');
+  ok(rules({...cb, drop:{...cb.drop, swing:b => (b === 19 ? .1 : cb.drop.swing(b))}}).includes('swing.ladder'), 'lint: a swung ladder is an error');
+  // Major is for the haze songs: Humbled and Honored takes Washed Out; without it, E-flat major is an error.
+  const hh = TRACKS['humbled-and-honored'];
+  ok(!rules(hh).includes('harmony.home') && rules({...hh, references:{'daft-punk':hh.references['daft-punk'], air:hh.references.air}}).includes('harmony.home'), 'lint: E-flat major is a haze song\'s (Washed Out), not a lounge song\'s');
+  ok(lintTrack({...cb, story:{...cb.story, synthia:'an arpeggio'}}).some(x => x.rule === 'story.synthia' && /no bar plays her part/.test(x.reason)), 'lint: a Synthia part declared but never played is reported');
+  // Every plan of section 4's corpus keeps the plan's rules.
+  const REAL = JSON.parse(readFileSync(new URL('./fixtures/allhands-durations.json', import.meta.url), 'utf8')), warned = {};
+  let n = 0;
+  posts.forEach((post, i) => {
+    const lyrics = lyricsFromPost(post);
+    for (const track of TRACK_ORDER) for (const own of [false, true]) {
+      const cast = own ? castSong(post, {track}).cast : undefined, plan = settleCast(FORMS.drop60.arrange, lyrics, REAL, {track, cast}).plan, v = lintPlan(plan);
+      const errors = v.filter(x => x.level === 'error');
+      ok(!errors.length, `${i ? `fixture ${i - 1}` : 'sample'} ${track}${own ? ' (its cast)' : ''}: the plan keeps the constitution${errors.length ? `: ${describe(errors).join('; ')}` : ''}`);
+      for (const x of v) warned[`${track} ${x.rule}`] = (warned[`${track} ${x.rule}`] ?? 0) + 1;
+      n++;
+    }
+  });
+  console.log(`constitution, ${n} plans: 0 errors; warnings ${Object.entries(warned).map(([k, c]) => `${k} x${c}`).join(', ') || 'none'}`);
+  // The plan's rules bite too, and a measured render's.
+  const lyrics = lyricsFromPost(SAMPLE_POST), plan = FORMS.drop60.arrange(lyrics, {}, {track:'humbled-and-honored'}), prules = (p, r) => lintPlan(p, r).filter(x => x.level === 'error').map(x => x.rule);
+  ok(prules({...plan, choke:{...plan.choke, tagEnd:plan.choke.tagEnd - .26}}).includes('impact.gap'), 'lint: the old 0.66 s wait on Humbled and Honored is an error');
+  const good = {loudness:{integrated_lufs:-10.2, true_peak_dbtp:-1.1}, drop_vs_verse:[{drop:'Drop A', lift_lu:4.6, phone_lift_lu:2.8}, {drop:'Drop B', lift_lu:4.7, phone_lift_lu:3.5}], silence:[{span:'36.15-36.29', peak_dbfs:null}], whisper:[]};
+  ok(!prules(plan, good).length, 'lint: a render on its targets passes');
+  ok(prules(plan, {...good, loudness:{integrated_lufs:-13, true_peak_dbtp:-.4}}).includes('mix.loudness') && prules(plan, {...good, drop_vs_verse:[good.drop_vs_verse[0], {drop:'Drop B', lift_lu:3, phone_lift_lu:1.9}]}).includes('mix.drops')
+    && prules(plan, {...good, silence:[{span:'36.15-36.29', peak_dbfs:-48}]}).includes('mix.silence'), 'lint: loudness, a drop that does not lift on a phone, noise before the impact: errors');
 }
 
 // ---- Optional: a real render through the page, compared with the old code's
