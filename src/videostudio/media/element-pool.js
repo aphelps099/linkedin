@@ -94,7 +94,10 @@ export function createElementPool({shots, cache = null, slots = isMobile() ? 4 :
     return Math.max(2, Math.min(8, Math.floor((cache?.budget ?? 0) * .5 / bytes)));
   };
   function plan(el, from) {
-    if (el.busy >= 0 && performance.now() - el.busyAt > 400) el.busy = -1;     // a seek that presented no frame: try again
+    // A seek that finished but presented no frame: try again. Never while it is still seeking: a seek
+    // into a master's seconds-long GOP takes 0.5-3 s (measured, 1080p, GOP 241), and re-seeking then
+    // restarts it, so nothing would ever be captured.
+    if (el.busy >= 0 && !el.video.seeking && performance.now() - el.busyAt > 400) el.busy = -1;
     const want = [], seen = new Set(), N = el.shot.frames, until = Math.min(program.frames, from + windowOf(el));
     for (let g = from; g < until; g++) for (const l of program.frame(g).layers) {
       if (l.kind !== 'video' || l.shotId !== el.shot.id || !l.reverse) continue;

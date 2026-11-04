@@ -438,8 +438,13 @@ const MASTER = path.join(OUT, 'master-1080-gop120.mp4');
   const shot = index.get('the-professionals-arrive'), proxy = path.join(ROOT, 'public/videostudio/proxies', shot.proxy.split('/').pop());
   const made = spawnSync('ffmpeg', ['-v', 'error', '-y', '-i', proxy, '-vf', 'scale=1920:1080:flags=lanczos', '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '16', '-g', '120', '-bf', '2', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-an', MASTER]);
   if (made.status !== 0) throw Error(`ffmpeg could not make the test master: ${made.stderr}`);
+  // And one keyframe for the whole clip, as the bucket's 1080p masters are (GOP 241): a seek near
+  // its end decodes every frame before it.
+  const one = spawnSync('ffmpeg', ['-v', 'error', '-y', '-i', proxy, '-vf', 'scale=1920:1080:flags=lanczos', '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '16', '-g', '1000', '-keyint_min', '1000', '-sc_threshold', '0', '-bf', '2', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-an', MASTER.replace('gop120', 'onegop')]);
+  if (one.status !== 0) throw Error(`ffmpeg could not make the one-GOP test master: ${one.stderr}`);
 }
 app.get('/test-master.mp4', (_q, r) => r.sendFile(MASTER));
+app.get('/test-master-onegop.mp4', (_q, r) => r.sendFile(MASTER.replace('gop120', 'onegop')));
 {
   const before = checks;
   const r = await page.evaluate(async () => {
@@ -491,6 +496,21 @@ app.get('/test-master.mp4', (_q, r) => r.sendFile(MASTER));
     }
     out.masterStats = dm.stats(); out.masterSize = size; out.masterLive = dm.ledger.live;
     dm.dispose(); dp.dispose();
+    // The preview from a one-GOP master alone (no reversed proxy, production today): every seek near
+    // the clip's end decodes ~170 frames first, longer than the pool's 400 ms retry, and must still capture.
+    const oneGop = new Map([[shot.id, {...shot, src:'/test-master-onegop.mp4', proxy:null, rev:null}]]);
+    const pm = T.createFrameDecoder({program:pr, shots:oneGop, from:0, to:24, media:'master', budget:40 << 20});
+    const mcache = T.createStutterCache(), mpool = T.createElementPool({shots:oneGop, cache:mcache, slots:4, preferProxy:false});
+    mpool.setProgram(pr); out.poolMaster = [];
+    for (const f of [0, 6, 12, 18, 23]) {
+      const t0 = performance.now();
+      while (performance.now() - t0 < 20000 && !mpool.settled(f)) { mpool.update(f, f / 24, false); await new Promise(res => setTimeout(res, 20)); }
+      await pm.prepare(f);
+      const l = pr.frame(f).layers.find(x => x.reverse), a = mpool.source(l), b = pm.source(l);
+      out.poolMaster.push({f, settled:mpool.settled(f), ms:Math.round(performance.now() - t0), db:a && b ? psnr(pixels(a.image), pixels(b.image)) : 0});
+      pm.release(f);
+    }
+    out.poolMasterStats = mpool.stats; mpool.dispose(); mcache.clear(); pm.dispose();
     return out;
   });
   const min = a => Math.min(...a), fmt = a => a.map(x => x.toFixed(1)).join('/');
@@ -499,6 +519,7 @@ app.get('/test-master.mp4', (_q, r) => r.sendFile(MASTER));
   ok(r.live.every(n => n === 0), 'every VideoFrame of the three decoders is closed');
   ok(r.previewFlip >= 1 && min(r.preview) >= 38 && min(r.previewExport) >= 40, `preview, reversed:false: the pool plays the reversed span from captured forward frames, ${fmt(r.preview)} dB against the reversed proxy and ${fmt(r.previewExport)} dB against the export's decode`);
   ok(min(r.master) >= 30 && r.masterSize?.[1] === 1080 && r.masterLive === 0 && r.masterStats.cacheBytes <= 40 << 20, `masters only (1080p, GOP 120, B-frames, a 40 MB cache): forward and reversed frames decode and match the proxies at ${fmt(r.master)} dB; ${r.masterStats.gops} GOP runs, ${r.masterStats.decoded} frames decoded, ${r.masterStats.evicted} evicted, peak ${(r.masterStats.peakBytes / 2 ** 20).toFixed(0)} MB`);
+  ok(r.poolMasterStats.reversedFromForward >= 1 && r.poolMaster.every(x => x.settled && x.db >= 35), `preview from a one-GOP 1080p master alone: the pool captures every reversed frame although each seek outlasts its retry, ${r.poolMaster.map(x => `f${x.f} ${x.db.toFixed(1)} dB in ${x.ms} ms`).join(', ')}; ${r.poolMasterStats.seeks} seeks`);
   log(`7b. reversed without reversed proxies, masters: ${checks - before} checks`);
 }
 
