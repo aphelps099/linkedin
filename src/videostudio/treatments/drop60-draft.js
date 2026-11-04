@@ -34,6 +34,8 @@ export const CAST = {
   printer:'printer-outward-feed',
 };
 const PAT = 'gen:camera-off', BOARD = 'gen:board', BLACK = 'gen:color:#000000';
+// A board move's length, in frames: about a 16th at 92-130 BPM.
+export const BOARD_MOVE = 4;
 // The loop seam's ghost BACK.: its intensity (plan §2: the hook's ghosts and BACK.'s are I .08).
 export const GHOST = .08;
 const sh = id => `shot:${id}`;
@@ -106,7 +108,13 @@ export function drop60Draft(plan, shots, {format = '9:16', features, seed = 7} =
   const index = shotIndex(shots);
   const m = (name, ctx) => MOVES[name].fn({plan, shots, features, format, seed, ...ctx});
   const c = (id, at, len, cell, asset, more = {}) => ({id, at, len, cell, asset, ...more});
-  const patches = [], board = [], camera = [], overrides = [], transports = [];
+  const patches = [], board = [], camera = [], overrides = [], transports = [], boardMoves = [];
+  // The board keeps its home (layouts.js HOME) in every call layout. A full-board moment (the
+  // screen share, the ladder's board alone, the ignition) grows out of the home on its first beat
+  // and returns to it landing on the cut that ends it: a short eased move, never a jump (lint G14).
+  // Both happen over the full-board moment's own picture, never over the call's tiles.
+  const grow = (at, why) => boardMoves.push({id:`grow.${boardMoves.length}`, at, frames:BOARD_MOVE, ease:'inOutSine', align:'start', why});
+  const settle = (at, why) => boardMoves.push({id:`home.${boardMoves.length}`, at, frames:BOARD_MOVE, ease:'inOutSine', align:'end', why});
   const add = (scene, p) => { for (const x of p.clips || []) { x.scene ??= scene; } patches.push(p); return p; };
   // The zoom ceiling of a shot in a cell (U · crop.h / cell.h); `fit` picks the first that holds `zoom`.
   const ceiling = (id, cell) => { const s = index.get(id), r = cellRect(format, cell); if (!s || !r) return 0; return (UPSCALE[s.sharpTier] ?? 1.5) * resolveCrop(s, {}, format, r).h / r.h; };
@@ -132,6 +140,9 @@ export function drop60Draft(plan, shots, {format = '9:16', features, seed = 7} =
     why:'cold open: frame 0 is the drop’s impact frame; the sound there is the impact, copied (plan.coldOpen)'});
   transports.push({id:'rewind', at:r6(S(rw.at)), len:r6(S(rw.at + rw.len) - S(rw.at)), kind:'rewind', audio:true, rate:rw.rate ?? 4, from:{anchor:`step:${r6(S(rw.sourceFrom))}`}, signature:'rewind',
     why:'the plan’s rewind: the last second before the choke at 4x, picture and sound reversed together'});
+
+  // The rewind's board (the ladder's board alone) shrinks back to its home, landing on the intro's first frame.
+  settle(r6(resume), 'the cold open hands the board back to its home as the call starts');
 
   // ---- the intro: Pat's black tile, the bloom, the unmute, the call ------------------------------------
   // The bloom: four join before the unmute, Synergy on it with his first line, the printer a beat later.
@@ -218,6 +229,8 @@ export function drop60Draft(plan, shots, {format = '9:16', features, seed = 7} =
   const ladderHook = again.length ? m('snapLadder', {clip:keysHook, at:hookAt + BS, len:hookEnd - hookAt - BS, ladder:'steep', hits:again.map(w => w.at)}).clips[0] : keysHook;
   ladderHook.why = 'snap ladder 1 / 1.33 / 1.78 on the repeated hook';
   add('hook', {clips:[crash, ladderHook, c('shareOps', hookAt, hookEnd - hookAt, 'BOARD+STRIP.2', sh(fit('BOARD+STRIP.2', 1, CAST.opsArrive, CAST.ops)), {time:{in:3}, chrome:{speaking:speaking('drums')}})]});
+  grow(hookAt, 'the screen share: the board grows out of its home');
+  settle(hookEnd, 'the share ends: the board is home on the cut');
 
   // ---- verse 2 (when the verse has one): the chase, vocal cuts in one tile, the dub delay -----------------
   if (build.from - hookEnd >= BS) {
@@ -306,8 +319,11 @@ export function drop60Draft(plan, shots, {format = '9:16', features, seed = 7} =
     add('ladder', m('poorConnection', {id:`poorB${id}`, at:p.at, len:BS, pool:[CAST.arjun], cell:'BOARD+STRIP.2', scene:'ladder', in:1}));
     for (const q of patches.slice(-2)) for (const x of q.clips) delete x.chrome;
   }
-  // The 32nds: the board alone; the choke: black, her tag on bare sockets, then true black.
-  add('ladder', {clips:[c('ladderBoard', chokeBar, choke.at - chokeBar, 'full', BOARD, {why:'the board alone: L at k4'}), c('black', choke.at, impact - choke.at, 'full', BLACK, {why:'the choke: true black once her tag stops sounding (the board goes dark)'})]});
+  if (poor.length) grow(poor[0].at, 'the board takes the screen with Synergy’s tile beside it');
+  // The 32nds: the board alone (it grows to the frame over black); the choke: black, her tag on bare
+  // sockets, then true black.
+  add('ladder', {clips:[c('ladderBoard', chokeBar, choke.at - chokeBar, 'full', BLACK, {why:'the board alone: L at k4, grown to the frame'}), c('black', choke.at, impact - choke.at, 'full', BLACK, {why:'the choke: true black once her tag stops sounding (the board goes dark)'})]});
+  grow(chokeBar, 'the board alone: it grows to the frame');
   // The scanline wobble on the rewind (film clock), where the rewound second shows no Synergy.
   if (S(rw.sourceFrom - rw.len * (rw.rate ?? 4)) >= chokeBar - 1e-9) camera.push({id:'rewind.wobble', at:r6(S(rw.at)), len:r6(S(rw.at + rw.len) - S(rw.at)), clock:'film', fx:[{type:'scanline', amount:.3, wobble:8, period:6}], why:'REWIND: the tape’s scanline wobble'});
 
@@ -315,7 +331,7 @@ export function drop60Draft(plan, shots, {format = '9:16', features, seed = 7} =
   const ign = add('dropA', m('pegTakeover', {id:'ignite', at:impact, len:8, pool:[CAST.arrive], scene:'dropA'}));
   ign.clips[0].at = {anchor:'cue:impact', hit:true};
   ign.clips[0].why = 'IGNITION on the frame that holds the impact, over peg video (the-professionals-arrive: office-ensemble has Synergy in it)';
-  const A = impact + 8, Aend = sinkS.from;
+  const A = impact + 8, Aend = sinkS.from;   // (pegTakeover brings the board home, landing on A)
   const room = c('room', A, Aend - A, 'stack3.0', sh(CAST.arrive), {time:{in:r6((ign.clips[0].time?.in ?? 0) + (cutFrame(T(A)) - impactFrame) / 24)}, chrome:{name:'Lobby'}, why:'the ignition’s shot, unpegged: the room comes back'});
   add('dropA', {clips:[m('slowPush', {clip:room, at:A, len:Aend - A, to:1.25}).clips[0]]});
   // Synergy's tile: a whip slide hides the cut to Synthia on her bend (PIVOT).
@@ -470,7 +486,7 @@ export function drop60Draft(plan, shots, {format = '9:16', features, seed = 7} =
     board.push({id:'ghost', at:at(ghostFrom), len:span(ghostFrom, N), text:{ref:'song:impact'}, ghost:GHOST, why:'ghost BACK.: frame 0’s BACK. on the same pegs, at I .08 (plan §2 row 29)'});
   }
 
-  const edl = merge(createEDL({format, loop:true, seed, track:plan.track, board, transports, camera, overrides}), ...patches);
+  const edl = merge(createEDL({format, loop:true, seed, track:plan.track, board, transports, camera, boardMoves, overrides}), ...patches);
   // Clean: no undefined fields.
   for (const x of edl.clips) {
     for (const key of Object.keys(x)) if (x[key] === undefined) delete x[key];

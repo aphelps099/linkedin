@@ -147,7 +147,7 @@ for (const track of TRACK_ORDER) {
   const pegsOf = (g, screen) => { const layout = g.layoutOf(screen), page = layout.pages[0], o = g.place(screen, layout, page), out = new Set(); for (const ch of page.lines.flatMap(l => l.chars)) for (let i = 0; i < ch.pegs.length; i += 2) out.add((o.y + ch.pegs[i + 1]) * g.cols + o.x + ch.pegs[i]); return out; };
   for (const track of TRACK_ORDER) for (const format of ['9:16', '1:1', '16:9']) {
     const plan = plans[track], p = programs[`${track}|${format}`], label = `${track} ${format}`, L = audioLatency(plan), N = p.frames;
-    const her = stopFrames(plan), ev = plan.lady.find(e => e.role === 'stop'), heardFrom = plan.timing[ev.at] + L, heardTo = her.end + TAG_TAIL + L;
+    const her = stopFrames(plan), ev = plan.lady.find(e => e.role === 'stop'), heardFrom = plan.timing[Math.floor(ev.at)] + (ev.at % 1) * plan.step + L, heardTo = her.end + TAG_TAIL + L;
     const stop = plan.tape.find(x => x.kind === 'stop'), curve = Math.round(plan.timing[stop.from] * FPS) + Math.ceil(stop.seconds * FPS - 1e-9), B = Math.max(curve, her.black), G = Math.max(N - 2, B);
     const black = fr => fr.layers.every(l => l.gen === 'color:#000000') && !fr.board.rect;
     // Frames against the sound: no frame that holds any of her phrase is black, and each shows it lit.
@@ -275,10 +275,10 @@ if (mp4) {
     ok(blackY < 1e-4 && blackPx <= 2 && Y[at(I)] > .3 && Y[at(I) + 1] < Y[at(I)] && Y[at(B) - 1] > blackY, `true black on ${B}-${I - 1} (luminance ${blackY.toExponential(1)}, max pixel ${blackPx}), the ignition on ${I} (${Y[at(I)].toFixed(3)}, then ${Y[at(I) + 1].toFixed(3)}); frame ${B - 1} still lit`);
     const impactT = plan.timing[plan.choke.until], onset = onsetIn(impactT - .03, impactT + .12), lead = (onset - I / FPS) * 1000;
     ok(lead >= 0 && lead < 1000 / FPS, `the impact: frame ${I} starts at ${(I / FPS).toFixed(4)} s, its sound from ${onset.toFixed(4)} s: the picture leads by ${lead.toFixed(1)} ms (0 to under one frame, never late)`);
-    let last = null; for (let i = ix(plan.timing[plan.choke.at]); i < ix(impactT - .01); i++) if (peak(i) > 10 ** (-70 / 20)) last = t0 + i / sr;
+    let last = null; for (let i = ix(plan.choke.time); i < ix(impactT - .01); i++) if (peak(i) > 10 ** (-70 / 20)) last = t0 + i / sr;
     ok(last !== null && last < B / FPS, `her tag sounds until ${last?.toFixed(4)} s, before the picture goes black at frame ${B} (${(B / FPS).toFixed(4)} s): no voice over black`);
     let run = 0, best = [0, 0];
-    for (let i = ix(plan.timing[plan.choke.at] + .2), s = i; i < ix(impactT + .1); i++) { if (peak(i) < 10 ** (-70 / 20)) { if (++run > best[1] - best[0]) best = [s, i + 1]; } else { run = 0; s = i + 1; } }
+    for (let i = ix(plan.choke.time + .2), s = i; i < ix(impactT + .1); i++) { if (peak(i) < 10 ** (-70 / 20)) { if (++run > best[1] - best[0]) best = [s, i + 1]; } else { run = 0; s = i + 1; } }
     const silent = (best[1] - best[0]) / sr * 1000;
     ok(silent >= 300, `the silence before the impact: ${silent.toFixed(0)} ms below -70 dBFS (${(t0 + best[0] / sr).toFixed(3)}-${(t0 + best[1] / sr).toFixed(3)} s)`);
   }
@@ -287,7 +287,7 @@ if (mp4) {
   const her = stopFrames(plan), ev = plan.lady.find(e => e.role === 'stop'), N = p.frames;
   if (her && from <= her.onset && to >= N) {
     const stop = plan.tape.find(q => q.kind === 'stop'), B2 = Math.max(Math.round(plan.timing[stop.from] * FPS) + Math.ceil(stop.seconds * FPS - 1e-9), her.black), G2 = Math.max(N - 2, B2);
-    let last = null; for (let i = ix(plan.timing[ev.at]); i < Math.min(x.length / 2, ix(N / FPS)); i++) if (peak(i) > 10 ** (-70 / 20)) last = t0 + i / sr;
+    let last = null; for (let i = ix(plan.timing[Math.floor(ev.at)] + (ev.at % 1) * plan.step); i < Math.min(x.length / 2, ix(N / FPS)); i++) if (peak(i) > 10 ** (-70 / 20)) last = t0 + i / sr;
     const litY = Math.min(...Y.slice(at(her.onset), at(B2))), darkY = B2 < G2 ? Math.max(...Y.slice(at(B2), at(G2))) : 0, darkPx = B2 < G2 ? Math.max(...maxPx.slice(at(B2), at(G2))) : 0;
     ok(last !== null && last < B2 / FPS && last < G2 / FPS && litY > darkY + 1e-3 && darkY < 1e-4 && darkPx <= 2, `the ending: "${ev.display}" sounds until ${last?.toFixed(4)} s, before frame ${B2} (${(B2 / FPS).toFixed(4)} s): never over black; frames ${her.onset}-${B2 - 1} lit (luminance at least ${litY.toFixed(4)})${B2 < G2 ? `, true black on ${B2}-${G2 - 1} (max pixel ${darkPx})` : ''}, the ghost from ${G2} (${Y[at(G2)].toExponential(1)})`);
   }

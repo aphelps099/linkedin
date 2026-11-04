@@ -135,7 +135,8 @@ function drums(api, b, bar, s, t) {
     if (L.kick && s % 4 === 0) { I.kick(ctx, D, t, 1); api.duck(t); }
     if (L.hats) { const v = L.hatsStraight ? (s % 4 === 0 ? .3 : .2) : hatVelocity(s); if (v) I.hat(ctx, D, t, v * .55); }
     if (L.open && PATTERNS.open.includes(s)) I.openHat(ctx, D, t, .18);
-    const [rate, v0, v1] = L.roll, last = bar === 19 ? 8 : 16;          // the last bar stops at the choke
+    const choke = api.plan.choke?.at ?? 19 * 16 + 8, last = bar === Math.floor(choke / 16) ? choke % 16 : 16;   // the last bar stops at the choke
+    const [rate, v0, v1] = L.roll;
     if (s < last) {
       const v = v0 + (v1 - v0) * s / 15, tone = 200 + 200 * L.rung / 7;
       if (rate >= 2) { if (s % rate === 0) I.clap(ctx, D, t, v); }

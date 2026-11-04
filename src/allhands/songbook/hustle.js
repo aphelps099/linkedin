@@ -246,7 +246,10 @@ export default {
   chords:CHORDS,
   chordAt,
   drop:{
-    bars:BARS, sections:SECTIONS, unmute:UNMUTE, choke:CHOKE, impact:IMPACT, rise:16, sink:SINK, stop:{bar:31, step:8, seconds:.4},
+    // Her "Full stop." leads the tape by 78 ms (drop.js: on the 128th nearest), so
+    // at 130 BPM it ends 0.09 s before the film's last two frames: her line, one
+    // black frame, the two ghost BACK. frames of the loop seam. The tape still stops at 31:8.
+    bars:BARS, sections:SECTIONS, unmute:UNMUTE, choke:CHOKE, impact:IMPACT, rise:16, sink:SINK, stop:{bar:31, step:8, seconds:.4, lead:.078},
     swing:swingOf, layers, cutoff, slots,
     answers:{bars:[14, 15], steps:[4, 12], notes:[53, 58]},
     stutter:{bar:17, notes:[53, 53, 58, 58, 60, 60, 63, 63]},

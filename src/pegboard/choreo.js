@@ -69,6 +69,34 @@ function ladyWords(plan, e, table) {
 
 const STYLE = {host:'typewriter', verse:'scanline', hook:'wipe', answer:'pop', repeat:'pop'};
 
+// ---- whole words in stutters -----------------------------------------------------
+// A fragment of a word (her ladder's "LE" and "LET'S BU-", Synergy's stammer, the intro's tease
+// of BACK.) is shown as the whole word or words it comes from: the letters that sound lit, the
+// rest a dim ghost at FRAGMENT_GHOST, so the word always reads and the stutter still shows as the
+// lit letters re-pop on every retrigger. A screen word carries `lit`: how many of its leading
+// letters sound (all of them when it has none).
+export const FRAGMENT_GHOST = .2;
+// The whole words a fragment ("LE", "LET'S BU-") comes from in `phrase` ("LET'S BUILD."), as
+// [{text, lit}]; null when the fragment is not the start of the phrase.
+export function wholeWords(fragment, phrase) {
+  const frag = String(fragment ?? '').replace(/[-\u2013]$/, '').trim(), fw = frag.split(/\s+/), pw = String(phrase ?? '').trim().split(/\s+/);
+  if (!frag || !pw[0] || fw.length > pw.length) return null;
+  const up = x => x.toUpperCase();
+  for (let i = 0; i < fw.length; i++) if (i < fw.length - 1 ? up(pw[i]) !== up(fw[i]) : !up(pw[i]).startsWith(up(fw[i]))) return null;
+  return fw.map((w, i) => ({text:pw[i], lit:i < fw.length - 1 ? pw[i].length : w.length}));
+}
+// Her ladder's whole phrase: the longest display among the plan's ladder hits of that recording
+// (the rungs that play all of it), whatever the cast.
+export function ladderPhrase(plan, e) {
+  const list = (plan?.lady || []).filter(x => x.role === 'ladder' && x.file === e.file).map(x => x.display);
+  return list.reduce((a, b) => b.replace(/-$/, '').length > a.replace(/-$/, '').length ? b : a, e.display);
+}
+// A ladder hit's whole words, or null when it plays the whole phrase (nothing to fill in).
+export function ladderWhole(plan, e) {
+  const whole = wholeWords(e.display, ladderPhrase(plan, e));
+  return whole && whole.some(w => w.lit < w.text.length) ? whole : null;
+}
+
 export function buildScreens(plan, {table} = {}) {
   const screens = [], drop = plan.form === 'drop60', section = t => plan.sections.find(s => t >= T(plan, s.from * 16) && t < T(plan, s.to * 16))?.name, step = stepOf(plan);
   const add = s => { screens.push({k:1, tone:'blue', release:'cut', fx:{}, ...s}); };
@@ -89,13 +117,14 @@ export function buildScreens(plan, {table} = {}) {
     const start = T(plan, w.at);
     add({kind:'answer', voice:'synergy', from:start, to:start + w.steps * step, text:w.display, words:[{text:w.display, start, end:start + w.gate, units:[{chars:[0, w.display.length], start}]}], reveal:'pop', tone:'white', k:1});
   }
-  // His stammer: the first three letters and a dash, on its own 16th. Where the
-  // lady's ladder owns the board (the drop's bar 18) it is heard, not shown.
+  // His stammer: the whole word with the first three letters lit (what he sings) and the rest a
+  // ghost, on its own 16th. Where the lady's ladder owns the board (the drop's bar 18) it is heard,
+  // not shown.
   const ladderSteps = new Set((plan.lady || []).filter(e => e.role === 'ladder').map(e => Math.floor(e.at / 16)));
   for (const s of plan.stutters) {
     if (ladderSteps.has(Math.floor(s.at / 16))) continue;
-    const start = T(plan, s.at), text = s.word.split(' ')[0].slice(0, 3).toUpperCase() + '-';
-    add({kind:'stammer', voice:'synergy', from:start, to:start + step, text, words:[{text, start, end:start + step * .9, units:[{chars:[0, text.length], start}]}], reveal:'pop', tone:'white', k:drop ? 2 : 1});
+    const start = T(plan, s.at), word = ((plan.words || []).find(w => w.word === s.word)?.display ?? s.word).split(' ')[0].toUpperCase(), lit = Math.min(3, word.length);
+    add({kind:'stammer', voice:'synergy', from:start, to:start + step, text:word, fragment:`${word.slice(0, lit)}-`, words:[{text:word, lit, start, end:start + step * .9, units:[{chars:[0, lit], start}]}], reveal:'pop', tone:'white', k:drop ? 2 : 1});
   }
   // The lady.
   for (const e of plan.lady || []) {
@@ -105,8 +134,12 @@ export function buildScreens(plan, {table} = {}) {
       // The visual ladder is the audio ladder: each retrigger re-cuts the board.
       // Up to two pops a second are fine; from the quarter-note rung on, a
       // retrigger moves the letters (a row shift, a size kick) instead of
-      // flashing them, so the climax never strobes.
-      const r = ladderLook(e), k = [1, 1, 1, 1, 2, 3, 3, 4][r] ?? 1;
+      // flashing them, so the climax never strobes. A fragment of her phrase
+      // ("LE", "LET'S BU-") shows the whole words it comes from, its own letters lit.
+      const r = ladderLook(e), k = [1, 1, 1, 1, 2, 3, 3, 4][r] ?? 1, whole = ladderWhole(plan, e);
+      // (Two words may stack on two lines, so both are always on the board at once.)
+      if (whole) Object.assign(base, {text:whole.map(w => w.text).join(' '), fragment:e.display, ...(whole.length > 1 ? {lines:2} : {}),
+        words:words.map((w, i) => ({...w, text:whole[i].text, lit:whole[i].lit, units:[{chars:[0, whole[i].lit], start:w.start}]}))});
       add({...base, reveal:r < 2 ? 'typewriter' : r < 4 ? 'pop' : 'steady', k, tone:r >= 2 && r < 4 && Math.round(e.at * 2) % 4 >= 2 ? 'white' : 'blue',
         fx:{rowShift:r >= 4 ? [0, -1, 0, 1][Math.round(e.at * 2) % 4] : 0, sparkle:r === 7 ? clamp((e.at % 16) / 8) : 0}});
     // Her tag holds the board until it goes black (a frame past her envelope's end), so the
@@ -124,7 +157,9 @@ export function buildScreens(plan, {table} = {}) {
   if (drop) {
     const u = plan.call?.until ?? 32, a = Math.max(2, u - 24), z = u - 4;
     add({kind:'title', voice:'board', from:T(plan, a), to:T(plan, z), text:"YOU'RE ON MUTE", words:[{text:"YOU'RE", start:T(plan, a), end:T(plan, z), units:[{chars:[0, 6], start:T(plan, a)}]}, {text:'ON', start:T(plan, a + 2), end:T(plan, z), units:[{chars:[0, 2], start:T(plan, a + 2)}]}, {text:'MUTE', start:T(plan, a + 4), end:T(plan, z), units:[{chars:[0, 4], start:T(plan, a + 4)}]}], reveal:'typewriter', tone:'white', release:'cut'});
-    add({kind:'tease', voice:'board', from:T(plan, z), to:T(plan, u), text:'BA', words:[{text:'BA', start:T(plan, z), end:T(plan, u), units:[{chars:[0, 1], start:T(plan, z)}, {chars:[1, 2], start:T(plan, z + 2)}]}], reveal:'pop', k:3, tone:'blue'});
+    // The tease is BACK. (her impact word, whatever the cast) with its first two letters lit, one a 16th.
+    const back = ((plan.lady || []).find(e => e.role === 'impact')?.display ?? 'BACK.').split(' ')[0], lit = Math.min(2, back.length);
+    add({kind:'tease', voice:'board', from:T(plan, z), to:T(plan, u), text:back, fragment:back.slice(0, lit), words:[{text:back, lit, start:T(plan, z), end:T(plan, u), units:[{chars:[0, 1], start:T(plan, z)}, {chars:[1, lit], start:T(plan, z + 2)}].filter(x => x.chars[1] > x.chars[0])}], reveal:'pop', k:3, tone:'blue'});
   }
   screens.sort((a, b) => a.from - b.from);
   // One screen at a time: a screen ends when the next begins. Synergy's lines
@@ -288,9 +323,12 @@ function drawScreen(board, screen, t, {layoutOf, place, reduced, igniting}) {
     letterIndex++;
     const sung = t >= unit.start, ended = t > word.end;
     const pegs = ch.pegs, n = pegs.length / 2;
+    // The letters of a fragment's word that do not sound: a flat ghost, so the word reads.
+    const ghostLetter = word.lit !== undefined && charInWord >= word.lit;
     for (let i = 0; i < n; i++) {
       const px = pegs[2 * i], py = pegs[2 * i + 1], x = origin.x + px, y = origin.y + py + (screen.fx.rowShift || 0);
       if (screen.ghost) { light(board, x, y, screen.ghost * fade, {tone}); continue; }
+      if (ghostLetter) { light(board, x, y, FRAGMENT_GHOST * fade, {tone}); continue; }
       let I, white = 0, size = 1, dx = 0, dy = 0, peg = tone;
       if (screen.voice === 'synergy' && !sung && screen.reveal !== 'wipe') { I = .1; }        // ghost: read ahead on mute
       else {

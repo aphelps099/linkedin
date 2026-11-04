@@ -121,22 +121,65 @@ export function tagRate(spec, entry, length, window, pitchClasses) {
   return {rate, room};
 }
 
-export function ladyEvents(words, table = LADY_TABLE, {track, cast} = {}) {
+// The wait before the impact. Her tag ends `target` seconds before BACK.'s
+// downbeat on every track and every cast; Circle Back's sample post (0.392 s)
+// is the reference, and Aaron heard the longer waits (Humbled and Honored
+// 0.658 s, Hustle 0.544 s) as a beat too long. The impact never moves: the
+// choke, and her tag with it, slides to where the gap comes out right.
+// min and max are the range every plan must land in (check-songbook, constitution.js).
+export const IMPACT_GAP = Object.freeze({target:.392, min:.37, max:.42});
+
+// The step (fractional) nearest song time t on the lady's clock (a step's time
+// plus its fraction at the nominal 16th, as engine.js plays her), on a 128th
+// grid: an eighth of a 16th, exact in binary, 7 to 10 ms at 90-130 BPM.
+export function ladyStepAt(timing, step, t) {
+  let i = timing.length - 2;
+  while (i > 0 && timing[i] > t) i--;
+  return i + Math.round((t - timing[i]) / step * 8) / 8;
+}
+// The time of a (fractional) step on the lady's clock.
+export const ladyClock = (timing, step, at) => timing[Math.floor(at)] + (at - Math.floor(at)) * step;
+
+export function ladyEvents(words, table = LADY_TABLE, {track, cast, timing} = {}) {
   const tr = trackOf(track), D = tr.drop, roles = castOf(cast), STEP = tr.step, events = [], seconds = s => s / STEP;
   const impactStep = D.impact * BAR_STEPS, chokeStep = D.choke.bar * BAR_STEPS + D.choke.step;
+  const T = timing ?? timingTable(D.bars * BAR_STEPS + BAR_STEPS, D.swing, STEP);
   // The deep voice's metal (a comb, lady.js bakeDeep): Circle Back keeps its A2;
   // the other tracks ring on the chord's root, an octave above Pat's.
   const comb = bar => D.tuneComb ? {comb:440 * 2 ** ((tr.chordAt(bar).root + 12 - 69) / 12)} : {};
   const ladder = roles.ladder && table[roles.ladder.file], tagEntry = roles.tag && table[roles.tag.file], impactEntry = roles.impact && table[roles.impact.file];
+  // Tag, choke, silence, impact. Her tag is placed first: where it starts, the
+  // band chokes and the ladder stops. "Let's circle-" a touch quick, so the
+  // whole word lands before the silence: it plays at the rate and gate the
+  // track's choke-to-impact window allows (D.choke, the earliest the choke
+  // falls by that rule), and starts on the 128th that leaves IMPACT_GAP before
+  // the impact. Circle Back's sample post: 19:8, as it always was.
+  let tagEvent = null, chokeAt = chokeStep;
+  if (tagEntry) {
+    const range = span(tagEntry, roles.tag.words), tag = slice(tagEntry, ...range), window = (impactStep - chokeStep) * STEP;   // the build is straight: no swing in it
+    const {rate, room} = tagRate(D.tag, tagEntry, tag[1] - tag[0], window, tr.pitchClasses);
+    // Circle Back gates at 0.64 s; a tuned tag is heard whole, inside the room its silence leaves.
+    const gate = room === undefined ? Math.min(.64, (tag[1] - tag[0]) / rate) : Math.min((tag[1] - tag[0]) / rate, room);
+    tagEvent = {role:'tag', file:roles.tag.file, from:tag[0], to:tag[1], at:chokeStep, rate, gate, gain:tagEntry.gainDb - 1, pan:0, display:roles.tag.display ?? upper(tagEntry, ...range)};
+    chokeAt = tagEvent.at = ladyStepAt(T, STEP, T[impactStep] - (D.tag.gap ?? IMPACT_GAP.target) - ladyLength(tagEvent));
+  }
   if (ladder) {
     const range = span(ladder, roles.ladder.words), file = roles.ladder.file;
     const {rate:baseRate, base} = tunedRate(ladder?.f0, D.ladder.targets);
     const cuts = ladderCuts(ladder, range, roles.ladder.display ?? upper(ladder, ...range)), build = D.ladder.rungs[0].bar, semis = ladderSemitones(base, D.ladder.pentatonic);
     for (const rung of D.ladder.rungs) {
-      const glide = rung.glide && rung.glide.map(semis), notes = rung.deg && rung.deg.map(semis);
-      rung.hits.forEach((h, i) => {
-        const at = rung.bar * BAR_STEPS + h, period = (rung.hits[i + 1] ?? (rung.hits.length > 1 ? h + (rung.hits[1] - rung.hits[0]) : 16)) - h;
-        const st = glide ? glide[0] + (glide[1] - glide[0]) * (i / Math.max(1, rung.hits.length - 1)) : notes[i];
+      const glide = rung.glide && rung.glide.map(semis), notes = rung.deg && rung.deg.map(semis), n0 = rung.hits.length;
+      // The rung the choke falls in retriggers right up to it: evenly spaced hits
+      // run on at their period (holding the last note) or stop sooner, and the
+      // last one, if at least half of it fits, is gated to end at the choke. No
+      // hole longer than half a retrigger opens between her and the choke.
+      const p0 = n0 > 1 ? rung.hits[1] - rung.hits[0] : 16, even = rung.hits.every((h, i) => !i || Math.abs(h - rung.hits[i - 1] - p0) < 1e-9);
+      const room = chokeAt - rung.bar * BAR_STEPS, last = Math.floor(chokeAt / BAR_STEPS) === rung.bar;
+      const hits = !last ? rung.hits : even ? Array.from({length:Math.max(0, Math.floor((room - rung.hits[0] - p0 / 2) / p0 + 1e-9) + 1)}, (_, i) => rung.hits[0] + i * p0)
+        : rung.hits.filter(h => h + p0 / 2 <= room + 1e-9);
+      hits.forEach((h, i) => {
+        const next = hits[i + 1] ?? (hits.length > 1 ? h + (hits[1] - hits[0]) : n0 > 1 ? h + p0 : 16), at = rung.bar * BAR_STEPS + h, period = (last ? Math.min(next, room) : next) - h;
+        const st = glide ? glide[0] + (glide[1] - glide[0]) * Math.min(1, i / Math.max(1, n0 - 1)) : notes[Math.min(i, n0 - 1)];
         const {cut, display} = cuts[rung.cut];
         const {rate, gate} = cutTune(file, cut, base + st, period * STEP, baseRate * 2 ** (st / 12));
         events.push({role:'ladder', rung:rung.bar - build, file, from:cut[0], to:cut[1], at, rate, gate,
@@ -144,15 +187,7 @@ export function ladyEvents(words, table = LADY_TABLE, {track, cast} = {}) {
       });
     }
   }
-  // Tag, choke, silence, impact.
-  // "Let's circle-" a touch quick, so the whole word lands before the silence.
-  if (tagEntry) {
-    const range = span(tagEntry, roles.tag.words), tag = slice(tagEntry, ...range), window = (impactStep - chokeStep) * STEP;   // the build is straight: no swing in it
-    const {rate, room} = tagRate(D.tag, tagEntry, tag[1] - tag[0], window, tr.pitchClasses);
-    // Circle Back gates at 0.64 s; a tuned tag is heard whole, inside the room its silence leaves.
-    const gate = room === undefined ? Math.min(.64, (tag[1] - tag[0]) / rate) : Math.min((tag[1] - tag[0]) / rate, room);
-    events.push({role:'tag', file:roles.tag.file, from:tag[0], to:tag[1], at:chokeStep, rate, gate, gain:tagEntry.gainDb - 1, pan:0, display:roles.tag.display ?? upper(tagEntry, ...range)});
-  }
+  if (tagEvent) events.push(tagEvent);
   // "BACK." owns the impact, dry and loud with the machine under it; her deep
   // robotic "BACK." answers one beat later, so the two never blur into one word.
   if (impactEntry) {
@@ -189,7 +224,11 @@ export function ladyEvents(words, table = LADY_TABLE, {track, cast} = {}) {
   const stopRole = roles.stop, stop = stopRole && table[stopRole.file];
   if (stop) {
     const range = span(stop, stopRole.words), cut = slice(stop, ...range);
-    events.push({role:'stop', file:stopRole.file, from:cut[0], to:cut[1], at:D.stop.bar * BAR_STEPS + D.stop.step, rate:1, gate:cut[1] - cut[0] + .02, gain:stop.gainDb, pan:0, display:stopRole.display ?? upper(stop, ...range)});
+    // She starts with the tape-stop, or `D.stop.lead` seconds before it (Hustle:
+    // the command a breath ahead of the tape, so her line ends clear of the
+    // film's last two frames, the loop seam's ghost BACK.).
+    const tape = D.stop.bar * BAR_STEPS + D.stop.step, at = D.stop.lead ? ladyStepAt(T, STEP, T[tape] - D.stop.lead) : tape;
+    events.push({role:'stop', file:stopRole.file, from:cut[0], to:cut[1], at, rate:1, gate:cut[1] - cut[0] + .02, gain:stop.gainDb, pan:0, display:stopRole.display ?? upper(stop, ...range)});
   }
   return events.sort((a, b) => a.at - b.at);
 }
@@ -239,22 +278,27 @@ export function arrangeDrop(lyrics, durations, table = LADY_TABLE, options) {
   const totalSteps = D.bars * BAR_STEPS, sectionOf = bar => D.sections.find(s => bar >= s.from && bar < s.to) || D.sections.at(-1);
   const timing = timingTable(totalSteps + BAR_STEPS, D.swing, STEP);
   clearWords(words, timing, durations, stutters);                     // one word at a time, in seconds
-  const lady = ladyEvents(words, table, {track:tr, cast});
+  const lady = ladyEvents(words, table, {track:tr, cast, timing});
   const bars = Array.from({length:D.bars}, (_, index) => ({index, section:sectionOf(index).name, chord:tr.chordAt(index), layers:D.layers(index), cutoff:D.cutoff(index), swing:D.swing(index)}));
-  const chokeAt = D.choke.bar * 16 + D.choke.step, tag = lady.find(e => e.role === 'tag');
+  // The choke is where her tag starts (ladyEvents): a step on the 128th grid, the lady's clock.
+  const tag = lady.find(e => e.role === 'tag'), chokeAt = tag ? tag.at : D.choke.bar * 16 + D.choke.step, chokeT = ladyClock(timing, STEP, chokeAt);
   // Kick steps, as the band plays them, plus the drop kick on the impact.
   const kicks = [];
   bars.forEach(b => { const own = tr.kicksOf(b.index, b.layers); if (b.layers.impact && !own.includes(0)) own.unshift(0); own.forEach(s => kicks.push(b.index * 16 + s)); });
   const energyTrim = roomTrim(tr, words, timing);
   // Her stop phrase: it starts with the tape-stop and is routed after the tape, so it outlasts it.
-  const stopStep = D.stop.bar * BAR_STEPS + D.stop.step, stopEvent = lady.find(e => e.role === 'stop');
+  const stopStep = D.stop.bar * BAR_STEPS + D.stop.step, stopEvent = lady.find(e => e.role === 'stop'), stopLine = stopEvent ? ladyClock(timing, STEP, stopEvent.at) : null;
   const plan = {form:'drop60', title:'Drop edition', bpm:tr.bpm, step:STEP, swing:tr.swing, key:tr.key, sections:D.sections, bars, lines, words, stutters, lady,
     call:{until:D.unmute * BAR_STEPS, dropouts:dropouts(hash(lyrics.hook), D.unmute * BAR_STEPS)},
+    // at: the step the band chokes on and her tag starts (fractional: a 128th grid); time: its seconds.
     // tagEnd: when her tag stops sounding (seconds, plan time): its envelope's end, gate and release included.
-    choke:{at:chokeAt, until:D.impact * 16, dark:timing[chokeAt] + (D.dark ?? Math.ceil(((tag ? tag.gate : 0) + .01) * 1000) / 1000), tagEnd:tag ? timing[chokeAt] + ladyLength(tag) : timing[chokeAt]},
+    // gap: tagEnd to the impact's downbeat, IMPACT_GAP.target give or take half a 128th.
+    choke:{at:chokeAt, until:D.impact * 16, time:chokeT, dark:chokeT + (D.dark ?? Math.ceil(((tag ? tag.gate : 0) + .01) * 1000) / 1000), tagEnd:tag ? chokeT + ladyLength(tag) : chokeT,
+      gap:timing[D.impact * 16] - (tag ? chokeT + ladyLength(tag) : chokeT)},
     tape:[{kind:'sink', from:D.sink * 16, to:(D.sink + 1) * 16, rate:[1, .5]}, {kind:'stop', from:D.stop.bar * 16 + D.stop.step, seconds:D.stop.seconds}],
     // stop.end: when her "Full stop." stops sounding (seconds, plan time), measured as choke.tagEnd is; null without a stop line.
-    stop:{at:timing[stopStep], tapeEnd:timing[stopStep] + D.stop.seconds, end:stopEvent ? timing[stopStep] + ladyLength(stopEvent) : null, display:stopEvent?.display ?? null},
+    // line: when her line starts (at, unless the track leads it: D.stop.lead).
+    stop:{at:timing[stopStep], tapeEnd:timing[stopStep] + D.stop.seconds, line:stopLine, end:stopEvent ? stopLine + ladyLength(stopEvent) : null, display:stopEvent?.display ?? null},
     timing, finale:false, totalSteps, duration:timing[totalSteps] + .6,
     track:tr.id, trackTitle:tr.title, kicks, energyTrim,
     marks:{unmute:D.unmute * 16, build:D.ladder.rungs[0].bar * 16, rise:D.rise * 16, choke:chokeAt, impact:D.impact * 16, sink:D.sink * 16, sinkEnd:(D.sink + 1) * 16, stop:D.stop.bar * 16 + D.stop.step}};
@@ -300,7 +344,7 @@ export const ladyLength = e => Math.min(e.gate, (e.to - e.from) / e.rate + .01);
 export const COLD_OPEN = {impact:.75, rewind:.25, rate:4};
 export function withColdOpen(plan) {
   if (plan.form !== 'drop60') throw Error('The cold open belongs to the Drop Edition.');
-  const T = plan.timing, impactAt = T[plan.marks.impact], choke = T[plan.marks.choke], hit = plan.lady.find(e => e.role === 'impact');
+  const T = plan.timing, impactAt = T[plan.marks.impact], choke = plan.choke.time ?? T[plan.marks.choke], hit = plan.lady.find(e => e.role === 'impact');
   const until = COLD_OPEN.impact, to = until + COLD_OPEN.rewind, sourceFrom = choke, sourceTo = choke - COLD_OPEN.rewind * COLD_OPEN.rate;
   const rewind = {from:until, to, rate:COLD_OPEN.rate, sourceFrom, sourceTo};
   return {...plan, coldOpen:{impact:{at:0, until, source:impactAt, word:hit ? hit.display : null, file:hit?.file ?? null}, rewind, resume:to},

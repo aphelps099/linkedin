@@ -18,6 +18,9 @@
 //      16ths the next slot gives); no line of hers is cut off by its gate (the
 //      ladder's hits are gated to their period by design); and plan.stop.end is
 //      when her "Full stop." stops sounding.
+//   5. P6, on the same 366 plans: her tag ends 0.37-0.42 s before BACK. (drop.js IMPACT_GAP,
+//      Circle Back's 0.392 s the reference), nothing else sounds from the choke to the impact,
+//      and her stop line ends at least 60 ms before the film's last two frames (the ghost BACK.).
 // Optional, with a dev server: --url http://localhost:5321 --baseline take.wav
 // renders Circle Back's Drop Edition through the page and compares it with a
 // render made by the old code: the difference must stay within the renderer's
@@ -28,7 +31,8 @@ import {readFileSync} from 'node:fs';
 import {createRequire} from 'node:module';
 import {lyricsFromPost, SAMPLE_POST, syllables, tokens} from '../src/allhands/lyrics.js';
 import {castSong, settleCast} from '../src/allhands/casting.js';
-import {ladyLength} from '../src/allhands/drop.js';
+import {ladyLength, IMPACT_GAP} from '../src/allhands/drop.js';
+import {stopFrames} from '../src/videostudio/edl/anchors.js';
 import {FORMS} from '../src/allhands/forms.js';
 import {TRACKS, TRACK_ORDER} from '../src/allhands/songbook/index.js';
 import * as E from '../src/allhands/engine.js';
@@ -48,7 +52,7 @@ const canon = x => JSON.stringify(x, (k, v) => v instanceof Float64Array || v in
 // the old plans and the new.
 function legacy(plan) {
   const {track, trackTitle, kicks, marks, energyTrim, stop, ...old} = plan;
-  if (old.choke) { const {dark, tagEnd, ...choke} = old.choke; old.choke = choke; }
+  if (old.choke) { const {dark, tagEnd, time, gap, ...choke} = old.choke; old.choke = choke; }
   old.lady = old.lady.map(({period, ...e}) => { if (e.role === 'ladder') { delete e.rate; delete e.gate; } return e; });
   const T = plan.timing, sung = [...plan.words, ...plan.stutters].sort((a, b) => a.at - b.at), next = new Map(sung.map((w, i) => [w, sung[i + 1]]));
   const strip = w => { const n = next.get(w); if (w.line < 0 || !n || T[w.at] + w.steps * plan.step <= T[n.at] + 1e-12) return w; const {gate, rate, ...rest} = w; return rest; };
@@ -183,14 +187,16 @@ for (const track of TRACK_ORDER) for (const post of [SAMPLE_POST, ...fixtures.sl
   ok(T instanceof Float64Array && plan.sections.every(s => Number.isInteger(s.from) && s.to > s.from) && plan.bars.every(b => typeof b.layers === 'object' && b.layers.drums), `${track}: timing, sections, bars[].layers`);
   ok(plan.lines.every(l => l.words.every(w => Number.isInteger(w.at) && w.steps > 0 && w.notes.length)) && plan.words.every(w => w.gate > 0), `${track}: lines and words`);
   ok(plan.lady.every(e => typeof e.role === 'string' && e.file && e.to > e.from && e.gate > 0 && e.rate > 0 && typeof e.display === 'string'), `${track}: lady events`);
-  ok(Number.isInteger(plan.choke.at) && Number.isInteger(plan.choke.until) && plan.choke.dark > T[plan.choke.at] && plan.tape.length === 2 && plan.duration > T[plan.totalSteps], `${track}: choke, tape, duration`);
-  ok(['unmute', 'build', 'rise', 'choke', 'impact', 'sink', 'sinkEnd', 'stop'].every(k => Number.isInteger(plan.marks[k])), `${track}: marks`);
+  // The choke is where her tag starts: a step on the 128th grid (P6), its seconds in choke.time.
+  ok((plan.choke.at * 8) % 1 === 0 && Number.isInteger(plan.choke.until) && plan.choke.time === T[Math.floor(plan.choke.at)] + (plan.choke.at % 1) * plan.step && plan.choke.dark > plan.choke.time && plan.tape.length === 2 && plan.duration > T[plan.totalSteps], `${track}: choke, tape, duration`);
+  ok(['unmute', 'build', 'rise', 'impact', 'sink', 'sinkEnd', 'stop'].every(k => Number.isInteger(plan.marks[k])) && plan.marks.choke === plan.choke.at, `${track}: marks`);
 }
 
 // ---- 4. Real eSpeak durations, every track, today's cast and the post's own
 {
   const REAL = JSON.parse(readFileSync(new URL('./fixtures/allhands-durations.json', import.meta.url), 'utf8'));
   let n = 0, joins = 0, gated = 0, given = 0;
+  const gaps = Object.fromEntries(TRACK_ORDER.map(t => [t, []])), seams = {}, LATENCY = 720 / 44100;   // edl/anchors.js AUDIO_LATENCY
   posts.forEach((post, i) => {
     const lyrics = lyricsFromPost(post), label = i ? `fixture ${i - 1}` : 'sample';
     for (const track of TRACK_ORDER) for (const own of [false, true]) {
@@ -218,8 +224,28 @@ for (const track of TRACK_ORDER) for (const post of [SAMPLE_POST, ...fixtures.sl
       const stop = plan.lady.find(e => e.role === 'stop');
       ok(plan.stop && plan.stop.at === T[plan.marks.stop] && plan.stop.tapeEnd === plan.stop.at + TRACKS[track].drop.stop.seconds && (stop ? Math.abs(plan.stop.end - (at(stop) + ladyLength(stop))) < 1e-12 && plan.stop.end > plan.stop.tapeEnd && plan.stop.display === stop.display : plan.stop.end === null),
         `${tag}: plan.stop ${plan.stop?.at.toFixed(3)}-${plan.stop?.end?.toFixed(3)} s, when "${stop?.display}" stops sounding`);
+      // ---- 5. P6, Aaron's note on the drop: her tag ends Circle Back's 0.39 s before BACK. on every
+      // track and cast (drop.js IMPACT_GAP). The impact stays on its downbeat; the choke, and her tag
+      // with it, sits where the gap comes out right; nothing else sounds after it; her tag plays whole.
+      const tagEv = plan.lady.find(e => e.role === 'tag'), impact = T[plan.choke.until], gap = impact - plan.choke.tagEnd;
+      ok(tagEv && tagEv.at === plan.choke.at && plan.choke.until === TRACKS[track].drop.impact * 16 && Math.abs(plan.choke.tagEnd - (at(tagEv) + ladyLength(tagEv))) < 1e-12
+        && tagEv.gate >= (tagEv.to - tagEv.from) / tagEv.rate - 1e-9 && gap >= IMPACT_GAP.min && gap <= IMPACT_GAP.max && Math.abs(gap - plan.choke.gap) < 1e-12,
+        `${tag}: "${tagEv?.display}" ends ${(gap * 1000).toFixed(1)} ms before BACK. (${IMPACT_GAP.min}-${IMPACT_GAP.max} s)`);
+      const after = [...plan.words.map(w => [T[w.at], T[w.at] + w.gate]), ...plan.lady.filter(e => e.role !== 'tag').map(e => [at(e), at(e) + ladyLength(e)])].filter(([a, b]) => b > plan.choke.time + 1e-9 && a < impact - 1e-9);
+      ok(!after.length, `${tag}: nothing but her tag sounds from the choke to BACK.${after.length ? ` (${after.length} events)` : ''}`);
+      gaps[track].push(gap);
+      // The ending: her stop line ends at least 60 ms (in the delivered sound, the engine's 16 ms
+      // look-ahead included) before the film's last two frames, the loop seam's ghost BACK.
+      const N = Math.round(T[plan.totalSteps] * 24), seam = (N - 2) / 24;
+      if (plan.stop.end !== null) {
+        ok(plan.stop.end + LATENCY + .06 <= seam + 1e-9, `${tag}: her stop line is heard to ${(plan.stop.end + LATENCY).toFixed(3)} s, ${((seam - plan.stop.end - LATENCY) * 1000).toFixed(1)} ms before the ghost BACK. (frame ${N - 2})`);
+        seams[track] = Math.min(seams[track] ?? Infinity, seam - plan.stop.end - LATENCY);
+      }
+      if (i === 0 && !own) ok(stopFrames(plan).black <= N - 3 && (track !== 'hustle' || stopFrames(plan).black === N - 3), `${tag}: the ending reads her line, black from frame ${stopFrames(plan).black}, the ghost BACK. on frames ${N - 2}-${N - 1}`);
     }
   });
+  console.log(`P6 gap from her tag to BACK. (${n} plans): ${TRACK_ORDER.map(t => `${TRACKS[t].title} ${Math.min(...gaps[t]).toFixed(4)}-${Math.max(...gaps[t]).toFixed(4)} s`).join(', ')}`);
+  console.log(`P6 her stop line, least room before the ghost BACK.: ${TRACK_ORDER.map(t => `${TRACKS[t].title} ${(seams[t] * 1000).toFixed(1)} ms`).join(', ')}`);
   console.log(`real durations: ${n} plans, one word at a time (${joins} back-to-back joins, ${gated} words gated at the next word's onset), ${given} lines run into a slot that gives way`);
 }
 

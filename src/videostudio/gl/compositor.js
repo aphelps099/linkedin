@@ -277,14 +277,16 @@ export function createCompositor(canvas, opts = {}) {
   const identity = rect => [1, 0, -rect.x, 0, 1, -rect.y, 0, 0, 1];     // output px -> rect-local px
   // Type stays inside the format's platform-safe area (in 9:16, left of the right rail).
   const safeOf = rect => safeSpan(rect, SAFE[format]);
-  function drawBoardRegion(rect, screens, time, {sockets = true, blend = 'over', pitch, cell = null, radius = 0, target = null} = {}) {
+  // transient: a moving board (a board move eases its rect every frame) draws through one reused
+  // instance, resized, instead of a new board for every size.
+  function drawBoardRegion(rect, screens, time, {sockets = true, blend = 'over', pitch, cell = null, radius = 0, target = null, opacity = 1, transient = false} = {}) {
     if (!boards) return;
-    const b = boards.draw({w:rect.w, h:rect.h, screens, time, pitch, sockets, safe:safeOf(rect)});
+    const b = boards.draw({w:rect.w, h:rect.h, screens, time, pitch, sockets, safe:safeOf(rect), transient});
     stats.boards++;
     resetState(); bindTarget(target ?? T.comp);
     if (blend === 'max') gl.blendEquation(gl.MAX);
     const r = cell ?? {x:rect.x, y:rect.y, w:rect.w, h:rect.h};
-    drawLayerPass({transform:{matrix:identity(rect)}, opacity:1, fx:[], cell:r, radius}, {kind:0, tex:b.texture, flip:1, srcW:Math.round(rect.w), srcH:Math.round(rect.h)}, {matrix:identity(rect)});
+    drawLayerPass({transform:{matrix:identity(rect)}, opacity, fx:[], cell:r, radius}, {kind:0, tex:b.texture, flip:1, srcW:Math.round(rect.w), srcH:Math.round(rect.h)}, {matrix:identity(rect)});
     gl.blendEquation(gl.FUNC_ADD);
     return b;
   }
@@ -324,24 +326,28 @@ export function createCompositor(canvas, opts = {}) {
     resetState(); bindTarget(T.comp); clear(BACKGROUND);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
 
-    // The board's own region: under the tiles, unless a picture covers it (then over, below).
+    // The board's own region (frame.board.rect: the format's home in every call layout, eased
+    // only inside a board move): under the tiles, unless a picture covers it (then over, below).
+    // It stays up whether or not a screen is on it, so its panel never comes and goes.
     // A camera move that does not own the board leaves it out of the composite: it is drawn
     // after the camera, fixed in its region, so a push or a Droste dive never carries the
     // words out of frame.
-    // L1's panel only comes up while the board has a screen on it: an empty panel over a
-    // full picture would be a grey bar.
-    const rect = frame.board?.over && frame.board.screen < 0 ? null : frame.board?.rect, screens = ctx.screens, fixed = !!(rect && frame.camera && !frame.camera.board);
+    const rect = frame.board?.rect, screens = ctx.screens, fixed = !!(rect && frame.camera && !frame.camera.board), moving = !!frame.board?.move;
     const under = rect ? frame.layers.filter(l => overlaps(l.cell, rect)) : [];
-    const pegUnder = under.find(l => l.fx.some(x => x.type === 'pegVideo' && x.mix >= .5));
+    const pegUnder = moving ? null : under.find(l => l.fx.some(x => x.type === 'pegVideo' && x.mix >= .5));
     const videoUnder = under.some(l => l.kind === 'video');
+    // panel: 1 the whole board, sockets and all (L1's panel laid over the picture, so its type
+    // reads over a bright frame; a board over generated tiles); 0 only its light over a full-frame
+    // picture (MAX); between, inside a board move, the light with the panel fading in over it.
+    const panel = frame.board?.panel ?? (!under.length || frame.board?.over || !videoUnder ? 1 : 0);
     const regionRadius = rect && (rect.w < F.w || rect.h < F.h) ? 12 : 0;
-    // L1's board (boardOver) is a panel laid over the picture: sockets and all, so its type
-    // reads over a bright frame. Over a full-frame picture the board shows only its light.
     const drawMain = (target = null) => {
-      if (!under.length || frame.board.over) drawBoardRegion(rect, screens, btime, {cell:rect, radius:regionRadius, target});
+      // (Over peg video the board takes its pitch, so the two grids coincide: the ignition, the loop seam's ghost.)
+      const pitch = pegUnder && !frame.board.over ? pegUnder.fx.find(x => x.type === 'pegVideo').pitch : undefined, base = {cell:rect, radius:regionRadius, target, transient:moving, pitch};
+      if (panel >= 1) drawBoardRegion(rect, screens, btime, base);
       else {
-        const pitch = pegUnder ? pegUnder.fx.find(x => x.type === 'pegVideo').pitch : undefined;
-        drawBoardRegion(rect, screens, btime, {sockets:!videoUnder, blend:videoUnder ? 'max' : 'over', pitch, cell:rect, radius:regionRadius, target});
+        drawBoardRegion(rect, screens, btime, {...base, sockets:!videoUnder, blend:videoUnder ? 'max' : 'over'});
+        if (panel > 0) drawBoardRegion(rect, screens, btime, {...base, opacity:panel});
       }
     };
     if (rect && !under.length && !fixed) drawMain();
@@ -500,8 +506,8 @@ export function governorGains(program, {plan, shots, boards}) {
     for (let gy = 0; gy < GY; gy++) for (let gx = 0; gx < GX; gx++) {
       const x = (gx + .5) * F.w / GX, y = (gy + .5) * F.h / GY;
       let v = 0;
-      const r = fr.board?.rect;
-      if (r && x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h) v = boardLuma();
+      const r = fr.board?.rect, inBoard = r && x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h;
+      if (inBoard) v = boardLuma();
       for (const l of fr.layers) {
         const c = l.cell;
         if (x < c.x || x >= c.x + c.w || y < c.y || y >= c.y + c.h) continue;
@@ -509,6 +515,8 @@ export function governorGains(program, {plan, shots, boards}) {
         const lv = l.kind === 'video' ? shotLuma(l.shotId, l.srcFrame) : g === 'white' ? 1 : g.startsWith('color:') ? lin(lumaHex(g.slice(6))) : g === 'board' ? boardLuma() : g === 'camera-off' || g === 'feedback' ? .012 : 0;
         v = v * (1 - l.opacity) + lv * l.opacity;
       }
+      // A panel laid over the picture (L1's, a moving board) covers it.
+      if (inBoard && fr.board.over) { const p = fr.board.panel ?? 1; v = v * (1 - p) + boardLuma() * p; }
       whole += v; q[(gy < GY / 2 ? 0 : 2) + (gx < GX / 2 ? 0 : 1)] += v;
     }
     frames.push({whole:whole / (GX * GY), quads:q.map(v => v / (GX * GY / 4))});

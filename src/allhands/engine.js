@@ -316,11 +316,13 @@ function songEvents(graph, plan, step, T, STEP) {
     }
   }
   if (plan.choke) {
-    if (step === plan.choke.at) {
-      // Everything stops in 6 ms, returns included, so the silence is silent.
-      for (const g of [graph.choke.gain, ...STEMS.map(n => graph.eqTap[n].gain)]) { g.setValueAtTime(1, t); g.linearRampToValueAtTime(0, t + .006); }
-      graph.feedback.gain.setValueAtTime(0, t);
-      graph.reverbOut.gain.setValueAtTime(.55, t); graph.reverbOut.gain.linearRampToValueAtTime(0, t + .006);
+    if (step === Math.floor(plan.choke.at)) {
+      // Everything stops in 6 ms, returns included, so the silence is silent. The
+      // choke is where her tag starts (drop.js): a step's fraction on the lady's clock.
+      const c = t + (plan.choke.at - step) * STEP;
+      for (const g of [graph.choke.gain, ...STEMS.map(n => graph.eqTap[n].gain)]) { g.setValueAtTime(1, c); g.linearRampToValueAtTime(0, c + .006); }
+      graph.feedback.gain.setValueAtTime(0, c);
+      graph.reverbOut.gain.setValueAtTime(.55, c); graph.reverbOut.gain.linearRampToValueAtTime(0, c + .006);
     }
     if (step === plan.choke.until) {
       for (const g of [graph.choke.gain, ...STEMS.map(n => graph.eqTap[n].gain)]) g.setValueAtTime(1, t);
@@ -374,7 +376,7 @@ export function scheduleStep(graph, song, step, t0) {
     if (L.riser === true && bar === 14) I.riser(ctx, D, t, T(step + 2 * BAR_STEPS) - t);
     if (L.riser === 'short') I.riser(ctx, D, t, barEnd - t, .2);
     if (L.riser === 'long') {
-      const end = T(plan.choke.at);
+      const end = T(Math.floor(plan.choke.at)) + (plan.choke.at % 1) * STEP;
       I.riser(ctx, D, t, end - t, .3); I.sawRiser(ctx, stems.keys.input, t, end - t, ...(track.sound.sawRiser || []));
     }
     if (bar === 16 && plan.form !== 'drop60') I.impact(ctx, D, t, .8);

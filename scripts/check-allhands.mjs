@@ -5,7 +5,7 @@ import {execFileSync} from 'node:child_process';
 import {lyricsFromPost, tokens, syllables, say, SAMPLE_POST} from '../src/allhands/lyrics.js';
 import {arrange, fitPhrase, melody, voicedWords, slots, stepTime, BARS, BAR_STEPS, STEP, HOST} from '../src/allhands/song.js';
 import {normalizeWords, fixStreamedWave, createAllHandsVoice, espeakWord} from '../server/allhands-voice.js';
-import {arrangeDrop, dropVoicedWords, DROP_BARS, DROP_SECTIONS, swingOf, tunedRate, pitchOf, ladyLength} from '../src/allhands/drop.js';
+import {arrangeDrop, dropVoicedWords, DROP_BARS, DROP_SECTIONS, swingOf, tunedRate, pitchOf, ladyLength, IMPACT_GAP} from '../src/allhands/drop.js';
 import {LADY_TABLE, slice} from '../src/allhands/lady-table.js';
 import {FORMS, stepAt, formPlays} from '../src/allhands/forms.js';
 import {TRACKS, TRACK_ORDER, DEFAULT_TRACK, DEFAULT_CAST, LADY_ROLES, trackOf, castOf} from '../src/allhands/songbook/index.js';
@@ -191,20 +191,23 @@ for (const id of TRACK_ORDER) {
     ok(ladder.every(e => sung(e) === null || Math.abs(sung(e) + 12 * Math.log2(e.rate) - e.midi) < .02), `${label}: every rung's played audio lands on its declared note`);
     // choke.tagEnd: when her tag stops sounding, from its gate and release.
     const tagEv = plan.lady.find(e => e.role === 'tag');
-    ok(Math.abs(plan.choke.tagEnd - (T[plan.choke.at] + ladyLength(tagEv))) < 1e-9 && plan.choke.tagEnd > T[plan.choke.at] && plan.choke.tagEnd < T[plan.choke.until] - .35, `${label}: choke.tagEnd ${plan.choke.tagEnd.toFixed(3)} s, when her tag stops`);
+    // The choke is where her tag starts: a 128th of a straight bar, on the lady's clock (choke.time).
+    const ct = T[Math.floor(plan.choke.at)] + (plan.choke.at % 1) * sp;
+    ok((plan.choke.at * 8) % 1 === 0 && plan.choke.time === ct && plan.bars[Math.floor(plan.choke.at / 16)].swing === 0, `${label}: the choke at ${Math.floor(plan.choke.at / 16)}:${plan.choke.at % 16} (${ct.toFixed(3)} s), a 128th of a straight bar`);
+    ok(Math.abs(plan.choke.tagEnd - (ct + ladyLength(tagEv))) < 1e-9 && plan.choke.tagEnd > ct && plan.choke.tagEnd < T[plan.choke.until] - .35, `${label}: choke.tagEnd ${plan.choke.tagEnd.toFixed(3)} s, when her tag stops`);
     // The cold open: off unless asked for; asked for, the impact, then the ladder's last second rewound at 4x.
     const cold = arrangeDrop(lyrics, durations, {track, coldOpen:true}), co = cold.coldOpen, rw = co && co.rewind;
     ok(!plan.coldOpen && !plan.transports && co && co.impact.at === 0 && co.impact.until === .75 && Math.abs(co.impact.source - T[plan.marks.impact]) < 1e-12 && co.resume === 1
-      && rw.from === .75 && rw.to === 1 && rw.rate === 4 && Math.abs(rw.sourceFrom - rw.sourceTo - (rw.to - rw.from) * rw.rate) < 1e-12 && rw.sourceTo >= T[plan.marks.build] && rw.sourceFrom <= T[plan.marks.choke] + 1e-12
+      && rw.from === .75 && rw.to === 1 && rw.rate === 4 && Math.abs(rw.sourceFrom - rw.sourceTo - (rw.to - rw.from) * rw.rate) < 1e-12 && rw.sourceTo >= T[plan.marks.build] && rw.sourceFrom <= plan.choke.time + 1e-12
       && cold.transports.length === 1 && cold.transports[0].kind === 'rewind' && cold.transports[0].audio === true && cold.transports[0].at === .75 && cold.transports[0].len === .25
       && cold.duration === plan.duration && JSON.stringify(cold.lady) === JSON.stringify(plan.lady), `${label}: the cold open (impact 0-0.75 s, rewind of ${rw?.sourceFrom.toFixed(2)}-${rw?.sourceTo.toFixed(2)} s at 4x, the song from 1 s)`);
     // The choke: silence after the tag, nothing sounding, then BACK. on the impact.
-    const choke = T[plan.choke.at], impact = T[plan.choke.until], tag = plan.lady.find(e => e.role === 'tag');
+    const choke = plan.choke.time, impact = T[plan.choke.until], tag = plan.lady.find(e => e.role === 'tag');
     const sounding = [...plan.words.map(w => [T[w.at], T[w.at] + w.gate]), ...plan.lady.filter(e => e.role !== 'tag').map(e => [T[Math.floor(e.at)] + (e.at % 1) * sp, T[Math.floor(e.at)] + (e.at % 1) * sp + e.gate])];
     ok(sounding.every(([a, b]) => b <= choke + 1e-6 || a >= impact - 1e-6), `${label}: the silence is empty`);
-    const silence = impact - choke - tag.gate;
-    // Circle Back keeps today's tag (0.39 s of silence: its measured "circle" is longer than the hand table's).
-    ok(tag.at === plan.choke.at && silence >= (id === 'circle-back' ? .35 : .45), `${label}: ${(silence * 1000).toFixed(0)} ms of silence after the tag`);
+    // Aaron's note: every track waits Circle Back's 0.39 s from the end of her tag to BACK. (drop.js IMPACT_GAP).
+    const gap = impact - plan.choke.tagEnd;
+    ok(tag.at === plan.choke.at && Math.abs(gap - plan.choke.gap) < 1e-9 && gap >= IMPACT_GAP.min && gap <= IMPACT_GAP.max, `${label}: ${(gap * 1000).toFixed(0)} ms from the end of her tag to BACK.`);
     // Circle Back's board keeps today's 0.49 s; the other tracks go dark once the tag has ended.
     ok(id === 'circle-back' ? plan.choke.dark === choke + .49 : plan.choke.dark >= choke + tag.gate - 1e-9 && plan.choke.dark < impact, `${label}: the board goes dark on time`);
     if (D.tag.tune) ok(nearKey(track, LADY_TABLE[tag.file].f0 * tag.rate) || tag.rate > 1.16, `${label}: her tag tuned into the key (rate ${tag.rate.toFixed(3)})`);
@@ -214,7 +217,7 @@ for (const id of TRACK_ORDER) {
     const sink = plan.lady.find(e => e.role === 'sink');
     ok(sink.at === m.sink && sink.deep > 0 && inKey(track, sink.root) && Math.abs(sink.gate - 16 * sp) < 1e-9, `${label}: Sink In, deep, on its bar`);
     ok(D.tuneComb ? [back, sink].every(e => nearKey(track, e.comb)) : [back, sink].every(e => e.comb === undefined), `${label}: the deep voice's comb rings in key`);
-    ok(plan.tape[0].kind === 'sink' && plan.tape[0].from === m.sink && plan.tape[1].kind === 'stop' && plan.tape[1].from === m.stop && plan.lady.some(e => e.role === 'stop' && e.at === m.stop), `${label}: Sink In varispeed, then the tape stops on her stop phrase`);
+    ok(plan.tape[0].kind === 'sink' && plan.tape[0].from === m.sink && plan.tape[1].kind === 'stop' && plan.tape[1].from === m.stop && plan.lady.some(e => e.role === 'stop' && Math.abs(T[m.stop] - (D.stop.lead ?? 0) - (T[Math.floor(e.at)] + (e.at % 1) * sp)) < sp / 16), `${label}: Sink In varispeed, then the tape stops on her stop phrase${D.stop.lead ? ` (she leads it by ${(D.stop.lead * 1000).toFixed(0)} ms)` : ''}`);
     ok(plan.bars.some(b => b.section === 'Drop A' && b.layers.bass) && plan.bars.some(b => b.section === 'Drop B' && b.layers.bass), `${label}: two drops`);
     // Every sung note in the scale, on the chord under it.
     for (const w of plan.words) for (const n of w.notes) { const c = plan.bars[Math.floor(n.at / 16)].chord; ok(inKey(track, n.midi) && (!c.avail || c.avail.includes(pc(n.midi))), `${label}: "${w.display}" ${n.midi} sits on ${c.name}`); }
@@ -239,7 +242,8 @@ ok(formPlays('soundcheck', 'circle-back') && !formPlays('soundcheck', 'hustle') 
   ok(LADY_ROLES.join() === 'ladder,tag,impact,bend,sink,lift,punct,stop' && LADY_ROLES.every(r => DEFAULT_CAST[r] && LADY_TABLE[DEFAULT_CAST[r].file]), 'cast: eight roles, all recorded');
   const recast = arrangeDrop(lyrics, durations, {track:'hustle', cast:{ladder:{file:'05.wav', words:[0, 0], display:'SYNERGY'}, punct:{file:'48.wav', words:[0, -1]}, lift:null}});
   const lad = recast.lady.filter(e => e.role === 'ladder');
-  ok(lad.length === 46 && lad.every(e => e.file === '05.wav') && lad[0].display === 'SYNERGY' && !recast.lady.some(e => e.file === '07.wav'), 'cast: a recast ladder, a role left out');
+  // 49 hits: the last rung retriggers on to the choke, where her tag now starts (19:7.375; it was 46 to 19:6).
+  ok(lad.length === 49 && lad.every(e => e.file === '05.wav') && lad[0].display === 'SYNERGY' && !recast.lady.some(e => e.file === '07.wav'), 'cast: a recast ladder, a role left out');
   ok(lad.every(e => TRACKS.hustle.drop.ladder.pentatonic.includes(pc(e.midi))), 'cast: a recast ladder is still in key');
   assert.throws(() => castOf({chorus:{file:'01.wav'}}), /Unknown lady role/); assert.throws(() => castOf({tag:{file:'x'}}), /NN.wav/); checks += 2;
 }

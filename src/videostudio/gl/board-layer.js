@@ -6,7 +6,7 @@
 // does on /allhands/ and /pixel-type/, bloom and sockets included.
 //
 //   const boards = createBoardLayer(gl, {plan, scale});
-//   const tex = boards.draw({w, h, screens, time, pitch?, sockets?, kick?, gain?})   // WebGLTexture, w×h output px
+//   const tex = boards.draw({w, h, screens, time, pitch?, sockets?, kick?, gain?, transient?})   // WebGLTexture, w×h output px
 //   boards.luma({w, h, screens, time})       predicted luminance (governor.js boardLuma)
 //
 // Pegs are hits (edl/anchors.js): each lights on the frame that holds its audible onset. choreo
@@ -91,11 +91,23 @@ export function boardTypeBounds(w, h, screen, grid = boardGrid(w, h)) {
 
 export function createBoardLayer(gl, {plan, scale = 1, quality} = {}) {
   const instances = new Map();
-  let tick = 0;
+  let tick = 0, moving = null;
   const MAX = 4;
 
+  function target(W, H) {
+    const tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, W, H);
+    for (const [k, v] of [[gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]]) gl.texParameteri(gl.TEXTURE_2D, k, v);
+    const fb = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+    return {tex, fb};
+  }
+  const keyOf = (w, h, pitch, safe) => `${w}x${h}@${pitch}${safe ? `|${safe.x0}-${safe.x1}` : ''}`;
+
   function instance(w, h, pitch, safe) {
-    const key = `${w}x${h}@${pitch}${safe ? `|${safe.x0}-${safe.x1}` : ''}`;
+    const key = keyOf(w, h, pitch, safe);
     let it = instances.get(key);
     if (it) { it.used = ++tick; return it; }
     if (instances.size >= MAX) {
@@ -104,13 +116,7 @@ export function createBoardLayer(gl, {plan, scale = 1, quality} = {}) {
     }
     const grid = boardGrid(w, h, pitch, safe);
     const W = Math.max(1, Math.round(w * scale)), H = Math.max(1, Math.round(h * scale));
-    const tex = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, tex);
-    gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, W, H);
-    for (const [k, v] of [[gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]]) gl.texParameteri(gl.TEXTURE_2D, k, v);
-    const fb = gl.createFramebuffer();
-    gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+    const {tex, fb} = target(W, H);
     // The renderer believes it owns a canvas of W × H; it draws into our framebuffer instead.
     const fake = {width:W, height:H};
     const renderer = createRendererGL(fake, {gl, output:() => fb, pixelRatio:scale, quality});
@@ -119,6 +125,24 @@ export function createBoardLayer(gl, {plan, scale = 1, quality} = {}) {
       dispose() { renderer.dispose(); gl.deleteTexture(tex); gl.deleteFramebuffer(fb); }};
     instances.set(key, it);
     return it;
+  }
+  // A moving board (a board move eases its rect every frame) has a new size on every frame: one
+  // instance, its renderer resized and its texture remade, so no frame compiles shaders.
+  function transient(w, h, pitch, safe) {
+    const key = keyOf(w, h, pitch, safe), W = Math.max(1, Math.round(w * scale)), H = Math.max(1, Math.round(h * scale));
+    if (moving?.key === key) return moving;
+    if (!moving) {
+      const fake = {width:W, height:H}, out = {fb:null};
+      const renderer = createRendererGL(fake, {gl, output:() => out.fb, pixelRatio:scale, quality});
+      moving = {renderer, out, fake, tex:null, fb:null,
+        dispose() { renderer.dispose(); if (this.tex) { gl.deleteTexture(this.tex); gl.deleteFramebuffer(this.fb); } }};
+    }
+    if (moving.tex) { gl.deleteTexture(moving.tex); gl.deleteFramebuffer(moving.fb); }
+    const {tex, fb} = target(W, H);
+    Object.assign(moving, {key, grid:boardGrid(w, h, pitch, safe), tex, fb, w, h, W, H});
+    moving.out.fb = fb; moving.fake.width = W; moving.fake.height = H;
+    moving.renderer.resize(w, h);
+    return moving;
   }
 
   // Paint the board for a region at song time t. sockets: false hides the empty sockets
@@ -132,9 +156,9 @@ export function createBoardLayer(gl, {plan, scale = 1, quality} = {}) {
 
   return {
     // Draw a board region; returns the texture (RGBA8, w×h output px at the render scale, framebuffer rows).
-    draw({w, h, screens, time, pitch, sockets = true, gain = 1, safe = null}) {
+    draw({w, h, screens, time, pitch, sockets = true, gain = 1, safe = null, transient:passing = false}) {
       w = Math.round(w); h = Math.round(h);
-      const it = instance(w, h, pitch ?? boardPitch(w, h), safe);
+      const it = (passing ? transient : instance)(w, h, pitch ?? boardPitch(w, h), safe);
       const board = paintGrid(it.grid, screens, time, {sockets, gain});
       // The kick's lift is a hit: it shows from the frame that holds the kick's sound (time is the
       // middle of the frame less the latency, so half a frame of lead lands it there).
@@ -151,8 +175,8 @@ export function createBoardLayer(gl, {plan, scale = 1, quality} = {}) {
     },
     state:t => boardState(plan, t),
     get size() { return instances.size; },
-    setScale(s) { if (s !== scale) { scale = s; for (const it of instances.values()) it.dispose(); instances.clear(); } },
-    dispose() { for (const it of instances.values()) it.dispose(); instances.clear(); },
+    setScale(s) { if (s !== scale) { scale = s; for (const it of instances.values()) it.dispose(); instances.clear(); moving?.dispose(); moving = null; } },
+    dispose() { for (const it of instances.values()) it.dispose(); instances.clear(); moving?.dispose(); moving = null; },
   };
 }
 

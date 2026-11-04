@@ -31,7 +31,7 @@ import {EASES, evaluate, paramFn, integrateKeys, planFeatures, buildFeatures, en
 import {gauss, tapeCurve, speedFit, hitWarp, transportTime, clipTimeMap} from '../src/videostudio/edl/remap.js';
 import {compile, shotIndex, layerMatrix, invert, apply, resolveCrop, DECODE_LIMITS} from '../src/videostudio/edl/compile.js';
 import {metronomeEDL, expectedCuts} from '../src/videostudio/edl/metronome.js';
-import {FORMATS, CLASSES, GUTTER, RADIUS, SAFE, insideSafeBand, layout, cellRect, layoutClassOf, cellIds} from '../src/videostudio/layouts.js';
+import {FORMATS, CLASSES, GUTTER, RADIUS, SAFE, HOME, FULL_BOARD, sameRect, insideSafeBand, layout, cellRect, layoutClassOf, cellIds} from '../src/videostudio/layouts.js';
 import {boardGrid, boardTypeBounds, safeSpan} from '../src/videostudio/gl/board-layer.js';
 import {buildScreens} from '../src/pegboard/choreo.js';
 import {LADY_TABLE} from '../src/allhands/lady-table.js';
@@ -296,16 +296,29 @@ section('6. layouts', () => {
       const gap = (a, b) => Math.max(b.x - (a.x + a.w), a.x - (b.x + b.w), b.y - (a.y + a.h), a.y - (b.y + b.h));
       ok(L.cells.every((a, i) => L.cells.every((b, j) => i === j || gap(a, b) >= GUTTER)), `${format} ${cls}: tiles at least 12 px apart`);
       for (const r of [L.board, L.banner].filter(Boolean)) ok(r.x >= 0 && r.y >= 0 && r.x + r.w <= F.w && r.y + r.h <= F.h && (full || (r === L.board && L.boardOver) || L.cells.every(c => gap(c, r) >= GUTTER - 1e-9)), `${format} ${cls}: board and banner inside, clear of the tiles${L.boardOver ? ' (the board lies over the picture)' : ''}`);
-      // Every class gives the board a region, inside the platform-safe band of its format
-      // (pegboard/font.js FORMATS); the full-bleed board is checked by its type below.
-      ok(L.board && (full || insideSafeBand(format, L.board)), full ? `${format} ${cls}: the board is the frame, full bleed (its type is checked below)` : `${format} ${cls}: board region y ${L.board?.y}-${L.board ? L.board.y + L.board.h : '?'}, inside the safe band y ${SAFE[format].y}-${SAFE[format].y + SAFE[format].h}`);
+      // Every call layout shares the format's one board home, inside the platform-safe band of its
+      // format (pegboard/font.js FORMATS), so the board never moves on a cut; the full-board moments
+      // (BOARD, BOARD+STRIP) grow out of it, and their type is checked below.
+      const moment = FULL_BOARD.includes(cls);
+      ok(L.board && (moment || (sameRect(L.board, HOME[format]) && insideSafeBand(format, L.board))), moment ? `${format} ${cls}: a full-board moment (its type is checked below)` : `${format} ${cls}: the board at its home, y ${L.board?.y}-${L.board ? L.board.y + L.board.h : '?'}, inside the safe band y ${SAFE[format].y}-${SAFE[format].y + SAFE[format].h}`);
+      // The tiles and the board fill the frame: nothing but gutters is left black.
+      const used = L.cells.reduce((a, c) => a + c.w * c.h, 0) + (L.boardOver || full ? 0 : L.board.w * L.board.h) + (L.banner ? L.banner.w * L.banner.h : 0);
+      ok(used / (F.w * F.h) >= .88, `${format} ${cls}: tiles and board cover ${(100 * used / (F.w * F.h)).toFixed(1)} % of the frame (the rest is gutters)`);
+      // The screen share keeps the home's edges that lie on the frame's safe side: it grows, it does not move.
+      if (cls === 'BOARD+STRIP') {
+        const H = HOME[format], b = L.board, kept = [b.x === H.x, b.y + b.h === H.y + H.h, b.x + b.w === H.x + H.w].filter(Boolean).length;
+        ok(kept >= 2 && b.w >= H.w && b.h >= H.h * (format === '16:9' ? .9 : 1), `${format} BOARD+STRIP: the share grows out of the home (${kept} of its edges stay put)`);
+      }
     }
     // The full-bleed board centres its type: every screen of the Drop Edition, the lady's 57
     // phrases at k 1-3 included, lights inside the safe band.
-    const grid = boardGrid(F.w, F.h), safe = SAFE[format];
+    const safe = SAFE[format];
     const screens = [...buildScreens(drop, {}), ...Object.keys(LADY_TABLE).flatMap(file => [1, 2, 3].map(k => ({text:LADY_TABLE[file].display ?? LADY_TABLE[file].text ?? file, k, font:'peg9'})))].filter(s => s.text);
-    const out = screens.map(s => ({s, b:boardTypeBounds(F.w, F.h, s, grid)})).filter(x => x.b && (x.b.y < safe.y || x.b.y + x.b.h > safe.y + safe.h));
-    ok(out.length === 0, `${format} BOARD: the type of ${screens.length} screens lights inside the safe band y ${safe.y}-${safe.y + safe.h} (${out.slice(0, 3).map(x => `${x.s.text} k${x.s.k} y ${x.b.y}-${x.b.y + x.b.h}`).join('; ')})`);
+    for (const cls of FULL_BOARD) {
+      const r = layout(cls, format).board, grid = boardGrid(r.w, r.h, undefined, safeSpan(r, safe));
+      const out = screens.map(s => ({s, b:boardTypeBounds(r.w, r.h, s, grid)})).filter(x => x.b && (r.y + x.b.y < safe.y || r.y + x.b.y + x.b.h > safe.y + safe.h));
+      ok(out.length === 0, `${format} ${cls}: the type of ${screens.length} screens lights inside the safe band y ${safe.y}-${safe.y + safe.h} (${out.slice(0, 3).map(x => `${x.s.text} k${x.s.k} y ${r.y + x.b.y}-${r.y + x.b.y + x.b.h}`).join('; ')})`);
+    }
     // And across: every region lays its words out in the columns the safe area leaves it (in 9:16
     // left of the right rail at x 944), the full-bleed board and every class's region alike.
     const wide = [];
@@ -317,10 +330,13 @@ section('6. layouts', () => {
     }
     ok(laid > 1000 && wide.length === 0, `${format}: ${laid} screens laid out in every class's board region keep their type inside the safe area x ${safe.x}-${safe.x + safe.w} (${wide.slice(0, 3).join('; ')})`);
   }
-  const g6 = layout('G6', '9:16').cells, board = cls => layout(cls, '9:16').board;
-  ok(g6.every(c => c.w === 522 && c.h === 258) && g6.map(c => c.y).filter((y, i, a) => a.indexOf(y) === i).join() === '288,558,828' && board('G6').y === 1098 && board('G6').y + board('G6').h === 1440, '9:16 G6: 2×3 of 522×258 at y 288 / 558 / 828, the board strip y 1098-1440 (above the platform caption)');
-  ok(layout('G9', '9:16').cells.every(c => c.w === 344 && c.h === 258) && board('G9').y + board('G9').h === 1440 && board('BOARD+STRIP').y === 340 && board('BOARD+STRIP').h === 760, '9:16 G9 344×258 with its strip ending at y 1440; BOARD+STRIP board at y 340–1100');
-  ok(layout('stack3', '9:16').cells.every(c => c.w === 1056 && c.h === 506) && board('stack3').y === 1048 && ['split', 'G4'].every(k => board(k).y === 790 && board(k).h === 340) && layout('L1', '9:16').boardOver, '9:16 stack3: three 1056×506 tiles, the board between the second and third; split and G4 around a board at y 790-1130; L1 lays its board over the picture');
+  // The homes: 9:16 the strip y 1098-1440 with tiles above it and a row under it; 1:1 y 588-840;
+  // 16:9 the column x 1422-1908. The 9:16 grids fill the frame (the last review found 30-45 % black).
+  ok(sameRect(HOME['9:16'], {x:12, y:1098, w:1056, h:342}) && sameRect(HOME['1:1'], {x:12, y:588, w:1056, h:252}) && sameRect(HOME['16:9'], {x:1422, y:54, w:486, h:972}), 'the homes: 9:16 y 1098-1440, 1:1 y 588-840, 16:9 x 1422-1908');
+  const rows = cls => [...new Set(layout(cls, '9:16').cells.map(c => `${c.y}+${c.h}`))].join(' ');
+  ok(rows('G9') === '12+531 555+531 1452+456' && rows('G6') === rows('G9') && layout('G9', '9:16').cells.every(c => c.w === 344) && layout('G6', '9:16').cells.every(c => c.w === 522), '9:16 G6 and G9: two rows of 531 above the home, one of 456 under it (2 and 3 across)');
+  ok(rows('stack3') === rows('G9') && rows('G4') === rows('G9') && rows('split') === '12+1074 1452+456' && layout('L1', '9:16').boardOver, '9:16 stack3 and G4 share those rows; split is the frame above the home and the row under it; L1 lays the home over its picture');
+  ok(sameRect(layout('BOARD+STRIP', '9:16').board, {x:12, y:78, w:1056, h:1362}) && layout('BOARD+STRIP', '9:16').cells.every(c => c.y === 1452 && c.h === 456), '9:16 BOARD+STRIP: the home grown up to y 78 (its bottom and sides stay), the strip under it');
   ok(['9:16', '1:1', '16:9'].every(f => JSON.stringify(layout('G4', f).cells) !== JSON.stringify(layout('G4', '9:16').cells) || f === '9:16'), 'each format laid out on its own');
   for (const id of ['split.1>G4.2', 'G4.0>g2x4.7', 'G9.4>split.1', 'stack3.1>g4x2.0']) {
     const r = cellRect('9:16', id), parent = cellRect('9:16', id.split('>')[0]);
@@ -443,13 +459,37 @@ section('8. policy', () => {
     const under = run(createEDL({clips:[{id:'s', at:64, len:16, cell:'L1.0', asset:'shot:synergy'}], camera:[{id:'cam', at:64, len:16, zoom:1.5, cy:.3}]}));
     ok(has(under, 'G11', /lights over Synergy's mouth/), "G11: a camera push that carries his mouth under the still board is caught");
   }
+  // G14: the board holds still. Every call layout shares the home; a full-board moment grows out of
+  // it only through an authored board move of at least 3 frames, eased, and never jumps.
+  {
+    const call = [{id:'a', at:64, len:16, cell:'G4.0', asset:'shot:keys'}, {id:'b', at:80, len:16, cell:'G9.2', asset:'shot:people'}, {id:'c', at:96, len:16, cell:'L1.0', asset:'shot:arjun'}, {id:'d', at:112, len:16, cell:'stack3.1', asset:'shot:keys'}];
+    const steady = run(createEDL({clips:call}));
+    const rects = new Set(); for (let f = 192; f < 384; f++) rects.add(JSON.stringify(steady.frame(f).board.rect));
+    ok(!has(steady, 'G14') && rects.size === 1, `G14: G4, G9, L1 and stack3 share one board rect (${[...rects][0]})`);
+    const board = {id:'x', at:128, len:16, cell:'full', asset:'gen:color:#000000'}, back = {id:'y', at:144, len:16, cell:'G6.0', asset:'shot:keys'};
+    const jump = run(createEDL({clips:[...call, board, back]}));
+    ok(has(jump, 'G14', /the board jumps on 2 cuts/), 'G14: a full-board moment cut in and out without a move is a jump, twice');
+    const moves = [{id:'grow', at:128, frames:4, align:'start'}, {id:'home', at:144, frames:5, ease:'outQuad', align:'end'}];
+    const eased = run(createEDL({clips:[...call, board, back], boardMoves:moves}));
+    const F0 = cutFrame(drop.timing[128]), F1 = cutFrame(drop.timing[144]), H = eased.frame(F0 - 1).board.rect, area = r => r.w * r.h;
+    const grow = [0, 1, 2, 3].map(k => eased.frame(F0 + k).board.rect), shrink = [4, 3, 2, 1, 0].map(k => eased.frame(F1 - k).board.rect);
+    ok(!has(eased, 'G14') && grow.every((r, k) => area(r) > (k ? area(grow[k - 1]) : area(H))) && grow[3].h === 1920 && shrink.every((r, k) => !k || area(r) < area(shrink[k - 1])) && JSON.stringify(shrink[4]) === JSON.stringify(H) && eased.frame(F0).board.move === 'grow' && eased.frame(F0).board.over,
+      `G14: with board moves it grows over 4 frames from the beat (heights ${grow.map(r => r.h).join(' ')}) and lands home on the cut over 5 (${shrink.map(r => r.h).join(' ')}), laid over the picture while it moves`);
+    const steps = grow.map((r, k) => area(r) - (k ? area(grow[k - 1]) : area(H)));
+    ok(Math.max(...steps) < .5 * (area(grow[3]) - area(H)), `G14: eased, no frame of the move takes half of it (largest step ${(100 * Math.max(...steps) / (area(grow[3]) - area(H))).toFixed(0)} %)`);
+    ok(validate(createEDL({clips:call, boardMoves:[{at:128, frames:2}]})).some(e => /never a jump/.test(e.message)) && validate(createEDL({clips:call, boardMoves:[{at:128, align:'middle'}]})).length === 1, 'G14: a board move of 2 frames is a jump (schema); align is start or end');
+    ok(JSON.stringify(eased.compileFrame(F0 + 1)) === JSON.stringify(eased.frame(F0 + 1)) && JSON.stringify(eased.compileFrame(F1 - 2)) === JSON.stringify(eased.frame(F1 - 2)), 'G14: a moving board is seek-safe (compileFrame equals the frame)');
+    // The panel never comes and goes on its own: a full-frame video under the board shows only its light.
+    const video = run(createEDL({clips:[{id:'v', at:64, len:16, cell:'full', asset:'shot:keys'}, {id:'w', at:80, len:16, cell:'full', asset:'gen:color:#000000'}]}));
+    ok(has(video, 'G14', /panel comes or goes/) && video.frame(200).board.panel === 0 && video.frame(330).board.panel === 1, "G14: the board's panel appearing on its own (light over footage, then sockets) is caught");
+  }
   // G8 repeats.
   ok(has(one({id:'r', at:64, len:16, cell:'G6.0', asset:'shot:keys', time:{repeat:{unit:1, count:5}}}), 'G8', /at most 4/), 'G8: five plays of a slice');
   ok(has(one({id:'r', at:64, len:16, cell:'G6.0', asset:'shot:keys', time:{repeat:{unit:1, count:3}}}), 'G8', /third/), 'G8: a third repeat that does not vary');
   const same = run(createEDL({clips:[0, 4, 8].map((at, i) => ({id:`c${i}`, at:64 + at, len:4, cell:'G6.0', asset:'shot:keys', time:{in:1}}))}));
   ok(has(same, 'G8', /third identical/), 'G8: three identical clips in a row across clips');
   // G10 zoom ceiling, and the mosaic escape hatch.
-  ok(has(one({id:'z', at:64, len:16, cell:'G4.0', asset:'shot:keys', frame:{zoom:2.2}}), 'G10', /2\.51x/), 'G10: zoom 2.2 in a 522×766 tile is a 2.51× upscale of a 672-line picture (ceiling 1.8)');
+  ok(has(one({id:'z', at:64, len:16, cell:'split.0', asset:'shot:keys', frame:{zoom:2.2}}), 'G10', /3\.52x/), 'G10: zoom 2.2 in a 1056×1074 tile is a 3.52× upscale of a 672-line picture (ceiling 1.8)');
   ok(!has(one({id:'z', at:64, len:16, cell:'G4.0', asset:'shot:keys', frame:{zoom:2.2}, fx:[{type:'mosaic', px:16}]}), 'G10'), 'G10: above the ceiling, mosaic is allowed');
   ok(has(one({id:'z', at:64, len:16, cell:'L1.0', asset:'shot:keys'}), 'G10', /2\.82x/), 'G10: a 720p plate in a full 9:16 tile is 2.82× (ceiling 1.8)');
   // G5 decode ceilings.
@@ -483,7 +523,7 @@ function film(plan) {
   const patches = [
     // 0: the cold open, one scene: BACK. as peg video, the rewind, Pat's black tile.
     m('pegTakeover', {id:'open', at:0, len:6, pool:['people'], instant:true, scene:'cold'}), m('rewind', {at:6, len:2, from:{anchor:'bar:17'}}),
-    c('pat', 8, 8, 'full', 'gen:camera-off', {scene:'cold'}),
+    c('pat', 8, 8, 'full', 'gen:camera-off', {scene:'cold'}), {boardMoves:[{id:'pat', at:8, frames:4, align:'start'}, {id:'bloom', at:16, frames:4, align:'end'}]},
     // 1-3: the call assembles, then the canon nod.
     m('gridBloom', {id:'bloom', at:16, len:16, pool:['gen:camera-off', 'synergy', 'keys', 'people'], scene:'join'}),
     m('reactionCanon', {id:'canon', at:32, len:32, pool:['people'], cls:'G6', scene:'canon'}),
@@ -498,7 +538,8 @@ function film(plan) {
     m('cellSplit', {id:'split', at:{anchor:'bar:16'}, len:16, pool:['people'], cell:'stack3.1', scene:'split'}),
     m('retriggerRoll', {id:'roll', at:{anchor:'bar:17'}, len:16, pool:['keys', 'people', 'arjun', 'synergy'], cells:G4, scene:'roll'}),
     m('poorConnection', {id:'poor', at:{anchor:'bar:18'}, len:16, pool:['keys'], cell:'G6.2', scene:'poor'}),
-    c('board19', 304, 8, 'full', 'gen:board', {scene:'tag'}), c('black', 312, 8, 'full', 'gen:color:#000000', {scene:'tag'}),
+    c('board19', 304, 8, 'full', 'gen:color:#000000', {scene:'tag'}), c('black', 312, 8, 'full', 'gen:color:#000000', {scene:'tag'}),
+    {boardMoves:[{id:'board19', at:304, frames:4, align:'start'}]},   // the board alone grows out of its home (G14)
     // 20-23: BACK., drop A, Sink In.
     m('pegTakeover', {id:'ignite', at:{anchor:'cue:impact'}, len:8, pool:['people'], scene:'dropA'}),
     c('ens', 328, 40, 'stack3.0', 'shot:people', {scene:'dropA', time:{in:1}}), c('host2', 328, 40, 'stack3.1', 'shot:synergy', {scene:'dropA', time:{in:2}}),
@@ -515,7 +556,8 @@ function film(plan) {
   // The cold open flashes forward to BACK.: the impact screen, re-timed to frame 0.
   patches.push({board:[{id:'back', at:0, len:6, text:{ref:'song:impact#0'}}]});
   const edl = merge(createEDL({loop:true}), ...patches);
-  edl.overrides.push(...edl.clips.filter(x => /^leave\./.test(x.id) && x.cell === 'L1.0').map(x => ({target:x.id, rule:'G10', note:'Synergy closes the film full frame; the tape stop and the dim carry the softness'})));
+  edl.overrides.push(...edl.clips.filter(x => /^leave\./.test(x.id) && x.cell === 'L1.0').map(x => ({target:x.id, rule:'G10', note:'Synergy closes the film full frame; the tape stop and the dim carry the softness'})),
+    {target:'chaseB', rule:'G10', note:'the Droste dive carries this tile out of frame; it is never seen at the full push'});
   return edl;
 }
 

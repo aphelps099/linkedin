@@ -23,13 +23,17 @@ export function poorConnection(ctx) {
 
 // 33. Peg takeover: the footage becomes peg video (luma^1.4 in 6 blue levels) over
 // one beat (at once with instant:true, or on the impact). Ignition, the drop's
-// signature, when it lands on the impact.
+// signature, when it lands on the impact. Over the whole frame the board takes the frame
+// too: it grows out of its home on the first beat (on the impact it ignites out of the
+// choke's black instead) and returns home landing on the takeover's last frame (lint G14).
 export function pegTakeover(ctx) {
   const w = win(ctx), [asset] = warpable(ctx, poolOf(ctx, 1)), QS = beatSteps(ctx.plan), cell = ctx.cell ?? 'full';
   if (!asset) return {clips:[], notes:['pegTakeover: Synergy is never turned into pegs; give it another shot']};
-  const impact = ctx.plan.choke?.until === w.from, instant = impact || ctx.instant;
+  const impact = ctx.plan.choke?.until === w.from, instant = impact || ctx.instant, id = ctx.id ?? 'pegTakeover';
+  const boardMoves = cell === 'full' ? [...(impact ? [] : [{id:`${id}.grow`, at:w.from, frames:4, ease:'inOutSine', align:'start', why:'the board takes the frame with the footage'}]),
+    {id:`${id}.home`, at:w.from + w.len, frames:4, ease:'inOutSine', align:'end', why:'the board is home when the call comes back'}] : [];
   return {clips:[clip(ctx, 'pegTakeover', 0, {at:w.from, len:w.len, cell, asset, time:fitTime(ctx, asset, w.from, w.len),
-    fx:[{type:'pegVideo', mix:instant ? 1 : [[0, 0], [QS, 1, 'outQuad']], pitch:ctx.pitch ?? 12, levels:6, gamma:1.4}], signature:impact ? 'ignition' : undefined, why:'peg takeover'})]};
+    fx:[{type:'pegVideo', mix:instant ? 1 : [[0, 0], [QS, 1, 'outQuad']], pitch:ctx.pitch ?? 12, levels:6, gamma:1.4}], signature:impact ? 'ignition' : undefined, why:'peg takeover'})], boardMoves};
 }
 
 // 34. Droste dive: the camera crash-zooms into one tile (ctx.cell, Pat's by

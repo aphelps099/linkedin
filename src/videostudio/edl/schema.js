@@ -2,7 +2,7 @@
 //
 //   EDL {version:1, song:{form, track?, post?, seed?, loop?, steps?}, format:'9:16'|'1:1'|'16:9', fps:24,
 //        clips:VideoClip[], board:BoardCue[] | 'song', transports:Transport[], camera?:CameraCue[],
-//        overrides:Override[], template?:bool}
+//        boardMoves?:BoardMove[], overrides:Override[], template?:bool}
 //
 //   VideoClip {id, at:At, len (steps), cell, asset:'shot:<id>'|'role:<stem>.<kind>'|'gen:<name>', z?,
 //     time?:{in (s), rate:Param, reverse, repeat?:{unit, count?, pingpong?, vary?, loop?}, freezeAt?, tape?, map?},
@@ -12,6 +12,10 @@
 //   BoardCue {id?, at, len, text | {ref}, font?, k?, reveal?, release?, palette?, fx?:{detune, slow, ...}, cell?, z?, ghost?}
 //   Transport {id?, at, len, kind:'rewind'|'tapestop'|'jump', audio:true, rate?, from?:At, seconds?}
 //   CameraCue {id?, at, len, zoom, cx, cy, rot, dx, dy:Param, fx?:[...], board?, clock?:'song'|'film'}   the whole composite
+//   BoardMove {id?, at, frames? (3-24, default 4), ease? (default inOutSine), align?:'start'|'end', why?}
+//     the only place the Peg Board's rect may change (lint G14): it eases from the rect its layout
+//     gave it on the frame before the move to the rect its layout gives it on the move's last frame,
+//     starting on `at` (start: a full-board moment grows out of the home) or landing on it (end)
 //   Override {target, set?:{'dotted.path':value}, rule?:'G7'|'S4', note}   rule: waive that lint for the target
 //
 // Units: at/len/keys/off in 16th steps of the plan (any tempo); `frames` in
@@ -101,6 +105,7 @@ const FIELDS = {
   cue:['id', 'at', 'len', 'text', 'font', 'k', 'reveal', 'release', 'palette', 'fx', 'cell', 'z', 'ghost', 'why'],
   transport:['id', 'at', 'len', 'kind', 'audio', 'rate', 'from', 'seconds', 'signature', 'why'],
   camera:['id', 'at', 'len', 'zoom', 'cx', 'cy', 'rot', 'dx', 'dy', 'fx', 'board', 'clock', 'why'],
+  boardMove:['id', 'at', 'frames', 'ease', 'align', 'why'],
   override:['target', 'set', 'rule', 'note'],
 };
 const unknown = (obj, kind, path, out) => { for (const k of Object.keys(obj)) if (!FIELDS[kind].includes(k)) out.push([`${path}.${k}`, `is not a field of ${kind}`]); };
@@ -214,7 +219,7 @@ function checkCue(c, path, out, format) {
 export function validate(edl) {
   const out = [];
   if (!isObj(edl)) return [{path:'', message:'an EDL is a JSON object'}];
-  for (const k of Object.keys(edl)) if (!['version', 'song', 'format', 'fps', 'clips', 'board', 'transports', 'camera', 'overrides', 'template'].includes(k)) out.push([k, 'is not a field of an EDL']);
+  for (const k of Object.keys(edl)) if (!['version', 'song', 'format', 'fps', 'clips', 'board', 'transports', 'camera', 'boardMoves', 'overrides', 'template'].includes(k)) out.push([k, 'is not a field of an EDL']);
   if (edl.version !== VERSION) out.push(['version', `must be ${VERSION}`]);
   if (!isObj(edl.song) || typeof edl.song.form !== 'string') out.push(['song', 'song is {form, track?, post?, seed?, loop?, steps?}']);
   else {
@@ -261,6 +266,19 @@ export function validate(edl) {
       if (c.clock !== undefined && !['song', 'film'].includes(c.clock)) out.push([`${p}.clock`, "clock is 'song' (default: the song time a transport shows) or 'film' (the film's own frames)"]);
     });
   }
+  if (edl.boardMoves !== undefined) {
+    if (!Array.isArray(edl.boardMoves)) out.push(['boardMoves', 'boardMoves is a list of BoardMoves']);
+    else edl.boardMoves.forEach((m, i) => {
+      const p = `boardMoves[${i}]`;
+      if (!isObj(m)) { out.push([p, 'a board move is an object']); return; }
+      unknown(m, 'boardMove', p, out);
+      checkAt(m.at, `${p}.at`, out);
+      if (m.frames !== undefined && !(Number.isInteger(m.frames) && m.frames >= 3 && m.frames <= 24)) out.push([`${p}.frames`, 'frames is a whole number from 3 to 24: a board move is never a jump']);
+      if (m.ease !== undefined && !EASE_NAMES.includes(m.ease)) out.push([`${p}.ease`, `is one of ${EASE_NAMES.join(', ')}`]);
+      if (m.align !== undefined && !['start', 'end'].includes(m.align)) out.push([`${p}.align`, "align is 'start' (the move starts on at) or 'end' (it lands on at)"]);
+      if (m.why !== undefined && typeof m.why !== 'string') out.push([`${p}.why`, 'must be a string']);
+    });
+  }
   if (!Array.isArray(edl.overrides)) out.push(['overrides', 'overrides is a list']);
   else edl.overrides.forEach((o, i) => {
     const p = `overrides[${i}]`;
@@ -285,8 +303,8 @@ const ORDER = ['version', 'song', 'format', 'fps', 'template', 'form', 'track', 
   'frame', 'crop', 'all', '9:16', '1:1', '16:9', 'x', 'y', 'w', 'h', 'zoom', 'cx', 'cy', 'rot', 'dx', 'dy', 'opacity', 'mirror',
   'keys', 'unit', 'bind', 'base', 'scale', 'attack', 'release', 'mul', 'add',
   'fx', 'chrome', 'name', 'role', 'mic', 'speaking', 'toast', 'banner', 'cameraOff',
-  'audio', 'from', 'seconds', 'target', 'set', 'rule', 'note', 'origin', 'scene', 'signature', 'why', 'tags',
-  'clips', 'board', 'transports', 'camera', 'overrides'];
+  'audio', 'from', 'seconds', 'ease', 'align', 'target', 'set', 'rule', 'note', 'origin', 'scene', 'signature', 'why', 'tags',
+  'clips', 'board', 'transports', 'camera', 'boardMoves', 'overrides'];
 const RANK = new Map();
 ORDER.forEach((k, i) => { if (!RANK.has(k)) RANK.set(k, i); });
 const byRank = (a, b) => { const ra = RANK.get(a) ?? 1e9, rb = RANK.get(b) ?? 1e9; return ra - rb || (a < b ? -1 : a > b ? 1 : 0); };
@@ -313,13 +331,14 @@ export function stringify(edl) {
 export const parse = text => JSON.parse(text);
 
 // A minimal valid EDL for a song form and format.
-export function createEDL({form = 'drop60', format = '9:16', clips = [], board = 'song', transports = [], camera, overrides = [], ...song} = {}) {
+export function createEDL({form = 'drop60', format = '9:16', clips = [], board = 'song', transports = [], camera, boardMoves, overrides = [], ...song} = {}) {
   const edl = {version:VERSION, song:{form, ...song}, format, fps:FPS, clips, board, transports, overrides};
   if (camera) edl.camera = camera;
+  if (boardMoves) edl.boardMoves = boardMoves;
   return edl;
 }
 
-// A patch of clips, cues, transports and camera cues (what a move returns) merged into an EDL.
+// A patch of clips, cues, transports, camera cues and board moves (what a move returns) merged into an EDL.
 export function merge(edl, ...patches) {
   const out = {...edl, clips:[...edl.clips], board:Array.isArray(edl.board) ? [...edl.board] : edl.board, transports:[...edl.transports], overrides:[...edl.overrides]};
   for (const p of patches) {
@@ -329,6 +348,7 @@ export function merge(edl, ...patches) {
     if (p.board?.length) out.board = [...(Array.isArray(out.board) ? out.board : [{id:'song', at:0, text:{ref:'song'}}]), ...p.board];
     if (p.transports) out.transports.push(...p.transports);
     if (p.camera?.length) out.camera = [...(out.camera || []), ...p.camera];
+    if (p.boardMoves?.length) out.boardMoves = [...(out.boardMoves || []), ...p.boardMoves];
     if (p.overrides) out.overrides.push(...p.overrides);
   }
   return out;
