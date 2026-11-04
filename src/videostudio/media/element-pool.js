@@ -23,6 +23,7 @@
 // is bounded by the cache (at most half of it, 2 to 8 frames); captures are capped at 540
 // lines, so a master standing in for a missing proxy costs no more than a proxy.
 import {stutterKey} from './stutter-cache.js';
+import {needsProxy} from './shots.js';
 
 export const isMobile = () => typeof navigator !== 'undefined' && (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && globalThis.matchMedia?.('(pointer: coarse)').matches));
 const FPS = 24, CORRECT = .03, SEEK_FRAMES = 2, LOOKAHEAD = 48, CAPTURE_LINES = 540;
@@ -74,7 +75,8 @@ export function createElementPool({shots, cache = null, slots = isMobile() ? 4 :
   }
   function load(el, key, time) {
     const [shotId, dir] = key.split('|'), shot = get(shotId), reverse = dir === 'rev';
-    const forward = preferProxy ? shot?.proxy ?? shot?.src : shot?.src;
+    // (A master iOS cannot decode, H.264 4:4:4, is always read through its proxy: shots.js needsProxy.)
+    const forward = preferProxy || needsProxy(shot) ? shot?.proxy ?? shot?.src : shot?.src;
     const flip = reverse && !revUsable(shot) && !!cache;
     const url = reverse && !flip ? shot?.rev : forward;
     if (!shot || !url) { el.key = null; return false; }

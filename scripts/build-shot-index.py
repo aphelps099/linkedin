@@ -41,6 +41,8 @@ TIER_LINES = {'A': 540, 'B': 260}   # detailH = effScale * content height (lines
 STEMS = {'Operations': 'drums', 'Keys': 'keys', 'Kevin': 'guitar', 'Synergy': 'voice'}
 NEVER_ON_SCREEN = {'Pat', 'the lady', 'The lady', 'Lady'}
 ROBOTS = {'Synergy', 'Synthia'}
+# Master pixel formats that need the 4:2:0 proxy to play everywhere: ffprobe pix_fmt prefix -> profile.
+MASTER_CHROMA = {'yuv444': 'High 4:4:4', 'yuv422': 'High 4:2:2', 'yuvj44': 'High 4:4:4', 'yuvj42': 'High 4:2:2'}
 NAMES = {'Guitar': 'Kevin', 'guitar': 'Kevin', 'drums': 'Operations', 'Drums': 'Operations',
          'accountant': 'Arjun', 'people': 'People & Culture', 'People': 'People & Culture'}
 CAT_STATUS = {'Current edit': 'C', 'Available edit': 'A', 'Source take': 'S',
@@ -951,6 +953,12 @@ def classify(e, m, runtime):
         notes = (notes + ' ' if notes else '') + 'No face measured; crops use ' + basis + '.'
     elif not m['faceTried'] and humans and not several:
         notes = (notes + ' ' if notes else '') + 'Face detector unavailable on this run.'
+    # A master in 4:4:4 (H.264 High 4:4:4) does not decode on iOS Safari or most hardware
+    # decoders: the studio plays its 540p 4:2:0 proxy, and says so when only the master is served.
+    chroma = MASTER_CHROMA.get(str(p.get('pix_fmt') or '')[:6])
+    if chroma:
+        notes = (notes + ' ' if notes else '') + (f'Master is H.264 {chroma} ({p["pix_fmt"]}): iOS Safari and most hardware decoders cannot play it. '
+                                                   'The studio plays the 540p 4:2:0 proxy; until that proxy is uploaded to production, the media route serves this master in its place.')
     rec = {
         'id': sid, 'aliases': aliases, 'catalogId': cat['id'] if cat else None, 'manifestId': man['id'] if man else None,
         'title': title, 'sha256': e['sha'],
@@ -960,6 +968,7 @@ def classify(e, m, runtime):
         'category': cat['category'] if cat else 'Season plates',
         'characters': chars, 'stem': stem, 'roles': roles, 'shotType': shot_type, 'action': action,
         'lipSync': lip, 'audio': bool(p['audio']), 'tracking': face.get('track'),
+        **({'masterChroma': chroma.split()[-1]} if chroma else {}),
         'width': w, 'height': h, 'fps': num(fps), 'duration': num(m['frames'] / fps), 'frames': m['frames'],
         'contentBox': cbox, 'uiBaked': dict(m['ui'], **({'label': ov['uiLabel']} if 'uiLabel' in ov else {})),
         'subjectBox': [int(round(v)) for v in subject] if subject else None,

@@ -68,6 +68,16 @@ for (const post of POSTS) {
   ok(Math.abs(plan.duration - (stepTime(BARS * BAR_STEPS) + 3.5)) < 1e-9, 'duration includes the tail');
 }
 
+// Five words in half a bar: every word sung, none past the window, or past the 16ths the next slot gives.
+{
+  const d = {Who:.3, do:.2, you:.22, trust:.4, more:.35};
+  const tight = fitPhrase('Who do you trust more', d, 8), given = fitPhrase('Who do you trust more', d, 8, STEP, 2);
+  ok(tight.length === 5 && tight.at(-1).at + tight.at(-1).steps <= 8 && tight.every((w, i) => !i || w.at >= tight[i - 1].at + tight[i - 1].steps), 'fit: five words in eight 16ths, the shortest as single 16ths');
+  ok(given.length === 5 && given.every(w => w.steps === 2) && given.at(-1).at + given.at(-1).steps === 10, 'fit: with two 16ths given, two 16ths a word, landing on the next downbeat');
+  const plan = arrange({hook:'Who do you trust more', verses:['We should talk about this', 'Who do you trust more', 'We should talk about this', 'Who do you trust more']}, d);
+  const sung = [...plan.words, ...plan.stutters.map(x => ({...x, gate:STEP * .8}))].sort((a, b) => a.at - b.at);
+  ok(sung.every((w, i) => !i || plan.timing[sung[i - 1].at] + sung[i - 1].gate <= plan.timing[w.at] + 1e-9), 'fit: on the swung grid no word sounds into the next');
+}
 // A hook that fits in a bar is sung twice; the answer resolves home.
 {
   const lyrics = lyricsFromPost(SAMPLE_POST), plan = arrange(lyrics, fakeDurations(lyrics));

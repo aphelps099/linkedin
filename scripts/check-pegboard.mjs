@@ -5,7 +5,8 @@ import {createBoard} from '../src/pegboard/board.js';
 import {compileFont, layoutText} from '../src/pegboard/font.js';
 import {PEG9} from '../src/pegboard/fonts/peg9.js';
 import {PEG5} from '../src/pegboard/fonts/peg5.js';
-import {buildScreens, paint, indexWords, activeScreen, syllableSpans, darkAt, TAG_TAIL} from '../src/pegboard/choreo.js';
+import {buildScreens, paint, indexWords, activeScreen, syllableSpans, darkAt, TAG_TAIL, stopEndAt, stopDarkAt, STOP_DIM} from '../src/pegboard/choreo.js';
+import {ladyLength} from '../src/allhands/drop.js';
 import {boardLuma, flashes, worstWindow, governorTrack} from '../src/pegboard/governor.js';
 import {FORMS, formPlays} from '../src/allhands/forms.js';
 import {TRACK_ORDER} from '../src/allhands/songbook/index.js';
@@ -79,6 +80,19 @@ for (const id of ['drop60', 'soundcheck']) for (const track of TRACK_ORDER.filte
     at(impact - FRAME * .49); ok(board.I.filter(v => v > .5).length > board.cols * board.rows * .8 && burning() > .8, `${label}: the board ignites, fully lit, on the frame that holds the impact`);
     at(impact + FRAME * .51); ok(board.I.filter(v => v > .5).length > board.cols * board.rows * .5 && burning() < .2, `${label}: one frame fully lit, then the settle (${(100 * burning()).toFixed(0)} % still burning)`);
     at(impact + .3); ok(screens.find(s => s.kind === 'impact') === activeScreen(screens, impact + .3), `${label}: BACK. holds the board after the impact`);
+    // The ending: her "Full stop." is routed after the tape, so the tape stop does not stop her. The
+    // board keeps it lit (never under STOP_DIM of full exposure) through every frame she is heard in,
+    // fully typed and readable on the last one, slid down 2 pegs; true black from the first frame
+    // that starts after she stops sounding (plan.stop.end, else her envelope's end), as at the choke.
+    const stopEv = plan.lady.find(e => e.role === 'stop'), sEnd = stopEndAt(plan), s0 = T[stopEv.at], sScreen = screens.find(s => s.kind === 'stop');
+    ok(Math.abs(sEnd - (s0 + ladyLength(stopEv))) < 1e-9 && (plan.stop?.end == null || Math.abs(plan.stop.end - sEnd) < 1e-9) && Math.abs(stopDarkAt(plan) - (sEnd + TAG_TAIL + FRAME / 2)) < 1e-12 && sEnd > T[plan.tape.find(x => x.kind === 'stop').from] + .4, `${label}: "${stopEv.display}" sounds ${s0.toFixed(3)}-${sEnd.toFixed(3)} s, past the tape stop; the board goes dark on the first frame after it`);
+    const page = layoutOf(sScreen).pages[0], total = page.lines.flatMap(l => l.chars).reduce((n, c) => n + c.pegs.length / 2, 0);
+    let dim = 1, gone = 0;
+    for (let t = s0 + FRAME * .5; t < sEnd + TAG_TAIL + FRAME * .5; t += FRAME) { at(t); dim = Math.min(dim, board.exposure); if (activeScreen(screens, t) !== sScreen) gone++; }
+    at(sEnd + TAG_TAIL + FRAME * .49);
+    const lit = [...board.I].filter(v => v > .05), mean = lit.reduce((a, v) => a + v, 0) / Math.max(1, lit.length), slid = Math.max(...board.dy);
+    ok(!gone && dim >= STOP_DIM - 1e-9 && lit.length === total && total > 20 && mean * board.exposure >= .5 && slid > 1.9 && slid <= 2 + 1e-9, `${label}: "${sScreen.text}" lit on every frame she is heard in (exposure at least ${dim.toFixed(2)}), fully typed on her last frame (${lit.length} of ${total} pegs, mean light ${(mean * board.exposure).toFixed(2)}), slid down ${slid.toFixed(2)} pegs`);
+    at(sEnd + TAG_TAIL + FRAME * .51); ok(board.exposure === 0 && board.sockets === 0, `${label}: true black from the first frame after "${sScreen.text}"`);
     // The flash governor: no second ever holds more than three flashes, whole or by quarter.
     const frames = [];
     for (let f = 0; f < Math.ceil(plan.duration * FPS); f++) { at(f / FPS); frames.push(boardLuma(board)); }

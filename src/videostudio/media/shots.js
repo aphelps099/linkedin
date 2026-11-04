@@ -39,16 +39,33 @@ export function canReverse(shot, {transport = false} = {}) {
   return transport || shot.reverseClass === 'R1';
 }
 
-// URL for a shot. preferProxy picks the 540p proxy when one is recorded.
-// reverse:true returns the reversed proxy, or null when none exists (a
-// <video> cannot play backwards; the caller freezes or uses another shot).
+// A master that iOS Safari and most hardware decoders cannot play (H.264 High 4:4:4 or 4:2:2:
+// shot.masterChroma, from the builder's probe). Its 540p 4:2:0 proxy plays everywhere, so the
+// studio always asks for the proxy, even where it would otherwise read the master.
+export const needsProxy = shot => !!shot?.masterChroma && shot.masterChroma !== '4:2:0';
+
+// URL for a shot. preferProxy picks the 540p proxy when one is recorded (always, for a
+// master that needs it). reverse:true returns the reversed proxy, or null when none exists
+// (a <video> cannot play backwards; the caller freezes or uses another shot).
 export function srcFor(shot, {reverse = false, preferProxy = true, transport = false} = {}) {
   if (!shot) throw new Error('srcFor: no shot');
   if (reverse) {
     if (!canReverse(shot, {transport})) throw new Error(`srcFor: ${shot.id} is ${shot.reverseClass} (${shot.reverseWhy}); it never plays reversed`);
     return shot.rev || null;
   }
-  return (preferProxy && shot.proxy) || shot.src;
+  return ((preferProxy || needsProxy(shot)) && shot.proxy) || shot.src;
+}
+
+// Where a shot's forward picture really comes from on this server: the media route answers
+// its proxy key with X-Videostudio-Source 'proxy' (on disk), 'bucket' (uploaded) or 'master'
+// (the proxy is not uploaded yet, so the route serves the master in its place). 'none' when the
+// index records no proxy; null when the server cannot be asked.
+export async function mediaSource(shot, fetcher = (u, o) => fetch(u, o)) {
+  if (!shot?.proxy) return 'none';
+  try {
+    const res = await fetcher(shot.proxy, {method:'HEAD'});
+    return res.ok ? res.headers.get('x-videostudio-source') ?? 'proxy' : null;
+  } catch { return null; }
 }
 
 export function posterFor(shot) {

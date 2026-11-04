@@ -9,7 +9,7 @@
 //     frame?:{crop?:{[format|'all']:Rect}, zoom, cx, cy, rot, dx, dy, opacity:Param, mirror?:'x'|'y'|'xy'},
 //     fx?:[{type, ...Param}], chrome?:{name, role, mic, speaking:Param, toast, banner, cameraOff},
 //     origin?, scene?, signature?, why?}
-//   BoardCue {id?, at, len, text | {ref}, font?, k?, reveal?, release?, palette?, fx?:{detune, slow, ...}, cell?, z?}
+//   BoardCue {id?, at, len, text | {ref}, font?, k?, reveal?, release?, palette?, fx?:{detune, slow, ...}, cell?, z?, ghost?}
 //   Transport {id?, at, len, kind:'rewind'|'tapestop'|'jump', audio:true, rate?, from?:At, seconds?}
 //   CameraCue {id?, at, len, zoom, cx, cy, rot, dx, dy:Param, fx?:[...], board?, clock?:'song'|'film'}   the whole composite
 //   Override {target, set?:{'dotted.path':value}, rule?:'G7'|'S4', note}   rule: waive that lint for the target
@@ -98,7 +98,7 @@ const FIELDS = {
   frame:['crop', 'zoom', 'cx', 'cy', 'rot', 'dx', 'dy', 'opacity', 'mirror'],
   chrome:['name', 'role', 'mic', 'speaking', 'toast', 'banner', 'cameraOff'],
   repeat:['unit', 'count', 'pingpong', 'vary', 'loop'],
-  cue:['id', 'at', 'len', 'text', 'font', 'k', 'reveal', 'release', 'palette', 'fx', 'cell', 'z', 'why'],
+  cue:['id', 'at', 'len', 'text', 'font', 'k', 'reveal', 'release', 'palette', 'fx', 'cell', 'z', 'ghost', 'why'],
   transport:['id', 'at', 'len', 'kind', 'audio', 'rate', 'from', 'seconds', 'signature', 'why'],
   camera:['id', 'at', 'len', 'zoom', 'cx', 'cy', 'rot', 'dx', 'dy', 'fx', 'board', 'clock', 'why'],
   override:['target', 'set', 'rule', 'note'],
@@ -206,6 +206,7 @@ function checkCue(c, path, out, format) {
   if (c.cell !== undefined && format && !cellRect(format, c.cell)) out.push([`${path}.cell`, `no cell "${c.cell}" in ${format}`]);
   if (c.z !== undefined && !['over', 'under'].includes(c.z)) out.push([`${path}.z`, 'is over or under']);
   if (c.fx !== undefined && !isObj(c.fx)) out.push([`${path}.fx`, 'board fx is {detune?, slow?, rowShift?, sparkle?, outline?}']);
+  if (c.ghost !== undefined && !(Number.isFinite(c.ghost) && c.ghost > 0 && c.ghost <= .5)) out.push([`${path}.ghost`, 'ghost is the intensity of a ghost screen (only its letters, flat, on true black), above 0 and at most .5']);
 }
 
 // Structural problems, as [{path, message}]. References to the plan and the shot

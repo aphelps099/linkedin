@@ -28,11 +28,11 @@ import {FORMS} from '../src/allhands/forms.js';
 import {lyricsFromPost, SAMPLE_POST} from '../src/allhands/lyrics.js';
 import {compile} from '../src/videostudio/edl/compile.js';
 import {stringify} from '../src/videostudio/edl/schema.js';
-import {stepTime, cutFrame, hitFrame, audioLatency, chokeFrames} from '../src/videostudio/edl/anchors.js';
+import {stepTime, cutFrame, hitFrame, audioLatency, chokeFrames, stopFrames} from '../src/videostudio/edl/anchors.js';
 import {metronomeEDL, expectedCuts} from '../src/videostudio/edl/metronome.js';
 import {demux} from '../src/videostudio/media/decoder.js';
 import {captions, planJSON, exportName, SAMPLES_PER_FRAME} from '../src/videostudio/render/export.js';
-import {drop60Draft, ROWS, SCENE_LABELS} from '../src/videostudio/treatments/drop60-draft.js';
+import {drop60Draft, ROWS, SCENE_LABELS, GHOST} from '../src/videostudio/treatments/drop60-draft.js';
 import {studioServer, launch, exportPage, runExport, pull} from './export-videostudio.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -119,9 +119,13 @@ const lyrics = lyricsFromPost(SAMPLE_POST), plan = FORMS.drop60.arrange(lyrics, 
     ok(fr(F(DB) + 8).layers.some(l => l.gen === 'feedback' && l.fx.some(e => e.type === 'droste')) && fr(F(DB + 14)).camera?.zoom > 2, `${track} row 24: the Droste dive into Pat's cell`);
     ok(fr(F(DB + 2 * BS + 10)).layers.some(l => l.fx.some(e => e.type === 'tile')) && fr(F(DB + 2 * BS + 10)).layout === 'L1' && fr(F(DB + 3 * BS + 10)).layers.some(l => l.clipId.startsWith('replay.')), `${track} rows 26-27: the kaleido of the pads in L1, replayed in the fill`);
     ok(layers.some(l => l.chrome?.toast?.text === 'Kevin left the meeting') && fr(F(sec('Outro').from * BS) + 2).layout === 'G6', `${track} row 28: the call from G6, Kevin leaves first`);
-    const stop = pl.tape.find(t => t.kind === 'stop'), black = F(stop.from) + Math.ceil(stop.seconds * 24 - 1e-9);
-    ok(p.transports.some(t => t.kind === 'tapestop' && t.to === black) && p.all.slice(black, p.frames - 2).every(x => x.layers.every(l => l.gen === 'color:#000000') && !x.board.rect), `${track} row 29: the tape stop to frame ${black}, then true black (no board region) to ${p.frames - 3}`);
-    ok(p.all.slice(-2).every(x => x.transport?.id === 'loop' && x.transport.sound === 'silent' && x.layout === fr(0).layout && x.board.screen === fr(0).board.screen) && !p.lint.warnings.some(w => w.rule === 'G12'), `${track} row 29: the last two frames are the impact six frames in (silent): frame 0's layout and BACK. screen, so the loop closes (G12 clean)`);
+    // Row 29: the tape stop's curve, then its hold while her "Full stop." (after the tape) still sounds,
+    // "FULL STOP." on the board all along; black from the first frame after her; the ghost BACK. last.
+    const stop = pl.tape.find(t => t.kind === 'stop'), curve = F(stop.from) + Math.ceil(stop.seconds * 24 - 1e-9), her = stopFrames(pl), black = Math.max(curve, her.black), ghost = Math.max(p.frames - 2, black);
+    const stopScreen = x => p.board.screens[x.board.screen]?.kind === 'stop' && !!x.board.rect && !x.board.dark;
+    ok(p.transports.some(t => t.kind === 'tapestop' && t.to === Math.min(black, p.frames)) && p.all.slice(her.onset, Math.min(black, p.frames)).every(stopScreen) && p.all.slice(black, ghost).every(x => x.layers.every(l => l.gen === 'color:#000000') && !x.board.rect), `${track} row 29: the tape stop's curve to frame ${curve}, held to ${Math.min(black, p.frames) - 1} with "FULL STOP." on the board while she sounds (to ${her.end.toFixed(3)} s), then true black (no board region) on ${black}-${ghost - 1}`);
+    const g0 = p.board.screens[fr(0).board.screen];
+    ok(p.all.slice(ghost).every(x => x.layout === fr(0).layout && p.board.screens[x.board.screen]?.ghost === GHOST && p.board.screens[x.board.screen].of === g0.of && x.layers.every(l => l.gen === 'color:#000000')) && p.frames - ghost === Math.min(2, p.frames - black) && !p.lint.warnings.some(w => w.rule === 'G12'), `${track} row 29: the last ${p.frames - ghost} frame${p.frames - ghost > 1 ? 's' : ''} (${ghost}-${p.frames - 1}) show the ghost BACK. at I ${GHOST} on black: frame 0's layout and BACK. screen, so the loop closes (G12 clean)`);
     ok(layers.every(l => !(l.shotId && /lady|circle back|^pat$/i.test(SHOTS.shots.find(s => s.id === l.shotId)?.characters.join(' ') ?? ''))) && layers.filter(l => l.gen === 'camera-off').length > 100, `${track} canon: Pat never on video; the lady never footage`);
     const sceneIds = new Set(edl.clips.map(c => c.scene));
     ok([...sceneIds].every(s => SCENE_LABELS[s]), `${track}: every scene has a label for the monitor (${[...sceneIds].join(', ')})`);

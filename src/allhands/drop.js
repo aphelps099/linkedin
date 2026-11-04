@@ -4,7 +4,7 @@
 // performs this structure in its own tempo, key and style (songbook/*.js);
 // Circle Back's is 30 bars, 60.000 s. Pure: every event is decided here,
 // before any audio exists.
-import {BAR_STEPS, placeSlot, timingTable, hash} from './song.js';
+import {BAR_STEPS, placeSlot, timingTable, hash, clearWords} from './song.js';
 import {tokens} from './lyrics.js';
 import {slice, LADY_TABLE} from './lady-table.js';
 import {trackOf, castOf} from './songbook/index.js';
@@ -149,7 +149,8 @@ export function ladyEvents(words, table = LADY_TABLE, {track, cast} = {}) {
   if (tagEntry) {
     const range = span(tagEntry, roles.tag.words), tag = slice(tagEntry, ...range), window = (impactStep - chokeStep) * STEP;   // the build is straight: no swing in it
     const {rate, room} = tagRate(D.tag, tagEntry, tag[1] - tag[0], window, tr.pitchClasses);
-    const gate = room === undefined ? Math.min(.64, (tag[1] - tag[0]) / rate) : Math.min(.64, (tag[1] - tag[0]) / rate, room);
+    // Circle Back gates at 0.64 s; a tuned tag is heard whole, inside the room its silence leaves.
+    const gate = room === undefined ? Math.min(.64, (tag[1] - tag[0]) / rate) : Math.min((tag[1] - tag[0]) / rate, room);
     events.push({role:'tag', file:roles.tag.file, from:tag[0], to:tag[1], at:chokeStep, rate, gate, gain:tagEntry.gainDb - 1, pan:0, display:roles.tag.display ?? upper(tagEntry, ...range)});
   }
   // "BACK." owns the impact, dry and loud with the machine under it; her deep
@@ -214,10 +215,17 @@ export function arrangeDrop(lyrics, durations, table = LADY_TABLE, options) {
   const {track, cast, coldOpen = false} = options || {};
   const tr = trackOf(track), D = tr.drop, STEP = tr.step;
   const music = {step:STEP, scale:tr.music.scale, resolve:tr.music.resolve, home:tr.music.home, fit:fitter(tr)};
-  const lines = [], words = [];
-  D.slots(lyrics).forEach((slot, id) => {
-    const placed = placeSlot(slot, lyrics, durations, id, music);
+  const lines = [], words = [], setlist = D.slots(lyrics), startOf = s => s.bar * BAR_STEPS + (s.startStep ?? 0);
+  // A slot that gives way (slot.give, 16ths) lets the phrase whose window ends
+  // where it starts run on into those 16ths, and then starts as late as that
+  // phrase ran; its window keeps its end. Every other phrase stays in its window.
+  let late = 0;
+  setlist.forEach((slot0, id) => {
+    const next = setlist[id + 1], slot = late ? {...slot0, startStep:(slot0.startStep ?? 0) + late, window:(slot0.window ?? 30) - late} : slot0;
+    const end = startOf(slot) + (slot.window ?? 30), spill = next?.give && startOf(next) === end ? next.give : 0;
+    const placed = placeSlot(spill ? {...slot, spill} : slot, lyrics, durations, id, music);
     lines.push(placed.line); words.push(...placed.words);
+    late = next ? Math.max(0, ...placed.words.map(w => w.at + w.steps - startOf(next))) : 0;
   });
   // Synergy answers her in the build: the hook's first word between her hits.
   const hookFirst = tokens(lyrics.hook)[0], A = D.answers;
@@ -228,20 +236,25 @@ export function arrangeDrop(lyrics, durations, table = LADY_TABLE, options) {
   // He stammers the hook's first word on the odd 16ths of one bar of the ladder.
   const stutters = hookFirst ? Array.from({length:8}, (_, i) => ({word:hookFirst.word, at:D.stutter.bar * 16 + 2 * i + 1, steps:1, midi:D.stutter.notes[i]})) : [];
   words.sort((a, b) => a.at - b.at);
-  const lady = ladyEvents(words, table, {track:tr, cast});
   const totalSteps = D.bars * BAR_STEPS, sectionOf = bar => D.sections.find(s => bar >= s.from && bar < s.to) || D.sections.at(-1);
-  const bars = Array.from({length:D.bars}, (_, index) => ({index, section:sectionOf(index).name, chord:tr.chordAt(index), layers:D.layers(index), cutoff:D.cutoff(index), swing:D.swing(index)}));
   const timing = timingTable(totalSteps + BAR_STEPS, D.swing, STEP);
+  clearWords(words, timing, durations, stutters);                     // one word at a time, in seconds
+  const lady = ladyEvents(words, table, {track:tr, cast});
+  const bars = Array.from({length:D.bars}, (_, index) => ({index, section:sectionOf(index).name, chord:tr.chordAt(index), layers:D.layers(index), cutoff:D.cutoff(index), swing:D.swing(index)}));
   const chokeAt = D.choke.bar * 16 + D.choke.step, tag = lady.find(e => e.role === 'tag');
   // Kick steps, as the band plays them, plus the drop kick on the impact.
   const kicks = [];
   bars.forEach(b => { const own = tr.kicksOf(b.index, b.layers); if (b.layers.impact && !own.includes(0)) own.unshift(0); own.forEach(s => kicks.push(b.index * 16 + s)); });
   const energyTrim = roomTrim(tr, words, timing);
+  // Her stop phrase: it starts with the tape-stop and is routed after the tape, so it outlasts it.
+  const stopStep = D.stop.bar * BAR_STEPS + D.stop.step, stopEvent = lady.find(e => e.role === 'stop');
   const plan = {form:'drop60', title:'Drop edition', bpm:tr.bpm, step:STEP, swing:tr.swing, key:tr.key, sections:D.sections, bars, lines, words, stutters, lady,
     call:{until:D.unmute * BAR_STEPS, dropouts:dropouts(hash(lyrics.hook), D.unmute * BAR_STEPS)},
     // tagEnd: when her tag stops sounding (seconds, plan time): its envelope's end, gate and release included.
     choke:{at:chokeAt, until:D.impact * 16, dark:timing[chokeAt] + (D.dark ?? Math.ceil(((tag ? tag.gate : 0) + .01) * 1000) / 1000), tagEnd:tag ? timing[chokeAt] + ladyLength(tag) : timing[chokeAt]},
     tape:[{kind:'sink', from:D.sink * 16, to:(D.sink + 1) * 16, rate:[1, .5]}, {kind:'stop', from:D.stop.bar * 16 + D.stop.step, seconds:D.stop.seconds}],
+    // stop.end: when her "Full stop." stops sounding (seconds, plan time), measured as choke.tagEnd is; null without a stop line.
+    stop:{at:timing[stopStep], tapeEnd:timing[stopStep] + D.stop.seconds, end:stopEvent ? timing[stopStep] + ladyLength(stopEvent) : null, display:stopEvent?.display ?? null},
     timing, finale:false, totalSteps, duration:timing[totalSteps] + .6,
     track:tr.id, trackTitle:tr.title, kicks, energyTrim,
     marks:{unmute:D.unmute * 16, build:D.ladder.rungs[0].bar * 16, rise:D.rise * 16, choke:chokeAt, impact:D.impact * 16, sink:D.sink * 16, sinkEnd:(D.sink + 1) * 16, stop:D.stop.bar * 16 + D.stop.step}};

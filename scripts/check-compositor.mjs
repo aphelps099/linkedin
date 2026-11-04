@@ -397,6 +397,29 @@ let page = await freshPage();
   log(`6. the board: ${checks - before} checks`);
 }
 
+// ---- 6b. the draft cut's ending, drawn: "FULL STOP." lit while she sounds, true black, the ghost BACK. ----------
+{
+  const before = checks;
+  const r = await page.evaluate(async () => {
+    const {stopFrames} = await import('/src/videostudio/edl/anchors.js'), {boardGrid, boardTypeBounds, safeSpan} = await import('/src/videostudio/gl/board-layer.js');
+    const plan = T.plan, p = T.compile(T.drop60Draft(plan, T.SHOTS, {format:'9:16'}), {plan, shots:T.SHOTS, format:'9:16'}), N = p.frames, her = stopFrames(plan), G = Math.max(N - 2, her.black);
+    const stat = (img, box) => { let max = 0, lit = 0, out = 0; T.region(img, {x:0, y:0, w:img.width, h:img.height}, (q, x, y) => { const l = T.luma(q); max = Math.max(max, l); if (l > 12) { lit++; if (box && (x < box.x - 2 || x > box.x + box.w + 2 || y < box.y - 2 || y > box.y + box.h + 2)) out++; } }); return {max, lit, out}; };
+    const at = async f => (await T.render(p, f, {scale:.5, shots:T.real})).img;
+    const last = await at(her.black - 1), dark = await at(her.black), ghost = await at(G);
+    // BACK. on frame 0's grid (the ignition's peg video pitch), in half-size px.
+    const s0 = p.board.screens[p.frame(0).board.screen], pitch = p.frame(0).layers.find(l => l.fx.some(x => x.type === 'pegVideo'))?.fx.find(x => x.type === 'pegVideo').pitch;
+    const b = boardTypeBounds(1080, 1920, s0, boardGrid(1080, 1920, pitch, safeSpan({x:0, y:0, w:1080, h:1920}, T.SAFE['9:16']))), box = {x:b.x / 2, y:b.y / 2, w:b.w / 2, h:b.h / 2};
+    const panel = T.layout('L1', '9:16').board;
+    let typed = 0; T.region(last, {x:panel.x / 2, y:panel.y / 2, w:panel.w / 2, h:panel.h / 2}, q => { if (T.luma(q) > 90) typed++; });
+    return {her, G, N, screen:p.board.screens[p.frame(her.black - 1).board.screen]?.text, typed, dark:stat(dark), ghost:stat(ghost, box), box, ghostScreen:p.board.screens[p.frame(G).board.screen]?.ghost, png1:T.png(last), png2:T.png(ghost)};
+  });
+  savePng('end-full-stop.png', r.png1); savePng('end-ghost.png', r.png2);
+  ok(r.screen === 'FULL STOP.' && r.typed > 300, `frame ${r.her.black - 1}, the last she is heard in: "${r.screen}" lit in L1's board panel (${r.typed} bright px at half size)`);
+  ok(r.dark.max <= 6, `frame ${r.her.black}: true black from the first frame after her (max luma ${r.dark.max.toFixed(1)})`);
+  ok(r.ghostScreen === .08 && r.ghost.lit > 200 && r.ghost.out === 0 && r.ghost.max < 160, `frames ${r.G}-${r.N - 1}: the ghost BACK. at I .08 (${r.ghost.lit} lit px, max luma ${r.ghost.max.toFixed(0)}), every lit pixel inside frame 0's BACK. (x ${r.box.x}-${r.box.x + r.box.w}, y ${r.box.y}-${r.box.y + r.box.h} at half size)`);
+  log(`6b. the ending: ${checks - before} checks`);
+}
+
 // ---- 7. proxies through texImage2D -----------------------------------------------------------------------------
 {
   const before = checks;

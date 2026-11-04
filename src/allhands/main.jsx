@@ -313,7 +313,7 @@ window.__allhands = {
     return {wav:btoa(s), lyrics, casting, plan:{form:plan.form, track:plan.track, trackTitle:plan.trackTitle, bpm:plan.bpm, step:plan.step, key:plan.key, offset, duration:plan.duration, marks:plan.marks, kicks:plan.kicks,
       sections:plan.sections.map(x => ({...x, start:plan.timing[x.from * BAR_STEPS], end:plan.timing[x.to * BAR_STEPS]})),
       timing:Array.from(plan.timing), choke:plan.choke ? {start:plan.timing[plan.choke.at], end:plan.timing[plan.choke.until], dark:plan.choke.dark, tagEnd:plan.choke.tagEnd} : null,
-      coldOpen:plan.coldOpen ?? null, transports:plan.transports ?? [],
+      coldOpen:plan.coldOpen ?? null, transports:plan.transports ?? [], stop:plan.stop ?? null,
       lines:plan.lines.map(l => ({text:l.text, bar:l.bar, kind:l.kind, words:l.words.map(w => [w.display, w.at, w.steps, +w.rate.toFixed(2), w.notes.map(n => n.midi).join('.'), +w.gate.toFixed(3)])})),
       // Everything the Pixel Text exporter needs to time every word exactly.
       words:plan.words.filter(w => w.line === -1).map(w => ({display:w.display, word:w.word, at:w.at, steps:w.steps, rate:w.rate, gate:w.gate, kind:w.kind, line:-1})),

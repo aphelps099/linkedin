@@ -114,7 +114,9 @@ export function buildScreens(plan, {table} = {}) {
     } else if (e.role === 'tag') add({...base, to:Math.max(base.to, plan.choke?.tagEnd ?? base.to) + TAG_TAIL + FRAME, reveal:'typewriter', tone:'white', sockets:0});
     else if (e.role === 'impact') add({...base, to:t0 + 2.6 * BEAT, reveal:'centre', k:3, tone:'white', fx:{outline:true}, ignite:true});
     else if (e.role === 'sink') add({...base, to:T(plan, marksOf(plan).sinkEnd), reveal:'sparkle', k:2, tone:'deep', fx:{slow:true, tape:true}});
-    else if (e.role === 'stop') add({...base, to:t0 + 1.2, reveal:'typewriter', tone:'white', fx:{stop:true}});
+    // Her "Full stop." is routed after the tape: the tape stops, she does not. Her line holds the
+    // board, fully typed, dimming and sliding down 2 pegs, until the frame after she stops sounding.
+    else if (e.role === 'stop') { const end = stopEndAt(plan) ?? t0 + e.gate; add({...base, to:end + TAG_TAIL + FRAME, reveal:'typewriter', tone:'white', fx:{stop:{from:t0, end}}}); }
     else add({...base, fx:e.bend ? {detune:e.bend.cents} : e.lift ? {lift:true} : {}});
   }
   // The muted intro: YOU'RE ON MUTE, then the tease of the drop that comes later.
@@ -152,6 +154,18 @@ export function buildScreens(plan, {table} = {}) {
 export const TAG_TAIL = .005;
 export const darkAt = plan => (plan.choke.tagEnd ?? plan.choke.dark ?? T(plan, plan.choke.at) + .49) + TAG_TAIL + FRAME * .5;
 export const igniteAt = plan => T(plan, plan.choke.until) - FRAME * .5;
+// When her stop phrase ("Full stop.") stops sounding, in song seconds: plan.stop.end when the
+// plan carries it, else her stop event's envelope end (its at, gate and release), the way
+// choke.tagEnd is computed (drop.js ladyLength). null when the plan has no stop phrase.
+export function stopEndAt(plan) {
+  if (Number.isFinite(plan?.stop?.end)) return plan.stop.end;
+  const e = (plan?.lady || []).find(x => x.role === 'stop');
+  return e ? T(plan, e.at) + Math.min(e.gate, (e.to - e.from) / e.rate + .01) : null;
+}
+// The film ends black from the first frame after her stop phrase (plus a codec's tail), as at the
+// choke: until then "FULL STOP." stays lit, dimmed to STOP_DIM of full exposure at most.
+export const stopDarkAt = plan => { const end = stopEndAt(plan); return end === null ? null : end + TAG_TAIL + FRAME * .5; };
+export const STOP_DIM = .7;
 export function boardState(plan, t) {
   const state = {sockets:1, exposure:1, bloom:1, ignite:-1};
   if (plan.form !== 'drop60') {
@@ -166,8 +180,14 @@ export function boardState(plan, t) {
   if (t >= dark && t < lit) { state.sockets = 0; state.exposure = 0; }     // true black, once her tag has stopped sounding
   if (t >= lit && t < lit + 2.6 * BEAT) state.ignite = t - lit;           // one frame fully lit, then the settle
   if (t >= sinkFrom && t < sinkTo) state.bloom = 1.6;
+  // The tape stop: the board dims with the tape (never under STOP_DIM while her stop phrase plays),
+  // then true black from the first frame after she stops sounding.
   const stop = plan.tape?.find(x => x.kind === 'stop');
-  if (stop) { const s = T(plan, stop.from); if (t >= s) state.exposure *= clamp(1 - (t - s) / (stop.seconds + .2)); }
+  if (stop) {
+    const s = T(plan, stop.from), off = stopDarkAt(plan) ?? s + stop.seconds + .2;
+    if (t >= off) { state.sockets = 0; state.exposure = 0; }
+    else if (t >= s) state.exposure *= 1 - (1 - STOP_DIM) * clamp((t - s) / Math.max(FRAME, off - s));
+  }
   return state;
 }
 
@@ -206,6 +226,10 @@ function pegLight(screen, word, unit, peg, t, ctx) {
 // (font.js layoutText), cached per screen. place(screen, layout) -> {x, y} board origin.
 export function paint(board, screens, t, {plan, layoutOf, place, eq, reduced = false} = {}) {
   clearBoard(board);
+  // A ghost screen (the loop seam's BACK., screen.ghost its intensity): only its letters, flat, on
+  // true black, on the same pegs as the screen it copies.
+  const ghost = activeScreen(screens, t);
+  if (ghost?.ghost) { board.sockets = 0; drawScreen(board, ghost, t, {layoutOf, place, reduced, igniting:false}); return board; }
   const state = plan ? boardState(plan, t) : {sockets:1, exposure:1, bloom:1, ignite:-1};
   board.sockets = state.sockets; board.exposure = state.exposure; board.bloom = state.bloom;
   if (state.exposure <= 0) return board;
@@ -266,6 +290,7 @@ function drawScreen(board, screen, t, {layoutOf, place, reduced, igniting}) {
     const pegs = ch.pegs, n = pegs.length / 2;
     for (let i = 0; i < n; i++) {
       const px = pegs[2 * i], py = pegs[2 * i + 1], x = origin.x + px, y = origin.y + py + (screen.fx.rowShift || 0);
+      if (screen.ghost) { light(board, x, y, screen.ghost * fade, {tone}); continue; }
       let I, white = 0, size = 1, dx = 0, dy = 0, peg = tone;
       if (screen.voice === 'synergy' && !sung && screen.reveal !== 'wipe') { I = .1; }        // ghost: read ahead on mute
       else {
@@ -277,7 +302,8 @@ function drawScreen(board, screen, t, {layoutOf, place, reduced, igniting}) {
       if (screen.accent === ch.word) peg = accentTone;
       if (screen.fx.detune && sung) { const c = clamp(screen.fx.detune / 100, -1, 1); dy = -c * .5; dx = (hash2(px, py, 11) < .5 ? -1 : 1) * Math.abs(c) * .4; }
       if (screen.fx.lift && sung) dy = -clamp((t - word.start) / Math.max(.05, word.end - word.start)) * .8;
-      if (screen.fx.stop) { const age = t - word.start; dy = clamp(age / 1.2) * .9; I *= clamp(1 - age / 1.4); }
+      // FULL STOP. slides down 2 pegs over her line, slowing like the tape, and dims to .8.
+      if (screen.fx.stop) { const st = screen.fx.stop, p = clamp((t - (st.from ?? screen.from)) / Math.max(FRAME, (st.end ?? screen.to) - (st.from ?? screen.from))); dy = 2 * (1 - (1 - p) ** 2); I *= 1 - .2 * p; }
       if (screen.fx.tape && sung) dy = clamp((t - screen.from) / 2) * .6;
       if (screen.fx.sparkle) { if (hash2(x, y, Math.floor(t * 32)) > 1 - screen.fx.sparkle * .8) { white = 1; I = 1.5; } }
       light(board, x, y, I * fade, {tone:peg, white, size, dx, dy});

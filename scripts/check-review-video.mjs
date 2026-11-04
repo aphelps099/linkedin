@@ -27,10 +27,14 @@ import {FORMS} from '../src/allhands/forms.js';
 import {lyricsFromPost, SAMPLE_POST} from '../src/allhands/lyrics.js';
 import {castSong} from '../src/allhands/casting.js';
 import {TRACK_ORDER} from '../src/allhands/songbook/index.js';
-import {compile, shotIndex, invert, apply} from '../src/videostudio/edl/compile.js';
-import {audioLatency, hitFrame, chokeFrames, TAG_TAIL} from '../src/videostudio/edl/anchors.js';
+import {compile, shotIndex, invert, apply, TRACKING} from '../src/videostudio/edl/compile.js';
+import {audioLatency, hitFrame, chokeFrames, stopFrames, TAG_TAIL} from '../src/videostudio/edl/anchors.js';
+import {paint, STOP_DIM} from '../src/pegboard/choreo.js';
+import {boardGrid, boardPitch, safeSpan} from '../src/videostudio/gl/board-layer.js';
+import {boardScreens, boardTimeOf} from '../src/videostudio/gl/compositor.js';
+import {SAFE} from '../src/videostudio/layouts.js';
 import {FX} from '../src/videostudio/edl/schema.js';
-import {drop60Draft} from '../src/videostudio/treatments/drop60-draft.js';
+import {drop60Draft, GHOST, CLAP} from '../src/videostudio/treatments/drop60-draft.js';
 import {captions} from '../src/videostudio/render/export.js';
 import {flashes, worstWindow} from '../src/pegboard/governor.js';
 
@@ -93,11 +97,11 @@ for (const track of TRACK_ORDER) {
 // ---- 1b. Synergy's mouth whenever he sings on screen ------------------------------------------------------
 // Every frame his voice is on (his words and stammers) and a layer shows him: a tracked shot with its
 // mouth row inside its tile and inside the frame through the camera, or his original take (its own
-// mouth). An untracked shot with him in it must be framed off him (the applause close-up: the visible
-// source starts right of x 465 of 1280). Echo taps of a dub delay count only beside his full tile;
+// mouth). An untracked shot with him in it must be framed off him (the applause close-up: his head and
+// headset reach x 640 of 1916 over the frames the draft plays). Echo taps of a dub delay count only beside his full tile;
 // a tile the camera carries more than half out of frame (the Droste dive) is off screen.
 {
-  const UNTRACKED = {'corporate-applause-closer-reaction-531fa4a4':[0, 465], 'corporate-applause-vhs-cameraman-a018b1c9':[0, 1280], 'office-ensemble-e03c9edb':[380, 800]};
+  const UNTRACKED = {'corporate-applause-closer-reaction-531fa4a4':[0, 650], 'corporate-applause-vhs-cameraman-a018b1c9':[0, 1280], 'office-ensemble-e03c9edb':[380, 800]};
   for (const track of TRACK_ORDER) for (const format of ['9:16', '1:1', '16:9']) {
     const plan = plans[track], p = programs[`${track}|${format}`], spans = [];
     for (const w of plan.words) { const t = plan.timing[w.at]; spans.push([t, Math.min(t + w.gate, plan.timing[w.at + w.steps] ?? Infinity)]); }
@@ -128,6 +132,71 @@ for (const track of TRACK_ORDER) {
     }
     ok(frames > 300 && !bad.length, `${track} ${format}: Synergy's mouth row shows on all ${frames} frames he sings on screen (${bad.slice(0, 3).join('; ')})`);
   }
+}
+
+// ---- 1c. the ending: "FULL STOP." heard and shown, black after it, the ghost BACK. -----------------------
+// Her stop phrase is routed after the tape, so it outlasts the tape stop. In the delivered file it is
+// heard from its onset (plus the engine's latency) to its end (plan.stop.end, else her envelope's end,
+// plus the codec's tail and the latency): every frame that holds any of that shows "FULL STOP." lit on
+// the board, fully typed on the last one; black starts on the first frame after it; the last two
+// frames (or what is left of them) show frame 0's BACK. as a ghost at I .08, on frame 0's pegs.
+{
+  const gridOf = (fr, format, pitch) => boardGrid(Math.round(fr.board.rect.w), Math.round(fr.board.rect.h), pitch ?? boardPitch(Math.round(fr.board.rect.w), Math.round(fr.board.rect.h)), safeSpan(fr.board.rect, SAFE[format]));
+  const pitchOf = fr => fr.layers.find(l => l.fx.some(x => x.type === 'pegVideo' && x.mix >= .5))?.fx.find(x => x.type === 'pegVideo').pitch;
+  const painted = (p, plan, fr, format) => { const g = gridOf(fr, format, pitchOf(fr)); paint(g.board, boardScreens(p.board.screens), boardTimeOf(fr), {plan, layoutOf:g.layoutOf, place:g.place}); return g; };
+  const pegsOf = (g, screen) => { const layout = g.layoutOf(screen), page = layout.pages[0], o = g.place(screen, layout, page), out = new Set(); for (const ch of page.lines.flatMap(l => l.chars)) for (let i = 0; i < ch.pegs.length; i += 2) out.add((o.y + ch.pegs[i + 1]) * g.cols + o.x + ch.pegs[i]); return out; };
+  for (const track of TRACK_ORDER) for (const format of ['9:16', '1:1', '16:9']) {
+    const plan = plans[track], p = programs[`${track}|${format}`], label = `${track} ${format}`, L = audioLatency(plan), N = p.frames;
+    const her = stopFrames(plan), ev = plan.lady.find(e => e.role === 'stop'), heardFrom = plan.timing[ev.at] + L, heardTo = her.end + TAG_TAIL + L;
+    const stop = plan.tape.find(x => x.kind === 'stop'), curve = Math.round(plan.timing[stop.from] * FPS) + Math.ceil(stop.seconds * FPS - 1e-9), B = Math.max(curve, her.black), G = Math.max(N - 2, B);
+    const black = fr => fr.layers.every(l => l.gen === 'color:#000000') && !fr.board.rect;
+    // Frames against the sound: no frame that holds any of her phrase is black, and each shows it lit.
+    const overBlack = [], unlit = [];
+    for (let f = Math.floor(heardFrom * FPS); f < N && f / FPS < heardTo; f++) {
+      const fr = p.frame(f);
+      if (black(fr) || fr.board.dark) { overBlack.push(f); continue; }
+      const s = p.board.screens[fr.board.screen];
+      if (s?.kind !== 'stop') { unlit.push(`f${f} screen ${s?.kind ?? 'none'}`); continue; }
+      const g = painted(p, plan, fr, format), lit = [...g.board.I].filter(v => v > .05).length;
+      if (!lit || g.board.exposure < STOP_DIM - 1e-9) unlit.push(`f${f} ${lit} pegs at ${g.board.exposure.toFixed(2)}`);
+    }
+    ok(!overBlack.length && !unlit.length && B === her.black && B > Math.floor(heardFrom * FPS), `${label}: "${ev.display}" heard ${heardFrom.toFixed(3)}-${heardTo.toFixed(3)} s in the file, never over black (frames ${Math.floor(heardFrom * FPS)}-${B - 1} all show it lit${overBlack.length ? `; over black on ${overBlack.slice(0, 3).join(', ')}` : ''}${unlit.length ? `; ${unlit.slice(0, 3).join(', ')}` : ''})`);
+    // Fully typed on the last frame she is heard in.
+    const last = p.frame(B - 1), sScreen = p.board.screens[last.board.screen], g = painted(p, plan, last, format), want = pegsOf(g, sScreen);
+    const litSet = [...g.board.I].map((v, i) => v > .05 ? i : -1).filter(i => i >= 0), mean = litSet.reduce((a, i) => a + g.board.I[i], 0) / Math.max(1, litSet.length) * g.board.exposure;
+    ok(sScreen.text === ev.display && litSet.length === want.size && litSet.every(i => want.has(i)) && mean >= .5, `${label}: "${sScreen.text}" fully typed on frame ${B - 1}, her last (${litSet.length} of ${want.size} pegs, mean light ${mean.toFixed(2)})`);
+    ok(p.all.slice(B, G).every(black) && (B === G || !p.frame(B - 1).layers.every(l => l.gen === 'color:#000000')), B < G ? `${label}: true black on ${B}-${G - 1} (${G - B} frame${G - B === 1 ? '' : 's'}), from the first frame after her` : `${label}: no true black before the loop seam: she is heard to frame ${B - 1}, the ghost takes what is left`);
+    // His last close-up holds a frame with his eyes open (robot-tracks.json blinks, a frame of lid either side).
+    const shut = [];
+    for (const fr of p.all) for (const l of fr.layers) {
+      const blinks = (l.robot && l.source === 'still' && is(l, /^synergy$/i) && TRACKING[idx.get(l.shotId)?.robot]?.blinks) || null;
+      if (blinks?.some(([a, b]) => l.srcFrame >= a - 1 && l.srcFrame <= b + 1)) shut.push(`f${fr.f} src ${l.srcFrame}`);
+    }
+    const held = p.all.filter(fr => fr.transport?.kind === 'tapestop').flatMap(fr => fr.layers.filter(l => l.source === 'still' && is(l, /^synergy$/i)).map(l => l.srcFrame));
+    ok(!shut.length && held.length > 0, `${label}: every held frame of Synergy has his eyes open (the tape stop holds source frame ${[...new Set(held)].join(', ')}${shut.length ? `; shut on ${shut.slice(0, 3).join(', ')}` : ''})`);
+    // The ghost BACK.: frame 0's screen and grid, its letters only, at I .08, on black.
+    const f0 = p.frame(0), s0 = p.board.screens[f0.board.screen], g0 = gridOf(f0, format, pitchOf(f0)), mask = pegsOf(g0, s0), bad = [];
+    for (let f = G; f < N; f++) {
+      const fr = p.frame(f), s = p.board.screens[fr.board.screen], gg = painted(p, plan, fr, format), on = [...gg.board.I].map((v, i) => v > 0 ? i : -1).filter(i => i >= 0);
+      if (!s?.ghost || s.of !== s0.of || fr.layout !== f0.layout || gg.cols !== g0.cols || gg.rows !== g0.rows || gg.pitch !== g0.pitch || on.length !== mask.size || !on.every(i => mask.has(i) && Math.abs(gg.board.I[i] - GHOST) < 1e-6) || gg.board.sockets !== 0 || !fr.layers.every(l => l.gen === 'color:#000000')) bad.push(f);
+    }
+    ok(N - G === Math.min(2, N - B) && !bad.length && !p.lint.warnings.some(w => w.rule === 'G12'), `${label}: frames ${G}-${N - 1} show frame 0's ${s0.text} as a ghost: its ${mask.size} pegs on frame 0's grid (pitch ${g0.pitch}), at I ${GHOST}, on black (G12 clean${bad.length ? `; wrong on ${bad.join(', ')}` : ''})`);
+  }
+}
+
+// ---- 1d. the applause tile keeps People & Culture's face, off Synergy, in every format ----------------------
+for (const track of TRACK_ORDER) for (const format of ['9:16', '1:1', '16:9']) {
+  const p = programs[`${track}|${format}`], cut = [], windows = new Set();
+  let n = 0;
+  for (const fr of p.all) for (const l of fr.layers) {
+    if (!l.shotId?.startsWith('corporate-applause-closer')) continue;
+    n++;
+    const c = l.cell, pts = [[c.x, c.y], [c.x + c.w, c.y + c.h], [c.x, c.y + c.h], [c.x + c.w, c.y]].map(([x, y]) => apply(l.transform.matrix, x, y));
+    const x0 = Math.min(...pts.map(q => q[0])), x1 = Math.max(...pts.map(q => q[0])), y0 = Math.min(...pts.map(q => q[1])), y1 = Math.max(...pts.map(q => q[1])), F = CLAP.face;
+    windows.add(`${Math.round(x0)}-${Math.round(x1)} x ${Math.round(y0)}-${Math.round(y1)}`);
+    if (x0 > F.x + 1e-6 || x1 < F.x + F.w - 1e-6 || y0 > F.y + 1e-6 || y1 < F.y + F.h - 1e-6 || x0 < CLAP.left - 1e-6) cut.push(`f${fr.f}`);
+  }
+  ok(!cut.length && (n > 0 || track === 'hustle'), `${track} ${format}: the applause tile holds People & Culture's whole face (x ${CLAP.face.x}-${CLAP.face.x + CLAP.face.w}, y ${CLAP.face.y}-${CLAP.face.y + CLAP.face.h}) and stays right of x ${CLAP.left}, off Synergy, on all ${n} layer-frames (source ${[...windows].join('; ') || 'none'})${cut.length ? `; cut on ${cut.slice(0, 3).join(', ')}` : ''}`);
 }
 
 // ---- 2. captions -----------------------------------------------------------------------------------
@@ -212,6 +281,15 @@ if (mp4) {
     for (let i = ix(plan.timing[plan.choke.at] + .2), s = i; i < ix(impactT + .1); i++) { if (peak(i) < 10 ** (-70 / 20)) { if (++run > best[1] - best[0]) best = [s, i + 1]; } else { run = 0; s = i + 1; } }
     const silent = (best[1] - best[0]) / sr * 1000;
     ok(silent >= 300, `the silence before the impact: ${silent.toFixed(0)} ms below -70 dBFS (${(t0 + best[0] / sr).toFixed(3)}-${(t0 + best[1] / sr).toFixed(3)} s)`);
+  }
+  // The ending, against the file's own sound: her "Full stop." stops before the first black frame and
+  // the ghost; every frame she is heard in is lit (the board), every black frame is true black.
+  const her = stopFrames(plan), ev = plan.lady.find(e => e.role === 'stop'), N = p.frames;
+  if (her && from <= her.onset && to >= N) {
+    const stop = plan.tape.find(q => q.kind === 'stop'), B2 = Math.max(Math.round(plan.timing[stop.from] * FPS) + Math.ceil(stop.seconds * FPS - 1e-9), her.black), G2 = Math.max(N - 2, B2);
+    let last = null; for (let i = ix(plan.timing[ev.at]); i < Math.min(x.length / 2, ix(N / FPS)); i++) if (peak(i) > 10 ** (-70 / 20)) last = t0 + i / sr;
+    const litY = Math.min(...Y.slice(at(her.onset), at(B2))), darkY = B2 < G2 ? Math.max(...Y.slice(at(B2), at(G2))) : 0, darkPx = B2 < G2 ? Math.max(...maxPx.slice(at(B2), at(G2))) : 0;
+    ok(last !== null && last < B2 / FPS && last < G2 / FPS && litY > darkY + 1e-3 && darkY < 1e-4 && darkPx <= 2, `the ending: "${ev.display}" sounds until ${last?.toFixed(4)} s, before frame ${B2} (${(B2 / FPS).toFixed(4)} s): never over black; frames ${her.onset}-${B2 - 1} lit (luminance at least ${litY.toFixed(4)})${B2 < G2 ? `, true black on ${B2}-${G2 - 1} (max pixel ${darkPx})` : ''}, the ghost from ${G2} (${Y[at(G2)].toExponential(1)})`);
   }
   if (from === 0) {
     const onset = onsetIn(0, .12), lead = onset * 1000;

@@ -16,7 +16,8 @@ the site navigation.
    caches takes in memory and rate-limits per IP. No paid service.
 3. `song.js` fits every word into a two-bar slot on a 16th grid. Squeezed
    words may speed up to 1.35×; a hook short enough for one bar is sung twice,
-   and the second time it resolves. Melodies use A minor pentatonic, so every
+   and the second time it resolves. Synergy sings one word at a time (see
+   "One word at a time" below). Melodies use A minor pentatonic, so every
    note fits every chord: Am9 · Fmaj9 · Cmaj9 · G6/9 at 120 BPM.
 4. `engine.js` plays the arrangement: 28 bars, laid out as intro, verse,
    breakdown, drop and outro. A small set of respellings in `lyrics.js`
@@ -225,6 +226,25 @@ P4 adds, on every Drop Edition plan (seconds are plan time, `timing[0] = 0`):
 - `energyTrim`: `{Verse: dB}`, the room the verse leaves the drops (below).
   `{}` when there is none.
 
+P5 adds `stop`, the ending, measured the way `choke.tagEnd` is:
+
+```js
+plan.stop = {
+  at:59.0,             // her stop phrase and the master tape-stop start (timing[marks.stop])
+  tapeEnd:59.4,        // the tape has stopped: at + track.drop.stop.seconds
+  end:59.832,          // her "Full stop." stops sounding: at + ladyLength(her stop event)
+  display:'FULL STOP.',
+};                     // end and display are null when the cast leaves the stop out
+```
+
+She is routed after the tape (she stops it; it does not stop her), so her
+line outlasts it: Circle Back 59.832 s, Humbled and Honored 62.136 s, Hustle
+58.986 s with today's cast, 0.43 s past `tapeEnd` on every track. A board or
+picture that should stay lit until she finishes stays lit to `stop.end` (plus
+the engine's 16 ms and a codec's 5 ms, as at the choke); `check-songbook`
+proves it on every track with today's cast and each post's own. The render
+hook returns it with the plan.
+
 and, with `arrangeDrop(lyrics, durations, {track, cast, coldOpen:true})`:
 
 ```js
@@ -238,20 +258,41 @@ plan.transports = [{kind:'rewind', at:.75, len:.25, audio:true, rate:4, sourceFr
 
 The cold open (plan.md section 2, signature moment 1) is the film's first
 second on any track: 0-0.75 s is the impact as the drop plays it (her impact
-word, the drop kick, the sub, the crash: the track's own render from
-`impact.source`, sample for sample), 0.75-1 s is the last second of the ladder
+word, dry and vocoded, the drop kick, the sub, the crash, the band's first
+beat: the track's own render from `impact.source`), but without Synergy and
+with her deep "BACK." faded out (below), 0.75-1 s is the last second of the ladder
 before the choke rewound at 4x (`sourceFrom` back to `sourceTo`, filtered so
 the 4x does not alias), and from 1 s the song is exactly what it is without the
 cold open, so the length does not change. At film time t in the rewind the
 sound is source time `sourceFrom - rate * (t - from)`: lock a REWIND picture to
 that. Equal-power crossfades of 6 ms make the two joins.
 
+**What the impact is cut from** (`engine.js coldSourcePlan`). In the song,
+Synergy's Drop A hook comes in half a beat after BACK. and her deep echo one
+beat after it (0.50 / 0.65 / 0.46 s), so a straight copy of 0.75 s cut both
+mid-word at the rewind. The cold open is cut instead from its own render of
+the same plan from the top, in which his words from the impact on are silent
+(their notes and choir bars stay, so her vocoded BACK. rides his carrier as in
+the drop) and her deep echo fades out on a raised cosine (up to 120 ms) that
+ends 1 ms before the first crossfade. Measured on the sample post:
+- Up to his first word the cold open is the drop's impact to 0 LSB on all
+  three tracks: the same stack, the same bus.
+- His stem from 0 to the first crossfade holds only her vocoded BACK. (the
+  BACK. stack's vocoded layer, which has always gone through his vocoder);
+  with that send off it is exact zeros. The song's own impact has his word at
+  +6.5 / +5.8 / +7.4 dBFS (stem level) there.
+- Her stem 10 ms before the crossfade: −49 / −38 / −45 dBFS, against −8 / −2 /
+  −5 dBFS of deep echo the old copy cut.
+- No click at the joins: above 4 kHz each 2 ms join window is no louder than
+  the louder of its neighbours 4 ms either side (+0.4 dB at most), and no
+  sample step at a join exceeds the steps around it.
+The source render costs about two thirds of a song render more.
+
 Off unless asked for: the page arranges without it and sounds as before. To
 hear it: `render(plan, …)` plays a plan that carries `coldOpen` (or
 `render(plan, buffers, {coldOpen:true}, lady)` adds it; `{coldOpen:false}`
-leaves it out). Offline the whole song is its own source; an excerpt that
-starts at bar 0 renders the song from the top to the bar after the impact
-first, which gives the same samples. Live, `await prepareColdOpen(plan,
+leaves it out). Offline the source is rendered from the top to the bar
+after the impact, so the rewind is the song's own samples. Live, `await prepareColdOpen(plan,
 buffers, lady)` and then `Performance.start(plan, buffers, {…, coldOpen:parts})`
 (a quick source render, the same music; `{exact:true}` renders from the top,
 the same samples). A transport of your own calls `scheduleColdOpen(graph, parts,
@@ -272,7 +313,7 @@ Hustle).
 | Role | Default | Where it sits | What it needs |
 |---|---|---|---|
 | `ladder` | 50 "Let's build." | The build: every bar, then every ½, ¼, ⅛, 1/16, 1/32 bar, up to the choke | Two words, the first short and hard-edged (≤ 0.2 s: it is the 1/8 cut; its first 0.1 s and 0.06 s are the 1/16 and 1/32 grains). Whole phrase ≤ 0.85 s, or it is gated at its half-bar rung (gate = 0.92 of the retrigger period: 0.92 / 1.20 / 0.85 s). A steady pitch: she is retuned to the scale note nearest her `f0` (±2 semitones) and pitched up to +12 semitones, so long sibilants turn to hiss. |
-| `tag` | 06 "Let's circle" | Right after the choke, dry, on its own bus | The first half of a phrase whose last word is the `impact`: the joke is the missing word. It plays at ~1.1× (tuned to the key in the new tracks) and must end with ≥ 0.45 s of silence before the impact: the choke-to-impact window is 1.00 / 1.30 / 1.15 s, so ≤ 0.64 s at its playback rate (the new tracks speed it up to 1.2× to keep the silence). |
+| `tag` | 06 "Let's circle" | Right after the choke, dry, on its own bus | The first half of a phrase whose last word is the `impact`: the joke is the missing word. It plays at ~1.1× (tuned to the key in the new tracks) and must end with ≥ 0.45 s of silence before the impact: the choke-to-impact window is 1.00 / 1.30 / 1.15 s, so ≤ 0.64 s at its playback rate (the new tracks speed it up to 1.2× to keep the silence). Circle Back gates it at 0.64 s; the new tracks play it whole inside the room its 0.47 s of silence leaves (today's "Let's circle" on Humbled and Honored: 0.646 s, then 0.658 s of silence). |
 | `impact` | 06 "back" | The impact downbeat, +5 dB, over the drop kick; vocoded on the key's tonic; her deep voice repeats it one beat later | One word, one or two syllables, ≤ 0.45 s, an open vowel. A word that closes the tag's phrase. |
 | `bend` | 08 "Pivot" | A gap in Synergy's line in Drop A (candidate 16ths in `drop.places.bend`) | One word, 2 syllables, ≤ 0.5 s. It bends down 300 cents at 66% of the word and back by 96%: a word that means a turn. |
 | `sink` | 15 "Let that sink in", `split:2` | Words before `split`: dry, Drop A's last bar (`places.letThat`). The rest: the Sink In bar, deep, while the whole room slows to half speed | Two to four words. The deep words are baked at half speed and held for the bar, so ≤ 1.0 / 1.3 / 0.92 s at the recording's speed. Her pause before the deep words is kept: it is the beat of air before the room sinks. |
@@ -343,6 +384,39 @@ hand table's, so at 1.1× the tag ends at 39.608 s and the last sample sounds at
 1.2× (or capping its gate at 0.53 s) would give it 470 ms; the other tracks
 already do this.
 
+### One word at a time (P5)
+
+Synergy never sings two words at once, on any track:
+- **No phrase runs past its slot.** `fitPhrase` used to let a phrase too long
+  for its window, even at two 16ths a word, run two 16ths on (five-word hooks
+  in the half-bar slots), and dropped any word past that. On fixtures 9 and 42
+  the repeated hook's last word then landed on the sign-off's "Let's" (Circle
+  Back and Humbled and Honored) and the build's answers ran into her ladder
+  hits (every track). Now a slot that can move gives way: on Circle Back and
+  Humbled and Honored the sign-off has `give:2`, so the hook runs on and lands
+  its last word on the outro's downbeat, and "Let's circle back" starts an 8th
+  later, its window keeping its end (Hustle's last half-bar hook has ten 16ths,
+  enough for five words). Where nothing can move (the answers before her next hit) the
+  shortest words are sung as single 16ths. No word is ever dropped.
+- **No word sounds into the next one** (`song.js clearWords`). A word's gate
+  was its steps × the 16th, but on a swung grid an odd 16th lands late, so a
+  word that starts on one and lasts an odd number of 16ths ran into the next
+  word by the swing: 15 ms on Circle Back, 23 ms on Hustle, 39 ms on Humbled
+  and Honored (longer than the 22 ms release, so at full level). Such a word
+  is now gated at the next word's onset and sped up (to 1.35× at most) to fit.
+  It touches about 2.4 joins a plan and moves the verse's room trim by 0.02 dB
+  at most; Circle Back's sample post keeps no trim.
+
+`check-songbook` proves it on 366 plans (the sample and 60 fixtures, three
+tracks, today's cast and the post's own, real eSpeak durations): no word
+sounds past the next word's onset (stammer included), every line is sung
+whole inside its window or the 16ths the next slot gives (8 lines use the
+give), no line of hers is cut short by its gate (the ladder's hits are gated
+to their period by design; the sink's deep half holds its bar), and
+`plan.stop` is right. Its Circle Back proof is unchanged where P5 changed
+nothing: 240 of the 244 plans hash as before; the 4 that changed are the two
+five-word hooks in both duration models.
+
 ### The verse's room for the drops
 
 On a phone (mono, 300 Hz to 8 kHz) the band's low end is gone, and what is
@@ -387,16 +461,17 @@ verse, and the keys step back to 0.5 under a sung word (was 0.6).
 ### Gates per track
 
 `scripts/measure-allhands.py` with each render's plan JSON. Silence: from
-`choke.tagEnd` (plus the 16 ms look-ahead) to BACK. Sample post, P4:
+`choke.tagEnd` (plus the 16 ms look-ahead) to BACK. Sample post, P5 (P4 in
+brackets where it moved: one word at a time trims a few swung word ends):
 
 | Measure | Circle Back | Humbled and Honored | Hustle |
 |---|---|---|---|
-| Integrated | −10.17 LUFS | −10.16 | −10.27 |
+| Integrated | −10.17 LUFS | −10.16 | −10.26 (−10.27) |
 | True peak | −1.10 dBTP | −1.24 | −1.09 |
 | LRA | 7.1 LU | 6.2 | 7.8 |
-| Drop A over verse, mix / phone | +4.64 / +2.81 | +4.81 / +3.30 | +4.53 / +2.58 |
-| Drop B over verse, mix / phone | +4.71 / +3.56 | +4.62 / +3.08 | +5.78 / +4.75 |
-| Silence | 0.38 s, −inf dBFS | 0.66 s, −inf | 0.53 s, −inf |
+| Drop A over verse, mix / phone | +4.60 / +2.80 (+4.64 / +2.81) | +4.81 / +3.30 | +4.54 / +2.59 (+4.53 / +2.58) |
+| Drop B over verse, mix / phone | +4.68 / +3.54 (+4.71 / +3.56) | +4.62 / +3.08 | +5.80 / +4.78 (+5.78 / +4.75) |
+| Silence (exact zeros) | 0.391 s | 0.657 s | 0.543 s |
 | Clipped samples | 0 | 0 | 0 |
 | Side/mid Drop A / B (warn only) | −20.3 / −15.6 | −10.7 / −11.1 | −10.9 / −16.4 |
 

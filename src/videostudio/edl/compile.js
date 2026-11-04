@@ -11,7 +11,7 @@ import {paramFn, range, planFeatures, envelopeAt} from './params.js';
 import {clipTimeMap, tapeCurve, transportTime} from './remap.js';
 import {validate, parseAsset, FX} from './schema.js';
 import {FORMATS, cellRect, layout, layoutClassOf} from '../layouts.js';
-import {buildScreens, activeScreen, indexWords, boardState} from '../../pegboard/choreo.js';
+import {buildScreens, activeScreen, indexWords, boardState, stopDarkAt, stopEndAt, TAG_TAIL} from '../../pegboard/choreo.js';
 import {LADY_TABLE} from '../../allhands/lady-table.js';
 import MEETING_TRACKING from '../../meeting-room/robot-tracking.json' with {type:'json'};
 import STUDIO_TRACKING from '../media/robot-tracks.json' with {type:'json'};
@@ -182,13 +182,14 @@ function cueScreens(edl, plan, songScreens, table) {
     const from = span.time, to = span.end, ref = typeof cue.text === 'object' ? cue.text.ref : null;
     const base = {id:cue.id ?? `cue${i}`, kind:'cue', voice:'board', from, to, reveal:cue.reveal ?? 'pop', tone:cue.palette ?? 'white', release:cue.release ?? 'cut', k:cue.k ?? 1, font:cue.font ?? 'peg9', accent:-1, fx:{}, cell:cue.cell ?? null, z:cue.z ?? (cue.cell ? 'over' : 'under')};
     let screens = [];
-    if (ref === 'song') screens = songScreens.filter(s => s.to > from && s.from < to).map(s => ({...s, from:Math.max(from, s.from), to:Math.min(to, s.to), cue:base.id, cell:base.cell, z:base.z}));
+    // (of: the song screen a copy comes from, so a ghost of it is known for the same screen.)
+    if (ref === 'song') screens = songScreens.flatMap((s, of) => s.to > from && s.from < to ? [{...s, from:Math.max(from, s.from), to:Math.min(to, s.to), cue:base.id, cell:base.cell, z:base.z, of}] : []);
     else if (ref && ref.startsWith('song:')) {
       const m = /^song:([a-z]+)(?:#(-?\d+))?$/.exec(ref), list = songScreens.filter(s => s.kind === m?.[1]), n = +(m?.[2] ?? 0), s = list[n < 0 ? list.length + n : n];
       if (!s) throw Error(`board ${base.id}: no song screen "${ref}"`);
       // Re-timed to the cue: the same words, the same rhythm, starting at `at` (a flash-forward, a reprise).
       const d = from - s.from, shift = w => ({...w, start:w.start + d, end:w.end + d, units:w.units.map(u => ({...u, start:u.start + d}))});
-      screens = [{...s, from, to:Math.min(to, s.to + d), words:s.words.map(shift), cue:base.id, cell:base.cell, z:base.z, k:cue.k ?? s.k, tone:cue.palette ?? s.tone, reveal:cue.reveal ?? s.reveal, retimed:d}];
+      screens = [{...s, from, to:Math.min(to, s.to + d), words:s.words.map(shift), cue:base.id, cell:base.cell, z:base.z, k:cue.k ?? s.k, tone:cue.palette ?? s.tone, reveal:cue.reveal ?? s.reveal, retimed:d, of:songScreens.indexOf(s)}];
     } else if (ref && ref.startsWith('lady')) {
       const e = anchorPoint(plan, ref).event, t0 = ladyTime(plan, e);
       screens = [{...base, text:e.display, words:[{text:e.display, start:t0, end:t0 + e.gate, units:[{chars:[0, e.display.length], start:t0}]}]}];
@@ -197,6 +198,8 @@ function cueScreens(edl, plan, songScreens, table) {
       screens = [{...base, text:l.words.map(w => w.display).join(' '), words:l.words.map(w => { const s = stepTime(plan, w.at); return {text:w.display, start:s, end:Math.min(s + (w.gate ?? Infinity), stepTime(plan, w.at + w.steps)), units:[{chars:[0, w.display.length], start:s}]}; })}];
     } else if (ref) throw Error(`board ${base.id}: cannot read ref "${ref}"`);
     else screens = [{...base, text:cue.text, words:textScreen(cue, from, to, cue.text)}];
+    // ghost: the screen as a ghost (choreo paints only its letters, flat at this intensity, on true black).
+    if (cue.ghost) for (const s of screens) s.ghost = cue.ghost;
     // fx: 'audio' follows the plan (the lady's bend, the sink's tape).
     for (const s of screens) {
       const fx = {...(s.fx || {})};
@@ -436,21 +439,30 @@ export function compile(edlIn, opts = {}) {
       // still over the moving picture, so the camera never pushes the words out of frame.
       camera = {id:cam.id, zoom, cx, cy, rot, dx, dy, board:cam.board, matrix:layerMatrix(frameRect, frameRect, {zoom, cx, cy, rot, dx, dy}), fx:evalFx(cam.fx, u)};
     }
+    // The board's time: the song time the frame shows, except through a tape stop. Her stop phrase
+    // is routed after the tape (she stops it, it does not stop her), so the board keeps the song's
+    // own clock while the picture slows to its hold.
+    const bt = tr?.kind === 'tapestop' ? t : v;
     // The screen this frame shows, by the compositor's own rule (gl/compositor.js boardTimeOf): a
-    // screen is up on the frame that holds the sound of its start, v + 1/24 − L.
-    const screen = board.screens.length ? board.screens.indexOf(activeScreen(board.screens, v + 1 / fps - lead)) : -1;
+    // screen is up on the frame that holds the sound of its start, bt + 1/24 − L.
+    const screen = board.screens.length ? board.screens.indexOf(activeScreen(board.screens, bt + 1 / fps - lead)) : -1;
     const cellScreens = [];
     for (let i = 0; i < board.cells.length; i++) { const s = board.cells[i]; if (v >= s.from && v < s.to) { const r = cellRect(format, s.cell); if (r) cellScreens.push({screen:i, cell:s.cell, rect:{x:r.x, y:r.y, w:r.w, h:r.h}, z:s.z}); } }
     // Lights out: when every tile of a layout is black, the call has gone dark and its board goes
     // with it (true black, sockets off). A full-frame black keeps the board: the choke's tag on
-    // bare sockets.
-    const dark = !!L && layers.length > 0 && layers.every(l => l.kind === 'generated' && BLACKS.has(l.gen) && l.opacity >= .999);
+    // bare sockets. Never while her stop phrase still sounds: "FULL STOP." stays on the board
+    // until the frame after she stops (choreo stopDarkAt).
+    const herStop = stopSpan && bt + .5 / fps - lead >= stopSpan[0] && bt + .5 / fps - lead < stopSpan[1];
+    const dark = !!L && !herStop && layers.length > 0 && layers.every(l => l.kind === 'generated' && BLACKS.has(l.gen) && l.opacity >= .999);
     return {f, t, time:v, layout:cls, transport:tr ? {id:tr.id, kind:tr.kind, phase:(f - tr.from) / (tr.to - tr.from), rate:tr.kind === 'rewind' ? -tr.rate : tr.kind === 'jump' ? 1 : null, sound:tr.sound} : null,
       // The board's region: the layout's, or the whole frame over a full-frame picture. lead: the
       // engine's latency, so the compositor lights each peg on the frame that holds its sound.
-      camera, board:{time:v, lead, screen, rect:dark ? null : L ? (L.board ? {...L.board} : null) : {...frameRect}, over:!!L?.boardOver, dark, banner:L?.banner ? {...L.banner} : null, cells:cellScreens}, layers};
+      camera, board:{time:bt, lead, screen, rect:dark ? null : L ? (L.board ? {...L.board} : null) : {...frameRect}, over:!!L?.boardOver, dark, banner:L?.banner ? {...L.banner} : null, cells:cellScreens}, layers};
   }
 
+  // Her stop phrase, as the board paints it (song seconds): from its onset to the first frame after it.
+  const stopEv = (plan.lady || []).find(e => e.role === 'stop'), stopOff = stopDarkAt(plan);
+  const stopSpan = stopEv && stopOff !== null ? [stepTime(plan, stopEv.at), stopOff] : null;
   const frames = new Array(N);
   for (let f = 0; f < N; f++) frames[f] = frameAt(f);
 
@@ -563,8 +575,9 @@ export function soundOf(plan, tr, fps = FPS) {
   const ci = plan.coldOpen?.impact;
   // (A jump starts on the frame that holds the copied moment's onset, so its source sits within a frame.)
   if (tr.kind === 'jump' && ci && near(ci.at, tr.Ta) && tr.Tb <= ci.until + .5 / fps + 1e-9 && Math.abs(ci.source - tr.Tfrom) < 1 / fps) return 'copied';
-  const stop = (plan.tape || []).find(x => x.kind === 'stop');
-  if (stop && tr.Ta >= stepTime(plan, stop.from) + (stop.seconds ?? .4) - 1e-9) return 'silent';
+  // (Silent once the tape has stopped and her stop phrase, after the tape, has stopped sounding too.)
+  const stop = (plan.tape || []).find(x => x.kind === 'stop'), herEnd = stopEndAt(plan);
+  if (stop && tr.Ta >= Math.max(stepTime(plan, stop.from) + (stop.seconds ?? .4), herEnd === null ? -Infinity : herEnd + TAG_TAIL + audioLatency(plan)) - 1e-9) return 'silent';
   return 'forward';
 }
 
@@ -619,8 +632,8 @@ function lintProgram({edl, plan, clips, byId, frames, transports, board, flag, r
   const L = audioLatency(plan);
   const litAt = fr => {
     const s = fr.board.screen >= 0 ? board.screens[fr.board.screen] : null;
-    if (!s || !(s.words || []).some(w => w.start <= fr.time + 1 / fps - L && w.end > fr.time)) return false;
-    return boardState(plan, fr.time + .5 / fps - L).exposure > 0;
+    if (!s || s.ghost || !(s.words || []).some(w => w.start <= fr.board.time + 1 / fps - L && w.end > fr.board.time)) return false;
+    return boardState(plan, fr.board.time + .5 / fps - L).exposure > 0;
   };
   // Per-frame rules: reverse policy (G7), zoom ceiling (G10), Synergy's mouth (G11).
   const worstZoom = new Map(), agg = new Map();
@@ -765,8 +778,10 @@ function lintProgram({edl, plan, clips, byId, frames, transports, board, flag, r
 
   // G12 (warn, loop films): the last frame matches frame 0.
   if (edl.song?.loop && N > 1) {
-    const a = frames[0], b = frames[N - 1];
-    if (a.layout !== b.layout || a.board.screen !== b.board.screen) report('warn', 'G12', `loop seam: frame 0 (${a.layout}, screen ${a.board.screen}) and frame ${N - 1} (${b.layout}, screen ${b.board.screen}) differ`);
+    // (A ghost of frame 0's screen, retimed from the same song screen, is the same peg mask.)
+    const a = frames[0], b = frames[N - 1], sa = board.screens[a.board.screen], sb = board.screens[b.board.screen];
+    const same = a.board.screen === b.board.screen || (!!sa && !!sb?.ghost && sb.of !== undefined && sa.of === sb.of && sa.text === sb.text && sa.k === sb.k);
+    if (a.layout !== b.layout || !same) report('warn', 'G12', `loop seam: frame 0 (${a.layout}, screen ${a.board.screen}) and frame ${N - 1} (${b.layout}, screen ${b.board.screen}) differ`);
   }
 }
 // What a layer can cover: its cell, or with rot 0 and zoom >= 1 the part of the cell its

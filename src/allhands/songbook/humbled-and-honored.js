@@ -101,7 +101,9 @@ function slots(lyrics) {
     {bar:18, window:24, text:verses[2], kind:'verse', shape:'arch', harmony:true},
     {bar:20, window:14, text:hook, kind:'hook', shape:'call', harmony:true},
     {bar:21, startStep:8, window:8, text:hook, kind:'hook', shape:'call', harmony:true},
-    {bar:22, text:HOST.close, kind:'host', shape:'chant'},
+    // The sign-off gives way: a hook too long for its half bar (five words) runs
+    // two 16ths on and lands on the downbeat, and Synergy signs off an 8th later.
+    {bar:22, text:HOST.close, kind:'host', shape:'chant', give:2},
   ];
 }
 
