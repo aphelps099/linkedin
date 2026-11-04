@@ -25,10 +25,10 @@ import {spawn, spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {FORMS} from '../src/allhands/forms.js';
 import {lyricsFromPost, SAMPLE_POST} from '../src/allhands/lyrics.js';
-import {castSong} from '../src/allhands/casting.js';
+import {castSong, settleCast} from '../src/allhands/casting.js';
 import {TRACK_ORDER} from '../src/allhands/songbook/index.js';
 import {compile, shotIndex, invert, apply, TRACKING} from '../src/videostudio/edl/compile.js';
-import {audioLatency, hitFrame, chokeFrames, stopFrames, TAG_TAIL} from '../src/videostudio/edl/anchors.js';
+import {audioLatency, hitFrame, chokeFrames, stopFrames, TAG_TAIL, CHOKE_TAIL} from '../src/videostudio/edl/anchors.js';
 import {paint, STOP_DIM, activeScreen} from '../src/pegboard/choreo.js';
 import {boardGrid, boardPitch, safeSpan} from '../src/videostudio/gl/board-layer.js';
 import {boardScreens, boardTimeOf} from '../src/videostudio/gl/compositor.js';
@@ -52,7 +52,8 @@ const planOf = track => FORMS.drop60.arrange(lyrics, {}, {track, coldOpen:true})
 ok(castSong(SAMPLE_POST).track === 'circle-back' && !castSong(SAMPLE_POST).recast.length, 'the sample post chooses Circle Back and today\'s cast');
 // The choke's frames: true black from the first frame that starts after her tag stops sounding
 // (plan.choke.tagEnd plus the engine's latency), the ignition on the frame that holds the impact.
-// (edl/anchors.js chokeFrames: plus the codec's 5 ms tail, so nothing of her plays over black in the file.)
+// (edl/anchors.js chokeFrames: plus the choke's 30 ms codec tail, CHOKE_TAIL, so nothing of her, and no
+// encoder floor after her hard cut, plays over black in the file.)
 const who = l => (l.shotId && idx.get(l.shotId)?.characters) || [];
 const is = (l, re) => who(l).some(c => re.test(c));
 const programs = {}, plans = {};
@@ -88,7 +89,7 @@ for (const track of TRACK_ORDER) {
     ok(!bad.mirror.length, `${label}: no unflagged shot or instrument is mirrored without a G11 waiver (${instrumentMirrors} waived layer-frames, Aaron's call)`);
     ok(!bad.r0.length, `${label}: no R0 footage runs backwards except where the plan reverses the sound with it (${heardBack} layer-frames inside the cold open's rewind; ${bad.r0.length} elsewhere)`);
     const black = p.all.slice(B, I).every(x => x.layers.every(l => l.gen === 'color:#000000')), ign = p.frame(I);
-    ok(black && p.frame(B - 1).board.rect && ign.layers.some(l => l.fx.some(x => x.type === 'pegVideo')) && ign.board.screen >= 0, `${label}: the black tile from the choke, the board dark from frame ${B} (her tag heard to ${(plan.choke.tagEnd + audioLatency(plan)).toFixed(4)} s, ${(plan.choke.tagEnd + TAG_TAIL + audioLatency(plan)).toFixed(4)} s through a codec), the ignition on frame ${I}`);
+    ok(black && p.frame(B - 1).board.rect && ign.layers.some(l => l.fx.some(x => x.type === 'pegVideo')) && ign.board.screen >= 0, `${label}: the black tile from the choke, the board dark from frame ${B} (her tag heard to ${(plan.choke.tagEnd + audioLatency(plan)).toFixed(4)} s, ${(plan.choke.tagEnd + CHOKE_TAIL + audioLatency(plan)).toFixed(4)} s through a codec), the ignition on frame ${I}`);
     const f0 = p.frame(0);
     ok(f0.transport?.kind === 'jump' && f0.transport.sound === 'copied' && f0.layers.some(l => l.fx.some(x => x.type === 'pegVideo')) && p.board.screens[f0.board.screen]?.kind === 'impact' && p.transports.some(t => t.kind === 'rewind' && t.sound === 'reversed'), `${label}: the cold open: frame 0 is the impact (its sound copied there), then the rewind with its sound reversed`);
     // The cold open's sound is the impact without Synergy (engine.js coldSourcePlan): the board shows
@@ -106,6 +107,22 @@ for (const track of TRACK_ORDER) {
     const steps = p.boardMoves.map(m => { const r = f => p.frame(f).board.rect, ar = x => x ? x.w * x.h : 0, all = Math.abs(ar(r(m.to - 1)) - ar(r(m.from - 1))); let worst = 0; for (let f = m.from; f < m.to; f++) worst = Math.max(worst, Math.abs(ar(r(f)) - ar(r(f - 1)))); return all ? worst / all : 0; });
     ok(!offHome.length && p.boardMoves.length >= 5 && p.boardMoves.every(m => m.to - m.from >= 3) && moving.length > 0 && Math.max(...steps) < .5 && !jumps.length && p.lint.errors.every(e => e.rule !== 'G14'),
       `${label}: the board holds its home in every call layout and moves only in ${p.boardMoves.length} eased board moves of ${[...new Set(p.boardMoves.map(m => m.to - m.from))].join('/')} frames (largest step ${(100 * Math.max(...steps)).toFixed(0)} % of a move; ${jumps.length} jumps, ${offHome.length} frames off home)`);
+  }
+}
+
+// ---- 1a. the choke keeps its silence on screen: at least 7 black frames before the impact --------------------
+// The choke's black waits CHOKE_TAIL (30 ms) past her tag for the encoder's floor after a hard cut; every
+// track, the sample post and every fixture post with the cast it would choose, still has 7 or more frames
+// of true black before the impact frame.
+{
+  const posts = [SAMPLE_POST, ...JSON.parse(fs.readFileSync(path.join(ROOT, 'scripts/fixtures/pixel-posts.json'), 'utf8')).map(x => x.post)];
+  for (const track of TRACK_ORDER) {
+    let fewest = Infinity, worst = null;
+    for (const post of posts) {
+      const c = castSong(post, {track}), {plan} = settleCast(FORMS.drop60.arrange, lyricsFromPost(post), {}, {track, cast:c.cast, coldOpen:true}), {black:B, impact:I} = chokeFrames(plan);
+      if (I - B < fewest) { fewest = I - B; worst = `${B}-${I - 1}`; }
+    }
+    ok(fewest >= 7, `${track}: at least 7 black frames before the impact on all ${posts.length} posts with their casts (fewest ${fewest}, frames ${worst}; her tag plus the choke's ${(CHOKE_TAIL * 1000).toFixed(0)} ms codec tail)`);
   }
 }
 

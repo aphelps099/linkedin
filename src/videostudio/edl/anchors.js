@@ -21,7 +21,7 @@
 //   stutter[#n]           the n-th of Synergy's stammered syllables
 // n may be negative: #-1 is the last one.
 
-import {TAG_TAIL, stopEndAt} from '../../pegboard/choreo.js';
+import {TAG_TAIL, CHOKE_TAIL, CODEC_FLOOR, stopEndAt} from '../../pegboard/choreo.js';
 
 export const FPS = 24;
 
@@ -50,9 +50,10 @@ export const hitFrame = (t, plan, fps = FPS) => Math.floor((t + audioLatency(pla
 // A peg that lights at song time t lights on this frame (a hit).
 export const pegFrame = (t, fps = FPS, plan) => hitFrame(t, plan, fps);
 // The choke's frames: true black from the first frame that starts after her tag stops sounding in
-// the delivered file (plan.choke.tagEnd, the codec's tail, the latency); the impact is a hit.
-export {TAG_TAIL};
-export const chokeFrames = (plan, fps = FPS) => plan?.choke ? {black:Math.ceil((plan.choke.tagEnd + TAG_TAIL + audioLatency(plan)) * fps - 1e-9), impact:hitFrame(stepTime(plan, plan.choke.until), plan, fps)} : null;
+// the delivered file (plan.choke.tagEnd, the codec's tail at a hard cut, CHOKE_TAIL, the latency);
+// the impact is a hit.
+export {TAG_TAIL, CHOKE_TAIL, CODEC_FLOOR};
+export const chokeFrames = (plan, fps = FPS) => plan?.choke ? {black:Math.ceil((plan.choke.tagEnd + CHOKE_TAIL + audioLatency(plan)) * fps - 1e-9), impact:hitFrame(stepTime(plan, plan.choke.until), plan, fps)} : null;
 // The ending's frames, by the same rule: her stop phrase ("Full stop.") is heard from the frame that
 // holds its onset (a hit) to its end (choreo stopEndAt: plan.stop.end, else her envelope's end);
 // black from the first frame that starts after it in the delivered file.
