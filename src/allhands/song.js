@@ -87,7 +87,9 @@ const SHAPES = {
 };
 const RESOLVE = [3, 5, 6];
 
-export function melody(count, shape, seed) {
+// scale and resolve default to Circle Back's; a song book track passes its own
+// nine-note table (same shapes, same indexes) and its tonic-chord indexes.
+export function melody(count, shape, seed, scale = SCALE, resolve = RESOLVE) {
   const keys = SHAPES[shape];
   let state = seed >>> 0;
   const random = () => (state = (Math.imul(state, 1664525) + 1013904223) >>> 0) / 4294967296;
@@ -99,20 +101,21 @@ export function melody(count, shape, seed) {
     let index = Math.round(b === a ? bi : ai + (bi - ai) * (p - a) / (b - a));
     if (i > 0 && i < count - 1 && random() < .28) index += random() < .5 ? -1 : 1;
     if (out.length) index = Math.max(out[out.length - 1] - 3, Math.min(out[out.length - 1] + 3, index));
-    out.push(Math.max(0, Math.min(SCALE.length - 1, index)));
+    out.push(Math.max(0, Math.min(scale.length - 1, index)));
   }
-  if (out.length) out[out.length - 1] = RESOLVE.reduce((best, r) => Math.abs(r - out[out.length - 1]) < Math.abs(best - out[out.length - 1]) ? r : best, RESOLVE[0]);
-  return out.map(i => SCALE[i]);
+  if (out.length) out[out.length - 1] = resolve.reduce((best, r) => Math.abs(r - out[out.length - 1]) < Math.abs(best - out[out.length - 1]) ? r : best, resolve[0]);
+  return out.map(i => scale[i]);
 }
 
 const MIN_STEPS = 2, MAX_RATE = 1.35;
 
 // Fit a phrase into a window of 16ths. Words keep their natural length when
 // they can; otherwise they speed up (the vocoder keeps the pitch) and, last,
-// they are gated to their slot. Onsets prefer 8th notes.
-export function fitPhrase(line, durations, window = 30) {
+// they are gated to their slot. Onsets prefer 8th notes. `step` is the
+// track's 16th in seconds (Circle Back's by default).
+export function fitPhrase(line, durations, window = 30, step = STEP) {
   const t = tokens(line);
-  const natural = t.map(x => Math.max(.12, durations[x.word] ?? .45) / STEP);
+  const natural = t.map(x => Math.max(.12, durations[x.word] ?? .45) / step);
   let rate = 1, alloc;
   for (; rate <= MAX_RATE + 1e-9; rate += .05) {
     alloc = natural.map(n => Math.max(MIN_STEPS, Math.round(n / rate)));
@@ -129,7 +132,7 @@ export function fitPhrase(line, durations, window = 30) {
     if (cursor % 2 && slack > 0) { cursor++; slack--; }
     const at = cursor, steps = alloc[i];
     cursor += steps;
-    const seconds = steps * STEP;
+    const seconds = steps * step;
     return {...x, at, steps, syllables:syllables(x.word),
       rate:Math.max(1, Math.min(MAX_RATE, (durations[x.word] ?? .45) / (seconds * .94))), gate:seconds};
   }).filter(w => w.at + w.steps <= window + MIN_STEPS);
@@ -156,18 +159,22 @@ export function slots(lyrics) {
 
 // Place one setlist slot: fit its words into the window, give every syllable a
 // note, and repeat a one-bar hook so it answers itself. Shared by every form.
-export function placeSlot(slot, lyrics, durations, id) {
+// `music` is the track's: its 16th, melody table, resolutions, the answer's
+// home notes [first choice, fallback], and fit(midi, at) to keep a note on the
+// chord under it. Omitted, it is Circle Back's.
+export function placeSlot(slot, lyrics, durations, id, music = {}) {
+  const {step = STEP, scale = SCALE, resolve = RESOLVE, home = [57, 52], fit} = music;
   const window = slot.window ?? 30, startStep = slot.startStep ?? 0;
   // A phrase that fits in one bar is sung twice: once is a line, twice is a hook.
-  const once = fitPhrase(slot.text, durations, Math.min(14, window));
+  const once = fitPhrase(slot.text, durations, Math.min(14, window), step);
   const short = slot.kind === 'hook' && window >= 30 - startStep && once.length === tokens(slot.text).length && once.every(w => w.rate < 1.25)
     && once.at(-1).at + once.at(-1).steps <= BAR_STEPS - startStep;
-  const fitted = short ? [...once, ...once.map(w => ({...w, at:w.at + BAR_STEPS, echo:true}))] : fitPhrase(slot.text, durations, window);
+  const fitted = short ? [...once, ...once.map(w => ({...w, at:w.at + BAR_STEPS, echo:true}))] : fitPhrase(slot.text, durations, window, step);
   // A repeated hook answers itself: same tune, but the second time it comes home.
   const half = short ? once : fitted;
   const count = w => Math.min(w.syllables, w.steps);
-  const tune = melody(half.reduce((n, w) => n + count(w), 0), slot.shape, slot.kind === 'hook' ? hash(lyrics.hook) : hash(slot.text));
-  const answer = short ? [...tune.slice(0, -1), tune.length > 1 && tune[tune.length - 1] !== 57 ? 57 : 52] : tune;
+  const tune = melody(half.reduce((n, w) => n + count(w), 0), slot.shape, slot.kind === 'hook' ? hash(lyrics.hook) : hash(slot.text), scale, resolve);
+  const answer = short ? [...tune.slice(0, -1), tune.length > 1 && tune[tune.length - 1] !== home[0] ? home[0] : home[1]] : tune;
   const start = slot.bar * BAR_STEPS + startStep;
   let n = 0;
   const words = fitted.map((w, i) => {
@@ -175,7 +182,7 @@ export function placeSlot(slot, lyrics, durations, id) {
     const melodyNotes = w.echo ? answer : tune, total = count(w), base = Math.floor(w.steps / total);
     let extra = w.steps - base * total, offset = 0;
     const notes = Array.from({length:total}, () => {
-      const steps = base + (extra-- > 0 ? 1 : 0), note = {at:start + w.at + offset, steps, midi:melodyNotes[n++]};
+      const steps = base + (extra-- > 0 ? 1 : 0), at = start + w.at + offset, midi = melodyNotes[n++], note = {at, steps, midi:fit ? fit(midi, at) : midi};
       offset += steps; return note;
     });
     return {display:w.display, word:w.word, line:id, at:start + w.at, steps:w.steps, rate:w.rate, gate:w.gate, notes, kind:slot.kind, harmony:!!slot.harmony, repeat:!!w.echo};
@@ -184,11 +191,11 @@ export function placeSlot(slot, lyrics, durations, id) {
 }
 
 // Seconds from the song's first downbeat to every 16th, swing included.
-export function timingTable(steps, swingOfBar = () => SWING) {
+export function timingTable(steps, swingOfBar = () => SWING, step = STEP) {
   const times = new Float64Array(steps + 1);
   for (let i = 0; i <= steps; i++) {
     const bar = Math.floor(i / BAR_STEPS);
-    times[i] = i * STEP + (i % 2 ? swingOfBar(bar) * STEP : 0);
+    times[i] = i * step + (i % 2 ? swingOfBar(bar) * step : 0);
   }
   return times;
 }

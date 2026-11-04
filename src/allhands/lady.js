@@ -18,8 +18,9 @@ export async function loadLady(ctx, names, {base = '/phrases/', fetcher = fetch}
 
 const baked = new Map();
 
-export async function bakeDeep(buffer, from, to, root, {rate = .5, shift = 2} = {}) {
-  const key = [buffer.length, from, to, root, rate, shift].join(':');
+// `comb`: the resonance in Hz (A2 by default; a song book track tunes it to its chord root).
+export async function bakeDeep(buffer, from, to, root, {rate = .5, shift = 2, comb:combHz = 110} = {}) {
+  const key = [buffer.length, from, to, root, rate, shift, combHz].join(':');
   if (baked.has(key)) return baked.get(key);
   const sr = 44100, seconds = (to - from) / rate + .4, ctx = new OfflineAudioContext(1, Math.ceil(seconds * sr), sr);
   const src = ctx.createBufferSource(); src.buffer = buffer; src.playbackRate.value = rate;
@@ -36,7 +37,7 @@ export async function bakeDeep(buffer, from, to, root, {rate = .5, shift = 2} = 
   hiss.buffer = noiseBuffer(ctx); hiss.loop = true; hiss.connect(hissHp); hissHp.connect(hissGain); hissGain.connect(vocoder.carrier); hiss.start(0);
   // A short comb (one period of A2) gives the metal; tanh gives the weight.
   const sum = amp(ctx, 1), comb = ctx.createDelay(.05), fb = amp(ctx, .55), wet = amp(ctx, .25), dry = amp(ctx, 1);
-  comb.delayTime.value = 1 / 110;
+  comb.delayTime.value = 1 / combHz;
   voc.connect(sum); tapeLp.connect(sum);
   sum.connect(dry); sum.connect(comb); comb.connect(fb); fb.connect(comb); comb.connect(wet);
   const sat = ctx.createWaveShaper(), curve = new Float32Array(1024);
@@ -58,7 +59,7 @@ export async function prepareLady(ctx, plan, options) {
   const deep = new Map();
   await Promise.all(plan.lady.map(async (e, i) => {
     if (!e.deep || !loaded.get(e.file)) return;
-    deep.set(i, await bakeDeep(loaded.get(e.file), e.from, e.to, e.root));
+    deep.set(i, await bakeDeep(loaded.get(e.file), e.from, e.to, e.root, e.comb ? {comb:e.comb} : undefined));
   }));
   return {files:loaded, deep};
 }

@@ -1,0 +1,524 @@
+# Video Studio
+
+The All Hands music video studio: footage, edit decision lists, the compositor and the director. Each section below is owned by the module it describes.
+
+## Media
+
+Footage enters the studio through one index, one proxy set and one same-origin route.
+
+| File | Role |
+| --- | --- |
+| `media/shots.json` | The shot index. Committed. Built by `scripts/build-shot-index.py`. |
+| `media/shots.js` | Loader and queries: `loadShots()`, `createShotIndex(json)`, `srcFor()`, `lumaTrack()`, `energyTrack()`, `maxZoom()`, `conformRate()`. |
+| `media/index-io.js` | Reads and writes `shots.json` in its one-shot-per-line layout; the proxy policy. |
+| `scripts/build-videostudio-proxies.mjs` | 540p forward and reversed proxies plus posters into `public/videostudio/proxies/` (gitignored). |
+| `server/videostudio.js` | `GET /api/videostudio/media/:key`, in Express and in the Vite dev server. |
+| `scripts/check-shot-index.mjs` | `npm run check:shots`. |
+
+### What the index covers
+
+Every season plate in `src/meeting-room/media-manifest.json` (21), every Cutting Room source take in `src/cutting-room/catalog.json` (106) and the runtime Synthia tile (`synthia-camera-v2-listening`, which `robot-tracking.json` belongs to). Masters are deduplicated by sha256: 110 shots. Pat and the lady have no footage and never will; the index rejects them.
+
+### Shot record
+
+Rects are `[x, y, w, h]` in source pixels unless named otherwise. Tracks are base64 `Uint8Array`s with one value per source frame.
+
+| Field | Meaning |
+| --- | --- |
+| `id` | `<name>-<sha8>`. Season plates use the manifest name (`drums-playing-4976ced8`), everything else the catalog id. |
+| `aliases` | Manifest id, catalog id, catalog id without hash, repo file name. `byId()` accepts any of them. |
+| `src` | Same-origin master URL. Repo files are static (`/studio/season/clips/...`); Cutting Room masters go through `/api/videostudio/media/<catalog key>`. |
+| `proxy`, `rev`, `poster` | Route URLs of the 540p forward proxy, reversed proxy and poster, or null. `proxyInfo` has `w`, `h`, `frames`, `gop`, `recipe` and byte sizes. Proxies keep the full source frame: scale rects by `proxyInfo.w / width` (`toProxyRect()`). |
+| `status` | See below. |
+| `kind` | `plate` (season clip folder), `exact` (lip-synced meeting performance), `take` (its original master, voice included), `brand` (brand-film plates and inserts). |
+| `characters` | Who is on screen. Normalised: Guitar is Kevin, drums is Operations, accountant is Arjun. |
+| `stem` | The performer's stem when one band member is alone on screen: `drums` Operations, `keys` Keys, `guitar` Kevin, `voice` Synergy. Never `bass` (Pat) or `lady`. |
+| `roles` | `<stem>.play` (the part is visibly played), `<stem>.hero`, `<stem>.cutaway`, `voice.lead`, `harmony` (Synthia), `shaker` (printer), `listener`, `speaker`, `reaction`, `wide`, `insert`, `banner`, `walk-in`. |
+| `shotType` | `plate` (locked video-call tile), `close`, `medium`, `wide`, `detail`, `insert` (screens and cards). |
+| `action` | Any of `play listen speak idle print walk applaud install type screen celebrate drink`. |
+| `lipSync` | `exact` (picture and recorded voice locked), `envelope` (robot LED mouth driven by audio), `loose` (talking, not phrase-locked), `none`. |
+| `width height fps duration frames` | Measured by decoding every frame. Every master is 24 fps. |
+| `contentBox` | Picture minus dark static bars and the baked name strip (max of detection and the manifest's `cropBottomPixels`). `uiBaked` says what was cut, and `label` marks UI burned into the picture (the `keys-full-*` mic and name). |
+| `faceBox` | `{x,y,w,h,method,hits}`. Humans: OpenCV Haar frontal face, kept only with an eye inside it, in at least 40% of samples every 12 frames; the median box. Robots: the dark glass display around the two green LED eyes (`led-eyes+glass`); `track` names the `robot-tracking.json` entry. Null for groups, inserts, details and anything not found. |
+| `subjectBox` | `[x0,y0,x1,y1]`: the face spread padded 15%, joined with the motion box for players. |
+| `safeCrops` | `{'9:16','1:1','16:9'}`: the largest rect of that aspect inside the content box, centred on the face (face at 40% height in tall crops), on performer plus instrument for players, else on the motion centroid, else the centre. `cropBasis` says which; `cropNotes` lists formats where the subject is wider than the crop. |
+| `sharpTier`, `maxUpscale`, `detailH` | `detailH` = lines of real detail: the smallest scale whose down-and-up round trip keeps PSNR at 38 dB or better, times content height. A at 540 lines or more, B at 260, C below. `maxUpscale` is U from the plan: 1.8, 1.5, 1.2. `maxZoom(shot, renderedH)` = U x contentH / renderedH. `lapvar` is kept for reference (native and at 720 lines, content box only). |
+| `energy`, `energyMean`, `motion` | Per-frame motion energy 0..1: mean absolute luma change over the content box at 320 px wide, 6 levels = 1.0, hard cuts removed. |
+| `hits`, `hitPeriod` | Instrument footage only: frames of motion peaks in the busiest 20% of the picture (detrended, at least 4 frames apart, prominence 0.6 sigma). They mark the stroke, not the contact. `hitPeriod` is the median interval in seconds; `conformRate(shot, bpm)` turns it into a playback rate for any tempo. |
+| `cuts` | Hard cuts inside the take (frame of the new picture). |
+| `loops` | `{in, out, len, seam, method}` in frames. Best seam for 12, 24, 48, 96 and 192 frames, plus up to six other lengths with a clean seam. Seam = jump at the loop point over the median frame-to-frame change: `cut` at 1.5 or below, `xfade2` to 3, else `pingpong`. No loop crosses a hard cut. |
+| `reverseClass`, `reverseWhy` | Plan section 3.2. |
+| `mirrorable`, `mirrorBlockers` | See below. |
+| `lumaTrack` | Per-frame mean luma 0..255 (Rec. 709 weights) of the content box, for the flash governor. |
+| `rules`, `tags`, `notes`, `overrides` | Extra constraints (`baked-label-in-picture`, `mask-call-ui-mark`), search tags, human notes, and which fields a hand override set. |
+
+### Status
+
+| Code | Meaning | Mapping |
+| --- | --- | --- |
+| C | Current: approved, used by the live meeting room | Season plates and any clip `src/meeting-room` loads, unless the catalog says E or R. |
+| A | Available edit | Catalog "Available edit". |
+| S | Source take, usable after review | Catalog "Source take" not used by the meeting room. |
+| E | Earlier version, never selected | Catalog "Earlier version" (`synergy-listening`, `synthia-listening`). |
+| R | Needs review, only with an override | Catalog "Needs review" (`printer-printing`, `synthia-camera-v2-listening`). |
+
+`createShotIndex().filter()` returns C, A and S by default; pass `{allow:['R']}` to include R. E never comes back unless asked for by `status`.
+
+### Reverse and mirror rules
+
+- **R0, never reversed at clip level:** anything with `play` in `action` (every instrument plate and the ensemble wide), the printer (`print`), `exact` lip sync (exact performances and their original takes), drinking. `srcFor(shot, {reverse:true})` throws on R0; only a whole-mix `Transport{kind:'rewind'}` may pass `{transport:true}`.
+- **R1, reverse freely:** listening and speaking plates that are not phrase-locked, robot idles, walk-ins, applause, banner work, screens and typing. `rev` is the pre-reversed proxy, so reverse playback never needs a backwards decode.
+- **Mirror:** false unless the shot is on the verified-safe list and has no blocker. Blockers: `badge` (both robots wear name badges), `guitar` and `keyboard` (handedness), `skyline` (Strategy's background), `logo` (pages, banners), `banner-text`, `screen-text`, `name-label`, `call-ui`. Safe today: People & Culture, Arjun and Linda tiles, the human exact performances and their takes except Strategy, and `drum-pad-detail`.
+
+Hand-checked classifications live in `OVERRIDES` inside the builder so every rebuild keeps them. Contact sheets (8 frames, content box, face, crops, energy and luma strips) come from `--sheets DIR`.
+
+### Proxies
+
+`node scripts/build-videostudio-proxies.mjs [--cache DIR] [--jobs 2] [--only id,...] [--force]`
+
+- libx264 High@4.0, CRF 20, `-g 12 -keyint_min 12 -bf 0 -sc_threshold 0`, 24 fps CFR, yuv420p bt709 limited range, faststart, no audio, bitexact. Height is min(540, source); width keeps the aspect. Every 12th frame is a keyframe, which the builder verifies.
+- Forward, reversed (`reverse` filter, same recipe) and a JPEG poster of frame 0.
+- Keys end in the first 8 hex of the file's own sha256: `<id>-540-<h8>.mp4`, `<id>-rev540-<h8>.mp4`, `<id>-poster540-<h8>.jpg`. They fit the Cutting Room key rule and are cached immutable.
+- Policy (`wantsProxy`): every season plate, every Instruments, Office scenes and Screen inserts take, and every performance by Kevin, Keys, Operations, Synergy, Synthia, Arjun, Linda, People & Culture, Strategy or the printer.
+- Output: `public/videostudio/proxies/` plus `manifest.json` there; the builder then writes the keys and sizes into `shots.json`. Incremental: a shot is rebuilt only when its master or the recipe changes.
+- **Production upload (Aaron):** `CATALOG_UPLOAD_TOKEN=... node scripts/build-videostudio-proxies.mjs --upload [--origin https://linkedinbeats.com]` sends each recorded proxy, reversed proxy and poster with `PUT /api/cutting-room/media/<key>` (`server/cutting-room.js`, bearer token, 300 MB cap). Nothing uploads without `--upload`.
+
+### Media route
+
+`GET|HEAD /api/videostudio/media/:key`, key `^[a-z0-9][a-z0-9-]{1,110}\.(mp4|jpg|webp)$`.
+
+1. A file in `public/videostudio/proxies/` (or `dist/videostudio/proxies/`) is served from disk.
+2. Otherwise `media/<key>` streams from the Cutting Room bucket through the server: signed server-side with the same S3 settings as `server/cutting-room.js` in production, or fetched from `https://linkedinbeats.com/api/cutting-room/media/<key>` (302 followed server-side) in the Vite dev server. Signed URLs never reach the browser.
+3. A forward proxy key the bucket lacks falls back to the shot's master (cached five minutes, never immutable), so the compositor plays before the upload lands. Reversed proxies never fall back: they answer 404.
+
+Range requests return 206 with `Content-Range` and `Content-Length`; `Accept-Ranges: bytes` always. Keys ending in `-<8 hex>` get `Cache-Control: public, max-age=31536000, immutable`, others five minutes. `X-Videostudio-Source` says `proxy`, `bucket` or `master`. Same origin, so `texImage2D` accepts the frames with no CORS headers.
+
+## EDL
+
+The edit decision list is the film. One JSON document says which footage plays where, when and how; `compile()` turns it into a frame program that the compositor draws and the export encodes, frame for frame. Everything here is pure and runs in Node.
+
+| File | Role |
+| --- | --- |
+| `edl/schema.js` | The document, `validate()` (readable `{path, message}` errors), canonical `stringify()`, `createEDL()`, `merge()`, and the effect vocabulary `FX`. |
+| `edl/anchors.js` | Musical time: `resolveAt()`, `resolveSpan()`, `stepTime()`, `stepAtTime()`, `cutFrame()`, `pegFrame()`, `listAnchors()`. |
+| `edl/params.js` | Params (static, keyframed, bound to the audio), eases with exact integrals, and the feature tracks: `buildFeatures()` from a render, `planFeatures()` without one. |
+| `edl/remap.js` | Output frame to source time: `clipTimeMap()`, `tapeCurve()`, `transportTime()`, `speedFit()`, `hitWarp()`. |
+| `edl/compile.js` | `compile(edl, {plan, shots, features, format})`, `shotIndex()`, the lint. |
+| `edl/metronome.js` | `metronomeEDL()` and `expectedCuts()` for the export's scene-detection gate. |
+| `layouts.js` | Layout classes per format, cell ids, nesting. |
+| `moves/` | The move library: `cuts.js`, `camera.js`, `time.js`, `grid.js`, `look.js`; `MOVES` in `index.js`. |
+| `scripts/check-videostudio.mjs` | `npm run check:videostudio`. |
+
+### The document
+
+```
+EDL {version:1, song:{form, track?, post?, seed?, loop?, steps?}, format:'9:16'|'1:1'|'16:9', fps:24,
+     clips:VideoClip[], board:BoardCue[] | 'song', transports:Transport[], camera?:CameraCue[],
+     overrides:Override[], template?:bool}
+
+VideoClip {id, at:At, len, cell, asset, z?,
+  time?:{in, rate:Param, reverse, repeat?:{unit, count?, pingpong?, vary?, loop?}, freezeAt?, tape?, map?},
+  frame?:{crop?:{[format|'all']:Rect}, zoom, cx, cy, rot, dx, dy, opacity:Param, mirror?:'x'|'y'|'xy'},
+  fx?:[{type, ...Param}], chrome?:{name, role, mic, speaking:Param, toast, banner, cameraOff},
+  origin?, scene?, signature?, why?}
+BoardCue  {id?, at, len, text | {ref}, font?:'peg9'|'peg5'|'peg3', k?:1-4, reveal?, release?, palette?, fx?, cell?, z?:'over'|'under'}
+Transport {id?, at, len, kind:'rewind'|'tapestop', audio:true, rate? (4), from?:At, seconds?}
+CameraCue {id?, at, len, zoom, cx, cy, rot, dx, dy:Param, fx?}        the whole composite
+Override  {target:'<clip id>'|'cue:<id>'|'transport:<id>', set?:{'dotted.path':value}, rule?:'G1'-'G12'|'S4', note}
+```
+
+Units: `at`, `len`, `off` and keyframe positions are 16th steps of the plan; the plan's `timing` table turns them into seconds, so any tempo works and a step need not be a whole number of frames. `frames` are output frames. Source times (`in`, `map`, `freezeAt.src`) are source seconds. `rot` is degrees, clockwise on screen. `cx`, `cy` are 0..1 of the crop. `dx`, `dy` and effect lengths are output pixels.
+
+- **asset**: `shot:<id or alias>` from the shot index; `role:<stem>.<kind>` (`role:drums.hero`: a shot whose `roles` name it, else the stem's shots by action, sharpest tier first); `gen:black`, `gen:white`, `gen:color:#rrggbb`, `gen:board` (the Peg Board drawn into the tile), `gen:camera-off` (Pat's tile), `gen:feedback` (the previous output frame, for Droste).
+- **crop**: per format, else `all`, else the shot's `safeCrops` entry nearest the cell's aspect, else its `contentBox`. It is then fitted to the cell's exact aspect inside the content box: never stretched, never outside the picture.
+- **board**: `'song'` draws the song's own screens (`buildScreens()` in `pegboard/choreo.js`). A list of cues replaces them; a cue with `text:{ref:'song'}` (no `len` needed) keeps the song underneath, `{ref:'song:impact#0'}` takes one song screen, `{ref:'lady:tag#0'}` and `{ref:'line:hook#0'}` take her words or a sung line with their timing. A cue with a `cell` draws inside that tile (`z:'over'`). `merge()` keeps a `'song'` board under any cues a move adds.
+- **overrides**: `set` patches a clip, cue or transport by path. `rule` waives one lint rule for that target (it becomes a warning) and needs a `note`. Templates (`template:true`) ignore waivers.
+- **stringify** writes keys in one fixed order and one clip per line, so `stringify(parse(s)) === s` and key order never changes the bytes.
+
+### Anchors
+
+`At` is a step number, or `{anchor, off?, frames?}`: the anchor's step, plus `off` steps, plus `frames` frames. A `frames` offset shifts both ends of a span, so back-to-back vocal cuts at `word − 1 f` still abut. Cuts land on `round(t·24)`; pegs light on `floor((t + .010)·24)`.
+
+| Anchor | Moment |
+| --- | --- |
+| `bar:n`, `step:n` | The downbeat of bar n; step n. |
+| `section:<name>[#k]` | First step of the section (`section:Drop B`, `section:drop-b`). |
+| `cue:impact` `cue:choke` `cue:unmute` `cue:sink` `cue:stop` `cue:start` `cue:end` | 40.000, 39.000, 4.000, 46.000, 59.000 s in the Drop Edition. |
+| `lady:<role>[#n]`, `lady:r<k>[#n]`, `lady[#n]` | Her events by role (`ladder tag impact punct sink stop`) or ladder rung, at the engine's own clock (fractional 32nds included). |
+| `word:<kind>[#n]`, `line:<kind>[#n]`, `stutter[#n]` | Synergy's n-th word in lines of a kind (`host verse hook answer any`), the n-th line, his stammer. |
+
+`#-1` is the last. Moves write anchors, not seconds, so a template follows any post.
+
+### Params
+
+`Param = number | [[k, v, ease?]...] | {keys, unit:'steps'|'frames'|'seconds'} | {bind, scale, base, attack, release} | {mul:[...]} | {add:[...]}`
+
+- A key's ease shapes the segment that arrives at it. Eases: `linear inQuad outQuad outExpo inOutSine step outBack`; each has an exact antiderivative, which is how rates integrate.
+- Keys in `steps` sit at `stepTime(at + k)`; in `frames` at the clip's cut frame plus k.
+- `bind`: `kick`, `kickLevel`, `voice`, `roll`, `stem:<name>`, `eq:<band>`. Value = `base + scale · envelope`, a one-pole follower with `attack` and `release` in seconds.
+- **Feature tracks** `{fps, frames, source, kick, kickLevel, roll, stems:{drums bass keys guitar voice lady}, eq}`, every series a `Float32Array` per frame. Frame g is song time g/24, read 10 ms ahead like the equalizer. `kick` is 1 on the frame each of the plan's kicks lands (eq.js `kickSteps`, the same kicks the engine plays). `buildFeatures(plan, render)` reads `engine.render(..., {tune:{stems:true}})` (master on channels 0-1, stems on 2-7): stem RMS mapped from -60 dBFS (0) to -6 dBFS (1), the drums' 35-150 Hz band as `kickLevel`, and master bands from `eqTrack`. `planFeatures(plan)` is the fallback with no audio: levels from the plan's players, words and lady events, silence in the choke.
+
+### Time
+
+For a clip with cut frame F0 (t0 = F0/24), the forward source time is
+
+```
+S(t) = in + dir · ∫[t0, t] rate(τ) · tape(τ) · live(τ) dτ        dir = −1 when reversed
+```
+
+- The first frame shows exactly `in`. Keyframed rates integrate in closed form. A rate under the tape, a freeze or a bind is integrated with 6-point Gauss-Legendre on pieces of at most 50 ms between its breakpoints: about 1e-15 s, and nothing is stepped frame by frame, so nothing drifts.
+- **tape**: the song's varispeed from `plan.tape`, the same curve the engine's delay line plays. Sink In: pitch 1 → 0.5 across bar 23 (content time `t − .25·D·u²`). The tape stop: 1 → 0 over 0.4 s, then a hold. R1 clips follow it exactly (0.5× means each source frame holds two output frames). Instruments freeze instead.
+- **reverse**: the source runs backwards from `in`. The layer says `reverse:true` and gives `proxyFrame = frames − 1 − srcFrame` in the reversed proxy and `proxyTime` at that frame's centre: `duration − srcTime`, snapped so a frame boundary never picks a neighbour.
+- **repeat** `{unit, count, pingpong, vary, loop}`: the slice restarts every `unit` (steps, `{steps}` or `{frames}`), `count` plays (the last runs on), each repeat showing the first slice's frames. Ping-pong plays odd repeats backwards, frame for frame (83 → 72 after 72 → 83). `vary[k]` changes repeat k (`zoom cx cy rot mirror`). Repeats after the first come from the stutter cache when the slice is 12 source frames or fewer. `loop:true` marks a plate loop on beats rather than a stutter.
+- **freezeAt**: local steps (hold from there), `{at, len}` (hold, then play on from the held frame), or `{src}` (one still frame for the whole clip).
+- **map** `[[localStep, srcSeconds], ...]`: an explicit piecewise-linear time map; hit warp writes it.
+- **speedFit(src, slot)**: rate = src/slot inside 0.5-2; faster, the source is trimmed; slower, the clip ends with the source.
+- **hitWarp**: a dynamic program puts the most hits (`shot.hits`, source frames) on 8ths (or the plan's kicks) with every local rate inside 0.85-1.15; matched hits land exactly.
+- **Transports** remap song time for the whole composite: `rewind` shows `Tfrom − 4·(t − Ta)` for at most one beat with every layer's direction flipped, the printer holding its frame; `tapestop` shows `Ta + τ − τ²/2S`, then holds. The board follows the same time.
+
+### Layouts
+
+Each class is laid out per format, never cropped from another. 12 px from every edge and between tiles, 12 px corners (BOARD is full bleed). Cell ids are `<class>.<i>` in reading order; `full` is the frame in any class.
+
+| Class | 9:16 (1080×1920) | 1:1 (1080×1080) | 16:9 (1920×1080) |
+| --- | --- | --- | --- |
+| L1 | 1056×1896 | 1056×1056 | 1896×1056 |
+| split | 2 stacked, 1056×942 | 2 stacked, 1056×522 | 2 side by side, 942×1056 |
+| stack3 | 3 × 1056×594 (16:9) from y 57 | 3 × 1056×344 | 3 columns, 624×1056 |
+| G4 | 2×2 of 522×942 | 2×2 of 522×522 | 2×2 of 942×522 |
+| G6 | 2×3 of 522×392 at y 288 / 692 / 1096; board strip below | 2×3 of 522×344 | 3×2 of 624×522 |
+| G9 | 3×3 of 344×258 from y 288; board strip y 1098-1488 | 3×3 of 344×256; board strip below | 3×3 of 458×344; board column on the right |
+| BOARD | the frame | the frame | the frame |
+| BOARD+STRIP | banner, board y 340-1100, 3 tiles of 344×258 | banner, board, 3 tiles | banner, board, 3 tiles centred |
+
+Cells nest with `>`: `split.1>G4.2` (a 2×2 inside the lower half: breakout rooms), `stack3.1>g2x4.5` (a generic grid: cell split). Nested grids keep the gutter with no outer margin. `cellRect(format, id)` returns `{id, cls, x, y, w, h, r}` or null.
+
+### Moves
+
+Each move is a pure function `move(ctx) → {clips, board?, transports?, camera?, notes?}`, a patch for `merge()`. `ctx = {plan, shots, format, at | section, len, cell | cells, pool, seed, id, scene, features, ...options}`. Every in point and choice comes from the seed; anchors keep them portable. Moves that would break policy refuse and say why in `notes` (a boomerang on R0, a kaleido on a robot, a ramp on an instrument, a warp on Synergy).
+
+| Family | Moves |
+| --- | --- |
+| `cuts.js` | downbeatCut, offbeatCut, vocalCut (word − 1 f), jCut, lCut, matchCut (faceBox eye-line, scale within ±10 %), jumpCut |
+| `camera.js` | slowPush, crashZoom (3 frames, 4 % overshoot, radial blur), snapLadder (never past maxZoom), snarePunch, whipSlide, hatRoll (±2° per 8th with corner-covering zoom) |
+| `time.js` | speedFit, hitWarp, tapeCoupling, speedRamp, freezeLabel (PEG-5 name and role in the tile), stutter, retriggerRoll (the ladder is the cut list), boomerang, rewind, tapeStop |
+| `grid.js` | gridBloom, gridCollapse, cellSplit (one decode), breakoutRooms, freezeTheCall, reactionCanon, dubDelay, speakerChase, leaveMeeting |
+| `look.js` | poorConnection, pegTakeover (Ignition on the impact), drosteDive, kaleido, rgbSplit, irisToEye |
+
+Not yet: graphic match (needs circle centroids in the index) and the cross-tile handoff.
+
+### The frame program
+
+`compile(edl, {plan, shots, features?, format?, target?:'desktop'|'mobile', table?, frames?})` returns:
+
+```
+program {version:1, format, width, height, fps:24, frames:N, duration,
+  plan:{form, totalSteps, duration},
+  clips:[{id, shotId, asset, cell, from, to (frames), step, restarts:[frames], scene, signature}],
+  transports:[{id, kind, from, to, rate, seconds, sourceTime}],
+  board:{mode:'song'|'cues', screens, cells},        screens: choreo.js screens, sorted, one at a time
+  cuts:[frame, ...],                                 every frame the picture changes, ascending
+  decode:{perFrame:Uint8Array(N), max, perBar:[{bar, from, to, max, worstFrame, distinct}],
+          streams:[{key, shotId, proxy:'fwd'|'rev', spans:[{from, to, srcTime, peak}]}],
+          prefetch:[{frame, preroll, shotId, proxy:'fwd'|'rev'|'still', srcTime, srcFrame?}], limits:{mobile:4, desktop:8}},
+  lint:{ok, errors:[{rule, message, clipId?, path?, frame?, frames?}], warnings:[...]},
+  frame(f), compileFrame(f), hash(), stats:{compileMs, layers}}
+
+Frame {f, t (f/24), time (the song time shown: differs only inside a transport), layout (class or 'full' or null),
+  transport:null | {id, kind, phase 0..1, rate},
+  camera:null | {id, zoom, cx, cy, rot, dx, dy, matrix, fx},     composite: output px -> composite px
+  board:{time, screen (index into board.screens, or -1), rect (the layout's board region or null), banner, cells:[{screen, cell, rect, z}]},
+  layers:[Layer, ...]}                                             bottom to top
+
+Layer {clipId, shotId, asset, kind:'video'|'generated', gen,
+  srcTime (forward source seconds), srcFrame, reverse, proxyTime, proxyFrame,
+  source:'stream'|'stutter'|'still', repeat,
+  cell:{id, x, y, w, h}, radius, crop:{x, y, w, h} (source px),
+  transform:{zoom, cx, cy, rot, dx, dy, mirror, matrix:[a, b, c, d, e, f, 0, 0, 1]},
+  opacity, fx:[{type, ...numbers}],
+  chrome:{name, role, mic:'on'|'muted', speaking 0..1, toast:null|{text, age, remaining}, banner:null|text, cameraOff},
+  robot?:{id, mouth:{x, y, angle (rad), scale, w, h}},   the tracked mouth row in output px
+  canon?:{synergy:true}, held?:'printer'}
+```
+
+- **Draw order**: z, then the later clip on top, then EDL order. A layer that is opaque, unrotated, unslid and at zoom 1 or more hides what is under it in its cell (a full-frame one hides everything), so hidden footage never costs a decode.
+- **matrix** maps an output pixel to a source pixel, row-major: `[sx, sy, 1]ᵀ = M·[x, y, 1]ᵀ` (GLSL `mat3` is column-major: transpose it). `M = T(crop.x + cx·crop.w, crop.y + cy·crop.h) · S(crop.w / (cell.w·zoom)) · R(−rot) · Mirror · T(−(cell centre + d))`. Divide by the shot's width and height for UVs; for the reversed proxy, sample `proxyFrame` at the same UVs. Outside the cell, the layer is masked by the rounded rect (`radius`). For generated layers the matrix maps to cell-local pixels of the generated texture.
+- **srcTime** is exact and continuous (robot tracking and mouth brightness read it). To show a frame, use `proxyFrame` (export) or seek to `proxyTime` (preview); both are frame-exact.
+- **Board**: pass `board.time` to `stage.draw()` / `paint()`; choreo's own half-frame lead does the rest. `gen:board` layers are the board inside a tile.
+- **Chrome** is drawn by the compositor above the layer and must keep clear of `robot.mouth`.
+- **Decode schedule**: a decode is one moving stream of one shot in one direction; layers of that stream within 12 source frames of each other share it (cell split, kaleido, the canon). Held frames need one decode, once; stutter repeats need none. `prefetch` is in preroll order, each one beat early.
+- **compileFrame(f)** recomputes one frame on its own; it equals `frame(f)`. `hash()` is FNV-64 over every frame.
+
+### Effects
+
+Each fx entry is `{type, ...}`; numeric parameters are Params, evaluated per frame. Compile drops an effect at its identity value. "Warps" effects are refused on Synergy.
+
+| type | Parameters (default) | Identity | Warps |
+| --- | --- | --- | --- |
+| `zoomBlur` | amount (0): 0..1, the 8 taps reach this fraction of the way to the centre; cx, cy (.5): centre in the cell | amount 0 | yes |
+| `dirBlur` | px (0): blur length in output px; angle (0): degrees, 0 along +x | px 0 | yes |
+| `mosaic` | px (0): block size in output px, blocks aligned to the cell origin | px ≤ 1 | yes |
+| `chromaDrop` | amount (0): 0..1, 1 keeps luma only | amount 0 | no |
+| `saturation` | amount (1): multiplier, 0 grey, .4 is -60 % | amount 1 | no |
+| `rgbSplit` | px (0): red moves +px along angle, blue -px, green stays; angle (0): degrees | px 0 | yes |
+| `fold` | axis ('x'): `x`, `y` or `xy`; UV fold about the cell centre, x reflects the left half onto the right | never | yes, mirrors |
+| `tile` | cols (2), rows (2): copies of the source inside the cell; mirror (1): alternate copies mirrored (the 2×2 kaleido), one decode | 1×1 | yes, mirrors when mirror is 1 |
+| `iris` | r (1): 0..1 of the cell half-diagonal, 1 open, 0 closed; cx, cy (.5): centre in the cell; feather (2): output px; space ('cell'): with `source` the centre is given in source px and compile maps it through the layer, so it follows any zoom | r ≥ 1 | no |
+| `droste` | depth (0): 0..3 levels of the previous output frame nested in the cell, fractional is partway in; scale (1/3): the inner frame's size as a fraction of the cell; cx, cy (.5) | depth 0 | yes |
+| `pegVideo` | mix (1): 0..1 footage to peg video; pitch (12): output px between pegs; levels (6): blue levels of luma^gamma; gamma (1.4) | mix 0 | yes |
+| `scanline` | amount (0): line darkening 0..1; wobble (0): horizontal displacement in output px; period (6): output px per line pair | both 0 | yes |
+| `echo` | taps (0): trail copies; frames (1): frames between copies; decay (.6): each copy's opacity relative to the one before | taps or decay 0 | yes |
+
+Mirroring a whole layer is `frame.mirror` (in the matrix), not an effect. Camera cues take the same effects over the whole composite, in frame coordinates.
+
+### Lint
+
+Errors block export; warnings do not. Each finding carries a rule, a sentence, and the clip and first frame when it has them.
+
+| Rule | Checked from the EDL | Level |
+| --- | --- | --- |
+| G1 | Adjacent scenes (clips tagged `scene`) differ in layout class where they meet. | error |
+| G2 | Signatures: the same one not within 16 bars, at most 4, one Droste; director-placed ones at most one per 8 bars. | warning |
+| G3 | A playing plate on screen while its stem's level is at or under .15 (needs features). | warning |
+| G4 | Scenes start on bar lines, ladder retriggers or the choke. | error |
+| G5 | Live decodes at once: over 8 is an error, over 4 a warning (an error with `target:'mobile'`). | error / warning |
+| G7 | R0 shots never play backwards outside a rewind (checked on every frame: reverse, negative rates and ping-pong all count). Rewinds: at most one beat, at most two, `audio:true`. Instruments are hit-warped (0.85-1.15) or frozen: never slowed, ramped or tape-coupled. | error |
+| G8 | A slice plays at most 4 times; the third repeat varies; three identical clips in a row in one cell. Continuations across re-layouts and generated tiles are not repeats. | error |
+| G9 | Custom board cues hold at least max(0.75 s, characters / 15). | warning |
+| G10 | Upscale `zoom · camera zoom · cell.h / crop.h` stays at or under U (A 1.8, B 1.5, C 1.2). A mosaic of 8 px or more, or peg video, is exempt. | error |
+| G11 | Pat never on video; the lady never gets a face; type is never green; robots, instruments and unflagged shots are never mirrored; no warping effect on Synergy; nothing covers his tracked mouth row. | error |
+| G12 | Loop films (`song.loop`): the last frame's layout and board screen match frame 0's. | warning |
+| S4 | Shot status E never loads; R loads only with an override (`rule:'S4'`). | error |
+| schema, S2, S3 | Structure; clips shorter than a frame; clips running past their source. | error / warning |
+
+G6 (flash governor) needs the rendered luminance and stays with the board and the compositor.
+
+G10 uses the real upscale. For a crop that spans the content height (tall and square tiles) it equals the shot index's `maxZoom(shot, renderedH) = U · contentH / renderedH`; for wide tiles the crop is shorter than the content box, and this is the stricter, correct number.
+
+### The metronome
+
+`metronomeEDL(plan, {format, every = 4, sources = [black, white]})`: a full-frame cut every N steps, alternating two generated colours, with no board. `expectedCuts(plan, edl)` gives `round(T(step)·24)` for every cut; the export gate compares those with ffmpeg `scdet`.
+
+### Checks
+
+`npm run check:videostudio` (1168 checks, under 2 s; `--render` adds a real stems render in headless Chromium, about 80 s; `--dump DIR` writes the sample film's EDL and fixture shots): schema round trips; anchors against the real Drop Edition and Sound check plans and a 128 BPM plan; eases against an independent quadrature; rate integration, reverse, stutter, ping-pong, freeze and tape coupling against closed forms (errors under 1e-14 s); the metronome's cuts on every plan; every layout in every format; every move to a clean EDL; every policy violation caught; a 60 s film (133 clips, 5,793 layers) compiled twice to one hash, about 40 ms warm and under 100 ms cold; and the real `media/shots.json` when present.
+
+## Compositor
+
+One WebGL2 canvas draws a frame of the frame program exactly, for the preview and for the export. The preview drives it from the All Hands engine's audio clock; the page at `/videostudio/` is the monitor.
+
+| File | Role |
+| --- | --- |
+| `gl/compositor.js` | `createCompositor(canvas, {format, scale, post, preserveDrawingBuffer})`: `ready`, `prepare()`, `drawFrame()`, `read()`, `setFormat()`, `setScale()`. `governorGains()`, `boardTimeOf()`, `boardScreens()`, `FX_SUPPORT`. |
+| `gl/shaders.js` | The uber layer shader, the chrome quads, copies and the post chain. |
+| `gl/chrome.js` | The video call's chrome: the Canvas2D text and icon atlas, name bars, speaking border, toasts, banners, Pat's camera-off tile, the lady's tile. |
+| `gl/board-layer.js` | The Peg Board inside the frame, drawn by `pegboard/renderer-gl.js` into the compositor's own context. |
+| `media/element-pool.js` | The preview's `<video>` decoders: A/B pairs per slot, preroll, rate steering, `requestVideoFrameCallback` uploads. |
+| `media/stutter-cache.js` | Exact frames as ImageBitmaps for stutters, holds and canon tiles, 25 MB at most. |
+| `render/preview.js` | `createPreview()`: the clock, the pool, the compositor; play, pause, seek, scrub, step, re-layout. |
+| `studio-film.js` | `studioFilm(plan, shots, {format})`: the first draft, built from the moves on the real shot index (`/videostudio/?cut=studio`; the monitor now opens on `treatments/drop60-draft.js`, see Export). |
+| `main.js`, `studio.css`, `/videostudio/index.html` | The monitor. Unlisted and noindex. |
+| `scripts/check-compositor.mjs` | `npm run check:compositor`. |
+
+### Drawing a frame
+
+```
+const comp = createCompositor(canvas, {format:'9:16', scale:1});
+await comp.ready;                                  // the chrome's fonts (TT Hoves, Azeret Mono)
+comp.prepare(program, {plan, shots});              // board screens, shot sizes, the governor's gain track
+comp.drawFrame(program.frame(f), sources, {program, format?, gain?});   // returns stats
+comp.read();                                       // {width, height, data}: RGBA, top row first
+```
+
+`sources(layer, i)` returns, for a video layer, `{image, key, version, width, height}` or `null`:
+
+- `image`: any TexImageSource of the shot's picture: `<video>`, `ImageBitmap`, `VideoFrame`, a canvas. The 540p proxy and the master address the same source px, so either works.
+- `key`: the GPU texture it uploads into (an element id, a cache slot). `version`: it uploads only when this changes (the pool passes rVFC's `presentedFrames` with the element's load count and frame); `undefined` uploads every time.
+- `width`, `height`: the shot's source px (what `transform.matrix` maps to), not the image's. They default to the shot index given to `prepare()`.
+- Or `{texture, flipY}` for a texture the caller owns. A Map keyed by `clipId` also works.
+
+A video layer with no source draws as an empty tile (`#181a1e`). Generated layers need no source: the compositor never asks for Pat, the lady, the board or a colour.
+
+`drawFrame` draws into the canvas; for the export, `new VideoFrame(canvas)` right after it. The canvas is `format × scale` pixels (1080×1920 at scale 1). The canvas keeps nothing from one frame to the next: frame f depends only on the frame, its sources and f.
+
+### Bottom to top
+
+1. The call's background, `#101114`.
+2. The Peg Board in the layout's region (`frame.board.rect`), opaque, when no tile covers that region. Board cues with `z:'under'` in their cells.
+3. Each layer in draw order: its echo copies, the layer, then its chrome.
+4. The board over a full-frame picture. Over footage, only its light shows (MAX blend, no sockets), at the peg video's pitch when there is one. Over generated tiles (black, Pat, colour), the whole board shows, sockets included. Board cues with `z:'over'`. The screen-share banner in the layout's banner rect (BOARD+STRIP).
+5. Droste: level k copies the frame and puts level k−1 into the feedback tile (the whole frame at `scale`, centred on `cx, cy`), in two ping-pong framebuffers; a fractional depth fades the last level in. Level 0 is the frame itself, with Pat's camera-off card in the tile. The frame's own composite stands in for "the previous output frame", so every frame is seek-safe.
+6. The composite camera: `frame.camera.matrix` and its effects over the whole frame.
+7. Post: a bloom (bright pass at half size, dual-Kawase down and up), the governor's gain, grain weighted to the mid-tones and seeded by the frame number, ±0.5 LSB triangular dither. `POST` holds the defaults; `post:{bloom:{weight:0}, grain:0, dither:false}` turns them off.
+
+### The layer shader
+
+Output px go through `transform.matrix` (transposed for GLSL) to source px, then divided by the shot's size for UVs. Outside the picture a layer is transparent. The cell's rounded-rect SDF (`radius`, antialiased over one device pixel) masks it, then the iris, then `opacity`.
+
+| fx | What it does |
+| --- | --- |
+| `tile` | `cols × rows` copies of the cell, alternate ones mirrored when `mirror` is 1. |
+| `fold` | `x`: the right half mirrors the left; `y`: the bottom mirrors the top; `xy`: both. |
+| `mosaic` | Blocks of `px` output px from the cell origin, each one colour. |
+| `scanline` | `wobble`: each line pair shifts sideways, seeded by the line and the frame. `amount`: the second half of each `period` darkens. |
+| `zoomBlur`, `dirBlur` | 16 taps toward the centre, or along `angle` over `px`. |
+| `rgbSplit` | Red moves `+px` along `angle`, blue `−px`, green stays. Applied to every blur tap. |
+| `saturation`, `chromaDrop` | Mix toward Rec. 709 luma. |
+| `pegVideo` | Luma^`gamma` in `levels` blue steps, one peg every `pitch` px on the cell's grid. A dark peg leaves its socket showing. |
+| `iris` | A soft circle of `r` × the half-diagonal. |
+| `droste` | The pass in step 5. |
+| `echo` | `taps` copies at the transforms of frames f − k·`frames`, opacity `decay`^k, under the layer. |
+
+The order inside the shader is: tile, fold, mosaic and wobble (cell space), then the matrix, then blur with split, then colour, then scanline darkening, then peg video, then the masks. Two effects of one type in one layer: saturations multiply, otherwise the last one wins.
+
+### Chrome
+
+The site's meeting room (`src/meeting-room/meeting-room.css`), at film scale, with no third-party call marks. `chromeScale(cell)` sizes it to the tile: 1.0 for a G9 tile, up to 1.2.
+
+- **Name bar:** a strip along the tile's foot (`#15171b`, 92 %): the mic or muted icon, the name, `· role` (the meeting room's cast roles when the clip names none; the host's is never shown), and speaking dots.
+- **Speaking border:** the meeting room's green `#7cdb65`, 5 px inside the tile's corners, its opacity the clip's `speaking` (bind it to a stem). Type is never green; only the border, the mic and the dots are.
+- **Toasts:** a pill at the tile's top, in over 0.18 s and out over 0.18 s: user-plus for "joined", log-out for "left the meeting".
+- **Banners:** a pill at the tile's top left, or the layout's banner rect in BOARD+STRIP. A screen-share icon in blue, or a wifi-off icon in signal yellow for a bad connection.
+- **Pat** (`gen:camera-off`): the meeting room's radial camera-off tile, the "PT" avatar, the name, "Camera off", the camera-off icon. Never footage.
+- **The lady** (`gen:camera-off` whose name is the lady or Circle Back): no avatar and no face, ever. Her voice is a waveform of 23 bars driven by `speaking`.
+- The name bar moves to the tile's top when it would cover Synergy's tracked mouth row (`layer.robot.mouth`).
+
+Text and icons (lucide paths) are rasterised once at device size into a 2048² Canvas2D atlas and drawn as instanced quads, clipped to the tile's rounded rect.
+
+### The board
+
+`gl/board-layer.js` gives each board region (the layout's strip, the whole frame, a `gen:board` tile, a cue's cell) its own grid at `pitchFor(w, h)`, or at the peg video's pitch when it lies over one. It paints it with `choreo.paint()` and draws it with the Peg Board's own WebGL2 renderer into a texture of the compositor's context. `renderer-gl.js` takes `{gl, output}` for that and nothing else changes. Up to 4 regions stay allocated.
+
+Pegs light on `floor((t + .010)·24)`. choreo lights a unit half a frame before its onset but switches a screen on at its exact start. So frame f paints at `f/24 + 1/48 − .010` (`boardTimeOf`) with every screen moved half a frame early (`boardScreens`). Every onset t is then lit from frame `floor((t + .010)·24)`: at most 25 ms before its sound, never after. The ignition lands on frame 960 and true black on frames 948 to 959.
+
+### The governor
+
+`prepare()` predicts each frame's relative luminance, whole and per quadrant, on a 9 × 16 grid. The top layer at each point gives its luma: footage reads the shot's `lumaTrack` at the layer's source frame; generated tiles and the board are exact. The Peg Board's `governorTrack()` turns that into a gain per frame, so there are never more than 3 flashes a second (rule G6). It takes about 260 ms for 1,440 frames. Pass `{governor:false}` to skip it (the metronome export), or `drawFrame(..., {gain})` to override it.
+
+### The preview
+
+```
+const pv = createPreview({canvas, program, plan, shots, song:{buffers, lady}, scale, avOffset});
+await pv.ready;
+pv.play(); pv.pause(); pv.toggle(); pv.seek(s); pv.scrub(s); pv.endScrub(); pv.step(±n);
+pv.setProgram(program);                 // another format: the same moment, re-laid out
+pv.setSong(plan, song, program);        // the voice arrived: the same moment in the new plan
+pv.on(({f, t, playing, stats, pool, cache}) => ...);
+```
+
+- **Clock:** `f = floor((position() + avOffset)·24)`. `StudioPerformance` is the engine's `Performance` able to start on any 16th, with the call's band-pass state set as if the song had played from the top. A seek restarts the sound on the 16th that holds it. A scrub moves the picture and the sound waits for the release.
+- **Element pool:** 8 slots on a desktop, 4 on a phone, each an A/B pair of `<video>` elements. The front plays its stream; the back prerolls the stream its slot plays next, one beat early (`program.decode.prefetch`). A playing element runs at the clip's rate, nudged by up to ±3 % toward the program's source time. It seeks only past 2 frames of error.
+  - Freezes, stills, tape-stepped and out-of-range rates pause the element and seek frame-exactly to `proxyTime`. Reverse plays the reversed proxy forwards.
+  - The pool uploads only when rVFC reports a new frame. `settled(f)` is true when every stream of frame f shows its exact proxy frame.
+- **Stutter cache:** frames the program will need again (stutters, holds, a stream shown in two tiles) are captured as ImageBitmaps as they pass, 25 MB at most, oldest first out.
+
+### The monitor
+
+`/videostudio/` (noindex): the draft cut over the sample post on the audio clock.
+
+- A format toggle: 9:16, 1:1 and 16:9, each re-laid out and recompiled.
+- Play and pause, a scrub bar in bars with the song's sections, the scenes as a cut list (click to jump), and every cut.
+- Readouts: bar:step, frame, time, section, layout, scene. The layers on screen, and the lint (click a finding to see its frame).
+- Keys: Space, ←/→ (frame), Shift+←/→ (beat), 1/2/3 (format), Home.
+- Query: `?format=16:9`, `?scale=.5`, `?av=-20` (ms) and `?f=960` (open on a frame).
+
+The page opens on a provisional plan, then re-arranges on Synergy's measured words once they load.
+
+### Checks
+
+`npm run check:compositor` (65 checks, about 50 s; `--out DIR` for the frames, `--quick`) runs Node, then headless Chromium on SwiftShader WebGL2:
+
+- the draft cut compiles clean in all three formats, and Pat and the lady are never footage
+- peg onsets land on `floor((t + .010)·24)`
+- cell edges, gutters and rounded corners, by pixel probes
+- every effect changes pixels the way the table says
+- the chrome
+- the board in its strip, a tile, over the frame, at true black and at the ignition
+- texImage2D on the same-origin forward and reversed proxies (frame N−1−k against frame k)
+- the stutter cache budget and the pool's exact frames
+- identical SHA-256 across two fresh pages, for synthetic frames and for the draft cut on real proxies
+- SwiftShader timings, for information only
+
+### Not yet
+
+- A seek-safe Droste uses the current frame for "the previous output frame"; true frame-to-frame feedback (datamosh) is not built.
+- Echo trails follow the transform only: the copies show the current source frame, not earlier ones.
+- Chrome is not masked by the iris, and it zooms with the camera (it is part of the call).
+- The department chart (OUTPUT BY DEPARTMENT) is not drawn in the film's boards.
+- Context loss is not handled (the board's 2D fallback does not apply inside the compositor).
+
+## Export
+
+The film to an MP4, offline and frame-exact, from the same frame program the monitor plays. The same EDL, plan, shots and song give the same samples, the same frames and the same bytes.
+
+| File | Role |
+| --- | --- |
+| `render/export.js` | `exportFilm()`, `exportSupport()`, `captions()`, `master48k()`, `planJSON()`, `sha256()`, `exportName()`; `VIDEO`, `AUDIO`. |
+| `media/decoder.js` | `demux()` (ISO BMFF sample tables), `createFrameDecoder()` (WebCodecs `VideoDecoder`, GOP at a time, a cache sized by the program), `layerStream()`, `frameLedger()`. |
+| `treatments/drop60-draft.js` | `drop60Draft(plan, shots, {format})`: plan §2 as an EDL treatment, the default cut on `/videostudio/`. `ROWS` (row by row: done, stand-in, partial, skipped), `CAST`, `SCENE_LABELS`. |
+| `scripts/export-videostudio.mjs` | `npm run export:videostudio -- --format 9:16`: the page's Download MP4 in headless Chromium, to a file. |
+| `scripts/check-videostudio-export.mjs` | `npm run check:export`: the P3 gates on real exported files. |
+
+### Calling it
+
+```
+const out = await exportFilm({edl, plan, shots, song:{buffers, lady}, format, scale:1, master:false, span:[from, to],
+                              audio:'render', governor:true, onProgress, signal});
+out.mp4      Uint8Array          out.vtt   captions.vtt          out.sidecar   the JSON sidecar
+out.program  the program it drew out.pcm   the 48 kHz master it encoded
+```
+
+1. **Sound.** `engine.render(plan, buffers, {tune:{stems:true}}, lady)`: master on channels 0-1, the six stems on 2-7. For a span only the bars it needs are rendered, with a bar of run-up. The master is resampled to 48 kHz by the browser's sinc resampler (`decodeAudioData` of a float WAV) and cut so sample 0 of the file is song time `from / 24`: exactly 2,000 samples a frame.
+2. **Features.** `buildFeatures(plan, render)` (stem levels, the kick, `eqTrack`), then `compile()` again with them, so every bound parameter (speaking borders, binds) follows the real mix. Lint errors block the export; `force:true` exports a draft anyway.
+3. **Picture.** For f = from…to−1: `decoder.prepare(f)` decodes exactly the source frames the frame shows; `drawFrame()`; `new VideoFrame(canvas, {timestamp:(f − from)/24 s})`; `encode()`; close. `encodeQueueSize` above 2 waits on `dequeue`. A keyframe every 48 frames.
+4. **File.** `mp4-muxer`, moov first (`fastStart:'in-memory'`), video timescale 24 (one tick a frame, CFR), audio timescale 48,000.
+
+| | |
+| --- | --- |
+| Video | H.264 High `avc1.640028`, 1080×1920, 1080×1080 or 1920×1080 (`scale` for proxies of the size), 24 fps CFR, 8 Mbps VBR, 24 Mbps with `master:true` |
+| Sound | AAC-LC `mp4a.40.2` 48 kHz stereo 256k where `AudioEncoder` has it, else Opus 48 kHz 256k in the MP4 (`exportSupport()` says which; the page says so). Headless Chromium has no AAC encoder. Opus pre-skip (312 samples) is in the `dOps` box, so decoders line the sound up with the picture. |
+| Captions | `captions(plan)`: WebVTT, `<v Synergy>` for every sung line and `<v Circle Back>` for her phrases, timed by the plan; a retriggered phrase is one cue. Sentence case, no em dashes. |
+| Sidecar | `{kind, film:{form, track, format, width, height, span, frames, seconds, planDuration}, video, audio:{codec, fallback, preSkip}, hashes:{edl (sha256 of the canonical EDL), plan (sha256 of planJSON), program (compile's FNV-64), mp4}, lint, stats:{seconds, msPerFrame, split, decoder, frames (the ledger), memory}, edl}` |
+
+`onProgress({phase:'audio'|'sound'|'picture'|'finishing'|'done', frame, frames, fraction, msPerFrame, eta, elapsed})`. `signal` (an `AbortController`'s) cancels between frames; everything is closed on the way out.
+
+### The decoder
+
+- `layerStream(layer, shot)`: a forward layer reads the 540p proxy at `srcFrame`; a reversed one reads the reversed proxy at `proxyFrame` (no backwards decode, ever); without a proxy, the master at `srcFrame`.
+- Proxies are GOP 12 with no B-frames: a missing frame decodes its whole GOP (12 chunks, then `flush()`), and every output `VideoFrame` is copied out (`copyTo`, I420 at 540p is 0.78 MB) and closed inside the output callback. `source(layer)` wraps the copy in a fresh `VideoFrame` for `drawFrame`; `release(f)` closes it after the draw.
+- The cache is sized by the program: every frame's keys (stream, proxy frame) are known before the first decode, so an entry stays only while its next use is within `horizon` output frames (24, two beats at 120 BPM). Stutters, holds, canon tiles and 0.5× plates decode once; nothing is decoded the program does not show. Streams close after their last frame.
+- `frameLedger()` counts every `VideoFrame` opened and closed, by kind (`decoded`, `source`, `canvas`); `live` must end at 0.
+- `demux(arrayBuffer)` reads moov (stsd avcC/hvcC, stts, ctts, stss, stsz, stsc, stco/co64) into samples in decode order with display indexes; enough for any faststart H.264 file.
+
+### The monitor's Download MP4
+
+`/videostudio/` has an Export block: one button per format (each a re-layout, never a crop), Master for 24 Mbps, a progress bar with the frame count and time left, Cancel, then links to the captions and the sidecar. The preview pauses while it exports. It waits until Synergy's voice and the lady are loaded, so the file has the whole song.
+
+### Headless
+
+```
+node scripts/export-videostudio.mjs --format 9:16 [--scale .5] [--span 936-1008] [--edl draft|studio|metronome|file.json]
+    [--track hustle] [--master] [--no-audio] [--out DIR] [--name NAME] [--url http://127.0.0.1:5351 | --port N]
+```
+
+Without `--url` it starts its own Vite dev server (the project's config, so the media and voice routes are there) on `--port` (default: any free port) with its own dependency cache (`VIDEOSTUDIO_VITE_CACHE`, default under the OS temp dir), so it never re-optimises under another dev server. It exposes `studioServer()`, `launch()`, `exportPage()`, `runExport()`, `pull()` and `saveExport()` for scripts.
+
+### The gates
+
+`npm run check:export` (`--quick` for shorter spans, `--node` for the Node part only, `--keep DIR` keeps the files):
+
+1. Node: the demuxer against the proxies on disk and ffprobe; captions; the draft cut clean in all three formats and byte-stable; one assertion per row of plan §2 it implements.
+2. Metronome: `metronomeEDL()` exported full length at 120 BPM (Circle Back) and 130 BPM (Hustle, where a step is 2.77 frames), with a click on every cut. `ffmpeg scdet` must find every cut on its `round(T·24)` frame and nothing else; every click within 1.5 ms of its step.
+3. Flash plus click: white flashes and clicks on chosen steps (on-frame beats, swung off-beats, and 130 BPM steps whose frame starts at or before the sound). In the file, measured from ffmpeg's decoded picture and sound, the picture leads by 0-25 ms and is never late; the pipeline adds less than 1 ms to the lead the frame grid gives.
+4. Determinism: the same span of the draft cut (the choke, true black, the ignition, stack3) exported twice in fresh pages. Every composited frame's RGBA SHA-256 (`hashFrames`) is identical and the sound's `ffmpeg -f framemd5` is identical. The decoded picture's framemd5 is identical wherever the encoder had nothing to decide and within 45 dB PSNR elsewhere: Chromium's software H.264 encoder is not bit-reproducible above about 720 lines (three encodes of the same synthetic frames give one stream at 270×480 and 404×720, three at 540×960 and 1080×1920), so neither are the MP4 bytes at the share sizes.
+5. Leaks and memory: every `VideoFrame` opened is closed; across Drop B the heap stays level and the frame cache empties at the end.
+6. Duration: the video and audio tracks are within a frame of the film's 60.000 s. `plan.duration` is 0.6 s longer: the render's tail, which a loop film drops.
+
+### Not yet
+
+- The proxies are 540p, so a full 1080×1920 export upscales them; a master decode path (`media:'master'`) exists for files with proxies missing but is not used for quality yet.
+- Opus, not AAC, wherever the browser lacks an AAC encoder (headless Chromium here). No 24-bit stems file yet; the stems are in the render the export makes.
+- Bit-reproducible files need a reproducible encoder: the WebCodecs H.264 encoder is not, and `engine.render()` is not either (its drums, keys and voice stems differ between renders by about -77 dBFS; the dry bass matches), so a full export's sound matches only up to the song engine. The export's own stages (decode, composite, resample, Opus) are reproducible.
+- SwiftShader only (CPU-emulated GL, on a shared 4-core machine): 0.7 s a frame at 1080×1920 for a G9 span with the machine quiet, 2.3 s a frame for the whole film under load (56 min), 90 to 210 ms a frame at 270×480. The compositor's GPU work lands in the encode step (the canvas is read back when the encoder takes the frame). Real GPUs and the plan's 40 s budget are untested.
+- Cancel takes effect between frames; the sound render (about 80 s for the whole song here) runs to the end first.
+- No presigned upload.

@@ -4,11 +4,21 @@
 // always light the same pegs, so preview, scrubbing and export agree.
 //
 // Times are song seconds (plan.timing[step]); renders add their own offset.
+// Song book tracks have their own tempo: a plan's 16th is plan.step and its
+// landmarks are plan.marks (Circle Back's values when a plan has none). The
+// reveal animations below keep their own clock in seconds.
 import {clearBoard, light, PALETTE} from './board.js';
 
 const STEP = .125, BEAT = .5;
 const FRAME = 1 / 24;
-const T = (plan, step) => plan.timing[Math.max(0, Math.min(plan.timing.length - 1, Math.floor(step)))] + (step % 1) * STEP;
+const stepOf = plan => plan.step ?? STEP;
+const T = (plan, step) => plan.timing[Math.max(0, Math.min(plan.timing.length - 1, Math.floor(step)))] + (step % 1) * stepOf(plan);
+const CIRCLE_BACK_MARKS = {build:12 * 16, rise:16 * 16, sink:23 * 16, sinkEnd:24 * 16};
+const marksOf = plan => plan.marks ?? CIRCLE_BACK_MARKS;
+// A ladder hit's look follows its retrigger rate (16ths until the next hit):
+// one per bar, per half, quarter, eighth, sixteenth, thirty-second. Circle
+// Back's eight rungs map onto the same looks they always had.
+const ladderLook = e => e.period === undefined ? e.rung : e.period >= 16 ? 0 : e.period >= 8 ? 2 : e.period >= 4 ? 4 : e.period >= 2 ? 5 : e.period >= 1 ? 6 : 7;
 
 // Seeded per-peg randomness: the same peg always gets the same number.
 function hash2(x, y, salt = 0) {
@@ -36,7 +46,7 @@ export function syllableSpans(display, count) {
 
 function wordsOfLine(plan, line, half) {
   return line.words.filter(w => !!w.repeat === half).map(w => {
-    const start = T(plan, w.at), end = start + Math.min(w.gate, w.steps * STEP);
+    const start = T(plan, w.at), end = start + Math.min(w.gate, w.steps * stepOf(plan));
     const spans = syllableSpans(w.display, w.notes.length);
     return {text:w.display, start, end, units:spans.map(([a, b], i) => ({chars:[a, b], start:T(plan, w.notes[i]?.at ?? w.at)}))};
   });
@@ -60,7 +70,7 @@ function ladyWords(plan, e, table) {
 const STYLE = {host:'typewriter', verse:'scanline', hook:'wipe', answer:'pop', repeat:'pop'};
 
 export function buildScreens(plan, {table} = {}) {
-  const screens = [], drop = plan.form === 'drop60', section = t => plan.sections.find(s => t >= T(plan, s.from * 16) && t < T(plan, s.to * 16))?.name;
+  const screens = [], drop = plan.form === 'drop60', section = t => plan.sections.find(s => t >= T(plan, s.from * 16) && t < T(plan, s.to * 16))?.name, step = stepOf(plan);
   const add = s => { screens.push({k:1, tone:'blue', release:'cut', fx:{}, ...s}); };
   for (const line of plan.lines) {
     for (const half of [false, true]) {
@@ -77,7 +87,7 @@ export function buildScreens(plan, {table} = {}) {
   // Words Synergy sings outside a line (his answers in the build).
   for (const w of plan.words.filter(x => x.line === -1)) {
     const start = T(plan, w.at);
-    add({kind:'answer', voice:'synergy', from:start, to:start + w.steps * STEP, text:w.display, words:[{text:w.display, start, end:start + w.gate, units:[{chars:[0, w.display.length], start}]}], reveal:'pop', tone:'white', k:1});
+    add({kind:'answer', voice:'synergy', from:start, to:start + w.steps * step, text:w.display, words:[{text:w.display, start, end:start + w.gate, units:[{chars:[0, w.display.length], start}]}], reveal:'pop', tone:'white', k:1});
   }
   // His stammer: the first three letters and a dash, on its own 16th. Where the
   // lady's ladder owns the board (the drop's bar 18) it is heard, not shown.
@@ -85,30 +95,32 @@ export function buildScreens(plan, {table} = {}) {
   for (const s of plan.stutters) {
     if (ladderSteps.has(Math.floor(s.at / 16))) continue;
     const start = T(plan, s.at), text = s.word.split(' ')[0].slice(0, 3).toUpperCase() + '-';
-    add({kind:'stammer', voice:'synergy', from:start, to:start + STEP, text, words:[{text, start, end:start + STEP * .9, units:[{chars:[0, text.length], start}]}], reveal:'pop', tone:'white', k:drop ? 2 : 1});
+    add({kind:'stammer', voice:'synergy', from:start, to:start + step, text, words:[{text, start, end:start + step * .9, units:[{chars:[0, text.length], start}]}], reveal:'pop', tone:'white', k:drop ? 2 : 1});
   }
   // The lady.
   for (const e of plan.lady || []) {
     const words = ladyWords(plan, e, table), t0 = T(plan, e.at);
-    const base = {kind:e.role, voice:'lady', from:t0, to:t0 + Math.max(e.gate, STEP), text:e.display, words, accent:-1, tone:'white', reveal:'pop', k:1};
+    const base = {kind:e.role, voice:'lady', from:t0, to:t0 + Math.max(e.gate, step), text:e.display, words, accent:-1, tone:'white', reveal:'pop', k:1};
     if (e.role === 'ladder') {
       // The visual ladder is the audio ladder: each retrigger re-cuts the board.
       // Up to two pops a second are fine; from the quarter-note rung on, a
       // retrigger moves the letters (a row shift, a size kick) instead of
       // flashing them, so the climax never strobes.
-      const r = e.rung, k = [1, 1, 1, 1, 2, 3, 3, 4][r] ?? 1;
+      const r = ladderLook(e), k = [1, 1, 1, 1, 2, 3, 3, 4][r] ?? 1;
       add({...base, reveal:r < 2 ? 'typewriter' : r < 4 ? 'pop' : 'steady', k, tone:r >= 2 && r < 4 && Math.round(e.at * 2) % 4 >= 2 ? 'white' : 'blue',
         fx:{rowShift:r >= 4 ? [0, -1, 0, 1][Math.round(e.at * 2) % 4] : 0, sparkle:r === 7 ? clamp((e.at % 16) / 8) : 0}});
     } else if (e.role === 'tag') add({...base, reveal:'typewriter', tone:'white', sockets:0});
     else if (e.role === 'impact') add({...base, to:t0 + 2.6 * BEAT, reveal:'centre', k:3, tone:'white', fx:{outline:true}, ignite:true});
-    else if (e.role === 'sink') add({...base, to:T(plan, 24 * 16), reveal:'sparkle', k:2, tone:'deep', fx:{slow:true, tape:true}});
+    else if (e.role === 'sink') add({...base, to:T(plan, marksOf(plan).sinkEnd), reveal:'sparkle', k:2, tone:'deep', fx:{slow:true, tape:true}});
     else if (e.role === 'stop') add({...base, to:t0 + 1.2, reveal:'typewriter', tone:'white', fx:{stop:true}});
     else add({...base, fx:e.bend ? {detune:e.bend.cents} : e.lift ? {lift:true} : {}});
   }
   // The muted intro: YOU'RE ON MUTE, then the tease of the drop that comes later.
+  // It ends on the unmute (Circle Back's 16th 32; a track's own plan.call.until).
   if (drop) {
-    add({kind:'title', voice:'board', from:T(plan, 8), to:T(plan, 28), text:"YOU'RE ON MUTE", words:[{text:"YOU'RE", start:T(plan, 8), end:T(plan, 28), units:[{chars:[0, 6], start:T(plan, 8)}]}, {text:'ON', start:T(plan, 10), end:T(plan, 28), units:[{chars:[0, 2], start:T(plan, 10)}]}, {text:'MUTE', start:T(plan, 12), end:T(plan, 28), units:[{chars:[0, 4], start:T(plan, 12)}]}], reveal:'typewriter', tone:'white', release:'cut'});
-    add({kind:'tease', voice:'board', from:T(plan, 28), to:T(plan, 32), text:'BA', words:[{text:'BA', start:T(plan, 28), end:T(plan, 32), units:[{chars:[0, 1], start:T(plan, 28)}, {chars:[1, 2], start:T(plan, 30)}]}], reveal:'pop', k:3, tone:'blue'});
+    const u = plan.call?.until ?? 32, a = Math.max(2, u - 24), z = u - 4;
+    add({kind:'title', voice:'board', from:T(plan, a), to:T(plan, z), text:"YOU'RE ON MUTE", words:[{text:"YOU'RE", start:T(plan, a), end:T(plan, z), units:[{chars:[0, 6], start:T(plan, a)}]}, {text:'ON', start:T(plan, a + 2), end:T(plan, z), units:[{chars:[0, 2], start:T(plan, a + 2)}]}, {text:'MUTE', start:T(plan, a + 4), end:T(plan, z), units:[{chars:[0, 4], start:T(plan, a + 4)}]}], reveal:'typewriter', tone:'white', release:'cut'});
+    add({kind:'tease', voice:'board', from:T(plan, z), to:T(plan, u), text:'BA', words:[{text:'BA', start:T(plan, z), end:T(plan, u), units:[{chars:[0, 1], start:T(plan, z)}, {chars:[1, 2], start:T(plan, z + 2)}]}], reveal:'pop', k:3, tone:'blue'});
   }
   screens.sort((a, b) => a.from - b.from);
   // One screen at a time: a screen ends when the next begins. Synergy's lines
@@ -134,11 +146,12 @@ export function boardState(plan, t) {
     state.sockets = clamp(t / BEAT);
     return state;
   }
-  const choke = T(plan, plan.choke.at), impact = T(plan, plan.choke.until), sinkFrom = T(plan, 23 * 16), sinkTo = T(plan, 24 * 16);
+  const m = marksOf(plan), choke = T(plan, plan.choke.at), impact = T(plan, plan.choke.until), sinkFrom = T(plan, m.sink), sinkTo = T(plan, m.sinkEnd);
+  const build = T(plan, m.build), rise = T(plan, m.rise), dark = plan.choke.dark ?? choke + .49;
   state.sockets = clamp(t / BEAT);                                        // power on over 1 beat
-  if (t >= T(plan, 12 * 16) && t < T(plan, 16 * 16)) state.exposure = .55;  // the build starts dim
-  else if (t >= T(plan, 16 * 16) && t < choke) state.exposure = .55 + .45 * clamp((t - T(plan, 16 * 16)) / (choke - T(plan, 16 * 16)));
-  if (t >= choke + .49 && t < impact) { state.sockets = 0; state.exposure = 0; }   // true black
+  if (t >= build && t < rise) state.exposure = .55;                       // the build starts dim
+  else if (t >= rise && t < choke) state.exposure = .55 + .45 * clamp((t - rise) / (choke - rise));
+  if (t >= dark && t < impact) { state.sockets = 0; state.exposure = 0; }   // true black, once her tag has ended
   if (t >= impact && t < impact + 2.6 * BEAT) state.ignite = t - impact;
   if (t >= sinkFrom && t < sinkTo) state.bloom = 1.6;
   const stop = plan.tape?.find(x => x.kind === 'stop');

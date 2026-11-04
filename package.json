@@ -26,7 +26,16 @@
     "check:pixel": "node scripts/check-pixel-export.mjs",
     "check:pixel-type": "node scripts/check-pixel-type.mjs",
     "check:eq": "node scripts/check-eq.mjs",
-    "check:pegboard": "node scripts/check-pegboard.mjs"
+    "check:pegboard": "node scripts/check-pegboard.mjs",
+    "check:songbook": "node scripts/check-songbook.mjs",
+    "check:casting": "node scripts/check-casting.mjs",
+    "check:review-audio": "node scripts/check-review-audio.mjs",
+    "check:review-video": "node scripts/check-review-video.mjs",
+    "check:shots": "node scripts/check-shot-index.mjs",
+    "check:videostudio": "node scripts/check-videostudio.mjs",
+    "check:compositor": "node scripts/check-compositor.mjs",
+    "check:export": "node scripts/check-videostudio-export.mjs",
+    "export:videostudio": "node scripts/export-videostudio.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1153.0",

@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="theme-color" content="#0a0a0b"/>
+<meta name="robots" content="noindex, nofollow"/>
+<title>Video Studio · Monitor · LinkedIn Beats</title>
+<meta name="description" content="The All Hands film on the audio clock, composited frame for frame. Draft cut, not for circulation."/>
+<link rel="icon" type="image/svg+xml" href="/home-2/brand/favicon.svg?v=brand-20261022"/>
+</head>
+<body>
+<header class="vs-top">
+  <a href="/" class="vs-mark">linkedinbeats<span>_</span></a>
+  <span class="vs-crumb">Video Studio <i>/</i> Monitor 01</span>
+  <span class="vs-proof">Draft cut <b>Not for circulation</b></span>
+</header>
+
+<main class="vs-main">
+  <section class="vs-monitor" aria-label="Monitor">
+    <div class="vs-screen" data-screen>
+      <canvas data-canvas aria-label="The composited film"></canvas>
+      <div class="vs-veil" data-veil><span>Connecting to the call</span></div>
+      <span class="vs-cue" aria-hidden="true"></span>
+    </div>
+    <div class="vs-screen-meta">
+      <span data-spec>9:16 · 1080 × 1920 · 24 fps</span>
+      <span data-perf></span>
+    </div>
+  </section>
+
+  <aside class="vs-panel">
+    <div class="vs-title">
+      <span class="vs-kicker">Drop Edition 60 · Draft cut</span>
+      <h1>Circle Back</h1>
+      <p>The film on the audio clock, composited the way it exports. Every cut lands on its frame; every peg lights before its&nbsp;sound.</p>
+    </div>
+
+    <div class="vs-transport">
+      <button class="vs-play" data-play type="button" aria-label="Play" disabled><i aria-hidden="true"></i><span>Play</span></button>
+      <div class="vs-seg" role="group" aria-label="Format" data-formats>
+        <button type="button" data-format="9:16" aria-pressed="true">9:16</button>
+        <button type="button" data-format="1:1" aria-pressed="false">1:1</button>
+        <button type="button" data-format="16:9" aria-pressed="false">16:9</button>
+      </div>
+    </div>
+    <p class="vs-status" data-status role="status">Tuning Synergy</p>
+
+    <section class="vs-block vs-export" aria-label="Export">
+      <header><h2>Export</h2><span data-export-spec>H.264 · 24 fps · 8 Mbps</span></header>
+      <div class="vs-export-formats" data-export-formats>
+        <button type="button" data-export="9:16" disabled><b>9:16</b><small>Download MP4</small></button>
+        <button type="button" data-export="1:1" disabled><b>1:1</b><small>Download MP4</small></button>
+        <button type="button" data-export="16:9" disabled><b>16:9</b><small>Download MP4</small></button>
+      </div>
+      <label class="vs-export-master"><input type="checkbox" data-export-master/><span>Master</span><small>24 Mbps for the edit suite</small></label>
+      <div class="vs-export-progress" data-export-progress hidden>
+        <div class="vs-export-bar"><i data-export-fill></i></div>
+        <p><span data-export-phase></span><span data-export-eta></span><button type="button" data-export-cancel>Cancel</button></p>
+      </div>
+      <p class="vs-export-files" data-export-files hidden></p>
+      <p class="vs-export-note" data-export-note></p>
+    </section>
+
+    <dl class="vs-readout">
+      <div><dt>Bar</dt><dd data-bar>00:00</dd></div>
+      <div><dt>Frame</dt><dd data-frame>0000</dd></div>
+      <div><dt>Time</dt><dd data-time>00:00.000</dd></div>
+      <div><dt>Section</dt><dd data-section>Intro</dd></div>
+      <div><dt>Layout</dt><dd data-layout>full</dd></div>
+      <div><dt>Scene</dt><dd data-scene>Cold open</dd></div>
+    </dl>
+
+    <section class="vs-block">
+      <header><h2>On screen</h2><span data-layer-count></span></header>
+      <ol class="vs-layers" data-layers></ol>
+    </section>
+
+    <section class="vs-block">
+      <header><h2>Lint</h2><span data-lint-count></span></header>
+      <ol class="vs-lint" data-lint></ol>
+    </section>
+  </aside>
+
+  <section class="vs-timeline" aria-label="Timeline">
+    <div class="vs-track" data-track>
+      <div class="vs-sections" data-sections></div>
+      <div class="vs-ruler" data-ruler></div>
+      <div class="vs-scenes" data-scenes></div>
+      <div class="vs-cuts" data-cuts></div>
+      <div class="vs-head" data-head><i></i></div>
+    </div>
+    <p class="vs-keys"><kbd>Space</kbd> play <kbd>←</kbd><kbd>→</kbd> frame <kbd>Shift</kbd> beat <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> format <kbd>Home</kbd> top</p>
+  </section>
+</main>
+<script type="module" src="/src/videostudio/main.js"></script>
+</body>
+</html>

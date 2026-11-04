@@ -1,12 +1,28 @@
-// The songs a post can become. Each form arranges the same lyrics and voice.
-import {arrange, voicedWords, SECTIONS} from './song.js';
+// The songs a post can become. A form is a structure (the Drop Edition, the
+// sound check); a track is the song that performs it (songbook/). Each form
+// arranges the same lyrics and voice.
+import {arrange, voicedWords, SECTIONS, BAR_STEPS} from './song.js';
 import {arrangeDrop, dropVoicedWords, DROP_SECTIONS} from './drop.js';
+import {trackOf, DEFAULT_TRACK} from './songbook/index.js';
+
+// Sound check 00 is Circle Back's rehearsal: the original 28 bars, only in that song.
+function soundcheck(lyrics, durations, options = {}) {
+  const track = trackOf(options.track);
+  if (track.id !== DEFAULT_TRACK) throw Error(`Sound check 00 is ${trackOf(DEFAULT_TRACK).title}'s form. ${track.title} plays the Drop Edition.`);
+  const plan = arrange(lyrics, durations), kicks = [];
+  plan.bars.forEach(b => track.kicksOf(b.index, b.layers).forEach(s => kicks.push(b.index * BAR_STEPS + s)));
+  if (plan.finale) kicks.push(plan.totalSteps);
+  return Object.assign(plan, {track:track.id, trackTitle:track.title, kicks});
+}
 
 export const FORMS = {
-  drop60:{id:'drop60', title:'Drop edition', note:'60 s · the lady builds, the room drops', arrange:arrangeDrop, voiced:dropVoicedWords, sections:DROP_SECTIONS},
-  soundcheck:{id:'soundcheck', title:'Sound check 00', note:'56 s · the original band', arrange, voiced:voicedWords, sections:SECTIONS},
+  drop60:{id:'drop60', title:'Drop edition', note:'60 s · the lady builds, the room drops', arrange:arrangeDrop, voiced:dropVoicedWords, sections:DROP_SECTIONS,
+    tracks:null, sectionsOf:track => trackOf(track).drop.sections},
+  soundcheck:{id:'soundcheck', title:'Sound check 00', note:'56 s · the original band', arrange:soundcheck, voiced:(lyrics, options) => voicedWords(lyrics), sections:SECTIONS,
+    tracks:[DEFAULT_TRACK], sectionsOf:() => SECTIONS},
 };
 export const DEFAULT_FORM = 'drop60';
+export const formPlays = (form, track) => !FORMS[form].tracks || FORMS[form].tracks.includes(trackOf(track).id);
 
 // The 16th that contains a moment, from the plan's swing-aware timing table.
 export function stepAt(plan, seconds) {

@@ -1,19 +1,20 @@
 // One arrangement, two clocks: the live AudioContext and the offline render
 // share buildGraph() and scheduleStep(), so the download is the performance.
+// The plan names its song book track (plan.track); the track supplies the band
+// (songbook/*.js band.step), the mix and the 16th. A plan without one is Circle Back.
 //
 // Master chain:  stems + returns → master → call | full (muted intro)
 //   → section energy → choke → tape (varispeed delay line) → glue → limiter
 //   → soft clip → out.   Post-choke: the tag.   Post-tape: the deep voice.
-import {BAR_STEPS, PATTERNS, hatVelocity, shakerVelocity, STEP} from './song.js';
+import {BAR_STEPS} from './song.js';
 import * as I from './instruments.js';
+import {trackOf} from './songbook/index.js';
 import {createVocoder} from './vocoder.js';
 import {createMobileAudio} from '../audio-session.js';
 import {truePeakLimit} from './master.js';
 
 export const STEMS = ['drums', 'bass', 'keys', 'guitar', 'voice', 'lady'];
 export const VOICE_MODES = {sung:{vocoder:1, dry:.06}, spoken:{vocoder:0, dry:.9}, both:{vocoder:.85, dry:.42}};
-// Section energy before the bus compressor: the drops have somewhere to go.
-const ENERGY = {Intro:.46, Verse:.45, Build:.56, 'Drop A':1, 'Sink In':.85, 'Drop B':1, Outro:.55};
 const dB = x => 10 ** (x / 20);
 
 function stem(ctx, master, sends, {duck = 0, under = 1, reverb = 0, delay = 0, level = 1, pan = 0, haas = 0} = {}) {
@@ -41,7 +42,9 @@ function softClip(ctx) {
   return clip;
 }
 
-export function buildGraph(ctx, {mode = 'sung', muted = {}, tune = {}} = {}) {
+// plan: the song to be played (its track decides the mix); omitted, Circle Back.
+export function buildGraph(ctx, {mode = 'sung', muted = {}, tune = {}} = {}, plan) {
+  const track = trackOf(plan?.track), mix = track.mix, STEP = plan?.step ?? track.step;
   const master = I.amp(ctx, 1);
   // The muted intro: the band heard through a call, band-limited, mono, crushed.
   const full = I.amp(ctx, 1), call = I.amp(ctx, 0), callHp = I.biquad(ctx, 'highpass', 300, .7), callLp = I.biquad(ctx, 'lowpass', 3400, .7);
@@ -65,11 +68,11 @@ export function buildGraph(ctx, {mode = 'sung', muted = {}, tune = {}} = {}) {
   glue.threshold.value = -10; glue.ratio.value = 2; glue.knee.value = 6; glue.attack.value = .03; glue.release.value = .16;
   const limiter = ctx.createDynamicsCompressor();
   limiter.threshold.value = -3; limiter.ratio.value = 20; limiter.knee.value = 0; limiter.attack.value = .001; limiter.release.value = .09;
-  const output = I.amp(ctx, tune.output ?? 1.25), analyser = ctx.createAnalyser();
+  const output = I.amp(ctx, tune.output ?? mix.output ?? 1.25), analyser = ctx.createAnalyser();
   analyser.fftSize = 1024; analyser.smoothingTimeConstant = .72;
   // tune.raw skips the bus compressor and limiter, for measuring stem balance.
   // Trim: the drop should arrive just under the limiter, not deep into it.
-  const trim = I.amp(ctx, tune.trim ?? .4); post.connect(trim);
+  const trim = I.amp(ctx, tune.trim ?? mix.trim ?? .4); post.connect(trim);
   if (tune.raw) trim.connect(output); else { trim.connect(glue); glue.connect(limiter); limiter.connect(output); }
   const clip = softClip(ctx);
   const eqAnalyser = ctx.createAnalyser(); eqAnalyser.fftSize = 4096; eqAnalyser.smoothingTimeConstant = 0;
@@ -85,7 +88,7 @@ export function buildGraph(ctx, {mode = 'sung', muted = {}, tune = {}} = {}) {
     clip.connect(stereo); stereo.connect(split); split.connect(merger, 0, 0); split.connect(merger, 1, 1); merger.connect(ctx.destination);
   } else clip.connect(ctx.destination);
 
-  const reverb = ctx.createConvolver(); reverb.buffer = I.impulse(ctx);
+  const reverb = ctx.createConvolver(); reverb.buffer = mix.room ? I.impulse(ctx, ...mix.room) : I.impulse(ctx);
   const reverbIn = I.biquad(ctx, 'highpass', 280), reverbOut = I.amp(ctx, .55);
   reverbIn.connect(reverb); reverb.connect(reverbOut); reverbOut.connect(master);
   const delayIn = I.biquad(ctx, 'highpass', 350), delay = ctx.createDelay(2), feedback = I.amp(ctx, .34), damp = I.biquad(ctx, 'lowpass', 3200), delayOut = I.amp(ctx, .5);
@@ -94,18 +97,18 @@ export function buildGraph(ctx, {mode = 'sung', muted = {}, tune = {}} = {}) {
   const sends = {reverb:reverbIn, delay:delayIn};
 
   const stems = {
-    drums:stem(ctx, master, sends, {reverb:.12, level:1}),
-    bass:stem(ctx, master, sends, {duck:.12, level:.55}),
-    keys:stem(ctx, master, sends, {duck:.28, under:.6, reverb:.38, delay:.16, level:2.3, haas:16}),
-    guitar:stem(ctx, master, sends, {duck:.45, under:.6, reverb:.2, delay:.1, level:7, haas:18}),
-    voice:stem(ctx, master, sends, {duck:.88, reverb:.2, delay:.24, level:1.35}),
-    lady:stem(ctx, master, sends, {reverb:.16, delay:.12, level:tune.ladyLevel ?? 1.1}),
+    drums:stem(ctx, master, sends, mix.stems.drums),
+    bass:stem(ctx, master, sends, mix.stems.bass),
+    keys:stem(ctx, master, sends, mix.stems.keys),
+    guitar:stem(ctx, master, sends, mix.stems.guitar),
+    voice:stem(ctx, master, sends, mix.stems.voice),
+    lady:stem(ctx, master, sends, {...mix.stems.lady, level:tune.ladyLevel ?? mix.stems.lady.level ?? 1.1}),
   };
   // Drum-bus high-pass for the build; Synergy's answer filter in the build.
   const drumHp = I.biquad(ctx, 'highpass', 20, .7); drumHp.connect(stems.drums.input);
   // Stabs and pad stay out of the bass's way: everything under ~200 Hz belongs to Pat.
   const keysFilter = I.biquad(ctx, 'lowpass', 3000, .9), padFilter = I.biquad(ctx, 'lowpass', 1100, .8);
-  const keysHp = I.biquad(ctx, 'highpass', 210, .6), padHp = I.biquad(ctx, 'highpass', 180, .6);
+  const keysHp = I.biquad(ctx, 'highpass', mix.keysHp ?? 210, .6), padHp = I.biquad(ctx, 'highpass', 180, .6);
   keysFilter.connect(keysHp); keysHp.connect(stems.keys.input); padFilter.connect(padHp); padHp.connect(stems.keys.input);
 
   // Synergy: speech into the vocoder; a saw choir as the carrier.
@@ -142,7 +145,7 @@ export function buildGraph(ctx, {mode = 'sung', muted = {}, tune = {}} = {}) {
   const eqSource = {...eqTap, lady:ladyEq};
   const spectra = Object.fromEntries(STEMS.map(name => { const a = ctx.createAnalyser(); a.fftSize = 2048; a.smoothingTimeConstant = 0; eqSource[name].connect(a); return [name, a]; }));
   if (merger) STEMS.forEach((name, i) => eqSource[name].connect(merger, 0, 2 + i));
-  const graph = {ctx, master, output, analyser, eqAnalyser, eqTap, spectra, stems, keysFilter, padFilter, drumHp, voiceLp, words, dry, sung, vocoder, ladySend, lead, harmony, oscillators, sources:new Set(),
+  const graph = {ctx, track, master, output, analyser, eqAnalyser, eqTap, spectra, stems, keysFilter, padFilter, drumHp, voiceLp, words, dry, sung, vocoder, ladySend, lead, harmony, oscillators, sources:new Set(),
     full, call, callGap, energy, choke, tag, deep, tapeDry, tapeWet, tapeDelay, tapeLp, reverbOut, delayOut, feedback};
   if (tune.voiceLevel) stems.voice.out.gain.value = tune.voiceLevel;
   if (tune.under !== undefined) ['keys', 'guitar'].forEach(n => { stems[n].under = tune.under; });
@@ -162,20 +165,23 @@ export function setVoiceMode(graph, mode) {
 
 // Index the plan's events by step, once. `lady` holds decoded files and baked deep takes.
 export function prepare(plan, buffers, lady = {files:new Map(), deep:new Map()}) {
+  const track = trackOf(plan.track), step = plan.step ?? track.step;
   const at = new Map(), push = (step, key, value) => { if (!at.has(step)) at.set(step, {words:[], notes:[], stutters:[], lady:[]}); at.get(step)[key].push(value); };
   plan.words.forEach(w => { if (buffers.get(w.word)) push(w.at, 'words', w); w.notes.forEach(n => push(n.at, 'notes', n)); });
   plan.stutters.forEach(s => { if (buffers.get(s.word)) push(s.at, 'stutters', s); });
   (plan.lady || []).forEach((e, i) => { if (lady.files.get(e.file)) push(Math.floor(e.at), 'lady', {...e, index:i}); });
   const harmonyBars = new Set(plan.words.filter(w => w.harmony).map(w => Math.floor(w.at / BAR_STEPS)));
-  return {plan, buffers, lady, at, harmonyBars};
+  return {plan, buffers, lady, at, harmonyBars, track, step};
 }
 
-function duck(graph, t) {
+// The kick's sidechain. A track may pump harder (depth per stem, release time
+// constant) for its own sections: duck(graph, t, {bass:.05, keys:.2}, .11).
+function duck(graph, t, depth, release = graph.track.mix.duckRelease ?? .075) {
   for (const name of STEMS) {
-    const s = graph.stems[name];
-    if (!s.duck) continue;
+    const s = graph.stems[name], d = depth?.[name] ?? s.duck;
+    if (!d) continue;
     const g = s.ducker.gain;
-    g.setValueAtTime(1, t); g.linearRampToValueAtTime(s.duck, t + .008); g.setTargetAtTime(1, t + .03, .075);
+    g.setValueAtTime(1, t); g.linearRampToValueAtTime(d, t + .008); g.setTargetAtTime(1, t + .03, release);
   }
 }
 
@@ -244,9 +250,9 @@ function playLady(graph, song, e, t) {
   }
   const deep = song.lady.deep.get(e.index);
   if (deep) {
-    const d = ctx.createBufferSource(), dg = I.amp(ctx, gain * e.deep), at = t + (e.deepAt || 0) * STEP;
+    const d = ctx.createBufferSource(), dg = I.amp(ctx, gain * e.deep), at = t + (e.deepAt || 0) * song.step;
     d.buffer = deep; d.connect(dg); dg.connect(graph.deep);
-    const room = e.role === 'sink' ? 2 : deep.duration;
+    const room = e.role === 'sink' ? e.gate : deep.duration;          // the sink holds its bar
     dg.gain.setValueAtTime(gain * e.deep, at + room - .03); dg.gain.linearRampToValueAtTime(0, at + room);
     // Its own lifetime: it may start after the dry word has ended (BACK.'s echo).
     d.start(at); d.stop(at + room + .01); d.onended = () => { d.disconnect(); dg.disconnect(); };
@@ -279,7 +285,7 @@ function tapeEvent(graph, tape, T) {
   }
 }
 
-function songEvents(graph, plan, step, T) {
+function songEvents(graph, plan, step, T, STEP) {
   const t = T(step);
   if (plan.call) {
     if (step === 0) { graph.full.gain.setValueAtTime(0, t); graph.call.gain.setValueAtTime(1.6, t); }
@@ -307,61 +313,21 @@ function songEvents(graph, plan, step, T) {
 }
 
 // ---- the band ----------------------------------------------------------------
+// The track plays its own drums, bass, keys and guitar (songbook/*.js band);
+// the engine keeps what every Drop Edition shares: filters, energy, the choir,
+// crashes and risers, the impact, the voices.
 
-function drums(graph, b, bar, s, t, T) {
-  const {ctx} = graph, D = graph.drumHp, L = b.layers, style = L.drums || 'four';
-  if (style === 'four') {
-    const holdBreath = (L.holdBreath ?? bar === 11) && s >= 12;           // the room holds its breath
-    if (L.kick && !holdBreath && PATTERNS.kick.includes(s) && s < (L.kickUntil ?? 16)) { I.kick(ctx, D, t, 1); duck(graph, t); }
-    if (L.clap && PATTERNS.clap.includes(s)) I.clap(ctx, D, t, .62);
-    if ((L.holdBreath ?? bar === 11) && (s === 14 || s === 15)) I.clap(ctx, D, t, s === 14 ? .35 : .5);
-    if (L.fill && s >= 8 && s % 2 === 0) I.clap(ctx, D, t, .3 + .04 * (s - 8));
-    if (L.fill && s >= 12) I.snareRoll(ctx, D, t, .35 + .05 * (s - 12));
-    if (L.roll === true) { if (s % 2 === 0 || s >= 8) I.clap(ctx, D, t, .18 + .5 * s / 15); }
-    if (L.hats) {
-      const breakdown = b.section === 'Breakdown';
-      const v = breakdown ? (s % 2 === 0 ? .2 + .05 * (bar - 14) * 4 : 0) : hatVelocity(s);
-      if (v) I.hat(ctx, D, t, v * .55);
-    }
-    if (L.open && PATTERNS.open.includes(s)) I.openHat(ctx, D, t, .2);
-    if (L.ride && PATTERNS.open.includes(s)) I.ride(ctx, D, t, .16);
-  } else if (style === 'build') {
-    if (L.kick && s % 4 === 0) { I.kick(ctx, D, t, 1); duck(graph, t); }
-    if (L.hats) { const v = L.hatsStraight ? (s % 4 === 0 ? .3 : .2) : hatVelocity(s); if (v) I.hat(ctx, D, t, v * .55); }
-    if (L.open && PATTERNS.open.includes(s)) I.openHat(ctx, D, t, .18);
-    const [rate, v0, v1] = L.roll, last = bar === 19 ? 8 : 16;          // the last bar stops at the choke
-    if (s < last) {
-      const v = v0 + (v1 - v0) * s / 15, tone = 200 + 200 * L.rung / 7;
-      if (rate >= 2) { if (s % rate === 0) I.clap(ctx, D, t, v); }
-      else if (rate === 1) I.snareRoll(ctx, D, t, v, tone);
-      else { I.snareRoll(ctx, D, t, v, tone); I.snareRoll(ctx, D, t + STEP / 2, v, tone); }
-    }
-  } else if (style === 'half') {
-    if (s === 0 || (s === 10 && bar !== 20)) { I.kick(ctx, D, t, s ? .8 : 1); duck(graph, t); }
-    if (s === 8) { I.snare(ctx, D, t, .9); I.clap(ctx, D, t, .45); }
-    if (L.hats) I.hat(ctx, D, t, (s % 4 === 2 ? .32 : s % 2 ? .14 : .2) * .55);
-    if (L.ride && s % 4 === 2) I.ride(ctx, D, t, .2);
-  } else if (style === 'downbeat') {
-    if (s === 0) { I.kick(ctx, D, t, 1); duck(graph, t); }
-  }
-  if (L.shaker) I.shaker(ctx, D, t, shakerVelocity(s) * .5);
-  if (L.rim && PATTERNS.rim.includes(s)) I.rim(ctx, D, t, .16);
-}
-
-function bassline(graph, b, s, t, barEnd) {
-  const {ctx} = graph, L = b.layers, chord = b.chord, out = graph.stems.bass.input;
-  const style = L.bass === true ? 'offbeat' : L.bass;
-  if (style === 'offbeat') { for (const [at, interval, length] of PATTERNS.bass) if (at === s) I.bass(ctx, out, t, chord.root + interval, length * STEP * .7, .85); }
-  else if (style === 'wobble' && s === 0) I.wobble(ctx, out, t, chord.root + 12, barEnd - t, L.wobble * STEP, .78);
-  else if (style === 'sustain' && s === 0) I.sustainBass(ctx, out, t, chord.root, barEnd - t, .8);
+function bandApi(graph, song) {
+  if (graph.api?.song === song) return graph.api;
+  return graph.api = {song, graph, ctx:graph.ctx, I, step:song.step, plan:song.plan, track:song.track, duck:(t, depth, release) => duck(graph, t, depth, release)};
 }
 
 export function scheduleStep(graph, song, step, t0) {
-  const {ctx, stems} = graph, {plan, buffers, at, harmonyBars} = song;
+  const {ctx, stems} = graph, {plan, buffers, at, harmonyBars, track} = song, band = track.band, STEP = song.step, api = bandApi(graph, song);
   const T = n => t0 + plan.timing[Math.min(n, plan.timing.length - 1)];
   const bar = Math.floor(step / BAR_STEPS), s = step % BAR_STEPS, t = T(step);
   const D = graph.drumHp;
-  songEvents(graph, plan, step, T);
+  songEvents(graph, plan, step, T, STEP);
   if (bar >= plan.bars.length) {
     if (step === plan.totalSteps && plan.finale) {
       const last = plan.bars[0].chord;
@@ -380,28 +346,27 @@ export function scheduleStep(graph, song, step, t0) {
     if (L.drumHp) { graph.drumHp.frequency.setValueAtTime(L.drumHp[0], t); graph.drumHp.frequency.exponentialRampToValueAtTime(L.drumHp[1], barEnd); }
     else graph.drumHp.frequency.setValueAtTime(20, t);
     graph.voiceLp.frequency.setValueAtTime(L.voiceLp || 20000, t);
-    if (plan.form === 'drop60') graph.energy.gain.setTargetAtTime(ENERGY[b.section] ?? 1, t, .02);
+    if (plan.form === 'drop60') graph.energy.gain.setTargetAtTime(track.drop.energy[b.section] ?? 1, t, .02);
     const choir = harmonyBars.has(bar);
     graph.harmony.forEach((h, i) => { h.o.frequency.setValueAtTime(I.mtof(chord.notes[i]), t); h.g.gain.setTargetAtTime(choir ? .2 : 0, t, .03); });
-    if (L.pad) I.pad(ctx, graph.padFilter, t, chord.notes, barEnd - t, /^Drop/.test(b.section) ? .55 : 1);
+    if (L.pad) band.pad(api, t, chord, barEnd - t, b);
     if (L.crash) I.crash(ctx, D, t + (L.impact ? .12 : 0), L.impact ? .3 : .42);    // after the vowel of "BACK." has spoken
     if (L.riser === true && bar === 14) I.riser(ctx, D, t, T(step + 2 * BAR_STEPS) - t);
     if (L.riser === 'short') I.riser(ctx, D, t, barEnd - t, .2);
     if (L.riser === 'long') {
       const end = T(plan.choke.at);
-      I.riser(ctx, D, t, end - t, .3); I.sawRiser(ctx, stems.keys.input, t, end - t);
+      I.riser(ctx, D, t, end - t, .3); I.sawRiser(ctx, stems.keys.input, t, end - t, ...(track.sound.sawRiser || []));
     }
     if (bar === 16 && plan.form !== 'drop60') I.impact(ctx, D, t, .8);
     if (L.impact) {
-      I.dropKick(ctx, D, t, 1); duck(graph, t); I.subDrop(ctx, stems.bass.input, t, .75); I.impact(ctx, D, t, .6);
+      // The impact is tuned: the drop kick settles on, and the sub falls through, the track's key.
+      I.dropKick(ctx, D, t, 1, track.sound.dropKick); duck(graph, t); I.subDrop(ctx, stems.bass.input, t, .75, track.sound.subDrop); I.impact(ctx, D, t, .6);
       I.downlifter(ctx, D, t + .25, barEnd - t - .25);   // after the word, not over it
     }
     if (L.reverseCrash) I.reverseCrash(ctx, D, T(step + 12), barEnd - T(step + 12));
+    band.bar?.(api, b, bar, t, barEnd, T, step);
   }
-  drums(graph, b, bar, s, t, T);
-  if (L.bass) bassline(graph, b, s, t, T(step + BAR_STEPS - s));
-  if (L.stabs) for (const [at, length, v] of PATTERNS.stabs) if (at === s) I.stab(ctx, graph.keysFilter, t, chord.notes, length * STEP * .95, v * (L.light ? .7 : b.section === 'Verse' ? .85 : 1), 2800);
-  if (L.guitar) for (const [at, v] of PATTERNS.guitar) if (at === s) I.chop(ctx, stems.guitar.input, t, chord.notes.slice(1).map(m => m + 12), v);
+  band.step(api, b, bar, s, t, T, step);
 
   const events = at.get(step);
   if (!events) return;
@@ -413,7 +378,7 @@ export function scheduleStep(graph, song, step, t0) {
 
 function lady(graph, song, events, T) {
   if (!events) return;
-  for (const e of events.lady) playLady(graph, song, e, T(Math.floor(e.at)) + (e.at - Math.floor(e.at)) * STEP);
+  for (const e of events.lady) playLady(graph, song, e, T(Math.floor(e.at)) + (e.at - Math.floor(e.at)) * song.step);
 }
 
 export function wav(buffer, channels = Math.min(2, buffer.numberOfChannels)) {
@@ -441,7 +406,7 @@ export async function render(plan, buffers, options = {}, lady) {
   const duration = last >= plan.totalSteps ? plan.duration - plan.timing[first] : plan.timing[last] - plan.timing[first] + 1.5;
   const stems = !!options.tune?.stems, ctx = new OfflineAudioContext(stems ? 2 + STEMS.length : 2, Math.ceil(duration * 44100), 44100);
   if (stems) { ctx.destination.channelCount = 2 + STEMS.length; ctx.destination.channelInterpretation = 'discrete'; }
-  const graph = buildGraph(ctx, options), song = prepare(plan, buffers, lady);
+  const graph = buildGraph(ctx, options, plan), song = prepare(plan, buffers, lady);
   graph.oscillators.forEach(o => o.start(0));
   // Song-level state (call, choke, tape) must be right even when starting mid-song.
   if (first > 0 && plan.call && first >= plan.call.until) { graph.full.gain.value = 1; graph.call.gain.value = 0; }
@@ -465,7 +430,7 @@ export class Performance {
   }
   start(plan, buffers, options, onEnd, lady) {
     this.stop(true);
-    const ctx = this.ctx, graph = this.graph = buildGraph(ctx, options), song = prepare(plan, buffers, lady);
+    const ctx = this.ctx, graph = this.graph = buildGraph(ctx, options, plan), song = prepare(plan, buffers, lady);
     const t0 = this.t0 = ctx.currentTime + .12;
     graph.oscillators.forEach(o => o.start(t0));
     this.plan = plan; this.running = true;
