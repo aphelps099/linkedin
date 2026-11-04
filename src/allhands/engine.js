@@ -12,6 +12,8 @@ import {trackOf} from './songbook/index.js';
 import {createVocoder} from './vocoder.js';
 import {createMobileAudio} from '../audio-session.js';
 import {truePeakLimit} from './master.js';
+import {exactSession, sessionOf} from './exact.js';
+import {ladyLength, withColdOpen} from './drop.js';
 
 export const STEMS = ['drums', 'bass', 'keys', 'guitar', 'voice', 'lady'];
 export const VOICE_MODES = {sung:{vocoder:1, dry:.06}, spoken:{vocoder:0, dry:.9}, both:{vocoder:.85, dry:.42}};
@@ -45,6 +47,8 @@ function softClip(ctx) {
 // plan: the song to be played (its track decides the mix); omitted, Circle Back.
 export function buildGraph(ctx, {mode = 'sung', muted = {}, tune = {}} = {}, plan) {
   const track = trackOf(plan?.track), mix = track.mix, STEP = plan?.step ?? track.step;
+  // Every sum in the graph is exact (exact.js): nodes made here are the structure, later ones voices.
+  const exact = exactSession(ctx);
   const master = I.amp(ctx, 1);
   // The muted intro: the band heard through a call, band-limited, mono, crushed.
   const full = I.amp(ctx, 1), call = I.amp(ctx, 0), callHp = I.biquad(ctx, 'highpass', 300, .7), callLp = I.biquad(ctx, 'lowpass', 3400, .7);
@@ -74,9 +78,10 @@ export function buildGraph(ctx, {mode = 'sung', muted = {}, tune = {}} = {}, pla
   // Trim: the drop should arrive just under the limiter, not deep into it.
   const trim = I.amp(ctx, tune.trim ?? mix.trim ?? .4); post.connect(trim);
   if (tune.raw) trim.connect(output); else { trim.connect(glue); glue.connect(limiter); limiter.connect(output); }
-  const clip = softClip(ctx);
+  const softClipper = softClip(ctx), clip = I.amp(ctx, 1);         // clip: the soft clipper, then the cold open's gate
+  softClipper.connect(clip);
   const eqAnalyser = ctx.createAnalyser(); eqAnalyser.fftSize = 4096; eqAnalyser.smoothingTimeConstant = 0;
-  output.connect(clip); clip.connect(analyser); clip.connect(eqAnalyser);
+  output.connect(softClipper); clip.connect(analyser); clip.connect(eqAnalyser);
   // tune.stems: an offline render with every stem on its own channel after the
   // stereo master (channels 0-1 master, then one mono channel per stem), so an
   // export can compute the scene equalizer frame-exactly.
@@ -146,10 +151,13 @@ export function buildGraph(ctx, {mode = 'sung', muted = {}, tune = {}} = {}, pla
   const spectra = Object.fromEntries(STEMS.map(name => { const a = ctx.createAnalyser(); a.fftSize = 2048; a.smoothingTimeConstant = 0; eqSource[name].connect(a); return [name, a]; }));
   if (merger) STEMS.forEach((name, i) => eqSource[name].connect(merger, 0, 2 + i));
   const graph = {ctx, track, master, output, analyser, eqAnalyser, eqTap, spectra, stems, keysFilter, padFilter, drumHp, voiceLp, words, dry, sung, vocoder, ladySend, lead, harmony, oscillators, sources:new Set(),
-    full, call, callGap, energy, choke, tag, deep, tapeDry, tapeWet, tapeDelay, tapeLp, reverbOut, delayOut, feedback};
+    full, call, callGap, energy, choke, tag, deep, tapeDry, tapeWet, tapeDelay, tapeLp, reverbOut, delayOut, feedback, exact, gate:clip};
+  // The buses voices join (exact.js gives each a head with a fixed channel count).
+  for (const bus of [drumHp, keysFilter, padFilter, words, ladySend, tag, deep, ...STEMS.map(n => stems[n].input)]) exact.bus(bus);
   if (tune.voiceLevel) stems.voice.out.gain.value = tune.voiceLevel;
   if (tune.under !== undefined) ['keys', 'guitar'].forEach(n => { stems[n].under = tune.under; });
   setMuted(graph, muted, 0);
+  exact.play();
   return graph;
 }
 
@@ -216,7 +224,7 @@ function note(graph, t, midi) {
 function playLady(graph, song, e, t) {
   const {ctx} = graph, buffer = song.lady.files.get(e.file);
   if (!buffer) return;
-  const length = Math.min(e.gate, (e.to - e.from) / e.rate + .01), gain = dB(e.gain || 0);
+  const length = ladyLength(e), gain = dB(e.gain || 0);
   const s = ctx.createBufferSource(), env = I.amp(ctx);
   s.buffer = buffer; s.playbackRate.value = e.rate;
   if (e.bend) {
@@ -268,12 +276,16 @@ function tapeEvent(graph, tape, T) {
   if (tape.kind === 'sink') {
     // pitch falls 1 → .5 linearly across the span: d(t) = 0.25·t²/D.
     const end = T(tape.to), D = end - start;
+    // Live, a late tick can find `start` already past; Web Audio then starts the
+    // curve at currentTime, and a reset at end + .01 would land inside it and throw,
+    // losing the whole Sink In downbeat. Offline, currentTime is 0: nothing changes.
+    const begin = Math.max(start, graph.ctx.currentTime || 0);
     for (let i = 0; i < points; i++) { const u = i / (points - 1); curve[i] = .25 * D * u * u; }
     tapeWet.gain.setValueAtTime(1, start); tapeDry.gain.setValueAtTime(0, start);
-    tapeDelay.delayTime.setValueCurveAtTime(curve, start, D);
+    tapeDelay.delayTime.setValueCurveAtTime(curve, begin, D);
     tapeWet.gain.setValueAtTime(1, end - .004); tapeWet.gain.linearRampToValueAtTime(0, end);
     tapeDry.gain.setValueAtTime(0, end - .004); tapeDry.gain.linearRampToValueAtTime(1, end);
-    tapeDelay.delayTime.setValueAtTime(0, end + .01);
+    tapeDelay.delayTime.setValueAtTime(0, (begin > start ? begin + D : end) + .01);
   } else {
     // tape-stop: pitch 1 → 0 over `seconds`: d(t) = t²/(2·S); then silence.
     const S = tape.seconds;
@@ -346,7 +358,8 @@ export function scheduleStep(graph, song, step, t0) {
     if (L.drumHp) { graph.drumHp.frequency.setValueAtTime(L.drumHp[0], t); graph.drumHp.frequency.exponentialRampToValueAtTime(L.drumHp[1], barEnd); }
     else graph.drumHp.frequency.setValueAtTime(20, t);
     graph.voiceLp.frequency.setValueAtTime(L.voiceLp || 20000, t);
-    if (plan.form === 'drop60') graph.energy.gain.setTargetAtTime(track.drop.energy[b.section] ?? 1, t, .02);
+    // The section's energy, less the room the verse leaves the drops (plan.energyTrim, dB).
+    if (plan.form === 'drop60') graph.energy.gain.setTargetAtTime((track.drop.energy[b.section] ?? 1) * dB(-(plan.energyTrim?.[b.section] ?? 0)), t, .02);
     const choir = harmonyBars.has(bar);
     graph.harmony.forEach((h, i) => { h.o.frequency.setValueAtTime(I.mtof(chord.notes[i]), t); h.g.gain.setTargetAtTime(choir ? .2 : 0, t, .03); });
     if (L.pad) band.pad(api, t, chord, barEnd - t, b);
@@ -393,10 +406,104 @@ export function wav(buffer, channels = Math.min(2, buffer.numberOfChannels)) {
   return new Blob([out], {type:'audio/wav'});
 }
 
+// For checks: exact.js's report on the graph a context rendered (every input, its lanes, the most it hears at once).
+export const exactReport = ctx => sessionOf(ctx)?.report() ?? [];
+
 export const RENDER_OFFSET = .05;   // renders start 50 ms in, so the first transient is whole
 
 // The stems of a tune.stems render, by name: Float32Array per stem, after the master's two channels.
 export const stemChannels = audio => Object.fromEntries(STEMS.map((name, i) => [name, audio.getChannelData(2 + i)]));
+
+// ---- the cold open ---------------------------------------------------------
+// plan.coldOpen (drop.js withColdOpen): the impact as the drop plays it, then
+// the end of the ladder rewound at 4x, both cut from the track's own render;
+// the song itself is heard from coldOpen.resume. Offline, render() splices it
+// in (the same plan rendered whole is its own source); live, prepareColdOpen()
+// renders the source first and Performance.start() plays it in front of the song.
+
+const XFADE = .006;   // equal-power crossfades at the joins, seconds
+
+export function coldOpenOf(plan, options = {}) {
+  if (options.coldOpen === false || plan.form !== 'drop60') return null;
+  return plan.coldOpen ?? (options.coldOpen ? withColdOpen(plan).coldOpen : null);
+}
+
+// A low-pass for the 4x rewind (windowed sinc at 0.45 of the new Nyquist), so it does not alias.
+const REWIND_FIR = (() => {
+  const taps = 95, fc = .45 / 4, k = new Float64Array(taps);
+  let sum = 0;
+  for (let i = 0; i < taps; i++) { const x = i - (taps - 1) / 2, w = .42 - .5 * Math.cos(2 * Math.PI * i / (taps - 1)) + .08 * Math.cos(4 * Math.PI * i / (taps - 1)); k[i] = (x ? Math.sin(2 * Math.PI * fc * x) / (Math.PI * x) : 2 * fc) * w; sum += k[i]; }
+  return k.map(v => v / sum);
+})();
+
+// The cold open's audio, from a source render whose sample 0 is song time `srcT0`
+// (srcT0 = plan time at that render's file time 0): per channel, the samples of
+// file time [0, resume + offset + XFADE/2), weighted for the crossfade into the
+// song, and the song's own weight over the same samples.
+export function coldOpenParts(cold, channels, sampleRate, srcT0) {
+  const sr = sampleRate, at = t => t + RENDER_OFFSET;              // plan seconds → file seconds of the output
+  const A = at(cold.impact.until), B = at(cold.resume), n = Math.ceil((B + XFADE) * sr);
+  // Both renders put song time u at file time u - t0 + RENDER_OFFSET. The impact is an integer
+  // sample shift; the rewind reads the source backwards, `rate` samples per sample.
+  const shift = Math.round((cold.impact.source - srcT0) * sr);
+  const rw = cold.rewind, base = Math.round((rw.sourceFrom - srcT0 + RENDER_OFFSET) * sr), stride = rw.rate;
+  const fade = (x, edge) => { const u = Math.min(1, Math.max(0, (x - edge) / XFADE + .5)); return [Math.cos(u * Math.PI / 2), Math.sin(u * Math.PI / 2)]; };
+  const out = channels.map(() => new Float32Array(n)), song = new Float32Array(n), half = (REWIND_FIR.length - 1) / 2;
+  for (let i = 0; i < n; i++) {
+    const f = i / sr, [aOut, aIn] = fade(f, A), [bOut, bIn] = fade(f, B);
+    const wI = aOut, wR = aIn * bOut;
+    song[i] = bIn;
+    // rewind sample: the source at song time sourceFrom - rate · (t - from), filtered
+    const j = base - stride * Math.round((f - A) * sr);
+    channels.forEach((c, k) => {
+      let v = 0;
+      if (wI > 0) { const s = i + shift; v += wI * (s >= 0 && s < c.length ? c[s] : 0); }
+      if (wR > 0) { let r = 0; for (let t = 0; t < REWIND_FIR.length; t++) { const s = j + t - half; if (s >= 0 && s < c.length) r += REWIND_FIR[t] * c[s]; } v += wR * r; }
+      out[k][i] = v;
+    });
+  }
+  return {cold, sampleRate:sr, length:n, channels:out, song};
+}
+
+// The bars a cold open's source needs. Exact: the song from the top through the
+// bar after the impact, which renders the source spans sample for sample as the
+// whole song does (a render only depends on what came before, and its clock
+// starts where the whole song's does). Quick (live): two bars before the
+// rewind's start, for the reverb and the delay; the same music, not the same samples.
+function sourceBars(plan, cold, exact = true) {
+  const T = plan.timing, stepOf = t => { let s = 0; while (s < plan.totalSteps && T[s + 1] <= t) s++; return s; };
+  return [exact ? 0 : Math.max(0, Math.floor(stepOf(cold.rewind.sourceTo) / BAR_STEPS) - 2), Math.floor(stepOf(cold.impact.source) / BAR_STEPS) + 2];
+}
+
+async function coldSource(plan, buffers, options, lady, cold, exact = true) {
+  const bars = sourceBars(plan, cold, exact);
+  const audio = await render(plan, buffers, {...options, coldOpen:false, limit:false, bars}, lady);
+  return {channels:Array.from({length:audio.numberOfChannels}, (_, c) => audio.getChannelData(c)), sampleRate:audio.sampleRate, t0:plan.timing[bars[0] * BAR_STEPS]};
+}
+
+// Live: render the cold open's source and cut its parts, before Performance.start(plan, buffers, {coldOpen:parts}).
+// options.exact renders the source from the top (the render's own samples; slower).
+export async function prepareColdOpen(plan, buffers, lady, options = {}) {
+  const cold = coldOpenOf(plan, {coldOpen:true});
+  if (!cold) return null;
+  const src = await coldSource(plan, buffers, {mode:options.mode, muted:options.muted, tune:options.tune}, lady, cold, !!options.exact);
+  return coldOpenParts(cold, src.channels.slice(0, 2), src.sampleRate, src.t0);
+}
+
+// Live: play prepared parts from song time 0 (t0 is the context time of song time 0),
+// and open the song's own gate at the join.
+export function scheduleColdOpen(graph, parts, t0) {
+  const {ctx} = graph, buffer = ctx.createBuffer(parts.channels.length, parts.length, parts.sampleRate);
+  parts.channels.forEach((c, i) => buffer.getChannelData(i).set(c));
+  const s = ctx.createBufferSource(), start = t0 - RENDER_OFFSET;
+  s.buffer = buffer; s.connect(graph.analyser); s.connect(graph.eqAnalyser); s.connect(ctx.destination);
+  s.start(Math.max(ctx.currentTime, start)); s.stop(start + parts.length / parts.sampleRate + .01);
+  const curve = new Float32Array(64), from = parts.length / parts.sampleRate - XFADE * 1.5;
+  for (let i = 0; i < curve.length; i++) curve[i] = parts.song[Math.min(parts.length - 1, Math.round((from + i / 63 * XFADE * 1.5) * parts.sampleRate))];
+  graph.gate.gain.setValueAtTime(0, Math.max(ctx.currentTime, start));
+  graph.gate.gain.setValueCurveAtTime(curve, start + from, XFADE * 1.5);
+  graph.sources.add(s); s.onended = () => { graph.sources.delete(s); s.disconnect(); };
+}
 
 // bars: [from, to) renders an excerpt, for quick listening tests.
 export async function render(plan, buffers, options = {}, lady) {
@@ -411,7 +518,16 @@ export async function render(plan, buffers, options = {}, lady) {
   // Song-level state (call, choke, tape) must be right even when starting mid-song.
   if (first > 0 && plan.call && first >= plan.call.until) { graph.full.gain.value = 1; graph.call.gain.value = 0; }
   for (let step = first; step <= last; step++) scheduleStep(graph, song, step, t0);
+  graph.exact.finalize();
   const out = await ctx.startRendering();
+  // The cold open replaces the first second; the whole song is its own source.
+  const cold = first === 0 ? coldOpenOf(plan, options) : null;
+  if (cold) {
+    const channels = Array.from({length:out.numberOfChannels}, (_, c) => out.getChannelData(c));
+    const src = last >= plan.totalSteps ? {channels, sampleRate:out.sampleRate, t0:plan.timing[first]} : await coldSource(plan, buffers, options, lady, cold);
+    const parts = coldOpenParts(cold, src.channels, src.sampleRate, src.t0);
+    channels.forEach((c, k) => { const p = parts.channels[k]; for (let i = 0; i < Math.min(parts.length, c.length); i++) c[i] = p[i] + parts.song[i] * c[i]; });
+  }
   // The export gets a true-peak ceiling of -1.3 dBTP; live playback keeps the clipper.
   if (options.limit !== false && !options.tune?.raw) truePeakLimit([out.getChannelData(0), out.getChannelData(1)], out.sampleRate);
   return out;
@@ -433,6 +549,8 @@ export class Performance {
     const ctx = this.ctx, graph = this.graph = buildGraph(ctx, options, plan), song = prepare(plan, buffers, lady);
     const t0 = this.t0 = ctx.currentTime + .12;
     graph.oscillators.forEach(o => o.start(t0));
+    // options.coldOpen: the parts prepareColdOpen() made for this plan.
+    if (options?.coldOpen?.channels) scheduleColdOpen(graph, options.coldOpen, t0);
     this.plan = plan; this.running = true;
     let next = 0;
     const tick = () => {

@@ -198,12 +198,29 @@ function evidence(reading, parts, max = 3) {
     q = q.replace(/[,;:]+$/, '').replace(/(?<!\b[ap]\.m)\.$/, '');
     return /\b[ap]\.m$/i.test(q) ? `${q}.` : q;
   };
-  return merged.sort((x, y) => y.points - x.points || x.a - y.a).slice(0, max).sort((x, y) => x.a - y.a).map(said).filter(Boolean)
+  // A quote never ends on a function word, never quotes someone's family or
+  // health back at them, and a lone "thank" or "day" is not evidence.
+  const FUNCTION = /^(?:at|to|of|for|the|a|an|and|in|on|with|my|our|from|by)$/i;
+  const tidy = q => { let t = q; for (let k = 0; k < 3; k++) t = t.replace(/\s+(?:at|to|of|for|the|a|an|and|in|on|with|my|our|from|by)$/i, ''); return t; };
+  // A cue that stops on a function word ("Head of") takes the post's next word or two.
+  const extend = sp => {
+    let b = sp.b;
+    for (let k = 0; k < 2 && b < words.length && FUNCTION.test(words[b - 1].raw) && !/[.!?:;"“”()\n\p{Extended_Pictographic}]/u.test(text.slice(words[b - 1].end, words[b].start)); k++) b++;
+    return {...sp, b};
+  };
+  const usable = q => q && !SENSITIVE.test(q) && !WEAK.has(q.toLowerCase().replace(/^(?:a|an|the)\s+/, ''));
+  const ranked = merged.sort((x, y) => y.points - x.points || x.a - y.a).map(s => ({...s, q:tidy(said(extend(s)))}));
+  const keep = ranked.filter(s => usable(s.q)), chosen = (keep.length ? keep : ranked.filter(s => s.q && !SENSITIVE.test(s.q))).slice(0, max);
+  return chosen.sort((x, y) => x.a - y.a).map(s => s.q)
     .filter((q, i, all) => all.findIndex(o => o.toLowerCase() === q.toLowerCase()) === i);
 }
+const SENSITIVE = /\b(?:family|health|cried|grandmother|grandfather|son|daughter|kids?|\d+-year-old|year-old|wife|husband|mom|dad|funeral|passed away|cancer|diagnos\w*)\b/i;
+const WEAK = new Set(['thank', 'thanks', 'day', 'days', 'every day', 'new', 'first', 'next', 'start', 'post']);
 function trackLine(choice, reading) {
   if (choice.fallback) return FALLBACK_LINE;
-  const quips = QUIP[choice.track], quip = quips[Math.floor(fnv(reading.text, 7) * quips.length)];
+  // A goodbye or personal news is not "very honored": it is a journey.
+  const gentle = choice.track === 'humbled-and-honored' && (reading.concepts.farewell || SENSITIVE.test(reading.text));
+  const quips = QUIP[choice.track], quip = gentle ? 'Grateful for this journey.' : quips[Math.floor(fnv(reading.text, 7) * quips.length)];
   return `${TRACKS[choice.track].title}, for ${andList(quote(evidence(reading, choice.parts[choice.track])))}. ${quip}`;
 }
 
@@ -346,6 +363,7 @@ function relevance(reading, cand, cache) {
 // also be recast on topic alone (TOPICAL). A line under RELEVANT is never a
 // recast; it is only a filler when today's line is taken.
 const RELEVANT = 1, TOPICAL = {tag:.7, ladder:.7, lift:.7, bend:.7};
+const TIE_LINE = .3;
 const BASELINE = {tag:1.5, ladder:1.6, sink:2.2, punct:2.1, stop:2.1, lift:1.4, bend:1.4};
 // The tag and its impact are the payoff; the ladder is the build; the rest punctuate.
 const ROLE_WEIGHT = {tag:1.6, ladder:1.3, sink:1.1, punct:1, stop:.9, lift:.8, bend:.8};
@@ -387,7 +405,23 @@ function candidatesFor(role, reading, track, salt, cache) {
     const score = relevant ? (rel.points + bonusOf(c)) * craftOf(c) * heardOf(c, track) * W + jitter : craftOf(c) * heardOf(c, track) * .3 - 1 + jitter;
     out.push({...c, score, fit, relevant:rel.points, filler:!relevant, reasons:relevant ? rel.reasons : ["today's line is taken: the best free line"]});
   }
-  return out.sort((x, y) => y.score - x.score);
+  out.sort((x, y) => y.score - x.score);
+  // Near-ties (within TIE_LINE of the best, today's line included) are settled
+  // by the post's hash, weighted by how close each is, so similar posts vary:
+  // the chosen line takes the best score and the best takes its, nothing else moves.
+  const close = out.filter(c => !c.filler && out[0].score - c.score < TIE_LINE);
+  if (close.length > 1) {
+    const weights = close.map(c => TIE_LINE - (out[0].score - c.score) + .05), sum = weights.reduce((a, b) => a + b, 0);
+    let r = fnv(`tie|${role}`, salt) * sum, k = 0;
+    while (k < close.length - 1 && r >= weights[k]) r -= weights[k++];
+    const pick = close[k];
+    if (pick !== out[0]) {
+      [pick.score, out[0].score] = [out[0].score, pick.score];
+      pick.reasons = [...pick.reasons, `a close call with “${out[0].display.replace(/-$/, '')}”: the post's hash decided`];
+      out.sort((x, y) => y.score - x.score);
+    }
+  }
+  return out;
 }
 
 // Pick a coherent set: no recording twice (the tag and its impact are one
@@ -457,7 +491,7 @@ function castEntry(c) {
   return out;
 }
 
-export function castSong(post, {seed = 0, track} = {}) {
+export function castSong(post, {seed = 0, track, candidates = false} = {}) {
   const reading = readPost(post);
   const choice = track ? {track:trackOf(track).id, ...scoreTracks(reading), close:[], fallback:false, forced:true} : chooseTrack(reading, seed);
   const id = choice.track;
@@ -479,7 +513,8 @@ export function castSong(post, {seed = 0, track} = {}) {
     : [...choice.parts[id].map(p => `${p.concept} +${p.points}: ${quote(p.words.slice(0, 3)).join(', ')}`), ...(choice.close.length > 1 ? [`close call with ${choice.close.filter(t => t !== id).map(t => TRACKS[t].title).join(', ')}: the post's hash decided`] : [])],
   lady};
   return {track:id, cast:ordered, why, line:choice.forced ? `${TRACKS[id].title}, chosen by hand.` : trackLine(choice, reading),
-    scores:Object.fromEntries(TRACK_ORDER.map(t => [t, +choice.scores[t].toFixed(2)])), recast:ROLE_ORDER.filter(r => !best.picks[r].isDefault)};
+    scores:Object.fromEntries(TRACK_ORDER.map(t => [t, +choice.scores[t].toFixed(2)])), recast:ROLE_ORDER.filter(r => !best.picks[r].isDefault),
+    ...(candidates ? {candidates:Object.fromEntries(ROLE_ORDER.map(r => [r, lists[r].slice(0, 6).map(c => ({display:c.display, file:c.file, score:+c.score.toFixed(3), relevant:+(c.relevant ?? 0).toFixed(2), isDefault:!!c.isDefault, filler:!!c.filler}))]))} : {})};
 }
 
 // Arrange with the post's cast; a gap role (bend, lift, punct) that today's
@@ -487,7 +522,8 @@ export function castSong(post, {seed = 0, track} = {}) {
 // gap in Synergy's line) goes back to today's line. `arrange` is a form's
 // arrange(), so this stays pure. Returns {plan, cast, restored}.
 const gapRole = (plan, sinkFile) => e => e.role !== 'punct' ? null : e.bend ? 'bend' : e.lift ? 'lift' : e.file === sinkFile && e.at === trackOf(plan.track).drop.places.letThat ? null : 'punct';
-export function settleCast(arrange, lyrics, durations, {track, cast} = {}) {
+export function settleCast(arrange0, lyrics, durations, {track, cast, coldOpen} = {}) {
+  const arrange = coldOpen ? (l, d, o) => arrange0(l, d, {...o, coldOpen}) : arrange0;
   let plan = arrange(lyrics, durations, {track, cast});
   if (!cast || plan.form !== 'drop60') return {plan, cast, restored:[]};
   const placed = p => new Set(p.lady.map(gapRole(p, (cast.sink || DEFAULT_CAST.sink).file)).filter(Boolean));

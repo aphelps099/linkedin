@@ -2,7 +2,9 @@
 //
 //   Param = number
 //         | [[k, v, ease?], ...]                       keyframes, k in clip-local steps
-//         | {keys:[[k, v, ease?], ...], unit?}         unit: 'steps' (default) | 'frames' | 'seconds'
+//         | {keys:[[k, v, ease?], ...], unit?, hit?}   unit: 'steps' (default) | 'frames' | 'seconds';
+//                                                       hit:true puts each key on the frame that holds
+//                                                       its transient's audible onset (anchors.js hitFrame)
 //         | {bind, scale?, base?, attack?, release?}   value = base + scale · envelope(feature)
 //         | {mul:[Param, ...]} | {add:[Param, ...]}    products and sums, so moves compose
 //
@@ -14,7 +16,7 @@
 // attack and release are one-pole time constants in seconds (0 = instant).
 // Feature tracks come from the audio (buildFeatures) or, without a render,
 // from the plan itself (planFeatures). Pure: the same inputs, the same numbers.
-import {stepTime, pegFrame, ladyTime, FPS} from './anchors.js';
+import {stepTime, hitFrame, ladyTime, FPS} from './anchors.js';
 import {kickSteps, eqTrack, LEAD} from '../../pegboard/eq.js';
 import {STEMS, RENDER_OFFSET} from '../../allhands/engine.js';
 
@@ -58,6 +60,7 @@ export function checkParam(p, path, out = []) {
     const keys = keysOf(p);
     if (!keys.length) out.push([path, 'keyframes need at least one key']);
     if (!Array.isArray(p) && p.unit && !['steps', 'frames', 'seconds'].includes(p.unit)) out.push([`${path}.unit`, `unknown unit "${p.unit}" (steps, frames or seconds)`]);
+    if (!Array.isArray(p) && p.hit !== undefined && typeof p.hit !== 'boolean') out.push([`${path}.hit`, 'hit is true when the keys mark transients']);
     keys.forEach((k, i) => {
       if (!Array.isArray(k) || k.length < 2 || k.length > 3) { out.push([`${path}[${i}]`, 'a key is [k, value, ease?]']); return; }
       if (!Number.isFinite(k[0]) || !Number.isFinite(k[1])) out.push([`${path}[${i}]`, 'key position and value must be finite numbers']);
@@ -79,11 +82,13 @@ export function checkParam(p, path, out = []) {
 //   steps:   stepTime(plan, origin.step + k) + origin.shift
 //   frames:  (origin.frame + k) / fps
 //   seconds: stepTime(plan, origin.step) + origin.shift + k
+//   hit:true (steps or seconds): the start of the frame that holds that time's audible onset,
+//   so a punch-in shows on the frame its snare is heard in, never a frame after.
 export function keyTime(p, k, ctx) {
   const unit = unitOf(p), o = ctx.origin, fps = ctx.fps || FPS;
   if (unit === 'frames') return (o.frame + k) / fps;
-  if (unit === 'seconds') return stepTime(ctx.plan, o.step) + (o.shift || 0) + k;
-  return stepTime(ctx.plan, o.step + k) + (o.shift || 0);
+  const t = unit === 'seconds' ? stepTime(ctx.plan, o.step) + (o.shift || 0) + k : stepTime(ctx.plan, o.step + k) + (o.shift || 0);
+  return !Array.isArray(p) && p.hit ? hitFrame(t, ctx.plan, fps) / fps : t;
 }
 
 // Key times are cached per (param, origin): a clip evaluates the same keys every frame.
@@ -224,10 +229,11 @@ export const levelOf = rms => { const db = 20 * Math.log10(rms + 1e-12); return 
 
 function framesOf(plan, fps) { return Math.ceil(plan.duration * fps - 1e-9); }
 
-// Kick onsets from the plan, exactly as the engine schedules them (eq.js kickSteps).
+// Kick onsets from the plan, exactly as the engine schedules them (eq.js kickSteps), each on
+// the frame that holds its audible onset (a hit).
 function kickTrack(plan, fps, frames) {
   const kick = new Float32Array(frames), steps = kickSteps(plan);
-  for (let s = 0; s < steps.length; s++) if (steps[s]) { const g = pegFrame(stepTime(plan, s), fps); if (g >= 0 && g < frames) kick[g] = 1; }
+  for (let s = 0; s < steps.length; s++) if (steps[s]) { const g = hitFrame(stepTime(plan, s), plan, fps); if (g >= 0 && g < frames) kick[g] = 1; }
   return kick;
 }
 function rollTrack(plan, fps, frames) {

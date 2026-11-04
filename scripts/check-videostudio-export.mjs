@@ -6,8 +6,10 @@
 //      not whole frames); ffmpeg scdet must find every cut on its target frame. The tiles are
 //      L1 (no board region): over a full-frame generated tile the compositor draws the board's
 //      sockets even when the EDL has no board cues.
-//   3. flash-plus-click: white flashes and clicks on the same steps; in the file the
-//      picture leads the sound by 0-25 ms and is never late
+//   3. the timing rule, every step at 120, 92 and 130 BPM: cuts on round(t·24), within half a frame
+//      of the beat; hits (one-frame flashes on {hit:true} anchors) on the frame that holds the click's
+//      audible onset as the engine's master bus renders it: the picture leads by 0 to under one frame,
+//      never late; the engine's latency measured on clicks and on every kick of each track's song
 //   4. determinism: the same span of the draft cut exported in two fresh pages: every composited
 //      frame's RGBA hash equal and the sound's ffmpeg framemd5 equal; the decoded picture's
 //      framemd5 equal wherever the encoder had nothing to decide, and within 45 dB PSNR elsewhere
@@ -26,7 +28,7 @@ import {FORMS} from '../src/allhands/forms.js';
 import {lyricsFromPost, SAMPLE_POST} from '../src/allhands/lyrics.js';
 import {compile} from '../src/videostudio/edl/compile.js';
 import {stringify} from '../src/videostudio/edl/schema.js';
-import {stepTime, cutFrame} from '../src/videostudio/edl/anchors.js';
+import {stepTime, cutFrame, hitFrame, audioLatency, chokeFrames} from '../src/videostudio/edl/anchors.js';
 import {metronomeEDL, expectedCuts} from '../src/videostudio/edl/metronome.js';
 import {demux} from '../src/videostudio/media/decoder.js';
 import {captions, planJSON, exportName, SAMPLES_PER_FRAME} from '../src/videostudio/render/export.js';
@@ -49,7 +51,7 @@ const hasFfmpeg = ff(['ffmpeg', '-version']).status === 0;
 
 // ---- 1. Node ----------------------------------------------------------------------------------------
 const SHOTS = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/videostudio/media/shots.json'), 'utf8'));
-const lyrics = lyricsFromPost(SAMPLE_POST), plan = FORMS.drop60.arrange(lyrics, {});
+const lyrics = lyricsFromPost(SAMPLE_POST), plan = FORMS.drop60.arrange(lyrics, {}, {coldOpen:true});
 {
   const before = checks;
   // The demuxer against the proxies on disk.
@@ -82,41 +84,51 @@ const lyrics = lyricsFromPost(SAMPLE_POST), plan = FORMS.drop60.arrange(lyrics, 
   const ladder = cues.filter(b => /Let's build\./.test(b)).length;
   ok(ladder >= 1 && ladder <= 6, `captions: the ladder's retriggers collapse into ${ladder} cues, not ${plan.lady.filter(e => e.role === 'ladder').length}`);
 
-  // The draft cut: clean in every format, deterministic, and the rows of plan §2.
-  for (const format of ['9:16', '1:1', '16:9']) {
-    const edl = drop60Draft(plan, SHOTS, {format}), p = compile(edl, {plan, shots:SHOTS});
-    ok(p.lint.errors.length === 0, `draft cut ${format}: ${p.clips.length} clips, 0 lint errors (${p.lint.errors.slice(0, 3).map(e => `${e.rule} ${e.message}`).join('; ')}), ${p.lint.warnings.length} warnings, peak ${p.decode.max} decodes`);
-    ok(stringify(drop60Draft(plan, SHOTS, {format})) === stringify(edl) && compile(drop60Draft(plan, SHOTS, {format}), {plan, shots:SHOTS}).hash() === p.hash(), `draft cut ${format}: the same EDL bytes and program hash twice (${p.hash()})`);
+  // The draft cut: clean on every track in every format, deterministic, and the rows of plan §2
+  // (frames from the plan: the cold open, the choke and the impact by the timing rule).
+  for (const track of ['circle-back', 'humbled-and-honored', 'hustle']) for (const format of ['9:16', '1:1', '16:9']) {
+    const pl = track === 'circle-back' ? plan : FORMS.drop60.arrange(lyrics, {}, {track, coldOpen:true});
+    const edl = drop60Draft(pl, SHOTS, {format}), p = compile(edl, {plan:pl, shots:SHOTS, format});
+    ok(p.lint.errors.length === 0, `draft cut ${track} ${format}: ${p.clips.length} clips, 0 lint errors (${p.lint.errors.slice(0, 3).map(e => `${e.rule} ${e.message}`).join('; ')}), ${p.lint.warnings.length} warnings, peak ${p.decode.max} decodes`);
+    ok(stringify(drop60Draft(pl, SHOTS, {format})) === stringify(edl) && compile(drop60Draft(pl, SHOTS, {format}), {plan:pl, shots:SHOTS, format}).hash() === p.hash(), `draft cut ${track} ${format}: the same EDL bytes and program hash twice (${p.hash()})`);
     if (format !== '9:16') continue;
-    const fr = f => p.frame(f), layers = p.all.flatMap(x => x.layers);
-    ok(p.board.screens[fr(0).board.screen]?.text === 'BACK.' && fr(0).layers.some(l => l.fx.some(x => x.type === 'pegVideo')), 'row 0:0: frame 0 is BACK. over peg video');
-    ok(p.all.slice(18, 24).every(x => x.transport?.kind === 'rewind') && fr(19).time > fr(22).time && !fr(17).transport && !fr(24).transport, `row 0:6: frames 18-23 rewind at 4x from bar 18 (song time ${fr(19).time.toFixed(2)} → ${fr(22).time.toFixed(2)} s)`);
-    ok(fr(30).layers.some(l => l.gen === 'camera-off') && p.board.screens[fr(30).board.screen]?.text.startsWith('CONNECTING'), "row 0:8: Pat's black tile, CONNECTING TO AUDIO…");
-    ok(['L1', 'G4', 'G6'].every(cls => p.all.slice(48, 120).some(x => x.layout === cls)) && layers.some(l => l.chrome?.toast?.text?.endsWith('joined')), 'row 1: the grid blooms L1 → G4 → G6 with "joined" toasts');
-    ok(p.all.slice(cutFrame(stepTime(plan, 40)), cutFrame(stepTime(plan, 41))).some(x => x.layers.some(l => /^join/.test(l.clipId) && l.shotId?.startsWith('printer'))), 'row 2: the printer in the call');
-    ok(fr(156).camera?.zoom > 1.1 && p.all.slice(144, 192).some(x => x.layers.some(l => l.chrome?.mic === 'on')) && p.all.slice(144, 192).some(x => x.layers.some(l => l.chrome?.mic === 'muted')), 'row 3: the gallery-unmute push; mute icons toggle');
-    ok(fr(192).layout === 'L1' && fr(192).layers[0].transform.zoom < .5 && fr(195).layers[0].transform.zoom === 1 && fr(204).layout === 'stack3', 'row 4: UNMUTE: Synergy fills the frame in 3 frames, then stack3');
-    ok(p.board.cells.some(s => s.text === 'ARJUN / FINANCE' && s.font === 'peg5'), 'row 7: freeze + label ARJUN / FINANCE in PEG-5');
-    ok(fr(400).layout === 'BOARD+STRIP' && fr(400).board.banner && layers.some(l => l.chrome?.banner === "You are viewing Synergy's screen"), 'row 8: the hook shares Synergy\'s screen');
-    ok(p.all.slice(576, 672).every(x => x.layout === 'G9') && fr(590).layers.filter(l => l.fx.some(x => x.type === 'saturation')).length >= 6, 'row 12: freeze the call in G9, the frozen tiles greyed');
-    ok(fr(14 * 48 + 4).layers.some(l => l.cell.id.startsWith('split.')) && fr(15 * 48 + 4).layers.some(l => /^G4\.\d>split/.test(l.cell.id)), 'row 14: breakout rooms, two then four');
-    ok([1, 2, 4, 8].every((n, q) => fr(16 * 48 + q * 12 + 2).layers.length === n), 'row 16: the cell split 1, 2, 4, 8 on the quarters');
-    ok(fr(18 * 48 + 2).layout === 'BOARD+STRIP' && fr(18 * 48 + 2).layers.some(l => l.fx.some(x => x.type === 'mosaic')), 'row 18: the board with Synergy\'s tile, poor connection on the side tiles');
-    ok(p.all.slice(948, 960).every(x => x.layers.every(l => l.gen === 'color:#000000')) && fr(960).layers.some(l => l.fx.some(x => x.type === 'pegVideo')), 'rows 19:8 and 20: black to frame 959, ignition over peg video at frame 960');
-    const sinkF = cutFrame(stepTime(plan, 23 * 16 + 4));
-    ok(fr(sinkF).layout === 'G4' && p.all.slice(cutFrame(stepTime(plan, 23 * 16 + 13)), 1152).some(x => x.layers.some(l => l.fx.some(e => e.type === 'mosaic' && e.px >= 32))), 'row 23: Sink In in G4; on "in" the outer cells sink to 32 px');
-    ok(fr(1160).layers.some(l => l.gen === 'feedback' && l.fx.some(x => x.type === 'droste')) && fr(1190).camera?.zoom > 2, 'row 24: the Droste dive into Pat\'s cell');
-    ok(fr(26 * 48 + 26).layers.some(l => l.fx.some(x => x.type === 'tile')) && fr(27 * 48 + 26).layers.some(l => l.clipId.startsWith('replay.')), 'rows 26-27: the kaleido of the pads, replayed at 27:8');
-    ok(layers.some(l => l.chrome?.toast?.text === 'Kevin left the meeting'), 'row 28: Kevin left the meeting');
-    ok(p.transports.some(t => t.kind === 'tapestop' && t.to === 1426) && p.all.slice(1426, 1438).every(x => x.layers.every(l => l.gen === 'color:#000000') && !x.board.rect), 'row 29: the tape stop to frame 1426, then true black (no board region) to 1437');
-    ok(p.all.slice(1438).every(x => x.transport?.id === 'loop' && x.layout === fr(0).layout && x.board.screen === fr(0).board.screen) && !p.lint.warnings.some(w => w.rule === 'G12'), 'row 29: frames 1438-1439 rewind to the top: frame 0\'s layout and BACK. screen, so the loop closes (G12 clean)');
-    ok(layers.every(l => !(l.shotId && /lady|circle back|^pat$/i.test(SHOTS.shots.find(s => s.id === l.shotId)?.characters.join(' ') ?? ''))) && layers.filter(l => l.gen === 'camera-off').length > 100, 'canon: Pat never on video; the lady never footage');
+    const fr = f => p.frame(f), layers = p.all.flatMap(x => x.layers), T = s => stepTime(pl, s), F = s => cutFrame(T(s)), BS = 16;
+    const sec = name => pl.sections.find(x => x.name === name), {black:B, impact:I} = chokeFrames(pl);
+    const ign = x => x.layers.some(l => l.fx.some(e => e.type === 'pegVideo'));
+    ok(fr(0).transport?.kind === 'jump' && fr(0).transport.sound === 'copied' && p.board.screens[fr(0).board.screen]?.kind === 'impact' && ign(fr(0)) && p.all.slice(0, 18).every((x, i) => x.time === I / 24 + i / 24), `${track} row 0:0: frames 0-17 are the drop's own impact frames ${I}-${I + 17}, BACK. over peg video, its sound copied`);
+    ok(p.all.slice(18, 24).every(x => x.transport?.kind === 'rewind' && x.transport.sound === 'reversed') && fr(19).time > fr(22).time && !fr(24).transport && p.all.slice(18, 24).every(x => x.layers.every(l => !l.reverse || l.shotId && SHOTS.shots.find(s => s.id === l.shotId)?.reverseClass === 'R1')), `${track} row 0:6: frames 18-23 rewind at 4x from the choke (${fr(18).time.toFixed(2)} → ${fr(23).time.toFixed(2)} s), the sound reversed with them; no R0 footage backwards`);
+    ok(fr(30).layers.some(l => l.gen === 'camera-off'), `${track} row 0:8: Pat's black tile after the cold open`);
+    ok(['L1', 'G4', 'G6'].every(cls => p.all.slice(24, F(pl.call.until) + 24).some(x => x.layout === cls)) && layers.some(l => l.chrome?.toast?.text?.endsWith('joined')), `${track} row 1: the grid blooms L1 → G4 → G6 with "joined" toasts`);
+    ok(p.all.slice(0, F(sec('Verse').from * BS)).some(x => x.layers.some(l => /^join/.test(l.clipId) && l.shotId?.startsWith('printer'))), `${track} row 2: the printer joins the call`);
+    const U = F(pl.call.until);
+    ok(fr(U - 2).layers.filter(l => l.chrome.mic === 'on').length <= 1 && fr(U + 2).layers.every(l => l.chrome.mic === 'on') && p.board.screens.some(s => s.kind === 'title' && s.to <= T(pl.call.until) + 1e-9), `${track} row 3: the call muted before the unmute (frame ${U}; only the drummer's mic flickers on the hats), every mic on after it; YOU'RE ON MUTE ends by then`);
+    const V = F(sec('Verse').from * BS);
+    ok(fr(V).layout === 'L1' && fr(V).layers[0].transform.zoom < .5 && fr(V + 3).layers[0].transform.zoom === 1 && fr(F(sec('Verse').from * BS + 4) + 1).layout === 'stack3', `${track} row 4: Synergy fills the frame in 3 frames on the verse, then stack3`);
+    ok(p.board.cells.some(s => s.text === 'ARJUN / FINANCE' && s.font === 'peg5' && s.cell === 'stack3.1'), `${track} row 7: freeze + label ARJUN / FINANCE in PEG-5, in the middle tile`);
+    ok(p.all.some(x => x.layout === 'BOARD+STRIP' && x.board.banner) && layers.some(l => l.chrome?.banner === "You are viewing Synergy's screen"), `${track} row 8: the hook shares Synergy's screen`);
+    const build = sec('Build').from * BS;
+    ok(p.all.slice(F(build), F(build + BS)).every(x => x.layout === 'G9') && fr(F(build) + 14).layers.filter(l => l.fx.some(e => e.type === 'saturation')).length >= 6 && !fr(F(build) + 14).layers.some(l => l.gen === 'board'), `${track} row 12: freeze the call in G9, the frozen tiles greyed, the board once (its strip)`);
+    ok(p.all.some(x => x.layers.some(l => /^G4\.\d>split/.test(l.cell.id))) && p.all.some(x => x.layers.some(l => /^split\.\d>G4/.test(l.cell.id))), `${track} row 14: breakout rooms, two then four`);
+    const q = pl.lady.find(e => e.role === 'ladder' && e.period === 4).at;
+    ok([1, 2, 4, 8].every((n, k) => fr(F(q + k * 4) + 2).layers.length === n), `${track} row 16: the cell split 1, 2, 4, 8 on the quarters`);
+    ok(p.all.some(x => x.layout === 'BOARD+STRIP' && x.layers.some(l => l.fx.some(e => e.type === 'mosaic'))), `${track} row 18: the board with Synergy's tile, poor connection on the side tiles`);
+    ok(p.all.slice(F(pl.choke.at), I).every(x => x.layers.every(l => l.gen === 'color:#000000')) && ign(fr(I)) && !ign(fr(I - 1)), `${track} rows 19:8 and 20: the black tile from the choke (the board dark from frame ${B}), the ignition over peg video on frame ${I}`);
+    const sink = sec('Sink In').from * BS;
+    ok(fr(F(sink) + 4).layout === 'G4' && p.all.slice(F(sink), F(sink + BS)).some(x => x.layers.some(l => l.fx.some(e => e.type === 'mosaic' && e.px >= 32))), `${track} row 23: Sink In in G4; on "in" the outer cells sink to 32 px`);
+    const DB = sec('Drop B').from * BS;
+    ok(fr(F(DB) + 8).layers.some(l => l.gen === 'feedback' && l.fx.some(e => e.type === 'droste')) && fr(F(DB + 14)).camera?.zoom > 2, `${track} row 24: the Droste dive into Pat's cell`);
+    ok(fr(F(DB + 2 * BS + 10)).layers.some(l => l.fx.some(e => e.type === 'tile')) && fr(F(DB + 2 * BS + 10)).layout === 'L1' && fr(F(DB + 3 * BS + 10)).layers.some(l => l.clipId.startsWith('replay.')), `${track} rows 26-27: the kaleido of the pads in L1, replayed in the fill`);
+    ok(layers.some(l => l.chrome?.toast?.text === 'Kevin left the meeting') && fr(F(sec('Outro').from * BS) + 2).layout === 'G6', `${track} row 28: the call from G6, Kevin leaves first`);
+    const stop = pl.tape.find(t => t.kind === 'stop'), black = F(stop.from) + Math.ceil(stop.seconds * 24 - 1e-9);
+    ok(p.transports.some(t => t.kind === 'tapestop' && t.to === black) && p.all.slice(black, p.frames - 2).every(x => x.layers.every(l => l.gen === 'color:#000000') && !x.board.rect), `${track} row 29: the tape stop to frame ${black}, then true black (no board region) to ${p.frames - 3}`);
+    ok(p.all.slice(-2).every(x => x.transport?.id === 'loop' && x.transport.sound === 'silent' && x.layout === fr(0).layout && x.board.screen === fr(0).board.screen) && !p.lint.warnings.some(w => w.rule === 'G12'), `${track} row 29: the last two frames are the impact six frames in (silent): frame 0's layout and BACK. screen, so the loop closes (G12 clean)`);
+    ok(layers.every(l => !(l.shotId && /lady|circle back|^pat$/i.test(SHOTS.shots.find(s => s.id === l.shotId)?.characters.join(' ') ?? ''))) && layers.filter(l => l.gen === 'camera-off').length > 100, `${track} canon: Pat never on video; the lady never footage`);
     const sceneIds = new Set(edl.clips.map(c => c.scene));
-    ok([...sceneIds].every(s => SCENE_LABELS[s]), `every scene has a label for the monitor (${[...sceneIds].join(', ')})`);
+    ok([...sceneIds].every(s => SCENE_LABELS[s]), `${track}: every scene has a label for the monitor (${[...sceneIds].join(', ')})`);
   }
   const statuses = ROWS.reduce((m, r) => ({...m, [r.status]:(m[r.status] ?? 0) + 1}), {});
   ok(ROWS.length >= 27 && ROWS.every(r => ['done', 'stand-in', 'partial', 'skipped'].includes(r.status) && r.what && !/—/.test(r.note + r.what)), `ROWS: plan §2 row by row: ${Object.entries(statuses).map(([k, v]) => `${v} ${k}`).join(', ')}`);
-  ok(planJSON(plan) === planJSON(FORMS.drop60.arrange(lyrics, {})) && exportName(plan, '9:16') === 'linkedinbeats-circle-back-drop60-9x16.mp4' && SAMPLES_PER_FRAME === 2000, 'the plan hashes the same twice; file names; 2,000 samples a frame at 48 kHz');
+  ok(planJSON(plan) === planJSON(FORMS.drop60.arrange(lyrics, {}, {coldOpen:true})) && exportName(plan, '9:16') === 'linkedinbeats-circle-back-drop60-9x16.mp4' && SAMPLES_PER_FRAME === 2000, 'the plan hashes the same twice; file names; 2,000 samples a frame at 48 kHz');
   log(`1. Node: ${checks - before} checks`);
 }
 
@@ -186,41 +198,90 @@ try {
     log(`2. metronome and duration: ${checks - before} checks`);
   }
 
-  // ---- 3. flash plus click ---------------------------------------------------------------------------------
+  // ---- 3. the timing rule, every step of every track: cuts and hits --------------------------------------------
+  // One file per track (120, 92 and 130 BPM), two tiles: the top one cuts black/white on every step
+  // at round(t·24) (hard cuts: within half a frame of the beat); the bottom one flashes white for one
+  // frame on every step at its hit frame ({anchor:'step:s', hit:true}: the frame that holds the
+  // audible onset). The sound is a click on every step played through the engine's own master bus
+  // (buildGraph's drum bus, glue and limiter), so it lands as the engine renders it. Every step is
+  // tested; nothing is chosen. The engine's latency is then measured on each track's real render
+  // (every kick of the song), and must match edl/anchors.js AUDIO_LATENCY.
   if (section(3)) {
-    const before = checks, page = await fresh();
-    const rows = [];
-    for (const track of quick ? ['circle-back'] : ['circle-back', 'hustle']) {
+    const before = checks, page = await fresh(), dist = {};
+    for (const track of quick ? ['circle-back'] : ['circle-back', 'humbled-and-honored', 'hustle']) {
       const res = await page.evaluate(async ({track}) => {
-        const {plan} = await X.song({voice:false, track:track === 'circle-back' ? undefined : track});
-        // Chosen steps over the first 12 s: on-frame beats, swung off-beats, and (at 130 BPM)
-        // steps whose nearest frame starts at or before the sound.
-        const T = s => X.stepTime(plan, s), chosen = [];
-        for (let s = 8; T(s) < 11.5 && chosen.length < 16; s += 3) { const lead = T(s) - Math.round(T(s) * 24) / 24; if (lead >= -1e-9 && lead <= .025) chosen.push(s); }
-        const clips = [{id:'bg', at:0, len:plan.totalSteps, cell:'L1.0', asset:'gen:color:#000000'}];
-        chosen.forEach((s, i) => clips.push({id:`flash${i}`, at:s, len:1, cell:'L1.0', asset:'gen:white', z:1}));
+        const {plan} = await X.song({voice:false, track});
+        const T = s => X.stepTime(plan, s), N = plan.totalSteps, clips = [{id:'bg', at:0, len:N, cell:'full', asset:'gen:color:#000000'}];
+        for (let s = 0; s < N; s++) {
+          clips.push({id:`cut${s}`, at:s, len:1, cell:'split.0', asset:s % 2 ? 'gen:color:#000000' : 'gen:white', z:1});
+          clips.push({id:`hit${s}`, at:{anchor:`step:${s}`, hit:true}, len:1, cell:'split.1', asset:'gen:white', z:1});
+          clips.push({id:`off${s}`, at:{anchor:`step:${s}`, hit:true, frames:1}, len:1, cell:'split.1', asset:'gen:color:#000000', z:1});
+        }
         const edl = X.createEDL({form:'drop60', format:'9:16', clips, board:[]});
-        const n = Math.round(14 * 48000), L = new Float32Array(n);
-        for (const s of chosen) { const i = Math.round(T(s) * 48000); for (let k = 0; k < 48; k++) L[i + k] = .9; }
-        const out = await X.exportFilm({edl, plan, shots:X.SHOTS, format:'9:16', scale:.25, governor:false, span:[0, 12 * 24], audio:{sampleRate:48000, channels:[L, L], offset:0}});
-        X.out = {mp4:out.mp4};
-        return {chosen:chosen.map(s => ({step:s, t:T(s), frame:Math.round(T(s) * 24), expected:T(s) - Math.round(T(s) * 24) / 24})), bpm:plan.bpm};
+        // A click on every step, through the engine's master bus, offline at the engine's own 44.1 kHz
+        // (the compressors' look-ahead is a whole number of samples: 720 at 44.1 kHz, 16.33 ms; 768 at
+        // 48 kHz, 16.00 ms), then resampled to the file's 48 kHz by the export, as a song is.
+        const sr = 44100, n = Math.ceil((T(N) + .5) * sr), ctx = new OfflineAudioContext(2, n, sr), g = X.engine.buildGraph(ctx, {}, plan);
+        g.oscillators.forEach(o => o.start(0));
+        const buf = ctx.createBuffer(1, n, sr), c = buf.getChannelData(0);
+        for (let s = 0; s < N; s++) { const i = Math.round(T(s) * sr); for (let k = 0; k < 24; k++) c[i + k] = .8 * (1 - k / 24); }
+        const src = ctx.createBufferSource(); src.buffer = buf; src.connect(g.drumHp); src.start(0);
+        g.exact?.finalize?.();
+        const out = await ctx.startRendering(), L = out.getChannelData(0), R = out.getChannelData(1);
+        // The engine's own delay on each click, before any codec (the first sample within 40 dB of its peak).
+        const clickDelay = [];
+        for (let s = 0; s < N; s++) { const a = Math.max(0, Math.round((T(s) - .002) * sr)), z = Math.round((T(s) + .05) * sr); let p = 0; for (let i = a; i < z; i++) p = Math.max(p, Math.abs(L[i])); for (let i = Math.max(0, a); i < z; i++) if (Math.abs(L[i]) >= p / 100) { clickDelay.push((i / sr - T(s)) * 1000); break; } }
+        const film = await X.exportFilm({edl, plan, shots:X.SHOTS, format:'9:16', scale:.125, governor:false, post:{bloom:{weight:0}, grain:0, dither:false}, audio:{sampleRate:sr, channels:[L, R], offset:0}});
+        X.out = {mp4:film.mp4};
+        // The engine's latency on the real song: every kick after the unmute, drums alone.
+        const {song} = await X.song({voice:false, track});
+        const r = await X.engine.render(plan, song.buffers, {tune:{stems:true}, coldOpen:false, muted:{bass:true, keys:true, guitar:true, voice:true, lady:true}}, song.lady);
+        const m = r.getChannelData(0), rs = r.sampleRate, off = X.engine.RENDER_OFFSET - plan.timing[0], kicks = [];
+        for (const k of plan.kicks) {
+          const t = T(k); if (k < plan.call.until || t < 1) continue;
+          const a = Math.round((t + off - .002) * rs), z = Math.round((t + off + .04) * rs);
+          let p = 0; for (let i = a; i < z; i++) p = Math.max(p, Math.abs(m[i]));
+          for (let i = a; i < z; i++) if (Math.abs(m[i]) >= p / 100) { kicks.push((i / rs - off - t) * 1000); break; }
+        }
+        return {bpm:plan.bpm, steps:N, T:Array.from({length:N}, (_, s) => T(s)), hit:Array.from({length:N}, (_, s) => X.hitFrame(T(s), plan)), cut:Array.from({length:N}, (_, s) => X.cutFrame(T(s))), latency:X.audioLatency(plan), kicks, clickDelay};
       }, {track});
-      const file = path.join(OUT, `flash-${track}.mp4`);
+      const file = path.join(OUT, `timing-${track}.mp4`);
       fs.writeFileSync(file, await pull(page, 'mp4'));
-      const luma = lumaTrack(file), x = pcm(file), sr = 48000;
-      const flashes = luma.filter((l, i) => l.luma > 128 && (i === 0 || luma[i - 1].luma <= 128)).map(l => l.pts);
-      const clicks = [];
-      for (let i = 0; i < x.length; i++) if (x[i] > .3 && (i === 0 || x[i - 1] <= .3) && (!clicks.length || i / sr - clicks.at(-1) > .05)) clicks.push(i / sr);
-      res.chosen.forEach((c, i) => rows.push({track, bpm:res.bpm, step:c.step, t:c.t, picture:flashes[i], sound:clicks[i], lead:clicks[i] - flashes[i], expected:c.expected}));
-      ok(flashes.length === res.chosen.length && clicks.length === res.chosen.length, `flash ${track}: ${flashes.length} flashes and ${clicks.length} clicks found for ${res.chosen.length} chosen steps`);
+      // Per frame: the mean luma of the top tile and the bottom tile (136×240 grey).
+      const W = 136, H = 240, raw = spawnSync('ffmpeg', ['-v', 'error', '-i', file, '-vf', 'format=gray', '-f', 'rawvideo', '-'], {maxBuffer:1 << 30}).stdout, frames = raw.length / (W * H);
+      const band = (f, y0, y1) => { let sum = 0, cnt = 0; for (let y = y0; y < y1; y++) for (let x = 10; x < W - 10; x++) { sum += raw[f * W * H + y * W + x]; cnt++; } return sum / cnt; };
+      const top = [], bottom = [];
+      for (let f = 0; f < frames; f++) { top.push(band(f, 15, 90) > 128); bottom.push(band(f, 150, 230) > 128); }
+      const start = +probe(file).find(st => st.codec_type === 'video').start_time || 0;
+      // Cuts: the frames where the top tile changes; each must be its step's round(t·24) and sit within half a frame of the beat.
+      const cutsSeen = []; for (let f = 1; f < frames; f++) if (top[f] !== top[f - 1]) cutsSeen.push(f);
+      const cutsWant = res.cut.slice(1);
+      const cutErr = cutsWant.map((f, i) => (cutsSeen[i] / FPS + start) - res.T[i + 1]);
+      ok(cutsSeen.length === cutsWant.length && cutsWant.every((f, i) => cutsSeen[i] === f), `${track} (${res.bpm} BPM): ${cutsSeen.length} of ${cutsWant.length} step cuts on their round(t·24) frame in the file`);
+      ok(cutErr.every(d => Math.abs(d) <= .5 / FPS + 5e-4), `${track}: every cut within half a frame of its beat (${(Math.min(...cutErr) * 1000).toFixed(2)} to ${(Math.max(...cutErr) * 1000).toFixed(2)} ms)`);
+      // Hits: one white frame per step in the bottom tile; the click's audible onset (the first sample within 40 dB
+      // of its peak) must fall inside that frame: the picture leads by 0 to under one frame, never late.
+      const flashes = []; for (let f = 0; f < frames; f++) if (bottom[f] && (!f || !bottom[f - 1])) flashes.push(f);
+      // The audible onset in the file: the first sample within 20 dB of the click's peak. (An Opus or AAC
+      // encode's pre-echo reaches a few tenths of a millisecond earlier at -40 dB: printed, not the onset.)
+      const x = pcm(file), sr = 48000, onsetAt = db => res.T.map(t => { const a = Math.max(0, Math.round((t - .002) * sr)), z = Math.round((t + .05) * sr); let p = 0; for (let i = a; i < z; i++) p = Math.max(p, Math.abs(x[i])); for (let i = a; i < z; i++) if (Math.abs(x[i]) >= p * 10 ** (db / 20)) return i / sr; return null; });
+      const onsets = onsetAt(-20), echo = onsetAt(-40);
+      const leads = flashes.map((f, i) => onsets[i] - (f / FPS + start)), echoLead = flashes.map((f, i) => echo[i] - (f / FPS + start));
+      ok(flashes.length === res.steps && flashes.every((f, i) => f === res.hit[i]), `${track}: ${flashes.length} of ${res.steps} hit flashes, each on its step's hit frame`);
+      // (To the file's resolution: one sample at 48 kHz, 0.02 ms; the rule's closest step leads by 0.02 ms in plan time.)
+      ok(leads.every(d => d >= -1 / 48000 - 1e-9 && d < 1 / FPS), `${track}: every hit leads its click's audible onset by 0 to under one frame (${(Math.min(...leads) * 1000).toFixed(2)} to ${(Math.max(...leads) * 1000).toFixed(2)} ms over ${leads.length} steps, to one sample; never late; the codec's pre-echo at -40 dB from ${(Math.min(...echoLead) * 1000).toFixed(2)} ms)`);
+      const delay = onsets.map((o, i) => (o - res.T[i]) * 1000).sort((a, b) => a - b), k = [...res.kicks].sort((a, b) => a - b), med = a => a[a.length >> 1], eng = [...res.clickDelay].sort((a, b) => a - b), Lms = res.latency * 1000;
+      const near = k.filter(d => Math.abs(d - Lms) < .5).length;
+      // The kicks a preceding hit's tail reaches into read early (their onset is lost in it), never late.
+      ok(eng.length === res.steps && Math.abs(eng[0] - Lms) < .05 && Math.abs(eng.at(-1) - Lms) < .05 && Math.abs(med(k) - Lms) < .15 && near >= .6 * k.length && k.at(-1) < Lms + .5,
+        `${track}: the engine's latency, measured: every click through the master bus ${eng[0].toFixed(2)}-${eng.at(-1).toFixed(2)} ms; the song's ${k.length} kicks median ${med(k).toFixed(2)} ms, ${near} within 0.5 ms, none later than ${k.at(-1).toFixed(2)} ms; AUDIO_LATENCY ${Lms.toFixed(2)} ms. In the file (Opus) the clicks' onsets read ${delay[0].toFixed(2)}-${delay.at(-1).toFixed(2)} ms after their steps`);
+      const pct = (a, q) => [...a].sort((p, r) => p - r)[Math.min(a.length - 1, Math.floor(q * a.length))];
+      dist[track] = {bpm:res.bpm, steps:res.steps, cut:{min:Math.min(...cutErr) * 1000, p50:pct(cutErr, .5) * 1000, max:Math.max(...cutErr) * 1000}, lead:{min:Math.min(...leads) * 1000, p50:pct(leads, .5) * 1000, max:Math.max(...leads) * 1000, overHalf:leads.filter(d => d > .5 / FPS).length, preEcho:Math.min(...echoLead) * 1000}, engineClick:{min:eng[0], max:eng.at(-1)}, fileClick:{min:delay[0], p50:med(delay), max:delay.at(-1)}, kicks:{n:k.length, min:k[0], p50:med(k), max:k.at(-1), within:near}};
+      log(`   ${track} ${res.bpm} BPM, ${res.steps} steps: cuts ${dist[track].cut.min.toFixed(2)} / ${dist[track].cut.p50.toFixed(2)} / ${dist[track].cut.max.toFixed(2)} ms from the beat (min / median / max); hits lead ${dist[track].lead.min.toFixed(2)} / ${dist[track].lead.p50.toFixed(2)} / ${dist[track].lead.max.toFixed(2)} ms (${dist[track].lead.overHalf} steps over half a frame); kicks land ${dist[track].kicks.min.toFixed(2)} / ${dist[track].kicks.p50.toFixed(2)} / ${dist[track].kicks.max.toFixed(2)} ms after plan time`);
     }
-    const leads = rows.map(r => r.lead * 1000), offs = rows.map(r => (r.lead - r.expected) * 1000);
-    ok(rows.every(r => r.lead >= -1e-4 && r.lead <= .025 + 1e-4), `flash-plus-click: the picture leads the sound by ${Math.min(...leads).toFixed(2)} to ${Math.max(...leads).toFixed(2)} ms over ${rows.length} flashes (gate 0-25 ms, never late)`);
-    ok(offs.every(o => Math.abs(o) < 1), `flash-plus-click: the file adds ${Math.min(...offs).toFixed(3)} to ${Math.max(...offs).toFixed(3)} ms to the lead the frame grid gives (encoder delay and Opus pre-skip cancel)`);
-    fs.writeFileSync(path.join(OUT, 'flash-click.json'), JSON.stringify(rows, null, 1));
+    fs.writeFileSync(path.join(OUT, 'timing.json'), JSON.stringify(dist, null, 1));
     await page.close();
-    log(`3. flash plus click: ${checks - before} checks (${rows.map(r => `${(r.lead * 1000).toFixed(1)}`).join(' ')} ms)`);
+    log(`3. the timing rule: ${checks - before} checks`);
   }
 
   // ---- 4. determinism, 5. leaks: the draft cut on real footage, twice in fresh pages --------------------------

@@ -6,19 +6,26 @@
 // Pure: the same EDL, plan, shots and features give the same program, frame for
 // frame, in Node and in the browser. compileFrame(f) recomputes any frame on its
 // own, for scrubbing.
-import {resolveAt, resolveSpan, stepTime, stepAtTime, cutFrame, ladyTime, FPS, barSteps, beatSteps, anchorPoint} from './anchors.js';
-import {paramFn, range, planFeatures} from './params.js';
+import {resolveAt, resolveSpan, stepTime, stepAtTime, cutFrame, ladyTime, FPS, barSteps, beatSteps, anchorPoint, audioLatency} from './anchors.js';
+import {paramFn, range, planFeatures, envelopeAt} from './params.js';
 import {clipTimeMap, tapeCurve, transportTime} from './remap.js';
 import {validate, parseAsset, FX} from './schema.js';
 import {FORMATS, cellRect, layout, layoutClassOf} from '../layouts.js';
-import {buildScreens, activeScreen, indexWords} from '../../pegboard/choreo.js';
+import {buildScreens, activeScreen, indexWords, boardState} from '../../pegboard/choreo.js';
 import {LADY_TABLE} from '../../allhands/lady-table.js';
-import TRACKING from '../../meeting-room/robot-tracking.json' with {type:'json'};
+import MEETING_TRACKING from '../../meeting-room/robot-tracking.json' with {type:'json'};
+import STUDIO_TRACKING from '../media/robot-tracks.json' with {type:'json'};
+
+// Robot mouth tracks: the meeting room's (by character: its own plates) and the studio's (by
+// shot id: every other clean Synergy shot, scripts/track-studio-robots.py). [x, y, angle, scale]
+// per source frame in source px, the mouth row 100 × 6 px at scale 1.
+export const TRACKING = {...MEETING_TRACKING, ...STUDIO_TRACKING};
 
 export const DECODE_LIMITS = {mobile:4, desktop:8};
 export const UPSCALE = {A:1.8, B:1.5, C:1.2};      // tolerable upscale U by sharpness tier
 export const STUTTER_FRAMES = 12;                  // the stutter cache: one beat of 540p frames, <= 25 MB
 const EPS = 1e-9;
+const BLACKS = new Set(['black', 'color:#000000']);
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 
 // ---- the shot index --------------------------------------------------------------------------
@@ -42,7 +49,7 @@ export function shotIndex(input) {
       contentBox:rectOf(s.contentBox) ?? {x:0, y:0, w:width, h:height}, faceBox:rectOf(s.faceBox), safeCrops,
       characters:s.characters ?? [], action:s.action ?? [], roles:s.roles ?? [], status:s.status ?? 'C',
       reverseClass:s.reverseClass ?? 'R0', mirrorable:!!s.mirrorable, hits, hitTimes:hits.map(h => seconds ? h : h / fps),
-      robot:s.robot ?? s.tracking ?? (s.id === 'synergy-camera-v2-listening' ? 'synergy' : null)});
+      robot:s.robot ?? s.tracking ?? (STUDIO_TRACKING[s.id] ? s.id : null) ?? (s.id === 'synergy-camera-v2-listening' ? 'synergy' : null)});
   }
   for (const s of list) for (const a of s?.aliases || []) if (!map.has(a) && map.has(s.id)) map.set(a, map.get(s.id));
   map.__shotIndex = true;
@@ -114,6 +121,27 @@ function robotFrame(track, time) {
 // The robot's mouth row (meeting-room drawRobotMouth: 22 cells over ~100 × 6 source px
 // around the tracked point) in output px.
 const MOUTH = {halfW:50, halfH:3, margin:4};
+// Synergy's mouth level: his voice stem (the vocoder and his dry voice), followed like a
+// meter, and only while he is singing or speaking one of his own words: the vocoder also
+// carries her ladder and BACK., and the plan keeps his mouth dark through Sink In.
+export const MOUTH_LEVEL = {bind:'voice', attack:.012, release:.09, tail:.12};
+function voiceSpans(plan) {
+  const out = [];
+  for (const w of plan.words || []) { const t = stepTime(plan, w.at); out.push([t, Math.min(t + (w.gate ?? Infinity), stepTime(plan, w.at + (w.steps ?? 1)))]); }
+  for (const s of plan.stutters || []) { const t = stepTime(plan, s.at); out.push([t, stepTime(plan, s.at + .9)]); }
+  out.sort((a, b) => a[0] - b[0]);
+  const merged = [];
+  for (const [a, b] of out) { const m = merged.at(-1); if (m && a <= m[1] + 1e-9) m[1] = Math.max(m[1], b); else merged.push([a, b]); }
+  return merged;
+}
+function mouthLevelFn(plan, features) {
+  const spans = voiceSpans(plan), lead = 1 / FPS;
+  return t => {
+    let lo = 0, hi = spans.length - 1, hit = false;
+    while (lo <= hi) { const mid = (lo + hi) >> 1; if (spans[mid][0] - lead <= t) { hit = t < spans[mid][1] + MOUTH_LEVEL.tail; lo = mid + 1; } else hi = mid - 1; }
+    return hit ? Math.round(clamp(envelopeAt(features, MOUTH_LEVEL, t), 0, 1) * 1e4) / 1e4 : 0;
+  };
+}
 
 // ---- overrides ----------------------------------------------------------------------------------
 export function applyOverrides(edl) {
@@ -208,6 +236,8 @@ export function compile(edlIn, opts = {}) {
   if (!F) throw Error(`unknown format ${format}`);
   const shots = shotIndex(opts.shots), features = opts.features ?? planFeatures(plan, {fps});
   const target = opts.target ?? 'desktop', table = opts.table ?? LADY_TABLE, tracking = opts.tracking ?? TRACKING;
+  let mouthLevel = null;
+  const mouthOf = () => mouthLevel ??= mouthLevelFn(plan, features);
   const N = opts.frames ?? cutFrame(stepTime(plan, edl.song?.steps ?? plan.totalSteps), fps);
   const tape = tapeCurve(plan), BS = barSteps(plan), QS = beatSteps(plan);
   const waived = (rule, clipId) => clipId && waivers.get(clipId)?.has(rule);
@@ -245,7 +275,7 @@ export function compile(edlIn, opts = {}) {
         speaking:paramFn(ch.speaking ?? 0, pctx), mic:typeof ch.mic === 'string' || ch.mic === undefined ? null : paramFn(ch.mic, pctx),
         name:ch.name ?? (shot ? shot.characters[0] ?? shot.id : asset.gen === 'camera-off' ? 'Pat' : null), role:ch.role ?? shot?.role ?? null,
         robot:shot && robotTrack(shot) && tracking[robotTrack(shot)] ? robotTrack(shot) : null,
-        synergy:!!shot && isSynergy(shot), printer:!!shot && isPrinter(shot), instrument:!!shot && isInstrument(shot),
+        synergy:!!shot && isSynergy(shot), printer:!!shot && isPrinter(shot), instrument:!!shot && isInstrument(shot), level:shot && isSynergy(shot) ? mouthOf() : null,
         toasts:(Array.isArray(ch.toast) ? ch.toast : ch.toast ? [ch.toast] : []).map(n => note(plan, origin, n, 2 * QS)),
         banners:(Array.isArray(ch.banner) ? ch.banner : ch.banner ? [ch.banner] : []).map(n => note(plan, origin, n, clip.len)),
         z:clip.z ?? 0});
@@ -264,12 +294,17 @@ export function compile(edlIn, opts = {}) {
     try {
       // The window is whole frames; the curve is pinned to the audio's own start time.
       const span = resolveSpan(plan, t.at, t.len, fps), Ta = span.time;
-      const tr = {id:t.id ?? `transport${i}`, kind:t.kind, from:span.frame, to:span.endFrame, Ta, len:t.len, audio:t.audio === true, signature:t.signature ?? (t.kind === 'rewind' ? 'rewind' : null), step:span.step};
+      const tr = {id:t.id ?? `transport${i}`, kind:t.kind, from:span.frame, to:span.endFrame, Ta, Tb:span.end, len:t.len, audio:t.audio === true, signature:t.signature ?? (t.kind === 'rewind' ? 'rewind' : null), step:span.step};
       if (t.kind === 'rewind') { tr.rate = t.rate ?? 4; tr.Tfrom = t.from !== undefined ? resolveAt(plan, t.from, fps).time : Ta; }
+      else if (t.kind === 'jump') { tr.rate = 1; tr.Tfrom = t.from !== undefined ? resolveAt(plan, t.from, fps).time : Ta; }
       else {
         const stop = tape.segments.find(s => s.kind === 'stop' && Math.abs(s.t0 - stepTime(plan, span.step)) < .02);
         tr.seconds = t.seconds ?? (stop ? stop.t1 - stop.t0 : (span.endFrame - span.frame) / fps);
       }
+      // Does the sound really do this? A rewind's audio reverses only where the plan rewinds it too
+      // (plan.transports, drop.js withColdOpen); a jump's sound is the moment it shows only where the
+      // plan copies it there (plan.coldOpen.impact).
+      tr.sound = soundOf(plan, tr, fps);
       transports.push(tr);
     } catch (e) { report('error', 'schema', `transports[${i}]: ${e.message}`, {path:`transports[${i}]`}); }
   });
@@ -281,7 +316,7 @@ export function compile(edlIn, opts = {}) {
     try {
       const span = resolveSpan(plan, c.at, c.len, fps), origin = {step:span.step, shift:span.shift, frame:span.frame}, pctx = {plan, features, origin, fps};
       const P = (k, d) => paramFn(c[k] ?? d, pctx);
-      cameras.push({id:c.id ?? `camera${i}`, from:span.frame, to:span.endFrame, zoom:P('zoom', 1), cx:P('cx', .5), cy:P('cy', .5), rot:P('rot', 0), dx:P('dx', 0), dy:P('dy', 0),
+      cameras.push({id:c.id ?? `camera${i}`, from:span.frame, to:span.endFrame, board:c.board === true, film:c.clock === 'film', zoom:P('zoom', 1), cx:P('cx', .5), cy:P('cy', .5), rot:P('rot', 0), dx:P('dx', 0), dy:P('dy', 0),
         fx:(c.fx || []).filter(x => FX[x?.type]).map(x => ({type:x.type, spec:FX[x.type], params:Object.entries(FX[x.type].params).map(([k, ps]) => [k, ps.values ? (x[k] ?? ps.d) : paramFn(x[k] ?? ps.d, pctx)])}))});
     } catch (e) { report('error', 'schema', `camera[${i}]: ${e.message}`, {path:`camera[${i}]`}); }
   });
@@ -296,7 +331,7 @@ export function compile(edlIn, opts = {}) {
   } catch (e) { report('error', 'schema', `board: ${e.message}`, {path:'board'}); board = {mode:'cues', screens:[], cells:[]}; }
 
   // ---- one frame ---------------------------------------------------------------------------------
-  const NONE = Object.freeze([]);
+  const NONE = Object.freeze([]), lead = audioLatency(plan);
   function evalFx(list, t, toCell) {
     if (!list.length) return NONE;
     const out = [];
@@ -316,8 +351,10 @@ export function compile(edlIn, opts = {}) {
     let cx = vary.cx ?? c.cx(v), cy = vary.cy ?? c.cy(v);
     if (zoom >= 1) { const h = .5 / zoom; cx = clamp(cx, h, 1 - h); cy = clamp(cy, h, 1 - h); }
     let src = tm.src, dir = tm.dir, source = tm.source, frozenByTransport = false;
+    // A rewind runs the picture backwards, but the printer's pages and the instrument plates hold
+    // their frame at the rewind's start instead (plan §2: R0 footage never plays backwards).
     if (tr?.kind === 'rewind') {
-      if (c.printer) { const tt = clamp(tr.Tfrom, c.F0 / fps, (c.F1 - 1) / fps); src = c.time.at(tt).src; dir = 0; source = 'still'; frozenByTransport = true; }
+      if (c.printer || c.instrument) { const tt = clamp(tr.Tfrom, c.F0 / fps, (c.F1 - 1) / fps); src = c.time.at(tt).src; dir = 0; source = 'still'; frozenByTransport = true; }
       else dir = -dir;
     }
     if (tr?.kind === 'tapestop' && v >= tr.Ta + tr.seconds / 2 - EPS && source !== 'still') { source = 'still'; dir = 0; }
@@ -346,13 +383,15 @@ export function compile(edlIn, opts = {}) {
       chrome:chromeOf(c, v),
     };
     if (c.robot) {
-      const [x, y, angle, scale] = robotFrame(tracking[c.robot], src);
+      const track = tracking[c.robot], [x, y, angle, scale] = robotFrame(track, src);
       inv ??= invert(M);
       const [ox, oy] = apply(inv, x, y), k = Math.hypot(inv[0], inv[3]);
-      layer.robot = {id:c.robot, mouth:{x:ox, y:oy, angle:angle + rot * Math.PI / 180, scale:scale * k, w:2 * MOUTH.halfW * scale * k, h:2 * MOUTH.halfH * scale * k}};
+      // level: 0..1, his voice while he sings (the compositor lights the row from it, the
+      // meeting room's drawRobotMouth); 0 rests the row at its idle glow.
+      layer.robot = {id:track.robot ?? c.robot, mouth:{x:ox, y:oy, angle:angle + rot * Math.PI / 180, scale:scale * k, px:k, w:2 * MOUTH.halfW * scale * k, h:2 * MOUTH.halfH * scale * k}, level:c.level ? c.level(v) : 0};
     }
     if (c.synergy) layer.canon = {synergy:true};
-    if (frozenByTransport) layer.held = 'printer';
+    if (frozenByTransport) layer.held = c.printer ? 'printer' : 'instrument';
     return layer;
   }
 
@@ -386,20 +425,30 @@ export function compile(edlIn, opts = {}) {
     const cls = named.length ? named.sort((a, b) => classes[b] - classes[a] || (a < b ? -1 : 1))[0] : layers.length ? 'full' : null;
     const L = cls && cls !== 'full' ? layout(cls, format) : null;
     let cam = null;
-    for (const c of cameras) if (vf >= c.from && vf < c.to) cam = c;
+    // A camera cue runs on the song time the frame shows, or (clock:'film') on the film's own frames.
+    for (const c of cameras) { const g = c.film ? f : vf; if (g >= c.from && g < c.to) cam = c; }
     let camera = null;
     if (cam) {
-      const zoom = cam.zoom(v), rot = cam.rot(v), dx = cam.dx(v), dy = cam.dy(v);
-      let cx = cam.cx(v), cy = cam.cy(v);
+      const u = cam.film ? t : v, zoom = cam.zoom(u), rot = cam.rot(u), dx = cam.dx(u), dy = cam.dy(u);
+      let cx = cam.cx(u), cy = cam.cy(u);
       if (zoom >= 1) { const h = .5 / zoom; cx = clamp(cx, h, 1 - h); cy = clamp(cy, h, 1 - h); }
-      camera = {id:cam.id, zoom, cx, cy, rot, dx, dy, matrix:layerMatrix(frameRect, frameRect, {zoom, cx, cy, rot, dx, dy}), fx:evalFx(cam.fx, v)};
+      // board: the move owns the board (it moves with the composite); otherwise the board holds
+      // still over the moving picture, so the camera never pushes the words out of frame.
+      camera = {id:cam.id, zoom, cx, cy, rot, dx, dy, board:cam.board, matrix:layerMatrix(frameRect, frameRect, {zoom, cx, cy, rot, dx, dy}), fx:evalFx(cam.fx, u)};
     }
-    const screen = board.screens.length ? board.screens.indexOf(activeScreen(board.screens, v)) : -1;
+    // The screen this frame shows, by the compositor's own rule (gl/compositor.js boardTimeOf): a
+    // screen is up on the frame that holds the sound of its start, v + 1/24 − L.
+    const screen = board.screens.length ? board.screens.indexOf(activeScreen(board.screens, v + 1 / fps - lead)) : -1;
     const cellScreens = [];
     for (let i = 0; i < board.cells.length; i++) { const s = board.cells[i]; if (v >= s.from && v < s.to) { const r = cellRect(format, s.cell); if (r) cellScreens.push({screen:i, cell:s.cell, rect:{x:r.x, y:r.y, w:r.w, h:r.h}, z:s.z}); } }
-    return {f, t, time:v, layout:cls, transport:tr ? {id:tr.id, kind:tr.kind, phase:(f - tr.from) / (tr.to - tr.from), rate:tr.kind === 'rewind' ? -tr.rate : null} : null,
-      // The board's region: the layout's, or the whole frame over a full-frame picture (or none).
-      camera, board:{time:v, screen, rect:L ? (L.board ? {...L.board} : null) : {...frameRect}, banner:L?.banner ? {...L.banner} : null, cells:cellScreens}, layers};
+    // Lights out: when every tile of a layout is black, the call has gone dark and its board goes
+    // with it (true black, sockets off). A full-frame black keeps the board: the choke's tag on
+    // bare sockets.
+    const dark = !!L && layers.length > 0 && layers.every(l => l.kind === 'generated' && BLACKS.has(l.gen) && l.opacity >= .999);
+    return {f, t, time:v, layout:cls, transport:tr ? {id:tr.id, kind:tr.kind, phase:(f - tr.from) / (tr.to - tr.from), rate:tr.kind === 'rewind' ? -tr.rate : tr.kind === 'jump' ? 1 : null, sound:tr.sound} : null,
+      // The board's region: the layout's, or the whole frame over a full-frame picture. lead: the
+      // engine's latency, so the compositor lights each peg on the frame that holds its sound.
+      camera, board:{time:v, lead, screen, rect:dark ? null : L ? (L.board ? {...L.board} : null) : {...frameRect}, over:!!L?.boardOver, dark, banner:L?.banner ? {...L.banner} : null, cells:cellScreens}, layers};
   }
 
   const frames = new Array(N);
@@ -422,14 +471,14 @@ export function compile(edlIn, opts = {}) {
   }
 
   // ---- lint ------------------------------------------------------------------------------------
-  lintProgram({edl, plan, clips, byId, frames, transports, board, flag, report, fps, N, BS, QS, features});
+  lintProgram({edl, plan, clips, byId, frames, transports, board, flag, report, fps, N, BS, QS, features, F});
 
   const ms = typeof performance !== 'undefined' ? performance.now() - started : 0;
   const program = {
     version:1, format, width:F.w, height:F.h, fps, frames:N, duration:N / fps,
     plan:{form:plan.form, totalSteps:plan.totalSteps, duration:plan.duration},
     clips:clips.map(c => ({id:c.id, shotId:c.shot?.id ?? null, asset:c.clip.asset, cell:c.clip.cell, from:c.F0, to:c.F1, step:c.span.step, restarts:c.time.restarts, scene:c.clip.scene ?? null, signature:c.clip.signature ?? null})),
-    transports:transports.map(t => ({id:t.id, kind:t.kind, from:t.from, to:t.to, rate:t.rate ?? null, seconds:t.seconds ?? null, sourceTime:t.Tfrom ?? null})),
+    transports:transports.map(t => ({id:t.id, kind:t.kind, from:t.from, to:t.to, rate:t.rate ?? null, seconds:t.seconds ?? null, sourceTime:t.Tfrom ?? null, sound:t.sound})),
     board, cuts, decode, lint:{...lint, ok:lint.errors.length === 0},
     frame:f => frames[f],
     compileFrame:f => frameAt(f),
@@ -500,6 +549,25 @@ export function decodeSchedule(frames, {N, plan, fps, shots, BS, QS}) {
   return {perFrame, max, perBar, streams:[...streams.values()], prefetch, limits:DECODE_LIMITS};
 }
 
+// What the sound does over a transport's span, from the plan alone:
+//   rewind: 'reversed' when plan.transports rewinds the mix over the same span at the same rate from
+//           the same source time (within half a frame); 'silent' when the plan is silent there (after
+//           the tape stop's hold); else 'forward'.
+//   jump:   'copied' when plan.coldOpen.impact copies that moment's sound into the span; 'silent' as
+//           above; else 'forward'.
+//   tapestop: 'tapestop' (the engine stops its tape on plan.tape).
+export function soundOf(plan, tr, fps = FPS) {
+  const near = (a, b) => Math.abs(a - b) <= .5 / fps + 1e-9;
+  if (tr.kind === 'tapestop') return 'tapestop';
+  if (tr.kind === 'rewind' && (plan.transports || []).some(p => p.kind === 'rewind' && p.audio === true && near(p.at, tr.Ta) && near(p.at + p.len, tr.Tb) && Math.abs((p.rate ?? 4) - tr.rate) < 1e-9 && near(p.sourceFrom ?? p.at, tr.Tfrom))) return 'reversed';
+  const ci = plan.coldOpen?.impact;
+  // (A jump starts on the frame that holds the copied moment's onset, so its source sits within a frame.)
+  if (tr.kind === 'jump' && ci && near(ci.at, tr.Ta) && tr.Tb <= ci.until + .5 / fps + 1e-9 && Math.abs(ci.source - tr.Tfrom) < 1 / fps) return 'copied';
+  const stop = (plan.tape || []).find(x => x.kind === 'stop');
+  if (stop && tr.Ta >= stepTime(plan, stop.from) + (stop.seconds ?? .4) - 1e-9) return 'silent';
+  return 'forward';
+}
+
 // Two 32-bit FNV-style lanes over every frame's JSON, as 16 hex digits.
 export function hashFrames(frames) {
   let h1 = 0x811c9dc5, h2 = 0xcbf29ce4;
@@ -512,7 +580,7 @@ export function hashFrames(frames) {
 
 // ---- the validator rules the EDL can decide ----------------------------------------------------
 const GREEN = c => { const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(c); if (!m) return /green|lime|emerald|#0f0\b/i.test(c); const [r, g, b] = m.slice(1).map(x => parseInt(x, 16)); return g > 90 && g > r + 40 && g > b + 40; };
-function lintProgram({edl, plan, clips, byId, frames, transports, board, flag, report, fps, N, BS, QS, features}) {
+function lintProgram({edl, plan, clips, byId, frames, transports, board, flag, report, fps, N, BS, QS, features, F}) {
   const T = s => stepTime(plan, s);
   // G11 canon, per clip: no Pat on video, no face for the lady, robots and instruments never mirrored.
   for (const c of clips) {
@@ -545,21 +613,42 @@ function lintProgram({edl, plan, clips, byId, frames, transports, board, flag, r
     if (c.overrun > .5 / (s.fps || 24)) report('warn', 'S3', `${c.id}: runs ${c.overrun.toFixed(2)} s past the end of ${s.id}; the last frame holds`, {clipId:c.id});
   }
 
+  // Lit words on the song's board at a frame: a word of the screen on the board has been
+  // reached (its pegs light on the frame that holds its sound: by v + 1/24 − L) and has not
+  // ended, and the board is not dark (choreo's state at the middle of the frame, less L).
+  const L = audioLatency(plan);
+  const litAt = fr => {
+    const s = fr.board.screen >= 0 ? board.screens[fr.board.screen] : null;
+    if (!s || !(s.words || []).some(w => w.start <= fr.time + 1 / fps - L && w.end > fr.time)) return false;
+    return boardState(plan, fr.time + .5 / fps - L).exposure > 0;
+  };
   // Per-frame rules: reverse policy (G7), zoom ceiling (G10), Synergy's mouth (G11).
   const worstZoom = new Map(), agg = new Map();
   // One finding per clip and cause, with the first frame and how many frames it lasts.
   const per = (level, rule, clipId, key, message, f) => { const k = `${level}|${rule}|${clipId}|${key}`, a = agg.get(k); if (a) a.count++; else agg.set(k, {level, rule, clipId, message, first:f, count:1}); };
   for (let f = 0; f < N; f++) {
-    const fr = frames[f], inRewind = fr.transport?.kind === 'rewind', camZoom = fr.camera?.zoom ?? 1;
+    const fr = frames[f], inRewind = fr.transport?.kind === 'rewind', heard = inRewind && fr.transport.sound === 'reversed', camZoom = fr.camera?.zoom ?? 1;
     fr.layers.forEach((l, i) => {
       if (l.kind !== 'video') return;
       const c = byId.get(l.clipId), s = c.shot;
-      if (l.reverse && !inRewind && s.reverseClass === 'R0') per('error', 'G7', c.id, 'reverse', `${c.id}: ${s.id} is R0 and plays backwards; R0 shots reverse only inside a rewind transport`, f);
+      // R2: R0 footage runs backwards only inside a rewind whose sound really reverses with it
+      // (a plan transport with audio:true over the same span), never under forward or silent sound.
+      if (l.reverse && !heard && s.reverseClass === 'R0') per('error', 'G7', c.id, inRewind ? 'reverse-silent' : 'reverse', inRewind
+        ? `${c.id}: ${s.id} is R0 and plays backwards in ${fr.transport.id}, but the plan does not reverse the sound there (plan.transports); freeze it or rewind the audio too`
+        : `${c.id}: ${s.id} is R0 and plays backwards; R0 shots reverse only inside a rewind whose sound reverses too`, f);
       const soft = l.fx.some(x => (x.type === 'mosaic' && x.px >= 8) || (x.type === 'pegVideo' && x.mix >= .5));
       const U = UPSCALE[s.sharpTier] ?? s.maxUpscale ?? 1.5, up = l.transform.zoom * camZoom * l.cell.h / l.crop.h;
       if (!soft && up > U + 1e-6) { const w = worstZoom.get(c.id); if (!w || up > w.up) worstZoom.set(c.id, {up, f, U, maxZoom:U * l.crop.h / l.cell.h, zoom:l.transform.zoom * camZoom}); }
       if (l.robot && l.canon?.synergy) {
         const m = l.robot.mouth, box = {x:m.x - m.w / 2 - MOUTH.margin, y:m.y - m.h / 2 - MOUTH.margin, w:m.w + 2 * MOUTH.margin, h:m.h + 2 * MOUTH.margin};
+        // The board never lights over his mouth row: a region laid over his picture, or one held
+        // still while a camera move carries his face under it.
+        const R = fr.board.rect;
+        if (R && litAt(fr)) {
+          const held = fr.camera && !fr.camera.board, onScreen = held ? boundsThrough(invert(fr.camera.matrix), box) : box;
+          const over = held || fr.board.over || fr.layers.some(x => overlap(x.cell, R));
+          if (over && overlap(onScreen, R)) per('error', 'G11', c.id, 'board', `${c.id}: the Peg Board lights over Synergy's mouth row (board y ${R.y}-${R.y + R.h})`, f);
+        }
         const inside = box.x >= l.cell.x && box.y >= l.cell.y && box.x + box.w <= l.cell.x + l.cell.w && box.y + box.h <= l.cell.y + l.cell.h;
         for (const above of fr.layers.slice(i + 1)) if (above.opacity > .01 && overlap(box, visible(above))) per('error', 'G11', c.id, above.clipId, `${c.id}: ${above.clipId} covers Synergy's mouth row`, f);
         for (const cs of fr.board.cells) if (cs.z === 'over' && overlap(box, cs.rect)) per('error', 'G11', c.id, cs.cell, `${c.id}: a board cue in ${cs.cell} covers Synergy's mouth row`, f);
@@ -568,15 +657,36 @@ function lintProgram({edl, plan, clips, byId, frames, transports, board, flag, r
     });
   }
   for (const a of agg.values()) flag(a.level, a.rule, a.clipId, `${a.message} (${a.count} frame${a.count > 1 ? 's' : ''} from frame ${a.first})`, {frame:a.first, frames:a.count});
+
+  // G13: whenever the song's board has lit words, a board is on screen: the layout's region
+  // (held still under any camera move that does not own it), or a gen:board tile the camera
+  // keeps in frame. Lights out (every tile black) is the film going dark, not a missing board.
+  const hidden = [];
+  for (let f = 0; f < N; f++) {
+    const fr = frames[f];
+    if (fr.board.dark || !litAt(fr)) continue;
+    const cam = fr.camera, inv = cam ? invert(cam.matrix) : null, frameArea = {x:0, y:0, w:F.w, h:F.h};
+    const kept = (r, need) => !cam || inFrame(boundsThrough(inv, r), frameArea) >= need;
+    const shown = (fr.board.rect && (!cam || !cam.board || kept(fr.board.rect, .9))) || fr.layers.some(l => l.gen === 'board' && l.opacity > .5 && kept(l.cell, .5));
+    if (!shown) hidden.push(f);
+  }
+  if (hidden.length) {
+    const runs = [];
+    for (const f of hidden) { const r = runs.at(-1); if (r && f === r[1] + 1) r[1] = f; else runs.push([f, f]); }
+    const words = ([a]) => { const s = board.screens[frames[a].board.screen]; return s ? ` "${s.text.slice(0, 24)}"` : ''; };
+    report('error', 'G13', `the song has words on the board but no board is on screen for ${hidden.length} frame${hidden.length > 1 ? 's' : ''}: ${runs.slice(0, 6).map(r => `f${r[0]}-${r[1]}${words(r)}`).join(', ')}${runs.length > 6 ? ` and ${runs.length - 6} more` : ''}; give the layout its board region, put the board in a tile, or keep the camera off it`, {frame:hidden[0], frames:hidden.length});
+  }
   for (const [id, w] of worstZoom) flag('error', 'G10', id, `${id}: ${w.up.toFixed(2)}x upscale at frame ${w.f} (zoom ${w.zoom.toFixed(2)}, maxZoom ${w.maxZoom.toFixed(2)} at U ${w.U}); zoom less or switch to mosaic`, {frame:w.f});
 
   // G7: rewinds. At most 1 beat, at most 2 per song, the audio reversed over the same span.
   const rewinds = transports.filter(t => t.kind === 'rewind');
   for (const t of rewinds) {
-    if (t.len > QS + 1e-9) report('error', 'G7', `${t.id}: a rewind lasts at most 1 beat (${QS} steps), this one ${t.len}`, {path:t.id});
+    if (t.Tb - t.Ta > stepTime(plan, t.step + QS) - stepTime(plan, t.step) + 1e-6) report('error', 'G7', `${t.id}: a rewind lasts at most 1 beat (${(stepTime(plan, t.step + QS) - stepTime(plan, t.step)).toFixed(3)} s), this one ${(t.Tb - t.Ta).toFixed(3)} s`, {path:t.id});
     if (!t.audio) report('error', 'G7', `${t.id}: the audio must reverse over the same span (audio:true)`, {path:t.id});
+    else if (t.sound !== 'reversed') report('warn', 'G7', `${t.id}: the picture rewinds over ${t.from}-${t.to - 1} but the plan does not reverse the sound there (${t.sound}); only generated and R1 layers may run backwards in it`, {path:t.id, frame:t.from});
   }
   if (rewinds.length > 2) report('error', 'G7', `${rewinds.length} rewinds; at most 2 per song`);
+  for (const t of transports.filter(x => x.kind === 'jump')) if (t.sound !== 'copied' && t.sound !== 'silent') report('warn', 'G7', `${t.id}: the picture jumps to ${t.Tfrom.toFixed(3)} s over frames ${t.from}-${t.to - 1}, but the sound plays on (${t.sound}); copy the moment's sound there too (plan.coldOpen)`, {path:t.id, frame:t.from});
 
   // G8: identical repeats across clips in one cell.
   const byCell = new Map();
@@ -668,6 +778,17 @@ function visible(l) {
   return {x:x0, y:y0, w:Math.max(0, x1 - x0), h:Math.max(0, y1 - y0)};
 }
 const overlap = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+// A rect's bounds through a 3×3 map (the camera: composite px to output px).
+function boundsThrough(M, r) {
+  const pts = [[r.x, r.y], [r.x + r.w, r.y], [r.x, r.y + r.h], [r.x + r.w, r.y + r.h]].map(([x, y]) => apply(M, x, y));
+  const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]), x = Math.min(...xs), y = Math.min(...ys);
+  return {x, y, w:Math.max(...xs) - x, h:Math.max(...ys) - y};
+}
+// The fraction of a rect inside another.
+function inFrame(r, F) {
+  const w = Math.max(0, Math.min(r.x + r.w, F.x + F.w) - Math.max(r.x, F.x)), h = Math.max(0, Math.min(r.y + r.h, F.y + F.h) - Math.max(r.y, F.y));
+  return r.w * r.h > 0 ? w * h / (r.w * r.h) : 0;
+}
 function classAt(frames, f, scene, clips) {
   const ids = new Set(clips.filter(c => c.clip.scene === scene).map(c => c.id));
   const cls = frames[f].layers.filter(l => ids.has(l.clipId)).map(l => layoutClassOf(l.cell.id)).filter(k => k !== 'full');

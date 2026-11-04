@@ -64,6 +64,9 @@ kbd{display:inline-block;min-width:20px;padding:3px 5px;margin:0 2px;border-radi
 .vs-seg button[aria-pressed=true]{background:var(--paper);color:var(--ink)}
 .vs-status{margin:-12px 0 0;font:500 10.5px/1.4 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
 .vs-status[data-tone=warn]{color:var(--signal)}
+.vs-status[data-tone=measuring]::after{content:'';display:inline-block;width:5px;height:5px;margin-left:8px;border-radius:50%;background:currentColor;vertical-align:1px;animation:vs-measure 1.2s ease-in-out infinite}
+@keyframes vs-measure{50%{opacity:.2}}
+@media (prefers-reduced-motion:reduce){.vs-status[data-tone=measuring]::after{animation:none}}
 
 .vs-readout{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1fr) minmax(0,1.25fr);margin:0;border-top:1px solid var(--rule)}
 .vs-readout div{padding:14px 0 12px;border-bottom:1px solid var(--rule2)}
@@ -115,23 +118,32 @@ kbd{display:inline-block;min-width:20px;padding:3px 5px;margin:0 2px;border-radi
 
 /* ---- the timeline: sections, bars, scenes, cuts, the head ------------------------ */
 .vs-timeline{grid-column:1;grid-row:2;padding:16px var(--gutter) 18px;border-top:1px solid var(--rule);background:var(--ink);min-width:0}
-.vs-track{position:relative;height:118px;cursor:ew-resize;touch-action:none;user-select:none;-webkit-user-select:none}
+.vs-track{position:relative;height:166px;cursor:ew-resize;touch-action:none;user-select:none;-webkit-user-select:none}
 .vs-sections,.vs-ruler,.vs-scenes,.vs-cuts{position:absolute;left:0;right:0}
-.vs-sections{top:0;height:24px}
+.vs-sections{top:16px;height:24px}
 .vs-sections span{position:absolute;top:0;height:24px;padding:7px 8px 0;border-left:1px solid var(--rule);font:500 9.5px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--dim);white-space:nowrap;overflow:hidden}
 .vs-sections span[data-drop]{color:var(--paper)}
+/* A section too short for its name: the name rides above it, on a hairline to the span. */
+.vs-sections span[data-out]{overflow:visible}
+.vs-sections span em{position:absolute;left:-1px;top:-16px;padding:0 0 4px 7px;border-left:1px solid var(--rule);font:inherit;font-style:normal;line-height:12px;white-space:nowrap}
 .vs-sections span[data-drop]::before{content:'';display:inline-block;width:6px;height:6px;margin:0 6px 1px 0;border-radius:50%;background:radial-gradient(circle at 42% 40%,#ddebff 0 22%,var(--blue) 46%,var(--cobalt) 100%);box-shadow:0 0 6px 1px rgba(43,120,255,.7)}
-.vs-ruler{top:26px;height:18px;border-top:1px solid var(--rule)}
+.vs-ruler{top:42px;height:18px;border-top:1px solid var(--rule)}
 .vs-ruler i{position:absolute;top:0;width:1px;height:4px;background:var(--rule)}
 .vs-ruler i[data-bar]{height:8px;background:var(--faint)}
 .vs-ruler span{position:absolute;top:9px;transform:translateX(3px);font:500 8.5px/1 var(--mono);color:var(--faint)}
-.vs-scenes{top:48px;height:38px}
+.vs-scenes{top:64px;height:38px}
 .vs-scenes button{position:absolute;top:0;height:38px;padding:6px 7px;border-radius:5px;background:var(--hole);box-shadow:inset 0 0 0 1px var(--lip);text-align:left;overflow:hidden;transition:background .15s}
 .vs-scenes button:hover{background:#1c2029}
 .vs-scenes button[aria-current]{background:#16233f;box-shadow:inset 0 0 0 1px rgba(43,120,255,.55)}
 .vs-scenes b{display:block;font:600 11px/1.1 var(--sans);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.vs-scenes small{display:block;margin-top:4px;font:500 8.5px/1 var(--mono);letter-spacing:.06em;color:var(--faint);white-space:nowrap}
-.vs-cuts{top:92px;height:20px}
+.vs-scenes small{display:block;margin-top:4px;font:500 8.5px/1 var(--mono);letter-spacing:.06em;color:var(--faint);white-space:nowrap;overflow:hidden}
+.vs-scenes small[hidden]{display:block;visibility:hidden}
+.vs-scenes button[data-out] b,.vs-scenes button[data-out] small{visibility:hidden}
+/* A block too narrow for its name: the name sits under the blocks, on a hairline up to it. */
+.vs-callout{position:absolute;padding-left:6px;font:600 11px/14px var(--sans);color:var(--dim);white-space:nowrap;cursor:pointer}
+.vs-callout::before{content:'';position:absolute;left:0;top:calc(var(--lead, 6px) * -1);width:1px;height:calc(var(--lead, 6px) + 7px);background:var(--lip)}
+.vs-callout:hover{color:var(--paper)}
+.vs-cuts{top:144px;height:20px}
 .vs-cuts i{position:absolute;top:0;width:1px;height:12px;background:rgba(242,238,230,.45)}
 .vs-cuts i[data-transport]{background:var(--signal);height:20px}
 .vs-head{position:absolute;top:-4px;bottom:-4px;left:0;width:0;pointer-events:none}
@@ -152,17 +164,37 @@ kbd{display:inline-block;min-width:20px;padding:3px 5px;margin:0 2px;border-radi
   .vs-proof{font-size:9.5px}
   .vs-proof b{margin-left:6px}
   .vs-screen-meta [data-perf]{display:none}
-  .vs-scenes b{display:none}
-  .vs-scenes button[aria-current] b{display:block}
+  .vs-scenes b{display:none}   /* phones: the readout names the scene; the blocks stay unlabelled, never cut */
   .vs-sections span{padding:7px 4px 0;font-size:8.5px;letter-spacing:.04em}
   .vs-main{grid-template-columns:minmax(0,1fr);grid-template-rows:auto}
   .vs-monitor{grid-column:1;grid-row:1;padding:16px var(--gutter) 12px}
   .vs-timeline{grid-column:1;grid-row:2}
   .vs-panel{grid-column:1;grid-row:3;border-left:0;border-top:1px solid var(--rule);max-height:none;position:static;padding-top:24px}
-  .vs-track{height:112px}
+  .vs-track{height:160px}
   .vs-scenes small{display:none}
   .vs-keys{display:none}
   .vs-readout dd{font-size:15px}
   .vs-readout div:nth-child(-n+3) dd{font-size:18px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* Song and post: the track, or the post's own choice (casting.js castSong), as on /allhands/. */
+.vs-song{display:flex;flex-direction:column;gap:12px}
+.vs-song-line{margin:0;color:var(--dim);font-size:13px;line-height:1.45;text-wrap:pretty}
+.vs-song-tracks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.vs-song-tracks button{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:11px 12px 10px;border-radius:8px;background:var(--hole);box-shadow:inset 0 0 0 1px var(--lip);text-align:left;transition:background .15s,box-shadow .15s,opacity .2s}
+.vs-song-tracks button:not(:disabled):hover{background:#1c2029}
+.vs-song-tracks button[aria-checked=true]{box-shadow:inset 0 0 0 1px var(--paper);background:#1a1d24}
+.vs-song-tracks button:disabled{opacity:.4}
+.vs-song-tracks b{font:600 13px/1.15 var(--sans);letter-spacing:-.01em}
+.vs-song-tracks small{font:500 9.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.vs-song-auto[aria-checked=true] small{color:var(--signal)}
+.vs-post summary{display:flex;align-items:baseline;justify-content:space-between;gap:12px;cursor:pointer;list-style:none;font:600 13px/1 var(--sans);padding:4px 0}
+.vs-post summary::-webkit-details-marker{display:none}
+.vs-post summary em{font:500 10px/1.3 var(--mono);font-style:normal;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:65%}
+.vs-post textarea{width:100%;margin-top:10px;padding:12px;border-radius:8px;border:0;background:var(--hole);box-shadow:inset 0 0 0 1px var(--lip);color:var(--paper);font:400 13px/1.5 var(--sans);resize:vertical}
+.vs-post textarea:focus{outline:none;box-shadow:inset 0 0 0 1px var(--blue)}
+.vs-post p{display:flex;gap:10px;margin:10px 0 0}
+.vs-post-go{height:36px;padding:0 16px;border-radius:999px;background:var(--paper);color:var(--ink);font:600 13px/1 var(--sans)}
+.vs-post-go:disabled{opacity:.35}
+.vs-post-sample{height:36px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--rule);color:var(--dim);font:500 12px/1 var(--sans)}

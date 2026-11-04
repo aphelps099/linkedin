@@ -57,7 +57,7 @@ export function studioFilm(plan, shots, {format = '9:16', features, seed = 7} = 
     m('gridBloom', {id:'join', at:bar(1), len:bar(3), pool:[PAT, CAST.opsArrive, CAST.keysPlay, CAST.kevin, CAST.synergy, CAST.people], scene:'join'}),
     // Verse: Synergy, Pat's board, the reactors cut on Synergy's words.
     m('slowPush', {id:'host', at:bar(4), len:bar(4), pool:[host], cell:'stack3.0', scene:'verse'}),
-    c('patboard', bar(4), bar(4), 'stack3.1', BOARD, {scene:'verse', chrome:{name:'Pat', mic:'on'}}),
+    c('patboard', bar(4), bar(4), 'stack3.1', PAT, {scene:'verse', chrome:{name:'Pat', mic:'on'}}),   // stack3 carries the board in its own band
     m('vocalCut', {id:'react', at:bar(4), len:bar(4), pool:reactors, cell:'stack3.2', scene:'verse'}),
     // The hook: Synergy shares his screen; the board takes the middle of the frame.
     c('share', bar(8), bar(2), 'BOARD+STRIP.0', `shot:${CAST.synergy}`, {scene:'hook', time:{in:2}, chrome:{banner:"You are viewing Synergy's screen", speaking:speaking('voice')}}),

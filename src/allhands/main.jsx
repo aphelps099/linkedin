@@ -17,7 +17,7 @@ import './allhands.css';
 const BAND = {
   drums:{name:'Operations', part:'Drums'},
   bass:{name:'Pat', part:'Bass', note:'Camera off'},
-  keys:{name:'Keys', part:'Keys'},
+  keys:{name:'Keys', part:'Keyboard'},
   guitar:{name:'Kevin', part:'Guitar'},
   voice:{name:'Synergy', part:'Vocals'},
   lady:{name:'The lady', part:'Phrases', note:'Audio only'},
@@ -293,7 +293,7 @@ function App() {
 
     <footer className="ah-foot">
       <p><b>Phase 0 asks one question.</b> Would you play this at a party? Listen on good speakers, then on a phone.</p>
-      <p>Synergy: eSpeak NG through a 28-band vocoder. The band: synthesized live in your browser. No samples. No generated music.</p>
+      <p>Synergy: eSpeak NG through a 28-band vocoder. The band: synthesized live in your browser. The lady: 57 recorded phrases, cut at her own word boundaries, the only samples in the room. No generated music.</p>
     </footer>
   </div>;
 }
@@ -301,17 +301,19 @@ function App() {
 // Headless render hook for scripts/render-allhands.mjs.
 window.__allhands = {
   // auto: the post picks the track and the cast, as on the page (casting.js).
-  async render({post = SAMPLE_POST, form = DEFAULT_FORM, track, cast, auto = false, mode = 'sung', muted = {}, bars, tune} = {}) {
+  // coldOpen: the film's cold open (drop.js withColdOpen), off unless asked for.
+  async render({post = SAMPLE_POST, form = DEFAULT_FORM, track, cast, auto = false, mode = 'sung', muted = {}, bars, tune, coldOpen = false} = {}) {
     const casting = auto ? castSong(post, {track}) : null;
     if (casting) { track = casting.track; cast = cast ?? casting.cast; }
     const songForm = FORMS[form] || FORMS[DEFAULT_FORM], lyrics = lyricsFromPost(post), {buffers, durations} = await loadWords(decoder(), songForm.voiced(lyrics, {track}));
-    const {plan} = settleCast(songForm.arrange, lyrics, durations, {track, cast}), lady = await prepareLady(decoder(), plan);
+    const {plan} = settleCast(songForm.arrange, lyrics, durations, {track, cast, coldOpen}), lady = await prepareLady(decoder(), plan);
     const bytes = new Uint8Array(await wav(await render(plan, buffers, {mode, muted, bars, tune}, lady)).arrayBuffer());
     let s = ''; for (let i = 0; i < bytes.length; i += 32768) s += String.fromCharCode(...bytes.subarray(i, i + 32768));
     const offset = RENDER_OFFSET - plan.timing[(bars?.[0] || 0) * BAR_STEPS];
     return {wav:btoa(s), lyrics, casting, plan:{form:plan.form, track:plan.track, trackTitle:plan.trackTitle, bpm:plan.bpm, step:plan.step, key:plan.key, offset, duration:plan.duration, marks:plan.marks, kicks:plan.kicks,
       sections:plan.sections.map(x => ({...x, start:plan.timing[x.from * BAR_STEPS], end:plan.timing[x.to * BAR_STEPS]})),
-      timing:Array.from(plan.timing), choke:plan.choke ? {start:plan.timing[plan.choke.at], end:plan.timing[plan.choke.until]} : null,
+      timing:Array.from(plan.timing), choke:plan.choke ? {start:plan.timing[plan.choke.at], end:plan.timing[plan.choke.until], dark:plan.choke.dark, tagEnd:plan.choke.tagEnd} : null,
+      coldOpen:plan.coldOpen ?? null, transports:plan.transports ?? [],
       lines:plan.lines.map(l => ({text:l.text, bar:l.bar, kind:l.kind, words:l.words.map(w => [w.display, w.at, w.steps, +w.rate.toFixed(2), w.notes.map(n => n.midi).join('.'), +w.gate.toFixed(3)])})),
       // Everything the Pixel Text exporter needs to time every word exactly.
       words:plan.words.filter(w => w.line === -1).map(w => ({display:w.display, word:w.word, at:w.at, steps:w.steps, rate:w.rate, gate:w.gate, kind:w.kind, line:-1})),

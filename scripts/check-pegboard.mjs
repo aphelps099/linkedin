@@ -5,7 +5,7 @@ import {createBoard} from '../src/pegboard/board.js';
 import {compileFont, layoutText} from '../src/pegboard/font.js';
 import {PEG9} from '../src/pegboard/fonts/peg9.js';
 import {PEG5} from '../src/pegboard/fonts/peg5.js';
-import {buildScreens, paint, indexWords, activeScreen, syllableSpans} from '../src/pegboard/choreo.js';
+import {buildScreens, paint, indexWords, activeScreen, syllableSpans, darkAt, TAG_TAIL} from '../src/pegboard/choreo.js';
 import {boardLuma, flashes, worstWindow, governorTrack} from '../src/pegboard/governor.js';
 import {FORMS, formPlays} from '../src/allhands/forms.js';
 import {TRACK_ORDER} from '../src/allhands/songbook/index.js';
@@ -40,7 +40,7 @@ ok(syllableSpans('A', 3).length === 1 && syllableSpans('OPTIMIZE', 3).length ===
 for (const id of ['drop60', 'soundcheck']) for (const track of TRACK_ORDER.filter(t => formPlays(id, t))) for (const post of POSTS) {
   const lyrics = lyricsFromPost(post), form = FORMS[id];
   const plan = form.arrange(lyrics, Object.fromEntries(form.voiced(lyrics, {track}).map(w => [w, .18 + .11 * syllables(w)])), {track});
-  const {board, screens, layoutOf, at} = rig(plan), label = `${id}/${track}/${post.slice(0, 12)}`;
+  const {board, screens, layoutOf, at} = rig(plan), label = `${id}/${track}/${post.slice(0, 12)}`, place = rig(plan).place;
   ok(screens.every((s, i) => s.to > s.from && (!i || s.from >= screens[i - 1].from)), `${label}: screens ordered`);
   ok(screens.every((s, i) => i === screens.length - 1 || s.to <= screens[i + 1].from + 1e-9), `${label}: one screen at a time`);
   ok(screens.every(s => layoutOf(s)?.pages?.length), `${label}: every screen lays out on the board`);
@@ -64,10 +64,20 @@ for (const id of ['drop60', 'soundcheck']) for (const track of TRACK_ORDER.filte
   const kicks = kickSteps(plan);
   ok(kicks.length === plan.totalSteps + 1 && plan.bars.some((b, i) => kicks[i * 16]) && kicks.reduce((n, k) => n + k, 0) > plan.bars.length, `${label}: kick steps from the band`);
   if (id === 'drop60') {
-    const T = plan.timing, choke = T[plan.choke.at], impact = T[plan.choke.until];
-    ok(plan.choke.dark > choke && plan.choke.dark < impact - .3, `${label}: the board goes dark after her tag, well before the impact`);
-    at((plan.choke.dark + impact) / 2); ok(board.exposure === 0 && board.sockets === 0, `${label}: true black before the drop`);
-    at(impact + FRAME * .5); ok(board.I.filter(v => v > .5).length > board.cols * board.rows * .8, `${label}: the board ignites on the impact frame`);
+    // The choke: a painted time is the middle of a frame. The board stays lit, her whole tag typed,
+    // through the last frame she is heard in (her envelope ends at plan.choke.tagEnd), goes true black
+    // on the first frame that starts after it, holds it, and ignites on the frame that holds the impact.
+    const T = plan.timing, choke = T[plan.choke.at], impact = T[plan.choke.until], end = plan.choke.tagEnd, tag = screens.find(s => s.kind === 'tag');
+    ok(end > choke && end < impact - .3 && Math.abs(darkAt(plan) - (end + TAG_TAIL + FRAME / 2)) < 1e-12, `${label}: the board goes dark on the first frame after her tag stops sounding (${end.toFixed(3)} s, plus a codec's ${TAG_TAIL * 1000} ms tail), well before the impact`);
+    const typed = (() => { const b = createBoard(board.cols, board.rows); paint(b, [{...tag, to:impact}], end - 1e-3, {layoutOf, place:rig(plan).place}); return b.I.filter(v => v > .05).length; })();
+    at(end + TAG_TAIL + FRAME * .49); const last = board.I.filter(v => v > .05).length;
+    ok(board.exposure > 0 && activeScreen(screens, end + TAG_TAIL + FRAME * .49) === tag && last >= typed && typed > 20, `${label}: "${tag.text}" fully typed on her last frame (${last} of ${typed} pegs)`);
+    at(end + TAG_TAIL + FRAME * .51); ok(board.exposure === 0 && board.sockets === 0, `${label}: true black from the first frame after her tag`);
+    let black = true; for (let t = end + TAG_TAIL + FRAME * .51; t < impact - FRAME * .51; t += .01) { at(t); black &&= board.exposure === 0 && board.sockets === 0; }
+    ok(black, `${label}: true black (0) all the way to the impact's frame`);
+    const burning = () => board.I.filter(v => v >= 1.15).length / (board.cols * board.rows);
+    at(impact - FRAME * .49); ok(board.I.filter(v => v > .5).length > board.cols * board.rows * .8 && burning() > .8, `${label}: the board ignites, fully lit, on the frame that holds the impact`);
+    at(impact + FRAME * .51); ok(board.I.filter(v => v > .5).length > board.cols * board.rows * .5 && burning() < .2, `${label}: one frame fully lit, then the settle (${(100 * burning()).toFixed(0)} % still burning)`);
     at(impact + .3); ok(screens.find(s => s.kind === 'impact') === activeScreen(screens, impact + .3), `${label}: BACK. holds the board after the impact`);
     // The flash governor: no second ever holds more than three flashes, whole or by quarter.
     const frames = [];

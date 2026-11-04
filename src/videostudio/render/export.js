@@ -22,7 +22,7 @@ import {render as renderSong, RENDER_OFFSET, STEMS} from '../../allhands/engine.
 import {buildFeatures, planFeatures} from '../edl/params.js';
 import {compile} from '../edl/compile.js';
 import {stringify} from '../edl/schema.js';
-import {stepTime, stepAtTime, barSteps, ladyTime} from '../edl/anchors.js';
+import {stepTime, stepAtTime, barSteps, ladyTime, audioLatency, chokeFrames} from '../edl/anchors.js';
 import {createCompositor} from '../gl/compositor.js';
 import {createFrameDecoder, frameLedger} from '../media/decoder.js';
 import {FORMATS} from '../layouts.js';
@@ -172,12 +172,22 @@ async function encodeAudio(pcm, kind, muxer, {signal} = {}) {
 //   format (the EDL's), scale (1: the format's size), master (24 Mbps), span [from, to) in frames
 //   audio: 'render' (default) | null (no sound) | {sampleRate, channels:[L, R, ...stems?], offset} song-time-zero at `offset` s
 //   features: feature tracks to compile with (default: from the render, else from the plan)
-//   governor (true), post (compositor post options), media ('proxy'), force (export despite lint errors)
+//   governor (true), post (compositor post options), media ('proxy'), reversed (true; false decodes the forward proxy backwards), force (export despite lint errors)
 //   onProgress({phase, frame, frames, fraction, msPerFrame, eta}), signal (AbortSignal)
 //   canvas (optional), fontBase, ledger (a frameLedger to count VideoFrames across exports)
 //   keyEvery (48: a keyframe every 2 s), hashFrames (SHA-256 of every composited frame's RGBA,
 //     before the encoder, into sidecar.frameHashes: the reproducible part. Chromium's software
 //     H.264 encoder is not bit-reproducible run to run, so the MP4 bytes are not either.)
+// The features a whole-song export compiles with: engine.render with the stems, then
+// buildFeatures, exactly as exportFilm does it. The monitor measures the band with this once
+// the voice is in, and hands the same features to exportFilm, so the preview and the file draw
+// one program (speaking borders, binds, Synergy's mouth level).
+export async function songFeatures(plan, song = {}) {
+  const buf = await renderSong(plan, song.buffers ?? new Map(), {tune:{stems:true}}, song.lady);
+  if (buf.numberOfChannels < 2 + STEMS.length) return planFeatures(plan);
+  return buildFeatures(plan, buf, {offset:RENDER_OFFSET - plan.timing[0]});
+}
+
 export async function exportFilm(opts) {
   const {edl, plan, shots, song = {}, master = false, onProgress, signal, governor = true, post, media = 'proxy', force = false, fontBase = '', keyEvery = VIDEO.keyEvery, hashFrames = false} = opts;
   const format = opts.format ?? edl.format ?? '9:16', scale = opts.scale ?? 1, F = FORMATS[format];
@@ -250,11 +260,16 @@ export async function exportFilm(opts) {
   const canvas = opts.canvas ?? (typeof OffscreenCanvas !== 'undefined' && opts.offscreen ? new OffscreenCanvas(W, H) : Object.assign(document.createElement('canvas'), {width:W, height:H}));
   const comp = createCompositor(canvas, {format, scale:W / F.w, post, fontBase});
   const ledger = opts.ledger ?? frameLedger();
-  const decoder = createFrameDecoder({program, shots, from, to, ledger, media});
+  const decoder = createFrameDecoder({program, shots, from, to, ledger, media, reversed:opts.reversed ?? true});
   let encError = null, chunks = 0, keyframes = 0, bytes = 0;
   const encoder = new VideoEncoder({output:(chunk, meta) => { chunks++; bytes += chunk.byteLength; if (chunk.type === 'key') keyframes++; muxer.addVideoChunk(chunk, meta); }, error:e => { encError = e; }});
   encoder.configure(videoConfig(W, H, master));
   const memory = [], perFrame = new Float32Array(n), split = {decode:0, draw:0, encode:0}, frameHashes = [], pendingHashes = [];
+  // Keyframes where the film goes to true black (the choke, the tape stop's lights out) and on the
+  // impact: a P-frame into black can leave the encoder's residue (a few code values) on screen, an
+  // intra frame of flat black decodes to 0.
+  const marks = chokeFrames(plan), cleanCuts = new Set(marks ? [marks.black, marks.impact] : []);
+  for (let f = Math.max(1, from); f < to; f++) if (program.frame(f).board.dark && !program.frame(f - 1).board.dark) cleanCuts.add(f);
   const sample = f => memory.push({f, heap:performance.memory?.usedJSHeapSize ?? null, cache:decoder.stats().cacheBytes, entries:decoder.stats().entries, live:ledger.live, textures:comp.textures, queue:encoder.encodeQueueSize});
   try {
     await comp.ready;
@@ -272,7 +287,7 @@ export async function exportFilm(opts) {
       const vf = ledger.open(new VideoFrame(canvas, {timestamp:Math.round((f - from) * 1e6 / FPS), duration:Math.round(1e6 / FPS)}), 'canvas');
       const c = performance.now();
       decoder.release(f);
-      encoder.encode(vf, {keyFrame:(f - from) % keyEvery === 0});
+      encoder.encode(vf, {keyFrame:(f - from) % keyEvery === 0 || cleanCuts.has(f)});
       ledger.close(vf);
       while (encoder.encodeQueueSize > 2) await new Promise(r => encoder.addEventListener('dequeue', r, {once:true}));
       const d = performance.now();
@@ -304,7 +319,9 @@ export async function exportFilm(opts) {
   const sidecar = {
     kind:'linkedinbeats.videostudio.export', version:1,
     film:{title:plan.trackTitle ?? plan.title ?? 'Circle Back', form:plan.form, track:plan.track ?? null, edition:edl.song?.form ?? plan.form, format, width:W, height:H, fps:FPS, scale:W / F.w,
-      span:[from, to], frames:n, seconds:n / FPS, songSeconds:[t0, t1], planDuration:plan.duration},
+      span:[from, to], frames:n, seconds:n / FPS, songSeconds:[t0, t1], planDuration:plan.duration, coldOpen:!!plan.coldOpen,
+      // The choke and the impact, on the film's frames (the timing rule: edl/anchors.js).
+      ...(plan.choke?.tagEnd !== undefined ? {marks:{latency:audioLatency(plan), tagEnd:plan.choke.tagEnd, ...chokeFrames(plan)}} : {})},
     video:{codec:VIDEO.codec, bitrate:master ? VIDEO.masterBitrate : VIDEO.bitrate, cfr:FPS, keyEvery, chunks, keyframes, bytes},
     audio:audioInfo,
     hashes:{edl:await sha256(edlText), plan:await sha256(planJSON(plan)), program:program.hash(), mp4:await sha256(mp4), features:features.source},

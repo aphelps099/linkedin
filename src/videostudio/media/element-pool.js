@@ -14,14 +14,22 @@
 // proxyTime. Reverse playback plays the pre-reversed proxy forwards. Textures upload only
 // when requestVideoFrameCallback reports a new frame (Source.version = presentedFrames).
 // Frames that stutters, holds and canon tiles need are kept in the stutter cache.
+//
+// No reversed proxy (none uploaded yet, a fresh checkout, a 404, or reversed:false): the
+// reversed stream's element loads the forward file and never plays. It seeks, frame by frame
+// and soonest first, to the forward frames the next few output frames show, and captures each
+// into the stutter cache as an ImageBitmap under the reversed proxy's own key (frame
+// N − 1 − forward frame), so the span plays backwards from cached forward frames. The window
+// is bounded by the cache (at most half of it, 2 to 8 frames); captures are capped at 540
+// lines, so a master standing in for a missing proxy costs no more than a proxy.
 import {stutterKey} from './stutter-cache.js';
 
 export const isMobile = () => typeof navigator !== 'undefined' && (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && globalThis.matchMedia?.('(pointer: coarse)').matches));
-const FPS = 24, CORRECT = .03, SEEK_FRAMES = 2, LOOKAHEAD = 48;
+const FPS = 24, CORRECT = .03, SEEK_FRAMES = 2, LOOKAHEAD = 48, CAPTURE_LINES = 540;
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 const streamKey = (shotId, reverse) => `${shotId}|${reverse ? 'rev' : 'fwd'}`;
 
-export function createElementPool({shots, cache = null, slots = isMobile() ? 4 : 8, container = null, preferProxy = true} = {}) {
+export function createElementPool({shots, cache = null, slots = isMobile() ? 4 : 8, container = null, preferProxy = true, reversed = true} = {}) {
   const get = id => shots?.get ? shots.get(id) : shots?.byId?.(id) ?? null;
   let host = container;
   if (!host && typeof document !== 'undefined') {
@@ -31,7 +39,10 @@ export function createElementPool({shots, cache = null, slots = isMobile() ? 4 :
     document.body.append(host);
   }
   let nextId = 0, program = null, needs = new Map(), dirty = false;
-  const stats = {seeks:0, plays:0, captures:0, overflow:0, drift:[], live:0};
+  const stats = {seeks:0, plays:0, captures:0, overflow:0, drift:[], live:0, reversedFromForward:0};
+  // Shots whose reversed proxy is missing (or switched off): their reversed spans are captured.
+  const noReverse = new Set();
+  const revUsable = shot => reversed && !!shot?.rev && !noReverse.has(shot.id);
   const S = Array.from({length:slots}, (_, i) => ({i, front:null, back:null}));
 
   function element() {
@@ -39,15 +50,22 @@ export function createElementPool({shots, cache = null, slots = isMobile() ? 4 :
     v.muted = true; v.playsInline = true; v.preload = 'auto'; v.disableRemotePlayback = true; v.crossOrigin = null;
     v.setAttribute('muted', ''); v.setAttribute('playsinline', '');
     host?.append(v);
-    const el = {id:`vs-el-${nextId++}`, video:v, key:null, shot:null, reverse:false, presented:0, frame:-1, ready:false, capture:false, loads:0};
+    const el = {id:`vs-el-${nextId++}`, video:v, key:null, shot:null, reverse:false, presented:0, frame:-1, ready:false, capture:false, loads:0, flip:false, want:[], busy:-1};
     const watch = () => v.requestVideoFrameCallback((now, meta) => {
       if (meta.mediaTime === undefined || v.dataset.loads !== String(el.loads)) { watch(); return; }   // a frame of the previous source
       el.presented = meta.presentedFrames; el.frame = Math.round(meta.mediaTime * FPS - .25); el.ready = true; dirty = true;
-      if (el.capture && cache && el.shot && typeof createImageBitmap === 'function') {
+      if (el.flip) { if (el.busy === el.frame) grab(el, el.frame); }
+      else if (el.capture && cache && el.shot && typeof createImageBitmap === 'function') {
         const key = stutterKey(el.shot.id, el.reverse, el.frame);
         if (!cache.has(key)) createImageBitmap(v).then(b => { cache.put(key, b); stats.captures++; }, () => {});
       }
       watch();
+    });
+    // A reversed proxy that will not load (a 404 before the upload): capture from the forward file.
+    v.addEventListener('error', () => {
+      if (!el.reverse || el.flip || !el.shot) return;
+      noReverse.add(el.shot.id);
+      const key = el.key; el.key = null; load(el, key, 0);
     });
     if (v.requestVideoFrameCallback) watch();
     else v.addEventListener('timeupdate', () => { el.presented++; el.frame = Math.floor(v.currentTime * FPS); el.ready = true; dirty = true; });
@@ -56,15 +74,51 @@ export function createElementPool({shots, cache = null, slots = isMobile() ? 4 :
   }
   function load(el, key, time) {
     const [shotId, dir] = key.split('|'), shot = get(shotId), reverse = dir === 'rev';
-    const url = reverse ? shot?.rev : preferProxy ? shot?.proxy ?? shot?.src : shot?.src;
+    const forward = preferProxy ? shot?.proxy ?? shot?.src : shot?.src;
+    const flip = reverse && !revUsable(shot) && !!cache;
+    const url = reverse && !flip ? shot?.rev : forward;
     if (!shot || !url) { el.key = null; return false; }
-    if (el.key !== key) {
-      el.key = key; el.shot = shot; el.reverse = reverse; el.ready = false; el.frame = -1; el.loads++;
+    if (el.key !== key || el.flip !== flip) {
+      el.key = key; el.shot = shot; el.reverse = reverse; el.flip = flip; el.ready = false; el.frame = -1; el.loads++; el.want = []; el.busy = -1;
       el.video.dataset.loads = String(el.loads);
       el.video.pause(); el.video.src = url; el.video.load();
+      if (flip) stats.reversedFromForward++;
     }
-    seek(el, time);
+    if (!flip) seek(el, time);
     return true;
+  }
+  // ---- reversed spans from forward frames ----
+  // The forward frames this stream shows over the next `window` output frames, soonest first.
+  const windowOf = el => {
+    const vh = el.video.videoHeight || CAPTURE_LINES, vw = el.video.videoWidth || CAPTURE_LINES * 16 / 9, h = Math.min(CAPTURE_LINES, vh), bytes = vw * h / vh * h * 4;
+    return Math.max(2, Math.min(8, Math.floor((cache?.budget ?? 0) * .5 / bytes)));
+  };
+  function plan(el, from) {
+    if (el.busy >= 0 && performance.now() - el.busyAt > 400) el.busy = -1;     // a seek that presented no frame: try again
+    const want = [], seen = new Set(), N = el.shot.frames, until = Math.min(program.frames, from + windowOf(el));
+    for (let g = from; g < until; g++) for (const l of program.frame(g).layers) {
+      if (l.kind !== 'video' || l.shotId !== el.shot.id || !l.reverse) continue;
+      const k = N - 1 - l.proxyFrame;
+      if (!seen.has(k) && !cache.has(stutterKey(el.shot.id, true, l.proxyFrame))) { seen.add(k); want.push(k); }
+    }
+    el.want = want;
+    pump(el);
+  }
+  function pump(el) {
+    if (el.busy >= 0 || !el.want.length || el.video.readyState < 1) return;
+    const k = el.want.shift();
+    el.busy = k; el.busyAt = performance.now();
+    if (el.ready && el.frame === k && !el.video.seeking) { grab(el, k); return; }
+    seek(el, (k + .5) / FPS);
+  }
+  function grab(el, k) {
+    const v = el.video, N = el.shot.frames, key = stutterKey(el.shot.id, true, N - 1 - k), loads = el.loads;
+    const h = Math.min(CAPTURE_LINES, v.videoHeight), w = Math.round(v.videoWidth * h / v.videoHeight);
+    const opts = h < v.videoHeight ? {resizeWidth:w, resizeHeight:h, resizeQuality:'high'} : undefined;
+    (typeof createImageBitmap === 'function' ? createImageBitmap(v, opts) : Promise.reject()).then(b => {
+      if (loads !== el.loads) { b.close?.(); return; }
+      cache.put(key, b); stats.captures++; dirty = true;
+    }, () => {}).finally(() => { if (loads === el.loads) { el.busy = -1; pump(el); } });
   }
   function seek(el, time) {
     const v = el.video, d = el.shot?.duration ?? Infinity;
@@ -98,13 +152,14 @@ export function createElementPool({shots, cache = null, slots = isMobile() ? 4 :
     free.front ??= element();
     return load(free.front, key, time) ? free.front : null;
   }
-  function preroll(key, live, time) {
-    for (const s of S) if (s.front?.key === key || s.back?.key === key) return;
+  function preroll(key, live, time, frame) {
+    for (const s of S) if (s.front?.key === key || s.back?.key === key) { const el = s.front?.key === key ? s.front : s.back; if (el.flip && frame !== undefined) plan(el, frame); return; }
     const s = S.find(x => !x.back || (!live.has(x.back.key))) ;
     if (!s) return;
     s.back ??= element();
     load(s.back, key, time);
     s.back.video.pause();
+    if (s.back.flip && frame !== undefined) { const el = s.back; el.video.addEventListener('loadedmetadata', () => plan(el, frame), {once:true}); plan(el, frame); }
   }
 
   // Drive the elements for output frame f at song time t.
@@ -115,7 +170,8 @@ export function createElementPool({shots, cache = null, slots = isMobile() ? 4 :
     for (const l of frame.layers) if (l.kind === 'video') { const k = streamKey(l.shotId, l.reverse); if (!live.has(k)) live.set(k, []); live.get(k).push(l); }
     for (const [key, layers] of live) {
       const el = procure(key, live, proxyTimeOf(layers[0]));
-      if (el) steer(el, layers[0], f, t, playing);
+      if (el?.flip) { if (!el.video.paused) el.video.pause(); plan(el, f); }
+      else if (el) steer(el, layers[0], f, t, playing);
     }
     // Preroll: streams that start within a beat.
     for (const p of program.decode.prefetch) {
@@ -123,7 +179,7 @@ export function createElementPool({shots, cache = null, slots = isMobile() ? 4 :
       if (p.frame <= f || p.frame > f + 2 * LOOKAHEAD) continue;
       const key = streamKey(p.shotId, p.proxy === 'rev'), shot = get(p.shotId);
       if (live.has(key) || !shot) continue;
-      preroll(key, live, p.proxy === 'rev' ? shot.duration - p.srcTime : p.srcTime);
+      preroll(key, live, p.proxy === 'rev' ? shot.duration - p.srcTime : p.srcTime, p.frame);
     }
     let n = 0;
     for (const s of S) {
@@ -160,6 +216,15 @@ export function createElementPool({shots, cache = null, slots = isMobile() ? 4 :
     const key = streamKey(layer.shotId, layer.reverse), shot = get(layer.shotId);
     let el = null;
     for (const s of S) if (s.front?.key === key) { el = s.front; break; }
+    if (el?.flip || (layer.reverse && !revUsable(shot) && cache)) {
+      // Captured forward frames only (the element shows forward frames): the exact one, else the
+      // nearest already captured a frame or two either side, so a late capture holds, never blanks.
+      for (const d of [0, -1, 1, -2, 2]) {
+        const ck = stutterKey(layer.shotId, true, layer.proxyFrame + d), b = cache.get(ck);
+        if (b) return {image:b, key:`cache:${layer.clipId}`, version:ck, width:shot?.width, height:shot?.height};
+      }
+      return null;
+    }
     const exact = el?.ready && el.frame === layer.proxyFrame;
     if (cache && !exact) {
       const ck = stutterKey(layer.shotId, layer.reverse, layer.proxyFrame), b = cache.get(ck);
@@ -177,7 +242,7 @@ export function createElementPool({shots, cache = null, slots = isMobile() ? 4 :
     for (const l of program.frame(clamp(f, 0, program.frames - 1)).layers) {
       if (l.kind !== 'video') continue;
       const key = streamKey(l.shotId, l.reverse), el = S.find(s => s.front?.key === key)?.front;
-      const exact = (el?.ready && el.frame === l.proxyFrame && !el.video.seeking) || cache?.has(stutterKey(l.shotId, l.reverse, l.proxyFrame));
+      const exact = (!el?.flip && el?.ready && el.frame === l.proxyFrame && !el.video.seeking) || cache?.has(stutterKey(l.shotId, l.reverse, l.proxyFrame));
       if (!seen.has(key) && !exact) return false;
       seen.add(key);
     }
@@ -187,7 +252,7 @@ export function createElementPool({shots, cache = null, slots = isMobile() ? 4 :
   return {
     setProgram, update, source, settled,
     get dirty() { return dirty; }, clean() { dirty = false; },
-    get slots() { return S; }, get stats() { const d = [...stats.drift].sort((a, b) => a - b); return {...stats, drift:undefined, driftP95:d.length ? d[Math.floor(d.length * .95)] : 0, elements:S.reduce((n, s) => n + !!s.front + !!s.back, 0)}; },
+    get slots() { return S; }, get noReverse() { return new Set(noReverse); }, get stats() { const d = [...stats.drift].sort((a, b) => a - b); return {...stats, drift:undefined, driftP95:d.length ? d[Math.floor(d.length * .95)] : 0, elements:S.reduce((n, s) => n + !!s.front + !!s.back, 0)}; },
     pause() { for (const s of S) { s.front?.video.pause(); s.back?.video.pause(); } },
     dispose() { for (const s of S) for (const el of [s.front, s.back]) if (el) { el.video.pause(); el.video.removeAttribute('src'); el.video.load(); el.video.remove(); } if (!container) host?.remove(); },
   };

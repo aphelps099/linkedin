@@ -115,10 +115,17 @@ const snap = (v, s) => Math.round(v * s) / s;
 // Size of the chrome in a cell: the meeting room's proportions at film scale, never so big
 // that a small tile is all chrome.
 export const chromeScale = cell => clamp(Math.min(cell.h / 290, cell.w / 380), .55, 1.2);
+// Legible on a phone, whatever the tile: names at 11 pt and roles at 9 pt on a 390 pt wide
+// phone in portrait (9:16, 1:1: 30.5 and 24.9 px of 1080), or across an 844 pt phone held
+// sideways (16:9: 25.0 and 20.5 px of 1920). Toasts, banners and Pat's card read at the name's
+// size. Where a tile cannot hold the role beside the name, the role goes; the name never does.
+const PHONE_PT = {'9:16':390, '1:1':390, '16:9':844};
+export const LEGIBLE = Object.fromEntries(Object.entries({'9:16':1080, '1:1':1080, '16:9':1920}).map(([f, w]) => [f, {name:11 * w / PHONE_PT[f], role:9 * w / PHONE_PT[f]}]));
+const NONE = {name:0, role:0};
 
 // Pat's camera-off tile and the lady's tile: what replaces the picture.
-export function tileQuads(layer, atlas, {scale = 1, time = 0} = {}) {
-  const out = [], {cell} = layer, k = chromeScale(cell), clip = {...cell, r:layer.radius};
+export function tileQuads(layer, atlas, {scale = 1, time = 0, legible = NONE} = {}) {
+  const out = [], {cell} = layer, k = chromeScale(cell), clip = {...cell, r:layer.radius}, kn = Math.max(k, legible.name / 24);
   const cx = cell.x + cell.w / 2, cy = cell.y + cell.h / 2 - (cell.h > 200 ? 10 * k : 0);
   if (isLadyTile(layer)) {
     // No face, ever: her voice as a waveform, bars on the meeting room's grid.
@@ -139,10 +146,10 @@ export function tileQuads(layer, atlas, {scale = 1, time = 0} = {}) {
   const ini = atlas.text(initials(layer.chrome.name), {px:D * .36, weight:400});
   if (ini) out.push(glyph(ini, snap(cx - ini.advance / 2 - 2 / scale, scale), snap(top + D / 2 - ini.ascent + D * .36 * .36, scale), C.avatarText, 1, clip));
   if (cell.h >= 200) {
-    const name = atlas.text(layer.chrome.name || 'Pat', {px:24 * k, weight:400});
+    const name = atlas.text(layer.chrome.name || 'Pat', {px:24 * kn, weight:400});
     if (name) out.push(glyph(name, snap(cx - name.advance / 2 - 2 / scale, scale), snap(top + D + 14 * k, scale), C.text, 1, clip));
-    const st = atlas.text('Camera off', {px:17 * k});
-    if (st) out.push(glyph(st, snap(cx - st.advance / 2 - 2 / scale, scale), snap(top + D + 14 * k + 32 * k, scale), C.status, 1, clip));
+    const st = atlas.text('Camera off', {px:Math.max(17 * k, legible.role)});
+    if (st && top + D + 14 * k + 32 * kn + st.h < cell.y + cell.h) out.push(glyph(st, snap(cx - st.advance / 2 - 2 / scale, scale), snap(top + D + 14 * k + 32 * kn, scale), C.status, 1, clip));
   }
   const ic = atlas.icon('videoOff', 26 * k);
   out.push(glyph(ic, snap(cell.x + cell.w - 16 * k - ic.w, scale), snap(cell.y + 16 * k, scale), C.cameraIcon, 1, clip));
@@ -153,10 +160,12 @@ function glyph(e, x, y, rgb, a, clip) { return {x, y, w:e.w, h:e.h, color:[...rg
 
 // Everything drawn over one layer's tile: speaking border, name bar, toast, banner.
 // opts.banner: the layout's banner rect (BOARD+STRIP) takes the banner instead of the tile.
-export function chromeQuads(layer, atlas, {scale = 1, time = 0, bannerRect = null, avoid = null} = {}) {
+export function chromeQuads(layer, atlas, {scale = 1, time = 0, bannerRect = null, avoid = null, legible = NONE} = {}) {
   const ch = layer.chrome || {}, cell = layer.cell, out = [];
   if (!ch || cell.id === 'full' || cell.w < 120 || cell.h < 80) return out;
-  const k = chromeScale(cell), clip = {...cell, r:layer.radius};
+  const k0 = chromeScale(cell), clip = {...cell, r:layer.radius};
+  // The name bar's scale: the tile's, but never under the phone's 11 pt name.
+  const k = Math.max(k0, legible.name / 20);
   const speaking = clamp(ch.speaking ?? 0, 0, 1);
   const op = layer.opacity ?? 1;
   // The name bar: the meeting room's strip along the bottom of the tile.
@@ -166,32 +175,37 @@ export function chromeQuads(layer, atlas, {scale = 1, time = 0, bannerRect = nul
     if (avoid && avoid.y + avoid.h > by && avoid.y < cell.y + cell.h) by = cell.y;    // keep clear of the robot's mouth row
     out.push({x:cell.x, y:by, w:cell.w, h:bh, color:[...C.bar, .92 * op], radius:0, mode:'fill', clip});
     const pad = 14 * k, isz = 20 * k, muted = ch.mic === 'muted';
-    const ic = atlas.icon(muted ? 'micOff' : 'mic', isz, 2);
-    const icCol = speaking > .5 && !muted ? C.green : C.icon;
-    out.push(glyph(ic, snap(cell.x + pad - 1 / scale, scale), snap(by + (bh - ic.h) / 2, scale), icCol, op, clip));
-    let tx = cell.x + pad + isz + 9 * k;
     const name = atlas.text(ch.name, {px:20 * k, weight:400});
     const base = by + bh / 2 + 7 * k;   // text baseline
-    if (name) { out.push(glyph(name, snap(tx - 2 / scale, scale), snap(base - name.ascent, scale), C.text, op, clip)); tx += name.advance; }
     const dotsW = speaking > .5 ? 26 * k : 0;
+    // A tile too narrow for the icon and the name gives up the icon first, then the dots.
+    const withIcon = !name || cell.x + pad + isz + 9 * k + name.advance <= cell.x + cell.w - pad - dotsW * .5;
+    let tx = cell.x + pad;
+    if (withIcon) {
+      const ic = atlas.icon(muted ? 'micOff' : 'mic', isz, 2);
+      const icCol = speaking > .5 && !muted ? C.green : C.icon;
+      out.push(glyph(ic, snap(cell.x + pad - 1 / scale, scale), snap(by + (bh - ic.h) / 2, scale), icCol, op, clip));
+      tx += isz + 9 * k;
+    }
+    if (name) { out.push(glyph(name, snap(tx - 2 / scale, scale), snap(base - name.ascent, scale), C.text, op, clip)); tx += name.advance; }
     const roleText = ch.role ?? CAST_ROLES[ch.name];
     if (roleText && roleText !== 'Host') {
-      const role = atlas.text(` · ${roleText}`, {px:16 * k, weight:400});
+      const role = atlas.text(` · ${roleText}`, {px:Math.max(16 * k, legible.role), weight:400});
       if (role && tx + role.advance < cell.x + cell.w - pad - dotsW) out.push(glyph(role, snap(tx - 2 / scale, scale), snap(base - role.ascent, scale), C.muted, op, clip));
     }
-    if (speaking > .5) for (let i = 0; i < 3; i++) {
+    if (speaking > .5 && tx + dotsW <= cell.x + cell.w - pad) for (let i = 0; i < 3; i++) {
       const d = 5 * k;
       out.push({x:cell.x + cell.w - pad - 3 * d - 2 * 4 * k + i * (d + 4 * k), y:by + bh / 2 - d / 2, w:d, h:d, color:[...C.green, op], radius:d / 2, mode:'fill', clip});
     }
   }
   // The speaking border: the meeting room's green, inside the tile's corners.
-  if (speaking > .02) out.push({x:cell.x, y:cell.y, w:cell.w, h:cell.h, color:[...C.green, speaking * op], radius:layer.radius, mode:'stroke', stroke:Math.max(2, 5 * k), clip});
+  if (speaking > .02) out.push({x:cell.x, y:cell.y, w:cell.w, h:cell.h, color:[...C.green, speaking * op], radius:layer.radius, mode:'stroke', stroke:Math.max(2, 5 * k0), clip});
   // A toast: in on its first .18 s, out on its last .18 s.
   if (ch.toast?.text) {
     const a = smooth(ch.toast.age / .18) * smooth(ch.toast.remaining / .18);
     if (a > 0) {
       const left = /left the meeting/i.test(ch.toast.text);
-      const t = atlas.text(ch.toast.text, {px:19 * k, weight:400}), ic = atlas.icon(left ? 'logOut' : 'userPlus', 18 * k, 2);
+      const t = atlas.text(ch.toast.text, {px:Math.max(19 * k0, legible.name), weight:400}), ic = atlas.icon(left ? 'logOut' : 'userPlus', 18 * k, 2);
       if (t) {
         const ph = 42 * k, pw = Math.min(cell.w - 24 * k, t.advance + 18 * k + 10 * k + 32 * k);
         const px = cell.x + (cell.w - pw) / 2, py = cell.y + 16 * k - (1 - a) * 10 * k;
@@ -202,13 +216,13 @@ export function chromeQuads(layer, atlas, {scale = 1, time = 0, bannerRect = nul
     }
   }
   // A banner: the screen share or the bad connection. In the layout's banner rect when it has one.
-  if (ch.banner && !bannerRect) out.push(...bannerQuads(ch.banner, {x:cell.x + 12 * k, y:cell.y + (ch.toast ? 66 : 14) * k, w:null, h:40 * k}, atlas, {scale, k, clip, op}));
+  if (ch.banner && !bannerRect) out.push(...bannerQuads(ch.banner, {x:cell.x + 12 * k0, y:cell.y + (ch.toast ? 66 : 14) * k, w:null, h:40 * k}, atlas, {scale, k, clip, op, legible}));
   return out;
 }
 
-export function bannerQuads(text, rect, atlas, {scale = 1, k = 1, clip = null, op = 1} = {}) {
+export function bannerQuads(text, rect, atlas, {scale = 1, k = 1, clip = null, op = 1, legible = NONE} = {}) {
   const out = [], poor = /connection|unstable|poor/i.test(text);
-  const h = rect.h, px = h * .45, isz = h * .46, padX = h * .38, gap = h * .3;
+  const h = Math.max(rect.h, legible.name / .58), px = Math.max(h * .45, legible.name), isz = h * .46, padX = h * .38, gap = h * .3;
   const t = atlas.text(text, {px, weight:400}), ic = atlas.icon(poor ? 'wifiOff' : 'screenShare', isz, 2);
   if (!t) return out;
   const content = isz + gap + t.advance;

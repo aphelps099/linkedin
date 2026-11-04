@@ -1,13 +1,12 @@
 // The song book's guarantees, in Node:
-//   1. Circle Back is unchanged. Every plan it arranges (the sample post and
-//      the 60 fixture posts, both forms, two duration models: 244 plans) hashes
-//      to the digest recorded from the code before the song book existed, the
-//      song book's additive fields aside. And the engine makes the identical
-//      Web Audio calls for it (every node, property, connection, automation
-//      event, start and stop), recorded through a fake OfflineAudioContext.
-//      Byte-comparing two WAVs cannot prove this: Chromium sums fan-in
-//      connections in a non-deterministic order, so two renders of the same
-//      code differ by up to ~16 LSB (see README, "The song book").
+//   1. Circle Back's form is unchanged where P4 did not change it on purpose.
+//      Every plan it arranges (the sample post and the 60 fixture posts, both
+//      forms, two duration models: 244 plans) hashes to the digest recorded
+//      from the code before the song book, the additive fields aside and the
+//      ladder's rates and gates (P4 tunes each cut by its own pitch). Through a
+//      fake OfflineAudioContext, the exact graph (exact.js) makes the plain
+//      graph's connections and no input hears more than two at once; the
+//      byte-identity of real renders is check-review-audio.mjs --url.
 //   2. Every track's Drop Edition schedules cleanly: no non-finite or invalid
 //      automation, for the sample post and five fixture posts.
 //   3. Every track's plan carries what the Peg Board, the Pixel Text export
@@ -34,9 +33,9 @@ const canon = x => JSON.stringify(x, (k, v) => v instanceof Float64Array || v in
 // ---- 1a. Circle Back's plans, as they were
 // Fields the song book added to every plan; everything else compares as it was.
 function legacy(plan) {
-  const {track, trackTitle, kicks, marks, ...old} = plan;
-  if (old.choke) { const {dark, ...choke} = old.choke; old.choke = choke; }
-  old.lady = old.lady.map(({period, ...e}) => e);
+  const {track, trackTitle, kicks, marks, energyTrim, ...old} = plan;
+  if (old.choke) { const {dark, tagEnd, ...choke} = old.choke; old.choke = choke; }
+  old.lady = old.lady.map(({period, ...e}) => { if (e.role === 'ladder') { delete e.rate; delete e.gate; } return e; });
   return old;
 }
 const models = {fake:w => .18 + .11 * syllables(w), long:w => .3 + .19 * syllables(w)};
@@ -46,7 +45,9 @@ for (const form of ['drop60', 'soundcheck']) for (const [m, f] of Object.entries
   const plan = FORMS[form].arrange(lyrics, Object.fromEntries(FORMS[form].voiced(lyrics).map(w => [w, f(w)])));
   plans[`${form}/${m}/${i}`] = plan; hashes[`${form}/${m}/${i}`] = sha(canon(legacy(plan)));
 });
-const PLANS_BEFORE = 'cbb85936893fa3f3ef13391c93d14d9a25d7cfc5cae8ec3709843dd43c0a28f7';
+// Recomputed at P4 from the committed P3 code (whose plans were proven identical to the code before
+// the song book: 'cbb85936893f...' with the ladder's rates and gates in), without the ladder's rates and gates.
+const PLANS_BEFORE = 'efdb37378de7bceca8da8d8b8f5d2af30f545b772f0926064d3c54e2509ab423';
 ok(Object.keys(hashes).length === 244 && sha(Object.keys(hashes).sort().map(k => hashes[k]).join('')) === PLANS_BEFORE, 'Circle Back: 244 plans identical to the code before the song book');
 
 // ---- 1b. Circle Back's Web Audio calls, as they were
@@ -83,7 +84,7 @@ class Recorder {
     target.stop = (...a) => { if (a.some(x => !Number.isFinite(x))) throw Error(`#${id} stop(${a})`); log.push([id, 'stop', ...a]); };
     target.setPeriodicWave = w => log.push([id, 'wave', w.__wave]);
     target.getFloatTimeDomainData = () => {}; target.getByteFrequencyData = () => {};
-    return new Proxy(target, {set(t, k, v) { if (k !== 'onended') log.push([id, 'set', k, show(v)]); t[k] = v; return true; }});
+    return new Proxy(target, {set(t, k, v) { if (k !== 'onended' && typeof v !== 'function') log.push([id, 'set', k, show(v)]); t[k] = v; return true; }});
   }
   createGain() { return this.node('gain', {}, {gain:1}); }
   createBiquadFilter() { return this.node('biquad', {}, {frequency:350, Q:1, gain:0, detune:0}); }
@@ -116,24 +117,35 @@ const fakeBuffer = (seconds, seed) => {
   for (let i = 0; i < length; i++) d[i] = Math.sin(i * (seed % 7 + 1) * .01);
   return {duration:seconds, length, sampleRate:44100, numberOfChannels:1, getChannelData:() => d};
 };
-async function record(plan, options) {
+async function record(plan, options, exact = 'on') {
   const words = [...new Set([...plan.words, ...plan.stutters].map(w => w.word))];
   const buffers = new Map(words.map((w, i) => [w, {audio:fakeBuffer(.25 + .1 * (i % 5), i), lead:.01 * (i % 3), duration:.25}]));
   const files = new Map([...new Set(plan.lady.map(e => e.file))].map((f, i) => [f, fakeBuffer(2.4, 40 + i)]));
   const deep = new Map(plan.lady.map((e, i) => [e, i]).filter(([e]) => e.deep).map(([e, i]) => [i, fakeBuffer(3, i)]));
-  await E.render(plan, buffers, options, {files, deep});
-  return {calls:last.log.length, sha:sha(canon(last.log))};
+  globalThis.__exact = exact;
+  try { await E.render(plan, buffers, options, {files, deep}); } finally { delete globalThis.__exact; }
+  return {calls:last.log.length, sha:sha(canon(last.log)), log:last.log, ctx:last};
 }
-// Digests recorded from the engine before the song book (scratchpad regress harness, same fake inputs).
-const ENGINE_BEFORE = [
-  ['drop60/fake/0', {mode:'sung'}, 44828, 'c8b6c7069c663cf112ff822f6152b6e716017f58485485a341a189848e3a619d'],
-  ['soundcheck/fake/0', {mode:'sung'}, 40631, '894f51fbe24238ccd4312deaaf001b42a2e9b34e5f85301acc30f55c23c73912'],
-  ['drop60/fake/1', {mode:'sung', tune:{stems:true}}, 44682, 'ba9bcfde8412318861c2f8506b646f624704b76cc87c78548cd8953abd632099'],
-  ['drop60/long/3', {mode:'both', muted:{drums:true}}, 44594, 'e825fa50e642bb7188094275ec54b146f22582ee5fbe9d13c2245c126c873f52'],
-];
-for (const [key, options, calls, digest] of ENGINE_BEFORE) {
-  const got = await record(plans[key], options);
-  ok(got.calls === calls && got.sha === digest, `Circle Back ${key} ${JSON.stringify(options)}: the same ${calls} Web Audio calls as before (got ${got.calls})`);
+// The graph as connections, with exact.js's lane links collapsed: [from, to, output, input].
+function logical(log) {
+  const links = new Set(log.filter(e => e[1] === 'set' && e[2] === 'exactLink').map(e => e[0]));
+  const ids = new Map(); let n = 0;
+  for (const e of log) if (e[0] === 'new' && !links.has(e[1])) ids.set(e[1], ++n);
+  const out = new Map();
+  for (const e of log) if (e[1] === 'connect' && links.has(e[0])) out.set(e[0], [e[2], e[4]]);
+  const name = d => { if (typeof d !== 'string') return d; const m = /^#(\d+)(\..+)?$/.exec(d); return m ? `#${ids.get(+m[1])}${m[2] ?? ''}` : d; };
+  const resolve = (d, i) => { for (let k = 0; typeof d === 'string' && /^#\d+$/.test(d) && links.has(+d.slice(1)); k++) { if (k > 1e5) throw Error('lane loop'); [d, i] = out.get(+d.slice(1)); } return [d, i]; };
+  return log.filter(e => e[1] === 'connect' && !links.has(e[0])).map(e => { const [d, i] = resolve(e[2], e[4]); return [ids.get(e[0]), name(d), e[3], i].join(' '); }).sort();
+}
+// exact.js changes how the graph sums, never what it connects: the same
+// connections as the plain graph, every input hearing at most two at once.
+// (The calls themselves changed by design at P4: lanes, heads, and the ladder
+// retuned by the pitch of each cut. The old digests were the pre-song-book code.)
+for (const [key, options] of [['drop60/fake/0', {mode:'sung'}], ['soundcheck/fake/0', {mode:'sung'}], ['drop60/fake/1', {mode:'sung', tune:{stems:true}}], ['drop60/long/3', {mode:'both', muted:{drums:true}}]]) {
+  const plain = await record(plans[key], options, 'off'), exact = await record(plans[key], options, 'on');
+  const a = logical(plain.log), b = logical(exact.log), report = E.exactReport(exact.ctx);
+  ok(a.length > 5000 && JSON.stringify(a) === JSON.stringify(b), `Circle Back ${key} ${JSON.stringify(options)}: the exact graph makes the plain graph's ${a.length} connections`);
+  ok(report.length > 100 && report.every(r => r.overlap <= 2), `Circle Back ${key}: every one of ${report.length} inputs hears at most two connections at once (busiest: ${Math.max(...report.map(r => r.lanes))} lanes)`);
 }
 
 // ---- 2. Every track schedules cleanly, deterministically
@@ -141,6 +153,7 @@ for (const track of TRACK_ORDER) for (const post of [SAMPLE_POST, ...fixtures.sl
   const lyrics = lyricsFromPost(post), F = FORMS.drop60, durations = Object.fromEntries(F.voiced(lyrics, {track}).map(w => [w, models.fake(w)]));
   const plan = F.arrange(lyrics, durations, {track}), a = await record(plan, {mode:'sung'}), b = await record(F.arrange(lyrics, durations, {track}), {mode:'sung'});
   ok(a.calls > 10000 && a.sha === b.sha, `${track}/${lyrics.hook}: ${a.calls} valid Web Audio calls, the same twice`);
+  ok(E.exactReport(a.ctx).every(r => r.overlap <= 2), `${track}/${lyrics.hook}: no input hears more than two connections at once`);
   // ---- 3. The plan downstream reads
   const T = plan.timing;
   ok(plan.track === track && plan.trackTitle === TRACKS[track].title && Number.isFinite(plan.bpm) && typeof plan.key === 'string' && Math.abs(plan.step - 15 / plan.bpm) < 1e-12, `${track}: track, bpm, key, step`);

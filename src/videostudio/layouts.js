@@ -8,9 +8,12 @@
 // half of a split (breakout rooms), 'G4.0>g2x4.5' a generic 2-column 4-row grid
 // inside a tile (cell split). Nested grids keep the gutter, with no outer margin.
 //
-// board: where the Peg Board draws when the layout gives it a region (null: the
-// board lives in a cell, or over the frame). banner: the screen-share banner.
+// board: where the Peg Board draws in this layout (every class has one, inside the format's
+// platform-safe area; boardOver: a panel laid over the picture). banner: the
+// screen-share banner.
 // All rects are output pixels {x, y, w, h}; cells add r (corner radius) and id.
+
+import {FORMATS as TYPE_FORMATS} from '../pegboard/font.js';
 
 export const FORMATS = {
   '9:16':{w:1080, h:1920},
@@ -18,6 +21,11 @@ export const FORMATS = {
   '16:9':{w:1920, h:1080},
 };
 export const FORMAT_NAMES = Object.keys(FORMATS);
+// The platform-safe area of each format (pegboard/font.js): the Peg Board's type stays inside.
+export const SAFE = Object.freeze(Object.fromEntries(Object.keys(FORMATS).map(k => [k, Object.freeze({...TYPE_FORMATS[k].safe})])));
+// A board region sits inside the safe band (top to bottom) of its format; a full-bleed board
+// (the whole frame) passes when its type does (boardTypeBounds in gl/board-layer.js).
+export const insideSafeBand = (format, r) => r.y >= SAFE[format].y - 1e-9 && r.y + r.h <= SAFE[format].y + SAFE[format].h + 1e-9;
 export const GUTTER = 12, RADIUS = 12;
 export const CLASSES = ['L1', 'split', 'stack3', 'G4', 'G6', 'G9', 'BOARD', 'BOARD+STRIP'];
 
@@ -40,45 +48,54 @@ export function gridIn(r, cols, rows, g = GUTTER) {
 }
 
 const M = GUTTER;
-// The geometry, per format. Where the plan fixes numbers they are used as given:
-// 9:16 G6 is 2×3 tiles of 522×392 at y 288 / 692 / 1096; G9 is 3×3 of 344×258
-// with a board strip; BOARD+STRIP puts the board at y 340–1100 over 3 tiles of
-// 344×258; stack3 is three 16:9 tiles (1056×594 once the gutters are taken).
+// The geometry, per format. Every call layout gives the Peg Board a region inside the
+// platform-safe area of its format (pegboard/font.js FORMATS: 9:16 type stays between y 300
+// and 1440, clear of the Reels / TikTok / Shorts header and caption; 1:1 between 60 and 900;
+// 16:9 between 54 and 1026), so the song's words always have somewhere to light:
+//   9:16  G6 and G9 are compact galleries from y 288 (the plan's 344×258 tile) with the board
+//         strip under them, y 1098-1440. split and G4 fill the frame with the board across
+//         the middle, y 790-1130; stack3 puts it between its second and third tile, y 1048-1390.
+//   1:1   rows of 390 above and below a band at y 414-666 (stack3 and G9: below the first row).
+//   16:9  the call on the left 1398 px, the board in a column on the right, y 54-1026.
+// L1 keeps the whole frame for its picture; its board is a panel laid over the picture
+// (boardOver), in the safe area below the face. BOARD is full bleed: its type is centred,
+// inside the safe band. BOARD+STRIP puts the board at y 340-1100 over 3 tiles of 344×258.
+const rows2 = (F, top, h, cols, w) => [...block(M, top, cols, 1, w, h), ...block(M, F - M - h, cols, 1, w, h)];
 const GEOMETRY = {
   '9:16':{
-    L1:{cells:[rect(M, M, 1056, 1896)]},
-    split:{cells:gridIn(rect(M, M, 1056, 1896), 1, 2)},
-    stack3:{cells:block(M, 57, 1, 3, 1056, 594)},
-    G4:{cells:gridIn(rect(M, M, 1056, 1896), 2, 2)},
-    G6:{cells:block(M, 288, 2, 3, 522, 392), board:rect(M, 1500, 1056, 408)},
-    G9:{cells:block(M, 288, 3, 3, 344, 258), board:rect(M, 1098, 1056, 390)},
+    L1:{cells:[rect(M, M, 1056, 1896)], board:rect(M, 1098, 1056, 342), boardOver:true},
+    split:{cells:rows2(1920, M, 766, 1, 1056), board:rect(M, 790, 1056, 340)},
+    stack3:{cells:[rect(M, M, 1056, 506), rect(M, 530, 1056, 506), rect(M, 1402, 1056, 506)], board:rect(M, 1048, 1056, 342)},
+    G4:{cells:rows2(1920, M, 766, 2, 522), board:rect(M, 790, 1056, 340)},
+    G6:{cells:block(M, 288, 2, 3, 522, 258), board:rect(M, 1098, 1056, 342)},
+    G9:{cells:block(M, 288, 3, 3, 344, 258), board:rect(M, 1098, 1056, 342)},
     BOARD:{cells:[rect(0, 0, 1080, 1920)], board:rect(0, 0, 1080, 1920), radius:0},
     'BOARD+STRIP':{cells:block(M, 1112, 3, 1, 344, 258), board:rect(0, 340, 1080, 760), banner:rect(M, 274, 1056, 54)},
   },
   '1:1':{
-    L1:{cells:[rect(M, M, 1056, 1056)]},
-    split:{cells:gridIn(rect(M, M, 1056, 1056), 1, 2)},
-    stack3:{cells:gridIn(rect(M, M, 1056, 1056), 1, 3)},
-    G4:{cells:gridIn(rect(M, M, 1056, 1056), 2, 2)},
-    G6:{cells:gridIn(rect(M, M, 1056, 1056), 2, 3)},
-    G9:{cells:block(M, M, 3, 3, 344, 256), board:rect(M, 816, 1056, 252)},
+    L1:{cells:[rect(M, M, 1056, 1056)], board:rect(M, 648, 1056, 252), boardOver:true},
+    split:{cells:rows2(1080, M, 390, 1, 1056), board:rect(M, 414, 1056, 252)},
+    stack3:{cells:[rect(M, M, 1056, 256), rect(M, 544, 1056, 256), rect(M, 812, 1056, 256)], board:rect(M, 280, 1056, 252)},
+    G4:{cells:rows2(1080, M, 390, 2, 522), board:rect(M, 414, 1056, 252)},
+    G6:{cells:rows2(1080, M, 390, 3, 344), board:rect(M, 414, 1056, 252)},
+    G9:{cells:[...block(M, M, 3, 1, 344, 256), ...block(M, 544, 3, 2, 344, 256)], board:rect(M, 280, 1056, 252)},
     BOARD:{cells:[rect(0, 0, 1080, 1080)], board:rect(0, 0, 1080, 1080), radius:0},
     'BOARD+STRIP':{cells:block(M, 810, 3, 1, 344, 258), board:rect(0, 72, 1080, 726), banner:rect(M, M, 1056, 48)},
   },
   '16:9':{
-    L1:{cells:[rect(M, M, 1896, 1056)]},
-    split:{cells:gridIn(rect(M, M, 1896, 1056), 2, 1)},
-    stack3:{cells:gridIn(rect(M, M, 1896, 1056), 3, 1)},
-    G4:{cells:gridIn(rect(M, M, 1896, 1056), 2, 2)},
-    G6:{cells:gridIn(rect(M, M, 1896, 1056), 3, 2)},
-    G9:{cells:block(M, M, 3, 3, 458, 344), board:rect(1422, M, 486, 1056)},
+    L1:{cells:[rect(M, M, 1896, 1056)], board:rect(1422, 54, 486, 972), boardOver:true},
+    split:{cells:gridIn(rect(M, M, 1398, 1056), 2, 1), board:rect(1422, 54, 486, 972)},
+    stack3:{cells:gridIn(rect(M, M, 1398, 1056), 3, 1), board:rect(1422, 54, 486, 972)},
+    G4:{cells:gridIn(rect(M, M, 1398, 1056), 2, 2), board:rect(1422, 54, 486, 972)},
+    G6:{cells:gridIn(rect(M, M, 1398, 1056), 3, 2), board:rect(1422, 54, 486, 972)},
+    G9:{cells:block(M, M, 3, 3, 458, 344), board:rect(1422, 54, 486, 972)},
     BOARD:{cells:[rect(0, 0, 1920, 1080)], board:rect(0, 0, 1920, 1080), radius:0},
     'BOARD+STRIP':{cells:block(420, 810, 3, 1, 344, 258), board:rect(0, 72, 1920, 726), banner:rect(M, M, 1896, 48)},
   },
 };
 
 const cache = new Map();
-// The layout of a class in a format: {cls, format, w, h, gutter, radius, cells, board, banner}.
+// The layout of a class in a format: {cls, format, w, h, gutter, radius, cells, board, boardOver, banner}.
 export function layout(cls, format) {
   const key = `${cls}|${format}`;
   if (cache.has(key)) return cache.get(key);
@@ -88,7 +105,7 @@ export function layout(cls, format) {
   const radius = G.radius ?? RADIUS;
   const out = Object.freeze({cls, format, w:F.w, h:F.h, gutter:GUTTER, radius,
     cells:G.cells.map((c, i) => Object.freeze({id:`${cls}.${i}`, ...c, r:radius})),
-    board:G.board ? Object.freeze({...G.board}) : null, banner:G.banner ? Object.freeze({...G.banner}) : null});
+    board:G.board ? Object.freeze({...G.board}) : null, boardOver:!!G.boardOver, banner:G.banner ? Object.freeze({...G.banner}) : null});
   cache.set(key, out);
   return out;
 }

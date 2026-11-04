@@ -4,9 +4,10 @@
 //   node scripts/render-allhands.mjs [--url http://localhost:5173] [--out dir]
 //     [--mode sung|spoken|both] [--mute drums,bass] [--post file.txt] [--name take]
 //     [--bars 8-12] [--form drop60|soundcheck]
-//     [--track circle-back|humbled-and-honored|hustle] [--cast cast.json]
+//     [--track circle-back|humbled-and-honored|hustle] [--cast cast.json] [--cold-open]
 // --track picks the song book track (default Circle Back); --cast is a JSON
-// object of lady roles to recast (src/allhands/README.md, "The cast").
+// object of lady roles to recast (src/allhands/README.md, "The cast"); --cold-open
+// adds the film's cold open (the impact, then the ladder rewound) to the Drop Edition.
 import {createRequire} from 'node:module';
 // Playwright is not a project dependency; use whichever copy the machine has.
 const require = createRequire(import.meta.url);
@@ -18,9 +19,9 @@ const arg = (name, fallback) => { const i = process.argv.indexOf(`--${name}`); r
 const url = arg('url', 'http://localhost:5173'), out = arg('out', '.'), mode = arg('mode', 'sung');
 const muted = Object.fromEntries((arg('mute', '') || '').split(',').filter(Boolean).map(s => [s, true]));
 const post = arg('post') ? await readFile(arg('post'), 'utf8') : undefined;
-const form = arg('form', 'drop60'), track = arg('track');
+const form = arg('form', 'drop60'), track = arg('track'), coldOpen = process.argv.includes('--cold-open');
 const cast = arg('cast') ? JSON.parse(await readFile(arg('cast'), 'utf8')) : undefined;
-const name = arg('name', `allhands-${track ? `${track}-` : ''}${form}-${mode}`);
+const name = arg('name', `allhands-${track ? `${track}-` : ''}${form}-${mode}${coldOpen ? '-cold' : ''}`);
 const bars = arg('bars') ? arg('bars').split('-').map(Number) : undefined;   // e.g. --bars 8-12
 
 const browser = await chromium.launch();
@@ -29,7 +30,7 @@ try {
   page.on('console', m => m.type() === 'error' && console.error('[page]', m.text()));
   await page.goto(`${url}/allhands/`, {waitUntil:'networkidle'});
   await page.waitForFunction(() => window.__allhands);
-  const result = await page.evaluate(options => window.__allhands.render(options), {post, form, track, cast, mode, muted, bars});
+  const result = await page.evaluate(options => window.__allhands.render(options), {post, form, track, cast, mode, muted, bars, coldOpen});
   await mkdir(out, {recursive:true});
   await writeFile(join(out, `${name}.wav`), Buffer.from(result.wav, 'base64'));
   await writeFile(join(out, `${name}.json`), JSON.stringify({lyrics:result.lyrics, plan:result.plan}, null, 1));

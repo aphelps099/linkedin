@@ -1,7 +1,7 @@
 // The camera inside a tile: zoom, centre, rotation and slides. Each move either
 // animates ctx.clip (an existing clip, composed with what it already has: zooms
 // multiply, rotations add) or makes one clip of ctx.pool[0] in ctx.cell over the window.
-import {win, poolOf, clip, fitTime, beatSteps, barSteps, snareSteps, eighths, ladderEvents, maxZoomFor, shotOf, isSynergy} from './util.js';
+import {win, poolOf, clip, fitTime, beatSteps, barSteps, snareHits, eighths, ladderEvents, maxZoomFor, shotOf, isSynergy} from './util.js';
 import {cellRect} from '../layouts.js';
 import {resolveAt} from '../edl/anchors.js';
 
@@ -52,16 +52,18 @@ export function snapLadder(ctx) {
   return {clips:[compose(c, 'zoom', keys)]};
 }
 
-// 12. Snare punch-in: 1.0 → 1.12 on each snare, decaying over one beat.
+// 12. Snare punch-in: 1.0 → 1.12 on each snare, decaying over one beat. A hit: each punch lands
+// on the frame that holds its snare's sound (keys with hit:true, the track's laid-back backbeat
+// included), never a frame after it.
 export function snarePunch(ctx) {
   const w = win(ctx), c = base(ctx, 'snarePunch', w), QS = beatSteps(ctx.plan), d = localOf(c, w), to = Math.min(ctx.to ?? 1.12, ceiling(ctx, c));
   const keys = [[d, 1]];
-  for (const s of snareSteps(ctx.plan, w.from, w.to)) {
-    const k = s - w.from + d;
+  for (const h of snareHits(ctx.plan, w.from, w.to)) {
+    const k = +(h.step + h.late - w.from + d).toFixed(6);
     if (keys.at(-1)[0] >= k) keys.pop();
     keys.push([k, +to.toFixed(4), 'step'], [k + QS, 1, 'outQuad']);
   }
-  return {clips:[compose(c, 'zoom', keys)]};
+  return {clips:[compose(c, 'zoom', {keys, hit:true})]};
 }
 
 // 13. Whip slide: the outgoing tile slides out by one cell over 2 steps and the

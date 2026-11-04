@@ -219,6 +219,8 @@ export default {
       punct:[27 * 16, 26 * 16 + 14, 26 * 16 + 15, 27 * 16 + 1],
     },
     energy:ENERGY,
+    // The verse's room for the drops (drop.js roomTrim): set on the sample post, whose shares are the references.
+    room:{verse:{section:'Verse', ref:.727, k:3}, drops:{'Drop A':{ref:.458, k:8}, 'Drop B':{ref:.670, k:4}}, max:2.5},
   },
   mix:{stems:STEM_MIX},
   sound:{},

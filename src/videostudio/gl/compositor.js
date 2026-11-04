@@ -29,11 +29,12 @@
 //   before it, in two ping-pong framebuffers. The composite camera (cue matrix + effects).
 //   Post: bloom (bright pass, dual Kawase), the governor's gain, grain, dither.
 // Every pass is a pure function of the frame, its sources and the frame number.
-import {RECT_VS, FULL_VS, LAYER_FS, CHROME_VS, CHROME_FS, COPY_FS, BRIGHT_FS, DOWN_FS, UP_FS, FINAL_FS} from './shaders.js';
-import {createAtlas, loadFonts, chromeQuads, tileQuads, bannerQuads, packQuads, isLadyTile} from './chrome.js';
-import {createBoardLayer, boardPitch} from './board-layer.js';
+import {RECT_VS, FULL_VS, LAYER_FS, CHROME_VS, CHROME_FS, MOUTH_VS, MOUTH_FS, COPY_FS, BRIGHT_FS, DOWN_FS, UP_FS, FINAL_FS} from './shaders.js';
+import {createAtlas, loadFonts, chromeQuads, tileQuads, bannerQuads, packQuads, isLadyTile, LEGIBLE} from './chrome.js';
+import {createBoardLayer, boardPitch, safeSpan} from './board-layer.js';
 import {governorTrack} from '../../pegboard/governor.js';
-import {FORMATS} from '../layouts.js';
+import {FORMATS, SAFE} from '../layouts.js';
+import {PEG_LEAD} from '../edl/anchors.js';
 
 export const BACKGROUND = [16 / 255, 17 / 255, 20 / 255];     // the meeting room's stage, #101114
 export const EMPTY_TILE = [24 / 255, 26 / 255, 30 / 255, 1];  // a tile still connecting, #181a1e
@@ -47,13 +48,16 @@ export const FX_SUPPORT = {
   scanline:'shader: line pairs and per-line wobble', echo:'trail copies at the transforms of earlier frames',
 };
 
-// Pegs light on floor((t + .010)·24). choreo lights a unit once the time it is painted at
-// reaches its onset less half a frame, so frame f paints at f/24 + (1/48 − .010); a screen
-// switches on at its own start with no lead, so the compositor hands choreo its screens half
-// a frame early (boardScreens). Every onset t is then lit from frame floor((t + .010)·24):
-// up to 25 ms before its sound, never after.
-export const PEG_PAINT_LEAD = 1 / 48 - .010;
-export const boardTimeOf = frame => frame.board.time + PEG_PAINT_LEAD;
+// Pegs are hits (edl/anchors.js): an onset at song time t lights on floor((t + L)·24), the frame
+// that holds its audible onset (L = frame.board.lead, the engine's measured latency, 16.33 ms).
+// choreo paints the middle of a frame: it lights a unit once the time it is painted at reaches its
+// onset less half a frame, so frame f paints at f/24 + 1/48 − L; a screen switches on at its own
+// start with no lead, so the compositor hands choreo its screens half a frame early
+// (boardScreens). Every onset is then lit from the frame that holds its sound, never after it;
+// true black starts on the first frame after her tag stops sounding; the ignition lands on the
+// frame that holds the impact.
+export const PEG_PAINT_LEAD = 1 / 48 - PEG_LEAD;
+export const boardTimeOf = frame => frame.board.time + 1 / 48 - (frame.board.lead ?? PEG_LEAD);
 const shifted = new WeakMap();
 export function boardScreens(list) {
   if (!shifted.has(list)) shifted.set(list, list.map(s => ({...s, from:s.from - 1 / 48, to:s.to - 1 / 48})));
@@ -87,7 +91,7 @@ export function createCompositor(canvas, opts = {}) {
     for (let i = 0, n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS); i < n; i++) { const name = gl.getActiveUniform(p, i).name; u[name.replace(/\[0\]$/, '')] = gl.getUniformLocation(p, name); }
     return {p, u};
   }
-  const P = {layer:program(RECT_VS, LAYER_FS), chrome:program(CHROME_VS, CHROME_FS), copy:program(FULL_VS, COPY_FS),
+  const P = {layer:program(RECT_VS, LAYER_FS), chrome:program(CHROME_VS, CHROME_FS), mouth:program(MOUTH_VS, MOUTH_FS), copy:program(FULL_VS, COPY_FS),
     bright:program(FULL_VS, BRIGHT_FS), down:program(FULL_VS, DOWN_FS), up:program(FULL_VS, UP_FS), final:program(FULL_VS, FINAL_FS)};
   const empty = gl.createVertexArray();
 
@@ -246,12 +250,38 @@ export function createCompositor(canvas, opts = {}) {
     stats.chrome += packed.count;
   }
 
+  // Synergy's mouth row, over his picture, inside his tile (meeting room drawRobotMouth).
+  // His voice level comes with the layer (compile: the voice stem while he sings); the wave's
+  // phase is the song time. Drawn right after his layer, under his chrome, so it zooms and
+  // fades with his face and is never mirrored or warped (G11 refuses both on Synergy).
+  function drawMouth(layer, time) {
+    const r = layer.robot, m = r?.mouth;
+    if (!m || !(m.scale > 0)) return;
+    const M = P.mouth, u = M.u, cell = layer.cell;
+    let sat = 1, chroma = 0, iris = [-1, .5, .5, 2];
+    for (const x of layer.fx) {
+      if (x.type === 'saturation') sat *= x.amount;
+      else if (x.type === 'chromaDrop') chroma = Math.max(chroma, Math.min(1, x.amount));
+      else if (x.type === 'iris') iris = [Math.max(0, x.r), x.cx ?? .5, x.cy ?? .5, x.feather ?? 2];
+    }
+    gl.useProgram(M.p); gl.bindVertexArray(empty);
+    gl.uniform2f(u.uTarget, W, H); gl.uniform1f(u.uScale, scale);
+    gl.uniform2f(u.uC, m.x, m.y); gl.uniform1f(u.uAng, m.angle); gl.uniform1f(u.uS, m.scale); gl.uniform1f(u.uPx, m.px ?? m.scale);
+    gl.uniform1f(u.uLevel, r.level ?? 0); gl.uniform1f(u.uPhase, (time * 15) % 22);
+    gl.uniform4f(u.uCell, cell.x, cell.y, cell.w, cell.h); gl.uniform1f(u.uRadius, layer.radius || 0);
+    gl.uniform4f(u.uIris, ...iris); gl.uniform1f(u.uOpacity, layer.opacity); gl.uniform1f(u.uSat, sat); gl.uniform1f(u.uChroma, chroma);
+    gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, 22);
+    stats.mouths++;
+  }
+
   const identity = rect => [1, 0, -rect.x, 0, 1, -rect.y, 0, 0, 1];     // output px -> rect-local px
-  function drawBoardRegion(rect, screens, time, {sockets = true, blend = 'over', pitch, cell = null, radius = 0} = {}) {
+  // Type stays inside the format's platform-safe area (in 9:16, left of the right rail).
+  const safeOf = rect => safeSpan(rect, SAFE[format]);
+  function drawBoardRegion(rect, screens, time, {sockets = true, blend = 'over', pitch, cell = null, radius = 0, target = null} = {}) {
     if (!boards) return;
-    const b = boards.draw({w:rect.w, h:rect.h, screens, time, pitch, sockets});
+    const b = boards.draw({w:rect.w, h:rect.h, screens, time, pitch, sockets, safe:safeOf(rect)});
     stats.boards++;
-    resetState(); bindTarget(T.comp);
+    resetState(); bindTarget(target ?? T.comp);
     if (blend === 'max') gl.blendEquation(gl.MAX);
     const r = cell ?? {x:rect.x, y:rect.y, w:rect.w, h:rect.h};
     drawLayerPass({transform:{matrix:identity(rect)}, opacity:1, fx:[], cell:r, radius}, {kind:0, tex:b.texture, flip:1, srcW:Math.round(rect.w), srcH:Math.round(rect.h)}, {matrix:identity(rect)});
@@ -267,7 +297,7 @@ export function createCompositor(canvas, opts = {}) {
       if (g.startsWith('color:')) return {kind:1, color:[...hexRGB(g.slice(6)), 1]};
       if (g === 'camera-off' || g === 'feedback') return {kind:2};
       if (g === 'board') {
-        const b = boards?.draw({w:layer.cell.w, h:layer.cell.h, screens:ctx.screens, time});
+        const b = boards?.draw({w:layer.cell.w, h:layer.cell.h, screens:ctx.screens, time, safe:safeOf(layer.cell)});
         if (b) { stats.boards++; resetState(); bindTarget(T.comp); return {kind:0, tex:b.texture, flip:1, srcW:Math.round(layer.cell.w), srcH:Math.round(layer.cell.h)}; }
         return {kind:1, color:[0, 0, 0, 1]};
       }
@@ -289,17 +319,32 @@ export function createCompositor(canvas, opts = {}) {
     if (o.format && o.format !== format) setFormat(o.format);
     const program = o.program ?? ctx.program;
     drawCount++;
-    stats = {passes:0, uploads:0, boards:0, chrome:0, missing:0, layers:frame.layers.length, droste:0};
+    stats = {passes:0, uploads:0, boards:0, chrome:0, missing:0, mouths:0, layers:frame.layers.length, droste:0};
     const time = frame.time, seed = (frame.f * 2654435761) >>> 0, btime = boardTimeOf(frame);
     resetState(); bindTarget(T.comp); clear(BACKGROUND);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
 
     // The board's own region: under the tiles, unless a picture covers it (then over, below).
-    const rect = frame.board?.rect, screens = ctx.screens;
+    // A camera move that does not own the board leaves it out of the composite: it is drawn
+    // after the camera, fixed in its region, so a push or a Droste dive never carries the
+    // words out of frame.
+    // L1's panel only comes up while the board has a screen on it: an empty panel over a
+    // full picture would be a grey bar.
+    const rect = frame.board?.over && frame.board.screen < 0 ? null : frame.board?.rect, screens = ctx.screens, fixed = !!(rect && frame.camera && !frame.camera.board);
     const under = rect ? frame.layers.filter(l => overlaps(l.cell, rect)) : [];
     const pegUnder = under.find(l => l.fx.some(x => x.type === 'pegVideo' && x.mix >= .5));
     const videoUnder = under.some(l => l.kind === 'video');
-    if (rect && !under.length) drawBoardRegion(rect, screens, btime, {});
+    const regionRadius = rect && (rect.w < F.w || rect.h < F.h) ? 12 : 0;
+    // L1's board (boardOver) is a panel laid over the picture: sockets and all, so its type
+    // reads over a bright frame. Over a full-frame picture the board shows only its light.
+    const drawMain = (target = null) => {
+      if (!under.length || frame.board.over) drawBoardRegion(rect, screens, btime, {cell:rect, radius:regionRadius, target});
+      else {
+        const pitch = pegUnder ? pegUnder.fx.find(x => x.type === 'pegVideo').pitch : undefined;
+        drawBoardRegion(rect, screens, btime, {sockets:!videoUnder, blend:videoUnder ? 'max' : 'over', pitch, cell:rect, radius:regionRadius, target});
+      }
+    };
+    if (rect && !under.length && !fixed) drawMain();
     for (const cs of frame.board?.cells || []) if (cs.z !== 'over') drawBoardRegion(cs.rect, [ctx.cells[cs.screen]], btime, {cell:cs.rect, radius:12});
 
     // The layers, each with its chrome.
@@ -317,24 +362,22 @@ export function createCompositor(canvas, opts = {}) {
         }
       }
       drawLayerPass(layer, look, {seed, time});
+      if (layer.robot && look.kind === 0) drawMouth(layer, time);
       const quads = [];
       if (layer.gen === 'camera-off' || layer.gen === 'feedback' || layer.chrome?.cameraOff) {
-        if (layer.cell.id !== 'full') quads.push(...tileQuads(layer, atlas, {scale, time}));
+        if (layer.cell.id !== 'full') quads.push(...tileQuads(layer, atlas, {scale, time, legible:LEGIBLE[format]}));
       }
       const m = layer.robot?.mouth, avoid = m ? {x:m.x - m.w / 2 - 4, y:m.y - m.h / 2 - 4, w:m.w + 8, h:m.h + 8} : null;
-      quads.push(...chromeQuads(layer, atlas, {scale, time, bannerRect, avoid}));
+      quads.push(...chromeQuads(layer, atlas, {scale, time, bannerRect, avoid, legible:LEGIBLE[format]}));
       if (quads.length) { resetState(); bindTarget(T.comp); drawChrome(quads); }
     });
 
     // The board over full-frame pictures: its light over footage (MAX), or the whole board over generated tiles.
-    if (rect && under.length) {
-      const pitch = pegUnder ? pegUnder.fx.find(x => x.type === 'pegVideo').pitch : undefined;
-      drawBoardRegion(rect, screens, btime, {sockets:!videoUnder, blend:videoUnder ? 'max' : 'over', pitch});
-    }
+    if (rect && under.length && !fixed) drawMain();
     for (const cs of frame.board?.cells || []) if (cs.z === 'over') drawBoardRegion(cs.rect, [ctx.cells[cs.screen]], btime, {cell:cs.rect, radius:12, blend:'max', sockets:false});
     if (bannerRect) {
       const text = frame.layers.find(l => l.chrome?.banner)?.chrome.banner;
-      if (text) { resetState(); bindTarget(T.comp); drawChrome(bannerQuads(text, bannerRect, atlas, {scale})); }
+      if (text) { resetState(); bindTarget(T.comp); drawChrome(bannerQuads(text, bannerRect, atlas, {scale, legible:LEGIBLE[format]})); }
     }
 
     // Droste: each level is the frame with the feedback tile holding the level before.
@@ -354,7 +397,7 @@ export function createCompositor(canvas, opts = {}) {
         resetState(); bindTarget(dst);
         const alpha = k < n ? 1 : Math.min(1, fx.depth - (n - 1));
         drawLayerPass(dro, {kind:0, tex:out.tex, flip:1, srcW:F.w, srcH:F.h}, {matrix:M, opacity:dro.opacity * alpha, fx:dro.fx.filter(x => x.type !== 'droste'), seed, time});
-        drawChrome(chromeQuads(dro, atlas, {scale, time, avoid:m ? {x:m.x - m.w / 2, y:m.y - m.h / 2, w:m.w, h:m.h} : null}));
+        drawChrome(chromeQuads(dro, atlas, {scale, time, avoid:m ? {x:m.x - m.w / 2, y:m.y - m.h / 2, w:m.w, h:m.h} : null, legible:LEGIBLE[format]}));
         out = dst; stats.droste++;
       }
     }
@@ -365,6 +408,7 @@ export function createCompositor(canvas, opts = {}) {
       const full = {id:'full', x:0, y:0, w:F.w, h:F.h};
       drawLayerPass({transform:{matrix:frame.camera.matrix}, opacity:1, fx:frame.camera.fx || [], cell:full, radius:0}, {kind:0, tex:out.tex, flip:1, srcW:F.w, srcH:F.h}, {seed, time});
       out = T.cam;
+      if (fixed) { drawMain(T.cam); stats.fixedBoard = true; }
     }
 
     // Post: bloom, gain, grain, dither, to the canvas.
@@ -451,7 +495,7 @@ export function governorGains(program, {plan, shots, boards}) {
   for (let f = 0; f < program.frames; f++) {
     const fr = program.frame(f), q = [0, 0, 0, 0];
     let boardL = null;
-    const boardLuma = () => boardL ??= fr.board?.rect && boards ? boards.luma({w:fr.board.rect.w, h:fr.board.rect.h, screens:boardScreens(program.board.screens), time:boardTimeOf(fr)}, grids).whole : 0;
+    const boardLuma = () => boardL ??= fr.board?.rect && boards ? boards.luma({w:fr.board.rect.w, h:fr.board.rect.h, screens:boardScreens(program.board.screens), time:boardTimeOf(fr), safe:safeSpan(fr.board.rect, SAFE[program.format])}, grids).whole : 0;
     let whole = 0;
     for (let gy = 0; gy < GY; gy++) for (let gx = 0; gx < GX; gx++) {
       const x = (gx + .5) * F.w / GX, y = (gy + .5) * F.h / GY;

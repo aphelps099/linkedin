@@ -1,7 +1,8 @@
 // The compositor (src/videostudio/gl/), the preview's element pool and stutter cache, and
 // the studio's draft cut. Node checks first, then headless Chromium on SwiftShader WebGL2.
 //   1. the draft cut compiles clean in every format; Pat and the lady are never footage
-//   2. pegs light on floor((t + .010)·24): the board's paint time for every frame
+//   2. pegs are hits: they light on floor((t + L)·24), the frame that holds their sound (L: the engine's
+//      measured latency, edl/anchors.js AUDIO_LATENCY): the board's paint time for every frame
 //   3. cell geometry and rounded masks, by pixel probes at full size
 //   4. every effect of the vocabulary changes pixels the way it says
 //   5. chrome: name bar, speaking border, toast, banner, Pat's camera-off tile, the lady's tile
@@ -17,14 +18,15 @@ import os from 'node:os';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createRequire} from 'node:module';
+import {spawnSync} from 'node:child_process';
 import {FORMS} from '../src/allhands/forms.js';
 import {lyricsFromPost, SAMPLE_POST} from '../src/allhands/lyrics.js';
 import {compile, shotIndex} from '../src/videostudio/edl/compile.js';
 import {FX_TYPES} from '../src/videostudio/edl/schema.js';
-import {pegFrame} from '../src/videostudio/edl/anchors.js';
+import {pegFrame, audioLatency} from '../src/videostudio/edl/anchors.js';
 import {studioFilm} from '../src/videostudio/studio-film.js';
 import {boardGrid} from '../src/videostudio/gl/board-layer.js';
-import {PEG_PAINT_LEAD, FX_SUPPORT, boardScreens} from '../src/videostudio/gl/compositor.js';
+import {PEG_PAINT_LEAD, FX_SUPPORT, boardScreens, boardTimeOf} from '../src/videostudio/gl/compositor.js';
 import {paint} from '../src/pegboard/choreo.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -75,8 +77,8 @@ const index = shotIndex(SHOTS);
     if (start - (s.from + 1 / 48) > 1e-6 || f < 1) continue;
     tested.push({text:s.text, start, f, before:lit(s, f - 1), at:lit(s, f)});
   }
-  ok(tested.length >= 10 && tested.every(x => x.before === 0 && x.at > 0), `pegs light on frame floor((t + .010)·24), never a frame late or early: ${tested.length} of the lady's onsets (${tested.slice(0, 3).map(x => `${x.text} ${x.start.toFixed(3)} s → f${x.f}`).join(', ')})`);
-  ok(Math.abs(PEG_PAINT_LEAD - (1 / 48 - .010)) < 1e-12 && painted.every((s, i) => Math.abs(p.board.screens[i].from - s.from - 1 / 48) < 1e-12), 'frame f paints the board at f/24 + 1/48 − .010, its screens half a frame early (choreo lights an onset half a frame before it)');
+  ok(tested.length >= 10 && tested.every(x => x.before === 0 && x.at > 0), `pegs light on the frame that holds their sound, floor((t + L)·24), never a frame late or early: ${tested.length} of the lady's onsets (${tested.slice(0, 3).map(x => `${x.text} ${x.start.toFixed(3)} s → f${x.f}`).join(', ')})`);
+  ok(Math.abs(PEG_PAINT_LEAD - (1 / 48 - 720 / 44100)) < 1e-12 && Math.abs(boardTimeOf(p.frame(100)) - (100 / 24 + 1 / 48 - audioLatency(plan))) < 1e-12 && painted.every((s, i) => Math.abs(p.board.screens[i].from - s.from - 1 / 48) < 1e-12), 'frame f paints the board at f/24 + 1/48 − L (L 16.33 ms), its screens half a frame early (choreo paints the middle of a frame)');
   log(`2. peg timing: ${checks - before} checks`);
 }
 
@@ -111,7 +113,7 @@ const HARNESS = `(() => {
   T.init = async () => {
     const m = s => import(s);
     Object.assign(T, await m('/src/videostudio/edl/compile.js'), await m('/src/videostudio/edl/schema.js'), await m('/src/videostudio/layouts.js'), await m('/src/videostudio/gl/compositor.js'),
-      {studioFilm:(await m('/src/videostudio/studio-film.js')).studioFilm}, await m('/src/videostudio/media/element-pool.js'), await m('/src/videostudio/media/stutter-cache.js'));
+      {studioFilm:(await m('/src/videostudio/studio-film.js')).studioFilm, drop60Draft:(await m('/src/videostudio/treatments/drop60-draft.js')).drop60Draft}, await m('/src/videostudio/media/element-pool.js'), await m('/src/videostudio/media/stutter-cache.js'), await m('/src/videostudio/media/decoder.js'));
     const {FORMS} = await m('/src/allhands/forms.js'), L = await m('/src/allhands/lyrics.js');
     T.plan = FORMS.drop60.arrange(L.lyricsFromPost(L.SAMPLE_POST), {});
     T.SHOTS = await (await fetch('/src/videostudio/media/shots.json')).json();
@@ -190,9 +192,10 @@ let page = await freshPage();
 {
   const before = checks;
   const res = await page.evaluate(async () => {
-    const cell = T.cellRect('9:16', 'G6.0'), R = {x:cell.x + 16, y:cell.y + 16, w:cell.w - 32, h:cell.h - 80};
+    // One 522 px wide tile (G4.0, 522×766) carries every single-layer effect.
+    const cell = T.cellRect('9:16', 'G4.0'), R = {x:cell.x + 16, y:cell.y + 16, w:cell.w - 32, h:cell.h - 80};
     const one = async (fx, extra = {}, f = 6) => {
-      const p = T.program([{id:'x', at:0, len:16, cell:'G6.0', asset:'shot:card', time:{in:1}, ...(fx ? {fx} : {}), ...extra}], extra.programOpts || {});
+      const p = T.program([{id:'x', at:0, len:16, cell:'G4.0', asset:'shot:card', time:{in:1}, ...(fx ? {fx} : {}), ...extra}], extra.programOpts || {});
       return (await T.render(p, f)).img;
     };
     const ref = await one(null), out = {pngs:{}};
@@ -234,20 +237,23 @@ let page = await freshPage();
     img = await one([{type:'scanline', amount:.6, period:8}]); keep('scanline-0.6', img);
     out.scan = (() => { let a = 0, b = 0; for (let k = 4; k < 40; k++) { const y0 = cell.y + k * 8; T.region(img, {x:R.x, y:y0 + 1, w:R.w, h:2}, p => { a += T.luma(p); }); T.region(img, {x:R.x, y:y0 + 5, w:R.w, h:2}, p => { b += T.luma(p); }); } return b / a; })();
     // opacity: half a white tile over the background
-    { const p = T.program([{id:'w', at:0, len:16, cell:'G6.0', asset:'gen:white', frame:{opacity:.5}, chrome:{name:''}}]); img = (await T.render(p, 6)).img; out.opacity = T.px(img, cell.x + cell.w / 2, cell.y + cell.h / 2); keep('opacity-0.5', img); }
+    { const p = T.program([{id:'w', at:0, len:16, cell:'G4.0', asset:'gen:white', frame:{opacity:.5}, chrome:{name:''}}]); img = (await T.render(p, 6)).img; out.opacity = T.px(img, cell.x + cell.w / 2, cell.y + cell.h / 2); keep('opacity-0.5', img); }
     // echo: a tile sliding right leaves trail copies of its earlier positions
-    { const move = {frame:{dx:[[0, 0], [16, 260]]}}; const a = await one(null, move, 24), b = await one([{type:'echo', taps:3, frames:2, decay:.6}], move, 24); keep('echo-3', b);
-      const bg = img => { let n = 0; T.region(img, {x:cell.x + 2, y:cell.y + 2, w:cell.w - 4, h:cell.h - 60}, p => { if (Math.abs(p[0] - 16) < 3 && Math.abs(p[2] - 20) < 3) n++; }); return n; };
+    // (in stack3.0, a wide tile whose crop spans the card's whole width, so a slide uncovers background)
+    { const ec = T.cellRect('9:16', 'stack3.0'), move = {frame:{dx:[[0, 0], [16, 260]]}};
+      const slid = async fx => (await T.render(T.program([{id:'x', at:0, len:16, cell:'stack3.0', asset:'shot:card', time:{in:1}, ...(fx ? {fx} : {}), ...move}]), 24)).img;
+      const a = await slid(null), b = await slid([{type:'echo', taps:3, frames:2, decay:.6}]); out.pngs['echo-3'] = T.png(b, {x:0, y:ec.y, w:1080, h:ec.h + 12});
+      const bg = img => { let n = 0; T.region(img, {x:ec.x + 2, y:ec.y + 2, w:ec.w - 4, h:ec.h - 60}, p => { if (Math.abs(p[0] - 16) < 3 && Math.abs(p[2] - 20) < 3) n++; }); return n; };
       out.echo = {plain:bg(a), echo:bg(b)}; }
     // Droste: the feedback tile holds the whole frame at .3, one level deep
-    { const p = T.program([{id:'fb', at:0, len:16, cell:'G6.0', asset:'gen:feedback', fx:[{type:'droste', depth:1, scale:.3, cx:.5, cy:.5}], chrome:{name:'Pat', cameraOff:true}}, {id:'w', at:0, len:16, cell:'G6.1', asset:'gen:white', chrome:{name:''}}, {id:'red', at:0, len:16, cell:'G6.5', asset:'gen:color:#ff0000', chrome:{name:''}}]);
+    { const p = T.program([{id:'fb', at:0, len:16, cell:'G6.0', asset:'gen:feedback', fx:[{type:'droste', depth:1, scale:.3, cx:.5, cy:.5}], chrome:{name:'Pat', cameraOff:true}}, {id:'w', at:0, len:16, cell:'G6.3', asset:'gen:white', chrome:{name:''}}, {id:'red', at:0, len:16, cell:'G6.5', asset:'gen:color:#ff0000', chrome:{name:''}}]);
       const r = await T.render(p, 6); img = r.img; keep('droste-1', img);
-      const at = (P) => [cell.x + cell.w / 2 + (P[0] - 540) * .3, cell.y + cell.h / 2 + (P[1] - 960) * .3];
-      const c1 = T.cellRect('9:16', 'G6.1'), c5 = T.cellRect('9:16', 'G6.5');
+      const fb = T.cellRect('9:16', 'G6.0'), at = (P) => [fb.x + fb.w / 2 + (P[0] - 540) * .3, fb.y + fb.h / 2 + (P[1] - 960) * .3];
+      const c1 = T.cellRect('9:16', 'G6.3'), c5 = T.cellRect('9:16', 'G6.5');
       out.droste = {red:T.px(img, ...at([c5.x + c5.w / 2, c5.y + c5.h / 2])), white:T.px(img, ...at([c1.x + c1.w / 2, c1.y + c1.h / 2])), levels:r.stats.droste}; }
     // the composite camera: zoom 2 about the centre
-    { const p = T.program([{id:'red', at:0, len:16, cell:'G6.5', asset:'gen:color:#ff0000', chrome:{name:''}}], {camera:[{id:'cam', at:0, len:16, zoom:2, cx:.5, cy:.5}]});
-      img = (await T.render(p, 6)).img; const c5 = T.cellRect('9:16', 'G6.5'); out.camera = {moved:T.px(img, 540 + (c5.x + 40 - 540) * 2, 960 + (c5.y + 40 - 960) * 2), old:T.px(img, c5.x + 10, c5.y + 10)}; }
+    { const p = T.program([{id:'red', at:0, len:16, cell:'G6.3', asset:'gen:color:#ff0000', chrome:{name:''}}], {camera:[{id:'cam', at:0, len:16, zoom:2, cx:.5, cy:.5}]});
+      img = (await T.render(p, 6)).img; const c3 = T.cellRect('9:16', 'G6.3'); out.camera = {moved:T.px(img, 540 + (c3.x + 40 - 540) * 2, 960 + (c3.y + 40 - 960) * 2), old:T.px(img, c3.x + 14, c3.y + c3.h - 16)}; }
     return out;
   });
   for (const [k, v] of Object.entries(res.pngs)) savePng(`fx-${k}.png`, v);
@@ -264,7 +270,8 @@ let page = await freshPage();
   ok(res.peg.on > 2.5 * res.peg.gap && res.peg.blue > res.peg.red + 40, `pegVideo 12 px: peg centres ${res.peg.on.toFixed(0)} vs gaps ${res.peg.gap.toFixed(0)} luma, blue ${res.peg.blue.toFixed(0)} over red ${res.peg.red.toFixed(0)}`);
   ok(res.scan > .3 && res.scan < .5, `scanline .6, 8 px pairs: dark lines at ${res.scan.toFixed(2)} of the light ones`);
   ok(Math.abs(res.opacity[0] - (255 + 16) / 2) <= 3, `opacity .5: white over the background reads ${res.opacity[0]} (want ${(271 / 2).toFixed(1)})`);
-  ok(res.echo.echo < res.echo.plain * .7, `echo 3 taps: the trail covers what a sliding tile uncovers (${res.echo.plain} background pixels without, ${res.echo.echo} with)`);
+  // The tile has slid 130 px by frame 24; its three taps sit at the last 6 frames' 33 px, at opacity .6, .36, .22.
+  ok(res.echo.echo < res.echo.plain * .85, `echo 3 taps: the trail covers what a sliding tile uncovers (${res.echo.plain} background pixels without, ${res.echo.echo} with)`);
   ok(res.droste.levels === 1 && res.droste.red[0] > 200 && res.droste.red[1] < 60 && res.droste.white[1] > 200, 'droste 1 level at .3: the feedback tile holds the whole frame (the red tile and the white tile in place)');
   ok(res.camera.moved[0] > 200 && res.camera.moved[1] < 60 && Math.abs(res.camera.old[0] - 16) < 4, 'camera zoom 2: the composite scales about the centre');
   log(`4. effects: ${checks - before} checks (${FX_TYPES.length} types plus opacity and the camera)`);
@@ -306,6 +313,52 @@ let page = await freshPage();
   log(`5. chrome: ${checks - before} checks`);
 }
 
+// ---- 5b. Synergy's mouth row --------------------------------------------------------------------------------------
+// The compositor's mouth pass against the meeting room's drawRobotMouth (the same code, on a
+// 1280×720 canvas over the clean plate), at one output px per source px: lit on a sung word,
+// resting between lines; then the draft cut on real footage.
+{
+  const before = checks;
+  const r = await page.evaluate(async () => {
+    const TR = await (await fetch('/src/meeting-room/robot-tracking.json')).json();
+    // src/meeting-room/Participant.jsx drawRobotMouth and robotFrame, verbatim but for the canvas.
+    const robotFrame = (id, time) => { const track = TR[id], index = Math.max(0, Math.min(track.frames.length - 1, time * track.fps)); const a = track.frames[Math.floor(index)], b = track.frames[Math.min(track.frames.length - 1, Math.ceil(index))]; return a.map((v, i) => v + (b[i] - v) * (index - Math.floor(index))); };
+    const drawRobotMouth = (ctx, id, videoTime, audioTime, level) => {
+      const [x, y, angle, scale] = robotFrame(id, videoTime);
+      ctx.save(); ctx.translate(x, y); ctx.rotate(angle); ctx.scale(scale, scale);
+      const height = 6; ctx.shadowColor = '#4aff70'; ctx.shadowBlur = 2;
+      const phase = (audioTime * 15) % 22;
+      for (let i = 0; i < 22; i++) { const distance = (phase - i + 22) % 22; const strength = level > .08 ? Math.max(.16, (1 - distance / 7) * level) : .11; ctx.fillStyle = `rgba(74,255,112,${strength})`; ctx.fillRect(-46 + i * 4.3, -height / 2, 3.2, height); }
+      ctx.restore();
+    };
+    const syn = {id:'syn', width:1280, height:720, fps:24, frames:408, duration:17, contentBox:[0, 0, 1280, 720], status:'C', characters:['Synergy'], tracking:'synergy', action:['idle', 'listen'], roles:['listener'], reverseClass:'R1', mirrorable:false, sharpTier:'A', shotType:'plate'};
+    const shots = [...T.fixture, syn];
+    const plate = document.createElement('canvas'); plate.width = 1280; plate.height = 720; const pg = plate.getContext('2d'); pg.fillStyle = '#1b1d22'; pg.fillRect(0, 0, 1280, 720);
+    // One output px per source px: the 16:9 L1 tile at zoom crop.w / cell.w.
+    const p = T.program([{id:'s', at:0, len:32, cell:'L1.0', asset:'shot:syn', time:{in:2}, frame:{zoom:1280 / 1896}, chrome:{name:''}}], {format:'16:9', shots, frames:96});
+    const out = {};
+    for (const [name, f, level] of [['sung', 40, .9], ['rest', 40, 0], ['half', 52, .45]]) {
+      const base = p.frame(f), layer = base.layers[0];
+      const fr = {...base, layers:[{...layer, robot:{...layer.robot, level}}]};
+      // The meeting room's drawing, on the plate, at the layer's source time and the song time.
+      const ref = document.createElement('canvas'); ref.width = 1280; ref.height = 720; const g = ref.getContext('2d');
+      g.drawImage(plate, 0, 0); drawRobotMouth(g, 'synergy', layer.srcTime, fr.time, level);
+      const c = T.comp(1, 'off', '16:9'); await c.ready; c.prepare(p, {plan:T.plan, shots, governor:false});
+      c.drawFrame(fr, l => ({image:plate, key:'plate', version:1, width:1280, height:720}), {program:p}); const A = c.read();
+      c.drawFrame({...fr, layers:[{...layer, robot:undefined}]}, l => ({image:ref, key:'ref' + name, version:1, width:1280, height:720}), {program:p}); const B = c.read();
+      const m = layer.robot.mouth, box = {x:Math.floor(m.x - m.w / 2 - 6), y:Math.floor(m.y - 14), w:Math.ceil(m.w + 12), h:28};
+      let se = 0, n = 0, gA = 0, gB = 0, maxD = 0;
+      T.region(A, box, (q, x, y) => { const w = T.px(B, x, y); for (let i = 0; i < 3; i++) { se += (q[i] - w[i]) ** 2; n++; maxD = Math.max(maxD, Math.abs(q[i] - w[i])); } gA += q[1] - (q[0] + q[2]) / 2; gB += w[1] - (w[0] + w[2]) / 2; });
+      out[name] = {psnr:10 * Math.log10(255 * 255 / Math.max(1e-9, se / n)), maxD, gA, gB, box, png:T.png(A, {x:box.x - 40, y:box.y - 40, w:box.w + 80, h:box.h + 80}), ref:T.png(B, {x:box.x - 40, y:box.y - 40, w:box.w + 80, h:box.h + 80}), mouths:c.stats.mouths};
+    }
+    return out;
+  });
+  for (const k of ['sung', 'rest', 'half']) { savePng(`mouth-${k}.png`, r[k].png); savePng(`mouth-${k}-meeting-room.png`, r[k].ref); }
+  ok(['sung', 'rest', 'half'].every(k => r[k].psnr >= 32), `the mouth row matches the meeting room's drawRobotMouth drawn on the same plate: ${['sung', 'rest', 'half'].map(k => `${k} ${r[k].psnr.toFixed(1)} dB (max Δ ${r[k].maxD})`).join(', ')}`);
+  ok(r.sung.gA > 2.5 * r.rest.gA && r.rest.gA > 0 && Math.abs(r.sung.gA / r.sung.gB - 1) < .15 && Math.abs(r.rest.gA / r.rest.gB - 1) < .15, `lit while he sings, an idle glow at rest: green excess ${r.sung.gA.toFixed(0)} sung, ${r.rest.gA.toFixed(0)} at rest (the meeting room's ${r.sung.gB.toFixed(0)} and ${r.rest.gB.toFixed(0)})`);
+  log(`5b. the mouth row: ${checks - before} checks`);
+}
+
 // ---- 6. the board ---------------------------------------------------------------------------------------------
 {
   const before = checks;
@@ -326,7 +379,9 @@ let page = await freshPage();
     const lit = (img, r, s) => { let n = 0; T.region(img, {x:r.x * s, y:r.y * s, w:r.w * s, h:r.h * s}, q => { if (q[2] > 150 && T.luma(q) > 90) n++; }); return n; };
     const lum = (img, r, s) => { let a = 0, n = 0; T.region(img, {x:r.x * s, y:r.y * s, w:r.w * s, h:r.h * s}, q => { a += T.luma(q); n++; }); return a / n; };
     let x = await T.render(p, on, {scale:.5}); out.png1 = T.png(x.img); out.stripOn = lit(x.img, strip, .5); out.tile = lit(x.img, T.cellRect('9:16', 'G6.3'), .5); out.above = lit(x.img, {x:0, y:0, w:1080, h:280}, .5); out.stats = x.stats; out.screen = p.board.screens[p.frame(on).board.screen].text;
-    x = await T.render(p, st, {scale:.5}); out.png2 = T.png(x.img); out.stripStack = lit(x.img, {x:12, y:1868, w:1056, h:48}, .5); out.boardRect = p.frame(st).board.rect;
+    // stack3 at its first frame with a word lit: the board between its second and third tile.
+    const st3 = [...Array(p.frames).keys()].find(f => p.frame(f).layout === 'stack3' && p.frame(f).board.screen >= 0 && p.board.screens[p.frame(f).board.screen].words.some(w => w.start + .1 <= f / 24 && w.end > f / 24)) ?? st;
+    x = await T.render(p, st3, {scale:.5}); out.png2 = T.png(x.img); out.st = st3; out.stripStack = lit(x.img, T.layout('stack3', '9:16').board, .5); out.boardRect = p.frame(st3).board.rect; out.stackScreen = p.board.screens[p.frame(st3).board.screen]?.text;
     x = await T.render(p, impact - 1, {scale:.5}); out.png3 = T.png(x.img); out.black = (() => { let m = 0; T.region(x.img, {x:0, y:0, w:540, h:960}, q => { m = Math.max(m, T.luma(q)); }); return m; })();
     x = await T.render(p, impact, {scale:.5}); out.png4 = T.png(x.img); out.ignite = lum(x.img, {x:0, y:0, w:1080, h:1920}, .5);
     x = await T.render(p, choke + 8, {scale:.5}); out.png5 = T.png(x.img); out.tag = lit(x.img, {x:0, y:0, w:1080, h:1920}, .5); out.tagScreen = p.board.screens[p.frame(choke + 8).board.screen]?.text;
@@ -335,7 +390,7 @@ let page = await freshPage();
   ['board-strip', 'board-stack3', 'board-true-black', 'board-ignition', 'board-tag'].forEach((n, i) => savePng(`${n}.png`, r[`png${i + 1}`]));
   ok(r.stripOn > 400 && r.above === 0, `G6 at frame ${r.on}: "${r.screen}" lit in the board strip y ${r.strip.y}-${r.strip.y + r.strip.h} (${r.stripOn} lit px at half size), nothing above the tiles`);
   ok(r.tile > 100, `gen:board: the same screen inside its tile G6.3 (${r.tile} lit px)`);
-  ok(r.boardRect === null && r.stripStack === 0, `stack3 at frame ${r.st} has no board region and draws none`);
+  ok(r.boardRect && r.boardRect.y === 1048 && r.boardRect.y + r.boardRect.h <= 1440 && r.stripStack > 200, `stack3 at frame ${r.st}: "${r.stackScreen}" lit in its board region y ${r.boardRect?.y}-${r.boardRect ? r.boardRect.y + r.boardRect.h : ''}, inside the platform-safe band (${r.stripStack} lit px)`);
   ok(r.black <= 6, `frame ${r.impact - 1}: true black, sockets off (max luma ${r.black.toFixed(1)})`);
   ok(r.ignite > 60, `frame ${r.impact}: the board ignites over the whole frame (mean luma ${r.ignite.toFixed(0)})`);
   ok(r.tag > 300 && /CIRCLE/i.test(r.tagScreen || ''), `after the choke: "${r.tagScreen}" on bare sockets over black (${r.tag} lit px)`);
@@ -371,6 +426,82 @@ let page = await freshPage();
   log(`7. proxies: ${checks - before} checks`);
 }
 
+// ---- 7b. reversed footage without reversed proxies; a long-GOP 1080p master ---------------------------------------
+// Production has no reversed proxies until Aaron uploads them, and a deploy has no ffmpeg. The
+// export decoder then decodes the forward proxy and numbers its frames backwards (frame k of
+// the reversed proxy is forward frame N − 1 − k); the preview captures forward frames into the
+// stutter cache. Both against the reversed-proxy path: the same frame within a stated PSNR (the
+// two files are separate CRF 20 encodes), and a clear margin over the neighbouring frames, so
+// the order is exact. Then the forward path from a master only: 1080p, GOP 120, B-frames.
+const MASTER = path.join(OUT, 'master-1080-gop120.mp4');
+{
+  const shot = index.get('the-professionals-arrive'), proxy = path.join(ROOT, 'public/videostudio/proxies', shot.proxy.split('/').pop());
+  const made = spawnSync('ffmpeg', ['-v', 'error', '-y', '-i', proxy, '-vf', 'scale=1920:1080:flags=lanczos', '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '16', '-g', '120', '-bf', '2', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-an', MASTER]);
+  if (made.status !== 0) throw Error(`ffmpeg could not make the test master: ${made.stderr}`);
+}
+app.get('/test-master.mp4', (_q, r) => r.sendFile(MASTER));
+{
+  const before = checks;
+  const r = await page.evaluate(async () => {
+    const psnr = (a, b) => { let se = 0; for (let i = 0; i < a.length; i += 4) for (let c = 0; c < 3; c++) se += (a[i + c] - b[i + c]) ** 2; return 10 * Math.log10(255 * 255 / Math.max(1e-9, se / (a.length * .75))); };
+    const pixels = (img, w = 480, h = 270) => { const c = new OffscreenCanvas(w, h), g = c.getContext('2d'); g.drawImage(img, 0, 0, w, h); return g.getImageData(0, 0, w, h).data; };
+    // A reversed walk-in (R1) at rate 1: consecutive output frames show consecutive reversed frames.
+    const id = 'the-professionals-arrive', shot = T.real.get(id);
+    const p = T.compile(T.createEDL({format:'9:16', clips:[{id:'r', at:0, len:16, cell:'L1.0', asset:`shot:${id}`, time:{in:7, reverse:true}, chrome:{name:''}}]}), {plan:T.plan, shots:T.SHOTS, frames:40});
+    const no404 = (u, o) => /-rev540-/.test(u) ? Promise.resolve(new Response('gone', {status:404})) : fetch(u, o);
+    const decoders = {proxy:T.createFrameDecoder({program:p, shots:T.real, from:0, to:40}), off:T.createFrameDecoder({program:p, shots:T.real, from:0, to:40, reversed:false}), missing:T.createFrameDecoder({program:p, shots:T.real, from:0, to:40, fetcher:no404})};
+    const grabs = {proxy:[], off:[], missing:[]};
+    const frames = [0, 1, 6, 7, 18, 19, 30, 31];
+    for (const f of frames) for (const [k, d] of Object.entries(decoders)) { await d.prepare(f); const s = d.source(p.frame(f).layers[0]); grabs[k].push(pixels(s.image)); d.release(f); }
+    const stats = Object.fromEntries(Object.entries(decoders).map(([k, d]) => [k, d.stats()])), live = Object.values(decoders).map(d => d.ledger.live);
+    Object.values(decoders).forEach(d => d.dispose());
+    const out = {same:[], next:[], identical:true, flipped:{off:stats.off.flipped.length, missing:stats.missing.flipped.length, proxy:stats.proxy.flipped.length}, live, proxyFrames:frames.map(f => p.frame(f).layers[0].proxyFrame)};
+    for (let i = 0; i < frames.length; i++) {
+      out.same.push(psnr(grabs.off[i], grabs.proxy[i]));
+      const j = i % 2 ? i - 1 : i + 1; out.next.push(psnr(grabs.off[i], grabs.proxy[j]));
+      if (grabs.off[i].some((v, n) => v !== grabs.missing[i][n])) out.identical = false;
+    }
+    // The preview: the pool with reversed proxies, and with reversed:false (captured forward frames).
+    const pv = {};
+    for (const [k, rev] of [['proxy', true], ['off', false]]) {
+      const cache = T.createStutterCache(), pool = T.createElementPool({shots:T.real, cache, slots:4, reversed:rev});
+      pool.setProgram(p); pv[k] = [];
+      for (const f of frames) {
+        const t0 = performance.now();
+        while (performance.now() - t0 < 15000 && !pool.settled(f)) { pool.update(f, f / 24, false); await new Promise(res => setTimeout(res, 20)); }
+        const src = pool.source(p.frame(f).layers[0]);
+        pv[k].push(src ? pixels(src.image) : null);
+      }
+      pv[k + 'Stats'] = pool.stats; pool.dispose(); cache.clear();
+    }
+    out.preview = frames.map((f, i) => pv.off[i] && pv.proxy[i] ? psnr(pv.off[i], pv.proxy[i]) : 0);
+    out.previewExport = frames.map((f, i) => pv.off[i] ? psnr(pv.off[i], grabs.off[i]) : 0);
+    out.previewFlip = pv.offStats.reversedFromForward;
+    // Masters only: a 1080p, GOP 120, two-B-frame master of the same shot, forward and reversed,
+    // through a small cache (the 1080p frames are 3 MB each).
+    const masterShots = new Map([[shot.id, {...shot, src:'/test-master.mp4', proxy:null, rev:null}]]);
+    const pr = T.compile(T.createEDL({format:'9:16', clips:[{id:'f', at:0, len:8, cell:'G4.0', asset:`shot:${id}`, time:{in:2}, chrome:{name:''}}, {id:'r', at:0, len:8, cell:'G4.1', asset:`shot:${id}`, time:{in:7, reverse:true}, chrome:{name:''}}]}), {plan:T.plan, shots:T.SHOTS, frames:24});
+    const dm = T.createFrameDecoder({program:pr, shots:masterShots, from:0, to:24, media:'master', budget:40 << 20}), dp = T.createFrameDecoder({program:pr, shots:T.real, from:0, to:24});
+    out.master = [];
+    let size = null;
+    for (const f of [0, 11, 23]) {
+      await dm.prepare(f); await dp.prepare(f);
+      for (const l of pr.frame(f).layers) { const a = dm.source(l), b = dp.source(l); size ??= [a.image.displayWidth, a.image.displayHeight]; out.master.push(psnr(pixels(a.image), pixels(b.image))); }
+      dm.release(f); dp.release(f);
+    }
+    out.masterStats = dm.stats(); out.masterSize = size; out.masterLive = dm.ledger.live;
+    dm.dispose(); dp.dispose();
+    return out;
+  });
+  const min = a => Math.min(...a), fmt = a => a.map(x => x.toFixed(1)).join('/');
+  ok(r.flipped.off === 1 && r.flipped.missing === 1 && r.flipped.proxy === 0 && r.identical, `export decoder: with reversed proxies switched off, or answering 404, it decodes the forward proxy backwards (the two give identical pixels)`);
+  ok(min(r.same) >= 38 && r.same.every((x, i) => x > r.next[i] + 3), `export decoder, reversed from the forward proxy: frame k matches the reversed proxy's frame k at ${fmt(r.same)} dB (min ${min(r.same).toFixed(1)}), its neighbours only ${fmt(r.next)} dB: the order is exact (reversed frames ${r.proxyFrames.join(', ')})`);
+  ok(r.live.every(n => n === 0), 'every VideoFrame of the three decoders is closed');
+  ok(r.previewFlip >= 1 && min(r.preview) >= 38 && min(r.previewExport) >= 40, `preview, reversed:false: the pool plays the reversed span from captured forward frames, ${fmt(r.preview)} dB against the reversed proxy and ${fmt(r.previewExport)} dB against the export's decode`);
+  ok(min(r.master) >= 30 && r.masterSize?.[1] === 1080 && r.masterLive === 0 && r.masterStats.cacheBytes <= 40 << 20, `masters only (1080p, GOP 120, B-frames, a 40 MB cache): forward and reversed frames decode and match the proxies at ${fmt(r.master)} dB; ${r.masterStats.gops} GOP runs, ${r.masterStats.decoded} frames decoded, ${r.masterStats.evicted} evicted, peak ${(r.masterStats.peakBytes / 2 ** 20).toFixed(0)} MB`);
+  log(`7b. reversed without reversed proxies, masters: ${checks - before} checks`);
+}
+
 // ---- 8. element pool and stutter cache --------------------------------------------------------------------------
 const FILM_FRAMES = quick ? [100, 600] : [100, 230, 400, 600, 760, 1000, 1160, 1380];
 {
@@ -398,6 +529,40 @@ const FILM_FRAMES = quick ? [100, 600] : [100, 230, 400, 600, 760, 1000, 1160, 1
   ok(r.out.every(x => x.settled), `element pool: every stream of ${r.out.length} draft-cut frames shows its exact proxy frame (${r.out.map(x => `f${x.f} ${x.layers} in ${x.ms.toFixed(0)} ms`).join(', ')})`);
   ok(r.elements <= 16 && r.overflow === 0, `element pool: ${r.elements} <video> elements for 8 A/B slots, no overflow`);
   log(`8. element pool: ${checks - before} checks`);
+}
+
+// ---- 8b. the mouth row in the draft cut, on real footage ---------------------------------------------------------
+// Synergy's host tile in the verse: a frame on a sung word and one of the same clip between his
+// lines, each drawn with the row and without it (the plate alone). Green excess in the row's box.
+{
+  const before = checks;
+  const r = await page.evaluate(async () => {
+    const program = T.compile(T.drop60Draft(T.plan, T.SHOTS, {format:'9:16'}), {plan:T.plan, shots:T.SHOTS});
+    const syn = f => program.frame(f).layers.find(l => l.robot && l.canon?.synergy);
+    let sung = null, rest = null;
+    for (let f = 192; f < 480 && !(sung && rest); f++) { const l = syn(f); if (!l || l.cell.id !== 'stack3.0') continue; if (!sung && l.robot.level > .7) sung = f; else if (sung && !rest && l.clipId === syn(sung).clipId && l.robot.level === 0) rest = f; }
+    if (!sung || !rest) return {missing:true, sung, rest};
+    const cache = T.createStutterCache(), pool = T.createElementPool({shots:T.real, cache, slots:8});
+    pool.setProgram(program);
+    const out = {sungF:sung, restF:rest};
+    for (const [name, f] of [['sung', sung], ['rest', rest]]) {
+      const t0 = performance.now();
+      while (performance.now() - t0 < 20000 && !pool.settled(f)) { pool.update(f, f / 24, false); await new Promise(res => setTimeout(res, 25)); }
+      const layer = syn(f), m = layer.robot.mouth, box = {x:m.x - m.w / 2, y:m.y - m.h / 2 - 2, w:m.w, h:m.h + 4};
+      const green = img => { let g = 0, n = 0; T.region(img, box, q => { g += q[1] - (q[0] + q[2]) / 2; n++; }); return g / n; };
+      const a = await T.render(program, f, {shots:T.real, sources:pool.source});
+      out[name] = {level:layer.robot.level, with:green(a.img), mouths:a.stats.mouths, box, png:T.png(a.img, {x:Math.max(0, Math.round(box.x - 80)), y:Math.max(0, Math.round(box.y - 120)), w:Math.round(box.w + 160), h:200})};
+      const bare = {...program.frame(f), layers:program.frame(f).layers.map(l => l === layer ? {...l, robot:undefined} : l)};
+      const c = T.comp(1, 'off', '9:16'); c.drawFrame(bare, pool.source, {program}); out[name].without = green(c.read());
+    }
+    pool.dispose();
+    return out;
+  });
+  ok(!r.missing, `the draft's verse has Synergy's host tile on a sung word and at rest (f${r.sungF}, f${r.restF})`);
+  savePng('mouth-draft-sung.png', r.sung.png); savePng('mouth-draft-rest.png', r.rest.png);
+  // Sung, a bright wave runs along the row (7 of 22 bars above the .16 floor at any moment); at rest every bar glows at .11.
+  ok(r.sung.mouths >= 1 && r.sung.with - r.sung.without > 1.6 * Math.max(1, r.rest.with - r.rest.without) && r.rest.with - r.rest.without > .5, `draft cut, Synergy's host tile on real footage: the row lights on a sung word (f${r.sungF} level ${r.sung.level.toFixed(2)}: green excess ${r.sung.without.toFixed(1)} → ${r.sung.with.toFixed(1)}) and rests between lines (f${r.restF}: ${r.rest.without.toFixed(1)} → ${r.rest.with.toFixed(1)})`);
+  log(`8b. the mouth row on footage: ${checks - before} checks`);
 }
 
 // ---- 9. determinism -------------------------------------------------------------------------------------------------
