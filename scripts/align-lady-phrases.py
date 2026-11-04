@@ -69,6 +69,17 @@ from scipy.signal import butter, resample_poly, sosfiltfilt
 ROOT = Path(__file__).resolve().parent.parent
 PHRASE_DIR = ROOT / 'public' / 'phrases'
 OUT = ROOT / 'src' / 'allhands' / 'lady-phrases.json'
+
+# Boundaries the automatic snap gets wrong, found and confirmed by ear-proxy
+# sweeps. 23 "say": the cut ended inside the /eI/ to /w/ glide and was heard as
+# "save"; 24 "lesson": the /g/ release of "big" leaked into it.
+CORRECTIONS = {
+    '01': [('join', 'to', 'announce', 1.140)],
+    '21': [('join', "won't", 'understand', 0.802)],
+    '23': [('join', 'say', 'what', 0.545)],
+    '24': [('join', 'big', 'lesson.', 2.032), ('start', 'that', None, 0.910)],
+    '29': [('join', 'and', 'upwards!', 1.713)],
+}
 SR = 24000
 HOP = 24                      # 1 ms feature hop at 24 kHz
 TARGET_DB = -14.0             # gainDb normalises active-speech RMS to this
@@ -592,6 +603,17 @@ def main():
                    for w in base]
             aligner = 'ctc-mms_fa'
         starts, ends, kinds = snap(feat, hmm, ctc_words)
+        # Ear-verified corrections from an independent check (5 ms sweeps, Whisper
+        # base.en and small.en, the engine's own playback envelope). A join moves
+        # the left word's end and the right word's start together.
+        names = [tok for tok, _, _ in toks]
+        for kind, left, right, t in CORRECTIONS.get(stem, []):
+            i = names.index(left)
+            if kind == 'join':
+                assert names[i + 1] == right, (stem, left, right)
+                ends[i] = t; starts[i + 1] = t
+            else:
+                starts[i] = t
 
         words = []
         for (tok, _, _), s, e in zip(toks, starts, ends):

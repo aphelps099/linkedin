@@ -152,6 +152,31 @@ in `lady-table.js`. Pick the form on the page under **The song**; Sound check
 - All 344 of 344 timestamps are unchanged (0 s difference).
 - The audio is embedded.
 
+## The lady's exact phrasing
+
+**`lady-phrases.json`** holds the measured word boundaries for all 57 recordings.
+
+**How it's measured:** `scripts/align-lady-phrases.py` makes four passes:
+1. pocketsphinx HMM forced alignment against the known text;
+2. a cross-check with two CTC models (MMS_FA, wav2vec2);
+3. every boundary snapped to the audio at 1 ms;
+4. ear-verified corrections, kept in its `CORRECTIONS` table.
+
+**Fields:** each word gets `start`, `end` and its vowel `onset`. Each phrase gets `f0` and a gain to a common speech level.
+
+**Verification:**
+- `--verify` re-hears every cut word with Whisper: 206 of 237 are heard alone, and the other 31 are short function words heard in context.
+- An independent check (signal margins, two Whisper models, ±30 ms boundary sweeps) passed every slice the drop uses.
+- That check also found the six joins now corrected. One was 23.wav "say": it was cut inside the glide, so it was heard as "save".
+
+**Why it matters:** the drop cuts her from this table. `lady-table.js` loads it, and its hand-measured entries are only a fallback.
+
+**Pixel Text projects:** `node scripts/make-lady-pixel-projects.mjs --out <dir> [--zip f.zip] [--check-editor <editor>/editor --check all]` writes one ready-to-open project per phrase:
+- the 17 bundled in the editor, plus 50 "Let's build.";
+- each with her WAV embedded and every word on its measured time.
+
+All 18 open in the real editor with every timestamp unchanged.
+
 ## Not yet
 
 These are Phase 1 and later:

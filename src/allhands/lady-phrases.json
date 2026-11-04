@@ -29,20 +29,20 @@
    {
     "text": "to",
     "start": 0.986,
-    "end": 1.12,
+    "end": 1.14,
     "onset": 1.045,
     "check": "context"
    },
    {
     "text": "announce",
-    "start": 1.12,
+    "start": 1.14,
     "end": 1.679,
-    "onset": 1.12,
+    "onset": 1.14,
     "check": "isolated"
    }
   ],
   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:N|F,gap,join:V|V",
-  "confidence": 0.59
+  "confidence": 0.55
  },
  {
   "index": 1,
@@ -866,7 +866,7 @@
    0.013,
    3.461
   ],
-  "f0": 238.8,
+  "f0": 240.0,
   "rmsDb": -15.0,
   "gainDb": 1.0,
   "words": [
@@ -887,15 +887,15 @@
    {
     "text": "won't",
     "start": 0.62,
-    "end": 0.797,
+    "end": 0.802,
     "onset": 0.661,
     "check": "isolated"
    },
    {
     "text": "understand",
-    "start": 0.797,
+    "start": 0.802,
     "end": 1.349,
-    "onset": 0.797,
+    "onset": 0.806,
     "check": "isolated"
    },
    {
@@ -1005,7 +1005,7 @@
    0.014,
    1.754
   ],
-  "f0": 198.3,
+  "f0": 197.5,
   "rmsDb": -15.16,
   "gainDb": 1.16,
   "words": [
@@ -1019,13 +1019,13 @@
    {
     "text": "say",
     "start": 0.192,
-    "end": 0.52,
+    "end": 0.545,
     "onset": 0.331,
-    "check": "fail"
+    "check": "isolated"
    },
    {
     "text": "what",
-    "start": 0.52,
+    "start": 0.545,
     "end": 0.709,
     "onset": 0.597,
     "check": "isolated"
@@ -1053,7 +1053,7 @@
    }
   ],
   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:A|F,join:V|A,join:P|N,join:V|V,gap",
-  "confidence": 0.26
+  "confidence": 0.52
  },
  {
   "index": 23,
@@ -1065,8 +1065,8 @@
    2.596
   ],
   "f0": 218.2,
-  "rmsDb": -14.29,
-  "gainDb": 0.29,
+  "rmsDb": -14.34,
+  "gainDb": 0.34,
   "words": [
    {
     "text": "A",
@@ -1091,10 +1091,10 @@
    },
    {
     "text": "that",
-    "start": 0.937,
+    "start": 0.91,
     "end": 1.083,
-    "onset": 0.937,
-    "check": "isolated"
+    "onset": 0.936,
+    "check": "context"
    },
    {
     "text": "taught",
@@ -1120,13 +1120,13 @@
    {
     "text": "big",
     "start": 1.811,
-    "end": 2.024,
+    "end": 2.032,
     "onset": 1.838,
     "check": "isolated"
    },
    {
     "text": "lesson.",
-    "start": 2.024,
+    "start": 2.032,
     "end": 2.596,
     "onset": 2.106,
     "check": "isolated"
@@ -1401,20 +1401,20 @@
    {
     "text": "and",
     "start": 1.557,
-    "end": 1.703,
+    "end": 1.713,
     "onset": 1.557,
     "check": "isolated"
    },
    {
     "text": "upwards!",
-    "start": 1.703,
+    "start": 1.713,
     "end": 2.359,
-    "onset": 1.703,
+    "onset": 1.713,
     "check": "isolated"
    }
   ],
   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:gap,join:P|V",
-  "confidence": 0.65
+  "confidence": 0.68
  },
  {
   "index": 29,
