@@ -94,11 +94,13 @@ function pixelWords(word, warn) {
 // Seconds in the render for a (possibly fractional) 16th: the plan's own
 // swing-aware table when it has one, else song.js stepTime(). Same rule as
 // engine.js: T(floor(at)) + fraction · STEP.
+// A plan's 16th: its own (song book tracks have their own tempo), else from its BPM.
+export const stepOfPlan = (plan = {}) => plan.step ?? (plan.bpm ? 15 / plan.bpm : STEP);
 export function planTimeOf(plan = {}, renderOffset = plan.offset ?? RENDER_OFFSET) {
-  const table = plan.timing && plan.timing.length ? plan.timing : null;
+  const table = plan.timing && plan.timing.length ? plan.timing : null, step = stepOfPlan(plan);
   return at => {
     const whole = Math.floor(at), base = table ? table[Math.min(whole, table.length - 1)] : stepTime(whole);
-    return base + (at - whole) * STEP + renderOffset;
+    return base + (at - whole) * step + renderOffset;
   };
 }
 
@@ -174,7 +176,7 @@ export function tapeWarp(tapes = [], timeOf) {
 // when it is heard (tape-warped), and nothing from inside the choke but the
 // tag, which is routed after it.
 export function planCueSources(plan, timeOf = planTimeOf(plan), {lyrics, styles = STYLE_BY_KIND, durations, stutters = true, lady = true, ladyTable = LADY_TABLE, onWarning} = {}) {
-  const lines = plan.lines || [], sources = [];
+  const lines = plan.lines || [], sources = [], STEP = stepOfPlan(plan);
   const counts = new Map(lines.map(l => [l.text, 0]));
   lines.forEach(l => counts.set(l.text, counts.get(l.text) + 1));
   const repeated = [...counts].sort((a, b) => b[1] - a[1])[0];

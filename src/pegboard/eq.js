@@ -261,6 +261,8 @@ export function scoreAccent(levelsByGroup, {kick = false, bands = 3} = {}, out =
 // finale). Uint8Array(totalSteps + 1), 1 on a kick step.
 export function kickSteps(plan) {
   const kicks = new Uint8Array(plan.totalSteps + 1);
+  // Song book plans list their kicks (each track's band has its own kit).
+  if (Array.isArray(plan.kicks)) { for (const s of plan.kicks) if (s >= 0 && s <= plan.totalSteps) kicks[s] = 1; return kicks; }
   plan.bars.forEach((b, bar) => {
     const L = b.layers, style = L.drums || 'four';
     for (let s = 0; s < 16; s++) {

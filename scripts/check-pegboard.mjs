@@ -7,7 +7,9 @@ import {PEG9} from '../src/pegboard/fonts/peg9.js';
 import {PEG5} from '../src/pegboard/fonts/peg5.js';
 import {buildScreens, paint, indexWords, activeScreen, syllableSpans} from '../src/pegboard/choreo.js';
 import {boardLuma, flashes, worstWindow, governorTrack} from '../src/pegboard/governor.js';
-import {FORMS} from '../src/allhands/forms.js';
+import {FORMS, formPlays} from '../src/allhands/forms.js';
+import {TRACK_ORDER} from '../src/allhands/songbook/index.js';
+import {kickSteps} from '../src/pegboard/eq.js';
 import {lyricsFromPost, SAMPLE_POST, syllables} from '../src/allhands/lyrics.js';
 import {LADY_TABLE} from '../src/allhands/lady-table.js';
 
@@ -34,10 +36,11 @@ function rig(plan, cols = 120, rows = 53) {
 ok(JSON.stringify(syllableSpans('BUILDING', 2)) === '[[0,3],[3,8]]' || syllableSpans('BUILDING', 2).length === 2, 'syllables split a word into its notes');
 ok(syllableSpans('A', 3).length === 1 && syllableSpans('OPTIMIZE', 3).length === 3, 'syllable spans never exceed the letters');
 
-for (const id of ['drop60', 'soundcheck']) for (const post of POSTS) {
+// Every form in every song book track that plays it (Sound check 00 is Circle Back's).
+for (const id of ['drop60', 'soundcheck']) for (const track of TRACK_ORDER.filter(t => formPlays(id, t))) for (const post of POSTS) {
   const lyrics = lyricsFromPost(post), form = FORMS[id];
-  const plan = form.arrange(lyrics, Object.fromEntries(form.voiced(lyrics).map(w => [w, .18 + .11 * syllables(w)])));
-  const {board, screens, layoutOf, at} = rig(plan), label = `${id}/${post.slice(0, 12)}`;
+  const plan = form.arrange(lyrics, Object.fromEntries(form.voiced(lyrics, {track}).map(w => [w, .18 + .11 * syllables(w)])), {track});
+  const {board, screens, layoutOf, at} = rig(plan), label = `${id}/${track}/${post.slice(0, 12)}`;
   ok(screens.every((s, i) => s.to > s.from && (!i || s.from >= screens[i - 1].from)), `${label}: screens ordered`);
   ok(screens.every((s, i) => i === screens.length - 1 || s.to <= screens[i + 1].from + 1e-9), `${label}: one screen at a time`);
   ok(screens.every(s => layoutOf(s)?.pages?.length), `${label}: every screen lays out on the board`);
@@ -57,9 +60,13 @@ for (const id of ['drop60', 'soundcheck']) for (const post of POSTS) {
   // Determinism.
   at(17.3); const a = board.I.slice(); at(17.3);
   ok(a.every((v, i) => v === board.I[i]), `${label}: same moment, same pegs`);
+  // The kick accent reads the track's own kicks: on the plan's kick steps, nowhere else.
+  const kicks = kickSteps(plan);
+  ok(kicks.length === plan.totalSteps + 1 && plan.bars.some((b, i) => kicks[i * 16]) && kicks.reduce((n, k) => n + k, 0) > plan.bars.length, `${label}: kick steps from the band`);
   if (id === 'drop60') {
     const T = plan.timing, choke = T[plan.choke.at], impact = T[plan.choke.until];
-    at(choke + .6); ok(board.exposure === 0 && board.sockets === 0, `${label}: true black before the drop`);
+    ok(plan.choke.dark > choke && plan.choke.dark < impact - .3, `${label}: the board goes dark after her tag, well before the impact`);
+    at((plan.choke.dark + impact) / 2); ok(board.exposure === 0 && board.sockets === 0, `${label}: true black before the drop`);
     at(impact + FRAME * .5); ok(board.I.filter(v => v > .5).length > board.cols * board.rows * .8, `${label}: the board ignites on the impact frame`);
     at(impact + .3); ok(screens.find(s => s.kind === 'impact') === activeScreen(screens, impact + .3), `${label}: BACK. holds the board after the impact`);
     // The flash governor: no second ever holds more than three flashes, whole or by quarter.

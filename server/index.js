@@ -12,6 +12,7 @@ import { createCertificateShareRouter } from './certificate-share.js';
 import { createOptimizerRedirects } from './optimizer-routes.js';
 import { createBeatShareRouter } from './beat-share.js';
 import { createCuttingRoomRouter } from './cutting-room.js';
+import { createVideoStudioRouter } from './videostudio.js';
 import { createBeatVideoRouter, beatVideoStore } from './beat-video-service.js';
 import { createMeetingShareRouter } from './meeting-share.js';
 import { createShowcaseShareRouter } from './showcase-share.js';
@@ -67,6 +68,7 @@ app.post('/api/store/webhook', express.raw({type:'application/json'}), async (re
 
 app.use('/api/youtube', createYouTubeRouter());
 app.use('/api/cutting-room', createCuttingRoomRouter());
+app.use('/api/videostudio', createVideoStudioRouter());
 app.use('/cutting-room', (_req,res,next)=>{res.set('X-Robots-Tag','noindex, nofollow, noarchive');next();});
 app.use(createBeatVideoRouter());
 app.use(express.json({limit:'32kb'}));
@@ -75,6 +77,7 @@ app.use('/api/post-beat/voices', postBeat.router);
 app.use('/api/allhands/voice', createAllHandsVoice().router);
 app.use('/allhands', (_req,res,next)=>{res.set('X-Robots-Tag','noindex, nofollow');next();});
 app.use('/pixel-type', (_req,res,next)=>{res.set('X-Robots-Tag','noindex, nofollow');next();});
+app.use('/videostudio', (_req,res,next)=>{res.set('X-Robots-Tag','noindex, nofollow');next();});
 
 app.post('/api/checkout', async (req, res)=>{
   try{

@@ -194,8 +194,12 @@ void main() {
 
 // ---------------------------------------------------------------- renderer
 
+// opts.gl and opts.output draw into a caller's context: the board composites into
+// the framebuffer opts.output() returns (sized canvas.width × canvas.height of the
+// plain {width, height} object passed as canvas) instead of the canvas. The video
+// compositor uses this to put the board in the film frame without a copy.
 export function createRendererGL(canvas, opts = {}) {
-  const gl = canvas.getContext('webgl2', {
+  const gl = opts.gl || canvas.getContext('webgl2', {
     alpha:false, antialias:false, depth:false, stencil:false, premultipliedAlpha:false,
     preserveDrawingBuffer:!!opts.preserveDrawingBuffer, powerPreference:'high-performance',
   });
@@ -420,7 +424,7 @@ export function createRendererGL(canvas, opts = {}) {
   // 4. To the canvas.
   function composite(b, W, Hc, ox, oy, Pp, wH, wA, hal, atm) {
     gl.disable(gl.SCISSOR_TEST);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, W, Hc);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, opts.output?.() ?? null); gl.viewport(0, 0, W, Hc);
     const C = P.comp; gl.useProgram(C.p); gl.bindVertexArray(empty);
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, scene.tex);
     gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, (hal || scene).tex);
@@ -433,7 +437,7 @@ export function createRendererGL(canvas, opts = {}) {
   // The canvas as RGBA rows, top row first. Call right after draw (or create with preserveDrawingBuffer).
   function read() {
     const W = canvas.width, Hc = canvas.height, raw = new Uint8Array(W * Hc * 4), out = new Uint8Array(W * Hc * 4);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, opts.output?.() ?? null);
     gl.readPixels(0, 0, W, Hc, gl.RGBA, gl.UNSIGNED_BYTE, raw);
     for (let y = 0; y < Hc; y++) out.set(raw.subarray((Hc - 1 - y) * W * 4, (Hc - y) * W * 4), y * W * 4);
     return {width:W, height:Hc, data:out};

@@ -13,7 +13,8 @@ import {
 } from '../src/allhands/pixel-export.js';
 import {lyricsFromPost, syllables, SAMPLE_POST} from '../src/allhands/lyrics.js';
 import {stepTime, STEP, HOST} from '../src/allhands/song.js';
-import {FORMS} from '../src/allhands/forms.js';
+import {FORMS, formPlays} from '../src/allhands/forms.js';
+import {TRACK_ORDER} from '../src/allhands/songbook/index.js';
 import {LADY_TABLE} from '../src/allhands/lady-table.js';
 
 let checks = 0;
@@ -175,17 +176,18 @@ const POSTS = [
   `Excited to announce we leveraged AI to unlock potential across our B2B KPIs in Q3. https://example.com/post`,
   `Our NPS rose 32% after the café offsite — naïve? Maybe. Grateful for this team’s “growth mindset”. Let’s keep building.`,
 ];
-const fakeDurations = (form, lyrics) => Object.fromEntries(form.voiced(lyrics).map(w => [w, .18 + .11 * syllables(w)]));
+const fakeDurations = (form, lyrics, track) => Object.fromEntries(form.voiced(lyrics, {track}).map(w => [w, .18 + .11 * syllables(w)]));
 // The render hook's JSON (src/allhands/main.jsx window.__allhands.render).
 const asRenderJson = plan => ({form:plan.form, bpm:plan.bpm, offset:RENDER_OFFSET, duration:plan.duration, timing:Array.from(plan.timing),
   choke:plan.choke ? {start:plan.timing[plan.choke.at], end:plan.timing[plan.choke.until]} : null,
   lines:plan.lines.map(l => ({text:l.text, bar:l.bar, kind:l.kind, words:l.words.map(w => [w.display, w.at, w.steps, +w.rate.toFixed(2), w.notes.map(n => n.midi).join('.'), +w.gate.toFixed(3)])})),
-  lady:plan.lady.map(e => ({role:e.role, display:e.display, file:e.file, at:e.at, start:plan.timing[Math.floor(e.at)] + (e.at - Math.floor(e.at)) * STEP, length:+Math.min(e.gate, (e.to - e.from) / e.rate).toFixed(3)}))});
+  lady:plan.lady.map(e => ({role:e.role, display:e.display, file:e.file, at:e.at, start:plan.timing[Math.floor(e.at)] + (e.at - Math.floor(e.at)) * (plan.step ?? STEP), length:+Math.min(e.gate, (e.to - e.from) / e.rate).toFixed(3)}))});
 const q = x => Math.round(x * 1e4) / 1e4;
 
-for (const post of POSTS) for (const id of Object.keys(FORMS)) {
-  const form = FORMS[id], lyrics = lyricsFromPost(post), plan = form.arrange(lyrics, fakeDurations(form, lyrics));
-  const label = `${id} · ${lyrics.hook}`, warnings = [];
+// Every form, in every song book track that plays it.
+for (const post of POSTS) for (const id of Object.keys(FORMS)) for (const track of TRACK_ORDER.filter(t => formPlays(id, t))) {
+  const form = FORMS[id], lyrics = lyricsFromPost(post), plan = form.arrange(lyrics, fakeDurations(form, lyrics, track), {track});
+  const label = `${id} · ${track} · ${lyrics.hook}`, warnings = [];
   const cues = planToCues(plan, undefined, {lyrics, onWarning:w => warnings.push(w)});
   const file = toPixelProject({title:'All Hands', duration:plan.duration + RENDER_OFFSET, bpm:plan.bpm, cues, format:'portrait'});
   eq(file.kind, PIXEL_KIND, `${label}: kind`);
@@ -193,7 +195,7 @@ for (const post of POSTS) for (const id of Object.keys(FORMS)) {
   ok(file.project.cues.length <= 80, `${label}: ≤ 80 cues`);
   await survives(file, label);
   sameAsBundle(file.project, label);
-  eq(layoutCues(cues, {duration:file.project.duration, bpm:120}).cues, cues, `${label}: layout is idempotent`);
+  eq(layoutCues(cues, {duration:file.project.duration, bpm:plan.bpm}).cues, cues, `${label}: layout is idempotent`);
   // Exact onsets: every sung line word that is not interrupted starts at its
   // 16th (swing included) + the 50 ms render offset.
   const timeOf = planTimeOf(plan), starts = new Set(cues.flatMap(c => c.words.map(w => w.start)));
@@ -215,7 +217,7 @@ for (const post of POSTS) for (const id of Object.keys(FORMS)) {
   await survives(toPixelProject({duration:plan.duration + RENDER_OFFSET, cues:jsonCues}), `${label} (render JSON)`);
   const jsonStarts = new Set(jsonCues.flatMap(c => c.words.map(w => w.start)));
   ok(exact.every(w => jsonStarts.has(q(heard(timeOf(w.at)))) || q(heard(timeOf(w.at))) !== q(timeOf(w.at))), `${label}: JSON line words keep their onsets`);
-  if (id === 'drop60' && post === SAMPLE_POST) {
+  if (id === 'drop60' && post === SAMPLE_POST && track === 'circle-back') {
     // The lady: words placed by her recording's measured boundaries.
     const back = plan.lady.find(e => e.display === 'BACK.'), t0 = timeOf(back.at);
     const backCue = cues.find(c => c.text === 'BACK.');

@@ -1,106 +1,33 @@
-// The Drop Edition: 30 bars, 60.000 s at 120 BPM. Same band, same Synergy,
-// plus the lady. The meeting starts muted, unmutes on Synergy's welcome, builds
-// on her accelerating "Let's build.", chokes into half a second of black, and
-// comes BACK. Pure: every event is decided here, before any audio exists.
-import {BAR_STEPS, STEP, SWING, CHORDS, HOST, BPM, KEY, placeSlot, timingTable, hash} from './song.js';
+// The Drop Edition: the same band, the same Synergy, plus the lady. The meeting
+// starts muted, unmutes on Synergy's welcome, builds on her accelerating
+// "Let's build.", chokes into silence, and comes BACK. Every song book track
+// performs this structure in its own tempo, key and style (songbook/*.js);
+// Circle Back's is 30 bars, 60.000 s. Pure: every event is decided here,
+// before any audio exists.
+import {BAR_STEPS, placeSlot, timingTable, hash} from './song.js';
 import {tokens} from './lyrics.js';
 import {slice, LADY_TABLE} from './lady-table.js';
+import {trackOf, castOf} from './songbook/index.js';
+import circleBack from './songbook/circle-back.js';
 
-export const DROP_BARS = 30;
-export const DROP_SECTIONS = [
-  {name:'Intro', from:0, to:4},
-  {name:'Verse', from:4, to:12},
-  {name:'Build', from:12, to:20},
-  {name:'Drop A', from:20, to:23},
-  {name:'Sink In', from:23, to:24},
-  {name:'Drop B', from:24, to:28},
-  {name:'Outro', from:28, to:30},
-];
-export const UNMUTE_BAR = 2;      // 4.000 s: the call audio opens on "Thanks for joining"
-export const CHOKE = {bar:19, step:8};   // 39.000 s
-export const IMPACT_BAR = 20;            // 40.000 s
+// Circle Back's form, still exported under its old names.
+export {DROP_BARS, DROP_SECTIONS, UNMUTE_BAR, CHOKE, IMPACT_BAR, swingOf, dropLayers, dropCutoff, dropSlots} from './songbook/circle-back.js';
 
-const sectionOf = bar => DROP_SECTIONS.find(s => bar >= s.from && bar < s.to) || DROP_SECTIONS.at(-1);
-
-// The groove tightens as the tension rises: swing .12 → 0 across the build's
-// first four bars, straight through the ladder and the half-time drop, house
-// shuffle again for the four-on-the-floor drop.
-export function swingOf(bar) {
-  if (bar >= 12 && bar < 16) return SWING * (15 - bar) / 4;
-  if (bar >= 16 && bar < 24) return 0;
-  return SWING;
-}
-
-// Players by bar. `drums` names the kit pattern; everything else is a flag the
-// engine reads. Numbers are [start, end] of a one-bar automation.
-export function dropLayers(bar) {
-  const s = sectionOf(bar).name, groove = {drums:'four', kick:true, clap:true, hats:true, open:true, shaker:true, rim:false, bass:'offbeat', stabs:true, pad:false, guitar:false};
-  if (s === 'Intro') return {...groove, clap:bar >= 1, open:bar >= 2, bass:bar >= 1 ? 'offbeat' : false, riser:bar === 3 ? 'short' : false};
-  // The verse leaves room: open hats arrive at bar 6, the rim at 8.
-  if (s === 'Verse') return {...groove, open:bar >= 6, rim:bar >= 8, holdBreath:bar === 11, light:true};
-  if (s === 'Build') {
-    const r = bar - 12;
-    return {drums:'build', rung:r, kick:bar < 18, clap:false, hats:true, hatsStraight:bar >= 17, open:bar < 15, shaker:bar < 18, rim:false, bass:false, stabs:false, pad:true, guitar:false,
-      roll:[[4, .22, .22], [4, .26, .26], [2, .30, .30], [2, .36, .36], [1, .40, .50], [1, .50, .60], [.5, .60, .75], [.5, .75, .85]][r],
-      drumHp:[[30, 120], [120, 120], [120, 160], [160, 160], [160, 300], [300, 500], [500, 500], [500, 500]][r],
-      riser:bar === 16 ? 'long' : false, voiceLp:bar < 16 ? 1800 : false};
-  }
-  if (s === 'Drop A') return {drums:'half', kick:true, clap:true, hats:true, ride:true, open:false, shaker:true, rim:bar === 22, bass:'wobble', wobble:[2, 2, 1][bar - 20], stabs:false, pad:true, guitar:false, crash:bar === 20, impact:bar === 20};
-  if (s === 'Sink In') return {drums:'downbeat', kick:true, clap:false, hats:false, open:false, shaker:false, rim:false, bass:'sustain', stabs:false, pad:true, guitar:false, tape:'sink', reverseCrash:true};
-  if (s === 'Drop B') return {...groove, rim:true, ride:true, pad:true, guitar:true, crash:bar === 24, fill:bar === 27};
-  return {...groove, clap:bar === 28, open:bar === 28, shaker:bar === 28, bass:bar === 28 ? 'offbeat' : false, rim:false, kickUntil:bar === 29 ? 8 : 16};
-}
-
-export function dropCutoff(bar) {
-  const s = sectionOf(bar).name, ramp = (a, b, i, n) => [a * (b / a) ** (i / n), a * (b / a) ** ((i + 1) / n)];
-  if (s === 'Intro') return {keys:ramp(450, 3600, bar, 4), pad:[900, 900]};
-  if (s === 'Build') return {keys:[2600, 2600], pad:[[600, 1200], [1200, 2000], [2000, 3000], [3000, 4200], [4200, 6000], [6000, 6000], [6000, 6000], [6000, 6000]][bar - 12]};
-  if (s === 'Drop A') return {keys:[2400, 2400], pad:[700, 700]};
-  if (s === 'Sink In') return {keys:[2400, 2400], pad:[1400, 500]};
-  if (s === 'Outro') return {keys:ramp(3000, 420, bar - 28, 2), pad:[900, 900]};
-  return {keys:[3000, 3000], pad:[1100, 1100]};
-}
-
-// Synergy's setlist for this form. Bars 12–15 are his answers to the lady.
-export function dropSlots(lyrics) {
-  const {hook, verses} = lyrics;
-  return [
-    {bar:2, text:HOST.open, kind:'host', shape:'chant'},
-    {bar:4, text:verses[0], kind:'verse', shape:'rise'},
-    {bar:6, text:verses[1], kind:'verse', shape:'arch'},
-    {bar:8, text:hook, kind:'hook', shape:'call'},
-    {bar:10, text:verses[2], kind:'verse', shape:'rise', harmony:true},
-    {bar:12, startStep:8, window:8, text:hook, kind:'answer', shape:'chant'},
-    {bar:13, startStep:8, window:8, text:hook, kind:'answer', shape:'chant'},
-    {bar:20, startStep:4, window:28, text:hook, kind:'hook', shape:'call', harmony:true},
-    // Verse 3 leaves the end of bar 25 for "Leverage"; the hook is sung once,
-    // she says "Read that again.", and Synergy does exactly that.
-    {bar:24, window:24, text:verses[3], kind:'verse', shape:'arch', harmony:true},
-    {bar:26, window:14, text:hook, kind:'hook', shape:'call', harmony:true},
-    {bar:27, startStep:8, window:8, text:hook, kind:'hook', shape:'call', harmony:true},
-    {bar:28, text:HOST.close, kind:'host', shape:'chant'},
-  ];
-}
-
-// The ladder climbs the pentatonic, so every rung is in key: semitones above
-// the tuned base (G3).
-const LADDER = [
-  {bar:12, hits:[0], cut:'phrase', notes:[0]},
-  {bar:13, hits:[0], cut:'phrase', notes:[0]},
-  {bar:14, hits:[0, 8], cut:'phrase', notes:[0, 0]},
-  {bar:15, hits:[0, 8], cut:'phrase', notes:[2, 2]},
-  {bar:16, hits:[0, 4, 8, 12], cut:'letsbu', notes:[2, 2, 5, 5], blend:.15},
-  {bar:17, hits:[0, 2, 4, 6, 8, 10, 12, 14], cut:'lets', notes:[5, 5, 7, 7, 7, 7, 9, 9], blend:.30},
-  {bar:18, hits:[0, 2, 4, 6, 8, 10, 12, 14], cut:'le', glide:[9, 12], blend:.45},
-  {bar:19, hits:Array.from({length:16}, (_, i) => i / 2), cut:'l', glide:[12, 12], blend:.60},
-];
-
-const TARGETS = [52, 55, 57];   // E3, G3, A3: tune her to the nearest of these
-export function tunedRate(f0) {
+const TARGETS = circleBack.drop.ladder.targets;   // E3, G3, A3: tune her to the nearest of these
+// The playback rate that puts a recording's f0 on the nearest target note.
+export function tunedRate(f0, targets = TARGETS) {
   if (!f0) return 1;
   const midi = 69 + 12 * Math.log2(f0 / 440);
-  const target = TARGETS.reduce((a, b) => Math.abs(b - midi) < Math.abs(a - midi) ? b : a);
+  const target = targets.reduce((a, b) => Math.abs(b - midi) < Math.abs(a - midi) ? b : a);
   return {rate:2 ** ((target - midi) / 12), base:target};
+}
+
+// Degree d of the pentatonic (pitch classes) counted up from the base note, in
+// semitones above it: the ladder stays in key whichever note she is tuned to.
+export function ladderSemitones(base, pentatonic) {
+  const up = [];
+  for (let m = base; up.length < 12; m++) if (pentatonic.includes(((m % 12) + 12) % 12)) up.push(m - base);
+  return d => up[d];
 }
 
 // Synergy's words occupy their steps (± one step of guard); the lady sings in the gaps.
@@ -108,88 +35,186 @@ function freeAt(words, from, length) {
   return !words.some(w => w.at - 1 < from + length && from < w.at + w.steps + 1);
 }
 
-export function ladyEvents(words, table = LADY_TABLE) {
-  const events = [], seconds = s => s / STEP;
-  const build = table['50.wav'], circle = table['06.wav'];
-  const {rate:baseRate, base} = tunedRate(build?.f0);
-  for (const rung of LADDER) {
-    rung.hits.forEach((h, i) => {
-      const at = rung.bar * BAR_STEPS + h, period = (rung.hits[i + 1] ?? (rung.hits.length > 1 ? h + (rung.hits[1] - rung.hits[0]) : 16)) - h;
-      const st = rung.glide ? rung.glide[0] + (rung.glide[1] - rung.glide[0]) * (i / Math.max(1, rung.hits.length - 1)) : rung.notes[i];
-      const cut = {phrase:slice(build, 0, -1), letsbu:slice(build, 0, 1, .455), lets:slice(build, 0, 0), le:slice(build, 0, 0, .1), l:slice(build, 0, 0, .06)}[rung.cut];
-      const rate = baseRate * 2 ** (st / 12), length = (cut[1] - cut[0]) / rate;
-      events.push({role:'ladder', rung:rung.bar - 12, file:'50.wav', from:cut[0], to:cut[1], at, rate, gate:Math.min(length, period * STEP * .92),
-        gain:build.gainDb, pan:0, blend:rung.blend || 0, midi:base + st, display:rung.cut === 'phrase' ? "LET'S BUILD." : rung.cut === 'letsbu' ? "LET'S BU-" : rung.cut === 'lets' ? "LET'S" : 'LE'});
-    });
+// A cast entry's words as [first, last] indexes into its recording.
+function span(entry, words) {
+  const n = entry.words.length, at = i => (i < 0 ? n + i : i);
+  return [Math.max(0, Math.min(n - 1, at(words[0]))), Math.max(0, Math.min(n - 1, at(words[1])))];
+}
+const upper = (entry, a, b) => entry.words.slice(a, b + 1).map(w => w.text.toUpperCase()).join(' ');
+// The display of words a..b of a cast role: from its own display when the word
+// counts agree (so the default cast shows exactly what it always showed).
+function shown(role, entry, [first, last], a, b) {
+  const parts = role.display ? role.display.split(' ') : null;
+  if (parts && parts.length === last - first + 1) return parts.slice(a - first, b - first + 1).join(' ');
+  return upper(entry, a, b);
+}
+
+// The ladder's slices of her phrase, longest to shortest: the whole phrase, its
+// first word and the start of the next, the first word, a syllable, a grain.
+function ladderCuts(entry, [first, last], display) {
+  const second = Math.min(first + 1, last), words = display.split(' '), head = words[0] || '';
+  return {
+    phrase:{cut:slice(entry, first, last), display},
+    letsbu:{cut:slice(entry, first, second, .455), display:second > first && words[1] ? `${head} ${words[1].slice(0, 2)}-` : head},
+    lets:{cut:slice(entry, first, first), display:head},
+    le:{cut:slice(entry, first, first, .1), display:head.slice(0, 2)},
+    l:{cut:slice(entry, first, first, .06), display:head.slice(0, 2)},
+  };
+}
+
+// The tag's rate: Circle Back's fixed 1.1, or (track.drop.tag.tune) the rate
+// nearest 1.1 that lands her f0 on a note of the key, then quick enough (up to
+// 1.2) that at least `silence` seconds of true silence remain before the impact.
+export function tagRate(spec, entry, length, window, pitchClasses) {
+  if (!spec.tune) return {rate:spec.rate};
+  let rate = spec.rate ?? 1.1;
+  if (entry.f0) {
+    const midi = 69 + 12 * Math.log2(entry.f0 / 440), [lo, hi] = spec.range ?? [.96, 1.16];
+    let best = null;
+    for (let m = Math.ceil(midi + 12 * Math.log2(lo)); m <= Math.floor(midi + 12 * Math.log2(hi)); m++) {
+      if (!pitchClasses.includes(((m % 12) + 12) % 12)) continue;
+      const r = 2 ** ((m - midi) / 12);
+      if (!best || Math.abs(Math.log(r / 1.1)) < Math.abs(Math.log(best.rate / 1.1))) best = {rate:r, midi:m};
+    }
+    if (best) rate = best.rate;
   }
-  // r6: Synergy stammers on the odd 16ths between her even ones.
+  const room = window - (spec.silence ?? .47);
+  if (length / rate > room) rate = Math.min(1.2, length / room);
+  return {rate, room};
+}
+
+export function ladyEvents(words, table = LADY_TABLE, {track, cast} = {}) {
+  const tr = trackOf(track), D = tr.drop, roles = castOf(cast), STEP = tr.step, events = [], seconds = s => s / STEP;
+  const impactStep = D.impact * BAR_STEPS, chokeStep = D.choke.bar * BAR_STEPS + D.choke.step;
+  // The deep voice's metal (a comb, lady.js bakeDeep): Circle Back keeps its A2;
+  // the other tracks ring on the chord's root, an octave above Pat's.
+  const comb = bar => D.tuneComb ? {comb:440 * 2 ** ((tr.chordAt(bar).root + 12 - 69) / 12)} : {};
+  const ladder = roles.ladder && table[roles.ladder.file], tagEntry = roles.tag && table[roles.tag.file], impactEntry = roles.impact && table[roles.impact.file];
+  if (ladder) {
+    const range = span(ladder, roles.ladder.words), file = roles.ladder.file;
+    const {rate:baseRate, base} = tunedRate(ladder?.f0, D.ladder.targets);
+    const cuts = ladderCuts(ladder, range, roles.ladder.display ?? upper(ladder, ...range)), build = D.ladder.rungs[0].bar, semis = ladderSemitones(base, D.ladder.pentatonic);
+    for (const rung of D.ladder.rungs) {
+      const glide = rung.glide && rung.glide.map(semis), notes = rung.deg && rung.deg.map(semis);
+      rung.hits.forEach((h, i) => {
+        const at = rung.bar * BAR_STEPS + h, period = (rung.hits[i + 1] ?? (rung.hits.length > 1 ? h + (rung.hits[1] - rung.hits[0]) : 16)) - h;
+        const st = glide ? glide[0] + (glide[1] - glide[0]) * (i / Math.max(1, rung.hits.length - 1)) : notes[i];
+        const {cut, display} = cuts[rung.cut];
+        const rate = baseRate * 2 ** (st / 12), length = (cut[1] - cut[0]) / rate;
+        events.push({role:'ladder', rung:rung.bar - build, file, from:cut[0], to:cut[1], at, rate, gate:Math.min(length, period * STEP * .92),
+          gain:ladder.gainDb, pan:0, blend:rung.blend || 0, midi:base + st, display, period});
+      });
+    }
+  }
   // Tag, choke, silence, impact.
-  // "Let's circle—" a touch quick, so the whole word lands before the silence.
-  const tag = slice(circle, 0, 1), tagRate = 1.1;
-  events.push({role:'tag', file:'06.wav', from:tag[0], to:tag[1], at:CHOKE.bar * BAR_STEPS + CHOKE.step, rate:tagRate, gate:Math.min(.64, (tag[1] - tag[0]) / tagRate), gain:circle.gainDb - 1, pan:0, display:"LET'S CIRCLE-"});
-  const back = slice(circle, 2, 2);
+  // "Let's circle-" a touch quick, so the whole word lands before the silence.
+  if (tagEntry) {
+    const range = span(tagEntry, roles.tag.words), tag = slice(tagEntry, ...range), window = (impactStep - chokeStep) * STEP;   // the build is straight: no swing in it
+    const {rate, room} = tagRate(D.tag, tagEntry, tag[1] - tag[0], window, tr.pitchClasses);
+    const gate = room === undefined ? Math.min(.64, (tag[1] - tag[0]) / rate) : Math.min(.64, (tag[1] - tag[0]) / rate, room);
+    events.push({role:'tag', file:roles.tag.file, from:tag[0], to:tag[1], at:chokeStep, rate, gate, gain:tagEntry.gainDb - 1, pan:0, display:roles.tag.display ?? upper(tagEntry, ...range)});
+  }
   // "BACK." owns the impact, dry and loud with the machine under it; her deep
   // robotic "BACK." answers one beat later, so the two never blur into one word.
-  events.push({role:'impact', file:'06.wav', from:back[0], to:back[1], at:IMPACT_BAR * BAR_STEPS, rate:1, gate:back[1] - back[0] + .02, gain:circle.gainDb + 5, pan:0, blend:.25, vocoded:.3, deep:.42, deepAt:4, root:CHORDS[0].root, midi:57, display:'BACK.'});
+  if (impactEntry) {
+    const range = span(impactEntry, roles.impact.words), back = slice(impactEntry, ...range);
+    events.push({role:'impact', file:roles.impact.file, from:back[0], to:back[1], at:impactStep, rate:1, gate:back[1] - back[0] + .02, gain:impactEntry.gainDb + 5, pan:0, blend:.25, vocoded:.3, deep:.42, deepAt:4,
+      root:tr.chordAt(D.impact).root, midi:D.impactNote, display:roles.impact.display ?? upper(impactEntry, ...range), ...comb(D.impact)});
+  }
   // Punctuation in Synergy's gaps.
-  const punct = (file, candidates, extra) => {
-    const t = table[file]; if (!t) return;
-    const cut = slice(t, 0, -1), length = (cut[1] - cut[0]);
+  const punct = (role, candidates, extra) => {
+    const r = roles[role], t = r && table[r.file]; if (!t) return;
+    const range = span(t, r.words), cut = slice(t, ...range), length = (cut[1] - cut[0]);
     const at = candidates.find(c => freeAt(words, c, Math.ceil(seconds(length + .02))));
     // In the drops she has to cut through the band: +3 dB.
-    if (at !== undefined) events.push({role:'punct', file, from:cut[0], to:cut[1], at, rate:1, gate:length + .02, gain:t.gainDb + (at >= IMPACT_BAR * BAR_STEPS ? 3 : 0), dip:at >= IMPACT_BAR * BAR_STEPS ? .6 : 0, pan:0, display:t.text.toUpperCase(), ...extra});
+    if (at !== undefined) events.push({role:'punct', file:r.file, from:cut[0], to:cut[1], at, rate:1, gate:length + .02, gain:t.gainDb + (at >= impactStep ? 3 : 0), dip:at >= impactStep ? .6 : 0, pan:0, display:r.display ?? t.text.toUpperCase(), ...extra});
   };
-  punct('08.wav', [21 * 16 + 12, 21 * 16 + 14, 22 * 16, 22 * 16 + 2, 22 * 16 + 4], {pan:-.25, bend:{cents:-300, at:.66, back:.96}});
+  punct('bend', D.places.bend, {pan:-.25, bend:{cents:-300, at:.66, back:.96}});
   // "Let that" dry, then the room sinks under "sink in".
-  const sink = table['15.wav'];
+  const sinkRole = roles.sink, sink = sinkRole && table[sinkRole.file];
   if (sink) {
     // "sink in" keeps her natural pause after "that": the beat of air before the room sinks.
-    const letThat = slice(sink, 0, 1), sinkIn = [letThat[1], slice(sink, 2, 3)[1]];
-    events.push({role:'punct', file:'15.wav', from:letThat[0], to:letThat[1], at:22 * 16 + 9, rate:1, gate:letThat[1] - letThat[0] + .02, gain:sink.gainDb, pan:0, display:'LET THAT'});
-    events.push({role:'sink', file:'15.wav', from:sinkIn[0], to:sinkIn[1], at:23 * 16, rate:1, gate:2, gain:sink.gainDb, pan:0, deep:.5, root:CHORDS[3].root, display:'SINK IN'});
+    const range = span(sink, sinkRole.words), split = Math.max(range[0], Math.min(range[1], range[0] + (sinkRole.split ?? Math.ceil((range[1] - range[0] + 1) / 2))));
+    const bar = 16 * STEP;
+    if (split > range[0]) {
+      const letThat = slice(sink, range[0], split - 1), sinkIn = [letThat[1], slice(sink, split, range[1])[1]];
+      events.push({role:'punct', file:sinkRole.file, from:letThat[0], to:letThat[1], at:D.places.letThat, rate:1, gate:letThat[1] - letThat[0] + .02, gain:sink.gainDb, pan:0, display:shown(sinkRole, sink, range, range[0], split - 1)});
+      events.push({role:'sink', file:sinkRole.file, from:sinkIn[0], to:sinkIn[1], at:D.sink * BAR_STEPS, rate:1, gate:bar, gain:sink.gainDb, pan:0, deep:.5, root:tr.chordAt(D.sink).root, display:shown(sinkRole, sink, range, split, range[1]), ...comb(D.sink)});
+    } else {
+      const sinkIn = slice(sink, range[0], range[1]);
+      events.push({role:'sink', file:sinkRole.file, from:sinkIn[0], to:sinkIn[1], at:D.sink * BAR_STEPS, rate:1, gate:bar, gain:sink.gainDb, pan:0, deep:.5, root:tr.chordAt(D.sink).root, display:shown(sinkRole, sink, range, range[0], range[1]), ...comb(D.sink)});
+    }
   }
-  punct('07.wav', [25 * 16 + 10, 25 * 16 + 9, 25 * 16 + 11, 25 * 16 + 8], {pan:.25, lift:{cents:500, from:.72}});
-  punct('18.wav', [27 * 16, 26 * 16 + 14, 26 * 16 + 15, 27 * 16 + 1], {pan:-.25});
-  const stop = table['16.wav'];
+  punct('lift', D.places.lift, {pan:.25, lift:{cents:500, from:.72}});
+  punct('punct', D.places.punct, {pan:-.25});
+  const stopRole = roles.stop, stop = stopRole && table[stopRole.file];
   if (stop) {
-    const cut = slice(stop, 0, -1);
-    events.push({role:'stop', file:'16.wav', from:cut[0], to:cut[1], at:29 * 16 + 8, rate:1, gate:cut[1] - cut[0] + .02, gain:stop.gainDb, pan:0, display:'FULL STOP.'});
+    const range = span(stop, stopRole.words), cut = slice(stop, ...range);
+    events.push({role:'stop', file:stopRole.file, from:cut[0], to:cut[1], at:D.stop.bar * BAR_STEPS + D.stop.step, rate:1, gate:cut[1] - cut[0] + .02, gain:stop.gainDb, pan:0, display:stopRole.display ?? upper(stop, ...range)});
   }
   return events.sort((a, b) => a.at - b.at);
 }
 
-export function arrangeDrop(lyrics, durations, table = LADY_TABLE) {
+// A melody note on the chord under it: the nearest note of the track's melody
+// table that the chord allows (track.chordAt(bar).avail, pitch classes).
+function fitter(tr) {
+  if (!tr.chords || !Object.values(tr.chords).some(c => c.avail)) return undefined;
+  return (midi, at) => {
+    const avail = tr.chordAt(Math.floor(at / BAR_STEPS)).avail;
+    if (!avail || avail.includes(midi % 12)) return midi;
+    const ok = tr.music.scale.filter(m => avail.includes(m % 12));
+    return ok.reduce((best, m) => Math.abs(m - midi) < Math.abs(best - midi) || (Math.abs(m - midi) === Math.abs(best - midi) && m < best) ? m : best, ok[0]);
+  };
+}
+
+// arrangeDrop(lyrics, durations[, table][, {track, cast}]) or
+// arrangeDrop(lyrics, durations, {track, cast, table}).
+export function arrangeDrop(lyrics, durations, table = LADY_TABLE, options) {
+  // A lady table is keyed by her recordings ("NN.wav"); any other object is the
+  // options, even {} or {track:undefined} (the render hook's default call).
+  if (table && !Object.keys(table).some(k => k.endsWith('.wav'))) { options = table; table = options.table ?? LADY_TABLE; }
+  const {track, cast} = options || {};
+  const tr = trackOf(track), D = tr.drop, STEP = tr.step;
+  const music = {step:STEP, scale:tr.music.scale, resolve:tr.music.resolve, home:tr.music.home, fit:fitter(tr)};
   const lines = [], words = [];
-  dropSlots(lyrics).forEach((slot, id) => {
-    const placed = placeSlot(slot, lyrics, durations, id);
+  D.slots(lyrics).forEach((slot, id) => {
+    const placed = placeSlot(slot, lyrics, durations, id, music);
     lines.push(placed.line); words.push(...placed.words);
   });
-  // Bars 14–15: one hook word on 4 and 12, answering her 0 and 8.
-  const hookFirst = tokens(lyrics.hook)[0];
-  if (hookFirst) for (const bar of [14, 15]) for (const s of [4, 12]) {
-    const word = {display:hookFirst.display, word:hookFirst.word, line:-1, at:bar * 16 + s, steps:3, rate:1, gate:Math.min(.36, (durations[hookFirst.word] ?? .4)), notes:[{at:bar * 16 + s, steps:3, midi:s === 4 ? 57 : 60}], kind:'answer', harmony:false, repeat:false};
+  // Synergy answers her in the build: the hook's first word between her hits.
+  const hookFirst = tokens(lyrics.hook)[0], A = D.answers;
+  if (hookFirst) for (const bar of A.bars) for (const s of A.steps) {
+    const word = {display:hookFirst.display, word:hookFirst.word, line:-1, at:bar * 16 + s, steps:3, rate:1, gate:Math.min(.36, (durations[hookFirst.word] ?? .4)), notes:[{at:bar * 16 + s, steps:3, midi:A.notes[A.steps.indexOf(s)]}], kind:'answer', harmony:false, repeat:false};
     words.push(word);
   }
-  // r6: Synergy stammers the hook's first word on the odd 16ths of bar 18.
-  const stutters = hookFirst ? Array.from({length:8}, (_, i) => ({word:hookFirst.word, at:18 * 16 + 2 * i + 1, steps:1, midi:[57, 57, 60, 60, 62, 62, 64, 64][i]})) : [];
+  // He stammers the hook's first word on the odd 16ths of one bar of the ladder.
+  const stutters = hookFirst ? Array.from({length:8}, (_, i) => ({word:hookFirst.word, at:D.stutter.bar * 16 + 2 * i + 1, steps:1, midi:D.stutter.notes[i]})) : [];
   words.sort((a, b) => a.at - b.at);
-  const lady = ladyEvents(words, table);
-  const totalSteps = DROP_BARS * BAR_STEPS;
-  const bars = Array.from({length:DROP_BARS}, (_, index) => ({index, section:sectionOf(index).name, chord:CHORDS[index % 4], layers:dropLayers(index), cutoff:dropCutoff(index), swing:swingOf(index)}));
-  const timing = timingTable(totalSteps + BAR_STEPS, swingOf);
-  return {form:'drop60', title:'Drop edition', bpm:BPM, step:STEP, swing:SWING, key:KEY, sections:DROP_SECTIONS, bars, lines, words, stutters, lady,
-    call:{until:UNMUTE_BAR * BAR_STEPS, dropouts:dropouts(hash(lyrics.hook))}, choke:{at:CHOKE.bar * 16 + CHOKE.step, until:IMPACT_BAR * 16},
-    tape:[{kind:'sink', from:23 * 16, to:24 * 16, rate:[1, .5]}, {kind:'stop', from:29 * 16 + 8, seconds:.4}],
-    timing, finale:false, totalSteps, duration:timing[totalSteps] + .6};
+  const lady = ladyEvents(words, table, {track:tr, cast});
+  const totalSteps = D.bars * BAR_STEPS, sectionOf = bar => D.sections.find(s => bar >= s.from && bar < s.to) || D.sections.at(-1);
+  const bars = Array.from({length:D.bars}, (_, index) => ({index, section:sectionOf(index).name, chord:tr.chordAt(index), layers:D.layers(index), cutoff:D.cutoff(index), swing:D.swing(index)}));
+  const timing = timingTable(totalSteps + BAR_STEPS, D.swing, STEP);
+  const chokeAt = D.choke.bar * 16 + D.choke.step, tag = lady.find(e => e.role === 'tag');
+  // Kick steps, as the band plays them, plus the drop kick on the impact.
+  const kicks = [];
+  bars.forEach(b => { const own = tr.kicksOf(b.index, b.layers); if (b.layers.impact && !own.includes(0)) own.unshift(0); own.forEach(s => kicks.push(b.index * 16 + s)); });
+  return {form:'drop60', title:'Drop edition', bpm:tr.bpm, step:STEP, swing:tr.swing, key:tr.key, sections:D.sections, bars, lines, words, stutters, lady,
+    call:{until:D.unmute * BAR_STEPS, dropouts:dropouts(hash(lyrics.hook), D.unmute * BAR_STEPS)},
+    choke:{at:chokeAt, until:D.impact * 16, dark:timing[chokeAt] + (D.dark ?? Math.ceil(((tag ? tag.gate : 0) + .01) * 1000) / 1000)},
+    tape:[{kind:'sink', from:D.sink * 16, to:(D.sink + 1) * 16, rate:[1, .5]}, {kind:'stop', from:D.stop.bar * 16 + D.stop.step, seconds:D.stop.seconds}],
+    timing, finale:false, totalSteps, duration:timing[totalSteps] + .6,
+    track:tr.id, trackTitle:tr.title, kicks,
+    marks:{unmute:D.unmute * 16, build:D.ladder.rungs[0].bar * 16, rise:D.rise * 16, choke:chokeAt, impact:D.impact * 16, sink:D.sink * 16, sinkEnd:(D.sink + 1) * 16, stop:D.stop.bar * 16 + D.stop.step}};
 }
 
-// Seeded call-audio dropouts in the muted intro: three short holes, 40–80 ms.
-function dropouts(seed) {
+// Seeded call-audio dropouts in the muted intro: three short holes, 40–80 ms,
+// spread over however many 16ths the call lasts (Circle Back's 32 as before).
+function dropouts(seed, until = 32) {
   let s = seed >>> 0;
-  const r = () => (s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 4294967296;
-  return [5 + Math.floor(r() * 4), 14 + Math.floor(r() * 6), 23 + Math.floor(r() * 6)].map(at => ({at, seconds:.04 + r() * .04}));
+  const r = () => (s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 4294967296, k = until / 32;
+  return [5 + Math.floor(r() * 4), 14 + Math.floor(r() * 6), 23 + Math.floor(r() * 6)].map(at => Math.floor(at * k)).map(at => ({at, seconds:.04 + r() * .04}));
 }
 
-export function dropVoicedWords(lyrics) {
-  return [...new Set(dropSlots(lyrics).flatMap(s => tokens(s.text).map(t => t.word)))];
+export function dropVoicedWords(lyrics, {track} = {}) {
+  return [...new Set(trackOf(track).drop.slots(lyrics).flatMap(s => tokens(s.text).map(t => t.word)))];
 }

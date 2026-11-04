@@ -239,18 +239,20 @@ export function sustainBass(ctx, out, t, midi, length, v = 1) {
   [saw, sub].forEach(o => { o.start(t); o.stop(t + length + .01); }); done(saw, [saw, sub, lp, g, sg]);
 }
 
-// The drop's floor falls away: 110 → 27.5 Hz, driven so phones hear its harmonics.
-export function subDrop(ctx, out, t, v = .7) {
+// The drop's floor falls away: 110 → 27.5 Hz (A2 → A0; a track passes its own
+// two octaves), driven so phones hear its harmonics.
+export function subDrop(ctx, out, t, v = .7, {from = 110, to = 27.5} = {}) {
   const o = ctx.createOscillator(), sh = drive(ctx, 2.6), g = amp(ctx);
-  o.frequency.setValueAtTime(110, t); o.frequency.exponentialRampToValueAtTime(27.5, t + 1.5);
+  o.frequency.setValueAtTime(from, t); o.frequency.exponentialRampToValueAtTime(to, t + 1.5);
   g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.001, t + 1.6);
   chain(o, sh, g, out); o.start(t); o.stop(t + 1.65); done(o, [o, sh, g]);
 }
 
-// A drop kick: the same tuned body with a longer, harder tail.
-export function dropKick(ctx, out, t, v = 1) {
+// A drop kick: the same tuned body with a longer, harder tail. It settles on
+// A1 (55 Hz); a track tunes it to its own key: {knee, settle} in Hz.
+export function dropKick(ctx, out, t, v = 1, {top = 240, knee = 62, settle = 55} = {}) {
   const o = ctx.createOscillator(), g = amp(ctx), sh = drive(ctx, 3);
-  o.frequency.setValueAtTime(240, t); o.frequency.exponentialRampToValueAtTime(62, t + .06); o.frequency.exponentialRampToValueAtTime(55, t + .25);
+  o.frequency.setValueAtTime(top, t); o.frequency.exponentialRampToValueAtTime(knee, t + .06); o.frequency.exponentialRampToValueAtTime(settle, t + .25);
   g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .002); g.gain.setValueAtTime(v, t + .07); g.gain.exponentialRampToValueAtTime(.001, t + .5);
   chain(o, sh, g, out); o.start(t); o.stop(t + .52); done(o, [o, sh, g]);
 }
@@ -287,4 +289,134 @@ export function ride(ctx, out, t, v = .2) {
   const o = ctx.createOscillator(), og = amp(ctx); o.type = 'square'; o.frequency.value = 3150; og.gain.setValueAtTime(v * .05, t); og.gain.exponentialRampToValueAtTime(.0005, t + .3);
   g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(v * .3, t + .06); g.gain.exponentialRampToValueAtTime(.001, t + .45);
   chain(n, hp, pk, g, out); o.connect(og); og.connect(hp); o.start(t); o.stop(t + .32); done(n, [n, hp, pk, g]); done(o, [o, og]);
+}
+
+// ---- Song book voices ----------------------------------------------------
+// New players for the other tracks. Circle Back never calls them.
+
+// A kick tuned to the track: body top → knee → settle (Hz), a hold, a decay.
+export function tunedKick(ctx, out, t, v = 1, {top = 220, knee = 62, settle = 55, kneeAt = .05, settleAt = .22, hold = .04, decay = .34, drive:amount = 1.8, click = .2, clickHz = 2800} = {}) {
+  const o = ctx.createOscillator(), g = amp(ctx), sh = drive(ctx, amount);
+  o.frequency.setValueAtTime(top, t); o.frequency.exponentialRampToValueAtTime(knee, t + kneeAt); o.frequency.exponentialRampToValueAtTime(settle, t + settleAt);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .0015); g.gain.setValueAtTime(v, t + hold);
+  g.gain.exponentialRampToValueAtTime(v * .4, t + hold + (decay - hold) * .3); g.gain.exponentialRampToValueAtTime(.0008, t + decay);
+  chain(o, sh, g, out); o.start(t); o.stop(t + decay + .02); done(o, [o, sh, g]);
+  if (click) {
+    const n = noise(ctx, t, .014), hp = biquad(ctx, 'highpass', clickHz), ng = amp(ctx);
+    ng.gain.setValueAtTime(click * v, t); ng.gain.exponentialRampToValueAtTime(.001, t + .012);
+    chain(n, hp, ng, out); done(n, [n, hp, ng]);
+  }
+}
+
+// A finger snap: two quick cracks of band-passed air and a short tonal snap.
+export function snap(ctx, out, t, v = 1, side = .18) {
+  const n = noise(ctx, t, .12), hp = biquad(ctx, 'highpass', 1100), bp = biquad(ctx, 'bandpass', 2300, 1.3), g = amp(ctx), p = spread(ctx, side);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .0008); g.gain.exponentialRampToValueAtTime(v * .2, t + .011);
+  g.gain.setValueAtTime(v * .75, t + .013); g.gain.exponentialRampToValueAtTime(.001, t + .1);
+  chain(n, hp, bp, g, p, out); done(n, [n, hp, bp, g, p]);
+  const o = ctx.createOscillator(), og = amp(ctx);
+  o.frequency.setValueAtTime(1900, t); o.frequency.exponentialRampToValueAtTime(1350, t + .02);
+  og.gain.setValueAtTime(v * .22, t); og.gain.exponentialRampToValueAtTime(.001, t + .028);
+  chain(o, og, p); o.start(t); o.stop(t + .03); done(o, [o, og]);
+}
+
+// An electric piano: per note, a 1:1 FM pair (the body, its index falling as the
+// tine settles) and a 1:14 pair for the bell of the attack; a little bark, and
+// a tremolo that pans the chord across the stereo field.
+export function rhodes(ctx, out, t, notes, length, v = 1, {bright = 1, trem = 4.4, width = .4, bark = 1.5, level = .05, release = .18} = {}) {
+  const mix = amp(ctx, 1), sh = drive(ctx, bark), pan = ctx.createStereoPanner(), lfo = ctx.createOscillator(), depth = amp(ctx, width);
+  lfo.frequency.value = trem; lfo.connect(depth); depth.connect(pan.pan);
+  mix.connect(sh); sh.connect(pan); pan.connect(out);
+  const end = t + length, stop = end + release + .02, oscs = [lfo], nodes = [mix, sh, pan, depth], b = bright * (.6 + .4 * v);
+  for (const m of notes) {
+    const f = mtof(m), car = ctx.createOscillator(), mod = ctx.createOscillator(), idx = amp(ctx), env = amp(ctx);
+    const bell = ctx.createOscillator(), bmod = ctx.createOscillator(), bidx = amp(ctx), benv = amp(ctx);
+    car.frequency.value = f; mod.frequency.value = f; bell.frequency.value = f; bmod.frequency.value = f * 14;
+    idx.gain.setValueAtTime(f * 1.6 * b, t); idx.gain.exponentialRampToValueAtTime(f * .28 * b, t + .45);
+    bidx.gain.setValueAtTime(f * 1.1 * b, t); bidx.gain.exponentialRampToValueAtTime(f * .01, t + .07);
+    mod.connect(idx); idx.connect(car.frequency); bmod.connect(bidx); bidx.connect(bell.frequency);
+    const peak = v * level, sustain = Math.max(end, t + .02);
+    env.gain.setValueAtTime(0, t); env.gain.linearRampToValueAtTime(peak, t + .003);
+    env.gain.exponentialRampToValueAtTime(peak * .5, t + Math.min(.7, length * .9 + .05));
+    env.gain.setValueAtTime(peak * .5, sustain); env.gain.exponentialRampToValueAtTime(.0001, sustain + release);
+    benv.gain.setValueAtTime(peak * .5 * b, t); benv.gain.exponentialRampToValueAtTime(.0001, t + .35);
+    car.connect(env); env.connect(mix); bell.connect(benv); benv.connect(mix);
+    oscs.push(car, mod, bell, bmod); nodes.push(idx, env, bidx, benv);
+  }
+  oscs.forEach(o => { o.start(t); o.stop(stop); }); done(oscs[1], [...oscs, ...nodes]);
+}
+
+// The 808: a sine that glides from the last note, driven for harmonics a phone
+// can hear, swelling down to half level by its end.
+export function sub808(ctx, out, t, midi, length, v = 1, {from, glide = .07, drive:amount = 1.7} = {}) {
+  const f = mtof(midi), o = ctx.createOscillator(), sh = drive(ctx, amount), g = amp(ctx), end = t + length;
+  if (from !== undefined && from !== midi) { o.frequency.setValueAtTime(mtof(from), t); o.frequency.exponentialRampToValueAtTime(f, t + glide); } else o.frequency.setValueAtTime(f, t);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .006); g.gain.setValueAtTime(v, t + .03);
+  g.gain.exponentialRampToValueAtTime(v * .5, Math.max(t + .04, end - .03)); g.gain.linearRampToValueAtTime(0, end);
+  chain(o, sh, g, out); o.start(t); o.stop(end + .01); done(o, [o, sh, g]);
+}
+
+// A round finger bass: a plucked, quickly darkening saw over a sine.
+export function fingerBass(ctx, out, t, midi, length, v = 1) {
+  const f = mtof(midi), saw = ctx.createOscillator(), sub = ctx.createOscillator(), lp = biquad(ctx, 'lowpass', 1400, 1.1), g = amp(ctx), sg = amp(ctx, .9), sw = amp(ctx, .45);
+  saw.type = 'sawtooth'; saw.frequency.value = f; sub.frequency.value = f;
+  lp.frequency.setValueAtTime(1500, t); lp.frequency.exponentialRampToValueAtTime(300, t + .2);
+  const end = t + length;
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .008); g.gain.exponentialRampToValueAtTime(v * .6, Math.max(t + .02, Math.min(end - .04, t + .35)));
+  g.gain.setValueAtTime(v * .6, Math.max(t + .03, end - .04)); g.gain.linearRampToValueAtTime(0, end);
+  saw.connect(sw); sw.connect(lp); lp.connect(g); sub.connect(sg); sg.connect(g); g.connect(out);
+  [saw, sub].forEach(x => { x.start(t); x.stop(end + .01); }); done(saw, [saw, sub, lp, g, sg, sw]);
+}
+
+// The house organ: drawbar harmonics (16' 8' 4' 2 2/3' 2' and the 1 1/3')
+// in one periodic wave, a percussive decay and a key click.
+function organWave(ctx) {
+  const s = store(ctx);
+  if (!s.organ) s.organ = ctx.createPeriodicWave(new Float32Array(9), new Float32Array([0, 1, .78, .52, .6, 0, .34, 0, .3]));
+  return s.organ;
+}
+export function organ(ctx, out, t, notes, length, v = 1, {level = .15, decay = .16, sustain = .32, width = .75} = {}) {
+  const g = amp(ctx), lp = biquad(ctx, 'lowpass', 5600, .7), left = spread(ctx, -width), right = spread(ctx, width), oscs = [];
+  left.connect(lp); right.connect(lp); lp.connect(g); g.connect(out);
+  for (const m of notes) for (const cents of [-6, 6]) {
+    const o = ctx.createOscillator(); o.setPeriodicWave(organWave(ctx)); o.frequency.value = mtof(m); o.detune.value = cents; o.connect(cents < 0 ? left : right); oscs.push(o);
+  }
+  const peak = v * level, end = t + Math.max(.03, length), d = Math.min(decay, (end - t) * .8);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(peak, t + .002); g.gain.exponentialRampToValueAtTime(peak * sustain, t + d);
+  g.gain.setValueAtTime(peak * sustain, Math.max(t + d, end - .02)); g.gain.linearRampToValueAtTime(0, end);
+  oscs.forEach(o => { o.start(t); o.stop(end + .01); }); done(oscs[0], [...oscs, left, right, lp, g]);
+  const n = noise(ctx, t, .008), hp = biquad(ctx, 'highpass', 2600), ng = amp(ctx);
+  ng.gain.setValueAtTime(peak * 1.4, t); ng.gain.exponentialRampToValueAtTime(.0005, t + .006);
+  chain(n, hp, ng, out); done(n, [n, hp, ng]);
+}
+
+// Speed-garage bass: two detuned saws through a resonant low-pass that snaps
+// shut on every note, driven, over a clean sine sub.
+export function reese(ctx, out, t, midi, length, v = 1, {cutoff = 480, open = 3.2, q = 3, sub = .9, detune = 15, drive:amount = 2.4} = {}) {
+  const f = mtof(midi), a = ctx.createOscillator(), b = ctx.createOscillator(), s = ctx.createOscillator();
+  a.type = b.type = 'sawtooth'; a.frequency.value = b.frequency.value = s.frequency.value = f; a.detune.value = -detune; b.detune.value = detune;
+  const mix = amp(ctx, .42), lp = biquad(ctx, 'lowpass', cutoff, q), sh = drive(ctx, amount), g = amp(ctx), sg = amp(ctx, sub), end = t + length;
+  lp.frequency.setValueAtTime(cutoff * open, t); lp.frequency.exponentialRampToValueAtTime(cutoff, t + Math.min(.14, length));
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .004); g.gain.setValueAtTime(v, Math.max(t + .005, end - .02)); g.gain.linearRampToValueAtTime(0, end);
+  a.connect(mix); b.connect(mix); mix.connect(lp); lp.connect(sh); sh.connect(g); s.connect(sg); sg.connect(g); g.connect(out);
+  [a, b, s].forEach(o => { o.start(t); o.stop(end + .01); }); done(a, [a, b, s, mix, lp, sh, g, sg]);
+}
+
+// A clean guitar: Karplus-Strong with a bright pick and a long ring, strummed.
+function cleanBuffer(ctx, midi) {
+  const s = store(ctx), key = 'clean' + midi;
+  if (s[key]) return s[key];
+  const sr = ctx.sampleRate, period = Math.max(2, Math.round(sr / mtof(midi))), b = ctx.createBuffer(1, Math.round(sr * 1.4), sr), d = b.getChannelData(0);
+  let seed = midi * 104729 + 7, last = 0;
+  for (let i = 0; i < period; i++) { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; const x = seed / 2147483648 - 1; last = last * .2 + x * .8; d[i] = last; }
+  for (let i = period; i < d.length; i++) d[i] = .4993 * (d[i - period] + d[i - period - 1 >= 0 ? i - period - 1 : 0]);
+  return s[key] = b;
+}
+export function cleanGuitar(ctx, out, t, notes, v = 1, {strum = .014, ring = .9} = {}) {
+  const lp = biquad(ctx, 'lowpass', 4200, .7), hp = biquad(ctx, 'highpass', 160), g = amp(ctx);
+  g.gain.setValueAtTime(v * .5, t); g.gain.setValueAtTime(v * .5, t + ring * .6); g.gain.linearRampToValueAtTime(0, t + ring);
+  hp.connect(lp); lp.connect(g); g.connect(out);
+  let first;
+  notes.forEach((m, i) => { const s = ctx.createBufferSource(); s.buffer = cleanBuffer(ctx, m); s.connect(hp); s.start(t + i * strum); s.stop(t + ring + .02); first ??= s; });
+  done(first, [hp, lp, g]);
 }

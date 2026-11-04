@@ -8,3 +8,6 @@ public/brand/afterbeat/identity-guide.png
 public/brand/afterbeat/linkedin-beats-afterbeat-kit.zip
 
 .cache/
+
+# Video Studio 540p proxies: built locally by scripts/build-videostudio-proxies.mjs
+public/videostudio/proxies/

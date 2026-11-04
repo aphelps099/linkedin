@@ -1,0 +1,3432 @@
+{
+ "about": "What each of the lady's 57 recordings can play in a Drop Edition, with which of its measured words (lady-phrases.json), and what it is about. Built by hand, checked by scripts/check-casting.mjs. words: [first, last] word indexes; tag: its impact is the next word; sink: split is the first deep word; tracks: where the cut fits the role's limits (casting.js fits()); craft: how well it plays the role, 0-1; heard: what Whisper (small.en) hears in the cut alone, enveloped as the engine plays it; mix (tag and sink): what it hears in two bars of the band on each track, and the share of her words it hears in order.",
+ "phrases": [
+  {
+   "file": "01.wav",
+   "text": "I'm thrilled to announce",
+   "duration": 1.715,
+   "topics": ["announce"],
+   "keywords": ["thrilled", "announce", "thrilled to announce", "excited to announce"],
+   "roles": {
+    "lift": [
+     {
+      "words": [3, 3],
+      "display": "ANNOUNCE",
+      "syllables": 2,
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Announce."
+     }
+    ],
+    "sink": [
+     {
+      "words": [0, 3],
+      "split": 2,
+      "display": "I'M THRILLED TO ANNOUNCE",
+      "craft": 0.8,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "I'm thrilled to announce.",
+      "mix": {
+       "circle-back": {
+        "heard": "I'm thrilled to announce",
+        "recall": 1
+       },
+       "humbled-and-honored": {
+        "heard": "I'm thrilled to announce",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "I'm thrilled to announce",
+        "recall": 1
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "02.wav",
+   "text": "Humbled and honored to share",
+   "duration": 1.767,
+   "topics": ["humility", "announce", "gratitude"],
+   "keywords": ["humbled", "honored", "humbled and honored", "honoured"],
+   "roles": {
+    "bend": [
+     {
+      "words": [2, 2],
+      "display": "HONORED",
+      "syllables": 2,
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Honored"
+     }
+    ],
+    "lift": [
+     {
+      "words": [0, 0],
+      "display": "HUMBLED",
+      "syllables": 2,
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Humbled"
+     },
+     {
+      "words": [2, 2],
+      "display": "HONORED",
+      "syllables": 2,
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Honored"
+     }
+    ],
+    "sink": [
+     {
+      "words": [2, 4],
+      "split": 3,
+      "display": "HONORED TO SHARE",
+      "craft": 0.7,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Honored to share.",
+      "mix": {
+       "circle-back": {
+        "heard": "Honored to share",
+        "recall": 1
+       },
+       "humbled-and-honored": {
+        "heard": "Honored to share",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "Honored to share",
+        "recall": 1
+       }
+      }
+     }
+    ],
+    "tag": [
+     {
+      "words": [2, 3],
+      "impact": [4, 4],
+      "display": "HONORED TO-",
+      "impactDisplay": "SHARE.",
+      "impactSyllables": 1,
+      "craft": 0.9,
+      "tracks": ["humbled-and-honored"],
+      "heard": "Honored to",
+      "impactHeard": "SHARE",
+      "mix": {
+       "humbled-and-honored": {
+        "heard": "Honored to share.",
+        "recall": 1
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "03.wav",
+   "text": "I'm happy to share that I'm starting a new position",
+   "duration": 3.616,
+   "topics": ["announce", "career", "start"],
+   "keywords": ["happy to share", "new position", "position"],
+   "roles": {
+    "bend": [
+     {
+      "words": [1, 1],
+      "display": "HAPPY",
+      "syllables": 2,
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Happy"
+     },
+     {
+      "words": [6, 6],
+      "display": "STARTING",
+      "syllables": 2,
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "starting"
+     }
+    ],
+    "lift": [
+     {
+      "words": [9, 9],
+      "display": "POSITION",
+      "syllables": 3,
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "position"
+     }
+    ],
+    "sink": [
+     {
+      "words": [7, 9],
+      "split": 9,
+      "display": "A NEW POSITION",
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "A new position.",
+      "mix": {
+       "circle-back": {
+        "heard": "Can you remember the position I'm showing?",
+        "recall": 0.33
+       },
+       "humbled-and-honored": {
+        "heard": "A new position",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "A new position",
+        "recall": 1
+       }
+      }
+     }
+    ],
+    "tag": [
+     {
+      "words": [0, 2],
+      "impact": [3, 3],
+      "display": "I'M HAPPY TO-",
+      "impactDisplay": "SHARE.",
+      "impactSyllables": 1,
+      "craft": 0.8,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "I'm happy to-",
+      "impactHeard": "shared",
+      "mix": {
+       "circle-back": {
+        "heard": "I'm happy to- SHIT",
+        "recall": 0.75
+       },
+       "humbled-and-honored": {
+        "heard": "I'm happy to... SHAD!",
+        "recall": 0.75
+       },
+       "hustle": {
+        "heard": "I'm happy to share this.",
+        "recall": 1
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "04.wav",
+   "text": "After careful reflection, I've decided to pursue new opportunities",
+   "duration": 4.348,
+   "topics": ["farewell", "career"],
+   "keywords": ["careful reflection", "reflection", "pursue new opportunities", "opportunities", "decided"],
+   "roles": {
+    "bend": [
+     {
+      "words": [6, 6],
+      "display": "PURSUE",
+      "syllables": 2,
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Pursuit"
+     },
+     {
+      "words": [1, 1],
+      "display": "CAREFUL",
+      "syllables": 2,
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "careful"
+     }
+    ],
+    "lift": [
+     {
+      "words": [4, 4],
+      "display": "DECIDED",
+      "syllables": 3,
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "decided"
+     }
+    ],
+    "sink": [
+     {
+      "words": [6, 8],
+      "split": 8,
+      "display": "PURSUE NEW OPPORTUNITIES",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored"],
+      "heard": "Pursue new opportunities.",
+      "mix": {
+       "circle-back": {
+        "heard": "But soon you will have opportune to choose who it is",
+        "recall": 0
+       },
+       "humbled-and-honored": {
+        "heard": "Pursue new opportunities.",
+        "recall": 1
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "05.wav",
+   "text": "Synergy",
+   "duration": 1.009,
+   "topics": ["jargon"],
+   "keywords": ["synergy", "synergies", "synergize"],
+   "roles": {
+    "punct": [
+     {
+      "words": [0, 0],
+      "display": "SYNERGY.",
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Synergy"
+     }
+    ],
+    "stop": [
+     {
+      "words": [0, 0],
+      "display": "SYNERGY.",
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Synergy"
+     }
+    ],
+    "lift": [
+     {
+      "words": [0, 0],
+      "display": "SYNERGY",
+      "syllables": 3,
+      "craft": 0.9,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Synergy"
+     }
+    ]
+   }
+  },
+  {
+   "file": "06.wav",
+   "text": "Let's circle back",
+   "duration": 1.093,
+   "topics": ["meeting"],
+   "keywords": ["circle back", "follow-up", "follow up"],
+   "roles": {
+    "ladder": [
+     {
+      "words": [0, 1],
+      "display": "LET'S CIRCLE",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Let's circle back."
+     }
+    ],
+    "sink": [
+     {
+      "words": [0, 2],
+      "split": 2,
+      "display": "LET'S CIRCLE BACK",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Let's circle back.",
+      "mix": {
+       "circle-back": {
+        "heard": "Let's circle spout!",
+        "recall": 0.67
+       },
+       "humbled-and-honored": {
+        "heard": "Let's circle back.",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "Let's circle back.",
+        "recall": 1
+       }
+      }
+     }
+    ],
+    "tag": [
+     {
+      "words": [0, 1],
+      "impact": [2, 2],
+      "display": "LET'S CIRCLE-",
+      "impactDisplay": "BACK.",
+      "impactSyllables": 1,
+      "craft": 1,
+      "default": true,
+      "exempt": [
+       "circle-back: silence 0.392 s < 0.45",
+       "humbled-and-honored: tag 0.646 s at 1.036x is gated at 0.64"
+      ],
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Let's circle back.",
+      "impactHeard": "back",
+      "mix": {
+       "circle-back": {
+        "heard": "Let's circle back.",
+        "recall": 1
+       },
+       "humbled-and-honored": {
+        "heard": "Let's circle back.",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "Let's circle back.",
+        "recall": 1
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "07.wav",
+   "text": "Leverage",
+   "duration": 1.168,
+   "topics": ["jargon", "growth"],
+   "keywords": ["leverage", "leveraging"],
+   "roles": {
+    "punct": [
+     {
+      "words": [0, 0],
+      "display": "LEVERAGE.",
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Leverage"
+     }
+    ],
+    "stop": [
+     {
+      "words": [0, 0],
+      "display": "LEVERAGE.",
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Leverage"
+     }
+    ],
+    "lift": [
+     {
+      "words": [0, 0],
+      "display": "LEVERAGE",
+      "syllables": 3,
+      "craft": 1,
+      "default": true,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Leverage"
+     }
+    ]
+   }
+  },
+  {
+   "file": "08.wav",
+   "text": "Pivot",
+   "duration": 0.68,
+   "topics": ["change", "strategy"],
+   "keywords": ["pivot", "pivoting", "rebrand", "rebranding"],
+   "roles": {
+    "punct": [
+     {
+      "words": [0, 0],
+      "display": "PIVOT.",
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Pivot"
+     }
+    ],
+    "stop": [
+     {
+      "words": [0, 0],
+      "display": "PIVOT.",
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Pivot"
+     }
+    ],
+    "bend": [
+     {
+      "words": [0, 0],
+      "display": "PIVOT",
+      "syllables": 2,
+      "craft": 1,
+      "default": true,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Pivot"
+     }
+    ],
+    "lift": [
+     {
+      "words": [0, 0],
+      "display": "PIVOT",
+      "syllables": 2,
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Pivot"
+     }
+    ]
+   }
+  },
+  {
+   "file": "09.wav",
+   "text": "It's not about the tools. It's about the mindset.",
+   "duration": 3.014,
+   "topics": ["notabout", "mindset", "ai"],
+   "keywords": ["mindset", "tools", "growth mindset"],
+   "roles": {
+    "stop": [
+     {
+      "words": [8, 8],
+      "display": "MINDSET.",
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Mindset"
+     }
+    ],
+    "sink": [
+     {
+      "words": [5, 8],
+      "split": 8,
+      "display": "IT'S ABOUT THE MINDSET.",
+      "craft": 0.7,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "It's about the mindset.",
+      "mix": {
+       "circle-back": {
+        "heard": "It's about the purpose of mindset shift.",
+        "recall": 1
+       },
+       "humbled-and-honored": {
+        "heard": "It's about the mindset shift.",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "It's another mindset shift.",
+        "recall": 0.5
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "10.wav",
+   "text": "Delve",
+   "duration": 0.857,
+   "topics": ["ai", "jargon"],
+   "keywords": ["delve", "deep dive"],
+   "roles": {
+    "punct": [
+     {
+      "words": [0, 0],
+      "display": "DELVE.",
+      "craft": 0.7,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Delve"
+     }
+    ]
+   }
+  },
+  {
+   "file": "11.wav",
+   "text": "A rich tapestry",
+   "duration": 0.94,
+   "topics": ["ai", "culture"],
+   "keywords": ["tapestry", "rich tapestry"],
+   "roles": {
+    "stop": [
+     {
+      "words": [2, 2],
+      "display": "TAPESTRY.",
+      "craft": 0.3,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "tapestry"
+     }
+    ],
+    "lift": [
+     {
+      "words": [2, 2],
+      "display": "TAPESTRY",
+      "syllables": 3,
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "tapestry"
+     }
+    ],
+    "sink": [
+     {
+      "words": [0, 2],
+      "split": 2,
+      "display": "A RICH TAPESTRY",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "A rich tapestry.",
+      "mix": {
+       "circle-back": {
+        "heard": "A rich, rich, tapestration.",
+        "recall": 0.67
+       },
+       "humbled-and-honored": {
+        "heard": "original tapestry",
+        "recall": 0.33
+       },
+       "hustle": {
+        "heard": "A rich, tapestry-strum.",
+        "recall": 1
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "12.wav",
+   "text": "Game-changer",
+   "duration": 1.514,
+   "topics": ["change", "ai", "success"],
+   "keywords": ["game-changer", "game changer", "gamechanger"],
+   "roles": {
+    "punct": [
+     {
+      "words": [0, 0],
+      "display": "GAME-CHANGER.",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Game Changer"
+     }
+    ]
+   }
+  },
+  {
+   "file": "13.wav",
+   "text": "Thoughts?",
+   "duration": 0.524,
+   "topics": ["opinion", "engagement"],
+   "keywords": ["thoughts"],
+   "roles": {
+    "punct": [
+     {
+      "words": [0, 0],
+      "display": "THOUGHTS?",
+      "craft": 0.8,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Thoughts?"
+     }
+    ]
+   }
+  },
+  {
+   "file": "14.wav",
+   "text": "Agree or disagree?",
+   "duration": 1.095,
+   "topics": ["opinion", "engagement"],
+   "keywords": ["agree or disagree", "agree", "disagree"],
+   "roles": {
+    "bend": [
+     {
+      "words": [0, 0],
+      "display": "AGREE",
+      "syllables": 2,
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Agree"
+     }
+    ],
+    "lift": [
+     {
+      "words": [2, 2],
+      "display": "DISAGREE?",
+      "syllables": 3,
+      "craft": 0.7,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Disagree."
+     }
+    ],
+    "sink": [
+     {
+      "words": [0, 2],
+      "split": 2,
+      "display": "AGREE OR DISAGREE?",
+      "craft": 0.7,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Agree or disagree.",
+      "mix": {
+       "circle-back": {
+        "heard": "Agree with all of these issues.",
+        "recall": 0.33
+       },
+       "humbled-and-honored": {
+        "heard": "Agree or desecrate?",
+        "recall": 0.67
+       },
+       "hustle": {
+        "heard": "Agree with this shit",
+        "recall": 0.33
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "15.wav",
+   "text": "Let that sink in",
+   "duration": 2.239,
+   "topics": ["truth"],
+   "keywords": ["let that sink in", "sink in"],
+   "roles": {
+    "sink": [
+     {
+      "words": [0, 3],
+      "split": 2,
+      "display": "LET THAT SINK IN",
+      "craft": 1,
+      "default": true,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "exempt": [
+       "circle-back: deep words 1.304 s > 1 (half a bar)",
+       "hustle: dry words 0.874 s > 0.858"
+      ],
+      "heard": "Let that sink in.",
+      "mix": {
+       "circle-back": {
+        "heard": "Let's not sink in",
+        "recall": 0.5
+       },
+       "humbled-and-honored": {
+        "heard": "Let that sink in.",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "Let that sing",
+        "recall": 0.5
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "16.wav",
+   "text": "Full stop.",
+   "duration": 1.01,
+   "topics": ["truth"],
+   "keywords": ["full stop", "period"],
+   "roles": {
+    "ladder": [
+     {
+      "words": [0, 1],
+      "display": "FULL STOP.",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Full stop."
+     }
+    ],
+    "punct": [
+     {
+      "words": [0, 1],
+      "display": "FULL STOP.",
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Full stop."
+     }
+    ],
+    "stop": [
+     {
+      "words": [0, 1],
+      "display": "FULL STOP.",
+      "craft": 1,
+      "default": true,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "exempt": [
+       "circle-back: 0.822 s > 0.8",
+       "humbled-and-honored: 0.822 s > 0.8",
+       "hustle: 0.822 s > 0.8"
+      ],
+      "heard": "Full stop."
+     }
+    ]
+   }
+  },
+  {
+   "file": "17.wav",
+   "text": "I'm excited to share…",
+   "duration": 1.33,
+   "topics": ["announce"],
+   "keywords": ["excited to share", "excited", "excited to announce"],
+   "roles": {
+    "ladder": [
+     {
+      "words": [0, 1],
+      "display": "I'M EXCITED",
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "I'm excited"
+     }
+    ],
+    "lift": [
+     {
+      "words": [1, 1],
+      "display": "EXCITED",
+      "syllables": 3,
+      "craft": 0.8,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "I'm excited."
+     }
+    ],
+    "sink": [
+     {
+      "words": [0, 3],
+      "split": 2,
+      "display": "I'M EXCITED TO SHARE",
+      "craft": 0.7,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "I'm excited to share!",
+      "mix": {
+       "circle-back": {
+        "heard": "I'm excited to share",
+        "recall": 1
+       },
+       "humbled-and-honored": {
+        "heard": "I'm excited to share.",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "I'm excited to share.",
+        "recall": 1
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "18.wav",
+   "text": "Read that again.",
+   "duration": 1.036,
+   "topics": ["truth", "engagement"],
+   "keywords": ["read that again", "read"],
+   "roles": {
+    "punct": [
+     {
+      "words": [0, 2],
+      "display": "READ THAT AGAIN.",
+      "craft": 1,
+      "default": true,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "exempt": [
+       "circle-back: 0.959 s > 0.9",
+       "humbled-and-honored: 0.959 s > 0.9",
+       "hustle: 0.959 s > 0.9"
+      ],
+      "heard": "Read that again."
+     }
+    ],
+    "stop": [
+     {
+      "words": [2, 2],
+      "display": "AGAIN.",
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "again."
+     }
+    ],
+    "lift": [
+     {
+      "words": [2, 2],
+      "display": "AGAIN",
+      "syllables": 2,
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "again."
+     }
+    ],
+    "sink": [
+     {
+      "words": [0, 2],
+      "split": 2,
+      "display": "READ THAT AGAIN.",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Read that again.",
+      "mix": {
+       "circle-back": {
+        "heard": "Breathe out of it again",
+        "recall": 0.33
+       },
+       "humbled-and-honored": {
+        "heard": "Read that... again.",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "Read that s**t again!",
+        "recall": 1
+       }
+      }
+     }
+    ],
+    "tag": [
+     {
+      "words": [0, 1],
+      "impact": [2, 2],
+      "display": "READ THAT-",
+      "impactDisplay": "AGAIN.",
+      "impactSyllables": 2,
+      "craft": 0.7,
+      "tracks": ["humbled-and-honored"],
+      "heard": "read that",
+      "impactHeard": "again.",
+      "mix": {
+       "humbled-and-honored": {
+        "heard": "read that again",
+        "recall": 1
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "19.wav",
+   "text": "Here's what I learned. 👇",
+   "duration": 1.171,
+   "topics": ["lesson"],
+   "keywords": ["here's what i learned", "learned", "what i learned"],
+   "roles": {
+    "stop": [
+     {
+      "words": [3, 3],
+      "display": "LEARNED.",
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "I learned"
+     }
+    ],
+    "sink": [
+     {
+      "words": [0, 3],
+      "split": 3,
+      "display": "HERE'S WHAT I LEARNED.",
+      "craft": 0.7,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Here's what I learned.",
+      "mix": {
+       "circle-back": {
+        "heard": "Here's what I hope to learn.",
+        "recall": 0.75
+       },
+       "humbled-and-honored": {
+        "heard": "Here's what I learned.",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "Here's what I've learned.",
+        "recall": 0.75
+       }
+      }
+     }
+    ],
+    "tag": [
+     {
+      "words": [0, 2],
+      "impact": [3, 3],
+      "display": "HERE'S WHAT I-",
+      "impactDisplay": "LEARNED.",
+      "impactSyllables": 1,
+      "craft": 0.9,
+      "tracks": ["circle-back", "humbled-and-honored"],
+      "heard": "Here's what I...",
+      "impactHeard": "I learned",
+      "mix": {
+       "circle-back": {
+        "heard": "Here's what I learned",
+        "recall": 1
+       },
+       "humbled-and-honored": {
+        "heard": "Here's what I learned",
+        "recall": 1
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "20.wav",
+   "text": "This changed everything for me.",
+   "duration": 2.03,
+   "topics": ["change", "personal", "lesson"],
+   "keywords": ["changed everything", "this changed everything", "everything"],
+   "roles": {
+    "stop": [
+     {
+      "words": [3, 4],
+      "display": "FOR ME.",
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "For me."
+     }
+    ],
+    "lift": [
+     {
+      "words": [2, 2],
+      "display": "EVERYTHING",
+      "syllables": 3,
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Everything."
+     }
+    ],
+    "sink": [
+     {
+      "words": [0, 2],
+      "split": 2,
+      "display": "THIS CHANGED EVERYTHING",
+      "craft": 0.8,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "This changed everything.",
+      "mix": {
+       "circle-back": {
+        "heard": "This changed everything.",
+        "recall": 1
+       },
+       "humbled-and-honored": {
+        "heard": "This changed everything.",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "This changed everything.",
+        "recall": 1
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "21.wav",
+   "text": "Most people won't understand this. But you will.",
+   "duration": 3.553,
+   "topics": ["truth", "mindset"],
+   "keywords": ["most people won't understand", "understand", "but you will", "most people"],
+   "roles": {
+    "ladder": [
+     {
+      "words": [5, 7],
+      "display": "BUT YOU WILL.",
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "But you will."
+     }
+    ],
+    "punct": [
+     {
+      "words": [5, 7],
+      "display": "BUT YOU WILL.",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "But you will."
+     }
+    ],
+    "stop": [
+     {
+      "words": [6, 7],
+      "display": "YOU WILL.",
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "You will."
+     }
+    ],
+    "lift": [
+     {
+      "words": [3, 3],
+      "display": "UNDERSTAND",
+      "syllables": 3,
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "understand"
+     }
+    ],
+    "sink": [
+     {
+      "words": [5, 7],
+      "split": 7,
+      "display": "BUT YOU WILL.",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "But you will.",
+      "mix": {
+       "circle-back": {
+        "heard": "But you will",
+        "recall": 1
+       },
+       "humbled-and-honored": {
+        "heard": "But you will.",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "But you will hold",
+        "recall": 1
+       }
+      }
+     }
+    ],
+    "tag": [
+     {
+      "words": [5, 6],
+      "impact": [7, 7],
+      "display": "BUT YOU-",
+      "impactDisplay": "WILL.",
+      "impactSyllables": 1,
+      "craft": 0.8,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "But you",
+      "impactHeard": "Will",
+      "mix": {
+       "circle-back": {
+        "heard": "But you will.",
+        "recall": 1
+       },
+       "humbled-and-honored": {
+        "heard": "But you will.",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "How about you? Wealthy!",
+        "recall": 0.33
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "22.wav",
+   "text": "It's not about X. It's about Y.",
+   "duration": 3.412,
+   "topics": ["notabout", "mindset"],
+   "keywords": ["it's not about", "it's about"],
+   "roles": {
+    "sink": [
+     {
+      "words": [4, 6],
+      "split": 6,
+      "display": "IT'S ABOUT Y.",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "It's about why.",
+      "mix": {
+       "circle-back": {
+        "heard": "It's about P-P-P-P-Why",
+        "recall": 0.67
+       },
+       "humbled-and-honored": {
+        "heard": "It's about why.",
+        "recall": 0.67
+       },
+       "hustle": {
+        "heard": "It's about why.",
+        "recall": 0.67
+       }
+      }
+     },
+     {
+      "words": [0, 3],
+      "split": 3,
+      "display": "IT'S NOT ABOUT X.",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "It's not about X.",
+      "mix": {
+       "circle-back": {
+        "heard": "It's not about the X",
+        "recall": 1
+       },
+       "humbled-and-honored": {
+        "heard": "It's not about S.",
+        "recall": 0.75
+       },
+       "hustle": {
+        "heard": "It's not about B.A.S.T.",
+        "recall": 0.75
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "23.wav",
+   "text": "I'll say what nobody else will…",
+   "duration": 1.977,
+   "topics": ["truth", "opinion"],
+   "keywords": ["nobody", "nobody else", "nobody talks about"],
+   "roles": {
+    "lift": [
+     {
+      "words": [3, 3],
+      "display": "NOBODY",
+      "syllables": 3,
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Nobody"
+     }
+    ],
+    "sink": [
+     {
+      "words": [3, 5],
+      "split": 5,
+      "display": "NOBODY ELSE WILL",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Nobody else will.",
+      "mix": {
+       "circle-back": {
+        "heard": "Nobody else will.",
+        "recall": 1
+       },
+       "humbled-and-honored": {
+        "heard": "Nobody else will.",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "Nobody else will.",
+        "recall": 1
+       }
+      }
+     }
+    ],
+    "tag": [
+     {
+      "words": [3, 4],
+      "impact": [5, 5],
+      "display": "NOBODY ELSE-",
+      "impactDisplay": "WILL.",
+      "impactSyllables": 1,
+      "craft": 0.7,
+      "tracks": ["humbled-and-honored", "hustle"],
+      "heard": "nobody else",
+      "impactHeard": "Will",
+      "mix": {
+       "humbled-and-honored": {
+        "heard": "Nobody else will.",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "Nobody else",
+        "recall": 0.67
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "24.wav",
+   "text": "A small moment that taught me a big lesson.",
+   "duration": 2.827,
+   "topics": ["lesson", "personal"],
+   "keywords": ["small moment", "big lesson", "lesson", "taught me", "small change"],
+   "roles": {
+    "ladder": [
+     {
+      "words": [7, 8],
+      "display": "BIG LESSON.",
+      "craft": 0.7,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Big Lesson"
+     }
+    ],
+    "punct": [
+     {
+      "words": [7, 8],
+      "display": "BIG LESSON.",
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Big Lesson"
+     }
+    ],
+    "stop": [
+     {
+      "words": [7, 8],
+      "display": "BIG LESSON.",
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Big Lesson"
+     }
+    ],
+    "bend": [
+     {
+      "words": [2, 2],
+      "display": "MOMENT",
+      "syllables": 2,
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "MOMENT"
+     }
+    ],
+    "lift": [
+     {
+      "words": [8, 8],
+      "display": "LESSON",
+      "syllables": 2,
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Lesson"
+     }
+    ],
+    "sink": [
+     {
+      "words": [6, 8],
+      "split": 8,
+      "display": "A BIG LESSON.",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "A big lesson.",
+      "mix": {
+       "circle-back": {
+        "heard": "Nothing will bless us.",
+        "recall": 0
+       },
+       "humbled-and-honored": {
+        "heard": "A big bless us.",
+        "recall": 0.67
+       },
+       "hustle": {
+        "heard": "A big bless us.",
+        "recall": 0.67
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "25.wav",
+   "text": "And then he said something I'll never forget.",
+   "duration": 2.417,
+   "topics": ["lesson", "personal"],
+   "keywords": ["never forget", "forget", "he said"],
+   "roles": {
+    "ladder": [
+     {
+      "words": [6, 7],
+      "display": "NEVER FORGET.",
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Never forget."
+     }
+    ],
+    "punct": [
+     {
+      "words": [6, 7],
+      "display": "NEVER FORGET.",
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Never forget."
+     }
+    ],
+    "stop": [
+     {
+      "words": [7, 7],
+      "display": "FORGET.",
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "forget"
+     }
+    ],
+    "bend": [
+     {
+      "words": [6, 6],
+      "display": "NEVER",
+      "syllables": 2,
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "never"
+     },
+     {
+      "words": [4, 4],
+      "display": "SOMETHING",
+      "syllables": 2,
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "something"
+     }
+    ],
+    "sink": [
+     {
+      "words": [5, 7],
+      "split": 7,
+      "display": "I'LL NEVER FORGET.",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "I'll never forget.",
+      "mix": {
+       "circle-back": {
+        "heard": "I'll never forget",
+        "recall": 1
+       },
+       "humbled-and-honored": {
+        "heard": "I'll never forget",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "I'll never forget",
+        "recall": 1
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "26.wav",
+   "text": "The rest is history.",
+   "duration": 1.242,
+   "topics": ["journey", "success"],
+   "keywords": ["history", "the rest is history", "years ago"],
+   "roles": {
+    "stop": [
+     {
+      "words": [2, 3],
+      "display": "IS HISTORY.",
+      "craft": 0.8,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "It is history."
+     }
+    ],
+    "lift": [
+     {
+      "words": [3, 3],
+      "display": "HISTORY",
+      "syllables": 3,
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "History"
+     }
+    ],
+    "sink": [
+     {
+      "words": [0, 3],
+      "split": 3,
+      "display": "THE REST IS HISTORY.",
+      "craft": 0.8,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "The rest is history.",
+      "mix": {
+       "circle-back": {
+        "heard": "The rest is history.",
+        "recall": 1
+       },
+       "humbled-and-honored": {
+        "heard": "The rest is history.",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "The rest is history.",
+        "recall": 1
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "27.wav",
+   "text": "Grateful for this incredible journey.",
+   "duration": 2.051,
+   "topics": ["gratitude", "journey"],
+   "keywords": ["grateful", "incredible journey", "journey", "gratitude"],
+   "roles": {
+    "stop": [
+     {
+      "words": [4, 4],
+      "display": "JOURNEY.",
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Journey"
+     }
+    ],
+    "bend": [
+     {
+      "words": [0, 0],
+      "display": "GRATEFUL",
+      "syllables": 2,
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "grateful"
+     },
+     {
+      "words": [4, 4],
+      "display": "JOURNEY",
+      "syllables": 2,
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Journey"
+     }
+    ],
+    "lift": [
+     {
+      "words": [3, 3],
+      "display": "INCREDIBLE",
+      "syllables": 4,
+      "craft": 0.8,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "incredible"
+     },
+     {
+      "words": [0, 0],
+      "display": "GRATEFUL",
+      "syllables": 2,
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "grateful"
+     }
+    ],
+    "sink": [
+     {
+      "words": [3, 4],
+      "split": 4,
+      "display": "INCREDIBLE JOURNEY.",
+      "craft": 0.7,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "incredible journey",
+      "mix": {
+       "circle-back": {
+        "heard": "An incredible journey.",
+        "recall": 1
+       },
+       "humbled-and-honored": {
+        "heard": "incredible journey",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "incredible journey",
+        "recall": 1
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "28.wav",
+   "text": "Couldn't have done it without my amazing team.",
+   "duration": 2.469,
+   "topics": ["team", "gratitude"],
+   "keywords": ["amazing team", "couldn't have done it", "without my team", "amazing"],
+   "roles": {
+    "stop": [
+     {
+      "words": [7, 7],
+      "display": "TEAM.",
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "team."
+     }
+    ],
+    "bend": [
+     {
+      "words": [4, 4],
+      "display": "WITHOUT",
+      "syllables": 2,
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Without"
+     }
+    ],
+    "lift": [
+     {
+      "words": [6, 6],
+      "display": "AMAZING",
+      "syllables": 3,
+      "craft": 0.8,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "amazing"
+     }
+    ],
+    "sink": [
+     {
+      "words": [5, 7],
+      "split": 7,
+      "display": "MY AMAZING TEAM.",
+      "craft": 0.7,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "My amazing team!",
+      "mix": {
+       "circle-back": {
+        "heard": "MY AMAZING TEA",
+        "recall": 0.67
+       },
+       "humbled-and-honored": {
+        "heard": "My amazing team",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "My amazing team",
+        "recall": 1
+       }
+      }
+     }
+    ],
+    "tag": [
+     {
+      "words": [6, 6],
+      "impact": [7, 7],
+      "display": "AMAZING-",
+      "impactDisplay": "TEAM.",
+      "impactSyllables": 1,
+      "craft": 0.7,
+      "tracks": ["circle-back", "humbled-and-honored"],
+      "heard": "amazing",
+      "impactHeard": "team.",
+      "mix": {
+       "circle-back": {
+        "heard": "amazing",
+        "recall": 0.5
+       },
+       "humbled-and-honored": {
+        "heard": "amazing",
+        "recall": 0.5
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "29.wav",
+   "text": "Onwards and upwards! 🚀",
+   "duration": 2.38,
+   "topics": ["journey", "growth", "future"],
+   "keywords": ["onwards and upwards", "upwards", "onwards"],
+   "roles": {
+    "stop": [
+     {
+      "words": [2, 2],
+      "display": "UPWARDS!",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Upwards"
+     }
+    ],
+    "lift": [
+     {
+      "words": [2, 2],
+      "display": "UPWARDS!",
+      "syllables": 2,
+      "craft": 1,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Upwards"
+     },
+     {
+      "words": [0, 0],
+      "display": "ONWARDS",
+      "syllables": 2,
+      "craft": 0.7,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Onwards."
+     }
+    ]
+   }
+  },
+  {
+   "file": "30.wav",
+   "text": "Delighted to have joined…",
+   "duration": 1.399,
+   "topics": ["career", "announce", "start"],
+   "keywords": ["delighted", "joined", "delighted to have joined"],
+   "roles": {
+    "lift": [
+     {
+      "words": [0, 0],
+      "display": "DELIGHTED",
+      "syllables": 3,
+      "craft": 0.8,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Delighted."
+     }
+    ],
+    "sink": [
+     {
+      "words": [0, 3],
+      "split": 3,
+      "display": "DELIGHTED TO HAVE JOINED",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Delighted to have joined.",
+      "mix": {
+       "circle-back": {
+        "heard": "Delighted to enjoy",
+        "recall": 0.5
+       },
+       "humbled-and-honored": {
+        "heard": "Delighted to have joined.",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "Delighted to have joined.",
+        "recall": 1
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "31.wav",
+   "text": "In today's fast-paced world…",
+   "duration": 2.023,
+   "topics": ["speed", "change"],
+   "keywords": ["today's fast-paced world", "fast-paced", "fast-paced world"],
+   "roles": {
+    "lift": [
+     {
+      "words": [1, 1],
+      "display": "TODAY'S",
+      "syllables": 2,
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Todays."
+     }
+    ],
+    "sink": [
+     {
+      "words": [2, 3],
+      "split": 3,
+      "display": "FAST-PACED WORLD",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "fast-paced world",
+      "mix": {
+       "circle-back": {
+        "heard": "Fast-paced world",
+        "recall": 1
+       },
+       "humbled-and-honored": {
+        "heard": "Fast-paced world",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "Fast-paced world",
+        "recall": 1
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "32.wav",
+   "text": "Passionate about driving impact at the intersection of…",
+   "duration": 2.713,
+   "topics": ["culture", "jargon"],
+   "keywords": ["passionate", "impact", "driving impact", "intersection"],
+   "roles": {
+    "bend": [
+     {
+      "words": [3, 3],
+      "display": "IMPACT",
+      "syllables": 2,
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "impact"
+     }
+    ],
+    "lift": [
+     {
+      "words": [0, 0],
+      "display": "PASSIONATE",
+      "syllables": 3,
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Passionate"
+     },
+     {
+      "words": [3, 3],
+      "display": "IMPACT",
+      "syllables": 2,
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "impact"
+     },
+     {
+      "words": [6, 6],
+      "display": "INTERSECTION",
+      "syllables": 4,
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Intersection"
+     }
+    ],
+    "sink": [
+     {
+      "words": [2, 3],
+      "split": 3,
+      "display": "DRIVING IMPACT",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Driving impact",
+      "mix": {
+       "circle-back": {
+        "heard": "Driving impact",
+        "recall": 1
+       },
+       "humbled-and-honored": {
+        "heard": "Driving Impact",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "Driving Impact Lock",
+        "recall": 1
+       }
+      }
+     }
+    ],
+    "tag": [
+     {
+      "words": [2, 2],
+      "impact": [3, 3],
+      "display": "DRIVING-",
+      "impactDisplay": "IMPACT.",
+      "impactSyllables": 2,
+      "craft": 0.6,
+      "tracks": ["humbled-and-honored"],
+      "heard": "Driving",
+      "impactHeard": "impact",
+      "mix": {
+       "humbled-and-honored": {
+        "heard": "Driving Impact",
+        "recall": 1
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "33.wav",
+   "text": "Not just a job — a calling.",
+   "duration": 2.318,
+   "topics": ["career", "culture"],
+   "keywords": ["calling", "not just a job", "job"],
+   "roles": {
+    "stop": [
+     {
+      "words": [4, 5],
+      "display": "A CALLING.",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "A calling."
+     }
+    ],
+    "lift": [
+     {
+      "words": [5, 5],
+      "display": "CALLING",
+      "syllables": 2,
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "calling."
+     }
+    ],
+    "sink": [
+     {
+      "words": [0, 3],
+      "split": 3,
+      "display": "NOT JUST A JOB",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Not just a job.",
+      "mix": {
+       "circle-back": {
+        "heard": "Not just as a job.",
+        "recall": 1
+       },
+       "humbled-and-honored": {
+        "heard": "Not just a job.",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "Not just a joke",
+        "recall": 0.75
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "34.wav",
+   "text": "Hot take: teamwork makes a difference.",
+   "duration": 2.649,
+   "topics": ["opinion", "team"],
+   "keywords": ["hot take", "teamwork", "difference"],
+   "roles": {
+    "ladder": [
+     {
+      "words": [0, 1],
+      "display": "HOT TAKE:",
+      "craft": 0.9,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "hot take"
+     }
+    ],
+    "punct": [
+     {
+      "words": [0, 1],
+      "display": "HOT TAKE:",
+      "craft": 0.8,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "hot take"
+     }
+    ],
+    "stop": [
+     {
+      "words": [4, 5],
+      "display": "A DIFFERENCE.",
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "The difference."
+     }
+    ],
+    "lift": [
+     {
+      "words": [2, 2],
+      "display": "TEAMWORK",
+      "syllables": 2,
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Teamwork"
+     }
+    ],
+    "tag": [
+     {
+      "words": [0, 0],
+      "impact": [1, 1],
+      "display": "HOT-",
+      "impactDisplay": "TAKE.",
+      "impactSyllables": 1,
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "hot",
+      "impactHeard": "Take",
+      "mix": {
+       "circle-back": {
+        "heard": "Hot. Take.",
+        "recall": 1
+       },
+       "humbled-and-honored": {
+        "heard": "hot take",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "Hot. Take. Eat.",
+        "recall": 1
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "35.wav",
+   "text": "Unpopular opinion: Fridays are great.",
+   "duration": 3.517,
+   "topics": ["opinion"],
+   "keywords": ["unpopular opinion", "opinion", "fridays"],
+   "roles": {
+    "stop": [
+     {
+      "words": [3, 4],
+      "display": "ARE GREAT.",
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "are great"
+     }
+    ],
+    "lift": [
+     {
+      "words": [1, 1],
+      "display": "OPINION",
+      "syllables": 3,
+      "craft": 0.7,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Opinion"
+     }
+    ],
+    "sink": [
+     {
+      "words": [2, 4],
+      "split": 4,
+      "display": "FRIDAYS ARE GREAT.",
+      "craft": 0.4,
+      "tracks": ["humbled-and-honored"],
+      "heard": "Fridays are great.",
+      "mix": {
+       "humbled-and-honored": {
+        "heard": "Fridays are great.",
+        "recall": 1
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "36.wav",
+   "text": "Let's connect and explore synergies.",
+   "duration": 2.136,
+   "topics": ["connect", "jargon"],
+   "keywords": ["let's connect", "connect", "explore synergies", "synergies", "explore"],
+   "roles": {
+    "ladder": [
+     {
+      "words": [0, 1],
+      "display": "LET'S CONNECT",
+      "craft": 0.8,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Let's connect."
+     }
+    ],
+    "punct": [
+     {
+      "words": [0, 1],
+      "display": "LET'S CONNECT",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Let's connect."
+     }
+    ],
+    "stop": [
+     {
+      "words": [4, 4],
+      "display": "SYNERGIES.",
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Synergies"
+     }
+    ],
+    "bend": [
+     {
+      "words": [1, 1],
+      "display": "CONNECT",
+      "syllables": 2,
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Connect"
+     },
+     {
+      "words": [3, 3],
+      "display": "EXPLORE",
+      "syllables": 2,
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Explore"
+     }
+    ],
+    "lift": [
+     {
+      "words": [3, 3],
+      "display": "EXPLORE",
+      "syllables": 2,
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Explore"
+     }
+    ],
+    "sink": [
+     {
+      "words": [3, 4],
+      "split": 4,
+      "display": "EXPLORE SYNERGIES.",
+      "craft": 0.7,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Explore synergies.",
+      "mix": {
+       "circle-back": {
+        "heard": "And that's 4.5.7.",
+        "recall": 0
+       },
+       "humbled-and-honored": {
+        "heard": "Explore. Energy. Energy.",
+        "recall": 0.5
+       },
+       "hustle": {
+        "heard": "Thanks for watching!",
+        "recall": 0
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "37.wav",
+   "text": "What do you think? Drop a comment below. 👇",
+   "duration": 2.297,
+   "topics": ["opinion", "engagement"],
+   "keywords": ["what do you think", "comment", "drop a comment", "comments", "what would you add"],
+   "roles": {
+    "ladder": [
+     {
+      "words": [4, 6],
+      "display": "DROP A COMMENT",
+      "craft": 0.8,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Drop a comment."
+     }
+    ],
+    "punct": [
+     {
+      "words": [0, 3],
+      "display": "WHAT DO YOU THINK?",
+      "craft": 0.8,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "What do you think?"
+     },
+     {
+      "words": [4, 6],
+      "display": "DROP A COMMENT",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Drop a comment."
+     }
+    ],
+    "stop": [
+     {
+      "words": [7, 7],
+      "display": "BELOW.",
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Below"
+     }
+    ],
+    "bend": [
+     {
+      "words": [7, 7],
+      "display": "BELOW",
+      "syllables": 2,
+      "craft": 0.7,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Below"
+     },
+     {
+      "words": [6, 6],
+      "display": "COMMENT",
+      "syllables": 2,
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Comment"
+     }
+    ],
+    "sink": [
+     {
+      "words": [4, 7],
+      "split": 6,
+      "display": "DROP A COMMENT BELOW.",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Drop a comment below.",
+      "mix": {
+       "circle-back": {
+        "heard": "Comment below",
+        "recall": 0.5
+       },
+       "humbled-and-honored": {
+        "heard": "drop a comment below",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "Drop a f**k comment below",
+        "recall": 1
+       }
+      }
+     },
+     {
+      "words": [0, 3],
+      "split": 3,
+      "display": "WHAT DO YOU THINK?",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "What do you think?",
+      "mix": {
+       "circle-back": {
+        "heard": "What do you think?",
+        "recall": 1
+       },
+       "humbled-and-honored": {
+        "heard": "What do you think?",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "What do you think?",
+        "recall": 1
+       }
+      }
+     }
+    ],
+    "tag": [
+     {
+      "words": [0, 2],
+      "impact": [3, 3],
+      "display": "WHAT DO YOU-",
+      "impactDisplay": "THINK?",
+      "impactSyllables": 1,
+      "craft": 0.8,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "what do you",
+      "impactHeard": "Think",
+      "mix": {
+       "circle-back": {
+        "heard": "What do you think?",
+        "recall": 1
+       },
+       "humbled-and-honored": {
+        "heard": "What do you think?",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "What do you think?",
+        "recall": 1
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "38.wav",
+   "text": "Big news.",
+   "duration": 1.019,
+   "topics": ["announce"],
+   "keywords": ["big news", "news"],
+   "roles": {
+    "ladder": [
+     {
+      "words": [0, 1],
+      "display": "BIG NEWS.",
+      "craft": 0.9,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Big news."
+     }
+    ],
+    "punct": [
+     {
+      "words": [0, 1],
+      "display": "BIG NEWS.",
+      "craft": 0.7,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Big news."
+     }
+    ],
+    "sink": [
+     {
+      "words": [0, 1],
+      "split": 1,
+      "display": "BIG NEWS.",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Big news.",
+      "mix": {
+       "circle-back": {
+        "heard": "Thank you for watching!",
+        "recall": 0
+       },
+       "humbled-and-honored": {
+        "heard": "Big news.",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "Bananas",
+        "recall": 0
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "39.wav",
+   "text": "Some personal news.",
+   "duration": 1.258,
+   "topics": ["announce", "personal"],
+   "keywords": ["some personal news", "personal news", "personal"],
+   "roles": {
+    "stop": [
+     {
+      "words": [2, 2],
+      "display": "NEWS.",
+      "craft": 0.3,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "News!"
+     }
+    ],
+    "lift": [
+     {
+      "words": [1, 1],
+      "display": "PERSONAL",
+      "syllables": 3,
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "personal"
+     }
+    ],
+    "sink": [
+     {
+      "words": [0, 2],
+      "split": 2,
+      "display": "SOME PERSONAL NEWS.",
+      "craft": 0.7,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Some personal news.",
+      "mix": {
+       "circle-back": {
+        "heard": "It's the first in all the news",
+        "recall": 0.33
+       },
+       "humbled-and-honored": {
+        "heard": "Some personal news.",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "It's a personal business",
+        "recall": 0.33
+       }
+      }
+     }
+    ],
+    "tag": [
+     {
+      "words": [0, 1],
+      "impact": [2, 2],
+      "display": "SOME PERSONAL-",
+      "impactDisplay": "NEWS.",
+      "impactSyllables": 1,
+      "craft": 0.7,
+      "tracks": ["humbled-and-honored"],
+      "heard": "Some personal...",
+      "impactHeard": "News!",
+      "mix": {
+       "humbled-and-honored": {
+        "heard": "Some personal Yes",
+        "recall": 0.67
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "40.wav",
+   "text": "A quick update.",
+   "duration": 1.296,
+   "topics": ["announce"],
+   "keywords": ["quick update", "update"],
+   "roles": {
+    "ladder": [
+     {
+      "words": [1, 2],
+      "display": "QUICK UPDATE.",
+      "craft": 0.8,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Quick update"
+     }
+    ],
+    "punct": [
+     {
+      "words": [1, 2],
+      "display": "QUICK UPDATE.",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Quick update"
+     }
+    ],
+    "stop": [
+     {
+      "words": [1, 2],
+      "display": "QUICK UPDATE.",
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Quick update"
+     }
+    ],
+    "lift": [
+     {
+      "words": [2, 2],
+      "display": "UPDATE",
+      "syllables": 2,
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "UPDATE"
+     }
+    ],
+    "sink": [
+     {
+      "words": [0, 2],
+      "split": 2,
+      "display": "A QUICK UPDATE.",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "A quick update.",
+      "mix": {
+       "circle-back": {
+        "heard": "A quick update check.",
+        "recall": 1
+       },
+       "humbled-and-honored": {
+        "heard": "A quick update.",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "A quick stealth danger.",
+        "recall": 0.67
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "41.wav",
+   "text": "The journey continues.",
+   "duration": 1.332,
+   "topics": ["journey", "future"],
+   "keywords": ["journey continues", "journey", "continues"],
+   "roles": {
+    "stop": [
+     {
+      "words": [2, 2],
+      "display": "CONTINUES.",
+      "craft": 0.7,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Continues"
+     }
+    ],
+    "bend": [
+     {
+      "words": [1, 1],
+      "display": "JOURNEY",
+      "syllables": 2,
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Journey"
+     }
+    ],
+    "lift": [
+     {
+      "words": [1, 1],
+      "display": "JOURNEY",
+      "syllables": 2,
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Journey"
+     }
+    ],
+    "sink": [
+     {
+      "words": [0, 2],
+      "split": 2,
+      "display": "THE JOURNEY CONTINUES.",
+      "craft": 0.7,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "The journey continues.",
+      "mix": {
+       "circle-back": {
+        "heard": "The journey continues",
+        "recall": 1
+       },
+       "humbled-and-honored": {
+        "heard": "The journey continues.",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "The journey continues.",
+        "recall": 1
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "42.wav",
+   "text": "Lessons learned.",
+   "duration": 0.944,
+   "topics": ["lesson", "failure"],
+   "keywords": ["lessons learned", "lessons", "learned", "lesson"],
+   "roles": {
+    "punct": [
+     {
+      "words": [0, 1],
+      "display": "LESSONS LEARNED.",
+      "craft": 0.7,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Lessons learned."
+     }
+    ],
+    "stop": [
+     {
+      "words": [1, 1],
+      "display": "LEARNED.",
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "learned"
+     }
+    ],
+    "bend": [
+     {
+      "words": [0, 0],
+      "display": "LESSONS",
+      "syllables": 2,
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Lessons"
+     }
+    ],
+    "sink": [
+     {
+      "words": [0, 1],
+      "split": 1,
+      "display": "LESSONS LEARNED.",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Lessons learned.",
+      "mix": {
+       "circle-back": {
+        "heard": "Let's learn",
+        "recall": 0
+       },
+       "humbled-and-honored": {
+        "heard": "Lessons learned.",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "",
+        "recall": 0
+       }
+      }
+     }
+    ],
+    "tag": [
+     {
+      "words": [0, 0],
+      "impact": [1, 1],
+      "display": "LESSONS-",
+      "impactDisplay": "LEARNED.",
+      "impactSyllables": 1,
+      "craft": 0.8,
+      "tracks": ["circle-back", "humbled-and-honored"],
+      "heard": "Lessons",
+      "impactHeard": "learned",
+      "mix": {
+       "circle-back": {
+        "heard": "Lessons. Land.",
+        "recall": 0.5
+       },
+       "humbled-and-honored": {
+        "heard": "Lessons. Learn.",
+        "recall": 0.5
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "43.wav",
+   "text": "Here's the takeaway.",
+   "duration": 1.077,
+   "topics": ["lesson"],
+   "keywords": ["takeaway", "here's the takeaway"],
+   "roles": {
+    "stop": [
+     {
+      "words": [2, 2],
+      "display": "TAKEAWAY.",
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Take away."
+     }
+    ],
+    "lift": [
+     {
+      "words": [2, 2],
+      "display": "TAKEAWAY",
+      "syllables": 3,
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Take away."
+     }
+    ],
+    "sink": [
+     {
+      "words": [0, 2],
+      "split": 2,
+      "display": "HERE'S THE TAKEAWAY.",
+      "craft": 0.7,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Here's the takeaway.",
+      "mix": {
+       "circle-back": {
+        "heard": "Here's the take away.",
+        "recall": 0.67
+       },
+       "humbled-and-honored": {
+        "heard": "Here's the take away.",
+        "recall": 0.67
+       },
+       "hustle": {
+        "heard": "Here's the f***ing take away.",
+        "recall": 0.67
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "44.wav",
+   "text": "We're just getting started.",
+   "duration": 1.277,
+   "topics": ["start", "future", "growth"],
+   "keywords": ["just getting started", "getting started", "started"],
+   "roles": {
+    "ladder": [
+     {
+      "words": [2, 3],
+      "display": "GETTING STARTED.",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Getting Started"
+     }
+    ],
+    "stop": [
+     {
+      "words": [2, 3],
+      "display": "GETTING STARTED.",
+      "craft": 0.8,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Getting Started"
+     }
+    ],
+    "lift": [
+     {
+      "words": [3, 3],
+      "display": "STARTED",
+      "syllables": 2,
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Started"
+     }
+    ],
+    "sink": [
+     {
+      "words": [0, 3],
+      "split": 2,
+      "display": "WE'RE JUST GETTING STARTED.",
+      "craft": 0.8,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "We're just getting started.",
+      "mix": {
+       "circle-back": {
+        "heard": "We're just getting started",
+        "recall": 1
+       },
+       "humbled-and-honored": {
+        "heard": "We're just getting started",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "We're just getting started",
+        "recall": 1
+       }
+      }
+     }
+    ],
+    "tag": [
+     {
+      "words": [0, 2],
+      "impact": [3, 3],
+      "display": "WE'RE JUST GETTING-",
+      "impactDisplay": "STARTED.",
+      "impactSyllables": 2,
+      "craft": 0.6,
+      "tracks": ["humbled-and-honored"],
+      "heard": "We're just getting s-",
+      "impactHeard": "Started",
+      "mix": {
+       "humbled-and-honored": {
+        "heard": "We're just getting started.",
+        "recall": 1
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "45.wav",
+   "text": "More to come.",
+   "duration": 0.945,
+   "topics": ["future"],
+   "keywords": ["more to come", "more on that"],
+   "roles": {
+    "punct": [
+     {
+      "words": [0, 2],
+      "display": "MORE TO COME.",
+      "craft": 0.7,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "more to come"
+     }
+    ],
+    "stop": [
+     {
+      "words": [1, 2],
+      "display": "TO COME.",
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "to come"
+     }
+    ],
+    "sink": [
+     {
+      "words": [0, 2],
+      "split": 2,
+      "display": "MORE TO COME.",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "more to come",
+      "mix": {
+       "circle-back": {
+        "heard": "More to come.",
+        "recall": 1
+       },
+       "humbled-and-honored": {
+        "heard": "More to come.",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "Like a f**k off",
+        "recall": 0
+       }
+      }
+     }
+    ],
+    "tag": [
+     {
+      "words": [0, 1],
+      "impact": [2, 2],
+      "display": "MORE TO-",
+      "impactDisplay": "COME.",
+      "impactSyllables": 1,
+      "craft": 0.7,
+      "tracks": ["circle-back", "humbled-and-honored"],
+      "heard": "more to",
+      "impactHeard": "Come",
+      "mix": {
+       "circle-back": {
+        "heard": "More to come!",
+        "recall": 1
+       },
+       "humbled-and-honored": {
+        "heard": "More to come!",
+        "recall": 1
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "46.wav",
+   "text": "Stay tuned.",
+   "duration": 0.929,
+   "topics": ["future", "announce"],
+   "keywords": ["stay tuned", "what's next"],
+   "roles": {
+    "punct": [
+     {
+      "words": [0, 1],
+      "display": "STAY TUNED.",
+      "craft": 0.8,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Stay tuned."
+     }
+    ],
+    "stop": [
+     {
+      "words": [1, 1],
+      "display": "TUNED.",
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "tuned"
+     }
+    ],
+    "sink": [
+     {
+      "words": [0, 1],
+      "split": 1,
+      "display": "STAY TUNED.",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Stay tuned.",
+      "mix": {
+       "circle-back": {
+        "heard": "Stay tuned.",
+        "recall": 1
+       },
+       "humbled-and-honored": {
+        "heard": "Stay tuned",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "Stay true",
+        "recall": 0.5
+       }
+      }
+     }
+    ],
+    "tag": [
+     {
+      "words": [0, 0],
+      "impact": [1, 1],
+      "display": "STAY-",
+      "impactDisplay": "TUNED.",
+      "impactSyllables": 1,
+      "craft": 0.6,
+      "tracks": ["humbled-and-honored"],
+      "heard": "Stay tuned for part 2 of this video.",
+      "impactHeard": "tuned",
+      "mix": {
+       "humbled-and-honored": {
+        "heard": "Stay tuned!",
+        "recall": 1
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "47.wav",
+   "text": "Proud of this team.",
+   "duration": 1.107,
+   "topics": ["team", "pride"],
+   "keywords": ["proud", "team", "proud of this team", "proud to share"],
+   "roles": {
+    "stop": [
+     {
+      "words": [2, 3],
+      "display": "THIS TEAM.",
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "This team"
+     }
+    ],
+    "sink": [
+     {
+      "words": [0, 3],
+      "split": 3,
+      "display": "PROUD OF THIS TEAM.",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "proud of this team",
+      "mix": {
+       "circle-back": {
+        "heard": "I'm proud of this whole team.",
+        "recall": 1
+       },
+       "humbled-and-honored": {
+        "heard": "I'm proud of this team.",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "I'm proud of this team.",
+        "recall": 1
+       }
+      }
+     }
+    ],
+    "tag": [
+     {
+      "words": [0, 2],
+      "impact": [3, 3],
+      "display": "PROUD OF THIS-",
+      "impactDisplay": "TEAM.",
+      "impactSyllables": 1,
+      "craft": 0.9,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "proud of this",
+      "impactHeard": "team.",
+      "mix": {
+       "circle-back": {
+        "heard": "I'm proud of this.",
+        "recall": 0.75
+       },
+       "humbled-and-honored": {
+        "heard": "proud of this",
+        "recall": 0.75
+       },
+       "hustle": {
+        "heard": "I'm proud of this team.",
+        "recall": 1
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "48.wav",
+   "text": "Milestone unlocked.",
+   "duration": 1.617,
+   "topics": ["milestone", "success"],
+   "keywords": ["milestone", "unlocked", "unlock"],
+   "roles": {
+    "stop": [
+     {
+      "words": [1, 1],
+      "display": "UNLOCKED.",
+      "craft": 0.7,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "unlocked"
+     }
+    ],
+    "sink": [
+     {
+      "words": [0, 1],
+      "split": 1,
+      "display": "MILESTONE UNLOCKED.",
+      "craft": 0.8,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Milestone unlocked.",
+      "mix": {
+       "circle-back": {
+        "heard": "Milestone unlocked.",
+        "recall": 1
+       },
+       "humbled-and-honored": {
+        "heard": "Milestone unlocked.",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "Miles down, unwalked",
+        "recall": 0
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "49.wav",
+   "text": "This one's personal.",
+   "duration": 2.206,
+   "topics": ["personal"],
+   "keywords": ["personal", "this one's personal"],
+   "roles": {
+    "stop": [
+     {
+      "words": [2, 2],
+      "display": "PERSONAL.",
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Personal"
+     }
+    ],
+    "lift": [
+     {
+      "words": [2, 2],
+      "display": "PERSONAL",
+      "syllables": 3,
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Personal"
+     }
+    ],
+    "sink": [
+     {
+      "words": [0, 2],
+      "split": 2,
+      "display": "THIS ONE'S PERSONAL.",
+      "craft": 0.7,
+      "tracks": ["humbled-and-honored"],
+      "heard": "This one's Personal.",
+      "mix": {
+       "humbled-and-honored": {
+        "heard": "This one's... Personal. Personal.",
+        "recall": 1
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "50.wav",
+   "text": "Let's build.",
+   "duration": 0.798,
+   "topics": ["execution", "start"],
+   "keywords": ["let's build", "build", "building"],
+   "roles": {
+    "ladder": [
+     {
+      "words": [0, 1],
+      "display": "LET'S BUILD.",
+      "craft": 1,
+      "default": true,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Let's build."
+     }
+    ],
+    "punct": [
+     {
+      "words": [0, 1],
+      "display": "LET'S BUILD.",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Let's build."
+     }
+    ],
+    "stop": [
+     {
+      "words": [0, 1],
+      "display": "LET'S BUILD.",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Let's build."
+     }
+    ],
+    "sink": [
+     {
+      "words": [0, 1],
+      "split": 1,
+      "display": "LET'S BUILD.",
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Let's build.",
+      "mix": {
+       "circle-back": {
+        "heard": "Let's first build!",
+        "recall": 1
+       },
+       "humbled-and-honored": {
+        "heard": "Let's build a page.",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "Let's build!",
+        "recall": 1
+       }
+      }
+     }
+    ],
+    "tag": [
+     {
+      "words": [0, 0],
+      "impact": [1, 1],
+      "display": "LET'S-",
+      "impactDisplay": "BUILD.",
+      "impactSyllables": 1,
+      "craft": 0.6,
+      "tracks": ["humbled-and-honored"],
+      "heard": "Let's",
+      "impactHeard": "Build",
+      "mix": {
+       "humbled-and-honored": {
+        "heard": "Let's... Build!",
+        "recall": 1
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "51.wav",
+   "text": "Watch this space.",
+   "duration": 1.63,
+   "topics": ["future"],
+   "keywords": ["watch this space", "watch"],
+   "roles": {
+    "stop": [
+     {
+      "words": [1, 2],
+      "display": "THIS SPACE.",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "This space."
+     }
+    ],
+    "sink": [
+     {
+      "words": [0, 2],
+      "split": 2,
+      "display": "WATCH THIS SPACE.",
+      "craft": 0.7,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Watch this space.",
+      "mix": {
+       "circle-back": {
+        "heard": "Watch this on Facebook",
+        "recall": 0.67
+       },
+       "humbled-and-honored": {
+        "heard": "Watch this face.",
+        "recall": 0.67
+       },
+       "hustle": {
+        "heard": "Watch this face",
+        "recall": 0.67
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "52.wav",
+   "text": "The numbers don't lie.",
+   "duration": 1.369,
+   "topics": ["data", "truth"],
+   "keywords": ["the numbers don't lie", "numbers", "data"],
+   "roles": {
+    "ladder": [
+     {
+      "words": [2, 3],
+      "display": "DON'T LIE.",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Don't lie."
+     }
+    ],
+    "stop": [
+     {
+      "words": [2, 3],
+      "display": "DON'T LIE.",
+      "craft": 0.7,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Don't lie."
+     }
+    ],
+    "bend": [
+     {
+      "words": [1, 1],
+      "display": "NUMBERS",
+      "syllables": 2,
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "numbers"
+     }
+    ],
+    "lift": [
+     {
+      "words": [1, 1],
+      "display": "NUMBERS",
+      "syllables": 2,
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "numbers"
+     }
+    ],
+    "sink": [
+     {
+      "words": [0, 3],
+      "split": 2,
+      "display": "THE NUMBERS DON'T LIE.",
+      "craft": 0.9,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "The numbers don't lie.",
+      "mix": {
+       "circle-back": {
+        "heard": "The numbers don't lie.",
+        "recall": 1
+       },
+       "humbled-and-honored": {
+        "heard": "The numbers don't lie.",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "The numbers don't lie.",
+        "recall": 1
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "53.wav",
+   "text": "Execution beats strategy.",
+   "duration": 1.746,
+   "topics": ["execution", "strategy"],
+   "keywords": ["execution beats strategy", "execution", "strategy"],
+   "roles": {
+    "stop": [
+     {
+      "words": [2, 2],
+      "display": "STRATEGY.",
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Strategy"
+     }
+    ],
+    "lift": [
+     {
+      "words": [2, 2],
+      "display": "STRATEGY",
+      "syllables": 3,
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Strategy"
+     }
+    ],
+    "sink": [
+     {
+      "words": [0, 2],
+      "split": 1,
+      "display": "EXECUTION BEATS STRATEGY.",
+      "craft": 0.9,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Execution beats strategy.",
+      "mix": {
+       "circle-back": {
+        "heard": "That's a human being strategy",
+        "recall": 0.33
+       },
+       "humbled-and-honored": {
+        "heard": "Execution is strategy.",
+        "recall": 0.67
+       },
+       "hustle": {
+        "heard": "Executes and beats strategy",
+        "recall": 0.67
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "54.wav",
+   "text": "Culture is everything.",
+   "duration": 2.137,
+   "topics": ["culture"],
+   "keywords": ["culture is everything", "culture"],
+   "roles": {
+    "lift": [
+     {
+      "words": [0, 0],
+      "display": "CULTURE",
+      "syllables": 2,
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Culture"
+     }
+    ],
+    "sink": [
+     {
+      "words": [0, 2],
+      "split": 2,
+      "display": "CULTURE IS EVERYTHING.",
+      "craft": 0.8,
+      "tracks": ["humbled-and-honored"],
+      "heard": "Culture is everything.",
+      "mix": {
+       "humbled-and-honored": {
+        "heard": "Culture is everything.",
+        "recall": 1
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "55.wav",
+   "text": "Feedback is a gift.",
+   "duration": 1.325,
+   "topics": ["feedback", "culture"],
+   "keywords": ["feedback", "feedback is a gift", "gift"],
+   "roles": {
+    "stop": [
+     {
+      "words": [2, 3],
+      "display": "A GIFT.",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "the gift"
+     }
+    ],
+    "bend": [
+     {
+      "words": [0, 0],
+      "display": "FEEDBACK",
+      "syllables": 2,
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Feedback"
+     }
+    ],
+    "lift": [
+     {
+      "words": [0, 0],
+      "display": "FEEDBACK",
+      "syllables": 2,
+      "craft": 0.4,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Feedback"
+     }
+    ],
+    "sink": [
+     {
+      "words": [0, 3],
+      "split": 2,
+      "display": "FEEDBACK IS A GIFT.",
+      "craft": 0.8,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Feedback is a gift.",
+      "mix": {
+       "circle-back": {
+        "heard": "Feedback is the gift.",
+        "recall": 0.75
+       },
+       "humbled-and-honored": {
+        "heard": "Feedback is a gift.",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "Feedback has been given.",
+        "recall": 0.25
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "56.wav",
+   "text": "Failure is just data.",
+   "duration": 1.593,
+   "topics": ["failure", "data", "lesson"],
+   "keywords": ["failure is just data", "failure", "data", "failed", "data points"],
+   "roles": {
+    "ladder": [
+     {
+      "words": [2, 3],
+      "display": "JUST DATA.",
+      "craft": 0.7,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Just data."
+     }
+    ],
+    "stop": [
+     {
+      "words": [2, 3],
+      "display": "JUST DATA.",
+      "craft": 0.8,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Just data."
+     }
+    ],
+    "bend": [
+     {
+      "words": [3, 3],
+      "display": "DATA",
+      "syllables": 2,
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Data"
+     }
+    ],
+    "lift": [
+     {
+      "words": [0, 0],
+      "display": "FAILURE",
+      "syllables": 2,
+      "craft": 0.5,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Failure"
+     }
+    ],
+    "sink": [
+     {
+      "words": [0, 3],
+      "split": 2,
+      "display": "FAILURE IS JUST DATA.",
+      "craft": 0.9,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Failure is just data.",
+      "mix": {
+       "circle-back": {
+        "heard": "Failure is just data.",
+        "recall": 1
+       },
+       "humbled-and-honored": {
+        "heard": "Failure is just data.",
+        "recall": 1
+       },
+       "hustle": {
+        "heard": "Failure is just data.",
+        "recall": 1
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "file": "57.wav",
+   "text": "Momentum compounds.",
+   "duration": 1.354,
+   "topics": ["momentum", "growth"],
+   "keywords": ["momentum compounds", "momentum", "compounds", "compound"],
+   "roles": {
+    "stop": [
+     {
+      "words": [1, 1],
+      "display": "COMPOUNDS.",
+      "craft": 0.6,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Compounds"
+     }
+    ],
+    "lift": [
+     {
+      "words": [0, 0],
+      "display": "MOMENTUM",
+      "syllables": 3,
+      "craft": 0.9,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Momentum"
+     }
+    ],
+    "sink": [
+     {
+      "words": [0, 1],
+      "split": 1,
+      "display": "MOMENTUM COMPOUNDS.",
+      "craft": 0.8,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle"],
+      "heard": "Momentum compounds",
+      "mix": {
+       "circle-back": {
+        "heard": "You",
+        "recall": 0
+       },
+       "humbled-and-honored": {
+        "heard": "Momentum. Calm down.",
+        "recall": 0.5
+       },
+       "hustle": {
+        "heard": "Momentum of Tom Hales",
+        "recall": 0.5
+       }
+      }
+     }
+    ]
+   }
+  }
+ ]
+}

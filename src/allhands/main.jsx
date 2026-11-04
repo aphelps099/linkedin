@@ -1,8 +1,10 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import {SAMPLE_POST, lyricsFromPost} from './lyrics.js';
-import {BAR_STEPS, STEP, BPM, KEY} from './song.js';
-import {FORMS, DEFAULT_FORM, stepAt} from './forms.js';
+import {BAR_STEPS} from './song.js';
+import {FORMS, DEFAULT_FORM, stepAt, formPlays} from './forms.js';
+import {TRACKS, TRACK_ORDER, DEFAULT_TRACK, DEFAULT_CAST, trackOf} from './songbook/index.js';
+import {castSong, settleCast} from './casting.js';
 import {loadWords} from './voice.js';
 import {prepareLady} from './lady.js';
 import {Performance, render, wav, STEMS, RENDER_OFFSET} from './engine.js';
@@ -25,6 +27,17 @@ const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matc
 const decoder = () => new OfflineAudioContext(1, 1, 44100);
 const clock = s => `${String(Math.floor(Math.max(0, s) / 60)).padStart(2, '0')}:${String(Math.floor(Math.max(0, s) % 60)).padStart(2, '0')}`;
 
+// The lady's lines as the setlist prints them, in the order she says them:
+// sentence case, her payoff word in capitals ("Proud of this… TEAM.").
+const said = text => text.toLowerCase().replace(/\bi('|\b)/g, 'I$1').replace(/^[^A-Za-z]*[a-z]/, c => c.toUpperCase());
+function ladyLines(cast) {
+  const c = cast || DEFAULT_CAST, out = [];
+  if (c.ladder) out.push(said(c.ladder.display));
+  if (c.tag && c.impact) out.push(`${said(c.tag.display).replace(/-$/, '…')} ${c.impact.display}`);
+  for (const role of ['bend', 'sink', 'lift', 'punct', 'stop']) if (c[role]) out.push(said(c[role].display));
+  return out;
+}
+
 // What the stage shows at a given step: the word being sung, its line, the
 // lady's latest phrase, and Synergy's stammer before a drop.
 function cueAt(plan, step) {
@@ -36,7 +49,7 @@ function cueAt(plan, step) {
   const stutter = plan.stutters.find(s => s.at <= step && step < s.at + 1) || (Math.floor(step / BAR_STEPS) === stammerBar ? plan.stutters[0] : null);
   // The most recent voice owns the screen.
   if (lady && word && word.at > lady.at) lady = null;
-  if (lady && step > lady.at + lady.gate / STEP + 4 && word && word.at <= step) lady = null;
+  if (lady && step > lady.at + lady.gate / plan.step + 4 && word && word.at <= step) lady = null;
   const bar = Math.min(plan.bars.length - 1, Math.max(0, Math.floor(step / BAR_STEPS)));
   return {word, line, stutter, lady, bar, section:plan.sections.find(s => bar >= s.from && bar < s.to)?.name || 'Outro'};
 }
@@ -62,9 +75,14 @@ function App() {
   const [draft, setDraft] = useState(SAMPLE_POST), [post, setPost] = useState(SAMPLE_POST);
   const [song, setSong] = useState(null), [error, setError] = useState(''), [status, setStatus] = useState('loading');
   const [mode, setMode] = useState('sung'), [muted, setMuted] = useState({}), [cue, setCue] = useState(null), [elapsed, setElapsed] = useState(0);
-  const [rendering, setRendering] = useState(false), [form, setForm] = useState(DEFAULT_FORM);
+  const [rendering, setRendering] = useState(false), [form, setForm] = useState(DEFAULT_FORM), [track, setTrack] = useState(DEFAULT_TRACK);
+  // Let the post choose (on by default): the post picks the song and the lady's
+  // lines (casting.js). The Song picker overrides it with today's cast.
+  const [auto, setAuto] = useState(true);
   const canvas = useRef(null), section = useRef('Intro'), meters = useRef({}), cueKey = useRef(''), labels = useRef(null), labelKey = useRef('');
   const lyrics = useMemo(() => { try { return lyricsFromPost(post); } catch { return null; } }, [post]);
+  const casting = useMemo(() => auto && lyrics ? castSong(post) : null, [auto, post, lyrics]);
+  const playTrack = casting ? casting.track : track, playForm = formPlays(form, playTrack) ? form : DEFAULT_FORM, cast = casting?.cast;
   const [stage, stageReady] = usePegStage(canvas, song?.plan);
 
   // Prepare the voice before anyone presses Play: a decode-only context needs no gesture.
@@ -72,21 +90,22 @@ function App() {
     if (!lyrics) { setStatus('idle'); setError('Paste a post with a few words in it.'); return; }
     const control = new AbortController();
     setStatus(s => s === 'playing' ? s : 'loading'); setError('');
-    const songForm = FORMS[form];
-    loadWords(decoder(), songForm.voiced(lyrics), {signal:control.signal})
+    const songForm = FORMS[playForm];
+    loadWords(decoder(), songForm.voiced(lyrics, {track:playTrack}), {signal:control.signal})
       .then(async ({buffers, durations}) => {
-        const plan = songForm.arrange(lyrics, durations);
+        // The post's cast; a recast line with no gap in Synergy's words goes back to today's.
+        const {plan, cast:played} = settleCast(songForm.arrange, lyrics, durations, {track:playTrack, cast});
         const lady = await prepareLady(decoder(), plan).catch(e => { setError(`${e.message} The band will play without her.`); return undefined; });
         if (control.signal.aborted) return;
-        setSong({plan, buffers, lady}); setStatus(s => s === 'playing' ? s : 'idle');
+        setSong({plan, buffers, lady, cast:played, castIn:cast}); setStatus(s => s === 'playing' ? s : 'idle');
       })
       .catch(e => {
         if (control.signal.aborted) return;
-        setSong({plan:songForm.arrange(lyrics, {}), buffers:new Map()});
+        setSong({plan:songForm.arrange(lyrics, {}, {track:playTrack, cast}), buffers:new Map(), cast, castIn:cast});
         setError(`${e.message} The band will play; Synergy will not.`); setStatus('idle');
       });
     return () => control.abort();
-  }, [lyrics, form]);
+  }, [lyrics, playForm, playTrack, cast]);
 
   const stop = useCallback((next = 'idle') => { perf.stop(); setStatus(next); section.current = 'Intro'; }, [perf]);
   useEffect(() => onAudioFocus('allhands', () => stop()), [stop]);
@@ -143,12 +162,22 @@ function App() {
     stage.current.still(status === 'ended' ? 'ADJOURNED.' : status === 'loading' ? 'WARMING UP' : 'ALL HANDS', {k:2, tone:status === 'loading' ? 'blue' : 'white'});
   }, [status, stage, stageReady]);
 
+  function chooseTrack(id) {
+    if (!auto && id === track) return;
+    stop(); setCue(null); setElapsed(0); setSong(null); setTrack(id); setAuto(false);
+    if (!formPlays(form, id)) setForm(DEFAULT_FORM);
+  }
+  function chooseAuto() {
+    if (auto) return;
+    stop(); setCue(null); setElapsed(0); setSong(null); setAuto(true);
+  }
   function toggle(name) { const next = {...muted, [name]:!muted[name]}; setMuted(next); perf.mute(next); }
   function chooseMode(next) { setMode(next); perf.voice(next); }
   function perform(e) {
     e.preventDefault();
     try { lyricsFromPost(draft); } catch (x) { setError(x.message); return; }
-    stop(); setPost(draft); setCue(null); setElapsed(0);
+    // A new post may pick a new song: nothing plays until it is ready.
+    stop(); setPost(draft); setCue(null); setElapsed(0); setSong(null);
   }
   function save(blob, name) {
     const url = URL.createObjectURL(blob), a = document.createElement('a');
@@ -158,14 +187,14 @@ function App() {
     if (!song || rendering) return;
     setRendering(kind);
     try {
-      const audio = await render(song.plan, song.buffers, {mode, muted}, song.lady), file = wav(audio), name = `all-hands-${song.plan.form}`;
+      const audio = await render(song.plan, song.buffers, {mode, muted}, song.lady), file = wav(audio), name = `all-hands-${song.plan.track || DEFAULT_TRACK}-${song.plan.form}`;
       if (kind === 'wav') { save(file, `${name}.wav`); return; }
       // Pixel Text: every word at the moment it is sung, the downbeat at 0 s,
       // the render's 50 ms lead-in carried as the editor's audio in-point.
       const audioDataUrl = await new Promise((resolve, reject) => { const r = new FileReader(); r.onload = () => resolve(r.result); r.onerror = () => reject(r.error); r.readAsDataURL(file); });
       const duration = Math.min(120, audio.duration - RENDER_OFFSET);
       const cues = planToCues(song.plan, undefined, {lyrics, renderOffset:0, duration, hold:.5});
-      const project = toPixelProject({title:`All Hands · ${FORMS[form].title}`, duration, bpm:song.plan.bpm, cues, format:'portrait', audioDataUrl, audioName:`${name}.wav`, options:{hold:.5, audioOffset:RENDER_OFFSET}});
+      const project = toPixelProject({title:`All Hands · ${trackOf(song.plan.track).title} · ${FORMS[song.plan.form].title}`, duration, bpm:song.plan.bpm, cues, format:'portrait', audioDataUrl, audioName:`${name}.wav`, options:{hold:.5, audioOffset:RENDER_OFFSET}});
       save(new Blob([JSON.stringify(project)], {type:'application/json'}), `${name}.pixel.json`);
     } catch (e) { setError(e.message || 'The render failed. Try again.'); } finally { setRendering(false); }
   }
@@ -174,7 +203,7 @@ function App() {
   const current = playing ? cue : null;
   const stammer = current?.stutter ? current.stutter.word.split(' ')[0].slice(0, 3).toUpperCase() + '–' : null;
   const ladyLine = current?.lady ? current.lady.display : null;
-  const sections = plan?.sections || FORMS[form].sections;
+  const sections = plan?.sections || FORMS[playForm].sectionsOf(playTrack), songTrack = trackOf(playTrack);
   const sectionName = playing ? current?.section || 'Intro' : status === 'ended' ? 'Adjourned' : 'Waiting room';
   const progress = plan ? Math.min(1, Math.max(0, elapsed) / plan.duration) : 0;
 
@@ -182,13 +211,13 @@ function App() {
     <header className="ah-top">
       <a href="/" className="ah-mark">linkedinbeats<span>_</span></a>
       <span className="ah-title">All Hands</span>
-      <span className="ah-form">{FORMS[form].title} · Not for circulation</span>
+      <span className="ah-form">{songTrack.title} · {FORMS[playForm].title} · Not for circulation</span>
     </header>
 
     <section className="ah-stage" aria-label="Performance">
       <canvas ref={canvas} className="ah-board" aria-hidden="true"/>
       <div className="ah-chart-labels" ref={labels} aria-hidden="true"/>
-      <div className="ah-stage-meta"><span>{sectionName}</span><span>{playing && current ? `Bar ${String(current.bar + 1).padStart(2, '0')} / ${plan.bars.length}` : `${BPM} BPM · ${KEY}`}</span></div>
+      <div className="ah-stage-meta"><span>{sectionName}</span><span>{playing && current ? `Bar ${String(current.bar + 1).padStart(2, '0')} / ${plan.bars.length}` : `${songTrack.bpm} BPM · ${songTrack.key}`}</span></div>
       <p className="ah-line" aria-live="polite"><span className={`ah-caption ${playing && !current?.line && !ladyLine ? 'empty' : ''}`}>
         {playing && ladyLine && !stammer ? <span className="sung">{current.lady.display}</span>
           : playing && current?.line ? current.line.words.filter(w => !!w.repeat === (current.word?.line === current.line.id && !!current.word.repeat)).map((w, i) => <span key={i} className={current.word && w.at <= current.word.at ? 'sung' : ''}>{w.display} </span>)
@@ -224,11 +253,21 @@ function App() {
       </section>
 
       <section className="ah-voice" aria-labelledby="voice-title">
-        <h2 id="form-title">The song</h2>
-        <div className="ah-modes ah-forms" role="radiogroup" aria-labelledby="form-title">
-          {Object.values(FORMS).map(f => <button key={f.id} role="radio" aria-checked={form === f.id} className={form === f.id ? 'on' : ''} onClick={() => { if (form !== f.id) { stop(); setCue(null); setElapsed(0); setSong(null); setForm(f.id); } }}>{f.title}</button>)}
+        <h2 id="song-title">The song</h2>
+        <div className="ah-songs" role="radiogroup" aria-labelledby="song-title">
+          {TRACK_ORDER.map(id => { const t = TRACKS[id], on = !auto && track === id; return <button key={id} role="radio" aria-checked={on} className={on ? 'on' : ''} title={t.blurb} onClick={() => chooseTrack(id)}>
+            <strong>{t.title}</strong><span>{t.bpm} BPM<br/>{t.key}</span>
+          </button>; })}
+          <button role="radio" aria-checked={auto} className={`ah-song-auto ${auto ? 'on' : ''}`} data-slot="casting" title="The post picks the song and the lady's lines." onClick={chooseAuto}>
+            <strong>Let the post choose</strong><span>{casting ? <>The post picked<br/>{TRACKS[casting.track].title}</> : <>The song and<br/>her lines</>}</span>
+          </button>
         </div>
-        <p className="ah-hint">{FORMS[form].note}</p>
+        <p className="ah-hint ah-casting" aria-live="polite">{casting ? casting.line : songTrack.blurb}</p>
+        <h2 id="form-title" className="ah-gap">The form</h2>
+        <div className="ah-modes ah-forms" role="radiogroup" aria-labelledby="form-title">
+          {Object.values(FORMS).map(f => { const plays = formPlays(f.id, playTrack); return <button key={f.id} role="radio" aria-checked={playForm === f.id} disabled={!plays} title={plays ? undefined : `${f.title} is ${trackOf(DEFAULT_TRACK).title}'s alone.`} className={playForm === f.id ? 'on' : ''} onClick={() => { if (playForm !== f.id) { stop(); setCue(null); setElapsed(0); setSong(null); setForm(f.id); } }}>{f.title}</button>; })}
+        </div>
+        <p className="ah-hint">{FORMS[playForm].id === 'drop60' ? `${Math.round(songTrack.drop.bars * 16 * songTrack.step)} s · the lady builds, the room drops` : FORMS[playForm].note}</p>
         <h2 id="voice-title" className="ah-gap">Synergy’s delivery</h2>
         <div className="ah-modes" role="radiogroup" aria-label="Synergy’s delivery">
           {MODES.map(([id, label]) => <button key={id} role="radio" aria-checked={mode === id} className={mode === id ? 'on' : ''} onClick={() => chooseMode(id)}>{label}</button>)}
@@ -246,7 +285,8 @@ function App() {
           <button type="submit" disabled={draft.trim() === post.trim()}>Perform this post</button>
           {draft !== SAMPLE_POST && <button type="button" className="quiet" onClick={() => setDraft(SAMPLE_POST)}>Use the sample</button>}
         </div>
-        {lyrics && <dl className="ah-setlist"><dt>Hook</dt><dd>{lyrics.hook}</dd><dt>Verses</dt>{lyrics.verses.map((v, i) => <dd key={i}>{v}</dd>)}</dl>}
+        {lyrics && <dl className="ah-setlist"><dt>Hook</dt><dd>{lyrics.hook}</dd><dt>Verses</dt>{lyrics.verses.map((v, i) => <dd key={i}>{v}</dd>)}
+          {playForm === 'drop60' && <><dt>The lady</dt><dd className="ah-lady-lines">{ladyLines(song && song.castIn === cast ? song.cast : cast).join(' · ')}</dd></>}</dl>}
         <p className="ah-hint">Every sung word comes from the post. Synergy adds only his welcome and his sign-off.</p>
       </form>
     </main>
@@ -260,21 +300,24 @@ function App() {
 
 // Headless render hook for scripts/render-allhands.mjs.
 window.__allhands = {
-  async render({post = SAMPLE_POST, form = DEFAULT_FORM, mode = 'sung', muted = {}, bars, tune} = {}) {
-    const songForm = FORMS[form] || FORMS[DEFAULT_FORM], lyrics = lyricsFromPost(post), {buffers, durations} = await loadWords(decoder(), songForm.voiced(lyrics));
-    const plan = songForm.arrange(lyrics, durations), lady = await prepareLady(decoder(), plan);
+  // auto: the post picks the track and the cast, as on the page (casting.js).
+  async render({post = SAMPLE_POST, form = DEFAULT_FORM, track, cast, auto = false, mode = 'sung', muted = {}, bars, tune} = {}) {
+    const casting = auto ? castSong(post, {track}) : null;
+    if (casting) { track = casting.track; cast = cast ?? casting.cast; }
+    const songForm = FORMS[form] || FORMS[DEFAULT_FORM], lyrics = lyricsFromPost(post), {buffers, durations} = await loadWords(decoder(), songForm.voiced(lyrics, {track}));
+    const {plan} = settleCast(songForm.arrange, lyrics, durations, {track, cast}), lady = await prepareLady(decoder(), plan);
     const bytes = new Uint8Array(await wav(await render(plan, buffers, {mode, muted, bars, tune}, lady)).arrayBuffer());
     let s = ''; for (let i = 0; i < bytes.length; i += 32768) s += String.fromCharCode(...bytes.subarray(i, i + 32768));
     const offset = RENDER_OFFSET - plan.timing[(bars?.[0] || 0) * BAR_STEPS];
-    return {wav:btoa(s), lyrics, plan:{form:plan.form, bpm:plan.bpm, offset, duration:plan.duration,
+    return {wav:btoa(s), lyrics, casting, plan:{form:plan.form, track:plan.track, trackTitle:plan.trackTitle, bpm:plan.bpm, step:plan.step, key:plan.key, offset, duration:plan.duration, marks:plan.marks, kicks:plan.kicks,
       sections:plan.sections.map(x => ({...x, start:plan.timing[x.from * BAR_STEPS], end:plan.timing[x.to * BAR_STEPS]})),
       timing:Array.from(plan.timing), choke:plan.choke ? {start:plan.timing[plan.choke.at], end:plan.timing[plan.choke.until]} : null,
       lines:plan.lines.map(l => ({text:l.text, bar:l.bar, kind:l.kind, words:l.words.map(w => [w.display, w.at, w.steps, +w.rate.toFixed(2), w.notes.map(n => n.midi).join('.'), +w.gate.toFixed(3)])})),
       // Everything the Pixel Text exporter needs to time every word exactly.
       words:plan.words.filter(w => w.line === -1).map(w => ({display:w.display, word:w.word, at:w.at, steps:w.steps, rate:w.rate, gate:w.gate, kind:w.kind, line:-1})),
       stutters:plan.stutters, tape:plan.tape || [],
-      lady:plan.lady.map(e => ({role:e.role, rung:e.rung, display:e.display, file:e.file, at:e.at, from:e.from, to:e.to, rate:e.rate, gate:e.gate,
-        start:plan.timing[Math.floor(e.at)] + (e.at - Math.floor(e.at)) * STEP, length:+Math.min(e.gate, (e.to - e.from) / e.rate).toFixed(3)}))}};
+      lady:plan.lady.map(e => ({role:e.role, rung:e.rung, display:e.display, file:e.file, at:e.at, from:e.from, to:e.to, rate:e.rate, gate:e.gate, midi:e.midi, root:e.root,
+        start:plan.timing[Math.floor(e.at)] + (e.at - Math.floor(e.at)) * plan.step, length:+Math.min(e.gate, (e.to - e.from) / e.rate).toFixed(3)}))}};
   },
 };
 

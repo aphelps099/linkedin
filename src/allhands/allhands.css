@@ -47,6 +47,19 @@ a{color:inherit;text-decoration:none}
 .ah[data-section^="Drop "] .ah-word-lady{color:#0a0a0b}
 .ah[data-section^="Drop "] .ah-caption{background:rgba(6,22,120,.62)}
 .ah-gap{margin-top:26px!important}
+/* The song book: one cell per track, a fourth left for casting. */
+.ah-songs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin-top:18px;border:1px solid var(--rule)}
+.ah-songs button{display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:7px;min-height:76px;padding:12px 14px;text-align:left;color:var(--dim)}
+.ah-songs button:nth-child(even){border-left:1px solid var(--rule)}
+.ah-songs button:nth-child(n+3){border-top:1px solid var(--rule)}
+.ah-songs strong{font:600 14px/1.15 var(--sans);letter-spacing:-.01em;color:var(--paper)}
+.ah-songs span{font:500 10px/1.45 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.ah-songs button:not(:disabled):not(.on):hover strong{color:#fff}
+.ah-songs button.on{background:var(--paper)}
+.ah-songs button.on strong{color:var(--ink)}
+.ah-songs button.on span{color:rgba(10,10,11,.56)}
+.ah-songs .ah-song-auto:disabled{opacity:1;cursor:default;background:repeating-linear-gradient(135deg,transparent 0 6px,rgba(242,238,230,.035) 6px 7px)}
+.ah-songs .ah-song-auto:disabled strong{color:var(--faint)}
 .ah-forms button{font-size:13px}
 .ah[data-section=Drop] .ah-word{color:#fff}
 .ah[data-section=Drop] .ah-word-hook,.ah[data-section=Drop] .ah-word-stammer{color:var(--signal)}
@@ -83,6 +96,7 @@ a{color:inherit;text-decoration:none}
 .ah-desk>*+*{border-left:1px solid var(--rule)}
 .ah h2{margin:0 0 6px;font:500 11px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--paper)}
 .ah-hint{margin:6px 0 0;color:var(--dim);font-size:13px;line-height:1.45;max-width:46ch}
+.ah-hint.ah-casting{color:var(--paper)}
 .ah-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:18px}
 .ah-tile{position:relative;aspect-ratio:16/10;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start;gap:2px;padding:12px;text-align:left;background:var(--ink-2);border:1px solid var(--rule);overflow:hidden;transition:opacity .15s,border-color .15s}
 .ah-tile:hover{border-color:var(--faint)}

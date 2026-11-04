@@ -7,7 +7,8 @@ import {arrange, fitPhrase, melody, voicedWords, slots, stepTime, BARS, BAR_STEP
 import {normalizeWords, fixStreamedWave, createAllHandsVoice, espeakWord} from '../server/allhands-voice.js';
 import {arrangeDrop, dropVoicedWords, DROP_BARS, DROP_SECTIONS, swingOf, tunedRate} from '../src/allhands/drop.js';
 import {LADY_TABLE, slice} from '../src/allhands/lady-table.js';
-import {FORMS, stepAt} from '../src/allhands/forms.js';
+import {FORMS, stepAt, formPlays} from '../src/allhands/forms.js';
+import {TRACKS, TRACK_ORDER, DEFAULT_TRACK, DEFAULT_CAST, LADY_ROLES, trackOf, castOf} from '../src/allhands/songbook/index.js';
 import {truePeakLimit, truePeaks} from '../src/allhands/master.js';
 
 const PENTATONIC = new Set([45, 48, 50, 52, 55, 57, 60, 62, 64]);
@@ -134,6 +135,92 @@ for (const post of POSTS) {
   ok(a < .05 && b > .6 && b <= back[0] + 1e-9 && back[1] - back[0] > .2, 'lady: "Let\'s circle" then "back", whole words');
 }
 ok(Object.keys(FORMS).join() === 'drop60,soundcheck', 'two forms');
+
+// ---- The song book: every track performs the Drop Edition in its own key and time.
+const ORDER = ['Intro', 'Verse', 'Build', 'Drop A', 'Sink In', 'Drop B', 'Outro'];
+const pc = m => ((Math.round(m) % 12) + 12) % 12, midiOf = hz => 69 + 12 * Math.log2(hz / 440);
+const inKey = (track, m) => track.pitchClasses.includes(pc(m)) && Math.abs(m - Math.round(m)) < 1e-6;
+const nearKey = (track, hz) => { const m = midiOf(hz); return Math.abs(m - Math.round(m)) < .02 && track.pitchClasses.includes(pc(m)); };
+ok(TRACK_ORDER.join() === 'circle-back,humbled-and-honored,hustle' && DEFAULT_TRACK === 'circle-back' && trackOf().id === 'circle-back' && trackOf('hustle').id === 'hustle', 'song book: three tracks, Circle Back by default');
+assert.throws(() => trackOf('nope'), /no track called/); checks++;
+for (const id of TRACK_ORDER) {
+  const track = TRACKS[id], D = track.drop, STEP_T = track.step;
+  ok(Math.abs(STEP_T - 15 / track.bpm) < 1e-12 && D.sections.map(x => x.name).join() === ORDER.join(), `${id}: ${track.bpm} BPM, the seven sections in order`);
+  ok(D.sections[0].from === 0 && D.sections.every((x, i) => !i || x.from === D.sections[i - 1].to) && D.sections.at(-1).to === D.bars, `${id}: sections tile the form`);
+  // Every chord, voicing and bass root is in the key; the melody table is too.
+  for (const c of Object.values(track.chords)) ok([c.root, ...c.notes, ...(c.keys || [])].every(m => inKey(track, m)) && c.notes.length === 4, `${id}: ${c.name} in key, four choir voices`);
+  ok(track.music.scale.length === 9 && track.music.scale.every(m => inKey(track, m)) && track.music.home.every(m => inKey(track, m)), `${id}: Synergy's nine-note table in key`);
+  for (const [name, hz] of [['drop kick', track.sound.dropKick?.settle ?? 55], ['sub drop from', track.sound.subDrop?.from ?? 110], ['sub drop to', track.sound.subDrop?.to ?? 27.5]]) ok(nearKey(track, hz), `${id}: the ${name} (${hz} Hz) is tuned to the key`);
+  for (const post of POSTS) {
+    const lyrics = lyricsFromPost(post), durations = Object.fromEntries(FORMS.drop60.voiced(lyrics, {track:id}).map(w => [w, .18 + .11 * syllables(w)]));
+    const plan = arrangeDrop(lyrics, durations, {track:id}), T = plan.timing, label = `${id}/${lyrics.hook}`, sp = plan.step;
+    // Form length and the fields downstream reads.
+    ok(plan.track === id && plan.form === 'drop60' && plan.bpm === track.bpm && plan.key === track.key && plan.step === STEP_T, `${label}: plan names its track, tempo and key`);
+    ok(T instanceof Float64Array && T.length === plan.totalSteps + 17 && T.every((t, i) => !i || t > T[i - 1]) && plan.bars.length === D.bars && plan.bars.every(b => b.layers && b.chord && b.cutoff), `${label}: timing and bars`);
+    ok(T[plan.totalSteps] >= 55 && T[plan.totalSteps] <= 65 && Math.abs(plan.duration - T[plan.totalSteps] - .6) < 1e-9, `${label}: ${T[plan.totalSteps].toFixed(2)} s, inside 55-65 s`);
+    ok(Array.isArray(plan.lines) && Array.isArray(plan.words) && Array.isArray(plan.lady) && plan.choke && plan.tape.length === 2 && Array.isArray(plan.kicks) && plan.marks, `${label}: lines, words, lady, choke, tape, kicks, marks`);
+    // The signature moments, in order.
+    const m = plan.marks, host = plan.lines[0];
+    ok(plan.call.until === m.unmute && host.text === HOST.open && host.words[0].at === plan.call.until, `${label}: the call unmutes on Synergy's welcome`);
+    ok(plan.call.dropouts.every(d => d.at < plan.call.until), `${label}: dropouts inside the muted intro`);
+    ok(plan.lines.filter(l => l.kind === 'verse' && lyrics.verses.includes(l.text)).length >= 3, `${label}: the post's verses are sung`);
+    ok(m.unmute < m.build && m.build < m.choke && m.choke < m.impact && m.impact < m.sink && m.sink < m.stop && m.stop < plan.totalSteps, `${label}: unmute, ladder, choke, BACK., sink, stop, in order`);
+    // The ladder: on the grid, 1 bar down to 1/32, climbing through the pentatonic, gated inside its period.
+    const ladder = plan.lady.filter(e => e.role === 'ladder'), base = ladder[0].midi, penta = D.ladder.pentatonic;
+    ok(ladder.every(e => (e.at * 2) % 1 === 0 && e.at >= m.build && e.at < m.choke), `${label}: ladder on the 32nd grid, between the build and the choke`);
+    // (Circle Back's 1/16 is her 8ths with Synergy's stammer on the odd 16ths between them.)
+    const shared16 = ladder.some(e => e.period === 2 && Math.floor(e.at / 16) === D.stutter.bar) && plan.stutters.every(x => x.at % 2 === 1);
+    ok([16, 8, 4, 2, .5].every(p => ladder.some(e => e.period === p)) && (ladder.some(e => e.period === 1) || shared16), `${label}: retriggers at 1, 1/2, 1/4, 1/8, 1/16 and 1/32 bar`);
+    ok(ladder.every((e, i) => !i || e.midi >= ladder[i - 1].midi - 1e-9) && Math.abs(ladder.at(-1).midi - base - 12) < 1e-9, `${label}: the ladder climbs an octave`);
+    ok(ladder.filter(e => !D.ladder.rungs[e.rung].glide).every(e => penta.includes(pc(e.midi))), `${label}: every rung on the pentatonic`);
+    ok(ladder.every((e, i) => { const n = ladder[i + 1]; return !n || T[e.at | 0] + (e.at % 1) * sp + e.gate <= T[n.at | 0] + (n.at % 1) * sp + 1e-6; }), `${label}: each hit ends before the next`);
+    const built = LADY_TABLE[ladder[0].file], tuned = tunedRate(built.f0, D.ladder.targets);
+    ok(Math.abs(ladder[0].rate - tuned.rate) < 1e-12 && tuned.base === base && inKey(track, base), `${label}: her ladder tuned to ${base}, in key`);
+    // The choke: silence after the tag, nothing sounding, then BACK. on the impact.
+    const choke = T[plan.choke.at], impact = T[plan.choke.until], tag = plan.lady.find(e => e.role === 'tag');
+    const sounding = [...plan.words.map(w => [T[w.at], T[w.at] + w.gate]), ...plan.lady.filter(e => e.role !== 'tag').map(e => [T[Math.floor(e.at)] + (e.at % 1) * sp, T[Math.floor(e.at)] + (e.at % 1) * sp + e.gate])];
+    ok(sounding.every(([a, b]) => b <= choke + 1e-6 || a >= impact - 1e-6), `${label}: the silence is empty`);
+    const silence = impact - choke - tag.gate;
+    // Circle Back keeps today's tag (0.39 s of silence: its measured "circle" is longer than the hand table's).
+    ok(tag.at === plan.choke.at && silence >= (id === 'circle-back' ? .35 : .45), `${label}: ${(silence * 1000).toFixed(0)} ms of silence after the tag`);
+    // Circle Back's board keeps today's 0.49 s; the other tracks go dark once the tag has ended.
+    ok(id === 'circle-back' ? plan.choke.dark === choke + .49 : plan.choke.dark >= choke + tag.gate - 1e-9 && plan.choke.dark < impact, `${label}: the board goes dark on time`);
+    if (D.tag.tune) ok(nearKey(track, LADY_TABLE[tag.file].f0 * tag.rate) || tag.rate > 1.16, `${label}: her tag tuned into the key (rate ${tag.rate.toFixed(3)})`);
+    const back = plan.lady.find(e => e.role === 'impact');
+    ok(back.at === m.impact && back.deep > 0 && back.vocoded > 0 && inKey(track, back.root) && inKey(track, back.midi) && back.root === plan.bars[D.impact].chord.root, `${label}: BACK. on the impact, its deep voice on the chord's root`);
+    ok(plan.bars[D.impact].layers.impact && plan.kicks.includes(m.impact), `${label}: the drop kick on BACK.`);
+    const sink = plan.lady.find(e => e.role === 'sink');
+    ok(sink.at === m.sink && sink.deep > 0 && inKey(track, sink.root) && Math.abs(sink.gate - 16 * sp) < 1e-9, `${label}: Sink In, deep, on its bar`);
+    ok(D.tuneComb ? [back, sink].every(e => nearKey(track, e.comb)) : [back, sink].every(e => e.comb === undefined), `${label}: the deep voice's comb rings in key`);
+    ok(plan.tape[0].kind === 'sink' && plan.tape[0].from === m.sink && plan.tape[1].kind === 'stop' && plan.tape[1].from === m.stop && plan.lady.some(e => e.role === 'stop' && e.at === m.stop), `${label}: Sink In varispeed, then the tape stops on her stop phrase`);
+    ok(plan.bars.some(b => b.section === 'Drop A' && b.layers.bass) && plan.bars.some(b => b.section === 'Drop B' && b.layers.bass), `${label}: two drops`);
+    // Every sung note in the scale, on the chord under it.
+    for (const w of plan.words) for (const n of w.notes) { const c = plan.bars[Math.floor(n.at / 16)].chord; ok(inKey(track, n.midi) && (!c.avail || c.avail.includes(pc(n.midi))), `${label}: "${w.display}" ${n.midi} sits on ${c.name}`); }
+    for (const x of plan.stutters) { const c = plan.bars[Math.floor(x.at / 16)].chord; ok(inKey(track, x.midi) && (!c.avail || c.avail.includes(pc(x.midi))), `${label}: stammer ${x.midi} on ${c.name}`); }
+    ok(plan.bars.every(b => [b.chord.root, ...b.chord.notes].every(x => inKey(track, x))), `${label}: every bar's chord in key`);
+    // The lady's punctuation waits for Synergy's gaps.
+    for (const e of plan.lady.filter(x => x.role === 'punct')) ok(!plan.words.some(w => w.at - 1 < e.at + Math.ceil(e.gate / sp) && e.at < w.at + w.steps + 1), `${label}: ${e.display} sits in a gap`);
+    ok(plan.kicks.every((k, i) => k >= 0 && k <= plan.totalSteps && (!i || k > plan.kicks[i - 1])), `${label}: kicks sorted, inside the song`);
+    // Deterministic: the same post arranges the same song.
+    const again = arrangeDrop(lyrics, durations, {track:id}), json = x => JSON.stringify(x, (k, v) => v instanceof Float64Array ? Array.from(v) : v);
+    ok(json(again) === json(plan), `${label}: deterministic`);
+  }
+}
+// Sound check 00 is Circle Back's alone.
+assert.throws(() => FORMS.soundcheck.arrange(lyricsFromPost(SAMPLE_POST), {}, {track:'hustle'}), /Sound check 00/); checks++;
+ok(formPlays('soundcheck', 'circle-back') && !formPlays('soundcheck', 'hustle') && formPlays('drop60', 'hustle'), 'forms know which tracks play them');
+// The cast seam: roles can be recast; the default cast is today's.
+{
+  const lyrics = lyricsFromPost(SAMPLE_POST), durations = Object.fromEntries(dropVoicedWords(lyrics).map(w => [w, .18 + .11 * syllables(w)]));
+  const plain = arrangeDrop(lyrics, durations), cast = arrangeDrop(lyrics, durations, {cast:DEFAULT_CAST}), json = x => JSON.stringify(x, (k, v) => v instanceof Float64Array ? Array.from(v) : v);
+  ok(json(plain) === json(cast) && json(plain) === json(arrangeDrop(lyrics, durations, LADY_TABLE, {track:'circle-back'})), 'cast: the default cast is today\'s choices');
+  ok(LADY_ROLES.join() === 'ladder,tag,impact,bend,sink,lift,punct,stop' && LADY_ROLES.every(r => DEFAULT_CAST[r] && LADY_TABLE[DEFAULT_CAST[r].file]), 'cast: eight roles, all recorded');
+  const recast = arrangeDrop(lyrics, durations, {track:'hustle', cast:{ladder:{file:'05.wav', words:[0, 0], display:'SYNERGY'}, punct:{file:'48.wav', words:[0, -1]}, lift:null}});
+  const lad = recast.lady.filter(e => e.role === 'ladder');
+  ok(lad.length === 46 && lad.every(e => e.file === '05.wav') && lad[0].display === 'SYNERGY' && !recast.lady.some(e => e.file === '07.wav'), 'cast: a recast ladder, a role left out');
+  ok(lad.every(e => TRACKS.hustle.drop.ladder.pentatonic.includes(pc(e.midi))), 'cast: a recast ladder is still in key');
+  assert.throws(() => castOf({chorus:{file:'01.wav'}}), /Unknown lady role/); assert.throws(() => castOf({tag:{file:'x'}}), /NN.wav/); checks += 2;
+}
 // The true-peak limiter keeps an over-full-scale signal under its ceiling.
 {
   const sr = 44100, a = new Float32Array(sr), b = new Float32Array(sr);
