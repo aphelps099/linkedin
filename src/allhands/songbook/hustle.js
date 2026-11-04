@@ -82,7 +82,8 @@ function cutoff(bar) {
   if (s === 'Intro') return {keys:ramp(500, 3800, bar, 4), pad:[900, 900]};
   if (s === 'Build') return {keys:[2600, 2600], pad:[[600, 1200], [1200, 2000], [2000, 3000], [3000, 4200], [4200, 6000], [6000, 6000], [6000, 6000], [6000, 6000]][bar - 12]};
   if (s === 'Drop A') return {keys:[5200, 5200], pad:[2600, 2600]};
-  if (s === 'Verse') return {keys:[2800, 2800], pad:[1100, 1100]};
+  // The verse's organ stays under 2 kHz, out of the consonants Synergy is understood by.
+  if (s === 'Verse') return {keys:[2000, 2000], pad:[1100, 1100]};
   if (s === 'Sink In') return {keys:[2200, 2200], pad:[1400, 500]};
   if (s === 'Outro') return {keys:ramp(4200, 600, bar - 28, 4), pad:[900, 900]};
   return {keys:[4200, 4200], pad:[1100, 1100]};
@@ -100,9 +101,11 @@ function slots(lyrics) {
     {bar:13, startStep:8, window:8, text:hook, kind:'answer', shape:'chant'},
     {bar:20, startStep:4, window:28, text:hook, kind:'hook', shape:'call', harmony:true},
     {bar:24, window:24, text:verses[3], kind:'verse', shape:'arch', harmony:true},
-    {bar:26, window:14, text:hook, kind:'hook', shape:'call', harmony:true},
-    {bar:27, startStep:8, window:8, text:hook, kind:'hook', shape:'call', harmony:true},
-    {bar:28, text:hook, kind:'hook', shape:'call'},
+    // At 130 BPM "Read that again." needs nine 16ths: the hook gives up a 16th,
+    // Synergy reads it again from 27:10, and the outro's hook waits half a bar.
+    {bar:26, window:13, text:hook, kind:'hook', shape:'call', harmony:true},
+    {bar:27, startStep:10, window:10, text:hook, kind:'hook', shape:'call', harmony:true},
+    {bar:28, startStep:8, window:22, text:hook, kind:'hook', shape:'call'},
     {bar:30, text:HOST.close, kind:'host', shape:'chant'},
   ];
 }
@@ -124,7 +127,7 @@ const ENERGY = {Intro:.43, Verse:.4, Build:.54, 'Drop A':1, 'Sink In':.85, 'Drop
 const STEM_MIX = {
   drums:{reverb:.1, level:1},
   bass:{duck:.3, level:.5},
-  keys:{duck:.45, under:.6, reverb:.36, delay:.14, level:2.4, haas:20},
+  keys:{duck:.45, under:.5, reverb:.36, delay:.14, level:2.4, haas:20},
   guitar:{duck:.45, under:.6, reverb:.18, delay:.1, level:7, haas:18},
   voice:{duck:.88, reverb:.18, delay:.22, level:1.35},
   lady:{reverb:.14, delay:.1},
@@ -154,11 +157,14 @@ function drums(api, b, bar, s, t, T, step) {
   if (kickPattern(bar, L).includes(s)) { I.tunedKick(ctx, D, t, 1, KICK); L.pump ? api.duck(t, PUMP, .11) : L.loud ? api.duck(t, DROP_A) : api.duck(t); }
   if (style === 'twostep') {
     const held = L.holdBreath && s >= 12;
-    if (L.snare && (s === 4 || s === 12) && !held) { I.snare(ctx, D, t, .5); I.clap(ctx, D, t, L.loud ? .58 : .42); }
-    if (L.snare && bar % 2 && (s === 7 || s === 15)) I.snare(ctx, D, t, s === 15 ? .16 : .1);   // ghosts
+    const back = L.light ? .75 : 1;                                       // and the backbeat leaves his vowels room
+    if (L.snare && (s === 4 || s === 12) && !held) { I.snare(ctx, D, t, .5 * back); I.clap(ctx, D, t, (L.loud ? .58 : .42) * back); }
+    if (L.snare && bar % 2 && (s === 7 || s === 15)) I.snare(ctx, D, t, (s === 15 ? .16 : .1) * back);   // ghosts
     if (L.holdBreath && (s === 14 || s === 15)) I.clap(ctx, D, t, s === 14 ? .35 : .5);
-    if (L.hats && !held && s % 4 !== 2) I.hat(ctx, D, t, [.28, .16, 0, .22][s % 4] * (L.loud ? .75 : .5));
-    if (L.open && s % 4 === 2 && !held) I.openHat(ctx, D, t, L.loud ? .26 : .16);
+    // Under a verse the top of the kit steps back for his consonants.
+    const top = L.light ? .7 : 1;
+    if (L.hats && !held && s % 4 !== 2) I.hat(ctx, D, t, [.28, .16, 0, .22][s % 4] * (L.loud ? .75 : .5) * top);
+    if (L.open && s % 4 === 2 && !held) I.openHat(ctx, D, t, (L.loud ? .26 : .16) * top);
     if (L.rim && (s === 3 || s === 11)) I.rim(ctx, D, t, .12);
   } else if (style === 'four') {
     if (L.snare && (s === 4 || s === 12)) { I.clap(ctx, D, t, .6); I.snare(ctx, D, t, .3); }
@@ -179,7 +185,7 @@ function drums(api, b, bar, s, t, T, step) {
       else { I.snareRoll(ctx, D, t, v, tone); I.snareRoll(ctx, D, t + STEP / 2, v, tone); }
     }
   }
-  if (L.shaker) I.shaker(ctx, D, t, shakerVelocity(s) * .45);
+  if (L.shaker) I.shaker(ctx, D, t, shakerVelocity(s) * .45 * (L.light ? .7 : 1));
 }
 
 // Pat: the root low on the one when it is the tonic, then octaves and fifths.
@@ -194,7 +200,7 @@ function bass(api, b, bar, s, t, T, step) {
     // that carries the bass line to a phone speaker.
     for (const [at, interval, length] of line) if (at === s) {
       if (L.bass === 'drop') I.wobble(ctx, out, t, interval === 'low' ? low + 12 : root + interval, span(api, T, step, length) - .015, Math.min(2, length) * api.step, .5);
-      else note(interval, length, .75, tone);
+      else note(interval, length, L.light ? .62 : .75, tone);              // under a verse the reese sits back
     }
   } else if (L.bass === 'offbeat') {
     for (const [at, interval] of [[2, 0], [6, 0], [10, 0], [14, 12]]) if (at === s) note(interval, 1.5, .8, {cutoff:520, open:3.5, q:3});
@@ -255,8 +261,10 @@ export default {
       punct:[27 * 16, 26 * 16 + 14, 26 * 16 + 15, 27 * 16 + 1],
     },
     energy:ENERGY,
+    // The verse's room for the drops (drop.js roomTrim): only a sparse hook or verse 3 needs any here.
+    room:{verse:{section:'Verse', ref:.75, k:0}, drops:{'Drop A':{ref:.30, k:4}, 'Drop B':{ref:.50, k:3}}, max:1},
   },
-  mix:{stems:STEM_MIX, duckRelease:.09, output:1.3},
+  mix:{stems:STEM_MIX, duckRelease:.09, output:1.36},
   // BACK. lands on F minor: the drop kick settles on F1, the sub falls F2 to F0.
   sound:{dropKick:{top:240, knee:56, settle:43.65}, subDrop:{from:87.31, to:21.83}, sawRiser:[53, 77]},
   band,

@@ -14,7 +14,7 @@
 // The clock: f = floor((performance.position() + avOffset) · 24). position() is the audio
 // context's time since the song's start, less the output latency, so the picture is drawn for
 // the sound that is reaching the speakers. Paused, the picture holds on the paused time.
-import {Performance, buildGraph, prepare, scheduleStep} from '../../allhands/engine.js';
+import {Performance, buildGraph, prepare, scheduleStep, scheduleColdOpen} from '../../allhands/engine.js';
 import {createCompositor} from '../gl/compositor.js';
 import {createElementPool} from '../media/element-pool.js';
 import {createStutterCache} from '../media/stutter-cache.js';
@@ -26,14 +26,19 @@ const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 // holds the requested time, with the song-level state (the call's band-pass) set as if it had
 // played from the top. Everything else (levels, analysers, stop, the mobile audio session) is
 // the engine's own.
+// options.coldOpen: the parts prepareColdOpen() cut for this plan. Started inside the cold open
+// (before plan.coldOpen.resume) the song starts from the top with them in front of it: the
+// impact, then the rewind, picture and sound together.
 export class StudioPerformance extends Performance {
   startAt(plan, buffers, options, onEnd, lady, seconds = 0) {
     this.stop(true);
+    const cold = options?.coldOpen?.channels && plan.coldOpen && seconds < plan.coldOpen.resume ? options.coldOpen : null;
     let step = 0;
-    while (step < plan.totalSteps && plan.timing[step + 1] <= seconds) step++;
+    if (!cold) while (step < plan.totalSteps && plan.timing[step + 1] <= seconds) step++;
     const ctx = this.ctx, graph = this.graph = buildGraph(ctx, options, plan), song = prepare(plan, buffers, lady);
     const start = ctx.currentTime + .12, t0 = this.t0 = start - plan.timing[step];
     graph.oscillators.forEach(o => o.start(start));
+    if (cold) scheduleColdOpen(graph, cold, t0);
     if (plan.call && step > 0) {
       if (step >= plan.call.until) { graph.full.gain.value = 1; graph.call.gain.value = 0; }
       else { graph.full.gain.value = 0; graph.call.gain.value = 1.6; }
@@ -99,7 +104,7 @@ export function createPreview({canvas, program, plan, shots, song = {}, composit
     const at = held >= prog.duration - 1 / FPS ? 0 : held;
     try {
       await perf.unlock();
-      const from = perf.startAt(plan, song.buffers || new Map(), {mode:voice}, () => { if (playing) { playing = false; held = prog.duration - .5 / FPS; emit(); } }, song.lady, at);
+      const from = perf.startAt(plan, song.buffers || new Map(), {mode:voice, coldOpen:song.coldOpen}, () => { if (playing) { playing = false; held = prog.duration - .5 / FPS; emit(); } }, song.lady, at);
       held = from; audioOk = true;
     } catch (e) { audioOk = false; throw e; }
     playing = true; emit();

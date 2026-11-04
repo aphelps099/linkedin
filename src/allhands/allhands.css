@@ -102,9 +102,10 @@ a{color:inherit;text-decoration:none}
 .ah-tile:hover{border-color:var(--faint)}
 .ah-tile strong{position:relative;font:600 15px/1.1 var(--sans);letter-spacing:-.01em}
 .ah-tile>span:not(.ah-meter){position:relative;font-size:12px;line-height:1.25;color:var(--dim)}
-.ah-tile small{position:absolute;top:11px;left:12px;font:500 9px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--live)}
+.ah-tile small{position:absolute;top:11px;left:12px;display:flex;align-items:center;gap:5px;font:500 9px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--paper)}
+.ah-tile small::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--live)}
 .ah-tile.muted{opacity:.42}
-.ah-tile.muted small{color:var(--leave)}
+.ah-tile.muted small::before{background:var(--leave)}
 .ah-meter{position:absolute;inset:0;pointer-events:none}
 .ah-meter i{position:absolute;left:0;right:0;bottom:0;height:100%;background:linear-gradient(to top,rgba(23,71,255,.62),rgba(23,71,255,.08));transform-origin:bottom;transform:scaleY(0);transition:transform 60ms linear}
 .ah-modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));margin-top:18px;border:1px solid var(--rule)}

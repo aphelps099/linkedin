@@ -112,17 +112,23 @@ export function demux(buffer) {
 }
 
 // ---- one stream: a file, its decoder, GOP-at-a-time decode -----------------------------------
-function createStream(url, {fetcher, ledger, keep, onBytes}) {
-  let file = null, decoder = null, loading = null, pending = null, closed = false;
+// fallback {url, frames}: for a reversed proxy. When the reversed file is missing (404: nothing
+// uploaded yet, a fresh checkout) or switched off, the stream decodes the forward file instead
+// and numbers its frames backwards, k = N − 1 − forward frame, exactly the reversed proxy's
+// frame order, so every key and cache entry stays the same.
+function createStream(url, {fetcher, ledger, keep, onBytes, fallback = null, force = false}) {
+  let file = null, decoder = null, loading = null, pending = null, closed = false, flipped = false;
   const byTs = new Map();
   async function load() {
     if (file) return file;
     loading ??= (async () => {
-      const res = await fetcher(url);
-      if (!res.ok) throw Error(`decoder: ${url} answered ${res.status}`);
+      let res = force && fallback ? null : await fetcher(url);
+      if ((!res || res.status === 404 || res.status === 410) && fallback) { res = await fetcher(fallback.url); flipped = true; }
+      if (!res.ok) throw Error(`decoder: ${flipped ? fallback.url : url} answered ${res.status}`);
       const buf = await res.arrayBuffer();
       file = demux(buf);
-      for (const s of file.samples) byTs.set(s.timestamp, s.display);
+      if (flipped && fallback.frames && file.frames !== fallback.frames) throw Error(`decoder: ${fallback.url} has ${file.frames} frames, the shot ${fallback.frames}; the reversed order would not line up`);
+      for (const s of file.samples) byTs.set(s.timestamp, flipped ? file.frames - 1 - s.display : s.display);
       onBytes?.(buf.byteLength);
       return file;
     })();
@@ -146,14 +152,24 @@ function createStream(url, {fetcher, ledger, keep, onBytes}) {
     });
     decoder.configure({codec:file.codec, description:file.description, codedWidth:file.width, codedHeight:file.height, optimizeForLatency:true, hardwareAcceleration:'prefer-software'});
   }
-  // Decode the whole GOP holding display frame k; returns [{display, data, init}] for the kept frames.
+  // Decode the GOP holding display frame k, from its keyframe through the last frame the
+  // program still wants from it (not to the next keyframe: a master's GOP can be seconds
+  // long); returns [{display, data, init}] for the kept frames. A flipped stream (the forward
+  // file standing in for its reversed proxy) decodes the forward frame N − 1 − k.
   async function decodeGop(k) {
     await load();
     if (closed) return [];
     if (!decoder || decoder.state === 'closed') makeDecoder();
-    const d = file.order[Math.max(0, Math.min(file.frames - 1, k))];
+    const N = file.frames, at = x => flipped ? N - 1 - x : x;
+    const d = file.order[Math.max(0, Math.min(N - 1, at(k)))];
     let a = d; while (a > 0 && !file.samples[a].key) a--;
-    let b = d + 1; while (b < file.frames && !file.samples[b].key) b++;
+    let b = d + 1; while (b < N && !file.samples[b].key) b++;
+    // Shorten the run to the last sample (in decode order) whose frame is wanted, plus the
+    // reorder depth the file has (0 for the proxies: no B-frames).
+    let last = d;
+    for (let i = a; i < b; i++) if (i > last && keep(at(file.samples[i].display))) last = i;
+    const depth = file.samples.slice(a, b).reduce((m, s, j) => Math.max(m, s.display - file.samples[a].display - j), 0);
+    b = Math.min(b, last + 1 + depth);
     pending = {outputs:[], error:null};
     const u8 = new Uint8Array(file.buffer);
     for (let i = a; i < b; i++) {
@@ -169,7 +185,7 @@ function createStream(url, {fetcher, ledger, keep, onBytes}) {
     return out;
   }
   return {
-    url, load, decodeGop,
+    url, load, decodeGop, get flipped() { return flipped; },
     get frames() { return file?.frames ?? null; },
     get bytes() { return file?.buffer.byteLength ?? 0; },
     close() { closed = true; try { if (decoder && decoder.state !== 'closed') decoder.close(); } catch {} decoder = null; file = null; loading = null; },
@@ -179,16 +195,21 @@ function createStream(url, {fetcher, ledger, keep, onBytes}) {
 // ---- the program's decoder -------------------------------------------------------------------------
 // Which file and which frame a video layer shows: the proxy the compile picked
 // (forward, or the reversed proxy at proxyFrame), else the master at srcFrame.
+// A reversed proxy carries the forward file as its fallback (decoded backwards when the
+// reversed one is missing).
 export function layerStream(layer, shot, {media = 'proxy'} = {}) {
   if (!shot || layer.kind !== 'video') return null;
   if (media === 'proxy') {
-    if (layer.reverse && shot.rev) return {url:shot.rev, frame:layer.proxyFrame, dir:'rev'};
+    if (layer.reverse && shot.rev) return {url:shot.rev, frame:layer.proxyFrame, dir:'rev', fallback:{url:shot.proxy ?? shot.src, frames:shot.frames}};
     if (shot.proxy) return {url:shot.proxy, frame:layer.srcFrame, dir:'fwd'};
   }
   return {url:shot.src, frame:layer.srcFrame, dir:'master'};
 }
 
-export function createFrameDecoder({program, shots, from = 0, to = program.frames, ledger = frameLedger(), fetcher = (u, o) => fetch(u, o), media = 'proxy', horizon = 24, budget = 512 << 20} = {}) {
+// reversed: false never asks for a reversed proxy (the forward file decoded backwards
+// instead: production before the upload, and the test of that path). budget: the frame cache's
+// ceiling; past it the entries used furthest ahead go first (a 1080p master's frame is 3 MB).
+export function createFrameDecoder({program, shots, from = 0, to = program.frames, ledger = frameLedger(), fetcher = (u, o) => fetch(u, o), media = 'proxy', horizon = 24, budget = 512 << 20, reversed = true} = {}) {
   const shotMap = shots instanceof Map ? shots : new Map((shots.shots ?? shots).map(s => [s.id, s]));
   // The schedule: for each output frame, the (stream, frame) keys it shows; every frame each key is used on.
   const needs = new Array(to - from), uses = new Map(), lastUse = new Map(), streamLast = new Map();
@@ -198,7 +219,7 @@ export function createFrameDecoder({program, shots, from = 0, to = program.frame
       const st = layerStream(l, shotMap.get(l.shotId), {media});
       if (!st) continue;
       const key = `${st.url}#${st.frame}`;
-      keys.push({layer:l.clipId, key, url:st.url, frame:st.frame, shot:shotMap.get(l.shotId)});
+      keys.push({layer:l.clipId, key, url:st.url, frame:st.frame, shot:shotMap.get(l.shotId), fallback:st.fallback ?? null});
       if (!uses.has(key)) uses.set(key, []);
       if (uses.get(key).at(-1) !== f) uses.get(key).push(f);
       lastUse.set(key, f); streamLast.set(st.url, f);
@@ -209,23 +230,32 @@ export function createFrameDecoder({program, shots, from = 0, to = program.frame
   const nextUse = (key, g) => { const u = uses.get(key); if (!u) return Infinity; let lo = 0, hi = u.length; while (lo < hi) { const mid = (lo + hi) >> 1; if (u[mid] < g) lo = mid + 1; else hi = mid; } return lo < u.length ? u[lo] : Infinity; };
   const soon = (key, f) => nextUse(key, f) <= f + horizon;
   const streams = new Map(), cache = new Map(), out = new Map();
-  let now = from, bytes = 0, peakBytes = 0, peakEntries = 0, gops = 0, decoded = 0, fileBytes = 0, filesOpened = 0;
-  const stats = () => ({cacheBytes:bytes, peakBytes, entries:cache.size, peakEntries, gops, decoded, streams:streams.size, filesOpened, fileBytes});
-  const streamOf = url => {
+  let now = from, bytes = 0, peakBytes = 0, peakEntries = 0, gops = 0, decoded = 0, fileBytes = 0, filesOpened = 0, evicted = 0;
+  const stats = () => ({cacheBytes:bytes, peakBytes, entries:cache.size, peakEntries, gops, decoded, evicted, streams:streams.size, filesOpened, fileBytes, flipped:[...flippedUrls]});
+  const flippedUrls = new Set();
+  const streamOf = (url, fallback) => {
     let s = streams.get(url);
     if (!s) {
       filesOpened++;
-      s = createStream(url, {fetcher, ledger, keep:k => soon(`${url}#${k}`, now), onBytes:n => { fileBytes += n; }});
+      s = createStream(url, {fetcher, ledger, keep:k => soon(`${url}#${k}`, now), onBytes:n => { fileBytes += n; }, fallback, force:!reversed});
       streams.set(url, s);
     }
     return s;
   };
+  // Over budget: drop the entries whose next use is furthest away (never one this frame shows).
+  function trim(f) {
+    if (bytes <= budget) return;
+    const mine = new Set((needs[f - from] || []).map(n => n.key));
+    const order = [...cache.keys()].filter(k => !mine.has(k)).map(k => [k, nextUse(k, f)]).sort((a, b) => b[1] - a[1]);
+    for (const [k] of order) { if (bytes <= budget) break; bytes -= cache.get(k).bytes; cache.delete(k); evicted++; }
+  }
   async function prepare(f) {
     now = f;
     const missing = new Map();
-    for (const n of needs[f - from] || []) if (!cache.has(n.key)) { if (!missing.has(n.url)) missing.set(n.url, new Set()); missing.get(n.url).add(n.frame); }
+    const fallbackOf = new Map();
+    for (const n of needs[f - from] || []) if (!cache.has(n.key)) { if (!missing.has(n.url)) missing.set(n.url, new Set()); missing.get(n.url).add(n.frame); fallbackOf.set(n.url, n.fallback); }
     await Promise.all([...missing].map(async ([url, wanted]) => {
-      const s = streamOf(url);
+      const s = streamOf(url, fallbackOf.get(url));
       for (const k of [...wanted].sort((a, b) => a - b)) {
         if (cache.has(`${url}#${k}`)) continue;
         const list = await s.decodeGop(k);
@@ -241,10 +271,13 @@ export function createFrameDecoder({program, shots, from = 0, to = program.frame
           if (!near) throw Error(`decoder: ${url} gave no frame for ${k}`);
           cache.set(`${url}#${k}`, near); bytes += near.bytes;
         }
+        if (s.flipped) flippedUrls.add(url);
+        trim(f);
       }
     }));
     peakBytes = Math.max(peakBytes, bytes); peakEntries = Math.max(peakEntries, cache.size);
-    if (bytes > budget) throw Error(`decoder: the frame cache holds ${(bytes / 2 ** 20).toFixed(0)} MB, over its ${(budget / 2 ** 20).toFixed(0)} MB budget`);
+    trim(f);
+    if (bytes > budget) throw Error(`decoder: frame ${f} alone needs ${(bytes / 2 ** 20).toFixed(0)} MB of decoded frames, over the cache's ${(budget / 2 ** 20).toFixed(0)} MB budget`);
   }
   // A VideoFrame of the layer's exact source frame, for compositor.drawFrame's sources().
   function source(layer) {

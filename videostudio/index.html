@@ -32,9 +32,25 @@
   <aside class="vs-panel">
     <div class="vs-title">
       <span class="vs-kicker">Drop Edition 60 · Draft cut</span>
-      <h1>Circle Back</h1>
-      <p>The film on the audio clock, composited the way it exports. Every cut lands on its frame; every peg lights before its&nbsp;sound.</p>
+      <h1 data-track-title>Circle Back</h1>
+      <p>The film on the audio clock, composited the way it exports. Every cut lands within half a frame of its beat; every hit lands on the frame its sound is heard&nbsp;in.</p>
     </div>
+
+    <section class="vs-block vs-song" aria-label="Song">
+      <header><h2>Song</h2><span data-song-mode>The post chooses</span></header>
+      <div class="vs-song-tracks" role="radiogroup" aria-label="Track" data-tracks>
+        <button type="button" role="radio" data-track="circle-back" aria-checked="false"><b>Circle Back</b><small>120 BPM</small></button>
+        <button type="button" role="radio" data-track="humbled-and-honored" aria-checked="false"><b>Humbled and Honored</b><small>92 BPM</small></button>
+        <button type="button" role="radio" data-track="hustle" aria-checked="false"><b>Hustle</b><small>130 BPM</small></button>
+        <button type="button" role="radio" data-track="auto" aria-checked="true" class="vs-song-auto"><b>Let the post choose</b><small>The song and her lines</small></button>
+      </div>
+      <p class="vs-song-line" data-song-line></p>
+      <details class="vs-post" data-post-panel>
+        <summary><span>Post</span><em data-post-summary>The sample</em></summary>
+        <textarea data-post rows="6" maxlength="3000" aria-label="LinkedIn post to cut the film to"></textarea>
+        <p><button type="button" class="vs-post-go" data-post-go>Cut this post</button><button type="button" class="vs-post-sample" data-post-sample>Use the sample</button></p>
+      </details>
+    </section>
 
     <div class="vs-transport">
       <button class="vs-play" data-play type="button" aria-label="Play" disabled><i aria-hidden="true"></i><span>Play</span></button>

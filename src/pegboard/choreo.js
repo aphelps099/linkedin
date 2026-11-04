@@ -109,7 +109,9 @@ export function buildScreens(plan, {table} = {}) {
       const r = ladderLook(e), k = [1, 1, 1, 1, 2, 3, 3, 4][r] ?? 1;
       add({...base, reveal:r < 2 ? 'typewriter' : r < 4 ? 'pop' : 'steady', k, tone:r >= 2 && r < 4 && Math.round(e.at * 2) % 4 >= 2 ? 'white' : 'blue',
         fx:{rowShift:r >= 4 ? [0, -1, 0, 1][Math.round(e.at * 2) % 4] : 0, sparkle:r === 7 ? clamp((e.at % 16) / 8) : 0}});
-    } else if (e.role === 'tag') add({...base, reveal:'typewriter', tone:'white', sockets:0});
+    // Her tag holds the board until it goes black (a frame past her envelope's end), so the
+    // typewriter's last letter is up on the last frame she is heard in.
+    } else if (e.role === 'tag') add({...base, to:Math.max(base.to, plan.choke?.tagEnd ?? base.to) + TAG_TAIL + FRAME, reveal:'typewriter', tone:'white', sockets:0});
     else if (e.role === 'impact') add({...base, to:t0 + 2.6 * BEAT, reveal:'centre', k:3, tone:'white', fx:{outline:true}, ignite:true});
     else if (e.role === 'sink') add({...base, to:T(plan, marksOf(plan).sinkEnd), reveal:'sparkle', k:2, tone:'deep', fx:{slow:true, tape:true}});
     else if (e.role === 'stop') add({...base, to:t0 + 1.2, reveal:'typewriter', tone:'white', fx:{stop:true}});
@@ -140,19 +142,29 @@ export function buildScreens(plan, {table} = {}) {
 
 // ---- board-level light: power, blackout, ignition, breakdown ------------------
 
+// The time a frame is painted at is the middle of that frame (a unit lights once
+// its onset is within half a frame: pegLight). So the board goes black on the first
+// frame that starts after her tag has stopped sounding (plan.choke.tagEnd, her
+// envelope's end, plus TAG_TAIL), stays true black, and ignites on the frame that holds
+// the impact. TAG_TAIL: an AAC or Opus encode smears her release on by up to 5 ms just
+// above -70 dBFS (measured on the export: -59 dBFS at her envelope's end, -69 dBFS 4 ms on),
+// so no trace of her voice ever plays over black in the delivered file.
+export const TAG_TAIL = .005;
+export const darkAt = plan => (plan.choke.tagEnd ?? plan.choke.dark ?? T(plan, plan.choke.at) + .49) + TAG_TAIL + FRAME * .5;
+export const igniteAt = plan => T(plan, plan.choke.until) - FRAME * .5;
 export function boardState(plan, t) {
   const state = {sockets:1, exposure:1, bloom:1, ignite:-1};
   if (plan.form !== 'drop60') {
     state.sockets = clamp(t / BEAT);
     return state;
   }
-  const m = marksOf(plan), choke = T(plan, plan.choke.at), impact = T(plan, plan.choke.until), sinkFrom = T(plan, m.sink), sinkTo = T(plan, m.sinkEnd);
-  const build = T(plan, m.build), rise = T(plan, m.rise), dark = plan.choke.dark ?? choke + .49;
+  const m = marksOf(plan), choke = T(plan, plan.choke.at), sinkFrom = T(plan, m.sink), sinkTo = T(plan, m.sinkEnd);
+  const build = T(plan, m.build), rise = T(plan, m.rise), dark = darkAt(plan), lit = igniteAt(plan);
   state.sockets = clamp(t / BEAT);                                        // power on over 1 beat
   if (t >= build && t < rise) state.exposure = .55;                       // the build starts dim
   else if (t >= rise && t < choke) state.exposure = .55 + .45 * clamp((t - rise) / (choke - rise));
-  if (t >= dark && t < impact) { state.sockets = 0; state.exposure = 0; }   // true black, once her tag has ended
-  if (t >= impact && t < impact + 2.6 * BEAT) state.ignite = t - impact;
+  if (t >= dark && t < lit) { state.sockets = 0; state.exposure = 0; }     // true black, once her tag has stopped sounding
+  if (t >= lit && t < lit + 2.6 * BEAT) state.ignite = t - lit;           // one frame fully lit, then the settle
   if (t >= sinkFrom && t < sinkTo) state.bloom = 1.6;
   const stop = plan.tape?.find(x => x.kind === 'stop');
   if (stop) { const s = T(plan, stop.from); if (t >= s) state.exposure *= clamp(1 - (t - s) / (stop.seconds + .2)); }

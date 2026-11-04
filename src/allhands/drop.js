@@ -9,6 +9,7 @@ import {tokens} from './lyrics.js';
 import {slice, LADY_TABLE} from './lady-table.js';
 import {trackOf, castOf} from './songbook/index.js';
 import circleBack from './songbook/circle-back.js';
+import PITCH from './lady-pitch.json' with {type:'json'};
 
 // Circle Back's form, still exported under its old names.
 export {DROP_BARS, DROP_SECTIONS, UNMUTE_BAR, CHOKE, IMPACT_BAR, swingOf, dropLayers, dropCutoff, dropSlots} from './songbook/circle-back.js';
@@ -20,6 +21,43 @@ export function tunedRate(f0, targets = TARGETS) {
   const midi = 69 + 12 * Math.log2(f0 / 440);
   const target = targets.reduce((a, b) => Math.abs(b - midi) < Math.abs(a - midi) ? b : a);
   return {rate:2 ** ((target - midi) / 12), base:target};
+}
+
+// Her pitch (MIDI) over [from, to] seconds of a recording: the median of the
+// voiced 10 ms frames within 6 dB of the span's loudest (the vowels you hear,
+// not the glides into them), from scripts/measure-lady-pitch.py; null when
+// nothing in the span is voiced. A cut is tuned by what it plays, not by the
+// phrase's median: "Let's" sits 2 to 5 semitones above "build.".
+export function pitchOf(file, from, to) {
+  const p = PITCH[file];
+  if (!p) return null;
+  const a = Math.max(0, Math.ceil((from + .008 - p.t0) / p.hop)), b = Math.min(p.m.length - 1, Math.floor((to - .008 - p.t0) / p.hop));
+  let loud = -Infinity;
+  for (let k = a; k <= b; k++) if (p.m[k] && p.e[k] > loud) loud = p.e[k];
+  const v = [];
+  for (let k = a; k <= b; k++) if (p.m[k] && p.e[k] >= loud - 6) v.push(p.m[k] / 10);
+  if (!v.length) return null;
+  v.sort((x, y) => x - y);
+  return v.length % 2 ? v[(v.length - 1) / 2] : (v[v.length / 2 - 1] + v[v.length / 2]) / 2;
+}
+
+// The rate that puts the audio a cut actually plays on `target`, and the gate
+// that plays exactly that audio. The played span (seconds of the recording)
+// depends on the rate (a hit is gated at 0.92 of its period), so it is solved
+// with a span that only ever shrinks: it settles, and the gate then plays
+// precisely the span that was measured. Without a pitch: `fallback`.
+function cutTune(file, cut, target, period, fallback) {
+  const whole = cut[1] - cut[0], limit = period * .92;
+  let played = whole, rate = fallback;
+  for (let pass = 0; pass < 24; pass++) {
+    const m = pitchOf(file, cut[0], cut[0] + played);
+    if (m === null) return {rate:fallback, gate:Math.min(whole / fallback, limit)};
+    rate = 2 ** ((target - m) / 12);
+    const next = Math.min(played, limit * rate);
+    if (next >= played - 1e-12) break;
+    played = next;
+  }
+  return {rate, gate:Math.min(played / rate, limit)};
 }
 
 // Degree d of the pentatonic (pitch classes) counted up from the base note, in
@@ -100,8 +138,8 @@ export function ladyEvents(words, table = LADY_TABLE, {track, cast} = {}) {
         const at = rung.bar * BAR_STEPS + h, period = (rung.hits[i + 1] ?? (rung.hits.length > 1 ? h + (rung.hits[1] - rung.hits[0]) : 16)) - h;
         const st = glide ? glide[0] + (glide[1] - glide[0]) * (i / Math.max(1, rung.hits.length - 1)) : notes[i];
         const {cut, display} = cuts[rung.cut];
-        const rate = baseRate * 2 ** (st / 12), length = (cut[1] - cut[0]) / rate;
-        events.push({role:'ladder', rung:rung.bar - build, file, from:cut[0], to:cut[1], at, rate, gate:Math.min(length, period * STEP * .92),
+        const {rate, gate} = cutTune(file, cut, base + st, period * STEP, baseRate * 2 ** (st / 12));
+        events.push({role:'ladder', rung:rung.bar - build, file, from:cut[0], to:cut[1], at, rate, gate,
           gain:ladder.gainDb, pan:0, blend:rung.blend || 0, midi:base + st, display, period});
       });
     }
@@ -173,7 +211,7 @@ export function arrangeDrop(lyrics, durations, table = LADY_TABLE, options) {
   // A lady table is keyed by her recordings ("NN.wav"); any other object is the
   // options, even {} or {track:undefined} (the render hook's default call).
   if (table && !Object.keys(table).some(k => k.endsWith('.wav'))) { options = table; table = options.table ?? LADY_TABLE; }
-  const {track, cast} = options || {};
+  const {track, cast, coldOpen = false} = options || {};
   const tr = trackOf(track), D = tr.drop, STEP = tr.step;
   const music = {step:STEP, scale:tr.music.scale, resolve:tr.music.resolve, home:tr.music.home, fit:fitter(tr)};
   const lines = [], words = [];
@@ -198,13 +236,62 @@ export function arrangeDrop(lyrics, durations, table = LADY_TABLE, options) {
   // Kick steps, as the band plays them, plus the drop kick on the impact.
   const kicks = [];
   bars.forEach(b => { const own = tr.kicksOf(b.index, b.layers); if (b.layers.impact && !own.includes(0)) own.unshift(0); own.forEach(s => kicks.push(b.index * 16 + s)); });
-  return {form:'drop60', title:'Drop edition', bpm:tr.bpm, step:STEP, swing:tr.swing, key:tr.key, sections:D.sections, bars, lines, words, stutters, lady,
+  const energyTrim = roomTrim(tr, words, timing);
+  const plan = {form:'drop60', title:'Drop edition', bpm:tr.bpm, step:STEP, swing:tr.swing, key:tr.key, sections:D.sections, bars, lines, words, stutters, lady,
     call:{until:D.unmute * BAR_STEPS, dropouts:dropouts(hash(lyrics.hook), D.unmute * BAR_STEPS)},
-    choke:{at:chokeAt, until:D.impact * 16, dark:timing[chokeAt] + (D.dark ?? Math.ceil(((tag ? tag.gate : 0) + .01) * 1000) / 1000)},
+    // tagEnd: when her tag stops sounding (seconds, plan time): its envelope's end, gate and release included.
+    choke:{at:chokeAt, until:D.impact * 16, dark:timing[chokeAt] + (D.dark ?? Math.ceil(((tag ? tag.gate : 0) + .01) * 1000) / 1000), tagEnd:tag ? timing[chokeAt] + ladyLength(tag) : timing[chokeAt]},
     tape:[{kind:'sink', from:D.sink * 16, to:(D.sink + 1) * 16, rate:[1, .5]}, {kind:'stop', from:D.stop.bar * 16 + D.stop.step, seconds:D.stop.seconds}],
     timing, finale:false, totalSteps, duration:timing[totalSteps] + .6,
-    track:tr.id, trackTitle:tr.title, kicks,
+    track:tr.id, trackTitle:tr.title, kicks, energyTrim,
     marks:{unmute:D.unmute * 16, build:D.ladder.rungs[0].bar * 16, rise:D.rise * 16, choke:chokeAt, impact:D.impact * 16, sink:D.sink * 16, sinkEnd:(D.sink + 1) * 16, stop:D.stop.bar * 16 + D.stop.step}};
+  return coldOpen ? withColdOpen(plan) : plan;
+}
+
+// How much of a section Synergy sings: the share of its seconds inside his
+// words (his answers in the build aside).
+export function sungShare(words, timing, section) {
+  const a = timing[section.from * BAR_STEPS], b = timing[section.to * BAR_STEPS];
+  let sung = 0;
+  for (const w of words) { if (w.line < 0) continue; const x = timing[w.at], y = x + w.gate; sung += Math.max(0, Math.min(b, y) - Math.max(a, x)); }
+  return sung / (b - a);
+}
+
+// The room the verse leaves the drops (track.drop.room). On a phone the band's
+// low end is gone, so what a drop has over the verse is mostly Synergy: a dense
+// verse and a sparse hook in the drop flatten it. The verse steps back by the
+// shortfall, measured against the post the mix was set on: for each drop,
+// k * (its reference share - its share), plus kVerse * (the verse's share - its
+// reference); the most any drop needs, up to `max` dB. Zero at the reference
+// post; the same in the live performance and the render (the plan carries it).
+function roomTrim(tr, words, timing) {
+  const R = tr.drop.room;
+  if (!R) return {};
+  const share = name => sungShare(words, timing, tr.drop.sections.find(s => s.name === name));
+  const verse = share(R.verse.section), over = (verse - R.verse.ref) * R.verse.k;
+  const need = Math.max(0, ...Object.entries(R.drops).map(([name, d]) => d.k * (d.ref - share(name)) + over));
+  return need > 1e-6 ? {[R.verse.section]:Math.round(Math.min(R.max, need) * 100) / 100} : {};
+}
+
+// How long one of her events sounds, as engine.js playLady() envelopes it (seconds).
+export const ladyLength = e => Math.min(e.gate, (e.to - e.from) / e.rate + .01);
+
+// The film's cold open (plan.md section 2, signature moment 1), on any track:
+//   0 to 0.75 s: the impact exactly as it sounds at the drop (her impact word,
+//     the drop kick, the sub, the crash), cut from the track's own render;
+//   0.75 to 1 s: the last second of the ladder before the choke, played
+//     backwards at 4x (a tape rewind of the track's own render);
+//   from 1 s: the intro, as it plays without the cold open. The length is unchanged.
+// Seconds are plan time (timing[0] = 0). transports lists the reversed span
+// for the video studio, which locks its REWIND picture to it.
+export const COLD_OPEN = {impact:.75, rewind:.25, rate:4};
+export function withColdOpen(plan) {
+  if (plan.form !== 'drop60') throw Error('The cold open belongs to the Drop Edition.');
+  const T = plan.timing, impactAt = T[plan.marks.impact], choke = T[plan.marks.choke], hit = plan.lady.find(e => e.role === 'impact');
+  const until = COLD_OPEN.impact, to = until + COLD_OPEN.rewind, sourceFrom = choke, sourceTo = choke - COLD_OPEN.rewind * COLD_OPEN.rate;
+  const rewind = {from:until, to, rate:COLD_OPEN.rate, sourceFrom, sourceTo};
+  return {...plan, coldOpen:{impact:{at:0, until, source:impactAt, word:hit ? hit.display : null, file:hit?.file ?? null}, rewind, resume:to},
+    transports:[{kind:'rewind', at:until, len:to - until, audio:true, rate:COLD_OPEN.rate, sourceFrom, sourceTo}]};
 }
 
 // Seeded call-audio dropouts in the muted intro: three short holes, 40–80 ms,

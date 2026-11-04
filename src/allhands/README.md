@@ -98,6 +98,17 @@ in `lady-table.js`. Pick the form on the page under **The song**; Sound check
 
 **The build ladder:**
 - The ladder climbs the A-minor pentatonic from G3, so every rung is in key.
+- Each cut is tuned by the pitch of the audio it actually plays: "Let's" sits 2
+  to 5 semitones above "build.", so tuning the short cuts by the phrase's median
+  left the fast rungs up to 240 cents sharp. `scripts/measure-lady-pitch.py`
+  writes a pitch track for all 57 recordings (YIN, 10 ms frames with their
+  level, `lady-pitch.json`); `drop.js` tunes each hit by the median of the
+  voiced frames it plays that sit within 6 dB of its loudest (its vowel, not
+  the glide into it) and gates the hit to exactly that span. In the render,
+  every rung of the default ladder lands within 40 cents of its declared note
+  on every track and on three different pitch estimators. A whole phrase falls about 5 semitones and
+  "Let's" scoops up about 5.5, so how far a rung is from its note depends on
+  the estimator.
 - The build's swing tightens from .12 to 0, and the drum bus high-passes upward.
 - She is pulled further into Synergy's vocoder at each rung.
 - In bar 18 she and Synergy's stammer trade 16ths.
@@ -196,9 +207,56 @@ the same meaning: `timing` (Float64Array, seconds per 16th, swing included),
 `lady`, `choke` `{at, until}`, `tape`, `duration`, `bpm`, `key`, `step`. The
 song book adds: `track`, `trackTitle`, `kicks` (the band's kick steps),
 `marks` (`unmute`, `build`, `rise`, `choke`, `impact`, `sink`, `sinkEnd`,
-`stop`, all in 16ths), `choke.dark` (seconds: the Peg Board goes black) and
+`stop`, all in 16ths), `choke.dark` (seconds: the tag's gate; the Peg Board now
+goes black from `choke.tagEnd`, below) and
 `period` on ladder events (16ths to the next retrigger). Never assume 120 BPM
 or a whole number of frames per 16th: read `plan.step` and `plan.timing`.
+
+P4 adds, on every Drop Edition plan (seconds are plan time, `timing[0] = 0`):
+
+- `choke.tagEnd`: when her tag stops sounding: the tag's start plus its gate
+  and release, exactly as `playLady()` envelopes it (`drop.js ladyLength`).
+  Circle Back's is 39.608 s, 118 ms after `choke.dark` (39.49 s). choreo's
+  `boardState` and the video studio go black on the first frame after it plus
+  the engine's latency and a codec's 5 ms tail (Circle Back frame 952): a board or
+  picture that goes black at `tagEnd` goes black when she stops. The mix itself
+  reaches the speakers about 16 ms after plan time (the bus compressors'
+  look-ahead), as every other cue does.
+- `energyTrim`: `{Verse: dB}`, the room the verse leaves the drops (below).
+  `{}` when there is none.
+
+and, with `arrangeDrop(lyrics, durations, {track, cast, coldOpen:true})`:
+
+```js
+plan.coldOpen = {
+  impact:{at:0, until:.75, source:40.0, word:'BACK.', file:'06.wav'},   // source: the impact it copies
+  rewind:{from:.75, to:1, rate:4, sourceFrom:39.0, sourceTo:38.0},      // plays sourceFrom back to sourceTo
+  resume:1,                                                             // the song as it is, from here
+};
+plan.transports = [{kind:'rewind', at:.75, len:.25, audio:true, rate:4, sourceFrom:39.0, sourceTo:38.0}];
+```
+
+The cold open (plan.md section 2, signature moment 1) is the film's first
+second on any track: 0-0.75 s is the impact as the drop plays it (her impact
+word, the drop kick, the sub, the crash: the track's own render from
+`impact.source`, sample for sample), 0.75-1 s is the last second of the ladder
+before the choke rewound at 4x (`sourceFrom` back to `sourceTo`, filtered so
+the 4x does not alias), and from 1 s the song is exactly what it is without the
+cold open, so the length does not change. At film time t in the rewind the
+sound is source time `sourceFrom - rate * (t - from)`: lock a REWIND picture to
+that. Equal-power crossfades of 6 ms make the two joins.
+
+Off unless asked for: the page arranges without it and sounds as before. To
+hear it: `render(plan, …)` plays a plan that carries `coldOpen` (or
+`render(plan, buffers, {coldOpen:true}, lady)` adds it; `{coldOpen:false}`
+leaves it out). Offline the whole song is its own source; an excerpt that
+starts at bar 0 renders the song from the top to the bar after the impact
+first, which gives the same samples. Live, `await prepareColdOpen(plan,
+buffers, lady)` and then `Performance.start(plan, buffers, {…, coldOpen:parts})`
+(a quick source render, the same music; `{exact:true}` renders from the top,
+the same samples). A transport of your own calls `scheduleColdOpen(graph, parts,
+t0)`. The render hook takes `coldOpen:true`:
+`node scripts/render-allhands.mjs` with `--cold-open`.
 
 ### The cast
 
@@ -226,10 +284,41 @@ A role that finds no gap is left out; the song plays without it. A recast
 ladder stays in key: rungs are scale degrees above whichever note she is tuned
 to. **Let the post choose** in the Song picker casts the post (see Casting).
 
-### Circle Back is unchanged: the proof
+### Renders are the same bytes (exact.js)
 
-A WAV can not be byte-compared: Chromium's Web Audio sums fan-in connections in
-a non-deterministic order, so two renders of the same code, same page, differ.
+Two renders of the same plan are now byte-identical, in the same page or in
+fresh browsers. Chromium adds a node's input connections in an order that
+changes from run to run, and float addition is not associative, so with three
+or more inputs sounding at once every render differed in its last bits, which
+the bus compressors turned into audible LSBs (up to 16 LSB, and up to 212 LSB
+at the call audio's quantizer steps). A second drift: when the last stereo
+voice left a bus at a random moment (the engine's `onended` disconnects), the
+filters after it re-created their kernels and lost their state.
+
+`exact.js` fixes both without touching what the graph connects
+(`check-songbook` proves the connections identical):
+
+- Every input hears at most two connections at once; two inputs are exact
+  (a + b = b + a), and a silent input adds exact zeros.
+- Voices join a bus through its head, a unity gain with a fixed channel count:
+  the most any of its voices has, so every bus hears the layout it always had.
+- A head sums its voices on lanes: one voice per lane at a time, by its
+  scheduled start and stop plus 0.5 s of tail. Lanes chain, two inputs per link.
+  The busiest bus (the drums) needs about 60 lanes.
+- Offline, a voice is attached to its lane at a suspend point before it starts
+  and detached at one after it ends (every half second), so every graph change
+  lands on the same render quantum, and the render only carries the voices that
+  can sound: a 60 s render takes about 25 s instead of 78 s.
+- Live, connections are placed at the end of the task that made them.
+
+`node scripts/check-review-audio.mjs --url http://localhost:PORT` renders every
+track twice in fresh browsers and compares the bytes.
+
+### Circle Back before the song book: the proof
+
+Before exact.js a WAV could not be byte-compared: Chromium's Web Audio summed
+fan-in connections in a non-deterministic order, so two renders of the same
+code, same page, differed.
 Measured on today's code before any change: 422,248 of 2,672,460 frames
 differ, max 16 LSB (−66 dBFS), rms 0.39 LSB; a 40-oscillator sum into one gain
 node shows the same (3.6e-7), while a convolver, a compressor, a 4×
@@ -254,21 +343,70 @@ hand table's, so at 1.1× the tag ends at 39.608 s and the last sample sounds at
 1.2× (or capping its gate at 0.53 s) would give it 470 ms; the other tracks
 already do this.
 
+### The verse's room for the drops
+
+On a phone (mono, 300 Hz to 8 kHz) the band's low end is gone, and what is
+left of a drop is mostly Synergy: in the stems, his voice sits 10 to 17 dB
+above the band through the phone filter. So a drop's phone lift over the verse
+followed how much he sings: over 12 posts, Drop A's phone loudness correlates
+with his share of Drop A at 0.87 (Circle Back) and 0.95 (Humbled and Honored),
+and the mixes had been set on the sample post, whose hook fills Drop A more
+than any other. A dense verse and a short hook failed the +2.5 LU gate on 8 of
+11 posts on both tracks. Adding band in the drop does not move it: the drop sits
+on the limiter, which takes the extra bass back out of the voice (Humbled and
+Honored's 808 driven harder: +0.0 LU on the phone).
+
+So the verse steps back by the shortfall (`drop.js roomTrim`, from the plan, so
+the page and the render do the same): for each drop, k × (its reference share −
+its share), plus kVerse × (the verse's share − its reference), the most any
+drop needs, up to a ceiling. `track.drop.room` holds the references, set on
+the post each mix was set on:
+
+| Track | Verse | Drop A | Drop B | Max | Trim over the 61 posts |
+|---|---|---|---|---|---|
+| Circle Back | ref .727, k 3 | ref .458, k 8 | ref .670, k 4 | 2.5 dB | 0 on the sample, up to 1.9 dB |
+| Humbled and Honored | k 0 | ref .40, k 14 | ref .55, k 4 | 2.5 dB | up to 2.5 dB |
+| Hustle | k 0 | ref .30, k 4 | ref .50, k 3 | 1 dB | up to 0.3 dB |
+
+Humbled and Honored's Drop A stabs also moved an octave up (brighter, ×1.25),
+and its output and Hustle's rose to 1.36 to keep −10 LUFS with the quieter
+verses. Circle Back's sample post plays exactly as before.
+
+**Hustle, bars 26-28.** At 130 BPM "Read that again." needs nine 16ths, and the
+bar-26 hook (window 14, plus its two-16th overrun) left eight at most, so her
+line was lost on 35 of 61 posts. Now the hook takes 13, Synergy reads it again
+from 27:10 (window 10), and the outro's hook starts at 28:8. With the real
+eSpeak durations of all 61 posts (`scripts/fixtures/allhands-durations.json`)
+her line is placed on every post, on every track, with today's cast and with
+the post's own.
+
+**Hustle's verses** give Synergy's consonants room: the organ's verse low-pass
+is 2 kHz (was 2.8), the hats, open hats and the printer play at 0.7 under a
+verse, and the keys step back to 0.5 under a sung word (was 0.6).
+
 ### Gates per track
 
-`scripts/measure-allhands.py` with each render's plan JSON, sample post
-(fixture posts 1 and 2 in brackets). Silence: from the tag's end to BACK.
+`scripts/measure-allhands.py` with each render's plan JSON. Silence: from
+`choke.tagEnd` (plus the 16 ms look-ahead) to BACK. Sample post, P4:
 
 | Measure | Circle Back | Humbled and Honored | Hustle |
 |---|---|---|---|
-| Integrated | −10.23 LUFS | −10.84 (−10.90, −10.71) | −10.53 (−10.75, −10.49) |
-| True peak | −1.10 dBTP | −1.34 (−1.20, −1.27) | −1.09 (−1.09, −1.10) |
-| LRA | 7.0 LU | 6.2 (7.0, 6.7) | 7.9 (7.3, 7.2) |
-| Drop A over verse, mix / phone | +4.64 / +2.81 | +4.28 / +2.87 | +4.42 / +2.59 |
-| Drop B over verse, mix / phone | +4.72 / +3.56 | +4.14 / +2.62 | +5.76 / +4.81 |
+| Integrated | −10.17 LUFS | −10.16 | −10.27 |
+| True peak | −1.10 dBTP | −1.24 | −1.09 |
+| LRA | 7.1 LU | 6.2 | 7.8 |
+| Drop A over verse, mix / phone | +4.64 / +2.81 | +4.81 / +3.30 | +4.53 / +2.58 |
+| Drop B over verse, mix / phone | +4.71 / +3.56 | +4.62 / +3.08 | +5.78 / +4.75 |
 | Silence | 0.38 s, −inf dBFS | 0.66 s, −inf | 0.53 s, −inf |
 | Clipped samples | 0 | 0 | 0 |
-| Side/mid Drop A / B (warn only) | −20.3 / −15.6 | −12.1 / −11.1 | −10.4 / −15.8 |
+| Side/mid Drop A / B (warn only) | −20.3 / −15.6 | −10.7 / −11.1 | −10.9 / −16.4 |
+
+Over a fixed corpus of 12 posts on every track (the sample and fixtures 0, 1,
+5, 13, 22, 25, 33, 38, 43, 44 and 50; today's cast), with the cold open off
+and on: every gate passes, 72 of 72. The closest calls on the phone: Circle
+Back +2.64 (Drop A) and +2.63 (Drop B), Humbled and Honored +2.78, Hustle
++2.58. Integrated −10.76 to −9.97 LUFS, true peak at most −1.03 dBTP. The
+warnings are the side/mid width (Circle Back and Hustle's Drop B, as before) and
+Humbled and Honored's loudness range on its sparsest posts (up to 8.9 LU).
 
 ### Checks and renders
 
@@ -371,6 +509,17 @@ is the song's title and holds +2; in the other songs the tag is open (1.0).
 A line needs 1.0 of relevance and a quote or a keyword (or, for the tag,
 ladder, bend and lift, 0.7 of topic) to be a recast at all.
 
+**Near-ties.** Lines within 0.3 of the best in a role, today's included, are
+settled by the post's hash weighted by how close each is (as the songs are):
+the chosen line takes the best score and the best takes its, nothing else
+moves. Its reasons say so ("a close call with …").
+
+**The copy line** never ends a quote on a function word (a cue like "Head of"
+takes the post's next word: "Head of Brand"), never quotes someone's family or
+health back at them, drops a lone "thank" or "day", and on Humbled and Honored
+a goodbye or personal news ends "Grateful for this journey.", not "Someone is
+very honored."
+
 **A coherent set.** A beam over the roles (160 states) then pair swaps pick
 the best total under the rules: no recording twice (the tag and its impact
 are one recording, by design), no content word shown twice (−0.8 each), a
@@ -378,10 +527,13 @@ line that is not relevant only when today's line is taken. The impact is
 always the word the tag leaves out.
 
 Over the sample and the 60 fixtures: Circle Back 29, Humbled and Honored 14,
-Hustle 17 of the fixtures (the sample is Circle Back); 0.87 recasts a post,
-23 posts keep today's cast; the tag is recast 15 times, the lift 12, the
-ladder 9, the bend 6, the sink 5, the punct 5, the stop once. The sample
-keeps today's cast exactly: it is the flagship film.
+Hustle 17 of the fixtures (the sample is Circle Back); 1.02 recasts a post,
+20 posts keep today's cast; the tag is recast 15 times, the lift 15, the
+ladder 10, the bend 8, the punct 7, the sink 6, the stop once. The sample
+keeps today's cast exactly: it is the flagship film. "Proud of this… TEAM."
+is still the tag on 5 posts: on 4 of them it is the only line the post is
+about (scores 2.2 to 5.3 against today's 1.6), so only a less relevant line
+could replace it; the near-tie rule moves only close calls.
 
 `settleCast(arrange, lyrics, durations, {track, cast})` is how the page
 arranges: a recast bend, lift or punct that finds no gap in Synergy's line

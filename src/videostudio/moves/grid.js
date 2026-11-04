@@ -32,9 +32,10 @@ function emit(ctx, nameOf, segs) {
 }
 
 // 24. Grid bloom: one tile joins per beat with a "joined" toast; the grid grows 1 → 4 → 6 → 9.
+// ctx.every: steps between joins (default one beat).
 export function gridBloom(ctx) {
-  const w = win(ctx), QS = beatSteps(ctx.plan), members = membersOf(ctx);
-  members.forEach((m, i) => { m.join = w.from + i * QS; });
+  const w = win(ctx), QS = beatSteps(ctx.plan), every = ctx.every ?? QS, members = membersOf(ctx);
+  members.forEach((m, i) => { m.join = w.from + i * every; });
   const segs = members.map((m, i) => {
     const from = m.join, to = i + 1 < members.length ? members[i + 1].join : w.to, cls = bloomClass(i + 1);
     return {from, to, why:`grid bloom: ${i + 1} on the call`, members:members.slice(0, i + 1).map((x, j) => ({m:x, cell:`${cls}.${j}`,
@@ -141,16 +142,17 @@ export function speakerChase(ctx) {
 
 // 38. Leave the meeting: one tile leaves per beat, last in first out, each with a
 // "left the meeting" toast; ctx.pool[0] stays to the end.
+// ctx.every: steps between departures (default one beat).
 export function leaveMeeting(ctx) {
-  const w = win(ctx), QS = beatSteps(ctx.plan), members = membersOf(ctx);
+  const w = win(ctx), QS = beatSteps(ctx.plan), every = ctx.every ?? QS, members = membersOf(ctx);
   members.forEach(m => { m.join = w.from; });
   const n = members.length, segs = [];
   for (let k = 0; k < n; k++) {
-    const from = w.from + k * QS, to = k === n - 1 ? w.to : Math.min(w.to, from + QS);
+    const from = w.from + k * every, to = k === n - 1 ? w.to : Math.min(w.to, from + every);
     if (to <= from) break;
     const left = k ? members[n - k] : null, stay = members.slice(0, n - k), cls = bloomClass(stay.length);
     segs.push({from, to, why:left ? `${name(ctx, left.asset) ?? 'Guest'} left` : 'everyone still here', members:stay.map((m, j) => ({m, cell:`${cls}.${j}`,
-      chrome:left && j === 0 ? {toast:{text:`${name(ctx, left.asset) ?? 'Guest'} left the meeting`, at:0, len:Math.min(QS, to - from)}} : undefined}))});
+      chrome:left && j === 0 ? {toast:{text:`${name(ctx, left.asset) ?? 'Guest'} left the meeting`, at:0, len:Math.min(every, to - from)}} : undefined}))});
   }
   return {clips:emit(ctx, 'leaveMeeting', segs)};
 }

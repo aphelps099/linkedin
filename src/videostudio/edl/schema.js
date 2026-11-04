@@ -10,8 +10,8 @@
 //     fx?:[{type, ...Param}], chrome?:{name, role, mic, speaking:Param, toast, banner, cameraOff},
 //     origin?, scene?, signature?, why?}
 //   BoardCue {id?, at, len, text | {ref}, font?, k?, reveal?, release?, palette?, fx?:{detune, slow, ...}, cell?, z?}
-//   Transport {id?, at, len, kind:'rewind'|'tapestop', audio:true, rate?, from?:At, seconds?}
-//   CameraCue {id?, at, len, zoom, cx, cy, rot, dx, dy:Param, fx?:[...]}   the whole composite
+//   Transport {id?, at, len, kind:'rewind'|'tapestop'|'jump', audio:true, rate?, from?:At, seconds?}
+//   CameraCue {id?, at, len, zoom, cx, cy, rot, dx, dy:Param, fx?:[...], board?, clock?:'song'|'film'}   the whole composite
 //   Override {target, set?:{'dotted.path':value}, rule?:'G7'|'S4', note}   rule: waive that lint for the target
 //
 // Units: at/len/keys/off in 16th steps of the plan (any tempo); `frames` in
@@ -50,7 +50,7 @@ export const REVEALS = ['pop', 'typewriter', 'scanline', 'wipe', 'sparkle', 'cen
 export const RELEASES = ['cut', 'afterglow', 'dissolve'];
 export const PALETTES = ['blue', 'white', 'deep', 'signal'];
 export const FONTS = ['peg9', 'peg5', 'peg3'];
-export const TRANSPORTS = ['rewind', 'tapestop'];
+export const TRANSPORTS = ['rewind', 'tapestop', 'jump'];
 export const MIRRORS = ['x', 'y', 'xy'];
 
 // 'shot:<id>' | 'role:<stem>.<kind>' | 'gen:<name>' | 'gen:color:#rrggbb'
@@ -72,10 +72,11 @@ const isRect = r => isObj(r) && ['x', 'y', 'w', 'h'].every(k => Number.isFinite(
 
 function checkAt(at, path, out) {
   if (typeof at === 'number') { if (!Number.isFinite(at) || at < 0) out.push([path, 'a step must be a finite number of 0 or more']); return; }
-  if (!isObj(at) || typeof at.anchor !== 'string') { out.push([path, 'At is a step number or {anchor, off?, frames?}']); return; }
+  if (!isObj(at) || typeof at.anchor !== 'string') { out.push([path, 'At is a step number or {anchor, off?, frames?, hit?}']); return; }
   if (!/^[a-z]+(:[^#]+)?(#-?\d+)?$/i.test(at.anchor)) out.push([`${path}.anchor`, `cannot read anchor "${at.anchor}"`]);
   for (const k of ['off', 'frames']) if (at[k] !== undefined && !Number.isFinite(at[k])) out.push([`${path}.${k}`, 'must be a finite number']);
-  for (const k of Object.keys(at)) if (!['anchor', 'off', 'frames'].includes(k)) out.push([`${path}.${k}`, 'is not a field of At']);
+  if (at.hit !== undefined && typeof at.hit !== 'boolean') out.push([`${path}.hit`, 'hit is true for a moment tied to a transient (the frame that holds its audible onset)']);
+  for (const k of Object.keys(at)) if (!['anchor', 'off', 'frames', 'hit'].includes(k)) out.push([`${path}.${k}`, 'is not a field of At']);
 }
 function checkFx(list, path, out) {
   if (!Array.isArray(list)) { out.push([path, 'fx is a list of {type, ...}']); return; }
@@ -99,7 +100,7 @@ const FIELDS = {
   repeat:['unit', 'count', 'pingpong', 'vary', 'loop'],
   cue:['id', 'at', 'len', 'text', 'font', 'k', 'reveal', 'release', 'palette', 'fx', 'cell', 'z', 'why'],
   transport:['id', 'at', 'len', 'kind', 'audio', 'rate', 'from', 'seconds', 'signature', 'why'],
-  camera:['id', 'at', 'len', 'zoom', 'cx', 'cy', 'rot', 'dx', 'dy', 'fx', 'why'],
+  camera:['id', 'at', 'len', 'zoom', 'cx', 'cy', 'rot', 'dx', 'dy', 'fx', 'board', 'clock', 'why'],
   override:['target', 'set', 'rule', 'note'],
 };
 const unknown = (obj, kind, path, out) => { for (const k of Object.keys(obj)) if (!FIELDS[kind].includes(k)) out.push([`${path}.${k}`, `is not a field of ${kind}`]); };
@@ -255,6 +256,8 @@ export function validate(edl) {
       if (!(Number.isFinite(c.len) && c.len > 0)) out.push([`${p}.len`, 'len is a positive number of steps']);
       for (const k of ['zoom', 'cx', 'cy', 'rot', 'dx', 'dy']) if (c[k] !== undefined) for (const e of checkParam(c[k], `${p}.${k}`)) out.push(e);
       if (c.fx !== undefined) checkFx(c.fx, `${p}.fx`, out);
+      if (c.board !== undefined && typeof c.board !== 'boolean') out.push([`${p}.board`, 'board is true when the move carries the Peg Board with the picture (default: the board holds still)']);
+      if (c.clock !== undefined && !['song', 'film'].includes(c.clock)) out.push([`${p}.clock`, "clock is 'song' (default: the song time a transport shows) or 'film' (the film's own frames)"]);
     });
   }
   if (!Array.isArray(edl.overrides)) out.push(['overrides', 'overrides is a list']);
@@ -264,7 +267,7 @@ export function validate(edl) {
     unknown(o, 'override', p, out);
     if (typeof o.target !== 'string' || !o.target) out.push([`${p}.target`, 'names a clip id (or clip:<id>, cue:<id>, transport:<id>)']);
     if (o.set !== undefined && !isObj(o.set)) out.push([`${p}.set`, 'is {"dotted.path": value}']);
-    if (o.rule !== undefined && !/^(G([1-9]|1[0-2])|S4)$/.test(o.rule)) out.push([`${p}.rule`, 'names one rule: G1 to G12, or S4 (a shot that needs review)']);
+    if (o.rule !== undefined && !/^(G([1-9]|1[0-3])|S4)$/.test(o.rule)) out.push([`${p}.rule`, 'names one rule: G1 to G13, or S4 (a shot that needs review)']);
     if (typeof o.note !== 'string' || !o.note.trim()) out.push([`${p}.note`, 'every override carries a note saying why']);
   });
   if (edl.template !== undefined && typeof edl.template !== 'boolean') out.push(['template', 'must be true or false']);

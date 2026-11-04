@@ -5,7 +5,8 @@
 // frames. Pure.
 //
 //   At = step                                    a 16th-note step, fractional allowed
-//      | {anchor, off?, frames?}                 a named moment, then `off` steps, then `frames` frames
+//      | {anchor, off?, frames?, hit?}           a named moment, then `off` steps, then `frames` frames;
+//                                                hit:true lands it by the transient rule (below)
 //
 // Anchors:
 //   bar:n                 the downbeat of bar n
@@ -20,16 +21,38 @@
 //   stutter[#n]           the n-th of Synergy's stammered syllables
 // n may be negative: #-1 is the last one.
 
+import {TAG_TAIL} from '../../pegboard/choreo.js';
+
 export const FPS = 24;
-export const PEG_LEAD = .010;        // pegs light on floor((t + .010)·24): they may lead the audio, never lag it
+
+// The timing rule, one for the whole picture:
+//   cuts      land on round(t·24): within half a frame of the beat, early or late.
+//   hits      a picture event tied to a transient (a flash, the ignition, the impact, a punch-in,
+//             a peg popping white on a syllable, a kick or a clap) lands on the frame that contains
+//             the transient's audible onset, t + AUDIO_LATENCY: floor((t + L)·24). The picture leads
+//             the sound by 0 to under one frame and is never late.
+// AUDIO_LATENCY is how long after plan time the rendered sound arrives: the master bus's glue
+// compressor and limiter look ahead, so every transient leaves the engine 720 samples at 44.1 kHz
+// (16.33 ms) after its step. Measured per track on the real render (the first sample within
+// 40 dB of each kick's peak, every kick of the song): 16.33-16.36 ms on all three tracks, and the
+// same on an impulse through the drum bus. check-videostudio-export section 3 measures it again.
+export const AUDIO_LATENCY = Object.freeze({'circle-back':720 / 44100, 'humbled-and-honored':720 / 44100, hustle:720 / 44100});
+export const audioLatency = plan => AUDIO_LATENCY[plan?.track ?? 'circle-back'] ?? 720 / 44100;
+export const PEG_LEAD = audioLatency();     // pegs are hits: floor((t + L)·24)
 
 export const barSteps = plan => plan.barSteps ?? 16;
 export const beatSteps = plan => plan.beatSteps ?? 4;
 
 // A cut at song time t lands on this frame.
 export const cutFrame = (t, fps = FPS) => Math.round(t * fps);
-// A peg that lights at song time t lights on this frame.
-export const pegFrame = (t, fps = FPS) => Math.floor((t + PEG_LEAD) * fps + 1e-9);
+// A picture event tied to a transient at song time t: the frame that holds its audible onset.
+export const hitFrame = (t, plan, fps = FPS) => Math.floor((t + audioLatency(plan)) * fps + 1e-9);
+// A peg that lights at song time t lights on this frame (a hit).
+export const pegFrame = (t, fps = FPS, plan) => hitFrame(t, plan, fps);
+// The choke's frames: true black from the first frame that starts after her tag stops sounding in
+// the delivered file (plan.choke.tagEnd, the codec's tail, the latency); the impact is a hit.
+export {TAG_TAIL};
+export const chokeFrames = (plan, fps = FPS) => plan?.choke ? {black:Math.ceil((plan.choke.tagEnd + TAG_TAIL + audioLatency(plan)) * fps - 1e-9), impact:hitFrame(stepTime(plan, plan.choke.until), plan, fps)} : null;
 
 // Song seconds of a step, fractional steps interpolated inside their step.
 // Outside the table the first and last step lengths extend it.
@@ -114,19 +137,22 @@ export function anchorPoint(plan, anchor) {
 }
 
 // At -> {step, time, frame}. `step` includes `off` but not `frames`; `time` is
-// song seconds (with `frames` applied); `frame` is the cut frame round(time·fps).
+// song seconds (with `frames` applied); `frame` is the cut frame round(time·fps), or with
+// hit:true the frame that holds the audible onset, floor((time + L)·fps).
 export function resolveAt(plan, at, fps = FPS) {
   if (typeof at === 'number') {
     if (!Number.isFinite(at)) throw Error(`step must be a finite number, got ${at}`);
     const time = stepTime(plan, at);
     return {step:at, time, shift:0, frame:cutFrame(time, fps)};
   }
-  if (!at || typeof at !== 'object' || typeof at.anchor !== 'string') throw Error('At must be a step number or {anchor, off?, frames?}');
+  if (!at || typeof at !== 'object' || typeof at.anchor !== 'string') throw Error('At must be a step number or {anchor, off?, frames?, hit?}');
   const p = anchorPoint(plan, at.anchor), off = at.off ?? 0, frames = at.frames ?? 0;
   const base = off === 0 && p.time !== undefined ? p.time : stepTime(plan, p.step + off);
   const shift = frames / fps, time = base + shift;
-  return {step:p.step + off, time, shift, frame:cutFrame(time, fps)};
+  return {step:p.step + off, time, shift, frame:at.hit ? hitFrame(time, plan, fps) : cutFrame(time, fps), ...(at.hit ? {hit:true} : {})};
 }
+// A step as a transient-bound At (hit:true): {anchor:'step:N', hit:true}.
+export const hitAt = (step, extra = {}) => ({anchor:`step:${+(+step).toFixed(6)}`, ...extra, hit:true});
 
 // The span an EDL item covers: from its At for `len` steps. A `frames` offset
 // shifts both ends, so back-to-back vocal cuts (word − 1 f) still abut.

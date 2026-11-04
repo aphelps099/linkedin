@@ -10,6 +10,7 @@ import {shotIndex, resolveCrop, UPSCALE, isInstrument, isRobot, isSynergy} from 
 import {parseAsset} from '../edl/schema.js';
 import {cellRect} from '../layouts.js';
 import {PATTERNS} from '../../allhands/song.js';
+import {trackOf} from '../../allhands/songbook/index.js';
 
 export {stepTime, barSteps, beatSteps, cutFrame, FPS};
 
@@ -82,20 +83,31 @@ export function maxZoomFor(ctx, asset, cellId, clipSpec = {}) {
   return U * crop.h / cell.h;
 }
 
-// Snare (clap) steps, as engine.js drums() plays them: the four-on-the-floor clap
-// on beats 2 and 4, the half-time snare on step 8.
-export function snareSteps(plan, from = 0, to = plan.totalSteps) {
-  const out = [], BS = barSteps(plan);
+// Backbeat hits (snare, clap, snap), as each track's drums() plays them: Circle Back's
+// four-on-the-floor clap on beats 2 and 4 and its half-time snare on step 8; Hustle's two-step
+// and four-on-the-floor snare and clap on 2 and 4; Humbled and Honored's pocket backbeat on 2 and 4
+// and its bounce snare on step 8, both laid back by track.backbeatLate (18 ms).
+// [{step, late}]: late in steps, so stepTime(plan, step + late) is when the hit sounds.
+export function snareHits(plan, from = 0, to = plan.totalSteps) {
+  const out = [], BS = barSteps(plan), lateS = trackOf(plan.track).backbeatLate ?? 0;
   (plan.bars || []).forEach((b, bar) => {
     const L = b.layers || {}, style = L.drums || 'four';
     for (let s = 0; s < BS; s++) {
       const step = bar * BS + s;
       if (step < from || step >= to) continue;
-      if ((style === 'four' && L.clap && PATTERNS.clap.includes(s)) || (style === 'half' && s === 8)) out.push(step);
+      const back = s === 4 || s === 12, held = L.holdBreath && s >= 12;
+      const hit = style === 'four' ? (L.clap && PATTERNS.clap.includes(s)) || (L.snare && back)
+        : style === 'half' || style === 'bounce' ? s === 8
+        : style === 'twostep' ? L.snare && back && !held
+        : style === 'pocket' ? (L.snare || L.snap) && back && !held : false;
+      if (!hit) continue;
+      const late = (style === 'pocket' || style === 'bounce') && lateS ? lateS / (stepTime(plan, step + 1) - stepTime(plan, step)) : 0;
+      out.push({step, late:+late.toFixed(6)});
     }
   });
   return out;
 }
+export const snareSteps = (plan, from, to) => snareHits(plan, from, to).map(h => h.step);
 export const eighths = (from, to) => { const out = []; for (let s = Math.ceil(from / 2) * 2; s < to; s += 2) out.push(s); return out; };
 export const barLines = (plan, from, to) => { const BS = barSteps(plan), out = []; for (let s = Math.ceil(from / BS) * BS; s < to; s += BS) out.push(s); return out; };
 export const ladderEvents = (plan, from, to, rung) => (plan.lady || []).filter(e => e.role === 'ladder' && e.at >= from && e.at < to && (rung === undefined || e.rung === rung));

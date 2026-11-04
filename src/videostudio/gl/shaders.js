@@ -173,6 +173,58 @@ void main() {
   o = vColor * a;
 }`;
 
+// ---- Synergy's mouth row ----------------------------------------------------------------------------
+// The meeting room's drawRobotMouth (src/meeting-room/Participant.jsx), as 22 instanced bars:
+// rgba(74, 255, 112, strength) over the clean plate with the canvas's shadowBlur 2 (a Gaussian
+// of sigma 1 source px under each bar). Each bar is 3.2 × 6 units, 4.3 apart from x −46, at
+// the tracked point, rotated with the head, scaled by the track's scale (uS: output px per
+// unit; uPx: output px per source px). strength = level > .08 ? max(.16, (1 − d/7)·level) : .11,
+// d = (phase − i) mod 22, phase = (t·15) mod 22: speech runs a bright wave along the row; at
+// rest it glows at .11. Masked like the layer it belongs to (cell, iris, opacity, saturation).
+export const MOUTH_VS = HEAD + `
+uniform vec2 uTarget; uniform float uScale;
+uniform vec2 uC; uniform float uAng, uS, uPx, uLevel, uPhase;
+out vec2 vL, vP; flat out float vA;
+void main() {
+  int i = gl_InstanceID;
+  float d = mod(uPhase - float(i) + 22., 22.);
+  vA = uLevel > .08 ? max(.16, (1. - d / 7.) * uLevel) : .11;
+  vec2 c = vec2(float(gl_VertexID & 1), float((gl_VertexID >> 1) & 1));
+  float m = 3.5 * uPx / uS + 1. / (uS * uScale), x0 = -46. + float(i) * 4.3;
+  vec2 l = mix(vec2(x0 - m, -3. - m), vec2(x0 + 3.2 + m, 3. + m), c);
+  vL = (l - vec2(x0 + 1.6, 0.)) * uS;
+  vec2 r = vec2(cos(uAng) * l.x - sin(uAng) * l.y, sin(uAng) * l.x + cos(uAng) * l.y) * uS;
+  vP = uC + r;
+  vec2 p = vP * uScale;
+  gl_Position = vec4(p.x / uTarget.x * 2. - 1., 1. - p.y / uTarget.y * 2., 0., 1.);
+}`;
+export const MOUTH_FS = HEAD + `
+uniform float uScale, uS, uPx, uOpacity, uRadius, uSat, uChroma; uniform vec4 uCell, uIris;
+in vec2 vL, vP; flat in float vA;
+out vec4 o;
+float rrect(vec2 q, vec2 size, float r) { vec2 h = size * .5, d = abs(q - h) - (h - vec2(r)); return length(max(d, 0.)) + min(max(d.x, d.y), 0.) - r; }
+float erf1(float x) { float t = x * x, a = .147; return sign(x) * sqrt(1. - exp(-t * (1.2732395 + a * t) / (1. + a * t))); }
+void main() {
+  vec2 h = vec2(1.6, 3.) * uS, d = abs(vL) - h;
+  float shape = clamp(.5 - (length(max(d, 0.)) + min(max(d.x, d.y), 0.)) * uScale, 0., 1.);
+  float sg = max(uPx, .5 / uScale) * 1.41421356;
+  vec2 a = (h - vL) / sg, b = (-h - vL) / sg;
+  float blur = .25 * (erf1(a.x) - erf1(b.x)) * (erf1(a.y) - erf1(b.y));
+  float as = vA * shape, alpha = as + vA * blur * (1. - as);
+  vec2 q = vP - uCell.xy;
+  float mask = clamp(.5 - rrect(q, uCell.zw, uRadius) * uScale, 0., 1.);
+  if (uIris.x >= 0.) {
+    float R = uIris.x * .5 * length(uCell.zw), e = length(q - uIris.yz * uCell.zw), f = max(uIris.w, 1. / uScale);
+    mask *= clamp((R - e) / f + .5, 0., 1.);
+  }
+  alpha *= mask * uOpacity;
+  if (alpha <= 0.) discard;
+  vec3 g = vec3(74., 255., 112.) / 255.;
+  float l = dot(g, vec3(.2126, .7152, .0722));
+  g = mix(mix(vec3(l), g, uSat), vec3(l), uChroma);
+  o = vec4(g * alpha, alpha);
+}`;
+
 // ---- copies and the post chain ---------------------------------------------------------------------
 export const COPY_FS = HEAD + `
 uniform sampler2D uSrc; out vec4 o;
@@ -208,8 +260,10 @@ void main() {
   vec3 c = texelFetch(uSrc, ivec2(gl_FragCoord.xy), 0).rgb;
   if (uBloomW > 0.) c += uBloomW * texture(uBloom, vUv).rgb;
   c *= uGain;
+  // True black stays 0: grain and dither never lift a pixel nothing lit (the choke, the tape stop's tail).
+  bool black = max(c.r, max(c.g, c.b)) <= 0.;
   uvec3 k = uvec3(uint(gl_FragCoord.x), uint(gl_FragCoord.y), uSeed);
   if (uGrain > 0.) { float l = dot(clamp(c, 0., 1.), vec3(.2126, .7152, .0722)); c += (hash3(k) + hash3(k + uvec3(0u, 0u, 7919u)) - 1.) * uGrain * (.35 + 2.6 * l * (1. - l)); }
   if (uDither > 0.) c += (hash3(k + uvec3(0u, 0u, 104729u)) + hash3(k + uvec3(0u, 0u, 1299709u)) - 1.) * (.5 / 255.);
-  o = vec4(clamp(c, 0., 1.), 1.);
+  o = vec4(black ? vec3(0.) : clamp(c, 0., 1.), 1.);
 }`;

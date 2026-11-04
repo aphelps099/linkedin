@@ -6,7 +6,11 @@
 //
 //   node scripts/export-videostudio.mjs [--format 9:16|1:1|16:9] [--scale 1] [--span 0-1440]
 //       [--edl draft|studio|metronome|file.json] [--track circle-back|hustle|...] [--master]
-//       [--no-audio] [--no-governor] [--out DIR] [--name NAME] [--url http://127.0.0.1:5351 | --port 5351]
+//       [--post FILE] [--auto] [--no-cold-open] [--no-audio] [--no-governor] [--out DIR] [--name NAME] [--url http://127.0.0.1:5351 | --port 5351]
+//
+// The film opens cold (the impact at frame 0, then the rewind), as the monitor's does. --post cuts
+// another post; --auto lets the post choose its track and the lady's lines (casting.js castSong),
+// as /allhands/ and the monitor's Let the post choose do; --track picks one by hand.
 //
 // Without --url it starts its own Vite dev server (the project's config, so the
 // media route and the voice route are there) on --port (default 0: any free port)
@@ -59,20 +63,22 @@ export async function exportPage(browser, origin, {log = () => {}} = {}) {
     X.voice = await m('/src/allhands/voice.js');
     X.lady = await m('/src/allhands/lady.js');
     X.engine = await m('/src/allhands/engine.js');
+    X.casting = await m('/src/allhands/casting.js');
     X.SHOTS = await (await fetch('/src/videostudio/media/shots.json')).json();
     X.treatments = {
       draft:async () => (await m('/src/videostudio/treatments/drop60-draft.js')).drop60Draft,
       studio:async () => (await m('/src/videostudio/studio-film.js')).studioFilm,
     };
-    // The song as the monitor plays it: Synergy's measured words, then the lady.
-    X.song = async ({track, voice = true} = {}) => {
-      const form = X.FORMS.drop60, lyrics = X.L.lyricsFromPost(X.L.SAMPLE_POST), ctx = new OfflineAudioContext(1, 1, 44100);
+    // The song as the monitor plays it: the post's track and cast (auto) or a track by hand,
+    // Synergy's measured words, then the lady; the cold open unless coldOpen is false.
+    X.song = async ({track, voice = true, post, auto = false, coldOpen = true} = {}) => {
+      const form = X.FORMS.drop60, text = post ?? X.L.SAMPLE_POST, lyrics = X.L.lyricsFromPost(text), ctx = new OfflineAudioContext(1, 1, 44100);
+      const casting = auto ? X.casting.castSong(text) : null, playTrack = casting ? casting.track : track;
       let buffers = new Map(), durations = {};
-      if (voice) ({buffers, durations} = await X.voice.loadWords(ctx, track ? form.voiced(lyrics, {track}) : form.voiced(lyrics)));
-      // (Options only when there are any: arrangeDrop reads {track:undefined} as a lady table.)
-      const plan = track ? form.arrange(lyrics, durations, {track}) : form.arrange(lyrics, durations);
+      if (voice) ({buffers, durations} = await X.voice.loadWords(ctx, form.voiced(lyrics, {track:playTrack})));
+      const {plan} = X.casting.settleCast(form.arrange, lyrics, durations, {track:playTrack, cast:casting?.cast, coldOpen});
       const lady = await X.lady.prepareLady(ctx, plan);
-      return {plan, song:{buffers, lady}, voiced:buffers.size};
+      return {plan, song:{buffers, lady}, voiced:buffers.size, casting:casting && {track:casting.track, line:casting.line, recast:casting.recast}};
     };
     // Bytes of the last export, in base64 slices, for the Node side.
     X.slice = (name, at, len) => { const b = X.out[name]; const u = b.subarray(at, at + len); let s = ''; for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode(...u.subarray(i, i + 32768)); return btoa(s); };
@@ -87,11 +93,11 @@ export async function pull(page, name) {
   return Buffer.concat(parts);
 }
 
-// Run one export in the page. spec: {edl:'draft'|'studio'|'metronome'|object, format, scale, span, master, audio:false, governor, track, voice, every}
+// Run one export in the page. spec: {edl:'draft'|'studio'|'metronome'|object, format, scale, span, master, audio:false, governor, track, post, auto, coldOpen, voice, every}
 export async function runExport(page, spec, {onProgress} = {}) {
   if (onProgress) await page.exposeFunction('__exportProgress', onProgress).catch(() => {});
   return page.evaluate(async spec => {
-    const {plan, song, voiced} = await X.song({track:spec.track, voice:spec.voice !== false});
+    const {plan, song, voiced, casting} = await X.song({track:spec.track, voice:spec.voice !== false, post:spec.post, auto:!!spec.auto, coldOpen:spec.coldOpen !== false});
     const format = spec.format ?? '9:16';
     let edl;
     if (spec.edl === 'metronome') edl = X.metronomeEDL(plan, {format, every:spec.every ?? 4});
@@ -102,7 +108,7 @@ export async function runExport(page, spec, {onProgress} = {}) {
       audio:spec.audio === false ? null : 'render', governor:spec.governor !== false, post:spec.post, force:!!spec.force,
       onProgress:p => { if (window.__exportProgress && (p.phase !== 'picture' || p.frame - last >= (spec.every_progress ?? 24) || p.frame === p.frames)) { last = p.frame; window.__exportProgress(p); } }});
     X.out = {mp4:out.mp4, vtt:new TextEncoder().encode(out.vtt), json:new TextEncoder().encode(JSON.stringify(out.sidecar, null, 1))};
-    return {sidecar:{...out.sidecar, edl:undefined}, voiced, name:X.exportName(plan, format), expected:spec.edl === 'metronome' ? X.expectedCuts(plan, edl) : null, cuts:out.program.cuts};
+    return {sidecar:{...out.sidecar, edl:undefined}, voiced, casting, name:X.exportName(plan, format), expected:spec.edl === 'metronome' ? X.expectedCuts(plan, edl) : null, cuts:out.program.cuts};
   }, spec);
 }
 
@@ -128,13 +134,14 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const t0 = Date.now();
   try {
     const {page, errors} = await exportPage(browser, srv.origin, {log:s => console.error(s)});
-    const res = await runExport(page, {edl, format, scale, span, master:flag('master'), audio:flag('no-audio') ? false : undefined, governor:!flag('no-governor'), track:arg('track'), every_progress:+arg('progress', '48')}, {
+    const post = arg('post') ? fs.readFileSync(arg('post'), 'utf8') : undefined;
+    const res = await runExport(page, {edl, format, scale, span, master:flag('master'), audio:flag('no-audio') ? false : undefined, governor:!flag('no-governor'), track:arg('track'), post, auto:flag('auto'), coldOpen:!flag('no-cold-open'), every_progress:+arg('progress', '48')}, {
       onProgress:p => console.log(`${p.phase.padEnd(9)} ${String(p.frame).padStart(5)}/${p.frames} ${(100 * p.fraction).toFixed(1).padStart(5)}%  ${p.msPerFrame ? `${p.msPerFrame.toFixed(0)} ms/frame, ${Math.round(p.eta)} s left` : ''}  ${p.elapsed.toFixed(1)} s`),
     });
     const name = arg('name', res.name.replace(/\.mp4$/, ''));
     const files = await saveExport(page, out, name);
     const s = res.sidecar;
-    console.log(JSON.stringify({files, film:s.film, video:s.video, audio:s.audio && {...s.audio}, hashes:s.hashes, lint:s.lint, msPerFrame:s.stats.msPerFrame, split:s.stats.split, seconds:s.stats.seconds, frames:s.stats.frames, decoder:s.stats.decoder, voiced:res.voiced, errors:errors.length, wall:(Date.now() - t0) / 1000}, null, 1));
+    console.log(JSON.stringify({files, casting:res.casting, film:s.film, video:s.video, audio:s.audio && {...s.audio}, hashes:s.hashes, lint:s.lint, msPerFrame:s.stats.msPerFrame, split:s.stats.split, seconds:s.stats.seconds, frames:s.stats.frames, decoder:s.stats.decoder, voiced:res.voiced, errors:errors.length, wall:(Date.now() - t0) / 1000}, null, 1));
   } finally {
     await browser.close();
     await srv.close();

@@ -5,7 +5,7 @@ import {execFileSync} from 'node:child_process';
 import {lyricsFromPost, tokens, syllables, say, SAMPLE_POST} from '../src/allhands/lyrics.js';
 import {arrange, fitPhrase, melody, voicedWords, slots, stepTime, BARS, BAR_STEPS, STEP, HOST} from '../src/allhands/song.js';
 import {normalizeWords, fixStreamedWave, createAllHandsVoice, espeakWord} from '../server/allhands-voice.js';
-import {arrangeDrop, dropVoicedWords, DROP_BARS, DROP_SECTIONS, swingOf, tunedRate} from '../src/allhands/drop.js';
+import {arrangeDrop, dropVoicedWords, DROP_BARS, DROP_SECTIONS, swingOf, tunedRate, pitchOf, ladyLength} from '../src/allhands/drop.js';
 import {LADY_TABLE, slice} from '../src/allhands/lady-table.js';
 import {FORMS, stepAt, formPlays} from '../src/allhands/forms.js';
 import {TRACKS, TRACK_ORDER, DEFAULT_TRACK, DEFAULT_CAST, LADY_ROLES, trackOf, castOf} from '../src/allhands/songbook/index.js';
@@ -175,7 +175,19 @@ for (const id of TRACK_ORDER) {
     ok(ladder.filter(e => !D.ladder.rungs[e.rung].glide).every(e => penta.includes(pc(e.midi))), `${label}: every rung on the pentatonic`);
     ok(ladder.every((e, i) => { const n = ladder[i + 1]; return !n || T[e.at | 0] + (e.at % 1) * sp + e.gate <= T[n.at | 0] + (n.at % 1) * sp + 1e-6; }), `${label}: each hit ends before the next`);
     const built = LADY_TABLE[ladder[0].file], tuned = tunedRate(built.f0, D.ladder.targets);
-    ok(Math.abs(ladder[0].rate - tuned.rate) < 1e-12 && tuned.base === base && inKey(track, base), `${label}: her ladder tuned to ${base}, in key`);
+    ok(tuned.base === base && inKey(track, base), `${label}: her ladder tuned to ${base}, in key`);
+    // Each cut is tuned by the pitch of what it plays (lady-pitch.json), not the phrase's median.
+    const sung = e => pitchOf(e.file, e.from, e.from + e.gate * e.rate);
+    ok(ladder.every(e => sung(e) === null || Math.abs(sung(e) + 12 * Math.log2(e.rate) - e.midi) < .02), `${label}: every rung's played audio lands on its declared note`);
+    // choke.tagEnd: when her tag stops sounding, from its gate and release.
+    const tagEv = plan.lady.find(e => e.role === 'tag');
+    ok(Math.abs(plan.choke.tagEnd - (T[plan.choke.at] + ladyLength(tagEv))) < 1e-9 && plan.choke.tagEnd > T[plan.choke.at] && plan.choke.tagEnd < T[plan.choke.until] - .35, `${label}: choke.tagEnd ${plan.choke.tagEnd.toFixed(3)} s, when her tag stops`);
+    // The cold open: off unless asked for; asked for, the impact, then the ladder's last second rewound at 4x.
+    const cold = arrangeDrop(lyrics, durations, {track, coldOpen:true}), co = cold.coldOpen, rw = co && co.rewind;
+    ok(!plan.coldOpen && !plan.transports && co && co.impact.at === 0 && co.impact.until === .75 && Math.abs(co.impact.source - T[plan.marks.impact]) < 1e-12 && co.resume === 1
+      && rw.from === .75 && rw.to === 1 && rw.rate === 4 && Math.abs(rw.sourceFrom - rw.sourceTo - (rw.to - rw.from) * rw.rate) < 1e-12 && rw.sourceTo >= T[plan.marks.build] && rw.sourceFrom <= T[plan.marks.choke] + 1e-12
+      && cold.transports.length === 1 && cold.transports[0].kind === 'rewind' && cold.transports[0].audio === true && cold.transports[0].at === .75 && cold.transports[0].len === .25
+      && cold.duration === plan.duration && JSON.stringify(cold.lady) === JSON.stringify(plan.lady), `${label}: the cold open (impact 0-0.75 s, rewind of ${rw?.sourceFrom.toFixed(2)}-${rw?.sourceTo.toFixed(2)} s at 4x, the song from 1 s)`);
     // The choke: silence after the tag, nothing sounding, then BACK. on the impact.
     const choke = T[plan.choke.at], impact = T[plan.choke.until], tag = plan.lady.find(e => e.role === 'tag');
     const sounding = [...plan.words.map(w => [T[w.at], T[w.at] + w.gate]), ...plan.lady.filter(e => e.role !== 'tag').map(e => [T[Math.floor(e.at)] + (e.at % 1) * sp, T[Math.floor(e.at)] + (e.at % 1) * sp + e.gate])];

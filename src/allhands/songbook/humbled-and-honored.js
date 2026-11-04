@@ -194,9 +194,11 @@ function bass(api, b, bar, s, t, T, step) {
 }
 
 function keys(api, b, bar, s, t, T, step) {
-  const {ctx, I, graph} = api, L = b.layers, voicing = b.chord.keys;
+  const {ctx, I, graph} = api, L = b.layers;
   const parts = {comp:[[0, 5, .8], [6, 2, .55], [10, 3, .7], [14, 2, .5]], hold:[[0, 16, .7]], stab:[[0, 3, .9], [6, 2, .65], [11, 4, .8]]}[L.keys];
-  if (parts) for (const [at, length, v] of parts) if (at === s) I.rhodes(ctx, graph.keysFilter, t, voicing, T(step + length) - t - .03, v);
+  // Drop A's stabs sit an octave up and brighter: under the 808 they are what a phone hears of the drop.
+  const stab = L.keys === 'stab', voicing = stab ? b.chord.keys.map(m => m + 12) : b.chord.keys;
+  if (parts) for (const [at, length, v] of parts) if (at === s) I.rhodes(ctx, graph.keysFilter, t, voicing, T(step + length) - t - .03, stab ? v * 1.25 : v, stab ? {bright:1.35} : undefined);
 }
 
 // Kevin: a double-stop on the "and" of two, and every other bar a falling fill.
@@ -246,11 +248,15 @@ export default {
       punct:[21 * 16, 20 * 16 + 14, 20 * 16 + 15, 21 * 16 + 1],
     },
     energy:ENERGY,
+    // The verse's room for the drops (drop.js roomTrim). Here the drop's hook is
+    // what a phone hears of Drop A, so its share alone decides.
+    room:{verse:{section:'Verse', ref:.70, k:0}, drops:{'Drop A':{ref:.40, k:14}, 'Drop B':{ref:.55, k:4}}, max:2.5},
   },
-  mix:{stems:STEM_MIX, room:[3.2, 2.6], keysHp:110, duckRelease:.12},
+  mix:{stems:STEM_MIX, room:[3.2, 2.6], keysHp:110, duckRelease:.12, output:1.36},
   // BACK. lands on C minor: the drop kick settles on C2, the sub falls C3 to C1,
   // the build's saw riser climbs to the dominant.
   sound:{dropKick:{top:220, knee:72, settle:65.41}, subDrop:{from:130.81, to:32.7}, sawRiser:[58, 82]},
   band,
   kicksOf:kickPattern,
+  backbeatLate:LATE,   // the video studio lands its punch-ins on the backbeat as it sounds
 };

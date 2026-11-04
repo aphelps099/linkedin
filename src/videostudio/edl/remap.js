@@ -256,9 +256,12 @@ export function clipTimeMap(clip, ctx) {
 //            the audio reversed over the same span (transport.audio must be true).
 //   tapestop v(t) = Ta + τ − τ²/(2S) for τ = t − Ta < S, then held at Ta + S/2: the
 //            picture slows to a stop on the engine's tape-stop curve.
+//   jump     v(t) = Tfrom + (t − Ta): the picture of another moment, forwards (the cold open
+//            shows the impact at frame 0, where its sound is copied).
 // resolved: {kind, from, to (frames), Ta (song seconds), Tfrom, rate, seconds}
 export function transportTime(tr, t) {
   if (tr.kind === 'rewind') return tr.Tfrom - tr.rate * (t - tr.Ta);
+  if (tr.kind === 'jump') return tr.Tfrom + (t - tr.Ta);
   const tau = t - tr.Ta, S = tr.seconds;
   if (tau <= 0) return t;
   return tau < S ? tr.Ta + tau - tau * tau / (2 * S) : tr.Ta + S / 2;

@@ -9,8 +9,13 @@
 //   const tex = boards.draw({w, h, screens, time, pitch?, sockets?, kick?, gain?})   // WebGLTexture, w×h output px
 //   boards.luma({w, h, screens, time})       predicted luminance (governor.js boardLuma)
 //
-// Pegs light on floor((t + .010)·24): choreo keys every onset to the song time it is given,
-// and the compositor passes frame.board.time, so a peg leads its sound by at most 25 ms.
+// Pegs are hits (edl/anchors.js): each lights on the frame that holds its audible onset. choreo
+// keys every onset to the time it is given, and the compositor passes the middle of the frame
+// less the engine's latency (gl/compositor.js boardTimeOf).
+//
+// safe: the columns type may use, {x0, x1} in region px (the platform-safe area of the format
+// clipped to the region: in 9:16 type keeps left of the right rail, x 944). Lit pegs of a reveal
+// or the ignition may still run edge to edge; words never do.
 import {createBoard} from '../../pegboard/board.js';
 import {createRendererGL} from '../../pegboard/renderer-gl.js';
 import {compileFont, layoutText} from '../../pegboard/font.js';
@@ -31,18 +36,21 @@ export const boardPitch = (w, h) => pitchFor(w, h);
 
 // A board grid for a region: cols × rows at the pitch, centred, plus the stage's fitting
 // rules (largest k that fits, then a narrower face; a full-board title fits on one page).
-export function boardGrid(w, h, pitch = boardPitch(w, h)) {
+export function boardGrid(w, h, pitch = boardPitch(w, h), safe = null) {
   const cols = Math.max(1, Math.floor(w / pitch)), rows = Math.max(1, Math.floor(h / pitch));
   const board = createBoard(cols, rows), layouts = new Map();
   const ox = Math.floor((w - cols * pitch) / 2), oy = Math.floor((h - rows * pitch) / 2), textRows = rows - 1;
+  // The columns type may use: two pegs of margin each side, inside the safe span.
+  const c0 = safe ? Math.max(2, Math.ceil((safe.x0 - ox) / pitch)) : 2, c1 = safe ? Math.min(cols - 2, Math.floor((safe.x1 - ox) / pitch)) : cols - 2;
+  const span = Math.max(1, c1 - c0);
   const roomOf = screen => screen.full ? rows - 2 : textRows;
   function layoutOf(screen) {
     if (layouts.has(screen)) return layouts.get(screen);
     let out = null;
     for (const face of ORDER[screen.font] ?? ORDER.peg9) {
       for (let k = screen.k ?? 1; k >= 1 && !out; k--) {
-        const l = layoutText(screen.text, {font:FACES[face], k, maxCols:cols - 4, maxLines:screen.lines ?? ((screen.k ?? 1) > 1 ? 1 : 3)});
-        if (l.width <= cols - 4 && l.height <= roomOf(screen) && (!screen.full || l.pages.length === 1)) out = l;
+        const l = layoutText(screen.text, {font:FACES[face], k, maxCols:span, maxLines:screen.lines ?? ((screen.k ?? 1) > 1 ? 1 : 3)});
+        if (l.width <= span && l.height <= roomOf(screen) && (!screen.full || l.pages.length === 1)) out = l;
       }
       if (out) break;
     }
@@ -52,9 +60,33 @@ export function boardGrid(w, h, pitch = boardPitch(w, h)) {
   const place = (screen, layout, page) => {
     const hh = page.lines.length ? Math.max(...page.lines.map(l => l.y + Math.max(...l.chars.map(c => c.y + c.h - l.y), 0))) : layout.height;
     const ww = page.lines.length ? Math.max(...page.lines.map(l => l.width)) : layout.width;
-    return {x:Math.floor((cols - ww) / 2), y:Math.max(1, Math.floor((roomOf(screen) - Math.min(hh, layout.height)) / 2))};
+    return {x:c0 + Math.floor((span - ww) / 2), y:Math.max(1, Math.floor((roomOf(screen) - Math.min(hh, layout.height)) / 2))};
   };
-  return {board, cols, rows, pitch, ox, oy, layoutOf, place};
+  return {board, cols, rows, pitch, ox, oy, layoutOf, place, safe};
+}
+// The type columns of a region at (x, y, w, h) in a frame: the format's safe area, region-local.
+export function safeSpan(rect, safe) {
+  if (!safe) return null;
+  const x0 = Math.max(0, safe.x - rect.x), x1 = Math.min(rect.w, safe.x + safe.w - rect.x);
+  return x1 > x0 && (x0 > 0 || x1 < rect.w) ? {x0:Math.round(x0), x1:Math.round(x1)} : null;
+}
+
+// Where a screen's type lands in a board region of w × h output px: {x, y, w, h} over every
+// page, in region px, or null when it does not fit. The full-frame board centres its type, so
+// this is how a check proves the words stay inside the platform-safe band.
+export function boardTypeBounds(w, h, screen, grid = boardGrid(w, h)) {
+  const layout = grid.layoutOf(screen);
+  if (!layout?.pages?.length) return null;
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const page of layout.pages) {
+    const o = grid.place(screen, layout, page);
+    for (const line of page.lines) for (const ch of line.chars) {
+      const p = ch.pegs;
+      for (let i = 0; i < p.length; i += 2) { const x = o.x + p[i], y = o.y + p[i + 1]; x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+    }
+  }
+  if (!Number.isFinite(x0)) return null;
+  return {x:grid.ox + x0 * grid.pitch, y:grid.oy + y0 * grid.pitch, w:(x1 - x0 + 1) * grid.pitch, h:(y1 - y0 + 1) * grid.pitch};
 }
 
 export function createBoardLayer(gl, {plan, scale = 1, quality} = {}) {
@@ -62,15 +94,15 @@ export function createBoardLayer(gl, {plan, scale = 1, quality} = {}) {
   let tick = 0;
   const MAX = 4;
 
-  function instance(w, h, pitch) {
-    const key = `${w}x${h}@${pitch}`;
+  function instance(w, h, pitch, safe) {
+    const key = `${w}x${h}@${pitch}${safe ? `|${safe.x0}-${safe.x1}` : ''}`;
     let it = instances.get(key);
     if (it) { it.used = ++tick; return it; }
     if (instances.size >= MAX) {
       const old = [...instances.values()].sort((a, b) => a.used - b.used)[0];
       old.dispose(); instances.delete(old.key);
     }
-    const grid = boardGrid(w, h, pitch);
+    const grid = boardGrid(w, h, pitch, safe);
     const W = Math.max(1, Math.round(w * scale)), H = Math.max(1, Math.round(h * scale));
     const tex = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, tex);
@@ -100,19 +132,21 @@ export function createBoardLayer(gl, {plan, scale = 1, quality} = {}) {
 
   return {
     // Draw a board region; returns the texture (RGBA8, w×h output px at the render scale, framebuffer rows).
-    draw({w, h, screens, time, pitch, sockets = true, gain = 1}) {
+    draw({w, h, screens, time, pitch, sockets = true, gain = 1, safe = null}) {
       w = Math.round(w); h = Math.round(h);
-      const it = instance(w, h, pitch ?? boardPitch(w, h));
+      const it = instance(w, h, pitch ?? boardPitch(w, h), safe);
       const board = paintGrid(it.grid, screens, time, {sockets, gain});
-      const kick = /^Drop/.test(sectionAt(plan, time)) && kickAt(plan, time) ? 1 : 0;
+      // The kick's lift is a hit: it shows from the frame that holds the kick's sound (time is the
+      // middle of the frame less the latency, so half a frame of lead lands it there).
+      const kick = /^Drop/.test(sectionAt(plan, time)) && kickAt(plan, time, 1 / 48) ? 1 : 0;
       it.renderer.draw(board, {pitch:it.grid.pitch, x:it.grid.ox, y:it.grid.oy, time, kick});
       return {texture:it.tex, width:it.W, height:it.H, grid:it.grid, stats:it.renderer.stats};
     },
     // Predicted luminance of the board region at t, without drawing (the governor's input).
-    luma({w, h, screens, time, pitch}, grids = new Map()) {
-      const key = `${Math.round(w)}x${Math.round(h)}@${pitch ?? boardPitch(w, h)}`;
+    luma({w, h, screens, time, pitch, safe = null}, grids = new Map()) {
+      const key = `${Math.round(w)}x${Math.round(h)}@${pitch ?? boardPitch(w, h)}${safe ? `|${safe.x0}-${safe.x1}` : ''}`;
       let grid = grids.get(key);
-      if (!grid) grids.set(key, grid = boardGrid(Math.round(w), Math.round(h), pitch ?? boardPitch(w, h)));
+      if (!grid) grids.set(key, grid = boardGrid(Math.round(w), Math.round(h), pitch ?? boardPitch(w, h), safe));
       return boardLuma(paintGrid(grid, screens, time));
     },
     state:t => boardState(plan, t),

@@ -4,6 +4,7 @@
 // Baked offline per event, so playback never runs a second live vocoder.
 import {createVocoder} from './vocoder.js';
 import {biquad, amp, mtof, noiseBuffer} from './instruments.js';
+import {exactSession} from './exact.js';
 
 const files = new Map();
 
@@ -22,7 +23,7 @@ const baked = new Map();
 export async function bakeDeep(buffer, from, to, root, {rate = .5, shift = 2, comb:combHz = 110} = {}) {
   const key = [buffer.length, from, to, root, rate, shift, combHz].join(':');
   if (baked.has(key)) return baked.get(key);
-  const sr = 44100, seconds = (to - from) / rate + .4, ctx = new OfflineAudioContext(1, Math.ceil(seconds * sr), sr);
+  const sr = 44100, seconds = (to - from) / rate + .4, ctx = new OfflineAudioContext(1, Math.ceil(seconds * sr), sr), exact = exactSession(ctx);
   const src = ctx.createBufferSource(); src.buffer = buffer; src.playbackRate.value = rate;
   const vocoder = createVocoder(ctx, {follow:35, shift, airLevel:.35});
   const voc = amp(ctx, .75), tape = amp(ctx, .25), tapeLp = biquad(ctx, 'lowpass', 3000);
@@ -46,6 +47,7 @@ export async function bakeDeep(buffer, from, to, root, {rate = .5, shift = 2, co
   const hp = biquad(ctx, 'highpass', 45), lp = biquad(ctx, 'lowpass', 6000);
   dry.connect(sat); wet.connect(sat); sat.connect(hp); hp.connect(lp); lp.connect(ctx.destination);
   src.start(0, from, to - from);
+  exact.finalize();
   const out = await ctx.startRendering();
   baked.set(key, out);
   return out;
