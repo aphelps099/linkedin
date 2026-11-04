@@ -6,6 +6,7 @@ import {createMeetingShareRouter} from './server/meeting-share.js';
 import {createShowcaseShareRouter} from './server/showcase-share.js';
 import react from '@vitejs/plugin-react';
 import { postBeatApi } from './server/post-beat-dev.js';
+import { allHandsVoiceApi } from './server/allhands-voice.js';
 import { certificateSharePreview } from './server/certificate-share.js';
 import { optimizerPreview } from './server/optimizer-routes.js';
 import { beatSharePreview } from './server/beat-share.js';
@@ -92,7 +93,7 @@ function localCheckoutApi(){
 
 export default defineConfig({
   server: {allowedHosts:['terminal.local'], proxy:{'/api/cutting-room/media':{target:'https://linkedinbeats.com',changeOrigin:true,followRedirects:true}}},
-  plugins: [{name:'youtube-feed',configureServer(server){const app=express();app.use('/api/youtube',createYouTubeRouter());server.middlewares.use((req,res,next)=>req.url?.split('?')[0].replace(/\/$/,'')==='/api/youtube'?app(req,res,next):next());}}, webAnalyticsPlugin(), react(), {name:'showcase-film-share-preview',configureServer(server){const app=express();app.use(createShowcaseShareRouter({template:'index.html',transform:(html,req)=>server.transformIndexHtml(req.originalUrl,html)}));server.middlewares.use(app);}}, {name:'meeting-cover-preview',configureServer(server){const app=express();app.use(createMeetingShareRouter({template:'studio/index.html',assets:'public'}));server.middlewares.use((req,res,next)=>req.url?.startsWith('/api/meeting/cover/')?app(req,res,next):next());}}, optimizerPreview(), localVoiceApi(), localCheckoutApi(), postBeatApi(), beatSharePreview(), certificateSharePreview()],
+  plugins: [{name:'youtube-feed',configureServer(server){const app=express();app.use('/api/youtube',createYouTubeRouter());server.middlewares.use((req,res,next)=>req.url?.split('?')[0].replace(/\/$/,'')==='/api/youtube'?app(req,res,next):next());}}, webAnalyticsPlugin(), react(), {name:'showcase-film-share-preview',configureServer(server){const app=express();app.use(createShowcaseShareRouter({template:'index.html',transform:(html,req)=>server.transformIndexHtml(req.originalUrl,html)}));server.middlewares.use(app);}}, {name:'meeting-cover-preview',configureServer(server){const app=express();app.use(createMeetingShareRouter({template:'studio/index.html',assets:'public'}));server.middlewares.use((req,res,next)=>req.url?.startsWith('/api/meeting/cover/')?app(req,res,next):next());}}, optimizerPreview(), localVoiceApi(), localCheckoutApi(), postBeatApi(), allHandsVoiceApi(), beatSharePreview(), certificateSharePreview()],
   // Relative base so the built index.html works when served from a
   // GitHub Pages project path (https://<user>.github.io/linkedin/).
   base: './',
@@ -101,6 +102,10 @@ export default defineConfig({
       input: {
         archives: fileURLToPath(new URL('./archives/index.html', import.meta.url)),
         synth: fileURLToPath(new URL('./synth/index.html', import.meta.url)),
+        // Phase 0 sound check for the meeting band. Unlisted and noindex.
+        allhands: fileURLToPath(new URL('./allhands/index.html', import.meta.url)),
+        // The Peg Board type specimen, for sign-off. Unlisted and noindex.
+        pixelType: fileURLToPath(new URL('./pixel-type/index.html', import.meta.url)),
         sectionArchive: fileURLToPath(new URL('./archive/sections/index.html', import.meta.url)),
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
         identity: fileURLToPath(new URL('./brand/afterbeat/index.html', import.meta.url)),

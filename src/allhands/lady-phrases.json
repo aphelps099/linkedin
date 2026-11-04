@@ -1,0 +1,2630 @@
+[
+ {
+  "index": 0,
+  "file": "01.wav",
+  "text": "I'm thrilled to announce",
+  "duration": 1.715,
+  "voiced": [
+   0.016,
+   1.679
+  ],
+  "f0": 244.9,
+  "rmsDb": -14.65,
+  "gainDb": 0.65,
+  "words": [
+   {
+    "text": "I'm",
+    "start": 0.016,
+    "end": 0.186,
+    "onset": 0.017,
+    "check": "isolated"
+   },
+   {
+    "text": "thrilled",
+    "start": 0.186,
+    "end": 0.867,
+    "onset": 0.43,
+    "check": "isolated"
+   },
+   {
+    "text": "to",
+    "start": 0.986,
+    "end": 1.14,
+    "onset": 1.045,
+    "check": "context"
+   },
+   {
+    "text": "announce",
+    "start": 1.14,
+    "end": 1.679,
+    "onset": 1.14,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:N|F,gap,join:V|V",
+  "confidence": 0.55
+ },
+ {
+  "index": 1,
+  "file": "02.wav",
+  "text": "Humbled and honored to share",
+  "duration": 1.767,
+  "voiced": [
+   0.006,
+   1.748
+  ],
+  "f0": 203.4,
+  "rmsDb": -14.78,
+  "gainDb": 0.78,
+  "words": [
+   {
+    "text": "Humbled",
+    "start": 0.006,
+    "end": 0.508,
+    "onset": 0.062,
+    "check": "isolated"
+   },
+   {
+    "text": "and",
+    "start": 0.581,
+    "end": 0.774,
+    "onset": 0.581,
+    "check": "isolated"
+   },
+   {
+    "text": "honored",
+    "start": 0.802,
+    "end": 1.137,
+    "onset": 0.805,
+    "check": "isolated"
+   },
+   {
+    "text": "to",
+    "start": 1.15,
+    "end": 1.257,
+    "onset": 1.204,
+    "check": "isolated"
+   },
+   {
+    "text": "share",
+    "start": 1.257,
+    "end": 1.748,
+    "onset": 1.386,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:gap,gap,gap,join:V|F",
+  "confidence": 0.69
+ },
+ {
+  "index": 2,
+  "file": "03.wav",
+  "text": "I'm happy to share that I'm starting a new position",
+  "duration": 3.616,
+  "voiced": [
+   0.014,
+   2.659
+  ],
+  "f0": 183.2,
+  "rmsDb": -15.86,
+  "gainDb": 1.86,
+  "words": [
+   {
+    "text": "I'm",
+    "start": 0.014,
+    "end": 0.195,
+    "onset": 0.016,
+    "check": "isolated"
+   },
+   {
+    "text": "happy",
+    "start": 0.195,
+    "end": 0.516,
+    "onset": 0.272,
+    "check": "isolated"
+   },
+   {
+    "text": "to",
+    "start": 0.516,
+    "end": 0.616,
+    "onset": 0.548,
+    "check": "context"
+   },
+   {
+    "text": "share",
+    "start": 0.616,
+    "end": 0.989,
+    "onset": 0.733,
+    "check": "isolated"
+   },
+   {
+    "text": "that",
+    "start": 0.989,
+    "end": 1.104,
+    "onset": 1.031,
+    "check": "context"
+   },
+   {
+    "text": "I'm",
+    "start": 1.104,
+    "end": 1.262,
+    "onset": 1.104,
+    "check": "isolated"
+   },
+   {
+    "text": "starting",
+    "start": 1.262,
+    "end": 1.67,
+    "onset": 1.381,
+    "check": "isolated"
+   },
+   {
+    "text": "a",
+    "start": 1.67,
+    "end": 1.72,
+    "onset": 1.67,
+    "check": "context"
+   },
+   {
+    "text": "new",
+    "start": 1.72,
+    "end": 1.987,
+    "onset": 1.89,
+    "check": "isolated"
+   },
+   {
+    "text": "position",
+    "start": 2.009,
+    "end": 2.659,
+    "onset": 2.017,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:N|F,join:V|P,join:V|F,join:A|Z,join:P|V,join:N|F,join:N|V,join:V|N,gap",
+  "confidence": 0.59
+ },
+ {
+  "index": 3,
+  "file": "04.wav",
+  "text": "After careful reflection, I've decided to pursue new opportunities",
+  "duration": 4.348,
+  "voiced": [
+   0.015,
+   4.305
+  ],
+  "f0": 228.6,
+  "rmsDb": -15.15,
+  "gainDb": 1.15,
+  "words": [
+   {
+    "text": "After",
+    "start": 0.015,
+    "end": 0.33,
+    "onset": 0.019,
+    "check": "isolated"
+   },
+   {
+    "text": "careful",
+    "start": 0.359,
+    "end": 0.72,
+    "onset": 0.429,
+    "check": "isolated"
+   },
+   {
+    "text": "reflection,",
+    "start": 0.72,
+    "end": 1.473,
+    "onset": 0.79,
+    "check": "isolated"
+   },
+   {
+    "text": "I've",
+    "start": 1.798,
+    "end": 2.01,
+    "onset": 1.798,
+    "check": "isolated"
+   },
+   {
+    "text": "decided",
+    "start": 2.011,
+    "end": 2.547,
+    "onset": 2.019,
+    "check": "isolated"
+   },
+   {
+    "text": "to",
+    "start": 2.562,
+    "end": 2.677,
+    "onset": 2.566,
+    "check": "isolated"
+   },
+   {
+    "text": "pursue",
+    "start": 2.704,
+    "end": 3.084,
+    "onset": 2.706,
+    "check": "isolated"
+   },
+   {
+    "text": "new",
+    "start": 3.084,
+    "end": 3.37,
+    "onset": 3.26,
+    "check": "isolated"
+   },
+   {
+    "text": "opportunities",
+    "start": 3.37,
+    "end": 4.305,
+    "onset": 3.37,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:gap,join:A|A,gap,gap,gap,gap,join:V|N,join:V|V",
+  "confidence": 0.64
+ },
+ {
+  "index": 4,
+  "file": "05.wav",
+  "text": "Synergy",
+  "duration": 1.009,
+  "voiced": [
+   0.014,
+   0.71
+  ],
+  "f0": 205.3,
+  "rmsDb": -16.18,
+  "gainDb": 2.18,
+  "words": [
+   {
+    "text": "Synergy",
+    "start": 0.014,
+    "end": 0.71,
+    "onset": 0.157,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:single",
+  "confidence": 0.78
+ },
+ {
+  "index": 5,
+  "file": "06.wav",
+  "text": "Let's circle back",
+  "duration": 1.093,
+  "voiced": [
+   0.015,
+   1.051
+  ],
+  "f0": 252.6,
+  "rmsDb": -15.8,
+  "gainDb": 1.8,
+  "words": [
+   {
+    "text": "Let's",
+    "start": 0.015,
+    "end": 0.31,
+    "onset": 0.084,
+    "check": "isolated"
+   },
+   {
+    "text": "circle",
+    "start": 0.31,
+    "end": 0.684,
+    "onset": 0.396,
+    "check": "isolated"
+   },
+   {
+    "text": "back",
+    "start": 0.684,
+    "end": 1.051,
+    "onset": 0.702,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|F,join:A|P",
+  "confidence": 0.54
+ },
+ {
+  "index": 6,
+  "file": "07.wav",
+  "text": "Leverage",
+  "duration": 1.168,
+  "voiced": [
+   0.014,
+   0.651
+  ],
+  "f0": 186.8,
+  "rmsDb": -16.27,
+  "gainDb": 2.27,
+  "words": [
+   {
+    "text": "Leverage",
+    "start": 0.014,
+    "end": 0.651,
+    "onset": 0.078,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:single",
+  "confidence": 0.88
+ },
+ {
+  "index": 7,
+  "file": "08.wav",
+  "text": "Pivot",
+  "duration": 0.68,
+  "voiced": [
+   0.012,
+   0.474
+  ],
+  "f0": 186.0,
+  "rmsDb": -17.33,
+  "gainDb": 3.33,
+  "words": [
+   {
+    "text": "Pivot",
+    "start": 0.012,
+    "end": 0.474,
+    "onset": 0.054,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:single",
+  "confidence": 0.83
+ },
+ {
+  "index": 8,
+  "file": "09.wav",
+  "text": "It's not about the tools. It's about the mindset.",
+  "duration": 3.014,
+  "voiced": [
+   0.052,
+   2.979
+  ],
+  "f0": 221.2,
+  "rmsDb": -15.1,
+  "gainDb": 1.1,
+  "words": [
+   {
+    "text": "It's",
+    "start": 0.052,
+    "end": 0.218,
+    "onset": 0.053,
+    "check": "isolated"
+   },
+   {
+    "text": "not",
+    "start": 0.218,
+    "end": 0.418,
+    "onset": 0.282,
+    "check": "isolated"
+   },
+   {
+    "text": "about",
+    "start": 0.418,
+    "end": 0.69,
+    "onset": 0.418,
+    "check": "isolated"
+   },
+   {
+    "text": "the",
+    "start": 0.739,
+    "end": 0.833,
+    "onset": 0.739,
+    "check": "isolated"
+   },
+   {
+    "text": "tools.",
+    "start": 0.841,
+    "end": 1.374,
+    "onset": 0.865,
+    "check": "isolated"
+   },
+   {
+    "text": "It's",
+    "start": 1.784,
+    "end": 1.931,
+    "onset": 1.784,
+    "check": "isolated"
+   },
+   {
+    "text": "about",
+    "start": 1.931,
+    "end": 2.148,
+    "onset": 1.931,
+    "check": "context"
+   },
+   {
+    "text": "the",
+    "start": 2.202,
+    "end": 2.255,
+    "onset": 2.203,
+    "check": "context"
+   },
+   {
+    "text": "mindset.",
+    "start": 2.255,
+    "end": 2.979,
+    "onset": 2.342,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|N,join:P|V,gap,gap,gap,join:F|V,gap,join:V|N",
+  "confidence": 0.57
+ },
+ {
+  "index": 9,
+  "file": "10.wav",
+  "text": "Delve",
+  "duration": 0.857,
+  "voiced": [
+   0.015,
+   0.822
+  ],
+  "f0": 151.9,
+  "rmsDb": -15.04,
+  "gainDb": 1.04,
+  "words": [
+   {
+    "text": "Delve",
+    "start": 0.015,
+    "end": 0.822,
+    "onset": 0.141,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:single",
+  "confidence": 0.89
+ },
+ {
+  "index": 10,
+  "file": "11.wav",
+  "text": "A rich tapestry",
+  "duration": 0.94,
+  "voiced": [
+   0.015,
+   0.938
+  ],
+  "f0": 206.9,
+  "rmsDb": -16.94,
+  "gainDb": 2.94,
+  "words": [
+   {
+    "text": "A",
+    "start": 0.015,
+    "end": 0.07,
+    "onset": 0.015,
+    "check": "context"
+   },
+   {
+    "text": "rich",
+    "start": 0.07,
+    "end": 0.338,
+    "onset": 0.16,
+    "check": "isolated"
+   },
+   {
+    "text": "tapestry",
+    "start": 0.351,
+    "end": 0.938,
+    "onset": 0.405,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:V|A,gap",
+  "confidence": 0.52
+ },
+ {
+  "index": 11,
+  "file": "12.wav",
+  "text": "Game-changer",
+  "duration": 1.514,
+  "voiced": [
+   0.006,
+   0.867
+  ],
+  "f0": 195.1,
+  "rmsDb": -15.57,
+  "gainDb": 1.57,
+  "words": [
+   {
+    "text": "Game-changer",
+    "start": 0.006,
+    "end": 0.867,
+    "onset": 0.095,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:single",
+  "confidence": 0.96
+ },
+ {
+  "index": 12,
+  "file": "13.wav",
+  "text": "Thoughts?",
+  "duration": 0.524,
+  "voiced": [
+   0.0,
+   0.469
+  ],
+  "f0": 226.4,
+  "rmsDb": -18.06,
+  "gainDb": 4.06,
+  "words": [
+   {
+    "text": "Thoughts?",
+    "start": 0.0,
+    "end": 0.469,
+    "onset": 0.017,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:single",
+  "confidence": 0.85
+ },
+ {
+  "index": 13,
+  "file": "14.wav",
+  "text": "Agree or disagree?",
+  "duration": 1.095,
+  "voiced": [
+   0.013,
+   1.08
+  ],
+  "f0": 240.0,
+  "rmsDb": -14.55,
+  "gainDb": 0.55,
+  "words": [
+   {
+    "text": "Agree",
+    "start": 0.013,
+    "end": 0.44,
+    "onset": 0.016,
+    "check": "isolated"
+   },
+   {
+    "text": "or",
+    "start": 0.44,
+    "end": 0.593,
+    "onset": 0.44,
+    "check": "isolated"
+   },
+   {
+    "text": "disagree?",
+    "start": 0.593,
+    "end": 1.08,
+    "onset": 0.638,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:V|V,join:A|P",
+  "confidence": 0.64
+ },
+ {
+  "index": 14,
+  "file": "15.wav",
+  "text": "Let that sink in",
+  "duration": 2.239,
+  "voiced": [
+   0.014,
+   2.192
+  ],
+  "f0": 195.1,
+  "rmsDb": -15.92,
+  "gainDb": 1.92,
+  "words": [
+   {
+    "text": "Let",
+    "start": 0.014,
+    "end": 0.284,
+    "onset": 0.123,
+    "check": "context"
+   },
+   {
+    "text": "that",
+    "start": 0.377,
+    "end": 0.888,
+    "onset": 0.445,
+    "check": "isolated"
+   },
+   {
+    "text": "sink",
+    "start": 1.086,
+    "end": 1.629,
+    "onset": 1.321,
+    "check": "isolated"
+   },
+   {
+    "text": "in",
+    "start": 1.673,
+    "end": 2.192,
+    "onset": 1.673,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:gap,gap,gap",
+  "confidence": 0.64
+ },
+ {
+  "index": 15,
+  "file": "16.wav",
+  "text": "Full stop.",
+  "duration": 1.01,
+  "voiced": [
+   0.0,
+   0.822
+  ],
+  "f0": 315.8,
+  "rmsDb": -16.46,
+  "gainDb": 2.46,
+  "words": [
+   {
+    "text": "Full",
+    "start": 0.0,
+    "end": 0.256,
+    "onset": 0.041,
+    "check": "context"
+   },
+   {
+    "text": "stop.",
+    "start": 0.256,
+    "end": 0.822,
+    "onset": 0.426,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:A|F",
+  "confidence": 0.59
+ },
+ {
+  "index": 16,
+  "file": "17.wav",
+  "text": "I'm excited to share…",
+  "duration": 1.33,
+  "voiced": [
+   0.01,
+   1.291
+  ],
+  "f0": 229.7,
+  "rmsDb": -15.61,
+  "gainDb": 1.61,
+  "words": [
+   {
+    "text": "I'm",
+    "start": 0.01,
+    "end": 0.172,
+    "onset": 0.017,
+    "check": "isolated"
+   },
+   {
+    "text": "excited",
+    "start": 0.172,
+    "end": 0.68,
+    "onset": 0.172,
+    "check": "isolated"
+   },
+   {
+    "text": "to",
+    "start": 0.68,
+    "end": 0.778,
+    "onset": 0.701,
+    "check": "context"
+   },
+   {
+    "text": "share…",
+    "start": 0.778,
+    "end": 1.291,
+    "onset": 0.909,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:N|V,join:P|P,join:V|F",
+  "confidence": 0.59
+ },
+ {
+  "index": 17,
+  "file": "18.wav",
+  "text": "Read that again.",
+  "duration": 1.036,
+  "voiced": [
+   0.01,
+   0.969
+  ],
+  "f0": 218.2,
+  "rmsDb": -13.97,
+  "gainDb": -0.03,
+  "words": [
+   {
+    "text": "Read",
+    "start": 0.01,
+    "end": 0.289,
+    "onset": 0.069,
+    "check": "isolated"
+   },
+   {
+    "text": "that",
+    "start": 0.289,
+    "end": 0.45,
+    "onset": 0.297,
+    "check": "isolated"
+   },
+   {
+    "text": "again.",
+    "start": 0.45,
+    "end": 0.969,
+    "onset": 0.45,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:P|Z,join:P|V",
+  "confidence": 0.69
+ },
+ {
+  "index": 18,
+  "file": "19.wav",
+  "text": "Here's what I learned. 👇",
+  "duration": 1.171,
+  "voiced": [
+   0.0,
+   0.926
+  ],
+  "f0": 224.3,
+  "rmsDb": -15.46,
+  "gainDb": 1.46,
+  "words": [
+   {
+    "text": "Here's",
+    "start": 0.0,
+    "end": 0.292,
+    "onset": 0.036,
+    "check": "isolated"
+   },
+   {
+    "text": "what",
+    "start": 0.292,
+    "end": 0.394,
+    "onset": 0.33,
+    "check": "isolated"
+   },
+   {
+    "text": "I",
+    "start": 0.394,
+    "end": 0.5,
+    "onset": 0.394,
+    "check": "context"
+   },
+   {
+    "text": "learned.",
+    "start": 0.5,
+    "end": 0.926,
+    "onset": 0.571,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:Z|A,join:P|V,join:V|A",
+  "confidence": 0.52
+ },
+ {
+  "index": 19,
+  "file": "20.wav",
+  "text": "This changed everything for me.",
+  "duration": 2.03,
+  "voiced": [
+   0.014,
+   1.986
+  ],
+  "f0": 216.2,
+  "rmsDb": -15.57,
+  "gainDb": 1.57,
+  "words": [
+   {
+    "text": "This",
+    "start": 0.014,
+    "end": 0.284,
+    "onset": 0.066,
+    "check": "isolated"
+   },
+   {
+    "text": "changed",
+    "start": 0.3,
+    "end": 0.766,
+    "onset": 0.373,
+    "check": "isolated"
+   },
+   {
+    "text": "everything",
+    "start": 0.828,
+    "end": 1.452,
+    "onset": 0.828,
+    "check": "isolated"
+   },
+   {
+    "text": "for",
+    "start": 1.452,
+    "end": 1.6,
+    "onset": 1.532,
+    "check": "isolated"
+   },
+   {
+    "text": "me.",
+    "start": 1.6,
+    "end": 1.986,
+    "onset": 1.668,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:gap,gap,join:N|F,join:V|N",
+  "confidence": 0.4
+ },
+ {
+  "index": 20,
+  "file": "21.wav",
+  "text": "Most people won't understand this. But you will.",
+  "duration": 3.553,
+  "voiced": [
+   0.013,
+   3.461
+  ],
+  "f0": 240.0,
+  "rmsDb": -15.0,
+  "gainDb": 1.0,
+  "words": [
+   {
+    "text": "Most",
+    "start": 0.013,
+    "end": 0.313,
+    "onset": 0.088,
+    "check": "isolated"
+   },
+   {
+    "text": "people",
+    "start": 0.342,
+    "end": 0.62,
+    "onset": 0.347,
+    "check": "isolated"
+   },
+   {
+    "text": "won't",
+    "start": 0.62,
+    "end": 0.802,
+    "onset": 0.661,
+    "check": "isolated"
+   },
+   {
+    "text": "understand",
+    "start": 0.802,
+    "end": 1.349,
+    "onset": 0.806,
+    "check": "isolated"
+   },
+   {
+    "text": "this.",
+    "start": 1.349,
+    "end": 1.691,
+    "onset": 1.37,
+    "check": "isolated"
+   },
+   {
+    "text": "But",
+    "start": 2.727,
+    "end": 2.903,
+    "onset": 2.792,
+    "check": "isolated"
+   },
+   {
+    "text": "you",
+    "start": 2.903,
+    "end": 3.06,
+    "onset": 3.0,
+    "check": "isolated"
+   },
+   {
+    "text": "will.",
+    "start": 3.06,
+    "end": 3.461,
+    "onset": 3.14,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:gap,join:A|A,join:P|V,join:P|Z,gap,join:P|A,join:V|A",
+  "confidence": 0.63
+ },
+ {
+  "index": 21,
+  "file": "22.wav",
+  "text": "It's not about X. It's about Y.",
+  "duration": 3.412,
+  "voiced": [
+   0.016,
+   2.74
+  ],
+  "f0": 217.2,
+  "rmsDb": -15.72,
+  "gainDb": 1.72,
+  "words": [
+   {
+    "text": "It's",
+    "start": 0.016,
+    "end": 0.188,
+    "onset": 0.016,
+    "check": "isolated"
+   },
+   {
+    "text": "not",
+    "start": 0.188,
+    "end": 0.378,
+    "onset": 0.227,
+    "check": "isolated"
+   },
+   {
+    "text": "about",
+    "start": 0.378,
+    "end": 0.725,
+    "onset": 0.378,
+    "check": "isolated"
+   },
+   {
+    "text": "X.",
+    "start": 0.785,
+    "end": 1.302,
+    "onset": 0.785,
+    "check": "isolated"
+   },
+   {
+    "text": "It's",
+    "start": 1.687,
+    "end": 1.866,
+    "onset": 1.687,
+    "check": "isolated"
+   },
+   {
+    "text": "about",
+    "start": 1.866,
+    "end": 2.15,
+    "onset": 1.867,
+    "check": "isolated"
+   },
+   {
+    "text": "Y.",
+    "start": 2.15,
+    "end": 2.74,
+    "onset": 2.33,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|N,join:P|V,gap,gap,join:F|V,join:P|A",
+  "confidence": 0.4
+ },
+ {
+  "index": 22,
+  "file": "23.wav",
+  "text": "I'll say what nobody else will…",
+  "duration": 1.977,
+  "voiced": [
+   0.014,
+   1.754
+  ],
+  "f0": 197.5,
+  "rmsDb": -15.16,
+  "gainDb": 1.16,
+  "words": [
+   {
+    "text": "I'll",
+    "start": 0.014,
+    "end": 0.192,
+    "onset": 0.017,
+    "check": "isolated"
+   },
+   {
+    "text": "say",
+    "start": 0.192,
+    "end": 0.545,
+    "onset": 0.331,
+    "check": "isolated"
+   },
+   {
+    "text": "what",
+    "start": 0.545,
+    "end": 0.709,
+    "onset": 0.597,
+    "check": "isolated"
+   },
+   {
+    "text": "nobody",
+    "start": 0.709,
+    "end": 1.11,
+    "onset": 0.79,
+    "check": "isolated"
+   },
+   {
+    "text": "else",
+    "start": 1.11,
+    "end": 1.363,
+    "onset": 1.11,
+    "check": "isolated"
+   },
+   {
+    "text": "will…",
+    "start": 1.363,
+    "end": 1.754,
+    "onset": 1.44,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:A|F,join:V|A,join:P|N,join:V|V,gap",
+  "confidence": 0.52
+ },
+ {
+  "index": 23,
+  "file": "24.wav",
+  "text": "A small moment that taught me a big lesson.",
+  "duration": 2.827,
+  "voiced": [
+   0.016,
+   2.596
+  ],
+  "f0": 218.2,
+  "rmsDb": -14.34,
+  "gainDb": 0.34,
+  "words": [
+   {
+    "text": "A",
+    "start": 0.016,
+    "end": 0.081,
+    "onset": 0.017,
+    "check": "context"
+   },
+   {
+    "text": "small",
+    "start": 0.081,
+    "end": 0.437,
+    "onset": 0.268,
+    "check": "isolated"
+   },
+   {
+    "text": "moment",
+    "start": 0.437,
+    "end": 0.902,
+    "onset": 0.526,
+    "check": "isolated"
+   },
+   {
+    "text": "that",
+    "start": 0.91,
+    "end": 1.083,
+    "onset": 0.936,
+    "check": "context"
+   },
+   {
+    "text": "taught",
+    "start": 1.113,
+    "end": 1.374,
+    "onset": 1.211,
+    "check": "isolated"
+   },
+   {
+    "text": "me",
+    "start": 1.384,
+    "end": 1.64,
+    "onset": 1.454,
+    "check": "isolated"
+   },
+   {
+    "text": "a",
+    "start": 1.64,
+    "end": 1.811,
+    "onset": 1.656,
+    "check": "context"
+   },
+   {
+    "text": "big",
+    "start": 1.811,
+    "end": 2.032,
+    "onset": 1.838,
+    "check": "isolated"
+   },
+   {
+    "text": "lesson.",
+    "start": 2.032,
+    "end": 2.596,
+    "onset": 2.106,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:V|F,join:A|N,gap,gap,gap,join:V|V,join:V|P,join:P|A",
+  "confidence": 0.55
+ },
+ {
+  "index": 24,
+  "file": "25.wav",
+  "text": "And then he said something I'll never forget.",
+  "duration": 2.417,
+  "voiced": [
+   0.016,
+   2.381
+  ],
+  "f0": 227.5,
+  "rmsDb": -14.58,
+  "gainDb": 0.58,
+  "words": [
+   {
+    "text": "And",
+    "start": 0.016,
+    "end": 0.158,
+    "onset": 0.017,
+    "check": "isolated"
+   },
+   {
+    "text": "then",
+    "start": 0.158,
+    "end": 0.511,
+    "onset": 0.183,
+    "check": "isolated"
+   },
+   {
+    "text": "he",
+    "start": 0.511,
+    "end": 0.73,
+    "onset": 0.638,
+    "check": "context"
+   },
+   {
+    "text": "said",
+    "start": 0.73,
+    "end": 0.945,
+    "onset": 0.817,
+    "check": "isolated"
+   },
+   {
+    "text": "something",
+    "start": 0.945,
+    "end": 1.394,
+    "onset": 1.042,
+    "check": "isolated"
+   },
+   {
+    "text": "I'll",
+    "start": 1.394,
+    "end": 1.55,
+    "onset": 1.394,
+    "check": "isolated"
+   },
+   {
+    "text": "never",
+    "start": 1.55,
+    "end": 1.825,
+    "onset": 1.611,
+    "check": "isolated"
+   },
+   {
+    "text": "forget.",
+    "start": 1.825,
+    "end": 2.381,
+    "onset": 1.913,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:P|Z,join:N|F,join:V|F,join:P|F,join:N|V,join:A|N,join:V|F",
+  "confidence": 0.56
+ },
+ {
+  "index": 25,
+  "file": "26.wav",
+  "text": "The rest is history.",
+  "duration": 1.242,
+  "voiced": [
+   0.017,
+   1.201
+  ],
+  "f0": 230.8,
+  "rmsDb": -16.35,
+  "gainDb": 2.35,
+  "words": [
+   {
+    "text": "The",
+    "start": 0.017,
+    "end": 0.09,
+    "onset": 0.017,
+    "check": "isolated"
+   },
+   {
+    "text": "rest",
+    "start": 0.09,
+    "end": 0.445,
+    "onset": 0.2,
+    "check": "isolated"
+   },
+   {
+    "text": "is",
+    "start": 0.445,
+    "end": 0.62,
+    "onset": 0.456,
+    "check": "context"
+   },
+   {
+    "text": "history.",
+    "start": 0.62,
+    "end": 1.201,
+    "onset": 0.645,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:V|A,release:P|V,join:Z|F",
+  "confidence": 0.57
+ },
+ {
+  "index": 26,
+  "file": "27.wav",
+  "text": "Grateful for this incredible journey.",
+  "duration": 2.051,
+  "voiced": [
+   0.015,
+   1.792
+  ],
+  "f0": 187.5,
+  "rmsDb": -16.63,
+  "gainDb": 2.63,
+  "words": [
+   {
+    "text": "Grateful",
+    "start": 0.015,
+    "end": 0.439,
+    "onset": 0.11,
+    "check": "isolated"
+   },
+   {
+    "text": "for",
+    "start": 0.439,
+    "end": 0.589,
+    "onset": 0.517,
+    "check": "isolated"
+   },
+   {
+    "text": "this",
+    "start": 0.589,
+    "end": 0.785,
+    "onset": 0.618,
+    "check": "isolated"
+   },
+   {
+    "text": "incredible",
+    "start": 0.785,
+    "end": 1.296,
+    "onset": 0.785,
+    "check": "isolated"
+   },
+   {
+    "text": "journey.",
+    "start": 1.296,
+    "end": 1.792,
+    "onset": 1.382,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:A|F,join:V|Z,join:F|V,join:A|P",
+  "confidence": 0.67
+ },
+ {
+  "index": 27,
+  "file": "28.wav",
+  "text": "Couldn't have done it without my amazing team.",
+  "duration": 2.469,
+  "voiced": [
+   0.013,
+   2.418
+  ],
+  "f0": 200.0,
+  "rmsDb": -14.19,
+  "gainDb": 0.19,
+  "words": [
+   {
+    "text": "Couldn't",
+    "start": 0.013,
+    "end": 0.257,
+    "onset": 0.037,
+    "check": "isolated"
+   },
+   {
+    "text": "have",
+    "start": 0.257,
+    "end": 0.43,
+    "onset": 0.32,
+    "check": "isolated"
+   },
+   {
+    "text": "done",
+    "start": 0.43,
+    "end": 0.636,
+    "onset": 0.469,
+    "check": "isolated"
+   },
+   {
+    "text": "it",
+    "start": 0.636,
+    "end": 0.811,
+    "onset": 0.636,
+    "check": "context"
+   },
+   {
+    "text": "without",
+    "start": 0.822,
+    "end": 1.172,
+    "onset": 0.854,
+    "check": "isolated"
+   },
+   {
+    "text": "my",
+    "start": 1.172,
+    "end": 1.4,
+    "onset": 1.236,
+    "check": "isolated"
+   },
+   {
+    "text": "amazing",
+    "start": 1.4,
+    "end": 1.958,
+    "onset": 1.4,
+    "check": "isolated"
+   },
+   {
+    "text": "team.",
+    "start": 1.971,
+    "end": 2.418,
+    "onset": 2.042,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:N|F,join:Z|P,join:N|V,gap,join:P|N,join:V|V,gap",
+  "confidence": 0.64
+ },
+ {
+  "index": 28,
+  "file": "29.wav",
+  "text": "Onwards and upwards! 🚀",
+  "duration": 2.38,
+  "voiced": [
+   0.016,
+   2.359
+  ],
+  "f0": 243.7,
+  "rmsDb": -15.05,
+  "gainDb": 1.05,
+  "words": [
+   {
+    "text": "Onwards",
+    "start": 0.016,
+    "end": 0.68,
+    "onset": 0.017,
+    "check": "isolated"
+   },
+   {
+    "text": "and",
+    "start": 1.557,
+    "end": 1.713,
+    "onset": 1.557,
+    "check": "isolated"
+   },
+   {
+    "text": "upwards!",
+    "start": 1.713,
+    "end": 2.359,
+    "onset": 1.713,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:gap,join:P|V",
+  "confidence": 0.68
+ },
+ {
+  "index": 29,
+  "file": "30.wav",
+  "text": "Delighted to have joined…",
+  "duration": 1.399,
+  "voiced": [
+   0.012,
+   1.288
+  ],
+  "f0": 220.2,
+  "rmsDb": -15.11,
+  "gainDb": 1.11,
+  "words": [
+   {
+    "text": "Delighted",
+    "start": 0.012,
+    "end": 0.493,
+    "onset": 0.016,
+    "check": "isolated"
+   },
+   {
+    "text": "to",
+    "start": 0.501,
+    "end": 0.648,
+    "onset": 0.567,
+    "check": "isolated"
+   },
+   {
+    "text": "have",
+    "start": 0.648,
+    "end": 0.796,
+    "onset": 0.669,
+    "check": "isolated"
+   },
+   {
+    "text": "joined…",
+    "start": 0.796,
+    "end": 1.288,
+    "onset": 0.871,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:gap,join:V|F,join:Z|P",
+  "confidence": 0.72
+ },
+ {
+  "index": 30,
+  "file": "31.wav",
+  "text": "In today's fast-paced world…",
+  "duration": 2.023,
+  "voiced": [
+   0.015,
+   1.97
+  ],
+  "f0": 230.8,
+  "rmsDb": -14.93,
+  "gainDb": 0.93,
+  "words": [
+   {
+    "text": "In",
+    "start": 0.015,
+    "end": 0.15,
+    "onset": 0.016,
+    "check": "isolated"
+   },
+   {
+    "text": "today's",
+    "start": 0.15,
+    "end": 0.68,
+    "onset": 0.193,
+    "check": "isolated"
+   },
+   {
+    "text": "fast-paced",
+    "start": 0.68,
+    "end": 1.456,
+    "onset": 0.756,
+    "check": "isolated"
+   },
+   {
+    "text": "world…",
+    "start": 1.456,
+    "end": 1.97,
+    "onset": 1.59,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:N|P,join:Z|F,release:P|A",
+  "confidence": 0.63
+ },
+ {
+  "index": 31,
+  "file": "32.wav",
+  "text": "Passionate about driving impact at the intersection of…",
+  "duration": 2.713,
+  "voiced": [
+   0.009,
+   2.712
+  ],
+  "f0": 208.7,
+  "rmsDb": -15.39,
+  "gainDb": 1.39,
+  "words": [
+   {
+    "text": "Passionate",
+    "start": 0.009,
+    "end": 0.519,
+    "onset": 0.08,
+    "check": "isolated"
+   },
+   {
+    "text": "about",
+    "start": 0.519,
+    "end": 0.759,
+    "onset": 0.519,
+    "check": "isolated"
+   },
+   {
+    "text": "driving",
+    "start": 0.759,
+    "end": 1.266,
+    "onset": 0.92,
+    "check": "isolated"
+   },
+   {
+    "text": "impact",
+    "start": 1.266,
+    "end": 1.754,
+    "onset": 1.267,
+    "check": "isolated"
+   },
+   {
+    "text": "at",
+    "start": 1.754,
+    "end": 1.86,
+    "onset": 1.767,
+    "check": "context"
+   },
+   {
+    "text": "the",
+    "start": 1.894,
+    "end": 2.03,
+    "onset": 1.895,
+    "check": "isolated"
+   },
+   {
+    "text": "intersection",
+    "start": 2.03,
+    "end": 2.634,
+    "onset": 2.03,
+    "check": "isolated"
+   },
+   {
+    "text": "of…",
+    "start": 2.634,
+    "end": 2.712,
+    "onset": 2.634,
+    "check": "context"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:P|V,join:P|P,join:N|V,release:P|V,gap,join:V|V,join:N|V",
+  "confidence": 0.66
+ },
+ {
+  "index": 32,
+  "file": "33.wav",
+  "text": "Not just a job — a calling.",
+  "duration": 2.318,
+  "voiced": [
+   0.015,
+   2.279
+  ],
+  "f0": 219.2,
+  "rmsDb": -15.47,
+  "gainDb": 1.47,
+  "words": [
+   {
+    "text": "Not",
+    "start": 0.015,
+    "end": 0.261,
+    "onset": 0.085,
+    "check": "isolated"
+   },
+   {
+    "text": "just",
+    "start": 0.307,
+    "end": 0.599,
+    "onset": 0.365,
+    "check": "isolated"
+   },
+   {
+    "text": "a",
+    "start": 0.599,
+    "end": 0.675,
+    "onset": 0.609,
+    "check": "context"
+   },
+   {
+    "text": "job",
+    "start": 0.675,
+    "end": 1.173,
+    "onset": 0.756,
+    "check": "isolated"
+   },
+   {
+    "text": "a",
+    "start": 1.553,
+    "end": 1.64,
+    "onset": 1.553,
+    "check": "context"
+   },
+   {
+    "text": "calling.",
+    "start": 1.686,
+    "end": 2.279,
+    "onset": 1.777,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:gap,release:P|V,join:V|P,gap,gap",
+  "confidence": 0.64
+ },
+ {
+  "index": 33,
+  "file": "34.wav",
+  "text": "Hot take: teamwork makes a difference.",
+  "duration": 2.649,
+  "voiced": [
+   0.0,
+   2.615
+  ],
+  "f0": 200.8,
+  "rmsDb": -15.49,
+  "gainDb": 1.49,
+  "words": [
+   {
+    "text": "Hot",
+    "start": 0.0,
+    "end": 0.2,
+    "onset": 0.063,
+    "check": "isolated"
+   },
+   {
+    "text": "take:",
+    "start": 0.286,
+    "end": 0.669,
+    "onset": 0.34,
+    "check": "isolated"
+   },
+   {
+    "text": "teamwork",
+    "start": 1.087,
+    "end": 1.666,
+    "onset": 1.15,
+    "check": "isolated"
+   },
+   {
+    "text": "makes",
+    "start": 1.666,
+    "end": 1.961,
+    "onset": 1.741,
+    "check": "isolated"
+   },
+   {
+    "text": "a",
+    "start": 1.961,
+    "end": 2.024,
+    "onset": 1.961,
+    "check": "context"
+   },
+   {
+    "text": "difference.",
+    "start": 2.024,
+    "end": 2.615,
+    "onset": 2.068,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:gap,gap,release:P|N,join:F|V,join:V|P",
+  "confidence": 0.63
+ },
+ {
+  "index": 34,
+  "file": "35.wav",
+  "text": "Unpopular opinion: Fridays are great.",
+  "duration": 3.517,
+  "voiced": [
+   0.015,
+   3.295
+  ],
+  "f0": 266.7,
+  "rmsDb": -14.13,
+  "gainDb": 0.13,
+  "words": [
+   {
+    "text": "Unpopular",
+    "start": 0.015,
+    "end": 0.73,
+    "onset": 0.017,
+    "check": "isolated"
+   },
+   {
+    "text": "opinion:",
+    "start": 0.73,
+    "end": 1.316,
+    "onset": 0.73,
+    "check": "isolated"
+   },
+   {
+    "text": "Fridays",
+    "start": 1.786,
+    "end": 2.565,
+    "onset": 1.98,
+    "check": "isolated"
+   },
+   {
+    "text": "are",
+    "start": 2.607,
+    "end": 2.742,
+    "onset": 2.607,
+    "check": "isolated"
+   },
+   {
+    "text": "great.",
+    "start": 2.742,
+    "end": 3.295,
+    "onset": 2.95,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:V|V,gap,gap,join:A|P",
+  "confidence": 0.64
+ },
+ {
+  "index": 35,
+  "file": "36.wav",
+  "text": "Let's connect and explore synergies.",
+  "duration": 2.136,
+  "voiced": [
+   0.012,
+   2.094
+  ],
+  "f0": 230.8,
+  "rmsDb": -15.96,
+  "gainDb": 1.96,
+  "words": [
+   {
+    "text": "Let's",
+    "start": 0.012,
+    "end": 0.292,
+    "onset": 0.069,
+    "check": "isolated"
+   },
+   {
+    "text": "connect",
+    "start": 0.317,
+    "end": 0.754,
+    "onset": 0.361,
+    "check": "isolated"
+   },
+   {
+    "text": "and",
+    "start": 0.754,
+    "end": 0.926,
+    "onset": 0.762,
+    "check": "isolated"
+   },
+   {
+    "text": "explore",
+    "start": 0.926,
+    "end": 1.373,
+    "onset": 0.928,
+    "check": "isolated"
+   },
+   {
+    "text": "synergies.",
+    "start": 1.373,
+    "end": 2.094,
+    "onset": 1.483,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:gap,release:P|V,join:P|V,join:A|F",
+  "confidence": 0.63
+ },
+ {
+  "index": 36,
+  "file": "37.wav",
+  "text": "What do you think? Drop a comment below. 👇",
+  "duration": 2.297,
+  "voiced": [
+   0.011,
+   2.257
+  ],
+  "f0": 220.2,
+  "rmsDb": -14.98,
+  "gainDb": 0.98,
+  "words": [
+   {
+    "text": "What",
+    "start": 0.011,
+    "end": 0.17,
+    "onset": 0.12,
+    "check": "isolated"
+   },
+   {
+    "text": "do",
+    "start": 0.17,
+    "end": 0.24,
+    "onset": 0.188,
+    "check": "context"
+   },
+   {
+    "text": "you",
+    "start": 0.24,
+    "end": 0.344,
+    "onset": 0.3,
+    "check": "isolated"
+   },
+   {
+    "text": "think?",
+    "start": 0.344,
+    "end": 0.747,
+    "onset": 0.424,
+    "check": "isolated"
+   },
+   {
+    "text": "Drop",
+    "start": 1.049,
+    "end": 1.316,
+    "onset": 1.2,
+    "check": "isolated"
+   },
+   {
+    "text": "a",
+    "start": 1.338,
+    "end": 1.439,
+    "onset": 1.344,
+    "check": "context"
+   },
+   {
+    "text": "comment",
+    "start": 1.457,
+    "end": 1.783,
+    "onset": 1.499,
+    "check": "isolated"
+   },
+   {
+    "text": "below.",
+    "start": 1.783,
+    "end": 2.257,
+    "onset": 1.818,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:P|P,join:V|A,join:V|F,gap,gap,gap,join:P|P",
+  "confidence": 0.52
+ },
+ {
+  "index": 37,
+  "file": "38.wav",
+  "text": "Big news.",
+  "duration": 1.019,
+  "voiced": [
+   0.017,
+   0.849
+  ],
+  "f0": 196.7,
+  "rmsDb": -13.97,
+  "gainDb": -0.03,
+  "words": [
+   {
+    "text": "Big",
+    "start": 0.017,
+    "end": 0.253,
+    "onset": 0.096,
+    "check": "isolated"
+   },
+   {
+    "text": "news.",
+    "start": 0.253,
+    "end": 0.849,
+    "onset": 0.46,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:P|N",
+  "confidence": 0.64
+ },
+ {
+  "index": 38,
+  "file": "39.wav",
+  "text": "Some personal news.",
+  "duration": 1.258,
+  "voiced": [
+   0.017,
+   1.221
+  ],
+  "f0": 171.4,
+  "rmsDb": -15.48,
+  "gainDb": 1.48,
+  "words": [
+   {
+    "text": "Some",
+    "start": 0.017,
+    "end": 0.237,
+    "onset": 0.109,
+    "check": "isolated"
+   },
+   {
+    "text": "personal",
+    "start": 0.246,
+    "end": 0.74,
+    "onset": 0.323,
+    "check": "isolated"
+   },
+   {
+    "text": "news.",
+    "start": 0.74,
+    "end": 1.221,
+    "onset": 0.785,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:gap,join:A|N",
+  "confidence": 0.83
+ },
+ {
+  "index": 39,
+  "file": "40.wav",
+  "text": "A quick update.",
+  "duration": 1.296,
+  "voiced": [
+   0.016,
+   0.942
+  ],
+  "f0": 208.7,
+  "rmsDb": -17.38,
+  "gainDb": 3.38,
+  "words": [
+   {
+    "text": "A",
+    "start": 0.016,
+    "end": 0.117,
+    "onset": 0.016,
+    "check": "context"
+   },
+   {
+    "text": "quick",
+    "start": 0.161,
+    "end": 0.375,
+    "onset": 0.23,
+    "check": "isolated"
+   },
+   {
+    "text": "update.",
+    "start": 0.375,
+    "end": 0.942,
+    "onset": 0.383,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:gap,release:P|V",
+  "confidence": 0.67
+ },
+ {
+  "index": 40,
+  "file": "41.wav",
+  "text": "The journey continues.",
+  "duration": 1.332,
+  "voiced": [
+   0.014,
+   1.296
+  ],
+  "f0": 247.4,
+  "rmsDb": -14.2,
+  "gainDb": 0.2,
+  "words": [
+   {
+    "text": "The",
+    "start": 0.014,
+    "end": 0.115,
+    "onset": 0.046,
+    "check": "context"
+   },
+   {
+    "text": "journey",
+    "start": 0.115,
+    "end": 0.504,
+    "onset": 0.192,
+    "check": "isolated"
+   },
+   {
+    "text": "continues.",
+    "start": 0.525,
+    "end": 1.296,
+    "onset": 0.527,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:V|P,gap",
+  "confidence": 0.59
+ },
+ {
+  "index": 41,
+  "file": "42.wav",
+  "text": "Lessons learned.",
+  "duration": 0.944,
+  "voiced": [
+   0.012,
+   0.904
+  ],
+  "f0": 187.5,
+  "rmsDb": -14.9,
+  "gainDb": 0.9,
+  "words": [
+   {
+    "text": "Lessons",
+    "start": 0.012,
+    "end": 0.448,
+    "onset": 0.068,
+    "check": "isolated"
+   },
+   {
+    "text": "learned.",
+    "start": 0.448,
+    "end": 0.904,
+    "onset": 0.55,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:Z|A",
+  "confidence": 0.71
+ },
+ {
+  "index": 42,
+  "file": "43.wav",
+  "text": "Here's the takeaway.",
+  "duration": 1.077,
+  "voiced": [
+   0.001,
+   1.028
+  ],
+  "f0": 218.3,
+  "rmsDb": -16.26,
+  "gainDb": 2.26,
+  "words": [
+   {
+    "text": "Here's",
+    "start": 0.001,
+    "end": 0.293,
+    "onset": 0.054,
+    "check": "isolated"
+   },
+   {
+    "text": "the",
+    "start": 0.295,
+    "end": 0.394,
+    "onset": 0.307,
+    "check": "isolated"
+   },
+   {
+    "text": "takeaway.",
+    "start": 0.4,
+    "end": 1.028,
+    "onset": 0.456,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:gap,gap",
+  "confidence": 0.8
+ },
+ {
+  "index": 43,
+  "file": "44.wav",
+  "text": "We're just getting started.",
+  "duration": 1.277,
+  "voiced": [
+   0.011,
+   1.229
+  ],
+  "f0": 208.7,
+  "rmsDb": -15.35,
+  "gainDb": 1.35,
+  "words": [
+   {
+    "text": "We're",
+    "start": 0.011,
+    "end": 0.163,
+    "onset": 0.07,
+    "check": "isolated"
+   },
+   {
+    "text": "just",
+    "start": 0.163,
+    "end": 0.444,
+    "onset": 0.246,
+    "check": "isolated"
+   },
+   {
+    "text": "getting",
+    "start": 0.471,
+    "end": 0.714,
+    "onset": 0.475,
+    "check": "isolated"
+   },
+   {
+    "text": "started.",
+    "start": 0.714,
+    "end": 1.229,
+    "onset": 0.828,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:A|P,gap,join:N|F",
+  "confidence": 0.63
+ },
+ {
+  "index": 44,
+  "file": "45.wav",
+  "text": "More to come.",
+  "duration": 0.945,
+  "voiced": [
+   0.013,
+   0.906
+  ],
+  "f0": 217.2,
+  "rmsDb": -14.73,
+  "gainDb": 0.73,
+  "words": [
+   {
+    "text": "More",
+    "start": 0.013,
+    "end": 0.313,
+    "onset": 0.115,
+    "check": "isolated"
+   },
+   {
+    "text": "to",
+    "start": 0.319,
+    "end": 0.426,
+    "onset": 0.325,
+    "check": "isolated"
+   },
+   {
+    "text": "come.",
+    "start": 0.449,
+    "end": 0.906,
+    "onset": 0.506,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:gap,gap",
+  "confidence": 0.84
+ },
+ {
+  "index": 45,
+  "file": "46.wav",
+  "text": "Stay tuned.",
+  "duration": 0.929,
+  "voiced": [
+   0.009,
+   0.873
+  ],
+  "f0": 225.4,
+  "rmsDb": -15.78,
+  "gainDb": 1.78,
+  "words": [
+   {
+    "text": "Stay",
+    "start": 0.009,
+    "end": 0.364,
+    "onset": 0.148,
+    "check": "context"
+   },
+   {
+    "text": "tuned.",
+    "start": 0.374,
+    "end": 0.873,
+    "onset": 0.405,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:gap",
+  "confidence": 0.71
+ },
+ {
+  "index": 46,
+  "file": "47.wav",
+  "text": "Proud of this team.",
+  "duration": 1.107,
+  "voiced": [
+   0.012,
+   1.007
+  ],
+  "f0": 185.4,
+  "rmsDb": -16.49,
+  "gainDb": 2.49,
+  "words": [
+   {
+    "text": "Proud",
+    "start": 0.012,
+    "end": 0.272,
+    "onset": 0.11,
+    "check": "isolated"
+   },
+   {
+    "text": "of",
+    "start": 0.272,
+    "end": 0.36,
+    "onset": 0.272,
+    "check": "context"
+   },
+   {
+    "text": "this",
+    "start": 0.36,
+    "end": 0.574,
+    "onset": 0.39,
+    "check": "isolated"
+   },
+   {
+    "text": "team.",
+    "start": 0.588,
+    "end": 1.007,
+    "onset": 0.649,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:P|V,join:Z|Z,gap",
+  "confidence": 0.56
+ },
+ {
+  "index": 47,
+  "file": "48.wav",
+  "text": "Milestone unlocked.",
+  "duration": 1.617,
+  "voiced": [
+   0.006,
+   1.572
+  ],
+  "f0": 210.5,
+  "rmsDb": -14.17,
+  "gainDb": 0.17,
+  "words": [
+   {
+    "text": "Milestone",
+    "start": 0.006,
+    "end": 0.849,
+    "onset": 0.088,
+    "check": "isolated"
+   },
+   {
+    "text": "unlocked.",
+    "start": 0.87,
+    "end": 1.572,
+    "onset": 0.87,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:gap",
+  "confidence": 0.95
+ },
+ {
+  "index": 48,
+  "file": "49.wav",
+  "text": "This one's personal.",
+  "duration": 2.206,
+  "voiced": [
+   0.012,
+   1.956
+  ],
+  "f0": 183.2,
+  "rmsDb": -15.99,
+  "gainDb": 1.99,
+  "words": [
+   {
+    "text": "This",
+    "start": 0.012,
+    "end": 0.304,
+    "onset": 0.072,
+    "check": "context"
+   },
+   {
+    "text": "one's",
+    "start": 0.304,
+    "end": 0.895,
+    "onset": 0.42,
+    "check": "context"
+   },
+   {
+    "text": "personal.",
+    "start": 1.299,
+    "end": 1.956,
+    "onset": 1.378,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|A,gap",
+  "confidence": 0.53
+ },
+ {
+  "index": 49,
+  "file": "50.wav",
+  "text": "Let's build.",
+  "duration": 0.798,
+  "voiced": [
+   0.013,
+   0.761
+  ],
+  "f0": 187.5,
+  "rmsDb": -15.95,
+  "gainDb": 1.95,
+  "words": [
+   {
+    "text": "Let's",
+    "start": 0.013,
+    "end": 0.29,
+    "onset": 0.087,
+    "check": "isolated"
+   },
+   {
+    "text": "build.",
+    "start": 0.29,
+    "end": 0.761,
+    "onset": 0.358,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|P",
+  "confidence": 0.67
+ },
+ {
+  "index": 50,
+  "file": "51.wav",
+  "text": "Watch this space.",
+  "duration": 1.63,
+  "voiced": [
+   0.013,
+   1.174
+  ],
+  "f0": 207.8,
+  "rmsDb": -16.64,
+  "gainDb": 2.64,
+  "words": [
+   {
+    "text": "Watch",
+    "start": 0.013,
+    "end": 0.374,
+    "onset": 0.11,
+    "check": "isolated"
+   },
+   {
+    "text": "this",
+    "start": 0.404,
+    "end": 0.6,
+    "onset": 0.409,
+    "check": "isolated"
+   },
+   {
+    "text": "space.",
+    "start": 0.6,
+    "end": 1.174,
+    "onset": 0.713,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:gap,join:F|F",
+  "confidence": 0.68
+ },
+ {
+  "index": 51,
+  "file": "52.wav",
+  "text": "The numbers don't lie.",
+  "duration": 1.369,
+  "voiced": [
+   0.015,
+   1.334
+  ],
+  "f0": 175.2,
+  "rmsDb": -14.17,
+  "gainDb": 0.17,
+  "words": [
+   {
+    "text": "The",
+    "start": 0.015,
+    "end": 0.085,
+    "onset": 0.017,
+    "check": "isolated"
+   },
+   {
+    "text": "numbers",
+    "start": 0.085,
+    "end": 0.574,
+    "onset": 0.159,
+    "check": "isolated"
+   },
+   {
+    "text": "don't",
+    "start": 0.599,
+    "end": 0.816,
+    "onset": 0.605,
+    "check": "isolated"
+   },
+   {
+    "text": "lie.",
+    "start": 0.818,
+    "end": 1.334,
+    "onset": 0.91,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:V|N,gap,gap",
+  "confidence": 0.62
+ },
+ {
+  "index": 52,
+  "file": "53.wav",
+  "text": "Execution beats strategy.",
+  "duration": 1.746,
+  "voiced": [
+   0.014,
+   1.709
+  ],
+  "f0": 201.7,
+  "rmsDb": -16.1,
+  "gainDb": 2.1,
+  "words": [
+   {
+    "text": "Execution",
+    "start": 0.014,
+    "end": 0.823,
+    "onset": 0.017,
+    "check": "isolated"
+   },
+   {
+    "text": "beats",
+    "start": 0.825,
+    "end": 1.08,
+    "onset": 0.832,
+    "check": "isolated"
+   },
+   {
+    "text": "strategy.",
+    "start": 1.08,
+    "end": 1.709,
+    "onset": 1.21,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:gap,join:F|F",
+  "confidence": 0.65
+ },
+ {
+  "index": 53,
+  "file": "54.wav",
+  "text": "Culture is everything.",
+  "duration": 2.137,
+  "voiced": [
+   0.015,
+   1.9
+  ],
+  "f0": 208.7,
+  "rmsDb": -16.19,
+  "gainDb": 2.19,
+  "words": [
+   {
+    "text": "Culture",
+    "start": 0.015,
+    "end": 0.638,
+    "onset": 0.067,
+    "check": "isolated"
+   },
+   {
+    "text": "is",
+    "start": 0.748,
+    "end": 1.012,
+    "onset": 0.748,
+    "check": "isolated"
+   },
+   {
+    "text": "everything.",
+    "start": 1.089,
+    "end": 1.9,
+    "onset": 1.089,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:gap,gap",
+  "confidence": 0.86
+ },
+ {
+  "index": 54,
+  "file": "55.wav",
+  "text": "Feedback is a gift.",
+  "duration": 1.325,
+  "voiced": [
+   0.0,
+   1.287
+  ],
+  "f0": 218.2,
+  "rmsDb": -15.61,
+  "gainDb": 1.61,
+  "words": [
+   {
+    "text": "Feedback",
+    "start": 0.0,
+    "end": 0.498,
+    "onset": 0.042,
+    "check": "isolated"
+   },
+   {
+    "text": "is",
+    "start": 0.498,
+    "end": 0.678,
+    "onset": 0.507,
+    "check": "isolated"
+   },
+   {
+    "text": "a",
+    "start": 0.678,
+    "end": 0.737,
+    "onset": 0.678,
+    "check": "context"
+   },
+   {
+    "text": "gift.",
+    "start": 0.737,
+    "end": 1.287,
+    "onset": 0.859,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:release:P|V,join:Z|V,join:V|P",
+  "confidence": 0.58
+ },
+ {
+  "index": 55,
+  "file": "56.wav",
+  "text": "Failure is just data.",
+  "duration": 1.593,
+  "voiced": [
+   0.0,
+   1.534
+  ],
+  "f0": 200.0,
+  "rmsDb": -14.94,
+  "gainDb": 0.94,
+  "words": [
+   {
+    "text": "Failure",
+    "start": 0.0,
+    "end": 0.587,
+    "onset": 0.086,
+    "check": "isolated"
+   },
+   {
+    "text": "is",
+    "start": 0.614,
+    "end": 0.787,
+    "onset": 0.618,
+    "check": "isolated"
+   },
+   {
+    "text": "just",
+    "start": 0.809,
+    "end": 1.049,
+    "onset": 0.849,
+    "check": "isolated"
+   },
+   {
+    "text": "data.",
+    "start": 1.052,
+    "end": 1.534,
+    "onset": 1.095,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:gap,gap,gap",
+  "confidence": 0.8
+ },
+ {
+  "index": 56,
+  "file": "57.wav",
+  "text": "Momentum compounds.",
+  "duration": 1.354,
+  "voiced": [
+   0.015,
+   1.293
+  ],
+  "f0": 205.1,
+  "rmsDb": -14.3,
+  "gainDb": 0.3,
+  "words": [
+   {
+    "text": "Momentum",
+    "start": 0.015,
+    "end": 0.546,
+    "onset": 0.061,
+    "check": "isolated"
+   },
+   {
+    "text": "compounds.",
+    "start": 0.555,
+    "end": 1.293,
+    "onset": 0.619,
+    "check": "isolated"
+   }
+  ],
+  "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:gap",
+  "confidence": 0.87
+ }
+]

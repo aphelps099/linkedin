@@ -21,7 +21,12 @@
     "check:feed": "node scripts/check-feed.mjs",
     "check:conversation": "node scripts/check-conversation.mjs",
     "check:meeting": "node scripts/check-meeting-season.mjs",
-    "check:meeting-voices": "node scripts/check-meeting-voices.mjs"
+    "check:meeting-voices": "node scripts/check-meeting-voices.mjs",
+    "check:allhands": "node scripts/check-allhands.mjs",
+    "check:pixel": "node scripts/check-pixel-export.mjs",
+    "check:pixel-type": "node scripts/check-pixel-type.mjs",
+    "check:eq": "node scripts/check-eq.mjs",
+    "check:pegboard": "node scripts/check-pegboard.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1153.0",
