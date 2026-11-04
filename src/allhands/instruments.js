@@ -36,14 +36,15 @@ function drive(ctx, amount) {
     for (let i = 0; i < curve.length; i++) { const x = i / 511.5 - 1; curve[i] = Math.tanh(x * amount) / Math.tanh(amount); }
     s[key] = curve;
   }
-  const w = ctx.createWaveShaper(); w.curve = s[key]; return w;
+  const w = ctx.createWaveShaper(); w.curve = s[key]; w.oversample = '4x'; return w;
 }
 
 export function kick(ctx, out, t, v = 1) {
   const o = ctx.createOscillator(), g = amp(ctx), sh = drive(ctx, 1.8);
+  // Body 220 → 62 Hz, settling on A1 (55 Hz): the kick is in key.
   o.frequency.setValueAtTime(220, t);
-  o.frequency.exponentialRampToValueAtTime(60, t + .05);
-  o.frequency.exponentialRampToValueAtTime(47, t + .3);
+  o.frequency.exponentialRampToValueAtTime(62, t + .05);
+  o.frequency.exponentialRampToValueAtTime(55, t + .22);
   g.gain.setValueAtTime(0, t);
   g.gain.linearRampToValueAtTime(v, t + .0015);
   g.gain.setValueAtTime(v, t + .04);
@@ -187,4 +188,103 @@ export function impulse(ctx, seconds = 2.6, decay = 3.1) {
     }
   }
   return s.ir = b;
+}
+
+// ---- Drop Edition voices -------------------------------------------------
+
+// The half-time snare: a tuned body under a noise crack.
+export function snare(ctx, out, t, v = 1) {
+  const o = ctx.createOscillator(), og = amp(ctx);
+  o.frequency.setValueAtTime(240, t); o.frequency.exponentialRampToValueAtTime(175, t + .06);
+  og.gain.setValueAtTime(v * .55, t); og.gain.exponentialRampToValueAtTime(.001, t + .14);
+  chain(o, og, out); o.start(t); o.stop(t + .16); done(o, [o, og]);
+  const n = noise(ctx, t, .3), hp = biquad(ctx, 'highpass', 900), pk = biquad(ctx, 'peaking', 2400, 1, 5), g = amp(ctx);
+  g.gain.setValueAtTime(v * .7, t); g.gain.exponentialRampToValueAtTime(v * .2, t + .05); g.gain.exponentialRampToValueAtTime(.001, t + .26);
+  chain(n, hp, pk, g, out); done(n, [n, hp, pk, g]);
+}
+
+// A short, bright roll hit that stays separate at 32nds (the clap would smear).
+export function snareRoll(ctx, out, t, v, tone = 200) {
+  const n = noise(ctx, t, .08), bp = biquad(ctx, 'bandpass', 1800, .8), g = amp(ctx);
+  g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.001, t + .06);
+  chain(n, bp, g, out); done(n, [n, bp, g]);
+  const o = ctx.createOscillator(), og = amp(ctx);
+  o.frequency.setValueAtTime(tone, t); og.gain.setValueAtTime(v * .35, t); og.gain.exponentialRampToValueAtTime(.001, t + .05);
+  chain(o, og, out); o.start(t); o.stop(t + .06); done(o, [o, og]);
+}
+
+// Dub wobble: a saturated saw/square pair through a resonant low-pass whose
+// cutoff swings 120 → 2400 Hz once per wobble, with a clean sine sub under it.
+export function wobble(ctx, out, t, midi, length, period, v = 1) {
+  const f = mtof(midi), saw = ctx.createOscillator(), sq = ctx.createOscillator(), sub = ctx.createOscillator();
+  saw.type = 'sawtooth'; sq.type = 'square'; saw.frequency.value = f; sq.frequency.value = f; sq.detune.value = 9; sub.frequency.value = f;
+  const lp = biquad(ctx, 'lowpass', 400, 8), sh = drive(ctx, 3.4), g = amp(ctx), sg = amp(ctx, .8), mix = amp(ctx, .5);
+  const points = Math.max(32, Math.round(length / period * 64)), curve = new Float32Array(points);
+  for (let i = 0; i < points; i++) {
+    const phase = (i / points * length / period) % 1, shape = .5 - .5 * Math.cos(2 * Math.PI * phase);
+    curve[i] = 120 * 20 ** shape;
+  }
+  lp.frequency.setValueCurveAtTime(curve, t, length);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .01); g.gain.setValueAtTime(v, t + length - .04); g.gain.linearRampToValueAtTime(0, t + length);
+  saw.connect(mix); sq.connect(mix); mix.connect(lp); lp.connect(sh); sh.connect(g); sub.connect(sg); sg.connect(g); g.connect(out);
+  [saw, sq, sub].forEach(o => { o.start(t); o.stop(t + length + .01); }); done(saw, [saw, sq, sub, lp, sh, g, sg, mix]);
+}
+
+// One long note: the room's floor while it sinks.
+export function sustainBass(ctx, out, t, midi, length, v = 1) {
+  const f = mtof(midi), saw = ctx.createOscillator(), sub = ctx.createOscillator(), lp = biquad(ctx, 'lowpass', 500, 2), g = amp(ctx), sg = amp(ctx, .9);
+  saw.type = 'sawtooth'; saw.frequency.value = f; sub.frequency.value = f;
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .02); g.gain.setValueAtTime(v, t + length - .05); g.gain.linearRampToValueAtTime(0, t + length);
+  saw.connect(lp); lp.connect(g); sub.connect(sg); sg.connect(g); g.connect(out);
+  [saw, sub].forEach(o => { o.start(t); o.stop(t + length + .01); }); done(saw, [saw, sub, lp, g, sg]);
+}
+
+// The drop's floor falls away: 110 → 27.5 Hz, driven so phones hear its harmonics.
+export function subDrop(ctx, out, t, v = .7) {
+  const o = ctx.createOscillator(), sh = drive(ctx, 2.6), g = amp(ctx);
+  o.frequency.setValueAtTime(110, t); o.frequency.exponentialRampToValueAtTime(27.5, t + 1.5);
+  g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.001, t + 1.6);
+  chain(o, sh, g, out); o.start(t); o.stop(t + 1.65); done(o, [o, sh, g]);
+}
+
+// A drop kick: the same tuned body with a longer, harder tail.
+export function dropKick(ctx, out, t, v = 1) {
+  const o = ctx.createOscillator(), g = amp(ctx), sh = drive(ctx, 3);
+  o.frequency.setValueAtTime(240, t); o.frequency.exponentialRampToValueAtTime(62, t + .06); o.frequency.exponentialRampToValueAtTime(55, t + .25);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .002); g.gain.setValueAtTime(v, t + .07); g.gain.exponentialRampToValueAtTime(.001, t + .5);
+  chain(o, sh, g, out); o.start(t); o.stop(t + .52); done(o, [o, sh, g]);
+}
+
+// Air falling after the impact: band-pass 8 kHz → 400 Hz.
+export function downlifter(ctx, out, t, duration, v = .22) {
+  const n = noise(ctx, t, duration), bp = biquad(ctx, 'bandpass', 8000, 1.2), g = amp(ctx);
+  bp.frequency.setValueAtTime(8000, t); bp.frequency.exponentialRampToValueAtTime(400, t + duration);
+  g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.001, t + duration);
+  chain(n, bp, g, out); done(n, [n, bp, g]);
+}
+
+// A cymbal played backwards into the next downbeat.
+export function reverseCrash(ctx, out, t, duration, v = .4) {
+  const n = noise(ctx, t, duration), hp = biquad(ctx, 'highpass', 4200), g = amp(ctx);
+  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + duration - .01); g.gain.linearRampToValueAtTime(0, t + duration);
+  chain(n, hp, g, out); done(n, [n, hp, g]);
+}
+
+// Four detuned saws gliding two octaves up under the build.
+export function sawRiser(ctx, out, t, duration, from = 57, to = 81, v = .05) {
+  const hp = biquad(ctx, 'highpass', 300), g = amp(ctx), oscs = [-14, -5, 5, 14].map(cents => {
+    const o = ctx.createOscillator(); o.type = 'sawtooth'; o.detune.value = cents;
+    o.frequency.setValueAtTime(mtof(from), t); o.frequency.exponentialRampToValueAtTime(mtof(to), t + duration); o.connect(hp); return o;
+  });
+  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + duration - .02); g.gain.linearRampToValueAtTime(0, t + duration);
+  hp.connect(g); g.connect(out);
+  oscs.forEach(o => { o.start(t); o.stop(t + duration + .01); }); done(oscs[0], [...oscs, hp, g]);
+}
+
+// A ride: a metallic wash on the off-beats, for the drops' top end.
+export function ride(ctx, out, t, v = .2) {
+  const n = noise(ctx, t, .5), hp = biquad(ctx, 'highpass', 5200), pk = biquad(ctx, 'peaking', 7400, 3, 7), g = amp(ctx);
+  const o = ctx.createOscillator(), og = amp(ctx); o.type = 'square'; o.frequency.value = 3150; og.gain.setValueAtTime(v * .05, t); og.gain.exponentialRampToValueAtTime(.0005, t + .3);
+  g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(v * .3, t + .06); g.gain.exponentialRampToValueAtTime(.001, t + .45);
+  chain(n, hp, pk, g, out); o.connect(og); og.connect(hp); o.start(t); o.stop(t + .32); done(n, [n, hp, pk, g]); done(o, [o, og]);
 }

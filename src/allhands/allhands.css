@@ -37,12 +37,22 @@ a{color:inherit;text-decoration:none}
 .ah-word{display:block;font-family:var(--display);font-weight:800;line-height:.82;text-transform:uppercase;letter-spacing:-.005em;white-space:nowrap;color:var(--paper);animation:ah-slam .16s cubic-bezier(.2,.7,.2,1)}
 .ah-word-hook,.ah-word-stammer{color:var(--signal)}
 .ah-word-host{color:var(--dim)}
+.ah-word-lady{color:#6f9bff}
+.ah[data-section="Drop A"] .ah-stage,.ah[data-section="Drop B"] .ah-stage{background:var(--cobalt)}
+.ah[data-section="Sink In"] .ah-stage,.ah[data-section=Build] .ah-stage{background:#050506}
+.ah[data-section^="Drop "] .ah-word{color:#fff}
+.ah[data-section^="Drop "] .ah-word-hook,.ah[data-section^="Drop "] .ah-word-stammer{color:var(--signal)}
+.ah[data-section^="Drop "] .ah-word-lady{color:#0a0a0b}
+.ah[data-section^="Drop "] .ah-caption{background:rgba(6,22,120,.62)}
+.ah-gap{margin-top:26px!important}
+.ah-forms button{font-size:13px}
 .ah[data-section=Drop] .ah-word{color:#fff}
 .ah[data-section=Drop] .ah-word-hook,.ah[data-section=Drop] .ah-word-stammer{color:var(--signal)}
 @keyframes ah-slam{from{transform:scale(1.07) translateY(1%);opacity:.35}to{transform:none;opacity:1}}
 .ah-line{position:absolute;left:28px;right:28px;bottom:8%;margin:0;text-align:center;font:400 clamp(16px,1.7vw,23px)/1.35 var(--sans);letter-spacing:-.01em;z-index:2;text-wrap:balance}
 .ah-caption{display:inline-block;padding:7px 14px 8px;background:rgba(10,10,11,.78);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 .ah[data-section=Drop] .ah-caption{background:rgba(6,22,120,.62)}
+.ah-caption.empty{visibility:hidden}
 .ah-caption span{opacity:.38;transition:opacity .08s}
 .ah-caption span.sung{opacity:1}
 
@@ -70,8 +80,8 @@ a{color:inherit;text-decoration:none}
 .ah-desk>*+*{border-left:1px solid var(--rule)}
 .ah h2{margin:0 0 6px;font:500 11px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--paper)}
 .ah-hint{margin:6px 0 0;color:var(--dim);font-size:13px;line-height:1.45;max-width:46ch}
-.ah-tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:18px}
-.ah-tile{position:relative;aspect-ratio:3/4;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start;gap:2px;padding:12px;text-align:left;background:var(--ink-2);border:1px solid var(--rule);overflow:hidden;transition:opacity .15s,border-color .15s}
+.ah-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:18px}
+.ah-tile{position:relative;aspect-ratio:16/10;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start;gap:2px;padding:12px;text-align:left;background:var(--ink-2);border:1px solid var(--rule);overflow:hidden;transition:opacity .15s,border-color .15s}
 .ah-tile:hover{border-color:var(--faint)}
 .ah-tile strong{position:relative;font:600 15px/1.1 var(--sans);letter-spacing:-.01em}
 .ah-tile>span:not(.ah-meter){position:relative;font-size:12px;line-height:1.25;color:var(--dim)}
@@ -80,12 +90,13 @@ a{color:inherit;text-decoration:none}
 .ah-tile.muted small{color:var(--leave)}
 .ah-meter{position:absolute;inset:0;pointer-events:none}
 .ah-meter i{position:absolute;left:0;right:0;bottom:0;height:100%;background:linear-gradient(to top,rgba(23,71,255,.62),rgba(23,71,255,.08));transform-origin:bottom;transform:scaleY(0);transition:transform 60ms linear}
-.ah-modes{display:grid;grid-template-columns:repeat(3,1fr);margin-top:18px;border:1px solid var(--rule)}
+.ah-modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));margin-top:18px;border:1px solid var(--rule)}
 .ah-modes button{height:44px;font:600 14px/1 var(--sans);color:var(--dim)}
 .ah-modes button+button{border-left:1px solid var(--rule)}
 .ah-modes button.on{background:var(--paper);color:var(--ink)}
 .ah-download{margin-top:26px;height:44px;width:100%;border:1px solid var(--paper);font:600 14px/1 var(--sans)}
 .ah-download:not(:disabled):hover{background:var(--paper);color:var(--ink)}
+.ah-download-2{margin-top:8px;border-color:var(--faint);color:var(--dim)}
 .ah-post textarea{display:block;width:100%;margin-top:18px;padding:14px 16px;background:var(--ink-2);border:1px solid var(--rule);border-radius:0;font:400 14px/1.5 var(--sans);resize:vertical;min-height:150px}
 .ah-post textarea:focus{border-color:var(--faint);outline:none}
 .ah-post-actions{display:flex;gap:10px;margin-top:10px}

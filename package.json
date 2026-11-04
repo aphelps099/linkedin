@@ -22,7 +22,8 @@
     "check:conversation": "node scripts/check-conversation.mjs",
     "check:meeting": "node scripts/check-meeting-season.mjs",
     "check:meeting-voices": "node scripts/check-meeting-voices.mjs",
-    "check:allhands": "node scripts/check-allhands.mjs"
+    "check:allhands": "node scripts/check-allhands.mjs",
+    "check:pixel": "node scripts/check-pixel-export.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1153.0",

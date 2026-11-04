@@ -16,19 +16,22 @@ function rectifier(ctx) {
 
 // Defaults tuned against Whisper transcripts of sung vs spoken takes: a fast
 // 70 Hz envelope and narrow bands keep the consonants that carry the words.
-export function createVocoder(ctx, {bands = 28, low = 105, high = 7800, q = 5, follow = 70, air = 4500, airLevel = .5, tilt = .42} = {}) {
+// `shift` moves the synthesis bands up by whole bands (2.76 semitones each at
+// the defaults): half-speed speech an octave down stays legible at shift +2.
+export function createVocoder(ctx, {bands = 28, low = 105, high = 7800, q = 5, follow = 70, air = 4500, airLevel = .5, tilt = .42, shift = 0} = {}) {
   const input = amp(ctx, 1), carrier = amp(ctx, 1), output = amp(ctx, 1);
   const hp = biquad(ctx, 'highpass', 85), presence = biquad(ctx, 'highshelf', 2200, .707, 10);
   input.connect(hp); hp.connect(presence);
-  const levels = [];
+  const levels = [], ratio = (high / low) ** (1 / (bands - 1));
   for (let i = 0; i < bands; i++) {
-    const f = low * (high / low) ** (i / (bands - 1));
+    const f = low * ratio ** i, fs = f * ratio ** shift;
+    if (fs > ctx.sampleRate * .45) continue;
     const m1 = biquad(ctx, 'bandpass', f, q), m2 = biquad(ctx, 'bandpass', f, q), rect = rectifier(ctx);
     const l1 = biquad(ctx, 'lowpass', follow, .6), l2 = biquad(ctx, 'lowpass', follow, .6);
     // Bandpassed speech loses level fast toward the top; the tilt keeps the
     // consonants audible, which is what keeps the joke intelligible.
     const makeup = amp(ctx, 26 * (f / 400) ** tilt);
-    const c1 = biquad(ctx, 'bandpass', f, q), c2 = biquad(ctx, 'bandpass', f, q), vca = amp(ctx, 0);
+    const c1 = biquad(ctx, 'bandpass', fs, q), c2 = biquad(ctx, 'bandpass', fs, q), vca = amp(ctx, 0);
     presence.connect(m1); m1.connect(m2); m2.connect(rect); rect.connect(l1); l1.connect(l2); l2.connect(makeup); makeup.connect(vca.gain);
     carrier.connect(c1); c1.connect(c2); c2.connect(vca); vca.connect(output);
     levels.push(makeup);

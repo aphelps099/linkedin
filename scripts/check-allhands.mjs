@@ -5,6 +5,10 @@ import {execFileSync} from 'node:child_process';
 import {lyricsFromPost, tokens, syllables, say, SAMPLE_POST} from '../src/allhands/lyrics.js';
 import {arrange, fitPhrase, melody, voicedWords, slots, stepTime, BARS, BAR_STEPS, STEP, HOST} from '../src/allhands/song.js';
 import {normalizeWords, fixStreamedWave, createAllHandsVoice, espeakWord} from '../server/allhands-voice.js';
+import {arrangeDrop, dropVoicedWords, DROP_BARS, DROP_SECTIONS, swingOf, tunedRate} from '../src/allhands/drop.js';
+import {LADY_TABLE, slice} from '../src/allhands/lady-table.js';
+import {FORMS, stepAt} from '../src/allhands/forms.js';
+import {truePeakLimit, truePeaks} from '../src/allhands/master.js';
 
 const PENTATONIC = new Set([45, 48, 50, 52, 55, 57, 60, 62, 64]);
 const POSTS = [
@@ -81,6 +85,56 @@ for (const shape of ['chant', 'call', 'rise', 'arch']) {
 }
 function SCALE_INDEX(m) { return [45, 48, 50, 52, 55, 57, 60, 62, 64].indexOf(m); }
 ok(Math.abs(stepTime(1) - STEP * 1.12) < 1e-9 && stepTime(2) === STEP * 2, 'swing delays odd 16ths only');
+
+// ---- Drop Edition ---------------------------------------------------------
+const PENTA_OK = new Set([0, 2, 5, 7, 9, 12]);   // semitones above the tuned base: G A C D E G
+for (const post of POSTS) {
+  const lyrics = lyricsFromPost(post), durations = Object.fromEntries(dropVoicedWords(lyrics).map(w => [w, .18 + .11 * syllables(w)]));
+  const plan = arrangeDrop(lyrics, durations), T = plan.timing;
+  ok(plan.bars.length === DROP_BARS && Math.abs(T[DROP_BARS * BAR_STEPS] - 60) < 1e-9, 'drop: 30 bars, 60.000 s');
+  ok(Math.abs(T[20 * BAR_STEPS] - 40) < 1e-9 && Math.abs(T[plan.choke.at] - 39) < 1e-9, 'drop: choke at 39.000 s, BACK at 40.000 s');
+  ok(T.every((t, i) => !i || t > T[i - 1]), 'drop: timing strictly increases');
+  ok(DROP_SECTIONS.every((x, i) => !i || x.from === DROP_SECTIONS[i - 1].to) && DROP_SECTIONS.at(-1).to === DROP_BARS, 'drop: sections tile the song');
+  ok(plan.bars.every(b => b.swing === swingOf(b.index)) && swingOf(16) === 0 && swingOf(4) > 0, 'drop: straight build, swung verse');
+  // Nothing sounds between the choke and the impact except the tag, which ends 0.5 s early.
+  const choke = T[plan.choke.at], impact = T[plan.choke.until];
+  const sounding = [...plan.words.map(w => [T[w.at], T[w.at] + w.gate]), ...plan.lady.filter(e => e.role !== 'tag').map(e => [T[Math.floor(e.at)] + (e.at % 1) * STEP, T[Math.floor(e.at)] + (e.at % 1) * STEP + e.gate])];
+  ok(sounding.every(([a, b]) => b <= choke + 1e-6 || a >= impact - 1e-6), 'drop: the silence is empty');
+  const tag = plan.lady.find(e => e.role === 'tag');
+  ok(tag && Math.abs(T[tag.at] - 39) < 1e-9 && T[tag.at] + tag.gate <= 39.65, 'drop: the tag ends, leaving at least 350 ms of silence');
+  const back = plan.lady.find(e => e.role === 'impact');
+  ok(back && back.at === 20 * BAR_STEPS && back.deep > 0 && back.vocoded > 0, 'drop: BACK. on the impact, three layers');
+  // The ladder: on the grid, accelerating, in key, gated inside its period.
+  const ladder = plan.lady.filter(e => e.role === 'ladder');
+  const {base} = tunedRate(LADY_TABLE['50.wav'].f0);
+  ok(ladder.length === 42, 'drop: 42 ladder hits (bar 18 shares its 16ths with Synergy)');
+  ok(ladder.every(e => (e.at * 2) % 1 === 0 && e.at >= 12 * BAR_STEPS && e.at < 19 * BAR_STEPS + 8), 'drop: ladder on the 32nd grid, before the choke');
+  ok(ladder.filter(e => e.rung < 6).every(e => PENTA_OK.has(Math.round((e.midi - base) * 1e6) / 1e6)), 'drop: rungs 0–5 step through the pentatonic');
+  ok(ladder.every((e, i) => !i || e.midi >= ladder[i - 1].midi - 1e-9), 'drop: the ladder only climbs');
+  const perBar = [12, 13, 14, 15, 16, 17, 18, 19].map(b => ladder.filter(e => Math.floor(e.at / 16) === b).length);
+  ok(perBar.join() === '1,1,2,2,4,8,8,16', 'drop: 1 bar → ½ → ¼ → ⅛ → 1/16 → 1/32');
+  ok(ladder.every((e, i) => { const next = ladder[i + 1]; return !next || T[e.at | 0] + (e.at % 1) * STEP + e.gate <= T[next.at | 0] + (next.at % 1) * STEP + 1e-6; }), 'drop: each hit ends before the next');
+  // The lady's punctuation waits for Synergy's gaps.
+  for (const e of plan.lady.filter(x => x.role === 'punct')) {
+    const span = Math.ceil(e.gate / STEP);
+    ok(!plan.words.some(w => w.at - 1 < e.at + span && e.at < w.at + w.steps + 1), `drop: ${e.display} sits in a gap`);
+  }
+  ok(plan.lady.filter(e => e.role === 'punct').length >= 3, 'drop: at least three phrases find gaps');
+  ok(plan.tape.some(x => x.kind === 'sink' && x.from === 23 * 16) && plan.tape.some(x => x.kind === 'stop' && x.from === 29 * 16 + 8), 'drop: Sink In and the tape-stop');
+  ok(plan.call.until === 2 * BAR_STEPS && plan.call.dropouts.every(d => d.at < plan.call.until && d.seconds >= .04 && d.seconds <= .08), 'drop: the muted intro unmutes at 4.0 s');
+  ok(plan.words.every(w => w.notes.every(n => n.midi >= 45 && n.midi <= 64)), 'drop: Synergy stays in range');
+  ok(stepAt(plan, 40) === 320 && stepAt(plan, 39.999) === 319 && stepAt(plan, -1) === -1, 'drop: stepAt inverts the timing table');
+}
+assert.deepEqual(slice(LADY_TABLE['06.wav'], 0, 1), [.015, .7]); checks++;
+ok(Object.keys(FORMS).join() === 'drop60,soundcheck', 'two forms');
+// The true-peak limiter keeps an over-full-scale signal under its ceiling.
+{
+  const sr = 44100, a = new Float32Array(sr), b = new Float32Array(sr);
+  for (let i = 0; i < sr; i++) { a[i] = 1.2 * Math.sin(2 * Math.PI * 11025 * i / sr + Math.PI / 4); b[i] = .3 * Math.sin(2 * Math.PI * 440 * i / sr); }
+  truePeakLimit([a, b], sr, {ceilingDb:-1.3});
+  const peak = Math.max(...truePeaks(a).slice(200, -200), ...truePeaks(b).slice(200, -200));
+  ok(20 * Math.log10(peak) <= -1.29, 'limiter: true peak under -1.3 dBTP');
+}
 
 // The endpoint: validation, streamed-WAV repair, caching, limits.
 assert.deepEqual(normalizeWords(['Synergy', 'chat G P T', 'Synergy']), ['Synergy', 'chat G P T']); checks++;

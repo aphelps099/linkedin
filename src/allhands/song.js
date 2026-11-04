@@ -21,7 +21,7 @@ export const CHORDS = [
 ];
 
 // A minor pentatonic, A2 to E4: every note sits on every chord.
-const SCALE = [45, 48, 50, 52, 55, 57, 60, 62, 64];
+export const SCALE = [45, 48, 50, 52, 55, 57, 60, 62, 64];
 
 export const SECTIONS = [
   {name:'Intro', from:0, to:4},
@@ -71,7 +71,7 @@ export function cutoffAt(bar) {
   return {keys:[3000, 3000], pad:[1100, 1100]};
 }
 
-function hash(text) {
+export function hash(text) {
   let h = 2166136261;
   for (const c of text) h = Math.imul(h ^ c.codePointAt(0), 16777619);
   return h >>> 0;
@@ -154,38 +154,58 @@ export function slots(lyrics) {
   ];
 }
 
+// Place one setlist slot: fit its words into the window, give every syllable a
+// note, and repeat a one-bar hook so it answers itself. Shared by every form.
+export function placeSlot(slot, lyrics, durations, id) {
+  const window = slot.window ?? 30, startStep = slot.startStep ?? 0;
+  // A phrase that fits in one bar is sung twice: once is a line, twice is a hook.
+  const once = fitPhrase(slot.text, durations, Math.min(14, window));
+  const short = slot.kind === 'hook' && window >= 30 - startStep && once.length === tokens(slot.text).length && once.every(w => w.rate < 1.25)
+    && once.at(-1).at + once.at(-1).steps <= BAR_STEPS - startStep;
+  const fitted = short ? [...once, ...once.map(w => ({...w, at:w.at + BAR_STEPS, echo:true}))] : fitPhrase(slot.text, durations, window);
+  // A repeated hook answers itself: same tune, but the second time it comes home.
+  const half = short ? once : fitted;
+  const count = w => Math.min(w.syllables, w.steps);
+  const tune = melody(half.reduce((n, w) => n + count(w), 0), slot.shape, slot.kind === 'hook' ? hash(lyrics.hook) : hash(slot.text));
+  const answer = short ? [...tune.slice(0, -1), tune.length > 1 && tune[tune.length - 1] !== 57 ? 57 : 52] : tune;
+  const start = slot.bar * BAR_STEPS + startStep;
+  let n = 0;
+  const words = fitted.map((w, i) => {
+    if (short && i === once.length) n = 0;
+    const melodyNotes = w.echo ? answer : tune, total = count(w), base = Math.floor(w.steps / total);
+    let extra = w.steps - base * total, offset = 0;
+    const notes = Array.from({length:total}, () => {
+      const steps = base + (extra-- > 0 ? 1 : 0), note = {at:start + w.at + offset, steps, midi:melodyNotes[n++]};
+      offset += steps; return note;
+    });
+    return {display:w.display, word:w.word, line:id, at:start + w.at, steps:w.steps, rate:w.rate, gate:w.gate, notes, kind:slot.kind, harmony:!!slot.harmony, repeat:!!w.echo};
+  });
+  return {line:{id, text:slot.text, kind:slot.kind, bar:slot.bar, from:start, to:slot.bar * BAR_STEPS + 32, words}, words};
+}
+
+// Seconds from the song's first downbeat to every 16th, swing included.
+export function timingTable(steps, swingOfBar = () => SWING) {
+  const times = new Float64Array(steps + 1);
+  for (let i = 0; i <= steps; i++) {
+    const bar = Math.floor(i / BAR_STEPS);
+    times[i] = i * STEP + (i % 2 ? swingOfBar(bar) * STEP : 0);
+  }
+  return times;
+}
+
 export function arrange(lyrics, durations) {
   const lines = [], words = [];
   slots(lyrics).forEach((slot, id) => {
-    // A phrase that fits in one bar is sung twice: once is a line, twice is a hook.
-    const once = fitPhrase(slot.text, durations, 14);
-    const short = slot.kind === 'hook' && once.length === tokens(slot.text).length && once.every(w => w.rate < 1.25);
-    const fitted = short ? [...once, ...once.map(w => ({...w, at:w.at + BAR_STEPS, echo:true}))] : fitPhrase(slot.text, durations, 30);
-    // A repeated hook answers itself: same tune, but the second time it comes home.
-    const half = short ? once : fitted;
-    const count = w => Math.min(w.syllables, w.steps);
-    const tune = melody(half.reduce((n, w) => n + count(w), 0), slot.shape, slot.kind === 'hook' ? hash(lyrics.hook) : hash(slot.text));
-    const answer = short ? [...tune.slice(0, -1), tune.length > 1 && tune[tune.length - 1] !== 57 ? 57 : 52] : tune;
-    const start = slot.bar * BAR_STEPS;
-    let n = 0;
-    const placed = fitted.map((w, i) => {
-      if (short && i === once.length) n = 0;
-      const melodyNotes = w.echo ? answer : tune, total = count(w), base = Math.floor(w.steps / total);
-      let extra = w.steps - base * total, offset = 0;
-      const notes = Array.from({length:total}, () => {
-        const steps = base + (extra-- > 0 ? 1 : 0), note = {at:start + w.at + offset, steps, midi:melodyNotes[n++]};
-        offset += steps; return note;
-      });
-      const word = {display:w.display, word:w.word, line:id, at:start + w.at, steps:w.steps, rate:w.rate, gate:w.gate, notes, kind:slot.kind, harmony:!!slot.harmony, repeat:!!w.echo};
-      words.push(word); return word;
-    });
-    lines.push({id, text:slot.text, kind:slot.kind, bar:slot.bar, from:start, to:start + 32, words:placed});
+    const placed = placeSlot(slot, lyrics, durations, id);
+    lines.push(placed.line); words.push(...placed.words);
   });
   // The drop is announced by Synergy stammering the hook's first word.
   const first = words.find(w => w.kind === 'hook');
   const stutters = first ? [0, 2, 4, 6, 8, 10, 11, 12, 13, 14, 15].map((s, i) => ({word:first.word, at:15 * BAR_STEPS + s, steps:1, midi:SCALE[Math.min(8, 3 + Math.floor(i / 2))]})) : [];
   const bars = Array.from({length:BARS}, (_, index) => ({index, section:sectionAt(index).name, chord:CHORDS[index % 4], layers:layersAt(index), cutoff:cutoffAt(index)}));
-  return {bpm:BPM, step:STEP, swing:SWING, key:KEY, bars, lines, words, stutters, totalSteps:BARS * BAR_STEPS, duration:stepTime(BARS * BAR_STEPS) + 3.5};
+  const totalSteps = BARS * BAR_STEPS;
+  return {form:'soundcheck', title:'Sound check 00', bpm:BPM, step:STEP, swing:SWING, key:KEY, sections:SECTIONS, bars, lines, words, stutters, lady:[],
+    timing:timingTable(totalSteps + BAR_STEPS), finale:true, totalSteps, duration:stepTime(totalSteps) + 3.5};
 }
 
 export function voicedWords(lyrics) {
