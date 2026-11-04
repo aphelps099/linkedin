@@ -17,7 +17,7 @@
 import {MOVES} from '../moves/index.js';
 import {snareHits} from '../moves/util.js';
 import {createEDL, merge} from '../edl/schema.js';
-import {barSteps, beatSteps, stepTime, stepAtTime, ladyTime, hitFrame, hitAt, cutFrame} from '../edl/anchors.js';
+import {barSteps, beatSteps, stepTime, stepAtTime, ladyTime, hitFrame, hitAt, cutFrame, stopFrames} from '../edl/anchors.js';
 import {shotIndex, isSynergy, resolveCrop, UPSCALE, TRACKING, layerMatrix, invert, apply} from '../edl/compile.js';
 import {cellRect, layout, FORMATS} from '../layouts.js';
 import {LADY_TABLE} from '../../allhands/lady-table.js';
@@ -34,14 +34,34 @@ export const CAST = {
   printer:'printer-outward-feed',
 };
 const PAT = 'gen:camera-off', BOARD = 'gen:board', BLACK = 'gen:color:#000000';
+// A board move's length, in frames: about a 16th at 92-130 BPM.
+export const BOARD_MOVE = 4;
+// The loop seam's ghost BACK.: its intensity (plan §2: the hook's ghosts and BACK.'s are I .08).
+export const GHOST = .08;
 const sh = id => `shot:${id}`;
-// The applause close-up has Synergy on its left third, untracked: framed on Kevin and People &
-// Culture clapping (the visible source starts right of x 470 of 1280), so he is never on screen
-// in it without his mouth row.
-const CLAP_FRAME = {zoom:1.6, cx:.68};
+// The applause close-up has Synergy on its left third, untracked (a mouth baked into his glass):
+// the tile is framed off him (its visible source starts right of x 660 of 1916, clear of his
+// head and headset) and on the people clapping, in the tile's own shape: both faces and their
+// hands where it allows, else both faces whole and the top of the clap, else People & Culture's
+// face and hands, else her face. The shot index has no faceBox for it (several people in frame),
+// so the boxes are measured on the footage, as unions over the frames the draft plays (source px,
+// frames 30-175): her face x 960-1180, y 260-530; his y 120-380; their hands down to y 850.
+export const CLAP = {left:660, face:{x:960, y:260, w:220, h:270},
+  framings:[{x:860, y:120, w:1020, h:730}, {x:860, y:120, w:1020, h:520}, {x:860, y:250, w:450, h:600}, {x:960, y:260, w:220, h:270}]};
+function clapCrop(shot, cell) {
+  const box = shot.contentBox, a = cell.w / cell.h, x0 = Math.max(box.x, CLAP.left), x1 = box.x + box.w;
+  for (const [b, pad] of CLAP.framings.flatMap(b => [[b, .04], [b, 0]])) {
+    let w = b.w * (1 + 2 * pad), h = b.h * (1 + 2 * pad);
+    if (w / h > a) h = w / a; else w = h * a;
+    if (w > x1 - x0 + 1e-6 || h > box.h + 1e-6) continue;
+    const x = Math.min(Math.max(b.x + b.w / 2 - w / 2, x0), x1 - w), y = Math.min(Math.max(b.y + b.h / 2 - h / 2, box.y), box.y + box.h - h);
+    return {x:r6(x), y:r6(y), w:r6(w), h:r6(h)};
+  }
+  return null;
+}
 
 // What the monitor's cut list calls each scene.
-export const SCENE_LABELS = {join:'Grid bloom', verse:'Unmute', hook:'Screen share', verse2:'Dub delay', freeze:'Freeze the call',
+export const SCENE_LABELS = {cold:'Cold open', join:'Grid bloom', verse:'Unmute', hook:'Screen share', verse2:'Dub delay', freeze:'Freeze the call',
   rooms:'Breakout rooms', split:'Cell split', roll:'Retrigger roll', ladder:'Poor connection', dropA:'BACK.', sink:'Sink In',
   dropB:'Droste dive', fill:'Read that again', leave:'Leave meeting'};
 
@@ -53,7 +73,7 @@ export const ROWS = [
   {row:'0:8-15', what:"Pat's black tile, CONNECTING TO AUDIO", status:'partial', note:'Board cue in TYPEWRITER over the camera-off tile, where the intro leaves three quarters of a second for it; Humbled and Honored’s two-bar intro goes straight to YOU’RE ON MUTE. The hook ghosts at I .08 are not drawn (board cues have no ghost intensity).'},
   {row:'1', what:'Grid bloom, one tile a beat with a joined toast', status:'done', note:'Pat, Operations, Keys and Kevin join muted, one a beat; Synergy joins on the song’s unmute with his first line, the printer a beat later. The drummer’s mic toggles on the 8ths while the call is muted.'},
   {row:'2', what:'G6 complete; reaction canon nod; printer at 8 fps', status:'stand-in', note:'The synchronized-nod pickup (Runway 1) is not in: the call ripples in canon instead (each tile holds half a bar after the host line, released a step after the last). Printer at 8 fps stop-motion is done.'},
-  {row:'3', what:"Gallery Unmute push into Synergy's cell; YOU'RE ON MUTE", status:'done', note:'The song unmutes at cue:unmute (bar 2 in Circle Back, not the plan’s bar 4): YOU’RE ON MUTE and its BA tease run on the strip before it, every mic flips on at it, and the push into Synergy’s cell (1.0 to 1.3, outExpo) takes the bar before the verse.'},
+  {row:'3', what:"Gallery Unmute push into Synergy's cell; YOU'RE ON MUTE", status:'done', note:'The song unmutes at cue:unmute (bar 2 in Circle Back, not the plan’s bar 4): YOU’RE ON MUTE and its tease (BACK. with BA lit) run on the board’s home before it, every mic flips on at it, and the push into Synergy’s cell (1.0 to 1.3, outExpo) takes the bar before the verse.'},
   {row:'4-5', what:'Synergy fills the frame in 3 f, stack3, slow push, vocal cuts', status:'done', note:'The push lands: Synergy grows from his tile to the frame in 3 frames on the verse downbeat, then stack3 a beat later: Synergy, the reactor, the board band, Pat’s camera-off tile. Vocal cuts on the reactor one frame before the sung words.'},
   {row:'6-7', what:'Ops reactor, snare punch-in, off-beat cut, freeze + label', status:'done', note:'Operations hit-warped with punch-ins on the backbeat as it sounds (hits), the off-beat cut ten steps into the second verse line, ARJUN / FINANCE in PEG-5 inside the middle tile, two beats before the hook (in the safe area).'},
   {row:'8-9', what:'Hook: BOARD+STRIP, screen-share banner, slam-word crash zoom, snap ladder', status:'partial', note:'Crash zoom on the slam word in Synergy’s tile (kept under the zoom that keeps his mouth row in the tile), the steep snap ladder on the repeat in the keys tile. The department chart is not drawn yet.'},
@@ -62,19 +82,19 @@ export const ROWS = [
   {row:'14-15', what:'Breakout rooms 2 then 4, snap ladder, outer-ring mosaic', status:'done', note:'The half-bar rungs: two rooms, then four (on its second hit when the track has one such bar).'},
   {row:'16', what:'Cell split 1/2/4/8 on drum-pad-detail, mirrored, mosaic 16 px', status:'done', note:'The quarter-note rung. Mirrored on alternate axes with a G11 waiver: the shot index verifies drum-pad-detail mirror-safe, the lint forbids mirroring any instrument. Lead and Aaron to settle.'},
   {row:'17', what:'Retrigger roll, hat roll, RGB split on the roll', status:'done', note:'The first 8th-note rung. The applause tile is gone: Synergy stammers here in Hustle and Humbled and Honored, and the applause shot would show him without a mouth row.'},
-  {row:'18', what:"Board with Synergy's cell, poor connection", status:'done', note:'BOARD+STRIP: the lady’s LE on the board, Synergy’s tile lights on his stammers. Mosaic 32 px on the side tiles only: never on Synergy (canon).'},
-  {row:'19:0-7', what:'BOARD, L at k4', status:'done', note:'The 32nd-note rung: the song’s own screens; the SPARKLE dissolve is the board’s.'},
+  {row:'18', what:"Board with Synergy's cell, poor connection", status:'done', note:'BOARD+STRIP, the board grown out of its home: the lady’s LET’S with LE lit (the rest a ghost), Synergy’s tile lights on his stammers. Mosaic 32 px on the side tiles only: never on Synergy (canon).'},
+  {row:'19:0-7', what:'BOARD, L at k4', status:'done', note:'The 32nd-note rung: the board grows to the frame over black; the song’s own screens (LET’S, LE lit); the SPARKLE dissolve is the board’s.'},
   {row:'19:8-11', what:'Choke: black, LET’S CIRCLE- on bare sockets', status:'done', note:'Her typewriter finishes its last letter before black.'},
   {row:'19 silence', what:'True black from the first frame after her tag stops sounding', status:'done', note:'choreo darkens the board on the first frame that starts after plan.choke.tagEnd, plus the 5 ms a codec smears her release and the engine’s latency (Circle Back frame 952: nothing over -70 dBFS of her plays over black in the file), and holds true black to the impact’s frame.'},
   {row:'20', what:'IGNITION: peg video, then stack3; push on the room', status:'stand-in', note:'The ignition lands on the frame that holds the impact’s sound. Peg video on the-professionals-arrive (as in the cold open); half a bar later the same shot unpegged leads stack3 with the push. office-ensemble is out: Synergy is in it without his mouth row while he sings the hook. Pat’s CONNECTED flip and the kick lift on the board are not drawn.'},
-  {row:'21', what:'Pads on the snare alternating with applause; whip slide and composite roll on PIVOT', status:'partial', note:'The pads and the applause (framed on Kevin and People & Culture) alternate a beat each, every cut and punch-in on the frame that holds its drum hit. The whip slide (Synergy to Synthia) and the composite roll land on her bend where the song has it. The printer’s page eject is skipped: no printer tile in stack3.'},
+  {row:'21', what:'Pads on the snare alternating with applause; whip slide and composite roll on PIVOT', status:'partial', note:'The pads and the applause (framed off Synergy on People & Culture’s whole face, with Kevin and their hands where the tile’s shape allows) alternate a beat each, every cut and punch-in on the frame that holds its drum hit. The whip slide (Synergy to Synthia) and the composite roll land on her bend where the song has it. The printer’s page eject is skipped: no printer tile in stack3.'},
   {row:'22-23', what:'Sink In: G4 tape-coupled, freeze on "in", outer cells sink to 32 px', status:'partial', note:'The G4 starts on Sink In (the tape falls across it). The freeze lands on the measured onset of "in" in her deep take; Synergy keeps his face, the others sink to 32 px. The page drifting into the droid’s tile is skipped.'},
   {row:'24', what:"Drop B: G9, rates snap back, Droste dive into Pat's cell", status:'done', note:'The board holds still in its strip while the camera dives (the camera does not own it). Synergy sits in the tile whose mouth row stays in frame longest and never goes under the board, so his mouth shows while he sings verse 3.'},
   {row:'25', what:'Chase light on 8ths, punch-ins, 2 to 4 cuts a bar', status:'done', note:'Punch-ins land on the frame that holds each backbeat.'},
   {row:'26', what:'Kaleido 2x2 of the drum pads; dub delay on Synergy', status:'done', note:'The kaleido runs in L1 so the board panel carries the hook over it with its sockets (legible). Roll Call stays gated (D3). The dub delay taps on 16ths: a dotted 8th needs 9 steps and the window has 4.'},
   {row:'27', what:'Tile cascade; the replay of the bar before; READ THAT AGAIN.', status:'done', note:''},
   {row:'28', what:'Leave Meeting: tiles leave on the beat, toasts', status:'done', note:'Six on the call, Kevin first, one a beat: the grid steps down G6, G4, split, L1 as they go, so the full layouts land on the bar and the half bar. In Hustle’s four-bar outro one leaves every two beats.'},
-  {row:'29', what:'G1 Synergy, tape stop, black, ghost BACK. on the last two frames', status:'done', note:'True black from the tape stop’s end (Circle Back frame 1426). The last two frames jump to the cold open’s last two (silent), so the loop closes on frame 0’s peg mask and BACK. screen.'},
+  {row:'29', what:'G1 Synergy, tape stop, black, ghost BACK. on the last two frames', status:'done', note:'The picture follows the tape-stop curve to a held frame with his eyes open and holds it while her “Full stop.” (after the tape) still sounds; FULL STOP. stays lit and fully typed, dimming and sliding down 2 pegs. True black from the first frame after her (Circle Back frame 1437). The last two frames show frame 0’s BACK. as a ghost at I .08 on its own pegs, so the loop closes on frame 0’s peg mask; where her line runs into them (Hustle), the ghost takes what is left.'},
   {row:'Runway pickups', what:'nod wide, overhead table, drum strike, pick hand, pages, robot duet, Strategy 10 s, privacy shutter', status:'stand-in', note:'None supplied yet. Stand-ins: the canon ripple (nod), drum-pad-detail (strike), printer-outward-feed (pages), strategy-listening at 3.5 s (Strategy). The rest have no row of their own in §2.'},
 ];
 
@@ -88,7 +108,13 @@ export function drop60Draft(plan, shots, {format = '9:16', features, seed = 7} =
   const index = shotIndex(shots);
   const m = (name, ctx) => MOVES[name].fn({plan, shots, features, format, seed, ...ctx});
   const c = (id, at, len, cell, asset, more = {}) => ({id, at, len, cell, asset, ...more});
-  const patches = [], board = [], camera = [], overrides = [], transports = [];
+  const patches = [], board = [], camera = [], overrides = [], transports = [], boardMoves = [];
+  // The board keeps its home (layouts.js HOME) in every call layout. A full-board moment (the
+  // screen share, the ladder's board alone, the ignition) grows out of the home on its first beat
+  // and returns to it landing on the cut that ends it: a short eased move, never a jump (lint G14).
+  // Both happen over the full-board moment's own picture, never over the call's tiles.
+  const grow = (at, why) => boardMoves.push({id:`grow.${boardMoves.length}`, at, frames:BOARD_MOVE, ease:'inOutSine', align:'start', why});
+  const settle = (at, why) => boardMoves.push({id:`home.${boardMoves.length}`, at, frames:BOARD_MOVE, ease:'inOutSine', align:'end', why});
   const add = (scene, p) => { for (const x of p.clips || []) { x.scene ??= scene; } patches.push(p); return p; };
   // The zoom ceiling of a shot in a cell (U · crop.h / cell.h); `fit` picks the first that holds `zoom`.
   const ceiling = (id, cell) => { const s = index.get(id), r = cellRect(format, cell); if (!s || !r) return 0; return (UPSCALE[s.sharpTier] ?? 1.5) * resolveCrop(s, {}, format, r).h / r.h; };
@@ -114,6 +140,9 @@ export function drop60Draft(plan, shots, {format = '9:16', features, seed = 7} =
     why:'cold open: frame 0 is the drop’s impact frame; the sound there is the impact, copied (plan.coldOpen)'});
   transports.push({id:'rewind', at:r6(S(rw.at)), len:r6(S(rw.at + rw.len) - S(rw.at)), kind:'rewind', audio:true, rate:rw.rate ?? 4, from:{anchor:`step:${r6(S(rw.sourceFrom))}`}, signature:'rewind',
     why:'the plan’s rewind: the last second before the choke at 4x, picture and sound reversed together'});
+
+  // The rewind's board (the ladder's board alone) shrinks back to its home, landing on the intro's first frame.
+  settle(r6(resume), 'the cold open hands the board back to its home as the call starts');
 
   // ---- the intro: Pat's black tile, the bloom, the unmute, the call ------------------------------------
   // The bloom: four join before the unmute, Synergy on it with his first line, the printer a beat later.
@@ -200,6 +229,8 @@ export function drop60Draft(plan, shots, {format = '9:16', features, seed = 7} =
   const ladderHook = again.length ? m('snapLadder', {clip:keysHook, at:hookAt + BS, len:hookEnd - hookAt - BS, ladder:'steep', hits:again.map(w => w.at)}).clips[0] : keysHook;
   ladderHook.why = 'snap ladder 1 / 1.33 / 1.78 on the repeated hook';
   add('hook', {clips:[crash, ladderHook, c('shareOps', hookAt, hookEnd - hookAt, 'BOARD+STRIP.2', sh(fit('BOARD+STRIP.2', 1, CAST.opsArrive, CAST.ops)), {time:{in:3}, chrome:{speaking:speaking('drums')}})]});
+  grow(hookAt, 'the screen share: the board grows out of its home');
+  settle(hookEnd, 'the share ends: the board is home on the cut');
 
   // ---- verse 2 (when the verse has one): the chase, vocal cuts in one tile, the dub delay -----------------
   if (build.from - hookEnd >= BS) {
@@ -288,8 +319,11 @@ export function drop60Draft(plan, shots, {format = '9:16', features, seed = 7} =
     add('ladder', m('poorConnection', {id:`poorB${id}`, at:p.at, len:BS, pool:[CAST.arjun], cell:'BOARD+STRIP.2', scene:'ladder', in:1}));
     for (const q of patches.slice(-2)) for (const x of q.clips) delete x.chrome;
   }
-  // The 32nds: the board alone; the choke: black, her tag on bare sockets, then true black.
-  add('ladder', {clips:[c('ladderBoard', chokeBar, choke.at - chokeBar, 'full', BOARD, {why:'the board alone: L at k4'}), c('black', choke.at, impact - choke.at, 'full', BLACK, {why:'the choke: true black once her tag stops sounding (the board goes dark)'})]});
+  if (poor.length) grow(poor[0].at, 'the board takes the screen with Synergy’s tile beside it');
+  // The 32nds: the board alone (it grows to the frame over black); the choke: black, her tag on bare
+  // sockets, then true black.
+  add('ladder', {clips:[c('ladderBoard', chokeBar, choke.at - chokeBar, 'full', BLACK, {why:'the board alone: L at k4, grown to the frame'}), c('black', choke.at, impact - choke.at, 'full', BLACK, {why:'the choke: true black once her tag stops sounding (the board goes dark)'})]});
+  grow(chokeBar, 'the board alone: it grows to the frame');
   // The scanline wobble on the rewind (film clock), where the rewound second shows no Synergy.
   if (S(rw.sourceFrom - rw.len * (rw.rate ?? 4)) >= chokeBar - 1e-9) camera.push({id:'rewind.wobble', at:r6(S(rw.at)), len:r6(S(rw.at + rw.len) - S(rw.at)), clock:'film', fx:[{type:'scanline', amount:.3, wobble:8, period:6}], why:'REWIND: the tape’s scanline wobble'});
 
@@ -297,7 +331,7 @@ export function drop60Draft(plan, shots, {format = '9:16', features, seed = 7} =
   const ign = add('dropA', m('pegTakeover', {id:'ignite', at:impact, len:8, pool:[CAST.arrive], scene:'dropA'}));
   ign.clips[0].at = {anchor:'cue:impact', hit:true};
   ign.clips[0].why = 'IGNITION on the frame that holds the impact, over peg video (the-professionals-arrive: office-ensemble has Synergy in it)';
-  const A = impact + 8, Aend = sinkS.from;
+  const A = impact + 8, Aend = sinkS.from;   // (pegTakeover brings the board home, landing on A)
   const room = c('room', A, Aend - A, 'stack3.0', sh(CAST.arrive), {time:{in:r6((ign.clips[0].time?.in ?? 0) + (cutFrame(T(A)) - impactFrame) / 24)}, chrome:{name:'Lobby'}, why:'the ignition’s shot, unpegged: the room comes back'});
   add('dropA', {clips:[m('slowPush', {clip:room, at:A, len:Aend - A, to:1.25}).clips[0]]});
   // Synergy's tile: a whip slide hides the cut to Synthia on her bend (PIVOT).
@@ -310,6 +344,8 @@ export function drop60Draft(plan, shots, {format = '9:16', features, seed = 7} =
   // The pads on each beat that has the snare and every other, the applause between: every cut on the
   // frame that holds its drum hit (the kick, or the snare as it sounds), punched in on the snare.
   const padsCell = 'stack3.2', backbeat = new Map(snareHits(plan, A, Aend).map(h => [h.step, h.late]));
+  const clapShot = index.get(CAST.applause), clapRect = clapShot && clapCrop(clapShot, cellRect(format, padsCell));
+  const clapFrame = clapRect ? {crop:{[format]:clapRect}} : {zoom:1.6, cx:.68};
   const beats = []; for (let s = A; s < Aend; s += QS) beats.push(s);
   beats.forEach((s, i) => {
     const late = backbeat.get(s) ?? 0, onSnare = backbeat.has(s), at = hitAt(s + late), len = i + 1 < beats.length ? QS + 1 - late : Aend - s - late;
@@ -325,7 +361,7 @@ export function drop60Draft(plan, shots, {format = '9:16', features, seed = 7} =
       // The cut moves to the hit (the warp keeps its shape); on the snare it punches in, from that frame.
       const to = Math.min(1.12, ceiling(padsShot, padsCell));
       add('dropA', {clips:[{...clip, at, len:r6(len), scene:'dropA', ...(onSnare ? {frame:{zoom:{keys:[[0, r6(to)], [QS, 1, 'outQuad']], hit:true}}} : {}), why:onSnare ? 'the pads on the snare, punched in' : 'the pads on the kick'}]});
-    } else add('dropA', {clips:[c(`clap${i}`, at, r6(len), padsCell, sh(CAST.applause), {time:{in:r6(1 + i * .5)}, frame:{...CLAP_FRAME}, chrome:{name:'Town hall'}, why:'the applause clap between the snares, framed on Kevin and People & Culture'})]});
+    } else add('dropA', {clips:[c(`clap${i}`, at, r6(len), padsCell, sh(CAST.applause), {time:{in:r6(1 + i * .5)}, frame:clapFrame, chrome:{name:'Town hall'}, why:'the applause clap between the snares, framed on Kevin and People & Culture'})]});
   });
 
   // ---- Sink In: tape-coupled G4; on "in" it all freezes and sinks to 32 px --------------------------------------
@@ -354,12 +390,18 @@ export function drop60Draft(plan, shots, {format = '9:16', features, seed = 7} =
   // from the middle, so his mouth row stays in frame while he sings verse 3.
   const callB = [fit('G9.0', 1.12, CAST.ops, CAST.opsArrive), CAST.keysPlay, CAST.people, fit('G9.3', 1.12, CAST.kevinPlay, CAST.kevin), PAT, CAST.arjun, CAST.linda, CAST.synthia, CAST.strategy];
   {
-    // His tracked mouth point in each tile (the plate's own framing), nearest the dive's centre wins.
+    // His tracked mouth point in each tile (the plate's own framing): the tile that keeps it in frame
+    // for as long as the tile shows, then the nearest the dive's centre, wins.
     const syn = index.get(CAST.synergy), track = TRACKING[syn?.robot], P = cellRect(format, 'G9.4'), px = P.x + P.w / 2, py = P.y + P.h / 2;
     const mouthIn = r => { if (!track) return [r.x + r.w / 2, r.y + r.h / 2]; const M = layerMatrix(r, resolveCrop(syn, {}, format, r), {zoom:1, cx:.5, cy:.5, rot:0}); return apply(invert(M), track.frames[0][0], track.frames[0][1]); };
     // (Never a tile on the board's side of Pat's: the push would carry his mouth under the held board.)
     const Bd = layout('G9', format).board, bx = Bd.x + Bd.w / 2 - px, by = Bd.y + Bd.h / 2 - py;
-    const near = [0, 1, 2, 3, 5, 6, 7, 8].map(i => { const [x, y] = mouthIn(cellRect(format, `G9.${i}`)); return {i, d:Math.hypot(x - px, y - py), away:(x - px) * bx + (y - py) * by <= 0}; }).filter(c => c.away).sort((a, b) => a.d - b.d)[0].i;
+    // The dive (moves/look.js drosteDive) zooms about Pat's tile, cx and cy clamped to keep the frame
+    // covered: a tile stays on screen while half of it is in frame, so his mouth row must leave no
+    // sooner than that (lost: the zooms at which it is out while his tile still shows).
+    const into = Math.min(F.w / P.w, F.h / P.h), toScreen = (z, x, y) => { const c = (q, n, s) => Math.min(Math.max(q / s, .5 / z), 1 - .5 / z) * s; return [F.w / 2 + (x - c(px, 0, F.w)) * z, F.h / 2 + (y - c(py, 0, F.h)) * z]; };
+    const lost = (r, [x, y]) => { let n = 0; for (let z = 1; z <= into + 1e-9; z += .02) { const [u, v] = toScreen(z, x, y), [a, b] = toScreen(z, r.x, r.y), [c, d] = toScreen(z, r.x + r.w, r.y + r.h); const shown = Math.max(0, Math.min(F.w, c) - Math.max(0, a)) * Math.max(0, Math.min(F.h, d) - Math.max(0, b)) >= .5 * (c - a) * (d - b); if (shown && (u < 0 || v < 0 || u > F.w || v > F.h)) n++; } return n; };
+    const near = [0, 1, 2, 3, 5, 6, 7, 8].map(i => { const r = cellRect(format, `G9.${i}`), [x, y] = mouthIn(r); return {i, d:Math.hypot(x - px, y - py), lost:lost(r, [x, y]), away:(x - px) * bx + (y - py) * by <= 0}; }).filter(c => c.away).sort((a, b) => a.lost - b.lost || a.d - b.d)[0].i;
     callB.splice(near, 1, CAST.synergy);
   }
   const chaseB = add('dropB', m('speakerChase', {id:'chaseB', at:DB, len:BS, pool:callB, scene:'dropB'}));
@@ -418,19 +460,39 @@ export function drop60Draft(plan, shots, {format = '9:16', features, seed = 7} =
     const s = index.get(x.asset.replace(/^shot:/, ''));
     if (s && ceiling(s.id, 'L1.0') < 1) overrides.push({target:x.id, rule:'G10', note:'the closing shot of Synergy alone; the tape stop holds it'});
   }
-  // The tape stop: the picture follows the curve to its hold, then true black.
-  const stopFrames = Math.ceil((stop?.seconds ?? .4) * 24 - 1e-9), blackFrame = cutFrame(T(stopAt)) + stopFrames;
+  // The tape stop: the picture follows the curve to its hold and holds there while her "Full stop."
+  // (after the tape) still sounds: the board keeps it lit and fully typed. Black from the first
+  // frame after she stops (anchors.js stopFrames), and never before the curve has run.
+  const N = cutFrame(T(plan.totalSteps)), at = f => ({anchor:'step:0', frames:f}), span = (a, b) => r6(S(b / 24) - S(a / 24));
+  const curveEnd = cutFrame(T(stopAt)) + Math.ceil((stop?.seconds ?? .4) * 24 - 1e-9), her = stopFrames(plan);
+  const blackFrame = Math.min(N, Math.max(curveEnd, her?.black ?? curveEnd));
+  // The ghost BACK. takes the last two frames, or what is left of them once she has stopped.
+  const ghostFrom = Math.min(N, Math.max(N - 2, blackFrame));
+  // Synergy's last close-up slows to a held frame: hold one with his eyes open. Every frame the
+  // slow-down shows, the hold included, stays two frames clear of his blinks (robot-tracks.json),
+  // moving the clip's source by the fewest frames that do it.
+  const v0 = Math.min(T(stopAt), cutFrame(T(stopAt)) / 24), vHold = T(stopAt) + (stop?.seconds ?? .4) / 2;
+  for (const x of leave.clips) {
+    const s = x.asset.startsWith('shot:') ? index.get(x.asset.slice(5)) : null, blinks = s && TRACKING[s.robot]?.blinks;
+    if (!blinks?.length || typeof x.at !== 'number' || T(x.at) > v0 || T(x.at + x.len) < vHold || x.time?.rate !== undefined || x.time?.map || x.time?.freezeAt !== undefined) continue;
+    const inS = x.time?.in ?? 0, frameAt = (v, d) => Math.floor((inS + d / 24 + v - T(x.at)) * 24 + 1e-6);
+    const clear = d => { const a = frameAt(v0, d), b = frameAt(vHold, d); return frameAt(T(x.at), d) >= 0 && b < s.frames - 1 && blinks.every(([p, q]) => b < p - 2 || a > q + 2); };
+    const d = [0, ...Array.from({length:48}, (_, i) => [-(i + 1), i + 1]).flat()].find(clear);
+    if (d) { x.time = {...(x.time || {}), in:r6(inS + d / 24)}; x.why = `${x.why ?? ''}; the tape stop holds source frame ${frameAt(vHold, d)}, eyes open (${d > 0 ? '+' : ''}${d} frames off a blink)`.replace(/^; /, ''); }
+  }
   const ts = m('tapeStop', {at:stopAt, len:r6(S(blackFrame / 24) - stopAt)}).transports[0];
-  transports.push({...ts, why:'the picture follows the tape-stop curve'});
+  transports.push({...ts, why:'the picture follows the tape-stop curve, then holds until her "Full stop." has stopped sounding'});
   // True black after it: a full black tile under an L1 one, so the layout has no board region.
-  const tailLen = r6(plan.totalSteps - S(blackFrame / 24) + BS);
-  add('leave', {clips:[c('tail', {anchor:'cue:stop', frames:stopFrames}, tailLen, 'full', BLACK, {why:'true black after the tape stop'}), c('tail.l1', {anchor:'cue:stop', frames:stopFrames}, tailLen, 'L1.0', BLACK, {why:'keeps the board out of the black'})]});
-  // The ghost BACK.: the last two frames are the impact six frames in, the board settling under BACK.
-  // (silent here), so the film loops into frame 0 on the same peg mask and BACK. screen.
-  const lastStep = T(plan.totalSteps) - T(plan.totalSteps - 1);
-  transports.push({id:'loop', at:{anchor:'cue:end', frames:-2}, len:r6(2 / 24 / lastStep), kind:'jump', audio:true, from:{anchor:'step:0', frames:impactFrame + 6}, why:'ghost BACK.: the last two frames are the impact a quarter second in, BACK. settling'});
+  if (ghostFrom > blackFrame) add('leave', {clips:[c('tail', at(blackFrame), span(blackFrame, ghostFrom), 'full', BLACK, {why:'true black from the first frame after her "Full stop."'}), c('tail.l1', at(blackFrame), span(blackFrame, ghostFrom), 'L1.0', BLACK, {why:'keeps the board out of the black'})]});
+  // The ghost BACK.: frame 0's BACK. screen at I .08, flat, on true black, on frame 0's peg grid (a
+  // black tile through the ignition's peg video pitch), so the loop closes on the same peg mask.
+  if (ghostFrom < N) {
+    const pitch = ign.clips[0].fx?.find(x => x.type === 'pegVideo')?.pitch ?? 12;
+    add('leave', {clips:[c('ghost', at(ghostFrom), span(ghostFrom, N), 'full', BLACK, {fx:[{type:'pegVideo', mix:1, pitch, levels:6, gamma:1.4}], why:'the loop seam: black on the ignition’s peg grid, under the ghost BACK.'})]});
+    board.push({id:'ghost', at:at(ghostFrom), len:span(ghostFrom, N), text:{ref:'song:impact'}, ghost:GHOST, why:'ghost BACK.: frame 0’s BACK. on the same pegs, at I .08 (plan §2 row 29)'});
+  }
 
-  const edl = merge(createEDL({format, loop:true, seed, track:plan.track, board, transports, camera, overrides}), ...patches);
+  const edl = merge(createEDL({format, loop:true, seed, track:plan.track, board, transports, camera, boardMoves, overrides}), ...patches);
   // Clean: no undefined fields.
   for (const x of edl.clips) {
     for (const key of Object.keys(x)) if (x[key] === undefined) delete x[key];

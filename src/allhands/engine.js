@@ -175,7 +175,8 @@ export function setVoiceMode(graph, mode) {
 export function prepare(plan, buffers, lady = {files:new Map(), deep:new Map()}) {
   const track = trackOf(plan.track), step = plan.step ?? track.step;
   const at = new Map(), push = (step, key, value) => { if (!at.has(step)) at.set(step, {words:[], notes:[], stutters:[], lady:[]}); at.get(step)[key].push(value); };
-  plan.words.forEach(w => { if (buffers.get(w.word)) push(w.at, 'words', w); w.notes.forEach(n => push(n.at, 'notes', n)); });
+  // A silent word (the cold open's source, below) keeps its notes and its choir bar: only his voice is gone.
+  plan.words.forEach(w => { if (buffers.get(w.word) && !w.silent) push(w.at, 'words', w); w.notes.forEach(n => push(n.at, 'notes', n)); });
   plan.stutters.forEach(s => { if (buffers.get(s.word)) push(s.at, 'stutters', s); });
   (plan.lady || []).forEach((e, i) => { if (lady.files.get(e.file)) push(Math.floor(e.at), 'lady', {...e, index:i}); });
   const harmonyBars = new Set(plan.words.filter(w => w.harmony).map(w => Math.floor(w.at / BAR_STEPS)));
@@ -257,11 +258,17 @@ function playLady(graph, song, e, t) {
     }
   }
   const deep = song.lady.deep.get(e.index);
-  if (deep) {
+  // e.deepUntil (seconds from its start): the deep voice fades out by then on a raised cosine (the cold open's source).
+  const cut = deep && e.deepUntil !== undefined && e.deepUntil < deep.duration;
+  if (deep && (!cut || e.deepUntil > .005)) {
     const d = ctx.createBufferSource(), dg = I.amp(ctx, gain * e.deep), at = t + (e.deepAt || 0) * song.step;
     d.buffer = deep; d.connect(dg); dg.connect(graph.deep);
-    const room = e.role === 'sink' ? e.gate : deep.duration;          // the sink holds its bar
-    dg.gain.setValueAtTime(gain * e.deep, at + room - .03); dg.gain.linearRampToValueAtTime(0, at + room);
+    const room = e.role === 'sink' ? e.gate : cut ? e.deepUntil : deep.duration;          // the sink holds its bar
+    if (cut) {
+      const fade = Math.min(DEEP_FADE, room), curve = new Float32Array(65);
+      for (let i = 0; i < curve.length; i++) curve[i] = gain * e.deep * .5 * (1 + Math.cos(Math.PI * i / (curve.length - 1)));
+      dg.gain.setValueCurveAtTime(curve, at + room - fade, fade);
+    } else { dg.gain.setValueAtTime(gain * e.deep, at + room - .03); dg.gain.linearRampToValueAtTime(0, at + room); }
     // Its own lifetime: it may start after the dry word has ended (BACK.'s echo).
     d.start(at); d.stop(at + room + .01); d.onended = () => { d.disconnect(); dg.disconnect(); };
   }
@@ -309,11 +316,13 @@ function songEvents(graph, plan, step, T, STEP) {
     }
   }
   if (plan.choke) {
-    if (step === plan.choke.at) {
-      // Everything stops in 6 ms, returns included, so the silence is silent.
-      for (const g of [graph.choke.gain, ...STEMS.map(n => graph.eqTap[n].gain)]) { g.setValueAtTime(1, t); g.linearRampToValueAtTime(0, t + .006); }
-      graph.feedback.gain.setValueAtTime(0, t);
-      graph.reverbOut.gain.setValueAtTime(.55, t); graph.reverbOut.gain.linearRampToValueAtTime(0, t + .006);
+    if (step === Math.floor(plan.choke.at)) {
+      // Everything stops in 6 ms, returns included, so the silence is silent. The
+      // choke is where her tag starts (drop.js): a step's fraction on the lady's clock.
+      const c = t + (plan.choke.at - step) * STEP;
+      for (const g of [graph.choke.gain, ...STEMS.map(n => graph.eqTap[n].gain)]) { g.setValueAtTime(1, c); g.linearRampToValueAtTime(0, c + .006); }
+      graph.feedback.gain.setValueAtTime(0, c);
+      graph.reverbOut.gain.setValueAtTime(.55, c); graph.reverbOut.gain.linearRampToValueAtTime(0, c + .006);
     }
     if (step === plan.choke.until) {
       for (const g of [graph.choke.gain, ...STEMS.map(n => graph.eqTap[n].gain)]) g.setValueAtTime(1, t);
@@ -367,7 +376,7 @@ export function scheduleStep(graph, song, step, t0) {
     if (L.riser === true && bar === 14) I.riser(ctx, D, t, T(step + 2 * BAR_STEPS) - t);
     if (L.riser === 'short') I.riser(ctx, D, t, barEnd - t, .2);
     if (L.riser === 'long') {
-      const end = T(plan.choke.at);
+      const end = T(Math.floor(plan.choke.at)) + (plan.choke.at % 1) * STEP;
       I.riser(ctx, D, t, end - t, .3); I.sawRiser(ctx, stems.keys.input, t, end - t, ...(track.sound.sawRiser || []));
     }
     if (bar === 16 && plan.form !== 'drop60') I.impact(ctx, D, t, .8);
@@ -422,6 +431,20 @@ export const stemChannels = audio => Object.fromEntries(STEMS.map((name, i) => [
 // renders the source first and Performance.start() plays it in front of the song.
 
 const XFADE = .006;   // equal-power crossfades at the joins, seconds
+const DEEP_FADE = .12;   // the cold open's deep echo fades out over this, ending before the first join
+
+// What the cold open's impact is cut from: the same song, with Synergy silent
+// from the impact on (plan.md section 2: the cold open is the BACK. stack, the
+// crash and the sub; his hook comes in half a beat after BACK. and would be cut
+// mid-word by the rewind) and her deep "BACK." faded out before the impact part
+// ends, so the rewind cuts nothing. Everything else is the song's own: the
+// band, her dry and vocoded BACK. on his carrier and choir, the bus.
+export function coldSourcePlan(plan, cold = coldOpenOf(plan, {coldOpen:true})) {
+  const impact = plan.marks.impact, gone = cold.impact.until - XFADE / 2 - .001;   // seconds after the impact
+  return {...plan,
+    words:plan.words.map(w => w.at >= impact ? {...w, silent:true} : w),
+    lady:plan.lady.map(e => e.role === 'impact' && e.deep ? {...e, deepUntil:gone - (e.deepAt || 0) * plan.step} : e)};
+}
 
 export function coldOpenOf(plan, options = {}) {
   if (options.coldOpen === false || plan.form !== 'drop60') return null;
@@ -477,7 +500,7 @@ function sourceBars(plan, cold, exact = true) {
 
 async function coldSource(plan, buffers, options, lady, cold, exact = true) {
   const bars = sourceBars(plan, cold, exact);
-  const audio = await render(plan, buffers, {...options, coldOpen:false, limit:false, bars}, lady);
+  const audio = await render(coldSourcePlan(plan, cold), buffers, {...options, coldOpen:false, limit:false, bars}, lady);
   return {channels:Array.from({length:audio.numberOfChannels}, (_, c) => audio.getChannelData(c)), sampleRate:audio.sampleRate, t0:plan.timing[bars[0] * BAR_STEPS]};
 }
 
@@ -520,11 +543,12 @@ export async function render(plan, buffers, options = {}, lady) {
   for (let step = first; step <= last; step++) scheduleStep(graph, song, step, t0);
   graph.exact.finalize();
   const out = await ctx.startRendering();
-  // The cold open replaces the first second; the whole song is its own source.
+  // The cold open replaces the first second, cut from its own source render
+  // (coldSourcePlan: the song from the top, Synergy silent from the impact on).
   const cold = first === 0 ? coldOpenOf(plan, options) : null;
   if (cold) {
     const channels = Array.from({length:out.numberOfChannels}, (_, c) => out.getChannelData(c));
-    const src = last >= plan.totalSteps ? {channels, sampleRate:out.sampleRate, t0:plan.timing[first]} : await coldSource(plan, buffers, options, lady, cold);
+    const src = await coldSource(plan, buffers, options, lady, cold);
     const parts = coldOpenParts(cold, src.channels, src.sampleRate, src.t0);
     channels.forEach((c, k) => { const p = parts.channels[k]; for (let i = 0; i < Math.min(parts.length, c.length); i++) c[i] = p[i] + parts.song[i] * c[i]; });
   }

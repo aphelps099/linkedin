@@ -11,6 +11,19 @@
 //      automation, for the sample post and five fixture posts.
 //   3. Every track's plan carries what the Peg Board, the Pixel Text export
 //      and the video studio read, with the same meaning.
+//   4. P5, with the real eSpeak durations of the 61 posts (fixtures/allhands-durations.json),
+//      on every track with today's cast and the post's own (366 plans): Synergy
+//      sings one word at a time (no word sounds past the next word's onset, in
+//      seconds), every word of every line is sung, inside its window (or the
+//      16ths the next slot gives); no line of hers is cut off by its gate (the
+//      ladder's hits are gated to their period by design); and plan.stop.end is
+//      when her "Full stop." stops sounding.
+//   5. P6, on the same 366 plans: her tag ends 0.37-0.42 s before BACK. (drop.js IMPACT_GAP,
+//      Circle Back's 0.392 s the reference), nothing else sounds from the choke to the impact,
+//      and her stop line ends at least 60 ms before the film's last two frames (the ghost BACK.).
+//   6. The composition constitution (songbook/CONSTITUTION.md as constitution.js): every track
+//      and every plan of that corpus keeps it, warnings aside (each printed); the lint bites
+//      on charts, plans and measured renders that break it.
 // Optional, with a dev server: --url http://localhost:5321 --baseline take.wav
 // renders Circle Back's Drop Edition through the page and compares it with a
 // render made by the old code: the difference must stay within the renderer's
@@ -19,7 +32,11 @@ import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {readFileSync} from 'node:fs';
 import {createRequire} from 'node:module';
-import {lyricsFromPost, SAMPLE_POST, syllables} from '../src/allhands/lyrics.js';
+import {lyricsFromPost, SAMPLE_POST, syllables, tokens} from '../src/allhands/lyrics.js';
+import {castSong, settleCast} from '../src/allhands/casting.js';
+import {ladyLength, IMPACT_GAP} from '../src/allhands/drop.js';
+import {stopFrames} from '../src/videostudio/edl/anchors.js';
+import {lintTrack, lintPlan, describe, REFERENCES, BAND} from '../src/allhands/songbook/constitution.js';
 import {FORMS} from '../src/allhands/forms.js';
 import {TRACKS, TRACK_ORDER} from '../src/allhands/songbook/index.js';
 import * as E from '../src/allhands/engine.js';
@@ -32,23 +49,37 @@ const canon = x => JSON.stringify(x, (k, v) => v instanceof Float64Array || v in
 
 // ---- 1a. Circle Back's plans, as they were
 // Fields the song book added to every plan; everything else compares as it was.
+// P5 (song.js clearWords): a word that would sound into the next sung word (a
+// swung odd 16th lands late, so its steps outlast its time) is gated at that
+// word's onset and sped up to fit. Those words compare without their gate and
+// rate; they are found from at, steps and timing alone, so the same words in
+// the old plans and the new.
 function legacy(plan) {
-  const {track, trackTitle, kicks, marks, energyTrim, ...old} = plan;
-  if (old.choke) { const {dark, tagEnd, ...choke} = old.choke; old.choke = choke; }
+  const {track, trackTitle, kicks, marks, energyTrim, stop, ...old} = plan;
+  if (old.choke) { const {dark, tagEnd, time, gap, ...choke} = old.choke; old.choke = choke; }
   old.lady = old.lady.map(({period, ...e}) => { if (e.role === 'ladder') { delete e.rate; delete e.gate; } return e; });
+  const T = plan.timing, sung = [...plan.words, ...plan.stutters].sort((a, b) => a.at - b.at), next = new Map(sung.map((w, i) => [w, sung[i + 1]]));
+  const strip = w => { const n = next.get(w); if (w.line < 0 || !n || T[w.at] + w.steps * plan.step <= T[n.at] + 1e-12) return w; const {gate, rate, ...rest} = w; return rest; };
+  old.words = plan.words.map(strip); old.lines = plan.lines.map(l => ({...l, words:l.words.map(strip)}));
   return old;
 }
 const models = {fake:w => .18 + .11 * syllables(w), long:w => .3 + .19 * syllables(w)};
-const posts = [SAMPLE_POST, ...fixtures], plans = {}, hashes = {};
+const posts = [SAMPLE_POST, ...fixtures], plans = {}, hashes = {}, fiveWordHooks = [];
 for (const form of ['drop60', 'soundcheck']) for (const [m, f] of Object.entries(models)) posts.forEach((post, i) => {
   let lyrics; try { lyrics = lyricsFromPost(post); } catch { return; }
   const plan = FORMS[form].arrange(lyrics, Object.fromEntries(FORMS[form].voiced(lyrics).map(w => [w, f(w)])));
   plans[`${form}/${m}/${i}`] = plan; hashes[`${form}/${m}/${i}`] = sha(canon(legacy(plan)));
+  if (form === 'drop60' && tokens(lyrics.hook).length === 5) fiveWordHooks.push(`${form}/${m}/${i}`);
 });
-// Recomputed at P4 from the committed P3 code (whose plans were proven identical to the code before
-// the song book: 'cbb85936893f...' with the ladder's rates and gates in), without the ladder's rates and gates.
-const PLANS_BEFORE = 'efdb37378de7bceca8da8d8b8f5d2af30f545b772f0926064d3c54e2509ab423';
-ok(Object.keys(hashes).length === 244 && sha(Object.keys(hashes).sort().map(k => hashes[k]).join('')) === PLANS_BEFORE, 'Circle Back: 244 plans identical to the code before the song book');
+// Recomputed at P5 from the committed P4 code (bb53d93; P4's own digest was 'efdb37378de7...') with the
+// legacy() above, over the 240 plans P5 leaves alone. The other four are the Drop Edition of the two posts
+// whose hook has five words (fixtures 9 and 42, both duration models): at two 16ths a word the hook is ten
+// 16ths, and in its half-bar slots it ran two past the window: into the sign-off (two words at once) and
+// into her ladder hits. Now the sign-off gives way and the half-bar answers sing their shortest words as 16ths.
+const PLANS_BEFORE = '048a5596f94a29167e168e00ee0b0f70b54297285373fa3ef0ddf2abb0923b9c';
+const kept = Object.keys(hashes).filter(k => !fiveWordHooks.includes(k)).sort();
+ok(Object.keys(hashes).length === 244 && fiveWordHooks.join() === 'drop60/fake/10,drop60/fake/43,drop60/long/10,drop60/long/43' && sha(kept.map(k => hashes[k]).join('')) === PLANS_BEFORE,
+  `Circle Back: 240 of 244 plans identical to the code before the song book; the 4 with a five-word hook changed on purpose`);
 
 // ---- 1b. Circle Back's Web Audio calls, as they were
 function fnv(arr) {
@@ -160,8 +191,114 @@ for (const track of TRACK_ORDER) for (const post of [SAMPLE_POST, ...fixtures.sl
   ok(T instanceof Float64Array && plan.sections.every(s => Number.isInteger(s.from) && s.to > s.from) && plan.bars.every(b => typeof b.layers === 'object' && b.layers.drums), `${track}: timing, sections, bars[].layers`);
   ok(plan.lines.every(l => l.words.every(w => Number.isInteger(w.at) && w.steps > 0 && w.notes.length)) && plan.words.every(w => w.gate > 0), `${track}: lines and words`);
   ok(plan.lady.every(e => typeof e.role === 'string' && e.file && e.to > e.from && e.gate > 0 && e.rate > 0 && typeof e.display === 'string'), `${track}: lady events`);
-  ok(Number.isInteger(plan.choke.at) && Number.isInteger(plan.choke.until) && plan.choke.dark > T[plan.choke.at] && plan.tape.length === 2 && plan.duration > T[plan.totalSteps], `${track}: choke, tape, duration`);
-  ok(['unmute', 'build', 'rise', 'choke', 'impact', 'sink', 'sinkEnd', 'stop'].every(k => Number.isInteger(plan.marks[k])), `${track}: marks`);
+  // The choke is where her tag starts: a step on the 128th grid (P6), its seconds in choke.time.
+  ok((plan.choke.at * 8) % 1 === 0 && Number.isInteger(plan.choke.until) && plan.choke.time === T[Math.floor(plan.choke.at)] + (plan.choke.at % 1) * plan.step && plan.choke.dark > plan.choke.time && plan.tape.length === 2 && plan.duration > T[plan.totalSteps], `${track}: choke, tape, duration`);
+  ok(['unmute', 'build', 'rise', 'impact', 'sink', 'sinkEnd', 'stop'].every(k => Number.isInteger(plan.marks[k])) && plan.marks.choke === plan.choke.at, `${track}: marks`);
+}
+
+// ---- 4. Real eSpeak durations, every track, today's cast and the post's own
+{
+  const REAL = JSON.parse(readFileSync(new URL('./fixtures/allhands-durations.json', import.meta.url), 'utf8'));
+  let n = 0, joins = 0, gated = 0, given = 0;
+  const gaps = Object.fromEntries(TRACK_ORDER.map(t => [t, []])), seams = {}, LATENCY = 720 / 44100;   // edl/anchors.js AUDIO_LATENCY
+  posts.forEach((post, i) => {
+    const lyrics = lyricsFromPost(post), label = i ? `fixture ${i - 1}` : 'sample';
+    for (const track of TRACK_ORDER) for (const own of [false, true]) {
+      const cast = own ? castSong(post, {track}).cast : undefined, plan = settleCast(FORMS.drop60.arrange, lyrics, REAL, {track, cast}).plan, T = plan.timing, at = e => T[Math.floor(e.at)] + (e.at % 1) * plan.step;
+      const tag = `${label} ${track}${own ? ' (its cast)' : ''}`, setlist = TRACKS[track].drop.slots(lyrics);
+      n++;
+      // One word at a time: every word (and the stammer, gated at 0.8 of a 16th by the engine) has stopped when the next one starts.
+      const sung = [...plan.words, ...plan.stutters.map(s => ({...s, gate:plan.step * .8}))].sort((a, b) => a.at - b.at);
+      const clash = sung.find((w, k) => k + 1 < sung.length && T[w.at] + w.gate > T[sung[k + 1].at] + 1e-9);
+      ok(!clash, `${tag}: Synergy sings one word at a time${clash ? ` ("${clash.display ?? clash.word}" at ${clash.at} runs into the next word)` : ''}`);
+      joins += sung.filter((w, k) => k + 1 < sung.length && w.at + w.steps === sung[k + 1].at).length;
+      gated += plan.words.filter(w => w.line >= 0 && w.gate < w.steps * plan.step - 1e-9).length;
+      // Every word of every line, inside its window or the 16ths the next slot gives.
+      // (A hook sung twice may end on the next slot's downbeat, as it always has.)
+      let late = 0;
+      plan.lines.forEach((l, id) => {
+        const slot = setlist[id], next = setlist[id + 1], from = slot.bar * 16 + (slot.startStep ?? 0), end = from + (slot.window ?? 30), nextAt = next ? next.bar * 16 + (next.startStep ?? 0) : end;
+        const give = next?.give && nextAt === end ? next.give : 0, twice = l.words.some(w => w.repeat), last = Math.max(...l.words.map(w => w.at + w.steps));
+        ok(l.words.filter(w => !w.repeat).length === tokens(slot.text).length && l.words[0].at >= from + late && last <= (twice ? Math.max(end, nextAt) : end) + give,
+          `${tag}: line ${id} "${slot.text}" sung whole, ${from + late}-${last} (window ${from}-${end}${give ? `, the next slot gives ${give}` : ''})`);
+        late = Math.max(0, last - nextAt); given += late > 0;
+      });
+      // Her lines play whole: every gate holds its cut at its rate (the ladder's hits are gated to their period by design).
+      for (const e of plan.lady.filter(x => x.role !== 'ladder')) ok(e.gate >= (e.to - e.from) / e.rate - 1e-9 && at(e) + ladyLength(e) <= plan.duration, `${tag}: her ${e.role} "${e.display}" plays whole (${((e.to - e.from) / e.rate).toFixed(3)} s, gate ${e.gate.toFixed(3)} s)`);
+      const stop = plan.lady.find(e => e.role === 'stop');
+      ok(plan.stop && plan.stop.at === T[plan.marks.stop] && plan.stop.tapeEnd === plan.stop.at + TRACKS[track].drop.stop.seconds && (stop ? Math.abs(plan.stop.end - (at(stop) + ladyLength(stop))) < 1e-12 && plan.stop.end > plan.stop.tapeEnd && plan.stop.display === stop.display : plan.stop.end === null),
+        `${tag}: plan.stop ${plan.stop?.at.toFixed(3)}-${plan.stop?.end?.toFixed(3)} s, when "${stop?.display}" stops sounding`);
+      // ---- 5. P6, Aaron's note on the drop: her tag ends Circle Back's 0.39 s before BACK. on every
+      // track and cast (drop.js IMPACT_GAP). The impact stays on its downbeat; the choke, and her tag
+      // with it, sits where the gap comes out right; nothing else sounds after it; her tag plays whole.
+      const tagEv = plan.lady.find(e => e.role === 'tag'), impact = T[plan.choke.until], gap = impact - plan.choke.tagEnd;
+      ok(tagEv && tagEv.at === plan.choke.at && plan.choke.until === TRACKS[track].drop.impact * 16 && Math.abs(plan.choke.tagEnd - (at(tagEv) + ladyLength(tagEv))) < 1e-12
+        && tagEv.gate >= (tagEv.to - tagEv.from) / tagEv.rate - 1e-9 && gap >= IMPACT_GAP.min && gap <= IMPACT_GAP.max && Math.abs(gap - plan.choke.gap) < 1e-12,
+        `${tag}: "${tagEv?.display}" ends ${(gap * 1000).toFixed(1)} ms before BACK. (${IMPACT_GAP.min}-${IMPACT_GAP.max} s)`);
+      const after = [...plan.words.map(w => [T[w.at], T[w.at] + w.gate]), ...plan.lady.filter(e => e.role !== 'tag').map(e => [at(e), at(e) + ladyLength(e)])].filter(([a, b]) => b > plan.choke.time + 1e-9 && a < impact - 1e-9);
+      ok(!after.length, `${tag}: nothing but her tag sounds from the choke to BACK.${after.length ? ` (${after.length} events)` : ''}`);
+      gaps[track].push(gap);
+      // The ending: her stop line ends at least 60 ms (in the delivered sound, the engine's 16 ms
+      // look-ahead included) before the film's last two frames, the loop seam's ghost BACK.
+      const N = Math.round(T[plan.totalSteps] * 24), seam = (N - 2) / 24;
+      if (plan.stop.end !== null) {
+        ok(plan.stop.end + LATENCY + .06 <= seam + 1e-9, `${tag}: her stop line is heard to ${(plan.stop.end + LATENCY).toFixed(3)} s, ${((seam - plan.stop.end - LATENCY) * 1000).toFixed(1)} ms before the ghost BACK. (frame ${N - 2})`);
+        seams[track] = Math.min(seams[track] ?? Infinity, seam - plan.stop.end - LATENCY);
+      }
+      if (i === 0 && !own) ok(stopFrames(plan).black <= N - 3 && (track !== 'hustle' || stopFrames(plan).black === N - 3), `${tag}: the ending reads her line, black from frame ${stopFrames(plan).black}, the ghost BACK. on frames ${N - 2}-${N - 1}`);
+    }
+  });
+  console.log(`P6 gap from her tag to BACK. (${n} plans): ${TRACK_ORDER.map(t => `${TRACKS[t].title} ${Math.min(...gaps[t]).toFixed(4)}-${Math.max(...gaps[t]).toFixed(4)} s`).join(', ')}`);
+  console.log(`P6 her stop line, least room before the ghost BACK.: ${TRACK_ORDER.map(t => `${TRACKS[t].title} ${(seams[t] * 1000).toFixed(1)} ms`).join(', ')}`);
+  console.log(`real durations: ${n} plans, one word at a time (${joins} back-to-back joins, ${gated} words gated at the next word's onset), ${given} lines run into a slot that gives way`);
+}
+
+// ---- 6. The composition constitution (songbook/CONSTITUTION.md, constitution.js)
+{
+  for (const id of TRACK_ORDER) {
+    const v = lintTrack(id), errors = v.filter(x => x.level === 'error');
+    console.log(`constitution, ${TRACKS[id].title}: ${errors.length} errors, ${v.length - errors.length} warnings`);
+    for (const line of describe(v)) console.log(`  ${line}`);
+    ok(!errors.length, `${id}: keeps the constitution (warnings aside)${errors.length ? `: ${describe(errors).join('; ')}` : ''}`);
+    ok(Object.keys(TRACKS[id].references).every(k => REFERENCES[k]) && TRACKS[id].references['daft-punk'] && BAND.every(r => TRACKS[id].palette[r]) && TRACKS[id].story.synergy, `${id}: declares its references, its palette and the story`);
+    // No track has a Synthia part yet: a warning that says what is missing, never an error.
+    const syn = v.find(x => x.rule === 'story.synthia');
+    ok(TRACKS[id].story.synthia === null && syn?.level === 'warning' && /no Synthia part yet/.test(syn.reason), `${id}: no Synthia part yet, reported as a warning`);
+    // Every break a track declares is a rule it really breaks.
+    ok(Object.keys(TRACKS[id].breaks || {}).every(rule => v.some(x => x.rule === rule && x.declared)), `${id}: every declared break is one it takes`);
+  }
+  // The lint bites: a chart that breaks rules without saying so fails.
+  const cb = TRACKS['circle-back'], rules = t => lintTrack(t).filter(x => x.level === 'error').map(x => x.rule);
+  ok(rules({...cb, bpm:140}).includes('tempo.range'), 'lint: 140 BPM is an error');
+  ok(rules({...TRACKS.hustle, breaks:{}}).includes('swing.light'), 'lint: Hustle\'s swing without its declared break is an error');
+  ok(rules({...cb, palette:{...cb.palette, guitar:undefined}}).includes('band.roles'), 'lint: a band without Kevin is an error');
+  ok(rules({...cb, references:{kraftwerk:'the grid'}}).includes('references'), 'lint: no Daft Punk is an error');
+  ok(rules({...cb, drop:{...cb.drop, swing:b => (b === 19 ? .1 : cb.drop.swing(b))}}).includes('swing.ladder'), 'lint: a swung ladder is an error');
+  // Major is for the haze songs: Humbled and Honored takes Washed Out; without it, E-flat major is an error.
+  const hh = TRACKS['humbled-and-honored'];
+  ok(!rules(hh).includes('harmony.home') && rules({...hh, references:{'daft-punk':hh.references['daft-punk'], air:hh.references.air}}).includes('harmony.home'), 'lint: E-flat major is a haze song\'s (Washed Out), not a lounge song\'s');
+  ok(lintTrack({...cb, story:{...cb.story, synthia:'an arpeggio'}}).some(x => x.rule === 'story.synthia' && /no bar plays her part/.test(x.reason)), 'lint: a Synthia part declared but never played is reported');
+  // Every plan of section 4's corpus keeps the plan's rules.
+  const REAL = JSON.parse(readFileSync(new URL('./fixtures/allhands-durations.json', import.meta.url), 'utf8')), warned = {};
+  let n = 0;
+  posts.forEach((post, i) => {
+    const lyrics = lyricsFromPost(post);
+    for (const track of TRACK_ORDER) for (const own of [false, true]) {
+      const cast = own ? castSong(post, {track}).cast : undefined, plan = settleCast(FORMS.drop60.arrange, lyrics, REAL, {track, cast}).plan, v = lintPlan(plan);
+      const errors = v.filter(x => x.level === 'error');
+      ok(!errors.length, `${i ? `fixture ${i - 1}` : 'sample'} ${track}${own ? ' (its cast)' : ''}: the plan keeps the constitution${errors.length ? `: ${describe(errors).join('; ')}` : ''}`);
+      for (const x of v) warned[`${track} ${x.rule}`] = (warned[`${track} ${x.rule}`] ?? 0) + 1;
+      n++;
+    }
+  });
+  console.log(`constitution, ${n} plans: 0 errors; warnings ${Object.entries(warned).map(([k, c]) => `${k} x${c}`).join(', ') || 'none'}`);
+  // The plan's rules bite too, and a measured render's.
+  const lyrics = lyricsFromPost(SAMPLE_POST), plan = FORMS.drop60.arrange(lyrics, {}, {track:'humbled-and-honored'}), prules = (p, r) => lintPlan(p, r).filter(x => x.level === 'error').map(x => x.rule);
+  ok(prules({...plan, choke:{...plan.choke, tagEnd:plan.choke.tagEnd - .26}}).includes('impact.gap'), 'lint: the old 0.66 s wait on Humbled and Honored is an error');
+  const good = {loudness:{integrated_lufs:-10.2, true_peak_dbtp:-1.1}, drop_vs_verse:[{drop:'Drop A', lift_lu:4.6, phone_lift_lu:2.8}, {drop:'Drop B', lift_lu:4.7, phone_lift_lu:3.5}], silence:[{span:'36.15-36.29', peak_dbfs:null}], whisper:[]};
+  ok(!prules(plan, good).length, 'lint: a render on its targets passes');
+  ok(prules(plan, {...good, loudness:{integrated_lufs:-13, true_peak_dbtp:-.4}}).includes('mix.loudness') && prules(plan, {...good, drop_vs_verse:[good.drop_vs_verse[0], {drop:'Drop B', lift_lu:3, phone_lift_lu:1.9}]}).includes('mix.drops')
+    && prules(plan, {...good, silence:[{span:'36.15-36.29', peak_dbfs:-48}]}).includes('mix.silence'), 'lint: loudness, a drop that does not lift on a phone, noise before the impact: errors');
 }
 
 // ---- Optional: a real render through the page, compared with the old code's

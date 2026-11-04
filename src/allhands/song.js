@@ -107,24 +107,31 @@ export function melody(count, shape, seed, scale = SCALE, resolve = RESOLVE) {
   return out.map(i => scale[i]);
 }
 
-const MIN_STEPS = 2, MAX_RATE = 1.35;
+export const MIN_STEPS = 2, MAX_RATE = 1.35;
 
 // Fit a phrase into a window of 16ths. Words keep their natural length when
 // they can; otherwise they speed up (the vocoder keeps the pitch) and, last,
 // they are gated to their slot. Onsets prefer 8th notes. `step` is the
-// track's 16th in seconds (Circle Back's by default).
-export function fitPhrase(line, durations, window = 30, step = STEP) {
-  const t = tokens(line);
+// track's 16th in seconds (Circle Back's by default). Every word is sung, and
+// none runs past the window: a phrase too long even at two 16ths a word (five
+// words in half a bar) runs `spill` 16ths on, where the next slot gives way
+// for it (slot.give), and past that its shortest words are sung as single 16ths.
+export function fitPhrase(line, durations, window = 30, step = STEP, spill = 0) {
+  const t = tokens(line), sum = a => a.reduce((x, y) => x + y, 0);
   const natural = t.map(x => Math.max(.12, durations[x.word] ?? .45) / step);
   let rate = 1, alloc;
   for (; rate <= MAX_RATE + 1e-9; rate += .05) {
     alloc = natural.map(n => Math.max(MIN_STEPS, Math.round(n / rate)));
-    if (alloc.reduce((a, b) => a + b, 0) <= window) break;
+    if (sum(alloc) <= window) break;
   }
-  while (alloc.reduce((a, b) => a + b, 0) > window && alloc.some(a => a > MIN_STEPS)) {
+  while (sum(alloc) > window && alloc.some(a => a > MIN_STEPS)) {
     const i = alloc.indexOf(Math.max(...alloc)); alloc[i]--;
   }
-  let slack = window - alloc.reduce((a, b) => a + b, 0), cursor = 0;
+  for (const i of natural.map((n, i) => i).sort((a, b) => natural[a] - natural[b] || b - a)) {
+    if (sum(alloc) <= window + spill) break;
+    alloc[i] = 1;
+  }
+  let slack = window - sum(alloc), cursor = 0;
   // Spare steps go first to the words that were squeezed hardest.
   const squeezed = natural.map((n, i) => i).sort((a, b) => natural[b] / alloc[b] - natural[a] / alloc[a]);
   for (let pass = 0; pass < 3 && slack > 0; pass++) for (const i of squeezed) if (slack > 0 && alloc[i] < Math.ceil(natural[i])) { alloc[i]++; slack--; }
@@ -135,7 +142,25 @@ export function fitPhrase(line, durations, window = 30, step = STEP) {
     const seconds = steps * step;
     return {...x, at, steps, syllables:syllables(x.word),
       rate:Math.max(1, Math.min(MAX_RATE, (durations[x.word] ?? .45) / (seconds * .94))), gate:seconds};
-  }).filter(w => w.at + w.steps <= window + MIN_STEPS);
+  });
+}
+
+// A word never sounds into the next sung word. On a swung grid an odd 16th
+// lands late, so a word that starts on one and lasts an odd number of 16ths has
+// less time than its steps: its gate ends where the next word starts, and it
+// speeds up (to MAX_RATE at most) to fit. `others` (the stammer) are heard but
+// not changed. Changes `words` in place; returns how many it shortened.
+export function clearWords(words, timing, durations, others = []) {
+  const sung = [...words, ...others].sort((a, b) => a.at - b.at), own = new Set(words);
+  let changed = 0;
+  for (let i = 0; i + 1 < sung.length; i++) {
+    const w = sung[i], room = timing[sung[i + 1].at] - timing[w.at];
+    if (!own.has(w) || w.gate <= room + 1e-12) continue;
+    w.gate = room;
+    w.rate = Math.max(w.rate, Math.min(MAX_RATE, (durations[w.word] ?? .45) / (room * .94)));
+    changed++;
+  }
+  return changed;
 }
 
 // The setlist: which phrase sings in which two-bar slot.
@@ -169,7 +194,7 @@ export function placeSlot(slot, lyrics, durations, id, music = {}) {
   const once = fitPhrase(slot.text, durations, Math.min(14, window), step);
   const short = slot.kind === 'hook' && window >= 30 - startStep && once.length === tokens(slot.text).length && once.every(w => w.rate < 1.25)
     && once.at(-1).at + once.at(-1).steps <= BAR_STEPS - startStep;
-  const fitted = short ? [...once, ...once.map(w => ({...w, at:w.at + BAR_STEPS, echo:true}))] : fitPhrase(slot.text, durations, window, step);
+  const fitted = short ? [...once, ...once.map(w => ({...w, at:w.at + BAR_STEPS, echo:true}))] : fitPhrase(slot.text, durations, window, step, slot.spill ?? 0);
   // A repeated hook answers itself: same tune, but the second time it comes home.
   const half = short ? once : fitted;
   const count = w => Math.min(w.syllables, w.steps);
@@ -210,9 +235,10 @@ export function arrange(lyrics, durations) {
   const first = words.find(w => w.kind === 'hook');
   const stutters = first ? [0, 2, 4, 6, 8, 10, 11, 12, 13, 14, 15].map((s, i) => ({word:first.word, at:15 * BAR_STEPS + s, steps:1, midi:SCALE[Math.min(8, 3 + Math.floor(i / 2))]})) : [];
   const bars = Array.from({length:BARS}, (_, index) => ({index, section:sectionAt(index).name, chord:CHORDS[index % 4], layers:layersAt(index), cutoff:cutoffAt(index)}));
-  const totalSteps = BARS * BAR_STEPS;
+  const totalSteps = BARS * BAR_STEPS, timing = timingTable(totalSteps + BAR_STEPS);
+  clearWords(words, timing, durations, stutters);
   return {form:'soundcheck', title:'Sound check 00', bpm:BPM, step:STEP, swing:SWING, key:KEY, sections:SECTIONS, bars, lines, words, stutters, lady:[],
-    timing:timingTable(totalSteps + BAR_STEPS), finale:true, totalSteps, duration:stepTime(totalSteps) + 3.5};
+    timing, finale:true, totalSteps, duration:stepTime(totalSteps) + 3.5};
 }
 
 export function voicedWords(lyrics) {

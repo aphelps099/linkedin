@@ -78,7 +78,9 @@ export function dropSlots(lyrics) {
     {bar:24, window:24, text:verses[3], kind:'verse', shape:'arch', harmony:true},
     {bar:26, window:14, text:hook, kind:'hook', shape:'call', harmony:true},
     {bar:27, startStep:8, window:8, text:hook, kind:'hook', shape:'call', harmony:true},
-    {bar:28, text:HOST.close, kind:'host', shape:'chant'},
+    // The sign-off gives way: a hook too long for its half bar (five words) runs
+    // two 16ths on and lands on the downbeat, and Synergy signs off an 8th later.
+    {bar:28, text:HOST.close, kind:'host', shape:'chant', give:2},
   ];
 }
 
@@ -133,7 +135,8 @@ function drums(api, b, bar, s, t) {
     if (L.kick && s % 4 === 0) { I.kick(ctx, D, t, 1); api.duck(t); }
     if (L.hats) { const v = L.hatsStraight ? (s % 4 === 0 ? .3 : .2) : hatVelocity(s); if (v) I.hat(ctx, D, t, v * .55); }
     if (L.open && PATTERNS.open.includes(s)) I.openHat(ctx, D, t, .18);
-    const [rate, v0, v1] = L.roll, last = bar === 19 ? 8 : 16;          // the last bar stops at the choke
+    const choke = api.plan.choke?.at ?? 19 * 16 + 8, last = bar === Math.floor(choke / 16) ? choke % 16 : 16;   // the last bar stops at the choke
+    const [rate, v0, v1] = L.roll;
     if (s < last) {
       const v = v0 + (v1 - v0) * s / 15, tone = 200 + 200 * L.rung / 7;
       if (rate >= 2) { if (s % rate === 0) I.clap(ctx, D, t, v); }
@@ -226,4 +229,21 @@ export default {
   sound:{},
   band,
   kicksOf,
+  // The composition constitution (CONSTITUTION.md; constitution.js lintTrack).
+  references:{
+    'daft-punk':"The spine: a filtered French-house shuffle on a 909, the offbeat saw bass and Kevin's muted chops, Synergy's vocoder lead, the kick pumping the stabs and the bass, the stabs' filter opening and closing the song.",
+    kraftwerk:'The machine: her phrase cut to the grid from one bar down to a 32nd, the robot voice, clarity over size.',
+    'washed-out':'The warmth as an event: Sink In at half speed, the tape stop under "Full stop."',
+  },
+  palette:{
+    synth:"Synergy's 28-band vocoder on a saw choir; detuned saw stabs; the saw riser into the choke.",
+    keys:'Detuned saw stabs through a low-pass that opens across the intro and closes across the outro; a pad under the build and the drops.',
+    drums:'A 909-style kit: kick on the four, claps on two and four, closed and open hats, a rim, the printer as the shaker; half-time in Drop A.',
+    bass:'Pat: an offbeat saw bass, a wobble in Drop A, held under Sink In, ducked by every kick.',
+    guitar:"Kevin: muted funk chops in Drop B. Never a solo.",
+  },
+  story:{
+    synergy:'Simple and a little stiff: the post on a nine-note pentatonic table, the first word of the hook as his answers in the build, a stammer on the odd 16ths of bar 18, the hook with the choir in the drops.',
+    synthia:null,
+  },
 };

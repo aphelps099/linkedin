@@ -6,9 +6,10 @@
 //      with no lady at all: no ladder, no tag, no BACK.
 //   2. Every way of asking for Circle Back's Drop Edition, the render hook's
 //      settleCast path included, arranges the same plan as the two-argument call.
-//   3. Every track: the plan's silence after her tag, against the brief's
-//      0.45 s (Circle Back's measured tag is documented at 0.392 s), for today's
-//      cast and for the cast each fixture post picks.
+//   3. Every track: the wait from the end of her tag to BACK. Aaron (P6): one
+//      song waited too long. Now 0.37-0.42 s on every track, Circle Back's 0.392 s
+//      the reference (drop.js IMPACT_GAP), for today's cast and the cast each
+//      fixture post picks, and (section 6) with real durations, both casts.
 //   4. Casting copy: the one line quotes the post verbatim, never a fragment that
 //      reads out of context (the 4-year-old post quoted "hit me").
 //   5. The Peg Board gives every one of her events a screen that starts on it.
@@ -28,12 +29,12 @@
 // reaches the Sink In downbeat late must schedule it without throwing.
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {arrangeDrop, dropVoicedWords, ladyLength} from '../src/allhands/drop.js';
+import {arrangeDrop, dropVoicedWords, ladyLength, IMPACT_GAP} from '../src/allhands/drop.js';
 import {createHash} from 'node:crypto';
 import {createRequire} from 'node:module';
 import {FORMS} from '../src/allhands/forms.js';
 import {LADY_TABLE} from '../src/allhands/lady-table.js';
-import {castSong, settleCast, LIMITS} from '../src/allhands/casting.js';
+import {castSong, settleCast} from '../src/allhands/casting.js';
 import {TRACKS, TRACK_ORDER} from '../src/allhands/songbook/index.js';
 import {lyricsFromPost, SAMPLE_POST, syllables} from '../src/allhands/lyrics.js';
 import {buildScreens} from '../src/pegboard/choreo.js';
@@ -66,11 +67,9 @@ POSTS.forEach((post, i) => {
   }
 });
 
-// ---- 3. The silence after her tag, per track and cast
-const silenceOf = plan => {
-  const tag = plan.lady.find(e => e.role === 'tag'), T = plan.timing;
-  return T[plan.choke.until] - T[plan.choke.at] - tag.gate;
-};
+// ---- 3. The wait from the end of her tag to BACK., per track and cast (exact silence between: check-songbook)
+const silenceOf = plan => plan.timing[plan.choke.until] - plan.choke.tagEnd;
+const inGap = s => s >= IMPACT_GAP.min - 1e-9 && s <= IMPACT_GAP.max + 1e-9;
 const silences = Object.fromEntries(TRACK_ORDER.map(t => [t, []]));
 POSTS.forEach((post, i) => {
   const lyrics = lyricsFromPost(post), c = castSong(post);
@@ -78,17 +77,18 @@ POSTS.forEach((post, i) => {
     const d = Object.fromEntries(dropVoicedWords(lyrics, {track}).map(w => [w, models.fake(w)]));
     const today = silenceOf(arrangeDrop(lyrics, d, {track}));
     silences[track].push(today);
-    if (track === 'circle-back') ok(Math.abs(today - .392) < .001, `${label(i)}: Circle Back's silence is the documented 0.392 s (${today.toFixed(3)})`);
-    else ok(today >= LIMITS.tag.silence - 1e-9, `${label(i)} ${track}: today's tag leaves ${today.toFixed(3)} s of silence`);
+    if (track === 'circle-back') ok(Math.abs(today - .392) < .001, `${label(i)}: Circle Back's wait is the documented 0.392 s (${today.toFixed(3)})`);
+    else ok(inGap(today), `${label(i)} ${track}: today's tag ends ${today.toFixed(3)} s before BACK.`);
     if (c.track === track) {
       const plan = settleCast(FORMS.drop60.arrange, lyrics, d, {track, cast:c.cast}).plan, s = silenceOf(plan);
       const isToday = c.cast.tag.file === '06.wav' && json(c.cast.tag.words) === '[0,1]';
-      ok(isToday ? Math.abs(s - today) < 1e-9 : s >= LIMITS.tag.silence - 1e-9, `${label(i)} ${track}: the post's tag "${c.cast.tag.display}" leaves ${s.toFixed(3)} s`);
-      // ---- 5. Every lady event has its own Peg Board screen, on time, with her words
+      ok(isToday ? Math.abs(s - today) < 1e-9 : inGap(s), `${label(i)} ${track}: the post's tag "${c.cast.tag.display}" ends ${s.toFixed(3)} s before BACK.`);
+      // ---- 5. Every lady event has its own Peg Board screen, on time, with her words (a fragment of
+      // her ladder shows the whole words it comes from, its own letters lit: screen.fragment)
       const screens = buildScreens(plan, {table:LADY_TABLE});
       for (const e of plan.lady) {
         const t0 = plan.timing[Math.floor(e.at)] + (e.at - Math.floor(e.at)) * plan.step;
-        ok(screens.some(x => x.voice === 'lady' && Math.abs(x.from - t0) < 1e-6 && x.text === e.display), `${label(i)} ${track}: a Peg Board screen for ${e.role} "${e.display}" at ${t0.toFixed(3)} s`);
+        ok(screens.some(x => x.voice === 'lady' && Math.abs(x.from - t0) < 1e-6 && (x.fragment ?? x.text) === e.display), `${label(i)} ${track}: a Peg Board screen for ${e.role} "${e.display}" at ${t0.toFixed(3)} s`);
       }
     }
   }
@@ -118,8 +118,8 @@ POSTS.forEach((post, i) => {
       const ws = plan.words.filter(w => w.line >= 0 && w.at >= 26 * 16 && w.at < 29 * 16).sort((a, b) => a.at - b.at);
       ok(ws.every((w, k) => !k || w.at >= ws[k - 1].at + ws[k - 1].steps), `${label(i)} hustle: Synergy never sings over himself in bars 26-28`);
     }
-    const tag = plan.lady.find(e => e.role === 'tag');
-    ok(Math.abs(plan.choke.tagEnd - (T[tag.at] + ladyLength(tag))) < 1e-9 && plan.choke.tagEnd < T[plan.choke.until], `${label(i)} ${track}: choke.tagEnd ${plan.choke.tagEnd.toFixed(3)} s is when "${tag.display}" stops`);
+    const tag = plan.lady.find(e => e.role === 'tag'), tagAt = T[Math.floor(tag.at)] + (tag.at % 1) * plan.step;
+    ok(Math.abs(plan.choke.tagEnd - (tagAt + ladyLength(tag))) < 1e-9 && tagAt === plan.choke.time && inGap(T[plan.choke.until] - plan.choke.tagEnd), `${label(i)} ${track}${own ? ' (its cast)' : ''}: choke.tagEnd ${plan.choke.tagEnd.toFixed(3)} s is when "${tag.display}" stops, ${((T[plan.choke.until] - plan.choke.tagEnd) * 1000).toFixed(0)} ms before BACK.`);
     const trim = plan.energyTrim?.Verse ?? 0;
     ok(trim >= 0 && trim <= 2.5, `${label(i)} ${track}: the verse's room ${trim} dB`);
     if (!own) trims[track].push(trim);
@@ -182,5 +182,5 @@ if (url) {
     }
   } finally { await browser.close(); }
 }
-console.log(`silence after today's tag: ${TRACK_ORDER.map(t => `${TRACKS[t].title} ${range(silences[t])}`).join(', ')}`);
+console.log(`from the end of today's tag to BACK.: ${TRACK_ORDER.map(t => `${TRACKS[t].title} ${range(silences[t])}`).join(', ')}`);
 console.log(`review-audio: ${checks} checks passed`);

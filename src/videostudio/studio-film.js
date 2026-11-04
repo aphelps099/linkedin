@@ -52,6 +52,8 @@ export function studioFilm(plan, shots, {format = '9:16', features, seed = 7} = 
     m('pegTakeover', {id:'open', at:0, len:6, pool:[CAST.arrive], instant:true, scene:'cold'}),
     m('rewind', {at:6, len:2, from:{anchor:'bar:17'}}),
     c('pat', 8, 8, 'full', PAT, {scene:'cold', chrome:{mic:'muted'}}),
+    // Pat's tile takes the frame and the board with it; the board is home again as the call assembles (lint G14).
+    {boardMoves:[{id:'pat.grow', at:8, frames:4, align:'start'}, {id:'pat.home', at:bar(1), frames:4, align:'end'}]},
     {board:[{id:'back', at:0, len:6, text:{ref:'song:impact#0'}}]},
     // The call assembles, one tile a beat, everyone muted until the call unmutes.
     m('gridBloom', {id:'join', at:bar(1), len:bar(3), pool:[PAT, CAST.opsArrive, CAST.keysPlay, CAST.kevin, CAST.synergy, CAST.people], scene:'join'}),
@@ -63,6 +65,8 @@ export function studioFilm(plan, shots, {format = '9:16', features, seed = 7} = 
     c('share', bar(8), bar(2), 'BOARD+STRIP.0', `shot:${CAST.synergy}`, {scene:'hook', time:{in:2}, chrome:{banner:"You are viewing Synergy's screen", speaking:speaking('voice')}}),
     c('shareKeys', bar(8), bar(2), 'BOARD+STRIP.1', `shot:${CAST.keysPlay}`, {scene:'hook', time:{in:1}, chrome:{speaking:speaking('keys')}}),
     c('shareKevin', bar(8), bar(2), 'BOARD+STRIP.2', `shot:${CAST.kevin}`, {scene:'hook', time:{in:3}, chrome:{speaking:speaking('guitar')}}),
+    // The board grows out of its home for the share and is home again on the cut that ends it (lint G14).
+    {boardMoves:[{id:'share.grow', at:bar(8), frames:4, align:'start'}, {id:'share.home', at:bar(10), frames:4, align:'end'}]},
     // Verse 2: the border chases the loudest player.
     m('speakerChase', {id:'chase', at:bar(10), len:bar(2), pool:[CAST.synergy, CAST.ops, CAST.keys, CAST.kevin, CAST.people, PAT], scene:'chase'}),
     // The build. Freeze the call: everyone but Operations stops and greys.
@@ -76,7 +80,8 @@ export function studioFilm(plan, shots, {format = '9:16', features, seed = 7} = 
     c('poorPat', bar(18), bar(1), 'G6.3', PAT, {scene:'poor'}),
     m('poorConnection', {id:'poorC', at:bar(18), len:bar(1), pool:[CAST.arjun], cell:'G6.4', scene:'poor', in:1}),
     c('poorBoard', bar(18), bar(1), 'G6.5', BOARD, {scene:'poor', chrome:{name:'Pat'}}),
-    c('ladder', bar(19), plan.choke.at - bar(19), 'full', BOARD, {scene:'tag'}),
+    c('ladder', bar(19), plan.choke.at - bar(19), 'full', 'gen:color:#000000', {scene:'tag'}),   // the board alone, grown to the frame over black
+    {boardMoves:[{id:'ladder.grow', at:bar(19), frames:4, align:'start'}]},
     c('black', plan.choke.at, plan.choke.until - plan.choke.at, 'full', 'gen:color:#000000', {scene:'tag'}),
     // BACK.
     m('pegTakeover', {id:'ignite', at:{anchor:'cue:impact'}, len:8, pool:[CAST.arrive], scene:'dropA'}),
@@ -93,6 +98,7 @@ export function studioFilm(plan, shots, {format = '9:16', features, seed = 7} = 
     m('leaveMeeting', {id:'leave', at:bar(28), len:bar(2), pool:[CAST.synergyClose, CAST.kevin, CAST.keysPlay, CAST.synthia, CAST.people, PAT, CAST.arjun], scene:'leave'}),
     m('tapeStop', {len:4}),
     c('tail', plan.totalSteps - 4, 4, 'full', 'gen:color:#000000', {scene:'leave'}),
+    c('tail.l1', plan.totalSteps - 4, 4, 'L1.0', 'gen:color:#000000', {scene:'leave'}),   // the call goes dark, its board with it (no jump to the frame)
   ];
   const edl = merge(createEDL({format, loop:true, seed}), ...patches);
   for (const clip of edl.clips) {
@@ -121,7 +127,7 @@ export function studioFilm(plan, shots, {format = '9:16', features, seed = 7} = 
     if (clip.id.startsWith('pads.')) Object.assign(clip, MOVES.snarePunch.fn({plan, shots, features, format, seed, clip, at:clip.at, len:clip.len, to:1.12}).clips[0]);
   }
   // The dive pushes the call's outer tiles out of the frame: their upscale is the camera's, not theirs.
-  for (const clip of edl.clips) if (clip.id.startsWith('chaseB.') && !clip.asset.startsWith('gen:'))
+  for (const clip of edl.clips) if ((clip.id === 'chaseB' || clip.id.startsWith('chaseB.')) && !clip.asset.startsWith('gen:'))
     edl.overrides.push({target:clip.id, rule:'G10', note:'The Droste dive carries this tile out of frame; it is never seen at the full push'});
   return edl;
 }

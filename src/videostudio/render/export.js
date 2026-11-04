@@ -25,6 +25,7 @@ import {stringify} from '../edl/schema.js';
 import {stepTime, stepAtTime, barSteps, ladyTime, audioLatency, chokeFrames} from '../edl/anchors.js';
 import {createCompositor} from '../gl/compositor.js';
 import {createFrameDecoder, frameLedger} from '../media/decoder.js';
+import {needsProxy} from '../media/shots.js';
 import {FORMATS} from '../layouts.js';
 
 export const FPS = 24;
@@ -326,6 +327,7 @@ export async function exportFilm(opts) {
     audio:audioInfo,
     hashes:{edl:await sha256(edlText), plan:await sha256(planJSON(plan)), program:program.hash(), mp4:await sha256(mp4), features:features.source},
     lint:{ok:program.lint.ok, errors:program.lint.errors.length, warnings:program.lint.warnings.length},
+    media:mediaReport(program, shots, media, decoder.stats().masters),
     stats:{seconds:timings, msPerFrame:{mean:sorted.reduce((s, x) => s + x, 0) / n, p50:sorted[Math.floor(n / 2)], p95:sorted[Math.floor(n * .95)], max:sorted[n - 1]},
       split:{decode:split.decode / n, draw:split.draw / n, encode:split.encode / n},
       decoder:decoder.stats(), frames:{opened:ledger.opened, closed:ledger.closed, live:ledger.live, peak:ledger.peak, byKind:ledger.byKind}, memory},
@@ -334,6 +336,16 @@ export async function exportFilm(opts) {
   };
   progress({phase:'done', frame:n, frames:n, fraction:1});
   return {mp4, vtt, sidecar, program, pcm};
+}
+
+// Which footage the film read, and where the media route had to stand a master in for a proxy
+// (not uploaded yet). needsProxy: the shots whose master is H.264 4:4:4, which iOS cannot decode;
+// standIns: those of them (and any other shot) served as the master in this export.
+export function mediaReport(program, shots, media = 'proxy', masterUrls = []) {
+  const list = shots?.shots ?? shots ?? [], byId = new Map((list instanceof Map ? [...list.values()] : list).map(s => [s.id, s]));
+  const used = [...new Set(program.clips.map(c => c.shotId).filter(Boolean))].map(id => byId.get(id)).filter(Boolean);
+  const urls = new Set(masterUrls);
+  return {mode:media, needsProxy:used.filter(needsProxy).map(s => s.id), standIns:used.filter(s => s.proxy && urls.has(s.proxy)).map(s => s.id)};
 }
 
 // File names: linkedinbeats-circle-back-drop60-9x16.mp4 and friends.

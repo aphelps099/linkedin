@@ -7,11 +7,11 @@
 // frame, in Node and in the browser. compileFrame(f) recomputes any frame on its
 // own, for scrubbing.
 import {resolveAt, resolveSpan, stepTime, stepAtTime, cutFrame, ladyTime, FPS, barSteps, beatSteps, anchorPoint, audioLatency} from './anchors.js';
-import {paramFn, range, planFeatures, envelopeAt} from './params.js';
+import {paramFn, range, planFeatures, envelopeAt, EASES} from './params.js';
 import {clipTimeMap, tapeCurve, transportTime} from './remap.js';
 import {validate, parseAsset, FX} from './schema.js';
-import {FORMATS, cellRect, layout, layoutClassOf} from '../layouts.js';
-import {buildScreens, activeScreen, indexWords, boardState} from '../../pegboard/choreo.js';
+import {FORMATS, cellRect, layout, layoutClassOf, sameRect, HOME} from '../layouts.js';
+import {buildScreens, activeScreen, indexWords, boardState, stopDarkAt, stopEndAt, TAG_TAIL, ladderWhole} from '../../pegboard/choreo.js';
 import {LADY_TABLE} from '../../allhands/lady-table.js';
 import MEETING_TRACKING from '../../meeting-room/robot-tracking.json' with {type:'json'};
 import STUDIO_TRACKING from '../media/robot-tracks.json' with {type:'json'};
@@ -26,6 +26,8 @@ export const UPSCALE = {A:1.8, B:1.5, C:1.2};      // tolerable upscale U by sha
 export const STUTTER_FRAMES = 12;                  // the stutter cache: one beat of 540p frames, <= 25 MB
 const EPS = 1e-9;
 const BLACKS = new Set(['black', 'color:#000000']);
+// A board move lasts at least 3 frames (never a jump); 4 by default.
+export const BOARD_MOVE_MIN = 3, BOARD_MOVE_FRAMES = 4;
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 
 // ---- the shot index --------------------------------------------------------------------------
@@ -182,21 +184,26 @@ function cueScreens(edl, plan, songScreens, table) {
     const from = span.time, to = span.end, ref = typeof cue.text === 'object' ? cue.text.ref : null;
     const base = {id:cue.id ?? `cue${i}`, kind:'cue', voice:'board', from, to, reveal:cue.reveal ?? 'pop', tone:cue.palette ?? 'white', release:cue.release ?? 'cut', k:cue.k ?? 1, font:cue.font ?? 'peg9', accent:-1, fx:{}, cell:cue.cell ?? null, z:cue.z ?? (cue.cell ? 'over' : 'under')};
     let screens = [];
-    if (ref === 'song') screens = songScreens.filter(s => s.to > from && s.from < to).map(s => ({...s, from:Math.max(from, s.from), to:Math.min(to, s.to), cue:base.id, cell:base.cell, z:base.z}));
+    // (of: the song screen a copy comes from, so a ghost of it is known for the same screen.)
+    if (ref === 'song') screens = songScreens.flatMap((s, of) => s.to > from && s.from < to ? [{...s, from:Math.max(from, s.from), to:Math.min(to, s.to), cue:base.id, cell:base.cell, z:base.z, of}] : []);
     else if (ref && ref.startsWith('song:')) {
       const m = /^song:([a-z]+)(?:#(-?\d+))?$/.exec(ref), list = songScreens.filter(s => s.kind === m?.[1]), n = +(m?.[2] ?? 0), s = list[n < 0 ? list.length + n : n];
       if (!s) throw Error(`board ${base.id}: no song screen "${ref}"`);
       // Re-timed to the cue: the same words, the same rhythm, starting at `at` (a flash-forward, a reprise).
       const d = from - s.from, shift = w => ({...w, start:w.start + d, end:w.end + d, units:w.units.map(u => ({...u, start:u.start + d}))});
-      screens = [{...s, from, to:Math.min(to, s.to + d), words:s.words.map(shift), cue:base.id, cell:base.cell, z:base.z, k:cue.k ?? s.k, tone:cue.palette ?? s.tone, reveal:cue.reveal ?? s.reveal, retimed:d}];
+      screens = [{...s, from, to:Math.min(to, s.to + d), words:s.words.map(shift), cue:base.id, cell:base.cell, z:base.z, k:cue.k ?? s.k, tone:cue.palette ?? s.tone, reveal:cue.reveal ?? s.reveal, retimed:d, of:songScreens.indexOf(s)}];
     } else if (ref && ref.startsWith('lady')) {
-      const e = anchorPoint(plan, ref).event, t0 = ladyTime(plan, e);
-      screens = [{...base, text:e.display, words:[{text:e.display, start:t0, end:t0 + e.gate, units:[{chars:[0, e.display.length], start:t0}]}]}];
+      // A fragment of her ladder ("LE") shows the whole word it comes from, its own letters lit (choreo).
+      const e = anchorPoint(plan, ref).event, t0 = ladyTime(plan, e), whole = e.role === 'ladder' ? ladderWhole(plan, e) : null;
+      screens = [whole ? {...base, text:whole.map(w => w.text).join(' '), fragment:e.display, words:whole.map(w => ({text:w.text, lit:w.lit, start:t0, end:t0 + e.gate, units:[{chars:[0, w.lit], start:t0}]}))}
+        : {...base, text:e.display, words:[{text:e.display, start:t0, end:t0 + e.gate, units:[{chars:[0, e.display.length], start:t0}]}]}];
     } else if (ref && ref.startsWith('line')) {
       const l = anchorPoint(plan, ref).line;
       screens = [{...base, text:l.words.map(w => w.display).join(' '), words:l.words.map(w => { const s = stepTime(plan, w.at); return {text:w.display, start:s, end:Math.min(s + (w.gate ?? Infinity), stepTime(plan, w.at + w.steps)), units:[{chars:[0, w.display.length], start:s}]}; })}];
     } else if (ref) throw Error(`board ${base.id}: cannot read ref "${ref}"`);
     else screens = [{...base, text:cue.text, words:textScreen(cue, from, to, cue.text)}];
+    // ghost: the screen as a ghost (choreo paints only its letters, flat at this intensity, on true black).
+    if (cue.ghost) for (const s of screens) s.ghost = cue.ghost;
     // fx: 'audio' follows the plan (the lady's bend, the sink's tape).
     for (const s of screens) {
       const fx = {...(s.fx || {})};
@@ -322,6 +329,22 @@ export function compile(edlIn, opts = {}) {
   });
   const frameRect = {x:0, y:0, w:F.w, h:F.h};
 
+  // Board moves (edl.boardMoves): the only frames where the board's rect may change. A move
+  // eases the board from the rect its layout gave it on the frame before the move to the rect its
+  // layout gives it on the move's last frame, over `frames` frames that start on `at` (align
+  // 'start', a full-board moment growing out of the home) or end on it (align 'end', returning to
+  // the home so it lands on the cut).
+  const boardMoves = [];
+  (edl.boardMoves || []).forEach((m, i) => {
+    try {
+      const a = resolveAt(plan, m.at, fps), n = Math.max(BOARD_MOVE_MIN, Math.round(m.frames ?? BOARD_MOVE_FRAMES));
+      const from = m.align === 'end' ? a.frame - n + 1 : a.frame;
+      boardMoves.push({id:m.id ?? `boardMove${i}`, from, to:from + n, n, ease:EASES[m.ease ?? 'inOutSine'] ? m.ease ?? 'inOutSine' : 'inOutSine'});
+    } catch (e) { report('error', 'schema', `boardMoves[${i}]: ${e.message}`, {path:`boardMoves[${i}]`}); }
+  });
+  boardMoves.sort((a, b) => a.from - b.from);
+  const boardMoveAt = f => { let out = null; for (const m of boardMoves) if (f >= m.from && f < m.to) out = m; return out; };
+
   // ---- the board ---------------------------------------------------------------------------------
   let songScreens = null;
   const song = () => songScreens ??= buildScreens(plan, {table}).map(indexWords);
@@ -405,7 +428,36 @@ export function compile(edlIn, opts = {}) {
   const seeThrough = new Set(['iris', 'droste', 'echo']);
   const covers = l => l.opacity >= .999 && !l.fx.some(x => seeThrough.has(x.type)) && l.transform.rot === 0 && l.transform.dx === 0 && l.transform.dy === 0 && l.transform.zoom >= 1 - EPS;
 
-  function frameAt(f) {
+  // The board's own rect at a frame, as its layout gives it: the layout's region (the format's home
+  // in every call layout), the frame over a full-frame picture, or null when the call has gone dark.
+  const targets = new Map();
+  function boardTarget(f) {
+    if (f < 0 || f >= N) return null;
+    if (!targets.has(f)) {
+      const x = frameAt(f, {layoutOnly:true}), rect = ownRect(x.dark, x.L, x.cls);
+      targets.set(f, rect && {...rect, panel:panelOf(rect, !!x.L?.boardOver, x.layers)});
+    }
+    return targets.get(f);
+  }
+  // The layout's region (the format's home in every call layout); the frame over a full-frame
+  // picture; an empty frame between clips keeps the home (a film with no clips is the board alone).
+  const ownRect = (dark, L, cls) => dark ? null : L ? (L.board ? {...L.board} : null) : cls === 'full' || !clips.length ? {...frameRect} : {...HOME[format]};
+  // The board is a panel (its sockets behind the type, 1) unless it lies over footage that shows
+  // through it (a full-frame video: only its light, 0).
+  const panelOf = (rect, over, layers) => over || !layers.some(l => l.kind === 'video' && overlap(l.cell, rect)) ? 1 : 0;
+  // Inside a board move the rect eases between the rects the layouts give before and at the end of
+  // it, and the panel fades between their panels (the ignition's light over peg video to the home).
+  function boardRect(f, own) {
+    const m = boardMoveAt(f);
+    if (!m || !own) return {rect:own, move:null};
+    const a = boardTarget(m.from - 1), b = boardTarget(m.to - 1);
+    if (!a || !b || (sameRect(a, b) && a.panel === b.panel)) return {rect:own, move:null};
+    const u = EASES[m.ease].f(clamp((f - m.from + 1) / m.n, 0, 1)), L = (p, q) => Math.round(p + (q - p) * u);
+    const x0 = L(a.x, b.x), y0 = L(a.y, b.y), x1 = L(a.x + a.w, b.x + b.w), y1 = L(a.y + a.h, b.y + b.h);
+    return {rect:{x:x0, y:y0, w:x1 - x0, h:y1 - y0}, move:u < 1 ? m.id : null, panel:+(a.panel + (b.panel - a.panel) * u).toFixed(6)};
+  }
+
+  function frameAt(f, {layoutOnly = false} = {}) {
     const t = f / fps, tr = transportAt(f), v = tr ? transportTime(tr, t) : t;
     const vf = Math.floor(v * fps + EPS);
     const list = vf >= 0 && vf < N ? activeAt[vf] : [];
@@ -424,6 +476,10 @@ export function compile(edlIn, opts = {}) {
     const named = Object.keys(classes).filter(k => k !== 'full');
     const cls = named.length ? named.sort((a, b) => classes[b] - classes[a] || (a < b ? -1 : 1))[0] : layers.length ? 'full' : null;
     const L = cls && cls !== 'full' ? layout(cls, format) : null;
+    if (layoutOnly) {
+      const bt0 = tr?.kind === 'tapestop' ? t : v, herStop0 = stopSpan && bt0 + .5 / fps - lead >= stopSpan[0] && bt0 + .5 / fps - lead < stopSpan[1];
+      return {L, cls, layers, dark:!!L && !herStop0 && layers.length > 0 && layers.every(l => l.kind === 'generated' && BLACKS.has(l.gen) && l.opacity >= .999)};
+    }
     let cam = null;
     // A camera cue runs on the song time the frame shows, or (clock:'film') on the film's own frames.
     for (const c of cameras) { const g = c.film ? f : vf; if (g >= c.from && g < c.to) cam = c; }
@@ -436,21 +492,56 @@ export function compile(edlIn, opts = {}) {
       // still over the moving picture, so the camera never pushes the words out of frame.
       camera = {id:cam.id, zoom, cx, cy, rot, dx, dy, board:cam.board, matrix:layerMatrix(frameRect, frameRect, {zoom, cx, cy, rot, dx, dy}), fx:evalFx(cam.fx, u)};
     }
+    // The board's time: the song time the frame shows, except through a tape stop. Her stop phrase
+    // is routed after the tape (she stops it, it does not stop her), so the board keeps the song's
+    // own clock while the picture slows to its hold. Inside a jump whose sound is copied without
+    // Synergy (the cold open: the drop's impact cut from its own render, engine.js coldSourcePlan)
+    // the board shows only what is heard: it holds on the frame before his first screen.
+    const hold = tr?.kind === 'jump' ? jumpHold(tr) : null;
+    const bt = tr?.kind === 'tapestop' ? t : hold !== null && v > hold ? hold : v;
     // The screen this frame shows, by the compositor's own rule (gl/compositor.js boardTimeOf): a
-    // screen is up on the frame that holds the sound of its start, v + 1/24 − L.
-    const screen = board.screens.length ? board.screens.indexOf(activeScreen(board.screens, v + 1 / fps - lead)) : -1;
+    // screen is up on the frame that holds the sound of its start, bt + 1/24 − L.
+    const screen = board.screens.length ? board.screens.indexOf(activeScreen(board.screens, bt + 1 / fps - lead)) : -1;
     const cellScreens = [];
     for (let i = 0; i < board.cells.length; i++) { const s = board.cells[i]; if (v >= s.from && v < s.to) { const r = cellRect(format, s.cell); if (r) cellScreens.push({screen:i, cell:s.cell, rect:{x:r.x, y:r.y, w:r.w, h:r.h}, z:s.z}); } }
     // Lights out: when every tile of a layout is black, the call has gone dark and its board goes
     // with it (true black, sockets off). A full-frame black keeps the board: the choke's tag on
-    // bare sockets.
-    const dark = !!L && layers.length > 0 && layers.every(l => l.kind === 'generated' && BLACKS.has(l.gen) && l.opacity >= .999);
+    // bare sockets. Never while her stop phrase still sounds: "FULL STOP." stays on the board
+    // until the frame after she stops (choreo stopDarkAt).
+    const herStop = stopSpan && bt + .5 / fps - lead >= stopSpan[0] && bt + .5 / fps - lead < stopSpan[1];
+    const dark = !!L && !herStop && layers.length > 0 && layers.every(l => l.kind === 'generated' && BLACKS.has(l.gen) && l.opacity >= .999);
+    // The board's region: the layout's (the format's home in every call layout), or the whole frame
+    // over a full-frame picture, eased inside a board move. A moving board is a panel laid over the
+    // picture (over), sockets and all. panel: the board shows its sockets (it is a panel), not only
+    // its light over footage (a full-frame video under it).
+    const moved = boardRect(f, ownRect(dark, L, cls)), {rect, move} = moved;
+    const over = !!L?.boardOver || !!move;
+    const panel = !rect ? 0 : move ? moved.panel : panelOf(rect, over, layers);
     return {f, t, time:v, layout:cls, transport:tr ? {id:tr.id, kind:tr.kind, phase:(f - tr.from) / (tr.to - tr.from), rate:tr.kind === 'rewind' ? -tr.rate : tr.kind === 'jump' ? 1 : null, sound:tr.sound} : null,
-      // The board's region: the layout's, or the whole frame over a full-frame picture. lead: the
-      // engine's latency, so the compositor lights each peg on the frame that holds its sound.
-      camera, board:{time:v, lead, screen, rect:dark ? null : L ? (L.board ? {...L.board} : null) : {...frameRect}, over:!!L?.boardOver, dark, banner:L?.banner ? {...L.banner} : null, cells:cellScreens}, layers};
+      // lead: the engine's latency, so the compositor lights each peg on the frame that holds its sound.
+      camera, board:{time:bt, lead, screen, rect, over, panel, move, dark, banner:L?.banner ? {...L.banner} : null, cells:cellScreens}, layers};
   }
 
+  // The board time a copied jump holds at (null: it never reaches one of his screens), by the
+  // compositor's rule: a screen is up on the frame whose time + 1/24 − L reaches its start.
+  const holds = new Map();
+  function jumpHold(tr) {
+    if (holds.has(tr)) return holds.get(tr);
+    let out = null;
+    if (tr.sound === 'copied' && board.screens.length) {
+      let prev = null;
+      for (let f = tr.from; f < tr.to; f++) {
+        const v = transportTime(tr, f / fps), s = activeScreen(board.screens, v + 1 / fps - lead);
+        if (s?.voice === 'synergy') { out = prev ?? v - 1 / fps; break; }
+        prev = v;
+      }
+    }
+    holds.set(tr, out);
+    return out;
+  }
+  // Her stop phrase, as the board paints it (song seconds): from its onset to the first frame after it.
+  const stopEv = (plan.lady || []).find(e => e.role === 'stop'), stopOff = stopDarkAt(plan);
+  const stopSpan = stopEv && stopOff !== null ? [stepTime(plan, stopEv.at), stopOff] : null;
   const frames = new Array(N);
   for (let f = 0; f < N; f++) frames[f] = frameAt(f);
 
@@ -471,6 +562,25 @@ export function compile(edlIn, opts = {}) {
   }
 
   // ---- lint ------------------------------------------------------------------------------------
+  // G14: the board holds still. Its rect changes between consecutive frames only inside an authored
+  // board move (edl.boardMoves, at least 3 frames), and its panel (the sockets behind the type) never
+  // comes and goes on its own: only inside a move, where a transport cuts to another moment, or
+  // from and to dark (lights out is the film going black, not a jump). Not waivable.
+  {
+    const jumps = [], panels = [], cutsAt = new Set(transports.flatMap(t => [t.from, t.to]));
+    // (A board choreo holds at true black, sockets off, is dark too: the choke's silence.)
+    const lit = fr => !!fr.board.rect && boardState(plan, fr.board.time + .5 / fps - lead).sockets > 0;
+    for (let f = 1; f < N; f++) {
+      const a = frames[f - 1].board, b = frames[f].board;
+      if (!lit(frames[f - 1]) || !lit(frames[f]) || boardMoveAt(f)) continue;
+      if (!sameRect(a.rect, b.rect)) jumps.push(f);
+      else if (a.panel !== b.panel && !cutsAt.has(f)) panels.push(f);
+    }
+    const rr = r => `${r.x},${r.y} ${r.w}×${r.h}`;
+    if (jumps.length) report('error', 'G14', `the board jumps on ${jumps.length} cut${jumps.length > 1 ? 's' : ''}: ${jumps.slice(0, 6).map(f => `f${f} (${frames[f - 1].layout} ${rr(frames[f - 1].board.rect)} to ${frames[f].layout} ${rr(frames[f].board.rect)})`).join(', ')}${jumps.length > 6 ? ` and ${jumps.length - 6} more` : ''}; keep the board at its home, or ease it there with a board move (edl.boardMoves) of at least 3 frames`, {frame:jumps[0], frames:jumps.length});
+    if (panels.length) report('error', 'G14', `the board's panel comes or goes on its own on ${panels.length} frame${panels.length > 1 ? 's' : ''}: ${panels.slice(0, 6).map(f => `f${f}`).join(', ')}; keep the panel behind the type, or change it inside a board move`, {frame:panels[0], frames:panels.length});
+    for (const m of boardMoves) if (m.to - m.from < BOARD_MOVE_MIN) report('error', 'G14', `${m.id}: a board move lasts at least ${BOARD_MOVE_MIN} frames`, {path:m.id, frame:m.from});
+  }
   lintProgram({edl, plan, clips, byId, frames, transports, board, flag, report, fps, N, BS, QS, features, F});
 
   const ms = typeof performance !== 'undefined' ? performance.now() - started : 0;
@@ -479,6 +589,7 @@ export function compile(edlIn, opts = {}) {
     plan:{form:plan.form, totalSteps:plan.totalSteps, duration:plan.duration},
     clips:clips.map(c => ({id:c.id, shotId:c.shot?.id ?? null, asset:c.clip.asset, cell:c.clip.cell, from:c.F0, to:c.F1, step:c.span.step, restarts:c.time.restarts, scene:c.clip.scene ?? null, signature:c.clip.signature ?? null})),
     transports:transports.map(t => ({id:t.id, kind:t.kind, from:t.from, to:t.to, rate:t.rate ?? null, seconds:t.seconds ?? null, sourceTime:t.Tfrom ?? null, sound:t.sound})),
+    boardMoves:boardMoves.map(m => ({id:m.id, from:m.from, to:m.to, ease:m.ease})),
     board, cuts, decode, lint:{...lint, ok:lint.errors.length === 0},
     frame:f => frames[f],
     compileFrame:f => frameAt(f),
@@ -563,8 +674,9 @@ export function soundOf(plan, tr, fps = FPS) {
   const ci = plan.coldOpen?.impact;
   // (A jump starts on the frame that holds the copied moment's onset, so its source sits within a frame.)
   if (tr.kind === 'jump' && ci && near(ci.at, tr.Ta) && tr.Tb <= ci.until + .5 / fps + 1e-9 && Math.abs(ci.source - tr.Tfrom) < 1 / fps) return 'copied';
-  const stop = (plan.tape || []).find(x => x.kind === 'stop');
-  if (stop && tr.Ta >= stepTime(plan, stop.from) + (stop.seconds ?? .4) - 1e-9) return 'silent';
+  // (Silent once the tape has stopped and her stop phrase, after the tape, has stopped sounding too.)
+  const stop = (plan.tape || []).find(x => x.kind === 'stop'), herEnd = stopEndAt(plan);
+  if (stop && tr.Ta >= Math.max(stepTime(plan, stop.from) + (stop.seconds ?? .4), herEnd === null ? -Infinity : herEnd + TAG_TAIL + audioLatency(plan)) - 1e-9) return 'silent';
   return 'forward';
 }
 
@@ -619,8 +731,8 @@ function lintProgram({edl, plan, clips, byId, frames, transports, board, flag, r
   const L = audioLatency(plan);
   const litAt = fr => {
     const s = fr.board.screen >= 0 ? board.screens[fr.board.screen] : null;
-    if (!s || !(s.words || []).some(w => w.start <= fr.time + 1 / fps - L && w.end > fr.time)) return false;
-    return boardState(plan, fr.time + .5 / fps - L).exposure > 0;
+    if (!s || s.ghost || !(s.words || []).some(w => w.start <= fr.board.time + 1 / fps - L && w.end > fr.board.time)) return false;
+    return boardState(plan, fr.board.time + .5 / fps - L).exposure > 0;
   };
   // Per-frame rules: reverse policy (G7), zoom ceiling (G10), Synergy's mouth (G11).
   const worstZoom = new Map(), agg = new Map();
@@ -765,8 +877,10 @@ function lintProgram({edl, plan, clips, byId, frames, transports, board, flag, r
 
   // G12 (warn, loop films): the last frame matches frame 0.
   if (edl.song?.loop && N > 1) {
-    const a = frames[0], b = frames[N - 1];
-    if (a.layout !== b.layout || a.board.screen !== b.board.screen) report('warn', 'G12', `loop seam: frame 0 (${a.layout}, screen ${a.board.screen}) and frame ${N - 1} (${b.layout}, screen ${b.board.screen}) differ`);
+    // (A ghost of frame 0's screen, retimed from the same song screen, is the same peg mask.)
+    const a = frames[0], b = frames[N - 1], sa = board.screens[a.board.screen], sb = board.screens[b.board.screen];
+    const same = a.board.screen === b.board.screen || (!!sa && !!sb?.ghost && sb.of !== undefined && sa.of === sb.of && sa.text === sb.text && sa.k === sb.k);
+    if (a.layout !== b.layout || !same) report('warn', 'G12', `loop seam: frame 0 (${a.layout}, screen ${a.board.screen}) and frame ${N - 1} (${b.layout}, screen ${b.board.screen}) differ`);
   }
 }
 // What a layer can cover: its cell, or with rot 0 and zoom >= 1 the part of the cell its

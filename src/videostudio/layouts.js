@@ -8,9 +8,9 @@
 // half of a split (breakout rooms), 'G4.0>g2x4.5' a generic 2-column 4-row grid
 // inside a tile (cell split). Nested grids keep the gutter, with no outer margin.
 //
-// board: where the Peg Board draws in this layout (every class has one, inside the format's
-// platform-safe area; boardOver: a panel laid over the picture). banner: the
-// screen-share banner.
+// board: where the Peg Board draws in this layout: the format's HOME in every call layout
+// (boardOver: laid over the picture), the grown board of a full-board moment otherwise.
+// banner: the screen-share banner.
 // All rects are output pixels {x, y, w, h}; cells add r (corner radius) and id.
 
 import {FORMATS as TYPE_FORMATS} from '../pegboard/font.js';
@@ -48,51 +48,64 @@ export function gridIn(r, cols, rows, g = GUTTER) {
 }
 
 const M = GUTTER;
-// The geometry, per format. Every call layout gives the Peg Board a region inside the
-// platform-safe area of its format (pegboard/font.js FORMATS: 9:16 type stays between y 300
-// and 1440, clear of the Reels / TikTok / Shorts header and caption; 1:1 between 60 and 900;
-// 16:9 between 54 and 1026), so the song's words always have somewhere to light:
-//   9:16  G6 and G9 are compact galleries from y 288 (the plan's 344×258 tile) with the board
-//         strip under them, y 1098-1440. split and G4 fill the frame with the board across
-//         the middle, y 790-1130; stack3 puts it between its second and third tile, y 1048-1390.
-//   1:1   rows of 390 above and below a band at y 414-666 (stack3 and G9: below the first row).
-//   16:9  the call on the left 1398 px, the board in a column on the right, y 54-1026.
-// L1 keeps the whole frame for its picture; its board is a panel laid over the picture
-// (boardOver), in the safe area below the face. BOARD is full bleed: its type is centred,
-// inside the safe band. BOARD+STRIP puts the board at y 340-1100 over 3 tiles of 344×258.
-const rows2 = (F, top, h, cols, w) => [...block(M, top, cols, 1, w, h), ...block(M, F - M - h, cols, 1, w, h)];
+// The geometry, per format. Each format gives the Peg Board one HOME: a single rect that every
+// call layout shares, so the board never moves or changes size on a cut. The tiles are laid out
+// around it and fill the frame (no dead black under or over a grid). The home sits inside the
+// platform-safe area of its format (pegboard/font.js FORMATS: 9:16 type stays between y 300 and
+// 1440, clear of the Reels / TikTok / Shorts header and caption; 1:1 between 60 and 900; 16:9
+// between 54 and 1026), so the song's words always have somewhere to light:
+//   9:16  the home is the strip y 1098-1440, the bottom of the safe band: tiles above it
+//         (y 12-1086) and a row below it (y 1452-1908, under the platform caption).
+//   1:1   the home is y 588-828, under Synergy's mouth in an L1 close-up: tiles above it (y 12-576)
+//         and a row below it (y 840-1068, tall enough for the applause tile to hold a whole face).
+//   16:9  the home is the column on the right, x 1422-1908, y 54-1026; the call fills the left 1398 px.
+// L1 keeps the whole frame for its picture; its board is the home laid over the picture
+// (boardOver), below the face. Only the full-board moments leave the home, and they grow out of
+// it and return to it through an authored board move (edl.boardMoves, lint G14), never a jump:
+//   BOARD+STRIP (the screen share) grows the home along the edges it does not share with the
+//     frame's safe area: in 9:16 and 1:1 its top rises (the bottom and the sides stay), in 16:9 its
+//     left edge opens across the frame; the strip of three tiles and the banner sit beside it.
+//   BOARD is full bleed: its type is centred, inside the safe band.
+export const HOME = Object.freeze({
+  '9:16':Object.freeze(rect(M, 1098, 1056, 342)),
+  '1:1':Object.freeze(rect(M, 588, 1056, 240)),
+  '16:9':Object.freeze(rect(1422, 54, 486, 972)),
+});
 const GEOMETRY = {
   '9:16':{
-    L1:{cells:[rect(M, M, 1056, 1896)], board:rect(M, 1098, 1056, 342), boardOver:true},
-    split:{cells:rows2(1920, M, 766, 1, 1056), board:rect(M, 790, 1056, 340)},
-    stack3:{cells:[rect(M, M, 1056, 506), rect(M, 530, 1056, 506), rect(M, 1402, 1056, 506)], board:rect(M, 1048, 1056, 342)},
-    G4:{cells:rows2(1920, M, 766, 2, 522), board:rect(M, 790, 1056, 340)},
-    G6:{cells:block(M, 288, 2, 3, 522, 258), board:rect(M, 1098, 1056, 342)},
-    G9:{cells:block(M, 288, 3, 3, 344, 258), board:rect(M, 1098, 1056, 342)},
+    L1:{cells:[rect(M, M, 1056, 1896)], board:HOME['9:16'], boardOver:true},
+    split:{cells:[rect(M, M, 1056, 1074), rect(M, 1452, 1056, 456)], board:HOME['9:16']},
+    stack3:{cells:[rect(M, M, 1056, 531), rect(M, 555, 1056, 531), rect(M, 1452, 1056, 456)], board:HOME['9:16']},
+    G4:{cells:[rect(M, M, 1056, 531), rect(M, 555, 1056, 531), ...block(M, 1452, 2, 1, 522, 456)], board:HOME['9:16']},
+    G6:{cells:[...block(M, M, 2, 2, 522, 531), ...block(M, 1452, 2, 1, 522, 456)], board:HOME['9:16']},
+    G9:{cells:[...block(M, M, 3, 2, 344, 531), ...block(M, 1452, 3, 1, 344, 456)], board:HOME['9:16']},
     BOARD:{cells:[rect(0, 0, 1080, 1920)], board:rect(0, 0, 1080, 1920), radius:0},
-    'BOARD+STRIP':{cells:block(M, 1112, 3, 1, 344, 258), board:rect(0, 340, 1080, 760), banner:rect(M, 274, 1056, 54)},
+    'BOARD+STRIP':{cells:block(M, 1452, 3, 1, 344, 456), board:rect(M, 78, 1056, 1362), banner:rect(M, M, 1056, 54)},
   },
   '1:1':{
-    L1:{cells:[rect(M, M, 1056, 1056)], board:rect(M, 648, 1056, 252), boardOver:true},
-    split:{cells:rows2(1080, M, 390, 1, 1056), board:rect(M, 414, 1056, 252)},
-    stack3:{cells:[rect(M, M, 1056, 256), rect(M, 544, 1056, 256), rect(M, 812, 1056, 256)], board:rect(M, 280, 1056, 252)},
-    G4:{cells:rows2(1080, M, 390, 2, 522), board:rect(M, 414, 1056, 252)},
-    G6:{cells:rows2(1080, M, 390, 3, 344), board:rect(M, 414, 1056, 252)},
-    G9:{cells:[...block(M, M, 3, 1, 344, 256), ...block(M, 544, 3, 2, 344, 256)], board:rect(M, 280, 1056, 252)},
+    L1:{cells:[rect(M, M, 1056, 1056)], board:HOME['1:1'], boardOver:true},
+    split:{cells:[rect(M, M, 1056, 564), rect(M, 840, 1056, 228)], board:HOME['1:1']},
+    stack3:{cells:[rect(M, M, 1056, 276), rect(M, 300, 1056, 276), rect(M, 840, 1056, 228)], board:HOME['1:1']},
+    G4:{cells:[...block(M, M, 2, 1, 522, 564), ...block(M, 840, 2, 1, 522, 228)], board:HOME['1:1']},
+    G6:{cells:[...block(M, M, 3, 1, 344, 564), ...block(M, 840, 3, 1, 344, 228)], board:HOME['1:1']},
+    G9:{cells:[...block(M, M, 3, 2, 344, 276), ...block(M, 840, 3, 1, 344, 228)], board:HOME['1:1']},
     BOARD:{cells:[rect(0, 0, 1080, 1080)], board:rect(0, 0, 1080, 1080), radius:0},
-    'BOARD+STRIP':{cells:block(M, 810, 3, 1, 344, 258), board:rect(0, 72, 1080, 726), banner:rect(M, M, 1056, 48)},
+    'BOARD+STRIP':{cells:block(M, 840, 3, 1, 344, 228), board:rect(M, 72, 1056, 756), banner:rect(M, M, 1056, 48)},
   },
   '16:9':{
-    L1:{cells:[rect(M, M, 1896, 1056)], board:rect(1422, 54, 486, 972), boardOver:true},
-    split:{cells:gridIn(rect(M, M, 1398, 1056), 2, 1), board:rect(1422, 54, 486, 972)},
-    stack3:{cells:gridIn(rect(M, M, 1398, 1056), 3, 1), board:rect(1422, 54, 486, 972)},
-    G4:{cells:gridIn(rect(M, M, 1398, 1056), 2, 2), board:rect(1422, 54, 486, 972)},
-    G6:{cells:gridIn(rect(M, M, 1398, 1056), 3, 2), board:rect(1422, 54, 486, 972)},
-    G9:{cells:block(M, M, 3, 3, 458, 344), board:rect(1422, 54, 486, 972)},
+    L1:{cells:[rect(M, M, 1896, 1056)], board:HOME['16:9'], boardOver:true},
+    split:{cells:gridIn(rect(M, M, 1398, 1056), 2, 1), board:HOME['16:9']},
+    stack3:{cells:gridIn(rect(M, M, 1398, 1056), 3, 1), board:HOME['16:9']},
+    G4:{cells:gridIn(rect(M, M, 1398, 1056), 2, 2), board:HOME['16:9']},
+    G6:{cells:gridIn(rect(M, M, 1398, 1056), 3, 2), board:HOME['16:9']},
+    G9:{cells:block(M, M, 3, 3, 458, 344), board:HOME['16:9']},
     BOARD:{cells:[rect(0, 0, 1920, 1080)], board:rect(0, 0, 1920, 1080), radius:0},
-    'BOARD+STRIP':{cells:block(420, 810, 3, 1, 344, 258), board:rect(0, 72, 1920, 726), banner:rect(M, M, 1896, 48)},
+    'BOARD+STRIP':{cells:block(M, M, 1, 3, 450, 344), board:rect(474, 72, 1434, 954), banner:rect(474, M, 1434, 48)},
   },
 };
+// The classes whose board is not the home: the full-board moments.
+export const FULL_BOARD = Object.freeze(['BOARD', 'BOARD+STRIP']);
+export const sameRect = (a, b) => (!a && !b) || (!!a && !!b && a.x === b.x && a.y === b.y && a.w === b.w && a.h === b.h);
 
 const cache = new Map();
 // The layout of a class in a format: {cls, format, w, h, gutter, radius, cells, board, boardOver, banner}.

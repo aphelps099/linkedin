@@ -22,6 +22,8 @@
 // stsz/stsc/stco/co64), enough for the proxies and for any faststart H.264 master.
 
 // ---- the ledger: every VideoFrame opened and closed --------------------------------------------
+import {needsProxy} from './shots.js';
+
 export function frameLedger() {
   const L = {opened:0, closed:0, peak:0, byKind:{}};
   L.open = (frame, kind) => { L.opened++; (L.byKind[kind] ??= {opened:0, closed:0}).opened++; frame.__ledger = kind; L.peak = Math.max(L.peak, L.opened - L.closed); return frame; };
@@ -117,7 +119,7 @@ export function demux(buffer) {
 // and numbers its frames backwards, k = N − 1 − forward frame, exactly the reversed proxy's
 // frame order, so every key and cache entry stays the same.
 function createStream(url, {fetcher, ledger, keep, onBytes, fallback = null, force = false}) {
-  let file = null, decoder = null, loading = null, pending = null, closed = false, flipped = false;
+  let file = null, decoder = null, loading = null, pending = null, closed = false, flipped = false, source = null;
   const byTs = new Map();
   async function load() {
     if (file) return file;
@@ -125,6 +127,8 @@ function createStream(url, {fetcher, ledger, keep, onBytes, fallback = null, for
       let res = force && fallback ? null : await fetcher(url);
       if ((!res || res.status === 404 || res.status === 410) && fallback) { res = await fetcher(fallback.url); flipped = true; }
       if (!res.ok) throw Error(`decoder: ${flipped ? fallback.url : url} answered ${res.status}`);
+      // What the media route served (proxy, bucket, or the master standing in for a proxy).
+      source = res.headers?.get?.('x-videostudio-source') ?? null;
       const buf = await res.arrayBuffer();
       file = demux(buf);
       if (flipped && fallback.frames && file.frames !== fallback.frames) throw Error(`decoder: ${fallback.url} has ${file.frames} frames, the shot ${fallback.frames}; the reversed order would not line up`);
@@ -176,16 +180,18 @@ function createStream(url, {fetcher, ledger, keep, onBytes, fallback = null, for
       const s = file.samples[i];
       decoder.decode(new EncodedVideoChunk({type:s.key ? 'key' : 'delta', timestamp:s.timestamp, duration:s.duration, data:u8.subarray(s.offset, s.offset + s.size)}));
     }
-    await decoder.flush();
+    // (A 4:4:4 master, avc1.f4…, served where its proxy is not uploaded yet, does not decode on iOS: say which and why.)
+    const explain = e => /^avc1\.f4/i.test(file?.codec ?? '') ? Error(`decoder: ${url} is H.264 High 4:4:4 (${file.codec}${source === 'master' ? ', the master standing in for its 540p proxy' : ''}) and this browser cannot decode it. Upload the proxies (src/videostudio/README.md, Media) or export on a computer.`) : e;
+    try { await decoder.flush(); } catch (e) { pending = null; throw explain(e); }
     const {outputs, error} = pending;
     pending = null;
-    if (error) throw error;
+    if (error) throw explain(error);
     const out = [];
     for (const o of outputs) out.push({display:o.display, ...(await o.p)});
     return out;
   }
   return {
-    url, load, decodeGop, get flipped() { return flipped; },
+    url, load, decodeGop, get flipped() { return flipped; }, get source() { return source; },
     get frames() { return file?.frames ?? null; },
     get bytes() { return file?.buffer.byteLength ?? 0; },
     close() { closed = true; try { if (decoder && decoder.state !== 'closed') decoder.close(); } catch {} decoder = null; file = null; loading = null; },
@@ -197,9 +203,11 @@ function createStream(url, {fetcher, ledger, keep, onBytes, fallback = null, for
 // (forward, or the reversed proxy at proxyFrame), else the master at srcFrame.
 // A reversed proxy carries the forward file as its fallback (decoded backwards when the
 // reversed one is missing).
+// A master iOS cannot decode (H.264 4:4:4, shots.js needsProxy) is read through its proxy in
+// either mode.
 export function layerStream(layer, shot, {media = 'proxy'} = {}) {
   if (!shot || layer.kind !== 'video') return null;
-  if (media === 'proxy') {
+  if (media === 'proxy' || needsProxy(shot)) {
     if (layer.reverse && shot.rev) return {url:shot.rev, frame:layer.proxyFrame, dir:'rev', fallback:{url:shot.proxy ?? shot.src, frames:shot.frames}};
     if (shot.proxy) return {url:shot.proxy, frame:layer.srcFrame, dir:'fwd'};
   }
@@ -231,8 +239,10 @@ export function createFrameDecoder({program, shots, from = 0, to = program.frame
   const soon = (key, f) => nextUse(key, f) <= f + horizon;
   const streams = new Map(), cache = new Map(), out = new Map();
   let now = from, bytes = 0, peakBytes = 0, peakEntries = 0, gops = 0, decoded = 0, fileBytes = 0, filesOpened = 0, evicted = 0;
-  const stats = () => ({cacheBytes:bytes, peakBytes, entries:cache.size, peakEntries, gops, decoded, evicted, streams:streams.size, filesOpened, fileBytes, flipped:[...flippedUrls]});
-  const flippedUrls = new Set();
+  // masters: the proxy URLs the media route answered with the shot's master (not uploaded yet).
+  const stats = () => ({cacheBytes:bytes, peakBytes, entries:cache.size, peakEntries, gops, decoded, evicted, streams:streams.size, filesOpened, fileBytes, flipped:[...flippedUrls],
+    masters:[...masterUrls]});
+  const flippedUrls = new Set(), masterUrls = new Set();
   const streamOf = (url, fallback) => {
     let s = streams.get(url);
     if (!s) {
@@ -272,6 +282,7 @@ export function createFrameDecoder({program, shots, from = 0, to = program.frame
           cache.set(`${url}#${k}`, near); bytes += near.bytes;
         }
         if (s.flipped) flippedUrls.add(url);
+        if (s.source === 'master') masterUrls.add(url);
         trim(f);
       }
     }));

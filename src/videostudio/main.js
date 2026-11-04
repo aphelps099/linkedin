@@ -20,6 +20,7 @@ import {prepareColdOpen} from '../allhands/engine.js';
 import {compile, shotIndex} from './edl/compile.js';
 import {stepAtTime, barSteps, beatSteps} from './edl/anchors.js';
 import {FORMATS} from './layouts.js';
+import {needsProxy, mediaSource} from './media/shots.js';
 import {studioFilm, SCENE_LABELS as STUDIO_LABELS} from './studio-film.js';
 import {drop60Draft, SCENE_LABELS as DRAFT_LABELS} from './treatments/drop60-draft.js';
 import {createPreview} from './render/preview.js';
@@ -34,6 +35,7 @@ const el = {
   bar:$('[data-bar]'), frame:$('[data-frame]'), time:$('[data-time]'), section:$('[data-section]'), layout:$('[data-layout]'), scene:$('[data-scene]'),
   layers:$('[data-layers]'), layerCount:$('[data-layer-count]'), lint:$('[data-lint]'), lintCount:$('[data-lint-count]'),
   track:$('[data-track]'), sections:$('[data-sections]'), ruler:$('[data-ruler]'), scenes:$('[data-scenes]'), cuts:$('[data-cuts]'), head:$('[data-head]'),
+  mediaNote:$('[data-media-note]'),
   title:$('[data-track-title]'), tracks:$('[data-tracks]'), songLine:$('[data-song-line]'), songMode:$('[data-song-mode]'), post:$('[data-post]'), postGo:$('[data-post-go]'), postSample:$('[data-post-sample]'), postSummary:$('[data-post-summary]'),
 };
 const ex = {formats:$('[data-export-formats]'), master:$('[data-export-master]'), progress:$('[data-export-progress]'), fill:$('[data-export-fill]'),
@@ -95,6 +97,11 @@ function timeline() {
     const s = scenes.get(k) ?? {id:k, from:Infinity, to:-Infinity};
     s.from = Math.min(s.from, c.from); s.to = Math.max(s.to, c.to); scenes.set(k, s);
   }
+  // The cold open is a scene of its own: the drop's impact and the rewind, before the film's own
+  // first scene starts (plan.coldOpen.resume).
+  const coldEnd = plan.coldOpen ? Math.round(plan.coldOpen.resume * FPS) : 0;
+  if (coldEnd > 0) for (const [k, s] of scenes) { if (s.to <= coldEnd) scenes.delete(k); else s.from = Math.max(s.from, coldEnd); }
+  if (coldEnd > 0) scenes.set('cold', {id:'cold', from:0, to:coldEnd});
   const list = [...scenes.values()].sort((a, b) => a.from - b.from);
   for (let i = 0; i < list.length - 1; i++) list[i].to = Math.min(list[i].to, list[i + 1].from);
   el.scenes.innerHTML = list.map(s => {
@@ -171,7 +178,9 @@ function lint() {
 // ---- readouts, once per drawn frame -----------------------------------------------------------
 let shownFrame = -1;
 function readout({f, t, stats, pool}) {
-  const fr = program.frame(f), step = Math.max(0, stepAtTime(plan, fr.time)), BS = barSteps(plan), bar = Math.floor(step / BS);
+  // Bar and section are the film's own time, f/24 (the song as heard), not the moment a transport
+  // shows: the cold open's frame 0 is bar 00:00 of the intro, showing the drop's impact.
+  const fr = program.frame(f), step = Math.max(0, stepAtTime(plan, f / FPS)), BS = barSteps(plan), bar = Math.floor(step / BS);
   el.bar.textContent = `${pad(bar, 2)}:${pad(Math.floor(step % BS), 2)}`;
   el.frame.textContent = pad(f, 4);
   el.time.textContent = clock(Math.max(0, f / FPS));
@@ -211,7 +220,7 @@ function setFormat(next) {
   for (const b of el.formats.children) b.setAttribute('aria-pressed', String(b.dataset.format === format));
   program = build(plan, format);
   preview.setProgram(program);
-  fit(); timeline(); lint(); shownFrame = -1;
+  fit(); timeline(); lint(); shownFrame = -1; mediaNote();
   const u = new URL(location.href); u.searchParams.set('format', format); history.replaceState(null, '', u);
 }
 // Scrub: the picture follows the pointer, the sound waits for the release.
@@ -235,6 +244,28 @@ addEventListener('keydown', e => {
   else if (['1', '2', '3'].includes(e.key)) setFormat(['9:16', '1:1', '16:9'][+e.key - 1]);
 });
 function status(text, tone = '') { el.status.textContent = text; el.status.dataset.tone = tone; }
+
+// ---- media: masters an iPhone cannot decode ---------------------------------------------------------
+// Synergy's main plate and Synthia's listening plate have H.264 High 4:4:4 masters (shots.js
+// needsProxy), so the preview and the export always read their 540p 4:2:0 proxies. Where this
+// server has no proxy for one yet, the media route serves the master in its place
+// (X-Videostudio-Source: master): say so, quietly, and what it costs until the upload.
+const served = new Map();
+let mediaToken = 0;
+async function mediaNote() {
+  const token = ++mediaToken;
+  const used = [...new Set(program.clips.map(c => c.shotId).filter(Boolean))].map(id => shots.get(id)).filter(needsProxy);
+  const masters = [];
+  for (const s of used) {
+    if (!served.has(s.id)) served.set(s.id, mediaSource(s));
+    const src = await served.get(s.id);
+    if (src === 'master' || src === 'none') masters.push(s);
+  }
+  if (token !== mediaToken) return;
+  el.mediaNote.hidden = !masters.length;
+  const names = masters.map(s => `${s.characters[0] ?? 'A shot'}\u2019s ${s.action.includes('listen') ? 'listening ' : ''}plate`);
+  el.mediaNote.textContent = masters.length ? `${names.join(' and ')} ${masters.length > 1 ? 'play from their' : 'plays from its'} H.264 4:4:4 master${masters.length > 1 ? 's: their 540p proxies are' : ': its 540p proxy is'} not on this server yet. A computer shows ${masters.length > 1 ? 'them' : 'it'}; an iPhone or iPad cannot decode ${masters.length > 1 ? 'them' : 'it'}, and an export needs several times the memory, until the proxies are uploaded.` : '';
+}
 
 // ---- export: Download MP4 per format ---------------------------------------------------------
 let exporting = null, songReady = false, fileUrls = [];
@@ -293,7 +324,7 @@ exportState();
 async function start() {
   for (const b of el.formats.children) b.setAttribute('aria-pressed', String(b.dataset.format === format));
   const scale = fit();
-  timeline(); lint();
+  timeline(); lint(); mediaNote();
   try {
     preview = createPreview({canvas:el.canvas, program, plan, shots, song, scale, avOffset:(+params.get('av') || 0) / 1000});
   } catch (e) {
@@ -330,7 +361,7 @@ async function loadSong() {
     if (stale()) return;
     plan = next; song = {buffers, lady}; measured = null; program = build(plan, format);
     preview.setSong(plan, song, program);
-    timeline(); lint(); shownFrame = -1;
+    timeline(); lint(); shownFrame = -1; mediaNote();
     await measure(lady ? 'Ready. The band, Synergy and the lady, measured to the frame.' : 'Ready. The lady is out of the office; the band plays on.', lady ? '' : 'warn', token);
   } catch (e) {
     if (stale()) return;
@@ -373,7 +404,7 @@ function restart() {
   if (preview?.playing) preview.pause();
   plan = arrange({}); song = {buffers:new Map(), lady:undefined}; measured = null; program = build(plan, format);
   preview.setSong(plan, song, program); preview.seek(0);
-  timeline(); lint(); shownFrame = -1;
+  timeline(); lint(); shownFrame = -1; mediaNote();
   loadSong();
 }
 el.tracks.addEventListener('click', e => { const b = e.target.closest('[data-track]'); if (b) choose(b.dataset.track); });
@@ -393,7 +424,7 @@ async function measure(done, tone, token = loading) {
     measured = {plan:p, features};
     program = build(plan, format);
     preview.setProgram(program);
-    timeline(); lint(); shownFrame = -1;
+    timeline(); lint(); shownFrame = -1; mediaNote();
     window.__studio.measured = true;
     status(done, tone);
   } catch (e) {

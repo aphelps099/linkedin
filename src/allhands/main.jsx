@@ -11,6 +11,7 @@ import {Performance, render, wav, STEMS, RENDER_OFFSET} from './engine.js';
 import {planToCues, toPixelProject} from './pixel-export.js';
 import {LADY_TABLE} from './lady-table.js';
 import {createStage} from '../pegboard/stage.js';
+import {ladderWhole} from '../pegboard/choreo.js';
 import {claimAudio, onAudioFocus} from '../brand/audio-focus.js';
 import './allhands.css';
 
@@ -203,6 +204,8 @@ function App() {
   const current = playing ? cue : null;
   const stammer = current?.stutter ? current.stutter.word.split(' ')[0].slice(0, 3).toUpperCase() + '–' : null;
   const ladyLine = current?.lady ? current.lady.display : null;
+  // A fragment of her ladder ("LE") reads as the whole word, its sounding letters lit, as on the board.
+  const ladyWhole = current?.lady?.role === 'ladder' && plan ? ladderWhole(plan, current.lady) : null;
   const sections = plan?.sections || FORMS[playForm].sectionsOf(playTrack), songTrack = trackOf(playTrack);
   const sectionName = playing ? current?.section || 'Intro' : status === 'ended' ? 'Adjourned' : 'Waiting room';
   const progress = plan ? Math.min(1, Math.max(0, elapsed) / plan.duration) : 0;
@@ -219,7 +222,7 @@ function App() {
       <div className="ah-chart-labels" ref={labels} aria-hidden="true"/>
       <div className="ah-stage-meta"><span>{sectionName}</span><span>{playing && current ? `Bar ${String(current.bar + 1).padStart(2, '0')} / ${plan.bars.length}` : `${songTrack.bpm} BPM · ${songTrack.key}`}</span></div>
       <p className="ah-line" aria-live="polite"><span className={`ah-caption ${playing && !current?.line && !ladyLine ? 'empty' : ''}`}>
-        {playing && ladyLine && !stammer ? <span className="sung">{current.lady.display}</span>
+        {playing && ladyLine && !stammer ? (ladyWhole ? ladyWhole.map((w, i) => <React.Fragment key={i}>{i ? ' ' : ''}<span className="sung">{w.text.slice(0, w.lit)}</span>{w.lit < w.text.length ? <span>{w.text.slice(w.lit)}</span> : null}</React.Fragment>) : <span className="sung">{current.lady.display}</span>)
           : playing && current?.line ? current.line.words.filter(w => !!w.repeat === (current.word?.line === current.line.id && !!current.word.repeat)).map((w, i) => <span key={i} className={current.word && w.at <= current.word.at ? 'sung' : ''}>{w.display} </span>)
           : playing ? null : status === 'ended' ? 'Synergy has ended the meeting.' : 'This meeting could have been a song.'}
       </span></p>
@@ -312,8 +315,8 @@ window.__allhands = {
     const offset = RENDER_OFFSET - plan.timing[(bars?.[0] || 0) * BAR_STEPS];
     return {wav:btoa(s), lyrics, casting, plan:{form:plan.form, track:plan.track, trackTitle:plan.trackTitle, bpm:plan.bpm, step:plan.step, key:plan.key, offset, duration:plan.duration, marks:plan.marks, kicks:plan.kicks,
       sections:plan.sections.map(x => ({...x, start:plan.timing[x.from * BAR_STEPS], end:plan.timing[x.to * BAR_STEPS]})),
-      timing:Array.from(plan.timing), choke:plan.choke ? {start:plan.timing[plan.choke.at], end:plan.timing[plan.choke.until], dark:plan.choke.dark, tagEnd:plan.choke.tagEnd} : null,
-      coldOpen:plan.coldOpen ?? null, transports:plan.transports ?? [],
+      timing:Array.from(plan.timing), choke:plan.choke ? {start:plan.choke.time, end:plan.timing[plan.choke.until], dark:plan.choke.dark, tagEnd:plan.choke.tagEnd, gap:plan.choke.gap} : null,
+      coldOpen:plan.coldOpen ?? null, transports:plan.transports ?? [], stop:plan.stop ?? null,
       lines:plan.lines.map(l => ({text:l.text, bar:l.bar, kind:l.kind, words:l.words.map(w => [w.display, w.at, w.steps, +w.rate.toFixed(2), w.notes.map(n => n.midi).join('.'), +w.gate.toFixed(3)])})),
       // Everything the Pixel Text exporter needs to time every word exactly.
       words:plan.words.filter(w => w.line === -1).map(w => ({display:w.display, word:w.word, at:w.at, steps:w.steps, rate:w.rate, gate:w.gate, kind:w.kind, line:-1})),

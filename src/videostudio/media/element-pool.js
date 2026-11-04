@@ -23,6 +23,7 @@
 // is bounded by the cache (at most half of it, 2 to 8 frames); captures are capped at 540
 // lines, so a master standing in for a missing proxy costs no more than a proxy.
 import {stutterKey} from './stutter-cache.js';
+import {needsProxy} from './shots.js';
 
 export const isMobile = () => typeof navigator !== 'undefined' && (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && globalThis.matchMedia?.('(pointer: coarse)').matches));
 const FPS = 24, CORRECT = .03, SEEK_FRAMES = 2, LOOKAHEAD = 48, CAPTURE_LINES = 540;
@@ -74,7 +75,8 @@ export function createElementPool({shots, cache = null, slots = isMobile() ? 4 :
   }
   function load(el, key, time) {
     const [shotId, dir] = key.split('|'), shot = get(shotId), reverse = dir === 'rev';
-    const forward = preferProxy ? shot?.proxy ?? shot?.src : shot?.src;
+    // (A master iOS cannot decode, H.264 4:4:4, is always read through its proxy: shots.js needsProxy.)
+    const forward = preferProxy || needsProxy(shot) ? shot?.proxy ?? shot?.src : shot?.src;
     const flip = reverse && !revUsable(shot) && !!cache;
     const url = reverse && !flip ? shot?.rev : forward;
     if (!shot || !url) { el.key = null; return false; }
@@ -94,7 +96,10 @@ export function createElementPool({shots, cache = null, slots = isMobile() ? 4 :
     return Math.max(2, Math.min(8, Math.floor((cache?.budget ?? 0) * .5 / bytes)));
   };
   function plan(el, from) {
-    if (el.busy >= 0 && performance.now() - el.busyAt > 400) el.busy = -1;     // a seek that presented no frame: try again
+    // A seek that finished but presented no frame: try again. Never while it is still seeking: a seek
+    // into a master's seconds-long GOP takes 0.5-3 s (measured, 1080p, GOP 241), and re-seeking then
+    // restarts it, so nothing would ever be captured.
+    if (el.busy >= 0 && !el.video.seeking && performance.now() - el.busyAt > 400) el.busy = -1;
     const want = [], seen = new Set(), N = el.shot.frames, until = Math.min(program.frames, from + windowOf(el));
     for (let g = from; g < until; g++) for (const l of program.frame(g).layers) {
       if (l.kind !== 'video' || l.shotId !== el.shot.id || !l.reverse) continue;

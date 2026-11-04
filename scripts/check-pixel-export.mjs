@@ -179,7 +179,7 @@ const POSTS = [
 const fakeDurations = (form, lyrics, track) => Object.fromEntries(form.voiced(lyrics, {track}).map(w => [w, .18 + .11 * syllables(w)]));
 // The render hook's JSON (src/allhands/main.jsx window.__allhands.render).
 const asRenderJson = plan => ({form:plan.form, bpm:plan.bpm, offset:RENDER_OFFSET, duration:plan.duration, timing:Array.from(plan.timing),
-  choke:plan.choke ? {start:plan.timing[plan.choke.at], end:plan.timing[plan.choke.until]} : null,
+  choke:plan.choke ? {start:plan.choke.time, end:plan.timing[plan.choke.until]} : null,
   lines:plan.lines.map(l => ({text:l.text, bar:l.bar, kind:l.kind, words:l.words.map(w => [w.display, w.at, w.steps, +w.rate.toFixed(2), w.notes.map(n => n.midi).join('.'), +w.gate.toFixed(3)])})),
   lady:plan.lady.map(e => ({role:e.role, display:e.display, file:e.file, at:e.at, start:plan.timing[Math.floor(e.at)] + (e.at - Math.floor(e.at)) * (plan.step ?? STEP), length:+Math.min(e.gate, (e.to - e.from) / e.rate).toFixed(3)}))});
 const q = x => Math.round(x * 1e4) / 1e4;

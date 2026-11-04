@@ -14,7 +14,8 @@ import os from 'node:os';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {readIndex, writeIndex, wantsProxy, ROUTE, PROXY_RECIPE} from '../src/videostudio/media/index-io.js';
-import {createShotIndex, srcFor, lumaTrack, energyTrack, canReverse, maxZoom} from '../src/videostudio/media/shots.js';
+import {createShotIndex, srcFor, lumaTrack, energyTrack, canReverse, maxZoom, needsProxy} from '../src/videostudio/media/shots.js';
+import {layerStream} from '../src/videostudio/media/decoder.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const INDEX = path.join(root, 'src/videostudio/media/shots.json');
@@ -93,6 +94,8 @@ for (const s of shots) {
     if (!inside([f.x, f.y, f.w, f.h], [0, 0, s.width, s.height])) fail(id, 'faceBox outside the frame');
   }
   if (s.subjectBox && !(s.subjectBox[0] < s.subjectBox[2] && s.subjectBox[1] < s.subjectBox[3])) fail(id, 'subjectBox is [x0,y0,x1,y1]');
+  // A master iOS cannot decode (H.264 4:4:4 or 4:2:2) is flagged, explained in its notes, and has a 4:2:0 proxy to play instead.
+  if (s.masterChroma !== undefined && (!['4:4:4', '4:2:2'].includes(s.masterChroma) || !/H\.264 High 4:[24]:[24].*540p 4:2:0 proxy/.test(s.notes) || !s.proxy)) fail(id, `masterChroma ${s.masterChroma}: needs its note and a proxy`);
   if (s.maxUpscale !== U[s.sharpTier]) fail(id, `maxUpscale ${s.maxUpscale} for tier ${s.sharpTier}`);
   if (!(maxZoom(s, 480) > 0)) fail(id, 'maxZoom');
   // tracks
@@ -172,6 +175,12 @@ q('byStem(voice)', lib.byStem('voice'), r => r.length >= 1 && r.every(s => s.cha
 q('reversible()', lib.reversible(), r => r.length > 0 && r.every(s => s.reverseClass === 'R1'));
 q('mirrorable()', lib.mirrorable(), r => r.every(s => !s.mirrorBlockers.length));
 q('srcFor(proxy)', [srcFor(lib.byId('drum-pad-detail'), {preferProxy:true})], r => r[0].startsWith(ROUTE));
+// A 4:4:4 master plays through its proxy even where the master is asked for (preview and export).
+for (const s of shots.filter(needsProxy)) {
+  const v = {kind:'video', srcFrame:0, proxyFrame:0, reverse:false};
+  if (srcFor(s, {preferProxy:false}) !== s.proxy || layerStream(v, s, {media:'master'}).url !== s.proxy || layerStream(v, s, {media:'proxy'}).url !== s.proxy) fail(s.id, 'a 4:4:4 master must play through its 540p proxy in every mode');
+}
+if (!shots.some(needsProxy) || layerStream({kind:'video', srcFrame:0}, lib.byId('drum-pad-detail'), {media:'master'}).url !== lib.byId('drum-pad-detail').src) fail('shots.js', 'needsProxy: only the flagged masters are forced to their proxies');
 
 // ---------------------------------------------------------------- deep proxy probe
 if (deep) {
@@ -222,6 +231,7 @@ if (probe.status !== 0) {
 const by = key => Object.entries(shots.reduce((m, s) => ((m[s[key]] = (m[s[key]] || 0) + 1), m), {})).map(([k, v]) => `${k} ${v}`).join(', ');
 console.log(`shots ${shots.length}: ${by('kind')}`);
 console.log(`status: ${by('status')}; reverse: ${by('reverseClass')}; tiers: ${by('sharpTier')}; mirrorable ${shots.filter(s => s.mirrorable).length}`);
+console.log(`masters that need their proxy to play on iOS (H.264 4:4:4 or 4:2:2): ${shots.filter(s => s.masterChroma).map(s => `${s.aliases[0] ?? s.id} ${s.masterChroma}`).join(', ') || 'none'}`);
 console.log(`faces ${shots.filter(s => s.faceBox).length}/${shots.length}; proxies recorded ${shots.filter(s => s.proxy).length}, local files ${localProxies} (${(proxyBytes / 1e6).toFixed(1)} MB)`);
 console.log(`determinism: ${determinism}`);
 if (failures.length) {
