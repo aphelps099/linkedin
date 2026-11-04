@@ -17,8 +17,9 @@ All times are seconds from the start of the file, rounded to 1 ms.
   end      where the word's energy has decayed (stop releases are included).
            Consecutive words either share a boundary (end == next start, continuous
            speech) or have silence between them (end < next start).
-  onset    attack of the word's first vowel: the steepest rise of 0.5-3 kHz energy.
-           Put this on the beat; start..onset is the consonant lead-in ("s" of "sink").
+  onset    attack of the word's first vowel: the steepest rise of 0.5-3 kHz energy
+           within 25 ms of where the HMM puts that vowel. Put this on the beat;
+           start..onset is the consonant lead-in (the "s" of "sink", the voiced b of "build").
   voiced   [first word start, last word end].
   rmsDb    active-speech RMS over the word spans (mono mix, dBFS: a full-scale square
            wave is 0 dB); gainDb = -14 - rmsDb.
@@ -152,6 +153,7 @@ class Feat:
         self.floor = float(np.percentile(quiet, 5)) if len(quiet) > 20 else self.peak - 70.0
         sm = lambda b: np.convolve(b, np.ones(5) / 5, mode='same')
         self.Ls, self.Ms, self.Hs = sm(self.L), sm(self.M), sm(self.H)
+        self.h_floor = float(np.percentile(self.Hs, 5))
         self.t_on = max(self.peak - 38.0, self.floor + 12.0)    # speech / silence split
         self.t_aud = max(self.peak - 50.0, self.floor + 6.0)    # still audible: edges fade to here
 
@@ -191,7 +193,7 @@ def sphinx_align(x16, toks):
         if _ == 0:
             dec.set_alignment()
     alignment = dec.get_alignment()           # entries are only valid while this lives
-    found = [(w.name, w.start, w.start + w.duration, [p.name for p in w])
+    found = [(w.name, w.start, w.start + w.duration, [(p.name, p.start) for p in w])
              for w in (alignment or []) if w.name not in ('<sil>', '<s>', '</s>', '[NOISE]')]
     del alignment
     if len(found) != sum(len(ws) for _, ws, _ in toks):
@@ -200,11 +202,12 @@ def sphinx_align(x16, toks):
     for _, ws, _ in toks:
         seg = found[k:k + len(ws)]
         k += len(ws)
-        phones = [p for w in seg for p in w[3]]
+        phones = [p for w in seg for p, _ in w[3]]
+        vowel = next((t for w in seg for p, t in w[3] if ARPA_CLASS.get(p) == 'V'), seg[0][1])
         out.append(dict(start=seg[0][1] / 100 - 0.3, end=seg[-1][2] / 100 - 0.3,
                         first=ARPA_CLASS.get(phones[0], 'V'),
                         last=AFFRICATE_END.get(phones[-1], ARPA_CLASS.get(phones[-1], 'V')),
-                        phones=' '.join(phones)))
+                        vowel=vowel / 100 - 0.3, phones=' '.join(phones)))
     return out
 
 
@@ -288,7 +291,11 @@ def snap(feat, hmm, ctc):
                 b += 1
             # a stop closure inside a word (the t of "Let's") is silent too: accept a
             # run only if the aligned boundary falls in or near it
-            if any(abs((a + b) / 2000 - v) <= (b - a) / 2000 + 0.04 for v in votes):
+            # and a weak fricative is not silence ("I'm thrilled": the θ sits under the
+            # speech threshold but is plainly audible hiss); a long hissy run is a breath
+            hiss = (hmm[i + 1]['first'] == 'F' and b - a <= 120
+                    and np.median(feat.Hs[a:b]) > feat.h_floor + 15.0)
+            if not hiss and any(abs((a + b) / 2000 - v) <= (b - a) / 2000 + 0.04 for v in votes):
                 quiet.add((a, b))
         if quiet:
             a, b = max(quiet, key=lambda r: (r[1] - r[0]) - 0.5 * abs((r[0] + r[1]) / 2 - prior * 1000))
@@ -327,6 +334,11 @@ def snap(feat, hmm, ctc):
         if a / 1000 > last_end + 0.04 or (end_k > k0 + 1 and a - end_k > 120):
             break
         end_k = max(end_k, b)
+    if hmm[-1]['last'] == 'P':                    # a final stop: its release after the closure
+        for a, b in runs(speech):
+            if end_k <= a <= end_k + 150 and b - a <= 100:
+                end_k = b
+                break
     while end_k < len(feat.E) - 1 and feat.t_aud < feat.E[end_k] <= feat.E[end_k - 1] + 1.0:
         end_k += 1
     ends[-1] = feat.time(end_k)
@@ -427,14 +439,24 @@ def cut_point(feat, last, first, prior, lo, hi, reach=0.03):
     return feat.time(kk)
 
 
-def vowel_onset(feat, s, e):
-    """Steepest rise of 0.5-3 kHz energy where the word's first vowel attacks: the first
-    point within 10 dB of the word's maximum in that band, searched back up to 40 ms."""
+def vowel_onset(feat, s, e, vowel=None):
+    """Attack of the word's first vowel: the steepest rise of 0.5-3 kHz energy within 25 ms
+    of where the HMM puts that vowel (`vowel`). Without an HMM time: the first point within
+    10 dB of the word's maximum in that band, searched back up to 40 ms."""
     ka, kb = feat.frame(s), max(feat.frame(e), feat.frame(s) + 2)
-    m = np.convolve(feat.M, np.ones(5) / 5, mode='same')[ka:kb]
-    cross = int(np.argmax(m >= m.max() - 10.0))
+    m = feat.Ms
+    if vowel is not None:
+        lo, hi = max(ka, feat.frame(vowel) - 25), min(kb - 1, feat.frame(vowel) + 25)
+        k = np.arange(max(lo, 2), min(hi, len(m) - 3) + 1)
+        if len(k):
+            rise = m[k + 2] - m[k - 2]
+            if rise.max() >= 3.0:
+                return feat.time(int(k[np.argmax(rise)]))
+        return feat.time(int(np.clip(feat.frame(vowel), ka, kb - 1)))
+    seg = m[ka:kb]
+    cross = int(np.argmax(seg >= seg.max() - 10.0))
     lo = max(0, cross - 40)
-    d = np.diff(m[lo:cross + 6])
+    d = np.diff(seg[lo:cross + 6])
     return feat.time(ka + lo + int(np.argmax(d)) + 1) if len(d) else feat.time(ka)
 
 
@@ -566,13 +588,15 @@ def main():
             if not ctc_words:
                 sys.exit(f'{stem}.wav: pocketsphinx could not align "{text}" and no CTC fallback')
             base = ctc_words['mms_fa']
-            hmm = [dict(start=w['start'], end=w['end'], first='?', last='?', phones='') for w in base]
+            hmm = [dict(start=w['start'], end=w['end'], first='?', last='?', vowel=None, phones='')
+                   for w in base]
             aligner = 'ctc-mms_fa'
         starts, ends, kinds = snap(feat, hmm, ctc_words)
 
         words = []
         for (tok, _, _), s, e in zip(toks, starts, ends):
-            words.append(dict(text=tok, start=r3(s), end=r3(e), onset=r3(vowel_onset(feat, s, e))))
+            onset = vowel_onset(feat, s, e, hmm[len(words)].get('vowel'))
+            words.append(dict(text=tok, start=r3(s), end=r3(e), onset=r3(onset)))
         spans = [(w['start'], w['end']) for w in words]
         active = np.concatenate([x[int(s * SR):int(e * SR)] for s, e in spans])
         rms_db = 10 * np.log10(np.mean(active ** 2) + 1e-12)

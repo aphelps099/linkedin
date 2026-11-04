@@ -143,7 +143,8 @@ export function ladyEvents(words, table = LADY_TABLE) {
   // "Let that" dry, then the room sinks under "sink in".
   const sink = table['15.wav'];
   if (sink) {
-    const letThat = slice(sink, 0, 1), sinkIn = slice(sink, 2, 3);
+    // "sink in" keeps her natural pause after "that": the beat of air before the room sinks.
+    const letThat = slice(sink, 0, 1), sinkIn = [letThat[1], slice(sink, 2, 3)[1]];
     events.push({role:'punct', file:'15.wav', from:letThat[0], to:letThat[1], at:22 * 16 + 9, rate:1, gate:letThat[1] - letThat[0] + .02, gain:sink.gainDb, pan:0, display:'LET THAT'});
     events.push({role:'sink', file:'15.wav', from:sinkIn[0], to:sinkIn[1], at:23 * 16, rate:1, gate:2, gain:sink.gainDb, pan:0, deep:.5, root:CHORDS[3].root, display:'SINK IN'});
   }

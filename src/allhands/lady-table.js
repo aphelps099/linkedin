@@ -1,7 +1,10 @@
 // Word boundaries inside the lady's recordings (public/phrases/NN.wav), in
-// seconds from the start of each file. The measured table from
-// scripts/align-lady-phrases.py (lady-phrases.json) replaces these entries
-// when it is present; these are the energy-envelope measurements it refines.
+// seconds from the start of each file. lady-phrases.json is measured by
+// scripts/align-lady-phrases.py: HMM forced alignment, cross-checked by two CTC
+// models, snapped to the audio, every word re-heard by Whisper. The hand
+// measurements below remain only as a fallback for a file it lacks.
+import MEASURED from './lady-phrases.json' with {type:'json'};
+
 const FALLBACK = [
   {file:'50.wav', text:"Let's build.", f0:189, rmsDb:-13.1, words:[["Let's", .015, .2], ['build.', .225, .745]]},
   {file:'06.wav', text:"Let's circle back", f0:244.9, rmsDb:-12.8, words:[["Let's", .015, .2], ['circle', .245, .7], ['back', .715, .95]]},
@@ -24,7 +27,11 @@ export function tableFrom(entries) {
   return table;
 }
 
-export const LADY_TABLE = tableFrom(FALLBACK);
+// The aligner references RMS to a full-scale square wave; the mix was
+// calibrated against the hand table's sine-referenced levels, 2.9 dB lower on
+// average. Keep its per-phrase normalisation, remove the constant offset.
+const REFERENCE_OFFSET_DB = -2.9;
+export const LADY_TABLE = {...tableFrom(FALLBACK), ...tableFrom(MEASURED.map(e => ({...e, gainDb:e.gainDb + REFERENCE_OFFSET_DB})))};
 
 // [start, end] in the file from word `from` through word `to` (negative counts
 // from the end), optionally cut to `max` seconds from the start.

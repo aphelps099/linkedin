@@ -228,8 +228,10 @@ for (const post of POSTS) for (const id of Object.keys(FORMS)) {
     ok(!warnings.some(w => /STOP\..*tape stop/.test(w)) && cues.some(c => c.words.map(w => w.text).join(' ') === 'FULL STOP.'), '"FULL STOP." is heard over the tape stop, whole');
     // Proportional placement (JSON) stays within one frame of the exact cut for unclipped phrases.
     const viaJson = ladyCueSources(json.lady, {timeOf}), exactLady = ladyCueSources(plan.lady, {timeOf});
-    const sinkJ = viaJson.find(s => s.kind === 'sink'), sinkE = exactLady.find(s => s.kind === 'sink');
-    ok(sinkJ.words.every((w, i) => Math.abs(w.start - sinkE.words[i].start) < 1 / 30), 'JSON lady timing ≈ exact cut');
+    // ("SINK IN" now starts on her pause after "that", which only the exact cut knows;
+    // render JSON carries from/to, so real exports use the exact path.)
+    const letJ = viaJson.find(s => s.words.some(w => w.text === 'LET') && s.words.some(w => w.text === 'THAT')), letE = exactLady.find(s => s.words.some(w => w.text === 'LET') && s.words.some(w => w.text === 'THAT'));
+    ok(letJ.words.every((w, i) => Math.abs(w.start - letE.words[i].start) < 1 / 30), 'JSON lady timing ≈ exact cut');
   }
 }
 

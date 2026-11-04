@@ -125,7 +125,14 @@ for (const post of POSTS) {
   ok(plan.words.every(w => w.notes.every(n => n.midi >= 45 && n.midi <= 64)), 'drop: Synergy stays in range');
   ok(stepAt(plan, 40) === 320 && stepAt(plan, 39.999) === 319 && stepAt(plan, -1) === -1, 'drop: stepAt inverts the timing table');
 }
-assert.deepEqual(slice(LADY_TABLE['06.wav'], 0, 1), [.015, .7]); checks++;
+// The measured table covers every recording, with ordered, tight word spans.
+{
+  const files = Array.from({length:57}, (_, i) => `${String(i + 1).padStart(2, '0')}.wav`);
+  ok(files.every(f => LADY_TABLE[f] && LADY_TABLE[f].words.length), 'lady: all 57 recordings measured');
+  ok(files.every(f => LADY_TABLE[f].words.every((w, i, a) => w.end > w.start && (!i || w.start >= a[i - 1].end - 1e-9))), 'lady: word spans ordered and non-overlapping');
+  const [a, b] = slice(LADY_TABLE['06.wav'], 0, 1), back = slice(LADY_TABLE['06.wav'], 2, 2);
+  ok(a < .05 && b > .6 && b <= back[0] + 1e-9 && back[1] - back[0] > .2, 'lady: "Let\'s circle" then "back", whole words');
+}
 ok(Object.keys(FORMS).join() === 'drop60,soundcheck', 'two forms');
 // The true-peak limiter keeps an over-full-scale signal under its ceiling.
 {
