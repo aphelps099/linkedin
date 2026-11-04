@@ -4,15 +4,11 @@ Ninety percent of LinkedIn Beats music is built by these rules. The other ten pe
 
 The three tracks in this folder are the reference recordings. A new song should sit beside them without sounding like a fourth copy of them.
 
-## The story the music tells
+## The story behind the music
 
-Synergy is learning the synth. Synthia already plays it beautifully.
+Between us: Synergy is learning the synth, and Synthia already plays it beautifully. That is backstory, not a feature. No song announces it, no arc has to show it, and nobody watching needs to know. It shapes how we write: Synergy's lines stay simple and a little stiff, Synthia's are the fluent ones.
 
-Every song is a lesson in progress: a robot trying to sound human, and a human band trying to sound like machines. Keys, Ops on drums, Kevin on guitar and Pat on bass (camera off, always) are the session players. The lady is the voice from the meeting, sampled, chopped and tuned.
-
-- **Synergy** sings through the vocoder. He starts simple: short phrases, a stammer, a note held too long. He gets better as the song goes.
-- **Synthia** plays fluent lines: arpeggios, analog leads, the part Synergy is trying to learn.
-- **The payoff** comes when they play together, in the last drop or after BACK.
+Keys, Ops on drums, Kevin on guitar and Pat on bass (camera off, always) are the session players. The lady is the voice from the meeting, sampled, chopped and tuned.
 
 ## Five references, one sound
 
@@ -34,13 +30,13 @@ Influence means sound and approach. Never their melodies, lyrics, samples or son
 - Swing is light, 0 to .12 of a 16th, and the ladder always tightens to straight.
 
 ### Harmony
-- Home is minor, Dorian or Aeolian. Major sevenths and ninths are colour, not the default.
+- Home is minor, Dorian or Aeolian. The haze songs (Panda Bear, Washed Out lane) may live in major or Mixolydian. Major sevenths and ninths are colour, not the default.
 - Loops of two to four chords. Change the texture, not the progression.
 - Melody lives in the pentatonic, so every note sits on every chord.
 - Everyone is in key: Synergy, every rung of the lady's ladder, her deep voice.
 
 ### The band
-- **Synth:** two players, Synthia fluent and Synergy learning (above).
+- **Synth:** two players. Synthia is fluent; Synergy keeps it simple.
 - **Keys:** Rhodes, organ or filtered stabs. The filter is part of the arrangement.
 - **Drums (Ops):** an electronic kit with a live player's ghost notes. Claps over snares. The printer is the shaker.
 - **Bass (Pat):** sub plus funk, sidechained to the kick.
