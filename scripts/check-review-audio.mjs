@@ -155,7 +155,7 @@ if (url) {
       return createHash('sha256').update(Buffer.from(r.wav, 'base64')).digest('hex');
     } finally { await browser.close(); }
   };
-  for (const job of [{track:'circle-back'}, {track:'humbled-and-honored'}, {track:'hustle'}, {track:'circle-back', coldOpen:true}]) {
+  for (const job of [...TRACK_ORDER.map(track => ({track})), {track:'circle-back', coldOpen:true}, {track:'offsite', coldOpen:true}]) {
     const a = await take(job), b = await take(job);
     ok(a === b, `${JSON.stringify(job)}: two renders in fresh browsers are the same bytes (${a.slice(0, 16)})`);
     console.log(`  ${JSON.stringify(job)} ${a.slice(0, 16)} = ${b.slice(0, 16)}`);

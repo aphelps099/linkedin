@@ -197,8 +197,8 @@ Units: `at`, `len`, `off` and keyframe positions are 16th steps of the plan; the
 
 - A key's ease shapes the segment that arrives at it. Eases: `linear inQuad outQuad outExpo inOutSine step outBack`; each has an exact antiderivative, which is how rates integrate.
 - Keys in `steps` sit at `stepTime(at + k)`; in `frames` at the clip's cut frame plus k.
-- `bind`: `kick`, `kickLevel`, `voice`, `roll`, `stem:<name>`, `eq:<band>`. Value = `base + scale · envelope`, a one-pole follower with `attack` and `release` in seconds.
-- **Feature tracks** `{fps, frames, source, kick, kickLevel, roll, stems:{drums bass keys guitar voice lady}, eq}`, every series a `Float32Array` per frame. Frame g is song time g/24, read 10 ms ahead like the equalizer. `kick` is 1 on the frame that holds each of the plan's kicks (a hit; eq.js `kickSteps`, the same kicks the engine plays). `buildFeatures(plan, render)` reads `engine.render(..., {tune:{stems:true}})` (master on channels 0-1, stems on 2-7): stem RMS mapped from -60 dBFS (0) to -6 dBFS (1), the drums' 35-150 Hz band as `kickLevel`, and master bands from `eqTrack`. `planFeatures(plan)` is the fallback with no audio: levels from the plan's players, words and lady events, silence in the choke.
+- `bind`: `kick`, `kickLevel`, `voice`, `voices`, `clap`, `roll`, `stem:<name>`, `eq:<band>`. Value = `base + scale · envelope`, a one-pole follower with `attack` and `release` in seconds. `voices` is the loudest voice stem on each frame (Synergy, the lady, a `choir` stem when the engine has one); `clap` is 1 on the frame that holds each backbeat hit as it sounds (`backbeatHits`: the claps, snaps and snares each track's kit plays, its late backbeat included, or the plan's own `plan.claps`).
+- **Feature tracks** `{fps, frames, source, kick, kickLevel, roll, clap, stems:{drums bass keys guitar voice lady}, eq}`, every series a `Float32Array` per frame. Frame g is song time g/24, read 10 ms ahead like the equalizer. `kick` is 1 on the frame that holds each of the plan's kicks (a hit; eq.js `kickSteps`, the same kicks the engine plays). `buildFeatures(plan, render)` reads `engine.render(..., {tune:{stems:true}})` (master on channels 0-1, stems on 2-7): stem RMS mapped from -60 dBFS (0) to -6 dBFS (1), the drums' 35-150 Hz band as `kickLevel`, and master bands from `eqTrack`. `planFeatures(plan)` is the fallback with no audio: levels from the plan's players, words and lady events, silence in the choke.
 
 ### Time
 
@@ -218,7 +218,7 @@ S(t) = in + dir · ∫[t0, t] rate(τ) · tape(τ) · live(τ) dτ        dir = 
 - **hitWarp**: a dynamic program puts the most hits (`shot.hits`, source frames) on 8ths (or the plan's kicks) with every local rate inside 0.85-1.15; matched hits land exactly.
 - **Transports** remap song time for the whole composite: `rewind` shows `Tfrom − 4·(t − Ta)` for at most one beat with every layer's direction flipped, the printer and the instrument plates holding their frame at `Tfrom` (plan §2: they freeze, R0 footage never plays backwards under them); `tapestop` shows `Ta + τ − τ²/2S`, then holds; `jump` shows `Tfrom + (t − Ta)`, another moment forwards (the cold open). The board follows the same time, except through a tape stop: her "Full stop." is routed after the tape (she stops it, it does not stop her), so `board.time` keeps the song's own clock there while the picture slows to its hold.
 - **What the sound does** (`soundOf`, on every transport and frame as `transport.sound`): a rewind is `reversed` only where the plan rewinds the mix over the same span, at the same rate, from the same source time (`plan.transports`, drop.js `withColdOpen`); a jump is `copied` where the plan copies that moment's sound there (`plan.coldOpen.impact`); either is `silent` once the tape stop's hold has started and her stop phrase (after the tape) has stopped sounding, else `forward`.
-- **The cold open** (plan §2 rows 0:0-0:7, `plan.coldOpen`): frames 0-17 are a `jump` to the drop's own impact frame, `hitFrame(impact)` (the board ignites for one frame and BACK. settles, exactly as at the drop, while the sound is the drop's impact cut from its own render without Synergy, `engine.js coldSourcePlan`). The board shows only what is heard: inside a jump whose sound is copied, `board.time` holds on the frame before his first screen (`compile.js jumpHold`), so BACK. stays up and his Drop A "LET'S" never lights there (it used to, silently, on Circle Back frames 12-17, Humbled and Honored 16-17, Hustle 11-17); frames 18-23 are the plan's `rewind`, the last second before the choke at 4×, picture and sound reversed together, the board shrinking back to its home over frames 21-24; from frame 24 the song as written.
+- **The cold open** (plan §2 rows 0:0-0:7, `plan.coldOpen`): frames 0-17 are a `jump` to the drop's own impact frame, `hitFrame(impact)` (the board ignites for one frame and BACK. settles, exactly as at the drop, while the sound is the drop's impact cut from its own render without Synergy, `engine.js coldSourcePlan`). The board shows only what is heard: inside a jump whose sound is copied, `board.time` holds on the frame before his first screen (`compile.js jumpHold`), so BACK. stays up and his Drop A "LET'S" never lights there (it used to, silently, on Circle Back frames 12-17, Humbled and Honored 16-17, Hustle 11-17); frames 18-23 are the plan's `rewind`, the last second before the choke at 4×, picture and sound reversed together, the board shrinking back to its home over frames 21-24. Inside a rewind the board looks back, not ahead: frame f plays the song from v down to v − rate/24, so it shows the board at v − rate/48, the middle of that span (`board.time` is set so the compositor's own look-ahead lands there); frame 18 starts on the choke, where her tag starts, and shows the ladder's LET'S, never the tag's "L"; from frame 24 the song as written.
 - **The ending** (plan §2 row 29): the tape stop's curve, then its hold, for as long as her "Full stop." sounds in the file (from its onset to `plan.stop.end`, else her envelope's end, plus the codec's 5 ms and the engine's latency: `anchors.js stopFrames`). "FULL STOP." stays on the board the whole time, typed in full, sliding down 2 pegs and dimming to about 0.56 of full light (choreo `STOP_DIM` .7 on the exposure, .8 on the pegs). Black starts on the first frame after her (Circle Back f1437, Humbled and Honored f1492), never before the curve has run. The last two frames are the loop seam's ghost BACK.: frame 0's BACK. screen, its letters only, flat at I .08 on true black (a board cue `{text:{ref:'song:impact'}, ghost:.08}` over a black tile carrying the ignition's peg-video pitch, so the ghost lights frame 0's own pegs). Where her line runs into the last two frames (Hustle: she is heard to f1416 of 1418), the ghost takes only what is left (f1417) and there is no true black. Synergy's held close-up keeps his eyes open: the treatment moves the closing clip's source by the fewest frames that keep the slow-down and the hold two frames clear of his blinks (`robot-tracks.json` `blinks`, from `scripts/measure-robot-eyes.py`).
 
 ### Layouts
@@ -292,7 +292,8 @@ Layer {clipId, shotId, asset, kind:'video'|'generated', gen,
   opacity, fx:[{type, ...numbers}],
   chrome:{name, role, mic:'on'|'muted', speaking 0..1, toast:null|{text, age, remaining}, banner:null|text, cameraOff},
   robot?:{id, mouth:{x, y, angle (rad), scale, px, w, h}, level},   the tracked mouth row in output px; px: output px per source px; level 0..1: his voice
-  canon?:{synergy:true}, held?:'printer'}
+  canon?:{synergy:true}, held?:'printer',
+  trail?:{of, k, blend}}                                           a trail's copy k of clip `of` (clipId '<of>~k'): no chrome, no mouth row
 ```
 
 - **Draw order**: z, then the later clip on top, then EDL order. A layer that is opaque, unrotated, unslid and at zoom 1 or more hides what is under it in its cell (a full-frame one hides everything), so hidden footage never costs a decode.
@@ -325,6 +326,12 @@ Each fx entry is `{type, ...}`; numeric parameters are Params, evaluated per fra
 | `pegVideo` | mix (1): 0..1 footage to peg video; pitch (12): output px between pegs; levels (6): blue levels of luma^gamma; gamma (1.4) | mix 0 | yes |
 | `scanline` | amount (0): line darkening 0..1; wobble (0): horizontal displacement in output px; period (6): output px per line pair | both 0 | yes |
 | `echo` | taps (0): trail copies; frames (1): frames between copies; decay (.6): each copy's opacity relative to the one before | taps or decay 0 | yes |
+| `breathe` | px (0): block size in output px, meant to be bound (`{add:[{bind:'voices'}, {bind:'clap'}]}`); cx, cy (.5): the centre the blocks grow from. Between octaves the two nested grids (2^n and 2^(n+1) px) crossfade, so a size that follows the voices breathes instead of stepping | px ≤ 1 | yes |
+| `paletteWash` | mix (0): 0..1 the original to the wash; hue (0): the duotone, 0 Peg Board blue (#2B78FF), 1 violet (#8C52FF), 2 warm (coral, #FF7366), fractional between. Luma onto the duotone with luma kept (a zero-luma tint, strongest in the shadows, none at black or white), never green | mix 0 | no |
+| `trail` | taps (0): copies of the clip as it was earlier, its own earlier source frames and transforms (at most 6); frames (2): output frames between copies; decay (.5): each copy relative to the one before (bind it to `clap` to smear on the beat); blend ('lighten'): a copy only brightens, or 'over'. A layer effect: compile expands it into copies (never on a camera cue) | taps < 1 or decay 0 | yes |
+| `radialFold` | wedges (6): mirrored wedges about the centre, a kaleidoscope; angle (0): degrees, the wedges turn with it; cx, cy (.5). A point the turn carries out of the cell reflects back in | wedges < 2 | yes, mirrors |
+| `pegBloom` | amount (0): 0..1 how far the footage has turned into pegs from the centre out; cx, cy (.5); band (.2): the front of peg-wide pixel blocks ahead of the pegs; reach (0: the cell's farthest corner): output px amount 1 reaches; pitch (12), levels (6), gamma (1.4) as peg video; space ('cell'): 'frame' gives cx, cy in frame units (the board home) and compile maps them into the cell with reach the frame's farthest corner, so one circle grows across every tile | amount 0 | yes |
+| `chromaDrift` | px (0): red, green (at half) and blue each displaced along directions 120 degrees apart; angle (0): degrees, drift it slowly with keys; radial (0): px at the cell corner, red outwards and blue inwards from the centre | px and radial 0 | yes |
 
 Mirroring a whole layer is `frame.mirror` (in the matrix), not an effect. Camera cues take the same effects over the whole composite, in frame coordinates.
 
@@ -342,8 +349,8 @@ Errors block export; warnings do not. Each finding carries a rule, a sentence, a
 | G7 | R0 shots never play backwards except inside a rewind whose sound really reverses with them (a `plan.transports` rewind with `audio:true` over the same span; checked on every frame: reverse, negative rates and ping-pong all count). Rewinds: at most one beat, at most two, `audio:true`; one the plan does not reverse the sound in is a warning (only generated and R1 layers may run backwards there; printer and instruments hold). A `jump` whose sound plays on is a warning. Instruments are hit-warped (0.85-1.15) or frozen: never slowed, ramped or tape-coupled. | error / warning |
 | G8 | A slice plays at most 4 times; the third repeat varies; three identical clips in a row in one cell. Continuations across re-layouts and generated tiles are not repeats. | error |
 | G9 | Custom board cues hold at least max(0.75 s, characters / 15). | warning |
-| G10 | Upscale `zoom · camera zoom · cell.h / crop.h` stays at or under U (A 1.8, B 1.5, C 1.2). A mosaic of 8 px or more, or peg video, is exempt. | error |
-| G11 | Pat never on video; the lady never gets a face; type is never green; robots, instruments and unflagged shots are never mirrored; no warping effect on Synergy; nothing covers his tracked mouth row, the board included (L1's panel, or a still board a camera pushes his face under, while words are lit). | error |
+| G10 | Upscale `zoom · camera zoom · cell.h / crop.h` stays at or under U (A 1.8, B 1.5, C 1.2). A mosaic or breathing mosaic of 8 px or more, or peg video, is exempt. | error |
+| G11 | Pat never on video; the lady never gets a face; type is never green; robots, instruments and unflagged shots are never mirrored (a frame mirror, a mirrored tile, a fold or a radial fold); no warping effect on Synergy (the palette wash is colour, not a warp: his face takes it, his mouth row never does); nothing covers his tracked mouth row, the board included (L1's panel, or a still board a camera pushes his face under, while words are lit). | error |
 | G12 | Loop films (`song.loop`): the last frame's layout and board screen match frame 0's (a ghost of frame 0's song screen counts as the same). | warning |
 | G13 | Whenever the song's board has lit words (a word reached by the frame that holds its sound, not yet ended, the board not dark), a board is on screen: the layout's region (held still under a camera that does not own it), or a `gen:board` tile the camera keeps half in frame; a camera that owns the board must keep 90 % of the region in frame. Lights out is exempt. Not waivable. | error |
 | G14 | The board holds still: its rect may change between consecutive frames only inside an authored board move (`edl.boardMoves`, 3 frames or more, else a schema error), and its panel (the sockets behind the type) comes or goes only inside a move, where a transport cuts to another moment, or from dark (lights out, the choke's true black). Not waivable. | error |
@@ -360,7 +367,7 @@ G10 uses the real upscale. For a crop that spans the content height (tall and sq
 
 ### Checks
 
-`npm run check:videostudio` (1269 checks, under 3 s; `--render` adds a real stems render in headless Chromium, about 80 s; `--dump DIR` writes the sample film's EDL and fixture shots): schema round trips; anchors against the real Drop Edition and Sound check plans and a 128 BPM plan; eases against an independent quadrature; rate integration, reverse, stutter, ping-pong, freeze and tape coupling against closed forms (errors under 1e-14 s); the metronome's cuts on every plan; every layout in every format; every move to a clean EDL; every policy violation caught; a 60 s film (133 clips, 5,793 layers) compiled twice to one hash, the best of 7 warm compiles inside the 100 ms budget (a loaded machine only adds time, so the best run is the compile's own cost; the median is printed); every call layout's board at its format's one home, inside the safe band, the tiles and board covering 88 % of the frame or more, and every Drop Edition screen and lady phrase at k 1-3 lit inside the band on the screen share and the full-bleed board; every stutter's whole words on one page, in the home, the share and the full board; G14 (a full-board moment cut in and out without a move fails twice; with moves it grows over 4 frames from the beat and lands home on the cut, eased, seek-safe; a 2-frame move is a schema error; a panel that comes and goes on its own fails); G13 (a camera that owns the board and pushes it out fails; one that does not holds it still; lights out); Synergy's mouth level on his words, at rest between them and through Sink In; and the real `media/shots.json` when present.
+`npm run check:videostudio` (1310 checks, about 4 s; `--render` adds a real stems render in headless Chromium, about 80 s; `--dump DIR` writes the sample film's EDL and fixture shots): schema round trips; anchors against the real Drop Edition and Sound check plans and a 128 BPM plan; eases against an independent quadrature; rate integration, reverse, stutter, ping-pong, freeze and tape coupling against closed forms (errors under 1e-14 s); the metronome's cuts on every plan; every layout in every format; every move to a clean EDL; every policy violation caught; a 60 s film (133 clips, 5,793 layers) compiled twice to one hash, the best of 7 warm compiles inside the 100 ms budget (a loaded machine only adds time, so the best run is the compile's own cost; the median is printed); every call layout's board at its format's one home, inside the safe band, the tiles and board covering 88 % of the frame or more, and every Drop Edition screen and lady phrase at k 1-3 lit inside the band on the screen share and the full-bleed board; every stutter's whole words on one page, in the home, the share and the full board; G14 (a full-board moment cut in and out without a move fails twice; with moves it grows over 4 frames from the beat and lands home on the cut, eased, seek-safe; a 2-frame move is a schema error; a panel that comes and goes on its own fails); G13 (a camera that owns the board and pushes it out fails; one that does not holds it still; lights out); Synergy's mouth level on his words, at rest between them and through Sink In; the real `media/shots.json` when present; the new effects (12: each validates, compiles away at its identity, binds to `voices` and `clap`; the peg bloom in frame units; the trail's copies are the clip's own earlier frames, over it, sharing its decode, seek-safe; G11 refuses every new warp on Synergy and a radial fold on anything not mirrorable; the treatments by track) and the Offsite cut on the real shot index (13: every track and format clean, byte-stable, every new effect used, no warp on Synergy).
 
 ## Compositor
 
@@ -375,7 +382,7 @@ One WebGL2 canvas draws a frame of the frame program exactly, for the preview an
 | `media/element-pool.js` | The preview's `<video>` decoders: A/B pairs per slot, preroll, rate steering, `requestVideoFrameCallback` uploads. |
 | `media/stutter-cache.js` | Exact frames as ImageBitmaps for stutters, holds and canon tiles, 25 MB at most. |
 | `render/preview.js` | `createPreview()`: the clock, the pool, the compositor; play, pause, seek, scrub, step, re-layout. |
-| `studio-film.js` | `studioFilm(plan, shots, {format})`: the first draft, built from the moves on the real shot index (`/videostudio/?cut=studio`; the monitor now opens on `treatments/drop60-draft.js`, see Export). |
+| `studio-film.js` | `studioFilm(plan, shots, {format})`: the first draft, built from the moves on the real shot index (`/videostudio/?cut=studio`; the monitor now opens on the track's own treatment, `treatments/index.js`, see Export). |
 | `main.js`, `studio.css`, `/videostudio/index.html` | The monitor. Unlisted and noindex. |
 | `scripts/check-compositor.mjs` | `npm run check:compositor`. |
 
@@ -431,8 +438,14 @@ Output px go through `transform.matrix` (transposed for GLSL) to source px, then
 | `iris` | A soft circle of `r` × the half-diagonal. |
 | `droste` | The pass in step 5. |
 | `echo` | `taps` copies at the transforms of frames f − k·`frames`, opacity `decay`^k, under the layer. |
+| `breathe` | Two samples per pixel: the block centres of the 2^n and 2^(n+1) px grids from (cx, cy), crossfaded by smoothstep(fract(log2 px)). |
+| `paletteWash` | `l + tint(hue)·(1.1 − .6 l)·k(l)`, `k` 0 at black and white, clamped; mixed with the picture by `mix`. Not applied to Synergy's mouth row. |
+| `trail` | The copies are layers of the program (`layer.trail`), drawn right after their clip and before its chrome, MAX-blended for lighten (premultiplied, so a dim copy only shows where it is brighter). |
+| `radialFold` | Polar about (cx, cy): the angle folded into one wedge, alternate wedges mirrored, the radius kept, then reflected into the cell. |
+| `pegBloom` | Per peg cell: nearer than the front, a peg (the peg video term at full mix); inside the band, one colour per peg cell; beyond, the footage. |
+| `chromaDrift` | Folded into each sampling tap with `rgbSplit`: red, green and blue each read at their own offset. |
 
-The order inside the shader is: tile, fold, mosaic and wobble (cell space), then the matrix, then blur with split, then colour, then scanline darkening, then peg video, then the masks. Two effects of one type in one layer: saturations multiply, otherwise the last one wins.
+The order inside the shader is: tile, fold, radial fold, mosaic and wobble (cell space, the breathing mosaic sampling through them), then the matrix, then blur with split and drift, then colour (the palette wash last), then scanline darkening, then peg video and the peg bloom, then the masks. Two effects of one type in one layer: saturations multiply, otherwise the last one wins.
 
 ### Chrome
 
@@ -453,7 +466,7 @@ Text and icons (lucide paths) are rasterised once at device size into a 2048² C
 
 `gl/board-layer.js` gives each board region (the layout's strip, the whole frame, a `gen:board` tile, a cue's cell) its own grid at `pitchFor(w, h)`, or at the peg video's pitch when it lies over one. It paints it with `choreo.paint()` and draws it with the Peg Board's own WebGL2 renderer into a texture of the compositor's context. `renderer-gl.js` takes `{gl, output}` for that and nothing else changes. Up to 4 regions stay allocated; a moving board (a new size every frame) draws through one more instance that is resized, never recompiled.
 
-Pegs are hits: an onset at song time t lights on `floor((t + L)·24)`, the frame that holds its sound (`frame.board.lead` is `L`, 16.33 ms). choreo paints the middle of a frame: it lights a unit half a frame before its onset but switches a screen on at its exact start. So frame f paints at `f/24 + 1/48 − L` (`boardTimeOf`) with every screen moved half a frame early (`boardScreens`), and `compile` picks each frame's screen by the same rule. The choke follows her voice, on every track and cast: her tag's screen holds and its typewriter finishes its last letter on the last frame she is heard in; the board goes true black (sockets off) on the first frame that starts after `plan.choke.tagEnd + 5 ms + L` (choreo `darkAt`, anchors `chokeFrames`; the 5 ms is the tail an AAC or Opus encode smears onto her release, -69 dBFS 4 ms past her envelope on the export, so no sample of her above -70 dBFS plays over black in the file: Circle Back frame 952, Humbled and Honored 862, Hustle 874 with today's cast) and holds it to the impact's frame, where it ignites for exactly one frame (`igniteAt`: Circle Back 960, Humbled and Honored 876, Hustle 886). A Drop's kick lift on the board is a hit too.
+Pegs are hits: an onset at song time t lights on `floor((t + L)·24)`, the frame that holds its sound (`frame.board.lead` is `L`, 16.33 ms). choreo paints the middle of a frame: it lights a unit half a frame before its onset but switches a screen on at its exact start. So frame f paints at `f/24 + 1/48 − L` (`boardTimeOf`) with every screen moved half a frame early (`boardScreens`), and `compile` picks each frame's screen by the same rule. The choke follows her voice, on every track and cast: her tag's screen holds and its typewriter finishes its last letter on the last frame she is heard in; the board goes true black (sockets off) on the first frame that starts after `plan.choke.tagEnd + CHOKE_TAIL + L` (choreo `darkAt`, anchors `chokeFrames`). `CHOKE_TAIL` is 30 ms, codec-aware (choreo `CODEC_FLOOR`): the choke cuts her tag hard, and the Opus encoder leaves a hiss floor at -66 to -70 dBFS for about 25 ms after a hard cut whatever its frame size, which an AAC copy made from it carries too; the longest floor plus 5 ms keeps every sample above -70 dBFS off black in the file (Humbled and Honored's tag, floor included, last sounds at 36.167 s; black from 36.208 s). The endings keep `TAG_TAIL`, 5 ms (her "Full stop." is not cut against black). Black from Circle Back frame 952, Humbled and Honored 869, Hustle 879, Offsite 792 with today's cast: 7 or 8 black frames before the impact on every track, the sample and every fixture post with its own cast (`check-review-video` 1a) and holds it to the impact's frame, where it ignites for exactly one frame (`igniteAt`: Circle Back 960, Humbled and Honored 876, Hustle 886). A Drop's kick lift on the board is a hit too.
 
 Type stays inside the format's platform-safe area on both axes: each region's grid lays its words out only in the columns the safe area leaves it (`boardGrid(w, h, pitch, safe)`, `safeSpan`), so in 9:16 the words keep left of the right rail at x 944 and centre on the safe span, not the strip. Lit pegs of a reveal or the ignition still run edge to edge.
 
@@ -482,7 +495,7 @@ pv.on(({f, t, playing, stats, pool, cache}) => ...);
 
 ### The monitor
 
-`/videostudio/` (noindex): the draft cut on the audio clock, for any track of the song book and any post.
+`/videostudio/` (noindex): the track's own treatment on the audio clock (`treatments/index.js`: Offsite is cut with `offsite-psych`, every other track with the drop60 draft), for any track of the song book and any post. The spec line under the picture names the treatment; the cut list shows its scene labels.
 
 - A format toggle: 9:16, 1:1 and 16:9, each re-laid out and recompiled.
 - Play and pause, a scrub bar in bars with the song's sections, the scenes as a cut list (click to jump), and every cut. Labels never truncate or collide: a name sits in its span when it fits, else its written short form (Share, Dub, Rooms, Lag), else it moves to a callout lane (sections above their row, scenes in two lanes under the blocks) on a hairline to its span.
@@ -496,12 +509,13 @@ The page opens on a provisional plan, then re-arranges on Synergy's measured wor
 
 ### Checks
 
-`npm run check:compositor` (78 checks, about 110 s; `--out DIR` for the frames, `--quick`) runs Node, then headless Chromium on SwiftShader WebGL2:
+`npm run check:compositor` (88 checks, about 110 s on a quiet machine, 800 s under load; `--out DIR` for the frames, `--quick`) runs Node, then headless Chromium on SwiftShader WebGL2:
 
 - the draft cut compiles clean in all three formats, and Pat and the lady are never footage
 - peg onsets land on the frame that holds their sound, `floor((t + L)·24)`
 - cell edges, gutters and rounded corners, by pixel probes
 - every effect changes pixels the way the table says
+- the psychedelic pixelation (4c): the breathing mosaic's blocks from the cell centre and its octave crossfade; the palette wash keeps luma, turns blue, violet or warm and leaves no green pixel; the radial fold's 60 degree symmetry; pegs blooming from the centre with the corners still footage; the chroma drift's offsets; a trail only brightening where a tile has been. Then two seconds of the Offsite cut's clap circle on real proxies: at most 3 flashes in any second, whole frame and quadrants, with and without the governor; Synergy's tile identical with and without the effects around him; his mouth row green under his wash
 - the chrome
 - the board in its strip, a tile, over the frame, at true black and at the ignition
 - Synergy's mouth row against the meeting room's `drawRobotMouth` (sung, at rest, half level), and on real footage in the draft: lit on a sung word, glowing at rest
@@ -514,7 +528,7 @@ The page opens on a provisional plan, then re-arranges on Synergy's measured wor
 ### Not yet
 
 - A seek-safe Droste uses the current frame for "the previous output frame"; true frame-to-frame feedback (datamosh) is not built.
-- Echo trails follow the transform only: the copies show the current source frame, not earlier ones.
+- `echo` copies follow the transform only (the current source frame at earlier positions); `trail` is the one that shows earlier source frames.
 - Chrome is not masked by the iris, and it zooms with the camera (it is part of the call).
 - The department chart (OUTPUT BY DEPARTMENT) is not drawn in the film's boards.
 - Context loss is not handled (the board's 2D fallback does not apply inside the compositor).
@@ -527,9 +541,43 @@ The film to an MP4, offline and frame-exact, from the same frame program the mon
 | --- | --- |
 | `render/export.js` | `exportFilm()`, `exportSupport()`, `captions()`, `master48k()`, `planJSON()`, `sha256()`, `exportName()`; `VIDEO`, `AUDIO`. |
 | `media/decoder.js` | `demux()` (ISO BMFF sample tables), `createFrameDecoder()` (WebCodecs `VideoDecoder`, GOP at a time, a cache sized by the program), `layerStream()`, `frameLedger()`. |
-| `treatments/drop60-draft.js` | `drop60Draft(plan, shots, {format})`: plan §2 as an EDL treatment, the default cut on `/videostudio/`, for every track and post: every passage hangs off the plan's landmarks (sections, the unmute, Synergy's lines, the ladder rung by rung by its retrigger rate, the choke, the impact, the bend, Sink In, the tape stop, `plan.coldOpen`), never Circle Back's bars. 0 lint errors on all three tracks in all three formats. `ROWS` (row by row: done, stand-in, partial, skipped), `CAST`, `SCENE_LABELS`. |
+| `treatments/drop60-draft.js` | `drop60Draft(plan, shots, {format})`: plan §2 as an EDL treatment, the cut of every track but Offsite on `/videostudio/` and in the export, for any post: every passage hangs off the plan's landmarks (sections, the unmute, Synergy's lines, the ladder rung by rung by its retrigger rate, the choke, the impact, the bend, Sink In, the tape stop, `plan.coldOpen`), never Circle Back's bars. 0 lint errors on all three tracks in all three formats. `ROWS` (row by row: done, stand-in, partial, skipped), `CAST`, `SCENE_LABELS`. |
+| `treatments/offsite-psych.js` | `offsitePsych(plan, shots, {format})`: Offsite's cut, the psychedelic pixelation (below). `CAST`, `SCENE_LABELS`. 0 lint errors on every track in all three formats. |
+| `treatments/shared.js` | What every Drop Edition treatment shares: `landmarks()`, `coldOpen()` (the jump, the rewind, the board home on the intro's first frame, the rewind's wobble) and `ending()` (the tape stop, Synergy's eyes open, true black, the ghost BACK.). drop60-draft carries the same steps inline. |
+| `treatments/index.js` | `TREATMENTS`, `BY_TRACK`, `treatmentFor(track)`, `treatmentNamed(name, track)`: which treatment cuts which track, on the monitor and in the export. |
 | `scripts/export-videostudio.mjs` | `npm run export:videostudio -- --format 9:16`: the page's Download MP4 in headless Chromium, to a file. |
 | `scripts/check-videostudio-export.mjs` | `npm run check:export`: the P3 gates on real exported files. |
+
+### Treatments
+
+A treatment is a pure function `(plan, shots, {format, features?, seed?}) -> EDL` that hangs every passage off the plan's own landmarks (sections, the unmute, Synergy's lines, her ladder rung by rung, the claps, the choke, the impact, Sink In, the tape stop, `plan.coldOpen`), so it cuts any track and any post. `treatments/index.js` picks one per track:
+
+| Track | Treatment |
+| --- | --- |
+| Circle Back, Humbled and Honored, Hustle | `drop60-draft` (plan §2, the signed-off films) |
+| Offsite | `offsite-psych` |
+
+**Adding one:** write `treatments/<id>.js` exporting the function and `SCENE_LABELS` (a label for every `scene` its clips carry); build the cold open and the ending from `shared.js` so the loop seam, the choke and the ghost hold; register it in `TREATMENTS` and name the tracks it cuts in `BY_TRACK`. Then `check-videostudio` 13 and `check-review-video` 1 run it on every track and format (0 lint errors, the same bytes twice, canon on every frame, Synergy's mouth row, the ending and the ghost, no partial words), and the monitor and `export-videostudio.mjs --edl track` pick it up.
+
+**Offsite (`offsite-psych`).** Aaron: "lets get more of a panda bear style song... this means the video may be a bit more psychedelic pixelation." Cut for voices and claps, not bass drops: the mosaics breathe with the voices (`breathe` bound to `voices` and `clap`), the footage washes into Peg Board duotones drifting blue, violet, warm across the film (`paletteWash`, one hue curve for the whole song), trails smear motion on the backbeat (`trail`, its decay bound to `clap`), mirrorable close-ups fold into kaleidoscopes (`radialFold`, never Synergy, a robot or an instrument), the footage turns into pegs that bloom out of the board's home (`pegBloom` centred on the home, in frame units), and the colour drifts (`chromaDrift`). Synergy's face takes only a light wash; no warp ever reaches his tile.
+
+| Scene | Layout | What happens |
+| --- | --- | --- |
+| Arrivals | split | The crew walks in pixelated, resolving as the call connects (28 to 2 px, breathing with the room); Pat's black tile |
+| The call | G4 | Synergy joins on the unmute with his welcome; the printer smears on the claps |
+| The circle | G6 | The verse: Synergy, a listener cut on every other clap, a kaleidoscope pair from one glass |
+| Choir of glass | G9 | The hook: a round of kaleidoscopes, each a step later than the last, around Synergy |
+| Drift | G6 | A second verse, when the track has one |
+| Pegs rise | G4 | Her slow rungs: pegs bloom out of the board home, a step on each retrigger |
+| Fold | L1 | Her quarter notes: one kaleidoscope gains wedges on each retrigger, always at 9 px blocks or more |
+| Spiral | G6 | Her 8ths and 16ths: the kaleidoscopes turn a notch on each hit; Synergy's tile lights on his stammers |
+| The board alone | full | Her 32nds; the choke; true black |
+| Clap circle | full, G6 | The ignition: a mandala of pegs; then each clap cuts the next tile round the circle |
+| Melt | G4 | Sink In: the tape slows the picture, on "in" it holds and melts to 44 px blocks |
+| Mandala | L1 | Drop B's first bar: a full-frame kaleidoscope, a new glass on each clap |
+| Bloom | G9 | Pegs bloom out of the board home across the call on the claps; Synergy sings in the middle |
+| The round | G6 | The fill: one picture in canon around the circle |
+| Leave the offsite | G4, split, L1 | Each one turns to pegs and leaves ("left the offsite"); Synergy alone; the tape stop |
 
 ### Calling it
 
@@ -571,9 +619,11 @@ out.program  the program it drew out.pcm   the 48 kHz master it encoded
 ### Headless
 
 ```
-node scripts/export-videostudio.mjs --format 9:16 [--scale .5] [--span 936-1008] [--edl draft|studio|metronome|file.json]
+node scripts/export-videostudio.mjs --format 9:16 [--scale .5] [--span 936-1008] [--edl track|draft|offsite-psych|studio|metronome|file.json]
     [--track hustle] [--post FILE] [--auto] [--no-cold-open] [--master] [--no-audio] [--out DIR] [--name NAME] [--url http://127.0.0.1:5351 | --port N]
 ```
+
+`--edl track` (the default) cuts the film with the track's own treatment, as the monitor does; `draft` is drop60-draft whatever the track, or name a treatment. The sidecar's `treatment` says which cut the film.
 
 Without `--url` it starts its own Vite dev server (the project's config, so the media and voice routes are there) on `--port` (default: any free port) with its own dependency cache (`VIDEOSTUDIO_VITE_CACHE`, default under the OS temp dir), so it never re-optimises under another dev server. It exposes `studioServer()`, `launch()`, `exportPage()`, `runExport()`, `pull()` and `saveExport()` for scripts.
 
@@ -583,7 +633,7 @@ Without `--url` it starts its own Vite dev server (the project's config, so the 
 
 1. Node: the demuxer against the proxies on disk and ffprobe; captions; the draft cut clean in all three formats and byte-stable; one assertion per row of plan §2 it implements.
 2. Metronome: `metronomeEDL()` exported full length at 120 BPM (Circle Back) and 130 BPM (Hustle, where a step is 2.77 frames), with a click on every cut. `ffmpeg scdet` must find every cut on its `round(T·24)` frame and nothing else; every click within 1.5 ms of its step.
-3. The timing rule, every step at 120, 92 and 130 BPM (Circle Back, Humbled and Honored, Hustle), nothing chosen: one file per track with two tiles. The top tile cuts black/white on every step at `round(t·24)`; in the file every cut is on its frame and within half a frame of its beat. The bottom tile flashes white for one frame on every step at its hit frame (`{anchor:'step:s', hit:true}`), over a click on every step played through the engine's own master bus (`buildGraph`'s drum bus, glue and limiter), so the sound lands as the engine renders it; in the file every click's audible onset (the first sample within 20 dB of its peak; the Opus encode's pre-echo reads a few tenths of a millisecond earlier at -40 dB, and is printed) falls inside its flash frame: the picture leads by 0 to under one frame, never late. The engine's latency is measured on the clicks and on every kick of each track's real render and must match `AUDIO_LATENCY` within 0.15 ms. The distributions print and land in `timing.json`.
+3. The timing rule, every step at 120, 92, 130 and 108 BPM (Circle Back, Humbled and Honored, Hustle, and Offsite with its swing), nothing chosen: one file per track with two tiles. The top tile cuts black/white on every step at `round(t·24)`; in the file every cut is on its frame and within half a frame of its beat. The bottom tile flashes white for one frame on every step at its hit frame (`{anchor:'step:s', hit:true}`), over a click on every step played through the engine's own master bus (`buildGraph`'s drum bus, glue and limiter), so the sound lands as the engine renders it; in the file every click's audible onset (the first sample within 20 dB of its peak; the Opus encode's pre-echo reads a few tenths of a millisecond earlier at -40 dB, and is printed) falls inside its flash frame: the picture leads by 0 to under one frame, never late. The engine's latency is measured on the clicks and on every kick of each track's real render and must match `AUDIO_LATENCY` within 0.15 ms. The distributions print and land in `timing.json`.
 4. Determinism: the same span of the draft cut (the choke, true black, the ignition, stack3) exported twice in fresh pages. Every composited frame's RGBA SHA-256 (`hashFrames`) is identical and the sound's `ffmpeg -f framemd5` is identical. The decoded picture's framemd5 is identical wherever the encoder had nothing to decide and within 45 dB PSNR elsewhere: Chromium's software H.264 encoder is not bit-reproducible above about 720 lines (three encodes of the same synthetic frames give one stream at 270×480 and 404×720, three at 540×960 and 1080×1920), so neither are the MP4 bytes at the share sizes.
 5. Leaks and memory: every `VideoFrame` opened is closed; across Drop B the heap stays level and the frame cache empties at the end.
 6. Duration: the video and audio tracks are within a frame of the film's 60.000 s. `plan.duration` is 0.6 s longer: the render's tail, which a loop film drops.

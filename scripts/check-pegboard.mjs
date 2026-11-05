@@ -6,7 +6,7 @@ import {createBoard} from '../src/pegboard/board.js';
 import {compileFont, layoutText} from '../src/pegboard/font.js';
 import {PEG9} from '../src/pegboard/fonts/peg9.js';
 import {PEG5} from '../src/pegboard/fonts/peg5.js';
-import {buildScreens, paint, indexWords, activeScreen, syllableSpans, darkAt, TAG_TAIL, stopEndAt, stopDarkAt, STOP_DIM, FRAGMENT_GHOST} from '../src/pegboard/choreo.js';
+import {buildScreens, paint, indexWords, activeScreen, syllableSpans, darkAt, TAG_TAIL, CHOKE_TAIL, CODEC_FLOOR, stopEndAt, stopDarkAt, STOP_DIM, FRAGMENT_GHOST, READ_AHEAD} from '../src/pegboard/choreo.js';
 import {ladyLength} from '../src/allhands/drop.js';
 import {boardLuma, flashes, worstWindow, governorTrack} from '../src/pegboard/governor.js';
 import {FORMS, formPlays} from '../src/allhands/forms.js';
@@ -71,12 +71,12 @@ for (const id of ['drop60', 'soundcheck']) for (const track of TRACK_ORDER.filte
     // on the first frame that starts after it, holds it, and ignites on the frame that holds the impact.
     // (P6: the choke is where her tag starts, a 128th of the bar: plan.choke.time.)
     const T = plan.timing, choke = plan.choke.time, impact = T[plan.choke.until], end = plan.choke.tagEnd, tag = screens.find(s => s.kind === 'tag');
-    ok(end > choke && end < impact - .3 && Math.abs(darkAt(plan) - (end + TAG_TAIL + FRAME / 2)) < 1e-12, `${label}: the board goes dark on the first frame after her tag stops sounding (${end.toFixed(3)} s, plus a codec's ${TAG_TAIL * 1000} ms tail), well before the impact`);
+    ok(end > choke && end < impact - .3 && Math.abs(darkAt(plan) - (end + CHOKE_TAIL + FRAME / 2)) < 1e-12 && CHOKE_TAIL >= Math.max(...Object.values(CODEC_FLOOR)) + .005 - 1e-12, `${label}: the board goes dark on the first frame after her tag stops sounding (${end.toFixed(3)} s, plus the choke's ${(CHOKE_TAIL * 1000).toFixed(0)} ms codec tail: Opus ${CODEC_FLOOR.opus * 1000} ms of floor after a hard cut, 5 ms to spare), well before the impact`);
     const typed = (() => { const b = createBoard(board.cols, board.rows); paint(b, [{...tag, to:impact}], end - 1e-3, {layoutOf, place:rig(plan).place}); return b.I.filter(v => v > .05).length; })();
-    at(end + TAG_TAIL + FRAME * .49); const last = board.I.filter(v => v > .05).length;
-    ok(board.exposure > 0 && activeScreen(screens, end + TAG_TAIL + FRAME * .49) === tag && last >= typed && typed > 20, `${label}: "${tag.text}" fully typed on her last frame (${last} of ${typed} pegs)`);
-    at(end + TAG_TAIL + FRAME * .51); ok(board.exposure === 0 && board.sockets === 0, `${label}: true black from the first frame after her tag`);
-    let black = true; for (let t = end + TAG_TAIL + FRAME * .51; t < impact - FRAME * .51; t += .01) { at(t); black &&= board.exposure === 0 && board.sockets === 0; }
+    at(end + CHOKE_TAIL + FRAME * .49); const last = board.I.filter(v => v > .05).length;
+    ok(board.exposure > 0 && activeScreen(screens, end + CHOKE_TAIL + FRAME * .49) === tag && last >= typed && typed > 20, `${label}: "${tag.text}" fully typed on her last frame (${last} of ${typed} pegs)`);
+    at(end + CHOKE_TAIL + FRAME * .51); ok(board.exposure === 0 && board.sockets === 0, `${label}: true black from the first frame after her tag`);
+    let black = true; for (let t = end + CHOKE_TAIL + FRAME * .51; t < impact - FRAME * .51; t += .01) { at(t); black &&= board.exposure === 0 && board.sockets === 0; }
     ok(black, `${label}: true black (0) all the way to the impact's frame`);
     const burning = () => board.I.filter(v => v >= 1.15).length / (board.cols * board.rows);
     at(impact - FRAME * .49); ok(board.I.filter(v => v > .5).length > board.cols * board.rows * .8 && burning() > .8, `${label}: the board ignites, fully lit, on the frame that holds the impact`);
@@ -119,7 +119,8 @@ for (const id of ['drop60', 'soundcheck']) for (const track of TRACK_ORDER.filte
   let screensSeen = 0, pegsSeen = 0, pops = 0, popsSeen = 0;
   const cases = [];
   for (const track of TRACK_ORDER.filter(t => formPlays('drop60', t))) for (const post of POSTS) cases.push({track, post});
-  for (const l of ladders) cases.push({track:'circle-back', post:SAMPLE_POST, cast:{ladder:l}});
+  // Every ladder cut, on Circle Back and on Offsite (where the ladder is a round of her voices).
+  for (const l of ladders) for (const track of ['circle-back', 'offsite']) cases.push({track, post:SAMPLE_POST, cast:{ladder:l}});
   for (const id of ['soundcheck']) cases.push({form:id, track:'circle-back', post:SAMPLE_POST});
   for (const {form = 'drop60', track, post, cast} of cases) {
     const lyrics = lyricsFromPost(post), F = FORMS[form];
@@ -170,5 +171,27 @@ for (const id of ['drop60', 'soundcheck']) for (const track of TRACK_ORDER.filte
     ok(popsSeen === 0 || pops === popsSeen, `${label}: the lit letters re-pop on each of ${popsSeen} retriggers (${pops})`);
   }
   ok(screensSeen > 400 && pegsSeen > 20000, `fragments painted: ${screensSeen} screens, ${pegsSeen} pegs`);
+}
+
+// No partial words while typing (the board /allhands/'s stage and the films paint): every typewriter
+// screen that is not Synergy's (her tag, her whole-phrase rungs, "FULL STOP.", the board's titles) has
+// every peg of its page lit on its first painted frame, the letters still to type at READ_AHEAD, and its
+// last letter typed in full by the time it ends.
+for (const track of TRACK_ORDER.filter(t => formPlays('drop60', t))) {
+  const lyrics = lyricsFromPost(SAMPLE_POST), form = FORMS.drop60;
+  const plan = form.arrange(lyrics, Object.fromEntries(form.voiced(lyrics, {track}).map(w => [w, .18 + .11 * syllables(w)])), {track});
+  const {board, screens, layoutOf, place, at} = rig(plan), kinds = new Map();
+  let holes = [], ghosts = 0;
+  for (const s of screens.filter(x => x.reveal === 'typewriter' && x.voice !== 'synergy' && !x.ghost)) {
+    const l = layoutOf(s); if (!l?.pages?.length) continue;
+    const page = l.pages[0], o = place(s, l, page), want = page.lines.flatMap(x => x.chars).flatMap(ch => { const out = []; for (let i = 0; i < ch.pegs.length; i += 2) out.push((o.y + ch.pegs[i + 1] + (s.fx?.rowShift || 0)) * board.cols + o.x + ch.pegs[i]); return out; });
+    at(s.from + FRAME * .5);
+    if (board.exposure <= 0 || activeScreen(screens, s.from + FRAME * .5) !== s) continue;
+    kinds.set(s.kind, (kinds.get(s.kind) || 0) + 1);
+    const dark = want.filter(i => !(board.I[i] > 0));
+    if (dark.length) holes.push(`${s.kind} "${s.text}" ${dark.length} of ${want.length}`);
+    ghosts += want.filter(i => Math.abs(board.I[i] - READ_AHEAD) < 1e-6).length;
+  }
+  ok(kinds.size >= 3 && !holes.length && ghosts > 50, `${track}: no partial words: every typewriter phrase (${[...kinds].map(([k, n]) => `${k} ${n}`).join(', ')}) is whole on its first frame, ${ghosts} pegs waiting at the read-ahead ghost${holes.length ? `; holes: ${holes.slice(0, 3).join('; ')}` : ''}`);
 }
 console.log(`pegboard: ${checks} checks passed`);

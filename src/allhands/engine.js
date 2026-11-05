@@ -156,6 +156,11 @@ export function buildGraph(ctx, {mode = 'sung', muted = {}, tune = {}} = {}, pla
   for (const bus of [drumHp, keysFilter, padFilter, words, ladySend, tag, deep, ...STEMS.map(n => stems[n].input)]) exact.bus(bus);
   if (tune.voiceLevel) stems.voice.out.gain.value = tune.voiceLevel;
   if (tune.under !== undefined) ['keys', 'guitar'].forEach(n => { stems[n].under = tune.under; });
+  // A track's own structure (band.graph: Offsite's round of voices and its
+  // bloom), built with the rest of the graph; the choke closes it and the
+  // impact reopens it through its own choke(c) and release(t).
+  graph.own = track.band.graph?.({ctx, I, graph, step:STEP, sends, master}) ?? null;
+  for (const bus of graph.own?.buses ?? []) exact.bus(bus);
   setMuted(graph, muted, 0);
   exact.play();
   return graph;
@@ -323,11 +328,13 @@ function songEvents(graph, plan, step, T, STEP) {
       for (const g of [graph.choke.gain, ...STEMS.map(n => graph.eqTap[n].gain)]) { g.setValueAtTime(1, c); g.linearRampToValueAtTime(0, c + .006); }
       graph.feedback.gain.setValueAtTime(0, c);
       graph.reverbOut.gain.setValueAtTime(.55, c); graph.reverbOut.gain.linearRampToValueAtTime(0, c + .006);
+      graph.own?.choke?.(c);
     }
     if (step === plan.choke.until) {
       for (const g of [graph.choke.gain, ...STEMS.map(n => graph.eqTap[n].gain)]) g.setValueAtTime(1, t);
       graph.feedback.gain.setValueAtTime(.34, t);
       graph.reverbOut.gain.setValueAtTime(0, t); graph.reverbOut.gain.linearRampToValueAtTime(.55, t + .4);
+      graph.own?.release?.(t);
     }
   }
   for (const tape of plan.tape || []) if (tape.from === step) tapeEvent(graph, tape, T);
@@ -380,7 +387,9 @@ export function scheduleStep(graph, song, step, t0) {
       I.riser(ctx, D, t, end - t, .3); I.sawRiser(ctx, stems.keys.input, t, end - t, ...(track.sound.sawRiser || []));
     }
     if (bar === 16 && plan.form !== 'drop60') I.impact(ctx, D, t, .8);
-    if (L.impact) {
+    // A track may make its own impact (band.impact: Offsite's stomp and bloom of voices, no bass slam).
+    if (L.impact && band.impact) band.impact(api, b, bar, t, barEnd, T, step);
+    else if (L.impact) {
       // The impact is tuned: the drop kick settles on, and the sub falls through, the track's key.
       I.dropKick(ctx, D, t, 1, track.sound.dropKick); duck(graph, t); I.subDrop(ctx, stems.bass.input, t, .75, track.sound.subDrop); I.impact(ctx, D, t, .6);
       I.downlifter(ctx, D, t + .25, barEnd - t - .25);   // after the word, not over it

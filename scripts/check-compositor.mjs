@@ -5,6 +5,9 @@
 //      measured latency, edl/anchors.js AUDIO_LATENCY): the board's paint time for every frame
 //   3. cell geometry and rounded masks, by pixel probes at full size
 //   4. every effect of the vocabulary changes pixels the way it says
+//  4c. the psychedelic pixelation: breathe, paletteWash, radialFold, pegBloom, chromaDrift and trail on the
+//      test card; the Offsite cut on real proxies inside the flash governor (whole frame and quadrants),
+//      Synergy's tile untouched by the effects around him, his mouth row green under his wash
 //   5. chrome: name bar, speaking border, toast, banner, Pat's camera-off tile, the lady's tile
 //   6. the board layer appears where scheduled (strip, tile, over a full frame), true black, ignition
 //   7. same-origin proxies upload with texImage2D; the reversed proxy's frame N-1-k is frame k
@@ -278,6 +281,111 @@ let page = await freshPage();
   ok(res.droste.levels === 1 && res.droste.red[0] > 200 && res.droste.red[1] < 60 && res.droste.white[1] > 200, 'droste 1 level at .3: the feedback tile holds the whole frame (the red tile and the white tile in place)');
   ok(res.camera.moved[0] > 200 && res.camera.moved[1] < 60 && Math.abs(res.camera.old[0] - 16) < 4, 'camera zoom 2: the composite scales about the centre');
   log(`4. effects: ${checks - before} checks (${FX_TYPES.length} types plus opacity and the camera)`);
+}
+
+// ---- 4c. the psychedelic pixelation ------------------------------------------------------------------------
+// Each new effect changes pixels the way the vocabulary says, on the test card in one tile; then the
+// Offsite cut on real proxies (the export's decoder): two seconds of its clap circle stay inside the flash
+// governor (whole frame and quadrants), and Synergy's tile is untouched by the effects around him.
+{
+  const before = checks;
+  const res = await page.evaluate(async () => {
+    const FXCELL = 'G6.4', cell = T.cellRect('9:16', FXCELL), R = {x:cell.x + 16, y:cell.y + 16, w:cell.w - 32, h:cell.h - 80}, out = {pngs:{}};
+    const one = async (fx, extra = {}, f = 6) => (await T.render(T.program([{id:'x', at:0, len:16, cell:FXCELL, asset:'shot:card', time:{in:1}, ...(fx ? {fx} : {}), ...extra}], extra.programOpts || {}), f)).img;
+    const keep = (name, img) => { out.pngs[name] = T.png(img, {x:0, y:cell.y - 12, w:1080, h:cell.h + 24}); };
+    const ref = await one(null);
+    const mean = (img, fn, r = R) => { let s = 0, n = 0; T.region(img, r, p => { s += fn(p); n++; }); return s / n; };
+    const diff = (a, b, r = R) => { let s = 0, n = 0; T.region(a, r, (p, x, y) => { const q = T.px(b, x, y); s += Math.abs(p[0] - q[0]) + Math.abs(p[1] - q[1]) + Math.abs(p[2] - q[2]); n += 3; }); return s / n; };
+    // breathe: blocks of 16 px from the cell centre, each one colour; at 22.6 px the 16 and 32 px grids crossfade.
+    const b16 = await one([{type:'breathe', px:16}]), b32 = await one([{type:'breathe', px:32}]), b22 = await one([{type:'breathe', px:22.6}]); keep('breathe-16', b16); keep('breathe-22.6', b22);
+    out.breathe = (() => { const cx = cell.x + cell.w / 2, cy = cell.y + cell.h / 2; let blocks = 0, bad = 0;
+      for (let j = -8; j < 7; j++) for (let i = -10; i < 10; i++) { const x0 = cx + i * 16, y0 = cy + j * 16; if (x0 < R.x || y0 < R.y || x0 + 16 > R.x + R.w || y0 + 16 > R.y + R.h) continue; blocks++; const p0 = T.px(b16, x0 + 1, y0 + 1); for (let y = 2; y < 15; y += 4) for (let x = 2; x < 15; x += 4) { const q = T.px(b16, x0 + x, y0 + y); if (Math.abs(q[0] - p0[0]) + Math.abs(q[1] - p0[1]) + Math.abs(q[2] - p0[2]) > 3) bad++; } }
+      const L = Math.log2(22.6), u = L - Math.floor(L), w = u * u * (3 - 2 * u); let err = 0, n = 0;
+      T.region(b22, R, (p, x, y) => { const a = T.px(b16, x, y), b = T.px(b32, x, y); for (let k = 0; k < 3; k++) { err += Math.abs(p[k] - ((1 - w) * a[k] + w * b[k])); n++; } });
+      return {blocks, bad, mix:err / n, w, apart:diff(b16, b32)}; })();
+    // paletteWash: luma kept, the chroma turned to blue, violet or warm, never green.
+    const lum = img => mean(img, T.luma), green = img => { let n = 0; T.region(img, R, p => { if (p[1] > p[0] + 20 && p[1] > p[2] + 20) n++; }); return n; };
+    out.wash = {};
+    for (const hue of [0, .5, 1, 1.5, 2]) { const img = await one([{type:'paletteWash', mix:1, hue}]); if (hue % 1 === 0) keep(`paletteWash-${hue}`, img);
+      out.wash[hue] = {dl:Math.abs(lum(img) - lum(ref)), r:mean(img, p => p[0]), g:mean(img, p => p[1]), b:mean(img, p => p[2]), green:green(img)}; }
+    out.wash.refGreen = green(ref);
+    { const half = await one([{type:'paletteWash', mix:.5, hue:1}]), full = await one([{type:'paletteWash', mix:1, hue:1}]); let e = 0, n = 0; T.region(half, R, (p, x, y) => { const a = T.px(ref, x, y), b = T.px(full, x, y); for (let k = 0; k < 3; k++) { e += Math.abs(p[k] - (a[k] + b[k]) / 2); n++; } }); out.wash.half = e / n; }
+    // radialFold: six mirrored wedges about the centre: symmetric under a turn of 60 degrees and a reflection.
+    const rf = await one([{type:'radialFold', wedges:6, angle:0}]); keep('radialFold-6', rf);
+    // (The mirror is checked on pixel pairs about the centre line, row cy + k against row cy − 1 − k, which
+    // the fold maps to one source point; the turn on rounded polar samples.)
+    out.fold = (() => { const cx = cell.x + cell.w / 2, cy = cell.y + cell.h / 2, at = (img, r, a) => T.luma(T.px(img, cx + r * Math.cos(a), cy + r * Math.sin(a))); let turn = 0, refTurn = 0, n = 0, mirror = 0, refMirror = 0, m = 0;
+      for (let r = 20; r < 170; r += 15) for (let a = .05; a < Math.PI / 3; a += .11) { turn += Math.abs(at(rf, r, a) - at(rf, r, a + Math.PI / 3)); refTurn += Math.abs(at(ref, r, a) - at(ref, r, a + Math.PI / 3)); n++; }
+      for (let k = 0; k < 150; k += 3) for (let x = R.x; x < R.x + R.w; x += 5) { mirror += Math.abs(T.luma(T.px(rf, x, cy + k)) - T.luma(T.px(rf, x, cy - 1 - k))); refMirror += Math.abs(T.luma(T.px(ref, x, cy + k)) - T.luma(T.px(ref, x, cy - 1 - k))); m++; }
+      return {turn:turn / n, mirror:mirror / m, refTurn:refTurn / n, refMirror:refMirror / m}; })();
+    // pegBloom: pegs near the centre, footage at the corners, a front of peg-wide blocks between.
+    const pb = await one([{type:'pegBloom', amount:.45, band:.2, pitch:12, gamma:.8}]); keep('pegBloom-0.45', pb);
+    out.bloom = (() => { const cx = cell.x + cell.w / 2, cy = cell.y + cell.h / 2; let gap = 0, peg = 0, blue = 0, red = 0, n = 0;
+      for (let j = -3; j < 3; j++) for (let i = -3; i < 3; i++) { const x = cell.x + (Math.floor((cx - cell.x) / 12) + i) * 12, y = cell.y + (Math.floor((cy - cell.y) / 12) + j) * 12, c = T.px(pb, x + 6, y + 6), g = T.px(pb, x, y); peg += T.luma(c); gap += T.luma(g); blue += c[2]; red += c[0]; n++; }
+      return {peg:peg / n, gap:gap / n, blue:blue / n, red:red / n, corner:diff(pb, ref, {x:cell.x + 8, y:cell.y + 8, w:40, h:40})}; })();
+    // chromaDrift: red moves +6 px along 0 degrees, blue along 240 degrees.
+    const cd = await one([{type:'chromaDrift', px:6, angle:0, radial:0}]); keep('chromaDrift-6', cd);
+    out.drift = (() => { let dr = 0, naive = 0, db = 0, n = 0; const bx = 6 * Math.cos(4 * Math.PI / 3), by = 6 * Math.sin(4 * Math.PI / 3);
+      T.region(cd, {x:R.x + 10, y:R.y + 10, w:R.w - 20, h:R.h - 20}, (p, x, y) => { dr += Math.abs(p[0] - T.px(ref, x - 6, y)[0]); naive += Math.abs(p[0] - T.px(ref, x, y)[0]); db += Math.abs(p[2] - T.px(ref, x - Math.round(bx), y - Math.round(by))[2]); n++; }); return {dr:dr / n, db:db / n, naive:naive / n}; })();
+    // trail: a sliding tile leaves lighter copies of where it was (lighten only brightens), an echo over it.
+    { const ec = T.cellRect('9:16', 'stack3.0'), move = {frame:{dx:[[0, 0], [16, 260]]}};
+      const slid = async fx => (await T.render(T.program([{id:'x', at:0, len:16, cell:'stack3.0', asset:'shot:card', time:{in:1}, ...(fx ? {fx} : {}), ...move}]), 24)).img;
+      const a = await slid(null), b = await slid([{type:'trail', taps:3, frames:2, decay:.7}]), c = await slid([{type:'trail', taps:3, frames:2, decay:.7, blend:'over'}]); out.pngs['trail-3'] = T.png(b, {x:0, y:ec.y, w:1080, h:ec.h + 12});
+      let darker = 0, brighter = 0; T.region(b, {x:ec.x + 2, y:ec.y + 2, w:ec.w - 4, h:ec.h - 60}, (p, x, y) => { const q = T.px(a, x, y); if (p[0] < q[0] - 2 || p[1] < q[1] - 2 || p[2] < q[2] - 2) darker++; if (T.luma(p) > T.luma(q) + 4) brighter++; });
+      out.trail = {darker, brighter, over:diff(c, a, {x:ec.x + 2, y:ec.y + 2, w:ec.w - 4, h:ec.h - 60}), lighten:diff(b, a, {x:ec.x + 2, y:ec.y + 2, w:ec.w - 4, h:ec.h - 60})}; }
+    return out;
+  });
+  for (const [k, v] of Object.entries(res.pngs)) savePng(`fx-${k}.png`, v);
+  const b = res.breathe, w = res.wash, f = res.fold, pb = res.bloom, d = res.drift, t = res.trail;
+  ok(b.blocks > 80 && b.bad === 0 && b.mix < 1.5 && b.apart > 4, `breathe 16 px: ${b.blocks} blocks from the cell centre, each one colour; at 22.6 px the 16 and 32 px grids crossfade at ${b.w.toFixed(2)} (error ${b.mix.toFixed(2)} of 255; the two grids differ by ${b.apart.toFixed(1)})`);
+  ok([0, .5, 1, 1.5, 2].every(h => w[h].dl < 10 && w[h].green === 0) && w.refGreen > 1000, `paletteWash keeps luma (within ${Math.max(...[0, .5, 1, 1.5, 2].map(h => w[h].dl)).toFixed(1)} of 255 at hues 0 to 2) and leaves no green pixel (the card has ${w.refGreen})`);
+  ok(w[0].b > w[0].r + 30 && w[1].b > w[1].g + 30 && w[1].r > w[1].g && w[2].r > w[2].b + 30 && w[.5].b > w[.5].r && w[.5].b > w[.5].g && w.half < 2, `paletteWash hues: blue (rgb ${[w[0].r, w[0].g, w[0].b].map(Math.round)}), violet (${[w[1].r, w[1].g, w[1].b].map(Math.round)}), warm (${[w[2].r, w[2].g, w[2].b].map(Math.round)}); mix .5 is halfway (error ${w.half.toFixed(2)})`);
+  ok(f.turn < 4 && f.mirror < 1 && f.refTurn > 10 && f.refMirror > 3, `radialFold 6 wedges: the same under a 60 degree turn (Δ ${f.turn.toFixed(2)}) and mirrored about the wedge's edge (Δ ${f.mirror.toFixed(2)}); the card itself is neither (Δ ${f.refTurn.toFixed(1)}, ${f.refMirror.toFixed(1)})`);
+  ok(pb.peg > 2 * pb.gap && pb.blue > pb.red + 30 && pb.corner < 1.5, `pegBloom .45: pegs at the centre (peg ${pb.peg.toFixed(0)} vs gap ${pb.gap.toFixed(0)} luma, blue ${pb.blue.toFixed(0)} over red ${pb.red.toFixed(0)}), the corner still footage (Δ ${pb.corner.toFixed(2)})`);
+  ok(d.dr < 3 && d.db < 4 && d.naive > 4 * d.dr, `chromaDrift 6 px at 0 degrees: red is the picture moved 6 px (error ${d.dr.toFixed(2)}), blue moved along 240 degrees (${d.db.toFixed(2)}); unshifted red is off by ${d.naive.toFixed(1)}`);
+  ok(t.darker === 0 && t.brighter > 2000 && t.over > t.lighten, `trail 3 taps (lighten): ${t.brighter} pixels lighter where the tile was, none darker; laid over (blend over) it changes more (${t.over.toFixed(1)} vs ${t.lighten.toFixed(1)})`);
+
+  // The Offsite cut on real proxies: two seconds of the clap circle (every effect bound to the claps
+  // and the voices), drawn as the export draws them: flashes on the whole frame and each quadrant.
+  const real = await page.evaluate(async () => {
+    const {FORMS} = await import('/src/allhands/forms.js'), L = await import('/src/allhands/lyrics.js'), {TRACKS} = await import('/src/allhands/songbook/index.js');
+    const {treatmentFor} = await import('/src/videostudio/treatments/index.js'), G = await import('/src/pegboard/governor.js');
+    const track = TRACKS.offsite ? 'offsite' : 'circle-back', plan = FORMS.drop60.arrange(L.lyricsFromPost(L.SAMPLE_POST), {}, {track, coldOpen:true});
+    const program = T.compile(treatmentFor('offsite').fn(plan, T.SHOTS, {format:'9:16'}), {plan, shots:T.SHOTS, format:'9:16'});
+    const canvas = document.createElement('canvas'); document.body.append(canvas);
+    const comp = T.createCompositor(canvas, {format:'9:16', scale:.25, preserveDrawingBuffer:true}); await comp.ready;
+    comp.prepare(program, {plan, shots:T.SHOTS});
+    const scene = id => program.clips.filter(c => c.scene === id), A = Math.min(...scene('dropA').filter(c => c.cell !== 'full').map(c => c.from));
+    const from = A + 12, to = from + 48, lut = new Float64Array(256).map((_, i) => { const c = i / 255; return c <= .04045 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4; });
+    const dec = T.createFrameDecoder({program, shots:T.SHOTS, from, to}), series = [[], [], [], [], []], raw = [[], [], [], [], []];
+    let syn = null;
+    const lumaOf = (img, into) => { const W = img.width, H = img.height, s = [0, 0, 0, 0, 0], n = [0, 0, 0, 0, 0]; for (let y = 0; y < H; y += 2) for (let x = 0; x < W; x += 2) { const i = (y * W + x) * 4, v = .2126 * lut[img.data[i]] + .7152 * lut[img.data[i + 1]] + .0722 * lut[img.data[i + 2]], q = 1 + (y < H / 2 ? 0 : 2) + (x < W / 2 ? 0 : 1); s[0] += v; n[0]++; s[q] += v; n[q]++; } s.forEach((v, k) => into[k].push(v / n[k])); };
+    for (let f = from; f < to; f++) {
+      await dec.prepare(f);
+      const fr = program.frame(f);
+      comp.drawFrame(fr, l => dec.source(l), {program}); lumaOf(comp.read(), series);
+      comp.drawFrame(fr, l => dec.source(l), {program, gain:1}); lumaOf(comp.read(), raw);
+      // Synergy's tile, with and without every effect on the layers around him.
+      if (!syn && fr.layers.some(l => l.canon?.synergy && l.robot) && fr.layers.some(l => !l.canon?.synergy && l.fx.length)) {
+        const me = fr.layers.find(l => l.canon?.synergy), bare = {...fr, layers:fr.layers.filter(l => !l.trail).map(l => l === me ? l : {...l, fx:[]})};
+        comp.drawFrame(fr, l => dec.source(l), {program, gain:1}); const a = comp.read();
+        comp.drawFrame(bare, l => dec.source(l), {program, gain:1}); const b = comp.read();
+        const c = {x:Math.ceil(me.cell.x * .25), y:Math.ceil(me.cell.y * .25), w:Math.floor(me.cell.w * .25), h:Math.floor(me.cell.h * .25)}; let maxd = 0, n = 0;
+        for (let y = c.y; y < c.y + c.h; y++) for (let x = c.x; x < c.x + c.w; x++) { const i = (y * a.width + x) * 4; for (let k = 0; k < 3; k++) maxd = Math.max(maxd, Math.abs(a.data[i + k] - b.data[i + k])); n++; }
+        const m = me.robot.mouth, box = {x:Math.round((m.x - m.w / 2) * .25), y:Math.round((m.y - m.h / 2) * .25), w:Math.max(1, Math.round(m.w * .25)), h:Math.max(2, Math.round(m.h * .25))}; let ge = 0, gn = 0;
+        for (let y = box.y; y < box.y + box.h; y++) for (let x = box.x; x < box.x + box.w; x++) { const i = (y * a.width + x) * 4; ge += a.data[i + 1] - (a.data[i] + a.data[i + 2]) / 2; gn++; }
+        syn = {f, clip:me.clipId, maxd, px:n, others:fr.layers.filter(l => !l.canon?.synergy && l.fx.length).length, fx:[...new Set(fr.layers.flatMap(l => l.fx.map(x => x.type)))].join(', '), mineFx:me.fx.map(x => x.type).join(', '), green:ge / gn, level:me.robot.level};
+      }
+      dec.release(f);
+    }
+    dec.dispose();
+    const worst = s => G.worstWindow(G.flashes(s, 24), 24);
+    return {track, from, to, gov:series.map(worst), raw:raw.map(worst), maxStep:Math.max(...raw[0].slice(1).map((v, i) => Math.abs(v - raw[0][i]))), syn, missing:0};
+  });
+  ok(Math.max(...real.gov) <= 3 && Math.max(...real.raw) <= 3, `the Offsite cut on ${real.track}, its clap circle on real proxies (frames ${real.from}-${real.to - 1}): at most ${Math.max(...real.gov)} flashes in any second with the governor, ${Math.max(...real.raw)} without it (whole frame and quadrants; limit 3; largest frame-to-frame step ${real.maxStep.toFixed(3)})`);
+  ok(real.syn && real.syn.maxd <= 1 && real.syn.others >= 3 && !/breathe|trail|radialFold|pegBloom|chromaDrift|mosaic/.test(real.syn.mineFx), `Synergy's tile untouched by the effects around him (f${real.syn?.f}, ${real.syn?.others} layers around him with ${real.syn?.fx}): ${real.syn?.px} px of his tile differ by at most ${real.syn?.maxd} with and without them; on him only ${real.syn?.mineFx || 'nothing'}`);
+  ok(real.syn && real.syn.green > 2, `his mouth row stays green under his palette wash (green excess ${real.syn?.green.toFixed(1)} in the row's box, level ${real.syn?.level.toFixed(2)})`);
+  log(`4c. the psychedelic pixelation: ${checks - before} checks`);
 }
 
 // ---- 5. chrome -----------------------------------------------------------------------------------------------

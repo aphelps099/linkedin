@@ -89,13 +89,19 @@ export const CONCEPTS = {
   data:{words:['data', 'numbers', 'metric', 'metrics', 'kpi', 'okr', 'dashboard', 'stats', 'data points'], re:/\b\d+(?:\.\d+)?\s?%/, weight:{hustle:.8, 'circle-back':.3}},
   hiring:{words:['hiring', 'hire', 'candidate', 'interview', 'recruiter', 'red flag', 'green flag', 'resume', 'résumé'], weight:{hustle:.6, 'circle-back':.4}},
   speed:{words:['fast-paced', 'fast', 'faster', 'speed', 'weeks early', 'in one sprint', 'overnight'], weight:{hustle:.8}},
-  meeting:{words:['meeting', 'all-hands', 'standup', 'calendar', 'schedule', 'follow-up', 'circle back', 'email', 'inbox', 'offsite', 'sync', 'agenda', 'kickoff', 'memo', 'status update', 'business review'], weight:{'circle-back':1.6}},
+  meeting:{words:['meeting', 'all-hands', 'standup', 'calendar', 'schedule', 'follow-up', 'circle back', 'email', 'inbox', 'sync', 'agenda', 'kickoff', 'memo', 'status update', 'business review'], weight:{'circle-back':1.6}},
   process:{words:['process', 'approval', 'step', 'checklist', 'workflow', 'documented', 'quarterly', 'planning cycle', 'roadmap', 'onboarding', 'framework', 'pods', 'reorganize', 'rebranding', 'deck', 'slide', 'workstreams', 'performance review', 'improvement plans'], weight:{'circle-back':1.3}},
   jargon:{words:['synergy', 'synergies', 'alignment', 'align', 'leverage', 'leveraging', 'stakeholder', 'buy-in', 'unlock value', 'bandwidth', 'engagement', 'retention', 'visibility', 'transformation', 'asynchronous', 'ecosystem', 'priorities', 'ambiguity', 'accountability', 'transparency', 'intention', 'customer obsession', 'culture fit', 'culture add'], weight:{'circle-back':1.3}},
   opinion:{words:['thoughts', 'unpopular opinion', 'opinion', 'hot take', 'agree or disagree', 'what would you add', 'who do you trust', "let's discuss", 'nobody talks about', 'be honest'], weight:{'circle-back':1}},
   strategy:{words:['strategy', 'strategic', 'plan', 'vision', 'consultants', 'leadership', 'leader', 'manager', 'stop chasing', 'start chasing'], weight:{'circle-back':.8, hustle:.3}},
   feedback:{words:['feedback', 'criticism', 'rating', 'performance review', 'gave me a', 'approval rating'], weight:{'circle-back':.4}},
-  culture:{words:['culture', 'values', 'mission', 'purpose', 'trust', 'morale', 'family', 'empty cup', 'emotional intelligence', 'lifestyle', 'philosophy'], weight:{'circle-back':1, 'humbled-and-honored':.3}},
+  culture:{words:['culture', 'values', 'mission', 'purpose', 'trust', 'morale', 'family', 'empty cup', 'emotional intelligence', 'lifestyle', 'philosophy'], weight:{'circle-back':.6, 'humbled-and-honored':.3, offsite:1.3}},
+  // Offsite: the team retreat, the work family, belonging, wellness and good vibes.
+  retreat:{words:['offsite', 'off-site', 'retreat', 'team building', 'team-building', 'trust fall', 'trust falls', 'hiked', 'hiking', 'journaled', 'journaling', 'campfire', 'mountains', 'workation', 'bonding', 'icebreaker', 'team trip', 'away day'], weight:{offsite:2.6, 'circle-back':.3}},
+  workfamily:{words:['a family', 'work family', 'like a family', 'like family', 'one big family', 'not a company', 'morale officer', 'office dog'], weight:{offsite:3.8}},
+  belonging:{words:['community', 'belonging', 'belong', 'inclusion', 'inclusive', 'connection', 'tribe', 'village', 'kindness', 'empathy', 'emotional intelligence', 'people operations', 'people first', 'grandchildren', 'every sunday', 'garden', 'neighbors', 'neighbours', 'volunteer'], weight:{offsite:1.7}},
+  wellness:{words:['wellness', 'well-being', 'wellbeing', 'mental health', 'burnout', 'self-care', 'self care', 'mindfulness', 'mindful', 'meditation', 'meditate', 'yoga', 'breathe', 'work-life balance', 'balance', 'empty cup', 'slow down', 'long walk', 'sabbatical', '4-day work week', 'four-day work week', 'recharge'], weight:{offsite:2}},
+  vibes:{words:['vibes', 'good vibes', 'vibe', 'positivity', 'joy', 'fun', 'laughter', 'smile', 'morale', 'pizza', 'party'], weight:{offsite:1.3}},
   notabout:{words:[], re:/\b(?:isn't|is not|not)\s+(?:about\s+|a\s+|an\s+|just\s+)?[^.?!\n]{1,48}[.?!]\s+it['’]s\s/i, weight:{'circle-back':.6}},
   lesson:{words:['lesson', 'learned', 'learn', 'taught', 'takeaway', 'advice', 'wish i knew', 'tip', 'when it hit me', 'it hit me', 'remembered', 'reminder', 'things i'], weight:{'circle-back':.5, 'humbled-and-honored':.3}},
   connect:{words:['connect', 'network', 'networking', 'booth', 'coffee chat', 'forum', 'see you there', 'explore'], weight:{'circle-back':.6}},
@@ -116,6 +122,7 @@ const QUIP = {
   'circle-back':['This post could have been a meeting.', 'Per my last email.', "Let's take this offline."],
   'humbled-and-honored':['Someone is very honored.', 'Humbled, once again.', 'Grateful for this journey.'],
   hustle:['This post is up at 5 a.m.', 'No days off.', 'Rise and grind.'],
+  offsite:['Mandatory fun starts at nine.', 'Trust falls after lunch.', 'Bring your whole self, within reason.'],
 };
 const FALLBACK_LINE = 'Circle Back. Nothing in the post commits to anything, so neither do we.';
 
@@ -214,7 +221,7 @@ function evidence(reading, parts, max = 3) {
   return chosen.sort((x, y) => x.a - y.a).map(s => s.q)
     .filter((q, i, all) => all.findIndex(o => o.toLowerCase() === q.toLowerCase()) === i);
 }
-const SENSITIVE = /\b(?:family|health|cried|grandmother|grandfather|son|daughter|kids?|\d+-year-old|year-old|wife|husband|mom|dad|funeral|passed away|cancer|diagnos\w*)\b/i;
+const SENSITIVE = /\b(?:family|health|cried|grandmother|grandfather|grandchild\w*|son|daughter|kids?|\d+-year-old|year-old|wife|husband|mom|dad|funeral|passed away|cancer|diagnos\w*)\b/i;
 const WEAK = new Set(['thank', 'thanks', 'day', 'days', 'every day', 'new', 'first', 'next', 'start', 'post']);
 function trackLine(choice, reading) {
   if (choice.fallback) return FALLBACK_LINE;
@@ -371,7 +378,7 @@ const ROLE_ORDER = ['tag', 'ladder', 'sink', 'punct', 'stop', 'lift', 'bend'];
 // The song's own line: in Circle Back the lady says its title, so its tag
 // holds harder; in the other songs "Let's circle back" is only today's tag.
 const SIGNATURE = {'circle-back':{role:'tag', file:'06.wav', points:2}};
-const OPEN_TAG = {'humbled-and-honored':1, hustle:1};
+const OPEN_TAG = {'humbled-and-honored':1, hustle:1, offsite:1};
 const craftOf = c => .4 + .6 * (c.craft ?? 1);
 // Heard in the mix: the tag and the sink were each rendered in two bars of
 // every song they fit (lady-roles.json `mix`) and played to Whisper. A cut it

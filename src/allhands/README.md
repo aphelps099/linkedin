@@ -144,8 +144,8 @@ in `lady-table.js`. Pick the form on the page under **The song**; Sound check
 
 ## The song book
 
-Every post can become any of three songs. A **track** (`songbook/*.js`) is a
-band chart and its sound; the **form** is the structure it performs. All three
+Every post can become any of four songs. A **track** (`songbook/*.js`) is a
+band chart and its sound; the **form** is the structure it performs. All four
 play the Drop Edition; Sound check 00 stays Circle Back's own rehearsal.
 
 | Track | Tempo, key | Drop Edition | The sound |
@@ -153,6 +153,7 @@ play the Drop Edition; Sound check 00 stays Circle Back's own rehearsal.
 | **Circle Back** (`circle-back`, default) | 120 BPM, A minor, swing .12 | 30 bars, 60.0 s | French house. Am9 · Fmaj9 · Cmaj9 · G6/9, 909 kit, offbeat saw bass, detuned saw stabs, Kevin's muted chops. Drop A half-time on a wobble, Drop B four-on-the-floor. |
 | **Humbled and Honored** (`humbled-and-honored`) | 92 BPM, E-flat major, swing .24 | 24 bars, 62.6 s | Neo-soul slow jam. E♭maj9 · Cm9 · Fm9 · B♭13sus (I-vi-ii-V), electric piano (two-operator FM, tremolo pan), finger snaps and a sidestick 18 ms behind the beat, round finger bass, Kevin's clean double-stops. The build rocks IV-V and never resolves; BACK. lands on the relative minor in a half-time bounce on a gliding 808; Drop B comes home to I; the outro is the amen, IV to I. |
 | **Hustle** (`hustle`) | 130 BPM, F minor, swing .2 | 32 bars, 59.1 s | UK garage. Fm9 · D♭maj9 · E♭6/9 · Cm11 (i-VI-VII-v), shuffled 2-step kit (kick on one and the "and" of three, ghost snares), speed-garage reese bass jumping octaves, house organ stabs (drawbar harmonics, key click). The build rocks VI-iv under the ladder, VII for the last bar, BACK. on i. Drop A is the 2-step bass drop: every bass note sweeps its filter open and shut (the speed-garage growl) under the organ riff an octave up. Drop B goes four-on-the-floor with a sidechain that pumps bass, keys and pad. |
+| **Offsite** (`offsite`) | 108 BPM, D major, swing .08 | 27 bars, 60.0 s | Voice-loop psych pop, the Panda Bear lane (see "Offsite" below). Dadd9 · G6/9, droning; voices as the instrument (her ladder as a round, her impact word as a chant, his vocoder round a two-beat canon, a wordless formant choir), stomps, a room of clappers, tuned floor toms, desk slaps, the printer, keyboard clatter, a mug, a chair; a pump organ, Pat humming the root, Kevin's looping clean figure. BACK. is a stomp and a bloom of voices, no bass slam; Sink In goes under water. |
 
 **What a track defines.** `bpm`, `step` (one 16th in seconds), `swing`, `key`,
 `pitchClasses` (its scale), `chords` (each: `root` for Pat, `notes` for the
@@ -168,7 +169,13 @@ tuning, where each lady role may sit (`places`), and section `energy`. Then
 (drop kick and sub drop tuned to the key, the build's saw riser) and `band`:
 its own drums, bass, keys and guitar, called by `engine.js` once per 16th.
 `kicksOf(bar, layers)` lists the band's kick steps, so the Peg Board's kick
-accent follows each kit.
+accent follows each kit. Three optional band hooks (P7, Offsite's; a track
+without them makes the same calls as before): `band.graph({ctx, I, graph,
+step, sends, master})` builds the track's own structure with the graph (its
+`buses`, and `choke(c)` / `release(t)`, which the engine calls when the band
+chokes and when BACK. lands), `band.impact(api, b, bar, t, barEnd, T, step)`
+replaces the shared impact stack (drop kick, sub drop, downlifter), and
+`band.bar(…)` runs once a bar.
 
 The engine keeps what every Drop Edition shares: the call audio and its
 unmute, the choke, the tape (Sink In and the stop), the filters, the energy
@@ -434,12 +441,11 @@ Each track declares `references` (which of the five, and how), `palette` (the
 band, role by role), `story` (`synergy`: what he plays, simple and a little
 stiff; `synthia`: her fluent part, or `null`) and `breaks` (`{rule: why}`: the rules it breaks on
 purpose, reported as warnings with the reason; a break it does not take warns
-too). Today, 0 errors on all three tracks and all 366 plans of the corpus; the
-warnings, honestly:
+too). Today, 0 errors on all four tracks and all 488 plans of the corpus. A
+track that gives Synthia no part is not warned (P7): the constitution says
+Synergy learning the synth is backstory, not a feature; a Synthia part a track
+names but never plays is still reported. The warnings, honestly:
 
-- **All three:** no Synthia part yet. The synth has one player, Synergy,
-  keeping it simple; the fluent line (an arpeggio or an analog lead on the
-  grid, the Kraftwerk part) is missing.
 - **Circle Back:** her tag plays at a fixed 1.1× and lands on C♯ (+4 cents),
   outside A minor (the new tracks tune theirs); C over G6/9 rubs a semitone
   over its B, and Synergy sings it there on every post.
@@ -449,11 +455,13 @@ warnings, honestly:
   outside the verse loop (build, Drop A, the amen).
 - **Hustle:** breaks swing on purpose (2-step's .2); B♭m9 sits outside the
   verse loop in the build.
+- **Offsite:** none. A haze song (Panda Bear and Washed Out), so D major is
+  allowed; two chords, the verse a four-bar loop of them, no breaks.
 
-`check-songbook` section 6 runs it on every track and on the 366 plans, and
+`check-songbook` section 6 runs it on every track and on the 488 plans, and
 proves it bites (140 BPM, an undeclared swing, no Kevin, no Daft Punk, a swung
-ladder, E-flat major without the haze, the old 0.66 s wait, a quiet or noisy
-render).
+ladder, E-flat major without the haze, Offsite's D major without Panda Bear
+and Washed Out, the old 0.66 s wait, a quiet or noisy render).
 
 ### Renders are the same bytes (exact.js)
 
@@ -616,19 +624,100 @@ Back +2.64 (Drop A) and +2.63 (Drop B), Humbled and Honored +2.78, Hustle
 warnings are the side/mid width (Circle Back and Hustle's Drop B, as before) and
 Humbled and Honored's loudness range on its sparsest posts (up to 8.9 LU).
 
+### Offsite (P7)
+
+Aaron: "lets get more of a panda bear style song... Comfy in Nautica / or
+Bros... this means the video may be a bit more psychedelic pixelation."
+`songbook/offsite.js` is the team retreat in the Panda Bear lane of the
+constitution: the Person Pitch era's sound and approach (voices as the
+instrument, loops, long reverb, hands and floors), none of its melodies,
+lyrics, samples or song structures.
+
+| | |
+|---|---|
+| Tempo and key | 108 BPM (a 16th is 0.139 s), swing .08, straight from the build's third bar; D major (Ionian: a haze song may be major) |
+| Harmony | Dadd9 and G6/9, I and IV: two bars each in the verse (a four-bar loop), a bar each in the build and the drops. Pat holds a D pedal under the verse. Melody on D major pentatonic (D E F♯ A B), every note on both chords. |
+| Form | 27 bars, 60.0 s. Intro 0-3 (the muted call: typing, the printer, a chair, the room; it unmutes at bar 2 on "Thanks for joining"), verse 3-9, build 9-15 (her ladder from F♯3, choke 14:8.75 on the sample), BACK. at bar 15, Drop A 15-18, Sink In 18, Drop B 19-23, outro 23-27, "Full stop." at 26:8 |
+
+**The voices.** Synergy's vocoder is the lead, dry in the verse; from the
+build on his stem and hers feed a canon: two delay lines, each feeding back on
+itself, two beats on the left and three on the right, so his lines come back as
+a round in the drops. The pad is a wordless choir (formant-filtered saws, "oo"
+in the verse, "ah" in the drops, a vibrato that blooms in and a slow tape wow
+on the voices themselves; the master's wow stays an event). In Drop B a
+falsetto "oo" doubles it an octave up. His four-voice choir sings every hook.
+
+**Her ladder as a round** (`ROUND` in offsite.js). Other voices of hers join
+each hit, a pentatonic step or more apart and panned round the room: in bar 9
+three more enter a beat apart and sing "Let's build." whole, so four phrases
+overlap; in bar 10 one more enters a beat after each hit; in bar 11 an 8th
+after; from bar 12 they sing with her, a chord under her line, gated as she is. The
+latest entry after her hit goes 12, 4, 2, 0, 0, 0 16ths: the round tightens
+into one voice at the choke. Her stem covers 96-98% of bars 9-10 with voice.
+
+**Hands, floors and the office.** Stomps on a wooden floor (the kick's role,
+tuned to D2: they pump the pad and Pat gently), a room of clappers on two and
+four (three to six people, each a few ms early or late, each hand its own
+pitch), floor toms on D3 and A2, desk slaps for the build's 16ths and 32nds,
+the printer as the shaker. The office is loop material: keyboard clatter as the
+hats, a mug (a ceramic tink on A5), a chair creak into the build and at the end,
+the room's own air under the muted call, the printer feeding a sheet.
+
+**BACK.** is a stomp, both floor toms and every clapper at once (no drop kick,
+no sub drop, no downlifter: `band.impact`), Pat's hum rising under it, and her
+word as a chord of her: five copies on A3, D4, F♯4, D3 and A4, a breath apart,
+then four more a beat later under her deep echo, all into the bloom (a 7 s space
+that swells in over 180 ms and hears nothing before BACK., so it opens empty).
+The choir swells into it. Her stem after BACK.: about -26 dB at 1.5-2 s, where
+the shorter first version was at -34.
+
+**Drop A** is the clap-and-chant groove: her impact word chanted on five
+16ths a bar, two voices a pentatonic third apart, stepping back 3 dB under his
+words and never over her own lines. **Sink In** goes under water: the room
+slides to half speed and an octave down as on every track, the tape's low-pass
+closes to 650 Hz with resonance, and a 0.95 Hz wow rides the varispeed; her
+deep "sink in" sits on top, dry: from her "Let that" to the end of the bar
+she sends nothing to the canon or the bloom. **Drop B** is the wall: the chant
+under him, the falsetto, his choir, the canon at its widest, the room clapping
+on the 8ths into the outro. **The outro** winds down to the drone and the
+office (typing, the printer, a mug), and the tape stops under "Full stop.".
+
+**What it is made of.** Everything is synthesized in the browser
+(`instruments.js`: `stomp`, `floorTom`, `gangClap`, `keyClick`, `mug`,
+`creak`, `roomTone`, `printerFeed`, `voicePad`, `harmonium`, `humBass`,
+`washImpulse`), plus her own recordings (`public/phrases`, the cast's files,
+which the page already loads) and Synergy's eSpeak words. Nothing else: `public/`
+holds full mixes and voice beds of other pieces (`studio-2/audio`,
+`studio/rooms`, `studio/season`, `audio/releases`), nothing usable as loop
+material, and the meeting room's office sounds are code (`src/audio.js`
+`office-key`, `office-printer`), whose recipes the keyboard and printer here
+follow, made deterministic.
+
+**Exact renders.** Two things Offsite does that no track did before had to be
+made exact. A param sums its own value and its inputs in an order that changes
+from run to run (the pad's detune had vibrato and wow: three terms), so the two
+are mixed first and each detune has one input. And Chromium breaks a feedback
+loop where the graph first pulls it: a loop with two exits (the first canon,
+two cross-coupled lines) broke in a different place each run, shifting its echo
+by a render quantum, so each line now feeds back on itself with one exit.
+
 ### Checks and renders
 
 - `npm run check:songbook`: the proof above, the wait before BACK. and the
-  loop seam on 366 plans (P6), the constitution's lint on every track and plan,
+  loop seam on 488 plans (P7: four tracks), the constitution's lint on every track and plan,
   every track scheduled against a
   validating fake context, and the plan fields per track.
 - `npm run check:allhands` adds per-track invariants: the form inside 55-65 s,
   the moments in order, the ladder on the grid at every rate and in key, the
   silence empty, every sung note in the scale and on its chord, the impact and
   the deep voice on the chord root, the drop kick and sub tuned, determinism,
-  and the cast seam.
+  and the cast seam. On Offsite (P7) also the band's extra voices of hers
+  (`voicesOf`): the round on the pentatonic and gone before the choke, the
+  round tightening bar by bar, the chant only in the drops and never over her
+  own lines, all deterministic.
 - `npm run check:pegboard` and `npm run check:pixel` run for every track
-  (screens on time, true black, ignition, the flash governor; Pixel Text cues).
+  (screens on time, true black, ignition, the flash governor; Pixel Text cues);
+  every recast ladder cut runs on Circle Back and on Offsite.
 - `node scripts/render-allhands.mjs --track hustle [--cast cast.json]` renders a track.
 
 ## Casting
@@ -699,8 +788,14 @@ phrases matched on stems, some with a pattern ("5 a.m.", "$40M", "+22%",
 "isn't X. It's Y."). Each carries a weight per track: humility, gratitude,
 announcements, promotions, pride, milestones and farewells for Humbled and
 Honored; layoffs, AI, money, growth, the 5 a.m. grind, productivity,
-momentum and shipping for Hustle; meetings, process, jargon, opinions,
-strategy and culture for Circle Back. A concept counts its first hit fully and
+momentum and shipping for Hustle; meetings, process, jargon, opinions and
+strategy for Circle Back; and for Offsite (P7) the retreat (an offsite, trust
+falls, hiking, journaling: 2.6), the work family ("a family", "not a company",
+an office dog, a morale officer: 3.8), belonging (community, kindness,
+emotional intelligence, People Operations, every Sunday: 1.7), wellness
+(burnout, a 4-day work week, the empty cup, slowing down: 2.0) and good vibes
+(morale, fun, joy, pizza: 1.3). Culture now leans Offsite (1.3) over Circle
+Back (0.6), and "offsite" left Circle Back's meetings. A concept counts its first hit fully and
 each further hit a quarter; a hit in the opening line counts 1.5 (the hook sets
 the tone). Scores within 0.35 of the best are a close call, settled by the
 post's hash, so similar posts spread across songs. Under 1.0 nothing is
@@ -755,7 +850,7 @@ today's line, which is shorter or the same.
 `npm run check:casting` (`scripts/check-casting.mjs`, 2 s):
 - the role table against `lady-phrases.json` and `fits()`, every display
   drawable on the Peg Board and in Pixel Text as is;
-- every post (sample and 60 fixtures, plus all three songs forced): files on
+- every post (sample and 60 fixtures, plus all four songs forced): files on
   disk, words inside the measured words, every recast inside its limits on
   its track, no recording twice, the impact the tag's next word, the copy one
   line without an em dash, reasons for every role, deterministic, under 20 ms;

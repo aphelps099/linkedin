@@ -76,6 +76,9 @@ const STYLE = {host:'typewriter', verse:'scanline', hook:'wipe', answer:'pop', r
 // lit letters re-pop on every retrigger. A screen word carries `lit`: how many of its leading
 // letters sound (all of them when it has none).
 export const FRAGMENT_GHOST = .2;
+// A letter that has not typed in yet: Synergy's read-ahead lines, and every typewriter screen, show it at
+// this intensity, so a phrase is whole on the board from its first frame and never reads "L", "LE".
+export const READ_AHEAD = .1;
 // The whole words a fragment ("LE", "LET'S BU-") comes from in `phrase` ("LET'S BUILD."), as
 // [{text, lit}]; null when the fragment is not the start of the phrase.
 export function wholeWords(fragment, phrase) {
@@ -145,7 +148,7 @@ export function buildScreens(plan, {table} = {}) {
         fx:{rowShift:r >= 4 ? [0, -1, 0, 1][Math.round(e.at * 2) % 4] : 0, sparkle:r === 7 ? clamp((e.at % 16) / 8) : 0}});
     // Her tag holds the board until it goes black (a frame past her envelope's end), so the
     // typewriter's last letter is up on the last frame she is heard in.
-    } else if (e.role === 'tag') add({...base, to:Math.max(base.to, plan.choke?.tagEnd ?? base.to) + TAG_TAIL + FRAME, reveal:'typewriter', tone:'white', sockets:0});
+    } else if (e.role === 'tag') add({...base, to:Math.max(base.to, plan.choke?.tagEnd ?? base.to) + CHOKE_TAIL + FRAME, reveal:'typewriter', tone:'white', sockets:0});
     else if (e.role === 'impact') add({...base, to:t0 + 2.6 * BEAT, reveal:'centre', k:3, tone:'white', fx:{outline:true}, ignite:true});
     else if (e.role === 'sink') add({...base, to:T(plan, marksOf(plan).sinkEnd), reveal:'sparkle', k:2, tone:'deep', fx:{slow:true, tape:true}});
     // Her "Full stop." is routed after the tape: the tape stops, she does not. Her line holds the
@@ -183,12 +186,19 @@ export function buildScreens(plan, {table} = {}) {
 // The time a frame is painted at is the middle of that frame (a unit lights once
 // its onset is within half a frame: pegLight). So the board goes black on the first
 // frame that starts after her tag has stopped sounding (plan.choke.tagEnd, her
-// envelope's end, plus TAG_TAIL), stays true black, and ignites on the frame that holds
-// the impact. TAG_TAIL: an AAC or Opus encode smears her release on by up to 5 ms just
+// envelope's end, plus CHOKE_TAIL), stays true black, and ignites on the frame that holds
+// the impact. TAG_TAIL: an AAC or Opus encode smears a release on by up to 5 ms just
 // above -70 dBFS (measured on the export: -59 dBFS at her envelope's end, -69 dBFS 4 ms on),
 // so no trace of her voice ever plays over black in the delivered file.
 export const TAG_TAIL = .005;
-export const darkAt = plan => (plan.choke.tagEnd ?? plan.choke.dark ?? T(plan, plan.choke.at) + .49) + TAG_TAIL + FRAME * .5;
+// The choke cuts her tag hard, and there a codec's own noise outlasts her: the Opus encoder (headless
+// Chromium's only AudioEncoder) leaves a hiss floor at -66 to -70 dBFS for about 25 ms after the cut,
+// whatever its frame size (20, 10 or 5 ms), and an AAC copy encoded from that sound carries it too
+// (AAC from the clean master smears 5 ms). So the choke's black waits for the longest floor plus 5 ms:
+// CHOKE_TAIL, 30 ms. The endings keep TAG_TAIL (her "Full stop." is not cut against a black frame).
+export const CODEC_FLOOR = Object.freeze({opus:.025, aac:.005});
+export const CHOKE_TAIL = Math.max(...Object.values(CODEC_FLOOR)) + .005;
+export const darkAt = plan => (plan.choke.tagEnd ?? plan.choke.dark ?? T(plan, plan.choke.at) + .49) + CHOKE_TAIL + FRAME * .5;
 export const igniteAt = plan => T(plan, plan.choke.until) - FRAME * .5;
 // When her stop phrase ("Full stop.") stops sounding, in song seconds: plan.stop.end when the
 // plan carries it, else her stop event's envelope end (its at, gate and release), the way
@@ -331,12 +341,15 @@ function drawScreen(board, screen, t, {layoutOf, place, reduced, igniting}) {
       if (screen.ghost) { light(board, x, y, screen.ghost * fade, {tone}); continue; }
       if (ghostLetter || (word.lit !== undefined && screen.voice === 'synergy' && !sung)) { light(board, x, y, FRAGMENT_GHOST * fade, {tone}); continue; }
       let I, white = 0, size = 1, dx = 0, dy = 0, peg = tone;
-      if (screen.voice === 'synergy' && !sung && screen.reveal !== 'wipe') { I = .1; }        // ghost: read ahead on mute
+      if (screen.voice === 'synergy' && !sung && screen.reveal !== 'wipe') { I = READ_AHEAD; }  // ghost: read ahead on mute
       else {
         const l = reduced ? {I:clamp((t - unit.start) / .2), white:0, size:1} : pegLight(screen, word, unit, {x, y, i, n, row:py - (ch.y || 0), rows:ch.h || rows}, t, ctx);
         // (A fragment's letters that have not sounded yet wait as its ghost, so the word never has a hole.)
         if (!l && word.lit !== undefined) { light(board, x, y, FRAGMENT_GHOST * fade, {tone}); continue; }
-        if (!l) { if (screen.voice === 'synergy') I = .1; else continue; }
+        // No partial words: a typewriter screen (her tag, her whole-phrase rungs, "FULL STOP.", the board's
+        // own titles) shows its whole phrase from its first frame as a dim read-ahead ghost, as Synergy's
+        // lines do, and lights each letter as it types.
+        if (!l) { if (screen.voice === 'synergy' || screen.reveal === 'typewriter') I = READ_AHEAD; else continue; }
         else { I = l.I; white = l.white; size = l.size; }
         if (ended && screen.voice === 'synergy') I = Math.min(I, .72);                          // sung: still readable
       }

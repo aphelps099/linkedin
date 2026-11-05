@@ -1,11 +1,15 @@
 // The P3 video review's gates, rerunnable. Node only (a second or two), plus an exported
 // MP4 when one is given:
-//   1. canon on every compiled frame of the draft cut, on every track and in every format, with
+//   1. canon on every compiled frame of each track's own treatment (treatments/index.js: Offsite's
+//      offsite-psych, drop60-draft for the rest) and of offsite-psych on every other track, in every format, with
 //      the film's cold open: Pat never on video, the lady never footage, no warping effect on
 //      Synergy (layer or composite), robots never mirrored, no R0 footage running backwards except
 //      inside a rewind whose sound the plan reverses too (plan.transports), instrument mirrors only
 //      under a G11 waiver; true black from the first frame after her tag stops sounding to the
 //      impact's frame, and the ignition on it (the frames come from the plan, per track and cast)
+//      1a. at least 7 black frames before the impact on every track, the sample and every fixture post
+//          with its cast (the choke's 30 ms codec tail); the rewind's board looks back (no tag "L")
+//      1e. no partial words: a typewriter phrase is whole on the board (a read-ahead ghost) from its first frame
 //   2. captions: one line at a time per voice
 //   3. the timing rule, every step of every track: cuts land within half a frame of the beat
 //      (round(t·24)); hits land on the frame that holds their audible onset (t + the engine's
@@ -25,16 +29,17 @@ import {spawn, spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {FORMS} from '../src/allhands/forms.js';
 import {lyricsFromPost, SAMPLE_POST} from '../src/allhands/lyrics.js';
-import {castSong} from '../src/allhands/casting.js';
+import {castSong, settleCast} from '../src/allhands/casting.js';
 import {TRACK_ORDER} from '../src/allhands/songbook/index.js';
 import {compile, shotIndex, invert, apply, TRACKING} from '../src/videostudio/edl/compile.js';
-import {audioLatency, hitFrame, chokeFrames, stopFrames, TAG_TAIL} from '../src/videostudio/edl/anchors.js';
+import {audioLatency, hitFrame, chokeFrames, stopFrames, TAG_TAIL, CHOKE_TAIL} from '../src/videostudio/edl/anchors.js';
 import {paint, STOP_DIM, activeScreen} from '../src/pegboard/choreo.js';
 import {boardGrid, boardPitch, safeSpan} from '../src/videostudio/gl/board-layer.js';
 import {boardScreens, boardTimeOf} from '../src/videostudio/gl/compositor.js';
 import {SAFE, HOME, FULL_BOARD, sameRect} from '../src/videostudio/layouts.js';
 import {FX} from '../src/videostudio/edl/schema.js';
-import {drop60Draft, GHOST, CLAP} from '../src/videostudio/treatments/drop60-draft.js';
+import {GHOST, CLAP} from '../src/videostudio/treatments/drop60-draft.js';
+import {treatmentFor, TREATMENTS, BY_TRACK, DEFAULT as DEFAULT_TREATMENT} from '../src/videostudio/treatments/index.js';
 import {captions} from '../src/videostudio/render/export.js';
 import {flashes, worstWindow} from '../src/pegboard/governor.js';
 
@@ -52,17 +57,26 @@ const planOf = track => FORMS.drop60.arrange(lyrics, {}, {track, coldOpen:true})
 ok(castSong(SAMPLE_POST).track === 'circle-back' && !castSong(SAMPLE_POST).recast.length, 'the sample post chooses Circle Back and today\'s cast');
 // The choke's frames: true black from the first frame that starts after her tag stops sounding
 // (plan.choke.tagEnd plus the engine's latency), the ignition on the frame that holds the impact.
-// (edl/anchors.js chokeFrames: plus the codec's 5 ms tail, so nothing of her plays over black in the file.)
+// (edl/anchors.js chokeFrames: plus the choke's 30 ms codec tail, CHOKE_TAIL, so nothing of her, and no
+// encoder floor after her hard cut, plays over black in the file.)
+// Every track's film with its own treatment (treatments/index.js: Offsite gets offsite-psych, the rest
+// drop60-draft), and the Offsite cut on every other track too, so it holds on any plan.
+const PAIRS = [...TRACK_ORDER.map(t => [t, treatmentFor(t).id]), ...TRACK_ORDER.filter(t => treatmentFor(t).id !== 'offsite-psych').map(t => [t, 'offsite-psych'])];
+const keyOf = (track, format, tid) => `${track}|${format}|${tid}`;
+const nameOf = (track, format, tid) => `${track} ${format}${tid === treatmentFor(track).id ? '' : ` (${tid})`}`;
+ok(treatmentFor('offsite').id === 'offsite-psych' && TRACK_ORDER.filter(t => t !== 'offsite').every(t => treatmentFor(t).id === DEFAULT_TREATMENT && DEFAULT_TREATMENT === 'drop60-draft') && Object.keys(BY_TRACK).every(t => TREATMENTS[BY_TRACK[t]]),
+  `treatments by track: ${TRACK_ORDER.map(t => `${t} ${treatmentFor(t).id}`).join(', ')}`);
 const who = l => (l.shotId && idx.get(l.shotId)?.characters) || [];
 const is = (l, re) => who(l).some(c => re.test(c));
 const programs = {}, plans = {};
 
 // ---- 1. canon on every frame ----------------------------------------------------------------------
-for (const track of TRACK_ORDER) {
-  const plan = plans[track] = planOf(track), {black:B, impact:I} = chokeFrames(plan);
+for (const track of TRACK_ORDER) plans[track] = planOf(track);
+for (const [track, tid] of PAIRS) {
+  const plan = plans[track], {black:B, impact:I} = chokeFrames(plan), TR = TREATMENTS[tid];
   for (const format of ['9:16', '1:1', '16:9']) {
-    const edl = drop60Draft(plan, SHOTS, {format}), p = programs[`${track}|${format}`] = compile(edl, {plan, shots:SHOTS, format}), label = `${track} ${format}`;
-    ok(p.lint.ok, `${label}: the draft cut compiles with 0 lint errors (${p.lint.warnings.length} warnings)${p.lint.ok ? '' : `: ${p.lint.errors.slice(0, 2).map(e => e.message).join('; ')}`}`);
+    const edl = TR.fn(plan, SHOTS, {format}), p = programs[keyOf(track, format, tid)] = compile(edl, {plan, shots:SHOTS, format}), label = nameOf(track, format, tid);
+    ok(p.lint.ok, `${label}: ${tid} compiles with 0 lint errors (${p.lint.warnings.length} warnings)${p.lint.ok ? '' : `: ${p.lint.errors.slice(0, 2).map(e => e.message).join('; ')}`}`);
     const waived = new Set(p.lint.warnings.filter(w => w.rule === 'G11' && /waived/.test(w.message)).map(w => w.clipId));
     const bad = {pat:[], lady:[], warp:[], camera:[], robotMirror:[], r0:[], mirror:[]};
     let instrumentMirrors = 0, heardBack = 0;
@@ -88,7 +102,7 @@ for (const track of TRACK_ORDER) {
     ok(!bad.mirror.length, `${label}: no unflagged shot or instrument is mirrored without a G11 waiver (${instrumentMirrors} waived layer-frames, Aaron's call)`);
     ok(!bad.r0.length, `${label}: no R0 footage runs backwards except where the plan reverses the sound with it (${heardBack} layer-frames inside the cold open's rewind; ${bad.r0.length} elsewhere)`);
     const black = p.all.slice(B, I).every(x => x.layers.every(l => l.gen === 'color:#000000')), ign = p.frame(I);
-    ok(black && p.frame(B - 1).board.rect && ign.layers.some(l => l.fx.some(x => x.type === 'pegVideo')) && ign.board.screen >= 0, `${label}: the black tile from the choke, the board dark from frame ${B} (her tag heard to ${(plan.choke.tagEnd + audioLatency(plan)).toFixed(4)} s, ${(plan.choke.tagEnd + TAG_TAIL + audioLatency(plan)).toFixed(4)} s through a codec), the ignition on frame ${I}`);
+    ok(black && p.frame(B - 1).board.rect && ign.layers.some(l => l.fx.some(x => x.type === 'pegVideo')) && ign.board.screen >= 0, `${label}: the black tile from the choke, the board dark from frame ${B} (her tag heard to ${(plan.choke.tagEnd + audioLatency(plan)).toFixed(4)} s, ${(plan.choke.tagEnd + CHOKE_TAIL + audioLatency(plan)).toFixed(4)} s through a codec), the ignition on frame ${I}`);
     const f0 = p.frame(0);
     ok(f0.transport?.kind === 'jump' && f0.transport.sound === 'copied' && f0.layers.some(l => l.fx.some(x => x.type === 'pegVideo')) && p.board.screens[f0.board.screen]?.kind === 'impact' && p.transports.some(t => t.kind === 'rewind' && t.sound === 'reversed'), `${label}: the cold open: frame 0 is the impact (its sound copied there), then the rewind with its sound reversed`);
     // The cold open's sound is the impact without Synergy (engine.js coldSourcePlan): the board shows
@@ -98,14 +112,35 @@ for (const track of TRACK_ORDER) {
     const his = jump.filter(x => [x.board.screen, p.board.screens.indexOf(activeScreen(boardScreens(p.board.screens), boardTimeOf(x)))].some(i => p.board.screens[i]?.voice === 'synergy'));
     const held = jump.filter((x, i) => i && x.board.time === jump[i - 1].board.time).length;
     ok(jump.length >= 17 && !his.length && jump.every(x => p.board.screens[x.board.screen]?.kind === 'impact'), `${label}: the cold open's board shows only what is heard: BACK. on all ${jump.length} copied frames, none of Synergy's words (held for the last ${held})${his.length ? `; his on f${his.map(x => x.f).join(', f')}` : ''}`);
+    // The rewind plays the second before the choke backwards: its board looks back over the span each
+    // frame plays (v down to v − rate/24), so no frame shows a screen that starts at or after the moment
+    // it rewinds from (her tag starts on the choke, where the rewind begins: its "L" never shows).
+    const rw = p.all.filter(x => x.transport?.kind === 'rewind'), ahead = rw.filter(x => [x.board.screen, p.board.screens.indexOf(activeScreen(boardScreens(p.board.screens), boardTimeOf(x)))].some(i => i >= 0 && p.board.screens[i].from >= x.time - 1e-9));
+    ok(rw.length >= 5 && !ahead.length && rw.every(x => p.board.screens[x.board.screen]?.kind !== 'tag'), `${label}: the rewind's board looks back: none of its ${rw.length} frames (f${rw[0]?.f}-f${rw.at(-1)?.f}) shows a screen from its own moment or later (${rw.map(x => p.board.screens[x.board.screen]?.text ?? 'none').filter((v, i, a) => a.indexOf(v) === i).join(', ')})${ahead.length ? `; ahead on f${ahead.map(x => x.f).join(', f')}` : ''}`);
     // A steady board: every call layout keeps it at the format's home; it changes only inside the
     // draft's board moves (each at least 3 frames, no frame taking half of the change), never on a cut.
     const offHome = p.all.filter(x => x.layout && x.layout !== 'full' && !FULL_BOARD.includes(x.layout) && x.board.rect && !x.board.move && !sameRect(x.board.rect, HOME[format]));
     const moving = p.all.filter(x => x.board.move), jumps = [];
     for (let f = 1; f < p.frames; f++) { const a = p.frame(f - 1).board, b = p.frame(f).board; if (a.rect && b.rect && !sameRect(a.rect, b.rect) && !p.boardMoves.some(m => f >= m.from && f < m.to)) jumps.push(f); }
     const steps = p.boardMoves.map(m => { const r = f => p.frame(f).board.rect, ar = x => x ? x.w * x.h : 0, all = Math.abs(ar(r(m.to - 1)) - ar(r(m.from - 1))); let worst = 0; for (let f = m.from; f < m.to; f++) worst = Math.max(worst, Math.abs(ar(r(f)) - ar(r(f - 1)))); return all ? worst / all : 0; });
-    ok(!offHome.length && p.boardMoves.length >= 5 && p.boardMoves.every(m => m.to - m.from >= 3) && moving.length > 0 && Math.max(...steps) < .5 && !jumps.length && p.lint.errors.every(e => e.rule !== 'G14'),
+    ok(!offHome.length && p.boardMoves.length >= (tid === 'drop60-draft' ? 5 : 3) && p.boardMoves.every(m => m.to - m.from >= 3) && moving.length > 0 && Math.max(...steps) < .5 && !jumps.length && p.lint.errors.every(e => e.rule !== 'G14'),
       `${label}: the board holds its home in every call layout and moves only in ${p.boardMoves.length} eased board moves of ${[...new Set(p.boardMoves.map(m => m.to - m.from))].join('/')} frames (largest step ${(100 * Math.max(...steps)).toFixed(0)} % of a move; ${jumps.length} jumps, ${offHome.length} frames off home)`);
+  }
+}
+
+// ---- 1a. the choke keeps its silence on screen: at least 7 black frames before the impact --------------------
+// The choke's black waits CHOKE_TAIL (30 ms) past her tag for the encoder's floor after a hard cut; every
+// track, the sample post and every fixture post with the cast it would choose, still has 7 or more frames
+// of true black before the impact frame.
+{
+  const posts = [SAMPLE_POST, ...JSON.parse(fs.readFileSync(path.join(ROOT, 'scripts/fixtures/pixel-posts.json'), 'utf8')).map(x => x.post)];
+  for (const track of TRACK_ORDER) {
+    let fewest = Infinity, worst = null;
+    for (const post of posts) {
+      const c = castSong(post, {track}), {plan} = settleCast(FORMS.drop60.arrange, lyricsFromPost(post), {}, {track, cast:c.cast, coldOpen:true}), {black:B, impact:I} = chokeFrames(plan);
+      if (I - B < fewest) { fewest = I - B; worst = `${B}-${I - 1}`; }
+    }
+    ok(fewest >= 7, `${track}: at least 7 black frames before the impact on all ${posts.length} posts with their casts (fewest ${fewest}, frames ${worst}; her tag plus the choke's ${(CHOKE_TAIL * 1000).toFixed(0)} ms codec tail)`);
   }
 }
 
@@ -117,8 +152,8 @@ for (const track of TRACK_ORDER) {
 // a tile the camera carries more than half out of frame (the Droste dive) is off screen.
 {
   const UNTRACKED = {'corporate-applause-closer-reaction-531fa4a4':[0, 650], 'corporate-applause-vhs-cameraman-a018b1c9':[0, 1280], 'office-ensemble-e03c9edb':[380, 800]};
-  for (const track of TRACK_ORDER) for (const format of ['9:16', '1:1', '16:9']) {
-    const plan = plans[track], p = programs[`${track}|${format}`], spans = [];
+  for (const [track, tid] of PAIRS) for (const format of ['9:16', '1:1', '16:9']) {
+    const plan = plans[track], p = programs[keyOf(track, format, tid)], spans = [];
     for (const w of plan.words) { const t = plan.timing[w.at]; spans.push([t, Math.min(t + w.gate, plan.timing[w.at + w.steps] ?? Infinity)]); }
     for (const st of plan.stutters) { const t = plan.timing[st.at]; spans.push([t, t + .9 * plan.step]); }
     const sings = v => spans.some(([a, b]) => v >= a && v < b);
@@ -145,7 +180,7 @@ for (const track of TRACK_ORDER) {
       }
       if (any) { frames++; if (!ok1) bad.push(`f${f}: only echoes of him`); }
     }
-    ok(frames > 300 && !bad.length, `${track} ${format}: Synergy's mouth row shows on all ${frames} frames he sings on screen (${bad.slice(0, 3).join('; ')})`);
+    ok(frames > 300 && !bad.length, `${nameOf(track, format, tid)}: Synergy's mouth row shows on all ${frames} frames he sings on screen (${bad.slice(0, 3).join('; ')})`);
   }
 }
 
@@ -160,8 +195,8 @@ for (const track of TRACK_ORDER) {
   const pitchOf = fr => fr.layers.find(l => l.fx.some(x => x.type === 'pegVideo' && x.mix >= .5))?.fx.find(x => x.type === 'pegVideo').pitch;
   const painted = (p, plan, fr, format) => { const g = gridOf(fr, format, pitchOf(fr)); paint(g.board, boardScreens(p.board.screens), boardTimeOf(fr), {plan, layoutOf:g.layoutOf, place:g.place}); return g; };
   const pegsOf = (g, screen) => { const layout = g.layoutOf(screen), page = layout.pages[0], o = g.place(screen, layout, page), out = new Set(); for (const ch of page.lines.flatMap(l => l.chars)) for (let i = 0; i < ch.pegs.length; i += 2) out.add((o.y + ch.pegs[i + 1]) * g.cols + o.x + ch.pegs[i]); return out; };
-  for (const track of TRACK_ORDER) for (const format of ['9:16', '1:1', '16:9']) {
-    const plan = plans[track], p = programs[`${track}|${format}`], label = `${track} ${format}`, L = audioLatency(plan), N = p.frames;
+  for (const [track, tid] of PAIRS) for (const format of ['9:16', '1:1', '16:9']) {
+    const plan = plans[track], p = programs[keyOf(track, format, tid)], label = nameOf(track, format, tid), L = audioLatency(plan), N = p.frames;
     const her = stopFrames(plan), ev = plan.lady.find(e => e.role === 'stop'), heardFrom = plan.timing[Math.floor(ev.at)] + (ev.at % 1) * plan.step + L, heardTo = her.end + TAG_TAIL + L;
     const stop = plan.tape.find(x => x.kind === 'stop'), curve = Math.round(plan.timing[stop.from] * FPS) + Math.ceil(stop.seconds * FPS - 1e-9), B = Math.max(curve, her.black), G = Math.max(N - 2, B);
     const black = fr => fr.layers.every(l => l.gen === 'color:#000000') && !fr.board.rect;
@@ -200,8 +235,8 @@ for (const track of TRACK_ORDER) {
 }
 
 // ---- 1d. the applause tile keeps People & Culture's face, off Synergy, in every format ----------------------
-for (const track of TRACK_ORDER) for (const format of ['9:16', '1:1', '16:9']) {
-  const p = programs[`${track}|${format}`], cut = [], windows = new Set();
+for (const [track, tid] of PAIRS) for (const format of ['9:16', '1:1', '16:9']) {
+  const p = programs[keyOf(track, format, tid)], cut = [], windows = new Set();
   let n = 0;
   for (const fr of p.all) for (const l of fr.layers) {
     if (!l.shotId?.startsWith('corporate-applause-closer')) continue;
@@ -211,7 +246,35 @@ for (const track of TRACK_ORDER) for (const format of ['9:16', '1:1', '16:9']) {
     windows.add(`${Math.round(x0)}-${Math.round(x1)} x ${Math.round(y0)}-${Math.round(y1)}`);
     if (x0 > F.x + 1e-6 || x1 < F.x + F.w - 1e-6 || y0 > F.y + 1e-6 || y1 < F.y + F.h - 1e-6 || x0 < CLAP.left - 1e-6) cut.push(`f${fr.f}`);
   }
-  ok(!cut.length && (n > 0 || track === 'hustle'), `${track} ${format}: the applause tile holds People & Culture's whole face (x ${CLAP.face.x}-${CLAP.face.x + CLAP.face.w}, y ${CLAP.face.y}-${CLAP.face.y + CLAP.face.h}) and stays right of x ${CLAP.left}, off Synergy, on all ${n} layer-frames (source ${[...windows].join('; ') || 'none'})${cut.length ? `; cut on ${cut.slice(0, 3).join(', ')}` : ''}`);
+  ok(!cut.length && (n > 0 || track === 'hustle' || tid !== 'drop60-draft'), `${nameOf(track, format, tid)}: the applause tile holds People & Culture's whole face (x ${CLAP.face.x}-${CLAP.face.x + CLAP.face.w}, y ${CLAP.face.y}-${CLAP.face.y + CLAP.face.h}) and stays right of x ${CLAP.left}, off Synergy, on all ${n} layer-frames (source ${[...windows].join('; ') || 'none'})${cut.length ? `; cut on ${cut.slice(0, 3).join(', ')}` : ''}`);
+}
+
+// ---- 1e. no partial words: a typewriter phrase is whole on the board from its first frame ------------------
+// Her tag ("LET'S CIRCLE-"), her whole-phrase rungs ("LET'S BUILD."), "FULL STOP." and the board's own
+// titles type in letter by letter over a dim read-ahead ghost of the whole phrase (choreo READ_AHEAD, as
+// Synergy's lines): on every frame that shows one, every peg of its page is lit, ghost or typed.
+{
+  const gridOf = (fr, format) => { const pv = fr.layers.find(l => l.fx.some(x => x.type === 'pegVideo' && x.mix >= .5))?.fx.find(x => x.type === 'pegVideo').pitch, w = Math.round(fr.board.rect.w), h = Math.round(fr.board.rect.h); return boardGrid(w, h, pv ?? boardPitch(w, h), safeSpan(fr.board.rect, SAFE[format])); };
+  for (const [track, tid] of PAIRS) for (const format of ['9:16', '1:1', '16:9']) {
+    const plan = plans[track], p = programs[keyOf(track, format, tid)], shifted = boardScreens(p.board.screens), holes = [], kinds = new Map();
+    let frames = 0, partial = 0;
+    for (const fr of p.all) {
+      if (!fr.board.rect || fr.board.dark) continue;
+      const t = boardTimeOf(fr), s = activeScreen(shifted, t);
+      if (!s || s.reveal !== 'typewriter' || s.voice === 'synergy' || s.ghost || t >= s.to) continue;
+      const g = gridOf(fr, format); paint(g.board, shifted, t, {plan, layoutOf:g.layoutOf, place:g.place});
+      if (g.board.exposure <= 0) continue;
+      const layout = g.layoutOf(s); if (!layout?.pages?.length) continue;
+      let page = layout.pages[0]; for (const pg of layout.pages) { const c0 = pg.lines[0]?.chars[0]; if (c0 && s.words[c0.word]?.start <= t + .001) page = pg; }
+      const o = g.place(s, layout, page), want = [];
+      for (const ch of page.lines.flatMap(l => l.chars)) for (let i = 0; i < ch.pegs.length; i += 2) want.push((o.y + ch.pegs[i + 1] + (s.fx.rowShift || 0)) * g.cols + o.x + ch.pegs[i]);
+      frames++; kinds.set(s.kind, (kinds.get(s.kind) || 0) + 1);
+      const dark = want.filter(i => !(g.board.I[i] > 0)).length;
+      if (dark) holes.push(`f${fr.f} ${s.text} ${dark} of ${want.length}`);
+      if (want.some(i => g.board.I[i] > 0 && g.board.I[i] <= .1 + 1e-9)) partial++;
+    }
+    ok(frames > 20 && !holes.length, `${nameOf(track, format, tid)}: no partial words: all ${frames} typewriter frames (${[...kinds].map(([k, n]) => `${k} ${n}`).join(', ')}) show the whole phrase, ${partial} of them with letters still to type as the read-ahead ghost${holes.length ? `; holes on ${holes.slice(0, 3).join('; ')}` : ''}`);
+  }
 }
 
 // ---- 2. captions -----------------------------------------------------------------------------------
@@ -239,7 +302,7 @@ const mp4 = arg('mp4');
 if (mp4) {
   const sidecar = (() => { try { return JSON.parse(fs.readFileSync(mp4.replace(/\.mp4$/, '.json'), 'utf8')); } catch { return null; } })();
   const format = arg('format') ?? sidecar?.film?.format ?? '9:16', track = arg('track') ?? sidecar?.film?.track ?? 'circle-back';
-  const plan = plans[track], p = programs[`${track}|${format}`];
+  const plan = plans[track], p = programs[keyOf(track, format, sidecar?.treatment ?? treatmentFor(track).id)];
   // The sidecar's own marks when it has them (another post or cast), else the sample's.
   const {black:B, impact:I} = sidecar?.film?.marks ?? chokeFrames(plan);
   const span = arg('span') ? arg('span').split('-').map(Number) : sidecar?.film?.span ?? [0, p.frames], [from, to] = span, n = to - from;

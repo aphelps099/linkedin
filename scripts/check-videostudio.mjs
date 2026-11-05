@@ -36,6 +36,10 @@ import {boardGrid, boardTypeBounds, safeSpan} from '../src/videostudio/gl/board-
 import {buildScreens} from '../src/pegboard/choreo.js';
 import {LADY_TABLE} from '../src/allhands/lady-table.js';
 import {MOVES, MOVE_NAMES} from '../src/videostudio/moves/index.js';
+import {backbeatHits} from '../src/videostudio/edl/params.js';
+import {TRACK_ORDER} from '../src/allhands/songbook/index.js';
+import {TREATMENTS, BY_TRACK, treatmentFor, treatmentNamed} from '../src/videostudio/treatments/index.js';
+import {TRAIL_MAX} from '../src/videostudio/edl/compile.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const verbose = process.argv.includes('--verbose');
@@ -627,6 +631,77 @@ if (fs.existsSync(SHOTS_JSON)) section('10. the real shot index', () => {
   const dp = by('drums-playing'), hw = hitWarp({plan:drop, at:384, len:32, hits:dp.hitTimes});
   ok(hw.matched.length >= 4 && hw.rates.every(r => r >= .85 - 1e-9 && r <= 1.15 + 1e-9), `real drums-playing: ${hw.matched.length} of its ${dp.hits.length} hits warp onto 8ths in bars 24-25 (rates ${Math.min(...hw.rates).toFixed(3)}-${Math.max(...hw.rates).toFixed(3)})`);
 }); else log('10. the real shot index: src/videostudio/media/shots.json not found, skipped');
+
+// =================================================================================================
+// 12. The psychedelic pixelation (Offsite): the new effects in the vocabulary, the features they bind to,
+// the trail's copies, canon on Synergy and mirrors, and the treatments chosen by track.
+const NEW_FX = ['breathe', 'paletteWash', 'trail', 'radialFold', 'pegBloom', 'chromaDrift'];
+section('12. the psychedelic pixelation', () => {
+  // The vocabulary: each new effect validates, with its parameters and values checked.
+  const clipWith = fx => createEDL({clips:[{id:'x', at:16, len:32, cell:'G6.1', asset:'shot:people', time:{in:1}, frame:{dx:[[0, 0], [32, 200]]}, fx}]});
+  const good = [{type:'breathe', px:{add:[{bind:'voices', scale:14, base:-1, attack:.03, release:.2}, {bind:'clap', scale:8, release:.16}]}, cx:.5, cy:.5}, {type:'paletteWash', mix:.5, hue:[[0, 0], [32, 2]]},
+    {type:'trail', taps:3, frames:2, decay:{bind:'clap', scale:.4, base:.2}, blend:'lighten'}, {type:'radialFold', wedges:6, angle:[[0, 0], [32, 45]]}, {type:'pegBloom', amount:.4, cx:.5, cy:.66, space:'frame'}, {type:'chromaDrift', px:3, angle:30, radial:2}];
+  ok(NEW_FX.every(t => FX[t] && FX_TYPES.includes(t)) && validate(clipWith(good)).length === 0, `the vocabulary has the new effects (${NEW_FX.join(', ')}) and they validate`);
+  const bad = validate(createEDL({clips:[{id:'x', at:0, len:4, cell:'G6.0', asset:'shot:people', fx:[{type:'trail', taps:2, blend:'screen'}, {type:'pegBloom', amount:.5, space:'page'}, {type:'radialFold', folds:6}, {type:'breathe', px:{bind:'choir'}}]}],
+    camera:[{at:0, len:4, fx:[{type:'trail', taps:2}]}]}));
+  ok(['.fx[0].blend', '.fx[1].space', '.fx[2].folds', '.fx[3].px.bind', 'camera[0].fx[0].type'].every(k => bad.some(e => e.path.endsWith(k))), `bad parameters are caught with readable paths (${bad.map(e => e.path).join(', ')})`);
+  // Identity values compile away.
+  const idle = run(clipWith([{type:'breathe', px:1}, {type:'paletteWash', mix:0}, {type:'trail', taps:0}, {type:'radialFold', wedges:1}, {type:'pegBloom', amount:0}, {type:'chromaDrift', px:0, radial:0}]));
+  ok(idle.frame(100).layers.length === 1 && idle.frame(100).layers[0].fx.length === 0, 'each new effect at its identity value compiles away');
+  // The features: claps on the frames that hold the backbeat as it sounds; voices the loudest voice stem.
+  const hits = backbeatHits(drop), want = new Set(hits.map(h => hitFrame(stepTime(drop, h.step) + h.late * (stepTime(drop, h.step + 1) - stepTime(drop, h.step)), drop)));
+  const on = [...features.clap.keys()].filter(g => features.clap[g]);
+  ok(hits.length > 20 && on.length === want.size && on.every(g => want.has(g)), `clap: ${on.length} frames, one on each backbeat hit as it sounds`);
+  const vo = envelope(features, {bind:'voices'}), vmax = Array.from(vo).every((v, g) => Math.abs(v - Math.max(features.stems.voice[g], features.stems.lady[g])) < 1e-6);
+  ok(vmax && checkParam({bind:'voices'}).length === 0 && checkParam({bind:'clap'}).length === 0, 'voices: the loudest of the voice stems per frame; voices and clap are binds');
+  // A breathing mosaic follows its binds frame by frame.
+  const br = run(clipWith([good[0]])), pxs = [];
+  for (let f = 0; f < br.frames; f++) { const l = br.frame(f).layers[0]; if (l?.clipId === 'x') pxs.push(l.fx.find(x => x.type === 'breathe')?.px ?? 0); }
+  ok(Math.max(...pxs) > 8 && pxs.some(v => v <= 1), `breathe follows the voices and the claps (block size 0 to ${Math.max(...pxs).toFixed(1)} px over the clip)`);
+  // A peg bloom centred on the frame: into the cell's units, its reach the frame's farthest corner.
+  const pb = run(clipWith([good[4]])).frame(100).layers[0].fx[0], cell = cellRect('9:16', 'G6.1'), px = .5 * 1080, py = .66 * 1920;
+  ok(near(pb.cx, (px - cell.x) / cell.w, 1e-9) && near(pb.cy, (py - cell.y) / cell.h, 1e-9) && near(pb.reach, Math.hypot(540, py), 1e-9) && pb.space === 'cell', `pegBloom space:frame lands in cell units (${pb.cx.toFixed(3)}, ${pb.cy.toFixed(3)}), reach ${pb.reach.toFixed(0)} px: one circle across the call`);
+  // Trails: the clip as it was 2k frames earlier (its own source frame and transform), over it, fading.
+  const plain = run(clipWith([])), tr = run(clipWith([{type:'trail', taps:3, frames:2, decay:.5}])), f = 120, layers = tr.frame(f).layers;
+  const taps = layers.filter(l => l.trail), main = layers.find(l => l.clipId === 'x');
+  const same = taps.every(l => { const was = plain.frame(f - 2 * l.trail.k).layers.find(x => x.clipId === 'x'); return was && l.srcFrame === was.srcFrame && l.transform.matrix.every((v, i) => near(v, was.transform.matrix[i], 1e-9)) && near(l.opacity, .5 ** l.trail.k, 1e-12) && l.chrome === null && !l.robot; });
+  ok(taps.length === 3 && layers.indexOf(main) === layers.length - 4 && taps.map(l => l.clipId).join() === 'x~1,x~2,x~3' && same && taps.every(l => l.trail.blend === 'lighten'), `trail 3 taps, 2 frames apart: the clip's own frames ${taps.map(l => l.srcFrame).join(', ')} behind ${main.srcFrame}, at .5, .25, .125, over it, no chrome`);
+  const start = tr.clips.find(c => c.id === 'x').from;
+  ok(tr.frame(start).layers.filter(l => l.trail).length === 0 && tr.frame(start + 3).layers.filter(l => l.trail).length === 1 && tr.decode.max === plain.decode.max && tr.hash() === run(clipWith([{type:'trail', taps:3, frames:2, decay:.5}])).hash() && tr.compileFrame(f).layers.length === layers.length,
+    `trails start with the clip (none on its first frame, one 3 frames in), share its decode (peak ${tr.decode.max}), compile the same twice and seek-safe; at most ${TRAIL_MAX} copies`);
+  // Canon: no new warp on Synergy (a wash is colour, not a warp); kaleidoscope folds only on mirrorable shots.
+  const syn = fx => run(createEDL({clips:[{id:'s', at:16, len:16, cell:'G6.0', asset:'shot:synergy', fx:[fx]}]}));
+  const refused = NEW_FX.filter(t => FX[t].warps).filter(t => syn(good[NEW_FX.indexOf(t)]).lint.errors.some(e => e.rule === 'G11' && /warp Synergy/.test(e.message)));
+  ok(refused.length === 5 && !syn(good[1]).lint.errors.some(e => e.rule === 'G11'), `G11 refuses every new warp on Synergy (${refused.join(', ')}); his face takes the palette wash, which keeps luma`);
+  const fold = id => run(createEDL({clips:[{id:'k', at:16, len:16, cell:'G6.0', asset:`shot:${id}`, fx:[{type:'radialFold', wedges:6}]}]})).lint.errors.filter(e => e.rule === 'G11' && /mirrored/.test(e.message)).length;
+  ok(fold('keys') > 0 && fold('synthia') > 0 && fold('drums') > 0 && fold('people') === 0, 'radialFold is a mirror: refused on an unflagged shot, a robot and an instrument; allowed on a mirrorable one');
+  ok(run(createEDL({clips:[{id:'z', at:16, len:16, cell:'L1.0', asset:'shot:people', frame:{zoom:2.4}, fx:[{type:'breathe', px:9}]}]})).lint.errors.every(e => e.rule !== 'G10'), 'G10: a breathing mosaic of 8 px or more carries the upscale, as a mosaic does');
+  // The treatments, chosen by track.
+  ok(treatmentFor('offsite').id === 'offsite-psych' && ['circle-back', 'humbled-and-honored', 'hustle'].every(t => treatmentFor(t).id === 'drop60-draft') && treatmentFor(undefined).id === 'drop60-draft'
+    && treatmentNamed('track', 'offsite').id === 'offsite-psych' && treatmentNamed('draft', 'offsite').id === 'drop60-draft' && Object.values(BY_TRACK).every(id => TREATMENTS[id]),
+    `treatments by track: offsite ${treatmentFor('offsite').id}, the others ${treatmentFor('hustle').id}; 'draft' still names drop60-draft`);
+});
+
+if (fs.existsSync(SHOTS_JSON)) section('13. the Offsite cut on the real shot index', () => {
+  const real = JSON.parse(fs.readFileSync(SHOTS_JSON, 'utf8')), idx = shotIndex(real), T = TREATMENTS['offsite-psych'], l = lyricsFromPost(SAMPLE_POST);
+  for (const track of TRACK_ORDER) {
+    const plan = FORMS.drop60.arrange(l, {}, {track, coldOpen:true}), used = new Set();
+    for (const format of ['9:16', '1:1', '16:9']) {
+      const edl = T.fn(plan, real, {format}), p = compile(edl, {plan, shots:real, format});
+      ok(p.lint.errors.length === 0 && stringify(T.fn(plan, real, {format})) === stringify(edl) && compile(T.fn(plan, real, {format}), {plan, shots:real, format}).hash() === p.hash(),
+        `offsite-psych on ${track} ${format}: ${edl.clips.length} clips, 0 lint errors (${p.lint.errors.slice(0, 2).map(e => `${e.rule} ${e.message}`).join('; ')}), ${p.lint.warnings.length} warnings, peak ${p.decode.max} decodes; the same bytes and hash twice`);
+      let warped = 0, unmirrorable = 0;
+      for (const fr of p.all) for (const x of fr.layers) {
+        for (const e of x.fx) used.add(e.type);
+        const s = x.shotId && idx.get(x.shotId);
+        if (s && /^synergy$/i.test(s.characters?.[0] ?? '') && x.fx.some(e => FX[e.type]?.warps)) warped++;
+        if (s && x.fx.some(e => e.type === 'radialFold') && (!s.mirrorable || (s.action || []).includes('play'))) unmirrorable++;
+      }
+      ok(!warped && !unmirrorable && edl.clips.every(c => !c.scene || T.labels[c.scene]), `offsite-psych on ${track} ${format}: no warp on Synergy, kaleidoscopes only on mirrorable shots, every scene labelled`);
+    }
+    ok(NEW_FX.every(t => used.has(t)), `offsite-psych on ${track} uses every new effect (${NEW_FX.join(', ')})`);
+  }
+});
 
 const dump = process.argv.indexOf('--dump');
 if (dump > 0) {

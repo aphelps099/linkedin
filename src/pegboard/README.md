@@ -31,6 +31,15 @@ flash them). A screen word's `lit` says how many of its leading letters sound; `
 keeps what is heard. Two words may stack on two lines (`lines:2`) so both are up at once.
 /allhands/'s caption line does the same with its dim and lit spans.
 
+**No partial words while typing:** a typewriter screen (her tag "LET'S CIRCLE-", her whole-phrase
+rungs "LET'S BUILD.", "FULL STOP.", the board's own titles) shows its whole phrase from its first
+frame as a dim read-ahead ghost at `READ_AHEAD` (.1), as Synergy's lines do, and lights each letter
+as it types; it never reads "L", "LE".
+
+**The choke's black:** the board goes true black on the first frame after her tag stops sounding plus
+`CHOKE_TAIL` (30 ms): the choke cuts her hard, and a codec's own floor outlasts a hard cut (Opus
+about 25 ms at -66 to -70 dBFS, `CODEC_FLOOR`). The endings keep `TAG_TAIL` (5 ms).
+
 **Timing:**
 - 120 BPM; a 16th is 0.125 s.
 - A peg lights on frame `floor((t + .010) · fps)`: it may lead the audio by up to 25 ms and never lags it.
@@ -38,7 +47,7 @@ keeps what is heard. Two words may stack on two lines (`lines:2`) so both are up
 **Checks** (each fails the build when a rule breaks):
 - `npm run check:pixel-type`: faces, kerning, normalize, and every fit (lady phrases, host lines, 60 fixture posts × 3 formats at P ≥ 9).
 - `npm run check:eq`: bands, follower, live vs export correlation, score accents.
-- `npm run check:pegboard`: screens, onsets within a frame, determinism, true black, ignition, governed flashes; every fragment screen (all three tracks, both posts, every ladder the casting can give her, the Sound check's stammer) shows its whole words with the lit letters equal to the sounding part, peg for peg, on one page, re-popping on every retrigger.
+- `npm run check:pegboard`: screens, onsets within a frame, determinism, true black, ignition, governed flashes; every fragment screen (all three tracks, both posts, every ladder the casting can give her, the Sound check's stammer) shows its whole words with the lit letters equal to the sounding part, peg for peg, on one page, re-popping on every retrigger; every typewriter phrase of every track (her tag, her whole-phrase rungs, "FULL STOP.", the titles) whole on its first frame, the letters still to type at the read-ahead ghost; the choke dark from her tag's end plus `CHOKE_TAIL`.
 
 **Specimen:** `/pixel-type/` (noindex) is the proof sheet for sign-off. It runs on these modules, so what it shows is what ships. Add `?renderer=2d` to see the fallback.
 

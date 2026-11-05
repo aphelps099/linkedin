@@ -31,9 +31,10 @@ float hash3(uvec3 v) { return float(hsh(v.x * 0x9e3779b1u ^ hsh(v.y * 0x85ebca77
 // every effect of the EDL vocabulary, the cell's rounded-rect mask, the iris and the opacity.
 // Out: premultiplied colour, blended ONE, ONE_MINUS_SRC_ALPHA (or MAX for the board over footage).
 //
-// Order: warps in cell space (tile, fold, mosaic, scanline wobble), then the matrix, then the
-// sampling effects (zoom blur or directional blur, each tap RGB-split), then colour (saturation,
-// chroma drop, scanline darkening), then peg video, then the masks.
+// Order: warps in cell space (tile, fold, radial fold, mosaic, scanline wobble; the breathing mosaic
+// samples two nested grids through them), then the matrix, then the sampling effects (zoom blur or
+// directional blur, each tap RGB-split and chroma-drifted), then colour (saturation, chroma drop, the
+// palette wash, scanline darkening), then peg video and the peg bloom, then the masks.
 export const LAYER_FS = HEAD + HASH + `
 uniform vec2 uTarget; uniform float uScale;
 uniform vec4 uCell; uniform float uRadius;
@@ -43,6 +44,7 @@ uniform float uOpacity, uTime; uniform uint uSeed;
 uniform vec4 uTile; uniform int uFold; uniform float uMosaic; uniform vec3 uScan;
 uniform vec3 uRadial; uniform vec2 uDir; uniform vec2 uRgb;
 uniform float uSat, uChroma; uniform vec4 uPeg; uniform vec4 uIris;
+uniform vec3 uBreathe; uniform vec2 uWash; uniform vec4 uRadialFold; uniform vec4 uBloomPeg; uniform float uBloomReach; uniform vec3 uDrift;
 out vec4 o;
 
 const vec3 LUMA = vec3(.2126, .7152, .0722);
@@ -65,8 +67,17 @@ vec4 tap(vec2 p) {
   return texture(uTex, uv);
 }
 vec4 tapSplit(vec2 p, vec2 d) {
-  if (d.x == 0. && d.y == 0.) return tap(p);
-  vec4 g = tap(p), r = tap(p - d), b = tap(p + d);          // red moves +d on screen, blue -d
+  // rgbSplit: red moves +d on screen, blue -d. chromaDrift: each channel orbits, 120 degrees apart
+  // (green at half), plus a radial split from the cell centre (red outwards, blue inwards).
+  vec2 dr = d, dg = vec2(0.), db = -d;
+  if (uDrift.x > 0. || uDrift.z > 0.) {
+    float a = uDrift.y;
+    dr += uDrift.x * vec2(cos(a), sin(a)); dg += .5 * uDrift.x * vec2(cos(a + 2.0943951), sin(a + 2.0943951)); db += uDrift.x * vec2(cos(a + 4.1887902), sin(a + 4.1887902));
+    vec2 rr = (p - uCell.xy - .5 * uCell.zw) / (.5 * length(uCell.zw));
+    dr += uDrift.z * rr; db -= uDrift.z * rr;
+  }
+  if (dr == vec2(0.) && dg == vec2(0.) && db == vec2(0.)) return tap(p);
+  vec4 r = tap(p - dr), g = tap(p - dg), b = tap(p - db);
   return vec4(r.r, g.g, b.b, max(g.a, max(r.a, b.a)));
 }
 // Sampling effects at output px p: 16 taps, h places them within their sixteenths.
@@ -93,17 +104,46 @@ vec2 warp(vec2 q) {
   }
   if ((uFold & 1) != 0 && q.x > uCell.z * .5) q.x = uCell.z - q.x;
   if ((uFold & 2) != 0 && q.y > uCell.w * .5) q.y = uCell.w - q.y;
+  if (uRadialFold.x >= 2.) {
+    // A kaleidoscope: every wedge about the centre shows the first, alternate ones mirrored; a point
+    // the turn carries out of the cell reflects back in at its edge, so there are no holes.
+    vec2 c = uRadialFold.zw * uCell.zw, d = q - c;
+    float w = 6.28318531 / uRadialFold.x, a = mod(atan(d.y, d.x) - uRadialFold.y, w);
+    if (a > .5 * w) a = w - a;
+    a += uRadialFold.y;
+    q = c + length(d) * vec2(cos(a), sin(a));
+    q = uCell.zw - abs(mod(q, 2. * uCell.zw) - uCell.zw);
+  }
   if (uMosaic > 1.) q = (floor(q / uMosaic) + .5) * uMosaic;
   if (uScan.y > 0.) { float line = floor(q.y / max(uScan.z, 1.)); q.x += uScan.y * sin(line * 2.39996 + uTime * 37.7) * (.6 + .4 * hash3(uvec3(uint(line), uSeed, 7u))); }
   return q;
 }
+// The palette wash: luma onto a Peg Board duotone, luma kept (the tint is a zero-luma chroma vector,
+// strongest in the shadows, gone at black and white). hue 0 blue (#2B78FF), 1 violet (#8C52FF),
+// 2 warm (coral, #FF7366); fractional drifts between them, never through green.
+vec3 washOf(vec3 rgb, float hue) {
+  const vec3 B = vec3(.169, .471, 1.), V = vec3(.549, .322, 1.), W = vec3(1., .451, .4);
+  vec3 cb = B - dot(B, LUMA), cv = V - dot(V, LUMA), cw = W - dot(W, LUMA);
+  vec3 ch = mix(mix(cb, cv, clamp(hue, 0., 1.)), cw, clamp(hue - 1., 0., 1.));
+  float l = dot(rgb, LUMA), k = smoothstep(0., .1, l) * (1. - smoothstep(.9, 1., l));
+  return clamp(vec3(l) + ch * (1.1 - .6 * l) * k, 0., 1.);
+}
 // The picture at cell-local q (before warps), as straight colour + alpha.
 vec4 pictureAt(vec2 q, float h) {
-  vec4 c = sampleAt(uCell.xy + warp(q), h);
+  vec4 c;
+  if (uBreathe.x > 1.) {
+    // A breathing mosaic: blocks of px from (cx, cy), the two nested grids an octave apart
+    // crossfaded by where px sits between them, so a block size that follows the voices never steps.
+    float L = log2(uBreathe.x), s0 = exp2(floor(L)), s1 = 2. * s0, w = smoothstep(0., 1., fract(L));
+    vec2 o = uBreathe.yz * uCell.zw;
+    vec2 q0 = clamp(o + (floor((q - o) / s0) + .5) * s0, vec2(.5), uCell.zw - .5), q1 = clamp(o + (floor((q - o) / s1) + .5) * s1, vec2(.5), uCell.zw - .5);
+    c = mix(sampleAt(uCell.xy + warp(q0), h), sampleAt(uCell.xy + warp(q1), h), w);
+  } else c = sampleAt(uCell.xy + warp(q), h);
   vec3 rgb = c.a > 1e-4 ? c.rgb / c.a : vec3(0.);
   float l = dot(rgb, LUMA);
   rgb = mix(vec3(l), rgb, uSat);
   rgb = mix(rgb, vec3(l), uChroma);
+  if (uWash.x > 0.) rgb = mix(rgb, washOf(rgb, uWash.y), uWash.x);
   return vec4(rgb, c.a);
 }
 
@@ -118,7 +158,17 @@ void main() {
   if (mask <= 0.) discard;
   vec4 c = pictureAt(q, .5);
   if (uScan.x > 0.) { float ph = fract(q.y / max(uScan.z, 1.)), e = .5 / (max(uScan.z, 1.) * uScale); c.rgb *= 1. - uScan.x * smoothstep(.5 - e, .5 + e, ph); }
-  if (uPeg.x > 0.) {
+  float pegMix = uPeg.x;
+  if (uBloomPeg.x > 0.) {
+    // Pegs bloom out of (cx, cy): peg cells nearer than the front are pegs, the cells in the front
+    // (band) are pixel blocks a peg wide, the rest stays footage. amount 1 reaches the farthest corner
+    // of the cell, or uBloomReach output px (a bloom centred on the frame: one circle across the call).
+    float P = max(uPeg.y, 2.); vec2 cc = (floor(q / P) + .5) * P, o = uBloomPeg.yz * uCell.zw;
+    float reach = uBloomReach > 0. ? uBloomReach : length(max(abs(o), abs(uCell.zw - o))), d = length(cc - o) / max(reach, 1.), r = uBloomPeg.x * (1. + uBloomPeg.w);
+    if (d < r - uBloomPeg.w) pegMix = 1.;
+    else if (d < r) c = pictureAt(clamp(cc, vec2(.5), uCell.zw - .5), .5);
+  }
+  if (pegMix > 0.) {
     // Peg video: the cell becomes a board. Luma^gamma in 'levels' blue steps, one peg per pitch,
     // pegs on the cell's own grid; a dark peg leaves its socket showing.
     float P = max(uPeg.y, 2.); vec2 ci = floor(q / P), cc = (ci + .5) * P;
@@ -133,7 +183,7 @@ void main() {
              + glow * (lev * .42 * exp(-max(r - .33, 0.) / .09));
     vec3 sock = vec3(.082, .094, .122) * smoothstep(.31 + px, .28 - px, r) * (1. - step(.001, lev) * body);
     vec3 pv = min(peg + sock, vec3(1.));
-    c = vec4(mix(c.rgb, pv, uPeg.x), mix(c.a, 1., uPeg.x * step(.001, A)));
+    c = vec4(mix(c.rgb, pv, pegMix), mix(c.a, 1., pegMix * step(.001, A)));
   }
   o = vec4(c.rgb * c.a, c.a) * mask;
 }`;

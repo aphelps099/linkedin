@@ -12,11 +12,15 @@
 // rises from 1 to 1.6 over three steps. 'step' holds the previous value until
 // the key, then jumps. Before the first key and after the last, the end values hold.
 //
-// bind: 'kick' | 'voice' | 'roll' | 'stem:<name>' | 'eq:<band>' | 'kickLevel'.
+// bind: 'kick' | 'voice' | 'voices' | 'clap' | 'roll' | 'stem:<name>' | 'eq:<band>' | 'kickLevel'.
+// voices: the loudest of the voice stems (Synergy, the lady, a choir stem when the engine has one);
+// clap: 1 on the frame that holds each backbeat clap, snap or snare (a hit), else 0.
 // attack and release are one-pole time constants in seconds (0 = instant).
 // Feature tracks come from the audio (buildFeatures) or, without a render,
 // from the plan itself (planFeatures). Pure: the same inputs, the same numbers.
-import {stepTime, hitFrame, ladyTime, FPS} from './anchors.js';
+import {stepTime, hitFrame, ladyTime, barSteps, FPS} from './anchors.js';
+import {PATTERNS} from '../../allhands/song.js';
+import {trackOf} from '../../allhands/songbook/index.js';
 import {kickSteps, eqTrack, LEAD} from '../../pegboard/eq.js';
 import {STEMS, RENDER_OFFSET} from '../../allhands/engine.js';
 
@@ -36,7 +40,7 @@ export const EASES = {
 export const EASE_NAMES = Object.keys(EASES);
 
 // ---- shape -----------------------------------------------------------------------
-export const BIND_RE = /^(kick|kickLevel|voice|roll|stem:[a-z]+|eq:\d+)$/;
+export const BIND_RE = /^(kick|kickLevel|voice|voices|clap|roll|stem:[a-z]+|eq:\d+)$/;
 export function paramKind(p) {
   if (typeof p === 'number') return 'number';
   if (Array.isArray(p)) return 'keys';
@@ -69,7 +73,7 @@ export function checkParam(p, path, out = []) {
     });
   }
   if (kind === 'bind') {
-    if (!BIND_RE.test(p.bind)) out.push([`${path}.bind`, `unknown feature "${p.bind}" (kick, kickLevel, voice, roll, stem:<name>, eq:<n>)`]);
+    if (!BIND_RE.test(p.bind)) out.push([`${path}.bind`, `unknown feature "${p.bind}" (kick, kickLevel, voice, voices, clap, roll, stem:<name>, eq:<n>)`]);
     for (const f of ['scale', 'base', 'attack', 'release']) if (p[f] !== undefined && !Number.isFinite(p[f])) out.push([`${path}.${f}`, 'must be a finite number']);
     for (const f of ['attack', 'release']) if (p[f] < 0) out.push([`${path}.${f}`, 'must be 0 or more seconds']);
   }
@@ -219,6 +223,7 @@ export function range(p, a, b, ctx) {
 //             kick: Float32Array(frames)       1 on the frame a kick lands (the plan's exact kicks), else 0
 //             kickLevel: Float32Array(frames)  low band (35–150 Hz) of the drums stem, 0..1 (render) or the kick (plan)
 //             roll: Float32Array(frames)       the build's snare-roll velocity, 0..1 (from the plan)
+//             clap: Float32Array(frames)       1 on the frame a backbeat clap, snap or snare lands (the plan's), else 0
 //             stems:{drums, bass, keys, guitar, voice, lady: Float32Array(frames)}   RMS level 0..1
 //             eq: null | {N, edges, data: Float32Array(frames·N)}}                   master bands, eq.js levels
 // Frame g describes song time g/fps; the audio is read LEAD (10 ms) ahead, as
@@ -235,6 +240,36 @@ function kickTrack(plan, fps, frames) {
   const kick = new Float32Array(frames), steps = kickSteps(plan);
   for (let s = 0; s < steps.length; s++) if (steps[s]) { const g = hitFrame(stepTime(plan, s), plan, fps); if (g >= 0 && g < frames) kick[g] = 1; }
   return kick;
+}
+// The backbeat hits of a plan, as the band plays them: {step, late} per clap, snap or snare, late
+// in steps (a laid-back backbeat sounds behind its step). moves/util.js snareHits is this.
+export function backbeatHits(plan, from = 0, to = plan.totalSteps) {
+  const out = [], BS = barSteps(plan), lateS = trackOf(plan.track).backbeatLate ?? 0;
+  (plan.bars || []).forEach((b, bar) => {
+    const L = b.layers || {}, style = L.drums || 'four';
+    for (let s = 0; s < BS; s++) {
+      const step = bar * BS + s;
+      if (step < from || step >= to) continue;
+      const back = s === 4 || s === 12, held = L.holdBreath && s >= 12;
+      const hit = style === 'four' ? (L.clap && PATTERNS.clap.includes(s)) || (L.snare && back)
+        : style === 'half' || style === 'bounce' ? s === 8
+        : style === 'twostep' ? L.snare && back && !held
+        : style === 'pocket' ? (L.snare || L.snap) && back && !held : false;
+      if (!hit) continue;
+      const late = (style === 'pocket' || style === 'bounce') && lateS ? lateS / (stepTime(plan, step + 1) - stepTime(plan, step)) : 0;
+      out.push({step, late:+late.toFixed(6)});
+    }
+  });
+  return out;
+}
+// The backbeat as it sounds (claps, snaps, the snare: backbeatHits, the track's late backbeat
+// included), or the plan's own list (plan.claps, steps) when the song book gives one: 1 on
+// the frame that holds each hit's audible onset.
+function clapTrack(plan, fps, frames) {
+  const clap = new Float32Array(frames);
+  const hits = Array.isArray(plan.claps) ? plan.claps.map(step => ({step, late:0})) : backbeatHits(plan);
+  for (const h of hits) { const t = stepTime(plan, h.step) + h.late * (stepTime(plan, h.step + 1) - stepTime(plan, h.step)), g = hitFrame(t, plan, fps); if (g >= 0 && g < frames) clap[g] = 1; }
+  return clap;
 }
 function rollTrack(plan, fps, frames) {
   const roll = new Float32Array(frames), bs = plan.barSteps ?? 16;
@@ -263,7 +298,7 @@ export function planFeatures(plan, {fps = FPS} = {}) {
   for (const e of plan.lady || []) { const t = ladyTime(plan, e); span('lady', t, t + (e.gate ?? .2)); }
   for (let g = 0; g < frames; g++) if (kick[g]) stems.drums[g] = 1;
   if (choke) for (let g = Math.ceil(choke[0] * fps); g < Math.min(frames, Math.ceil(choke[1] * fps)); g++) for (const n of STEMS) { if (n === 'lady' && g / fps < choke[0] + .5) continue; stems[n][g] = 0; }
-  return {fps, frames, source:'plan', kick, kickLevel:kick.slice(), roll:rollTrack(plan, fps, frames), stems, eq:null};
+  return {fps, frames, source:'plan', kick, kickLevel:kick.slice(), roll:rollTrack(plan, fps, frames), clap:clapTrack(plan, fps, frames), stems, eq:null};
 }
 
 // Offline, from an engine.render(plan, buffers, {tune:{stems:true}}) result: an
@@ -294,7 +329,7 @@ export function buildFeatures(plan, audio, {fps = FPS, offset = RENDER_OFFSET - 
     const t = eqTrack({master}, sr, {fps, N:eqBands, offset, duration:frames / fps, lead});
     eq = {N:eqBands, edges:t.edges.master, data:t.data.master};
   }
-  return {fps, frames, source:'render', kick:kickTrack(plan, fps, frames), kickLevel, roll:rollTrack(plan, fps, frames), stems, eq};
+  return {fps, frames, source:'render', kick:kickTrack(plan, fps, frames), kickLevel, roll:rollTrack(plan, fps, frames), clap:clapTrack(plan, fps, frames), stems, eq};
 }
 
 // The raw series a bind reads.
@@ -304,6 +339,14 @@ function series(features, bind) {
   if (bind === 'kickLevel') return features.kickLevel || features.kick;
   if (bind === 'roll') return features.roll;
   if (bind === 'voice') return features.stems?.voice;
+  if (bind === 'clap') return features.clap ?? null;
+  if (bind === 'voices') {
+    const list = ['voice', 'lady', 'choir'].map(n => features.stems?.[n]).filter(Boolean);
+    if (!list.length) return null;
+    const out = new Float32Array(features.frames ?? list[0].length);
+    for (const x of list) for (let g = 0; g < out.length; g++) if (x[g] > out[g]) out[g] = x[g];
+    return out;
+  }
   if (bind.startsWith('stem:')) return features.stems?.[bind.slice(5)];
   if (bind.startsWith('eq:')) {
     const band = +bind.slice(3), eq = features.eq;
