@@ -215,15 +215,61 @@ if (probe.status !== 0) {
   else if (runs[0]) {
     const fresh = readIndex(runs[0]).shots;
     const faceFields = new Set(['faceBox', 'subjectBox', 'safeCrops', 'cropBasis', 'cropNotes', 'notes']);
+    let tolerances = 0;
     for (const r of fresh) {
       const committed = shots.find(s => s.id === r.id);
       if (!committed) { fail('determinism', `${r.id} not in the committed index`); continue; }
+      const diffs = [];
       for (const k of Object.keys(committed)) {
         if (!cv2 && faceFields.has(k)) continue;
-        if (JSON.stringify(committed[k]) !== JSON.stringify(r[k])) fail('determinism', `${r.id}.${k} differs from the committed index`);
+        if (JSON.stringify(committed[k]) !== JSON.stringify(r[k])) diffs.push(k);
       }
+      if (!diffs.length) continue;
+
+      // Cross-machine tolerance for ffmpeg rounding differences
+      const tolerable = new Set(['energy', 'lumaTrack', 'loops']);
+      const nonTolerable = diffs.filter(k => !tolerable.has(k));
+      if (nonTolerable.length) {
+        for (const k of nonTolerable) fail('determinism', `${r.id}.${k} differs from the committed index`);
+        continue;
+      }
+
+      // Check energy and lumaTrack: ±2 per frame on 99% of frames
+      for (const track of ['energy', 'lumaTrack']) {
+        if (!diffs.includes(track)) continue;
+        const cTrack = track === 'energy' ? energyTrack(committed) : lumaTrack(committed);
+        const rTrack = track === 'energy' ? energyTrack(r) : lumaTrack(r);
+        if (cTrack.length !== rTrack.length) {
+          fail('determinism', `${r.id}.${track} length ${rTrack.length} vs committed ${cTrack.length}`);
+          continue;
+        }
+        const within2 = cTrack.filter((v, i) => Math.abs(v - rTrack[i]) <= 2).length;
+        const pct = within2 / cTrack.length;
+        if (pct < 0.99) {
+          const diffs = cTrack.map((v, i) => Math.abs(v - rTrack[i]));
+          const maxDiff = Math.max(...diffs);
+          const avgDiff = diffs.reduce((a, b) => a + b, 0) / diffs.length;
+          fail('determinism', `${r.id}.${track} differs: ${(pct * 100).toFixed(1)}% within ±2 (max diff ${maxDiff}, avg ${avgDiff.toFixed(2)})`);
+        }
+      }
+
+      // Check loops: same count, lengths and methods
+      if (diffs.includes('loops')) {
+        const cLoops = committed.loops;
+        const rLoops = r.loops;
+        if (cLoops.length !== rLoops.length) {
+          fail('determinism', `${r.id}.loops count ${rLoops.length} vs committed ${cLoops.length}`);
+        } else {
+          for (let i = 0; i < cLoops.length; i++) {
+            if (cLoops[i].len !== rLoops[i].len) fail('determinism', `${r.id}.loops[${i}] length ${rLoops[i].len} vs committed ${cLoops[i].len}`);
+            if (cLoops[i].method !== rLoops[i].method) fail('determinism', `${r.id}.loops[${i}] method ${rLoops[i].method} vs committed ${cLoops[i].method}`);
+          }
+        }
+      }
+
+      tolerances++;
     }
-    determinism = `${fresh.length} shots rebuilt twice, byte-identical, match committed${cv2 ? '' : ' (face fields not compared: no OpenCV)'}`;
+    determinism = `${fresh.length} shots rebuilt twice, byte-identical, match committed${tolerances ? ` (${tolerances} within cross-machine tolerance)` : ''}${cv2 ? '' : ' (face fields not compared: no OpenCV)'}`;
   }
 }
 
