@@ -34,7 +34,8 @@ _spec.loader.exec_module(LADY)            # the lady's aligner, unchanged (its m
 SR = LADY.SR                               # 24 kHz: the aligner's rate
 
 # Spellings Whisper gives for the word itself (added to the lady aligner's list).
-LADY.ALIKE.update({'grateful': {'greatful'}, 'thoughts': set(), 'delve': {'delv'}, 'okay': {'ok'}, 'ok': {'okay'}})
+LADY.ALIKE.update({'grateful': {'greatful'}, 'thoughts': set(), 'delve': {'delv'}, 'okay': {'ok'}, 'ok': {'okay'},
+                   'imposter': {'impostor'}})   # one word, two spellings
 
 # Whisper writes numbers as digits ("40 slides", "10,000 likes"); the lyric spells them.
 ONES = ('zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen '
@@ -219,9 +220,34 @@ def words_of(s):
     return LADY.norm_words(s)
 
 
+# Words that sound exactly alike, which Whisper may spell either way ("a quick sink"):
+# the listener hears the same thing and the board shows the lyric.
+HOMOPHONES = {'sync': ['sink'], 'async': ['a sink', 'a sync', 'asink']}
+
+
+_word_matches = LADY.word_matches
+
+
+def word_matches(expected, heard):
+    """The verifier's per-word match, with the homophones."""
+    if _word_matches(expected, heard):
+        return True
+    exp, got = words_of(expected), ' '.join(words_of(heard))
+    return len(exp) == 1 and exp[0] in HOMOPHONES and any(got == h for h in HOMOPHONES[exp[0]])
+
+
+LADY.word_matches = word_matches
+
+
 def wer(expected, heard):
     """Word error rate, with compounds allowed to join ("game changer" == "gamechanger")."""
     a, b = words_of(expected), words_of(heard)
+    for word, alike in HOMOPHONES.items():
+        if word in a:
+            joined = ' '.join(b)
+            for h in alike:
+                joined = re.sub(rf'\b{h}\b', word, joined)
+            b = joined.split()
     if ''.join(a).replace("'", '') == ''.join(b).replace("'", ''):
         return 0.0, 0
     d = np.zeros((len(a) + 1, len(b) + 1), int)
@@ -414,6 +440,8 @@ def main():
         result = hear(jobs)
     elif cmd == 'pitch':
         result = pitch(jobs)
+    elif cmd == 'rescore':
+        result = [dict(job, errors=wer(job['text'], job['heard'])[1]) for job in jobs]
     elif cmd == 'tamb':
         result = tamb(jobs)
     else:

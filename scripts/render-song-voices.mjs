@@ -15,6 +15,7 @@
 //            else light (.3). A take passes when every one of those is heard exactly.
 //   publish  the passing takes as FLAC (the pitch track in a Vorbis comment) -> public/allhands/voices/,
 //            the manifest -> src/allhands/voices/song-voices.json, the report -> DIR/report.{json,md}
+//   pitch    every kept take's test renders, each syllable against its note -> DIR/pitch.json
 //   tambourine  instruments.js's tambourine alone (shake, hit, groove, a bar of 16ths), measured -> DIR/tambourine.json
 //   sketch   the 20 s Offsite direction sketch from the published bank, Whisper on it -> DIR/listen, DIR/sketch.json
 //
@@ -233,7 +234,28 @@ function verdict(t) {
     at:Object.fromEntries(amountsOf(t.voice).map(m => [m, passAt(m)]))};
 }
 
+// Whisper's words are kept, so a change to the matching (measure.py wer: spellings,
+// numbers, homophones) re-scores every cached take without hearing it again.
+function rescore() {
+  const jobs = [];
+  for (const j of JOBS) for (const spoken of j.variants) {
+    const t = takeOf(j, spoken), r = resultOf(t);
+    for (const [variant, h] of Object.entries(r.hear || {})) jobs.push({name:t.name, variant, text:t.text, heard:h.heard, errors:h.errors});
+  }
+  const rows = py('rescore', jobs, [], () => {}, 100000);
+  let changed = 0;
+  for (const row of rows) {
+    if (row.errors === jobs.find(x => x.name === row.name && x.variant === row.variant).errors) continue;
+    const path = join(OUT, 'work', 'results', `${row.name}.json`), r = readJson(path);
+    r.hear[row.variant].errors = row.errors;
+    writeAtomic(path, JSON.stringify(r, null, 1));
+    changed++;
+  }
+  if (changed) console.log(`rescore: ${changed} results changed`);
+}
+
 async function run() {
+  if (STEPS.has('hear')) rescore();
   for (let round = 0; round < ROUNDS; round++) {
     const pending = JOBS.filter(j => !j.done && j.variants[round] !== undefined);
     if (!pending.length) break;
@@ -294,8 +316,8 @@ function publish() {
   for (const line of [...LINES, ...CUTS.map(c => ({...c, owner:'synthia', voices:['synthia', 'strategy'], why:null}))]) {
     const source = line.from ? LINES.find(l => l.id === line.from) : line;
     const voices = (source?.voices ?? line.voices).filter(v => has(v, line.id));
-    const why = source?.why ?? line.why ?? (voices.includes('synthia') ? null : 'failed');
-    lines[line.id] = {voices, owner:source?.owner ?? line.owner, ...(line.owner === 'synthia' || source?.owner === 'synthia') && !voices.includes('synthia') ? {strategyOnly:why ?? 'failed'} : {}};
+    const owner = source?.owner ?? line.owner, why = owner === 'synthia' ? (source?.why ?? line.why ?? 'failed') : null;
+    lines[line.id] = {voices, owner, ...owner === 'synthia' && !voices.includes('synthia') ? {strategyOnly:why} : {}};
   }
   const order = new Map(LINES.flatMap((l, i) => ['synthia', 'strategy'].map((v, k) => [fileOf(v, l.id), 2 * i + k])));
   const list = [...entries.values()].sort((a, b) => (order.get(a.file) ?? 1e9) - (order.get(b.file) ?? 1e9));
@@ -349,6 +371,29 @@ function report(manifest) {
   console.log(md.slice(0, 24).join('\n'));
 }
 
+// ---------------------------------------------------------------- pitch
+// Every kept take's two test renders, each syllable nucleus against its note
+// (measure.py pitch: normalised autocorrelation and subharmonic summation, no
+// code shared with pixel.js) -> DIR/pitch.json
+function pitch() {
+  const jobs = [];
+  for (const j of JOBS.filter(j => j.chosen)) {
+    const t = j.chosen, r = resultOf(t), entry = entryOf(t, r.align);
+    for (const k of TEST_KEYS) jobs.push({id:t.name, voice:t.voice, variant:`${j.amount}|${k.join(' ')}`, path:join(OUT, 'test', `${j.amount}`, k.join('-'), `${t.name}.wav`),
+      notes:testNotes(entry, j.line, t.voice, k).map(n => ({from:n.from, to:n.to, midi:n.midi}))});
+  }
+  const rows = py('pitch', jobs.filter(x => existsSync(x.path)), [], () => {}, 1000);
+  const summary = {};
+  for (const voice of ['strategy', 'synthia']) {
+    const ns = rows.filter(r => r.voice === voice).flatMap(r => r.notes), c = ns.filter(n => n.cents !== null).map(n => Math.abs(n.cents)).sort((a, b) => a - b);
+    const longer = ns.filter(n => n.to - n.from >= .06 && n.cents !== null), hit = n => Math.abs(n.cents) <= 25 || (n.shsCents !== null && Math.abs(n.shsCents) <= 25);
+    summary[voice] = {renders:rows.filter(r => r.voice === voice).length, notes:ns.length, measured:c.length, medianCents:c[c.length >> 1], p90Cents:c[Math.floor(.9 * c.length)],
+      within25:c.filter(x => x <= 25).length, nuclei60ms:longer.length, nuclei60msWithin25:longer.filter(hit).length};
+  }
+  writeFileSync(join(OUT, 'pitch.json'), JSON.stringify({summary, rows}, null, 1));
+  console.log('pitch', JSON.stringify(summary));
+}
+
 // ---------------------------------------------------------------- listen
 // The tambourine (instruments.js) alone, measured: one shake, one hit, four bars
 // of the groove, and a bar of even 16ths (do its strikes ring the same lines?).
@@ -391,5 +436,6 @@ async function sketch() {
 await run();
 if (STEPS.has('publish')) publish();
 else if (JOBS.some(j => j.tried.length)) report({entries:[], lines:{}});
+if (STEPS.has('pitch')) pitch();
 if (STEPS.has('tambourine')) tambourine();
 if (STEPS.has('sketch')) await sketch();

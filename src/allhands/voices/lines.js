@@ -22,6 +22,10 @@
 import LEXICON from '../vocabulary/lexicon.json' with {type:'json'};
 
 export const SYNTHIA_MAX_SYLLABLES = 6;
+// Strategy's lines Kokoro never says so Whisper hears them, in any spelling
+// tried (render-song-voices.mjs report: "needle" is "nidal", "This." is "This
+// one."): Synthia renders them too, after him, and keeps them if she passes.
+export const SYNTHIA_FALLBACK = ['this', 'move-the-needle'];
 export const VOICE_ORDER = ['synthia', 'strategy'];   // who sings a line both can: the owner's voice first
 
 // takes.js's slug (exchanges), and its pickup ids.
@@ -35,6 +39,7 @@ const sylCount = text => text.toLowerCase().replace(/[^a-z\s-]/g, '').split(/[\s
 // Lines with a take of their own: [{id, kind, text, owner, voices, why, syllables, ask, ref}]
 //   owner   the voice lexicon.json gives the line
 //   voices  who renders it, in preference order: Synthia when she is a candidate, Strategy always
+//           (and Synthia after him on SYNTHIA_FALLBACK)
 //   why     why Synthia is not a candidate: 'strategy' (his line) or 'long'
 // Cuts (tag and impact) have no take of their own: CUTS lists them, from their source line.
 export function lexiconLines(lex = LEXICON) {
@@ -44,7 +49,8 @@ export function lexiconLines(lex = LEXICON) {
     seen.add(line.id);
     const syllables = line.syllables ?? sylCount(line.text);
     const why = line.owner === 'strategy' ? 'strategy' : syllables > SYNTHIA_MAX_SYLLABLES ? 'long' : null;
-    lines.push({...line, syllables, ask:/\?$/.test(line.text), voices:why ? ['strategy'] : ['synthia', 'strategy'], why});
+    const voices = SYNTHIA_FALLBACK.includes(line.id) ? ['strategy', 'synthia'] : why ? ['strategy'] : ['synthia', 'strategy'];
+    lines.push({...line, syllables, ask:/\?$/.test(line.text), voices, why});
   };
   for (const b of lex.bank) {
     if (b.voice !== 'strategy' && b.voice !== 'synthia') continue;

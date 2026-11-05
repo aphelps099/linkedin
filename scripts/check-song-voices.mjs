@@ -8,8 +8,8 @@
 //      the syllable nuclei inside their word, the take trimmed to the speech, the
 //      words the lyric's words, f0 in the voice's range.
 //   3. Every lexicon line a song may cast has a take Whisper passed: every line
-//      Strategy has (he leads), every line the lexicon gives Synthia either hers
-//      or marked Strategy-only (long, or she failed it), every take casting names
+//      of Strategy's in his voice, every line the lexicon gives Synthia in hers or
+//      marked Strategy-only (long, or she failed it), every take casting names
 //      (vocabulary/takes.js TAKES) available in some voice, every drop impact cut
 //      ready; each take at its voice's verified amount.
 //   4. The loader and the chain: loadVoices gives the same samples by fetch (the
@@ -31,7 +31,7 @@ const PUBLIC = resolve(root, arg('public', 'public/allhands/voices'));
 const M = JSON.parse(readFileSync(MANIFEST_PATH, 'utf8'));
 const {decodeFlac, pitchFromTag, pitchToTag} = await import('../src/allhands/voices/flac.js');
 const {pitchTrack, hzMidi} = await import('../src/allhands/voices/pixel.js');
-const {LINES, CUTS, fileOf} = await import('../src/allhands/voices/lines.js');
+const {LINES, CUTS, fileOf, SYNTHIA_FALLBACK} = await import('../src/allhands/voices/lines.js');
 const {VOICES} = await import('../src/allhands/voices/items.js');
 const VT = await import('../src/allhands/voices/voice-table.js');
 const {readVoice} = await import('../src/allhands/voices/node.js');
@@ -93,16 +93,20 @@ const has = (voice, id) => files.has(fileOf(voice, id));
 const amounts = {strategy:[VOICES.strategy.amount], synthia:[VOICES.synthia.amount, VOICES.synthia.fallbackAmount]};
 for (const e of M.entries) ok(amounts[e.voice].includes(e.amount), `${e.file}: sung at ${e.voice}'s verified amount (${e.amount})`);
 let synthiaKept = 0, synthiaCandidates = 0;
+const synthiaOnly = [];
 for (const line of LINES) {
-  const L = M.lines[line.id];
+  const L = M.lines[line.id], fallback = SYNTHIA_FALLBACK.includes(line.id);
   ok(L, `${line.id}: in the line index`);
-  ok(has('strategy', line.id) && L.voices.includes('strategy'), `${line.id}: Strategy sings it (he leads every new line)`);
-  if (line.voices.includes('synthia')) {
+  ok(L.voices.length >= 1, `${line.id}: a passing take in some voice`);
+  if (line.owner === 'strategy' && !fallback) ok(has('strategy', line.id), `${line.id}: Strategy sings his own line`);
+  else if (!has('strategy', line.id)) { synthiaOnly.push(line.id); ok(has('synthia', line.id), `${line.id}: Strategy did not pass it, so Synthia must`); }
+  if (line.owner === 'synthia' && line.voices.includes('synthia')) {
     synthiaCandidates++;
     if (has('synthia', line.id)) { synthiaKept++; ok(L.voices[0] === 'synthia' && !L.strategyOnly, `${line.id}: Synthia first, her take passed`); }
     else ok(L.strategyOnly === 'failed', `${line.id}: Synthia failed it, so it is Strategy-only`);
   } else if (line.owner === 'synthia') ok(L.strategyOnly === 'long' && !has('synthia', line.id), `${line.id}: too long for Synthia, Strategy-only`);
-  eq(L.voices, ['synthia', 'strategy'].filter(v => has(v, line.id)), `${line.id}: the index names exactly the voices with a take`);
+  else ok(!L.strategyOnly && (fallback || !has('synthia', line.id)), `${line.id}: his line; Synthia only as the fallback`);
+  eq(L.voices, line.voices.filter(v => has(v, line.id)), `${line.id}: the index names exactly the voices with a take, the owner's first`);
 }
 for (const c of CUTS) {
   const cuts = M.cuts.filter(x => x.id === c.id);
@@ -122,6 +126,23 @@ if (casting && !custom) {
   const missing = [...casting.TAKES.keys()].filter(id => !VT.AVAILABLE.has(`synthia/${id}`) && !VT.AVAILABLE.has(`strategy/${id}`));
   eq(missing, [], 'every take casting can name has a passing take in some voice');
   for (const [id, t] of casting.TAKES) if (!VT.AVAILABLE.has(`${t.voice}/${id}`)) ok(VT.voicesFor(id).length && (t.voice !== 'synthia' || VT.strategyOnly(id)), `${id}: not in ${t.voice}'s voice, so the index says who sings it`);
+}
+
+// casting with the bank's AVAILABLE: every Strategy and Synthia part of every song cast for the sample
+// post and the 60 fixture posts, on every track, has a passing take in the voice cast
+if (!custom) {
+  const {castSong} = await import('../src/allhands/casting.js');
+  const {SAMPLE_POST} = await import('../src/allhands/lyrics.js');
+  const {TRACK_ORDER} = await import('../src/allhands/songbook/index.js');
+  const posts = [SAMPLE_POST, ...JSON.parse(readFileSync(join(root, 'scripts/fixtures/pixel-posts.json'), 'utf8')).map(x => x.post)];
+  const parts = [];
+  const walk = x => { if (!x || typeof x !== 'object') return; if (x.id && (x.voice === 'strategy' || x.voice === 'synthia')) parts.push(x); for (const v of Object.values(x)) walk(v); };
+  let songs = 0;
+  for (const post of posts) for (const track of TRACK_ORDER) { walk(castSong(post, {track, available:VT.AVAILABLE}).cast); songs++; }
+  const missing = [...new Set(parts.filter(x => !VT.AVAILABLE.has(`${x.voice}/${x.id}`)).map(x => `${x.voice}/${x.id}`))];
+  eq(missing, [], `castSong with the bank's AVAILABLE: ${songs} songs, ${parts.length} band parts, every one a passing take`);
+  const used = new Set(parts.map(x => `${x.voice}/${x.id}`));
+  console.log(`casting: ${songs} songs cast ${parts.length} Strategy and Synthia parts, ${used.size} distinct takes (${[...used].filter(k => k.startsWith('synthia/')).length} Synthia's)`);
 }
 
 // ---- 4. the loader and the chain
@@ -186,4 +207,4 @@ if (!custom) {
 }
 
 const total = M.entries.reduce((s, e) => s + e.bytes, 0);
-console.log(`check-song-voices: ${checks} checks passed. ${M.entries.length} takes (${M.entries.filter(e => e.voice === 'strategy').length} Strategy, ${M.entries.filter(e => e.voice === 'synthia').length} Synthia), ${seconds.toFixed(1)} s, ${(total / 1e6).toFixed(2)} MB FLAC; ${M.cuts.length} cuts; Synthia kept on ${synthiaKept} of ${synthiaCandidates} candidate lines; ${LINES.length} lines, every one sung by Strategy.`);
+console.log(`check-song-voices: ${checks} checks passed. ${M.entries.length} takes (${M.entries.filter(e => e.voice === 'strategy').length} Strategy, ${M.entries.filter(e => e.voice === 'synthia').length} Synthia), ${seconds.toFixed(1)} s, ${(total / 1e6).toFixed(2)} MB FLAC; ${M.cuts.length} cuts; Synthia kept on ${synthiaKept} of ${synthiaCandidates} candidate lines; ${LINES.length} lines, ${LINES.length - synthiaOnly.length} in Strategy's voice${synthiaOnly.length ? ` (not ${synthiaOnly.join(', ')}: Synthia's only)` : ''}.`);
