@@ -234,11 +234,12 @@ for (const id of TRACK_ORDER) {
 // Offsite: voices are the instrument. The band adds her voices to the plan's (offsite.js voicesOf): a
 // round around her ladder that tightens toward the choke, and a chant of her impact word in the drops.
 // Every one is on the pentatonic, the round is gone before the choke (nothing in the silence), the
-// chant sings only in the drops and never over her own lines, and BACK. is the track's own (a stomp
-// and a bloom of voices: no drop kick, no sub drop).
+// chant sings only in the drops and never over her own lines, and BACK. is the track's own (a bloom
+// of voices over the loop's heartbeat: no drop kick, no sub drop). P9: her round's slowed echoes, the
+// drone's pushed chord changes, the slow tape's windows, and the one loop in every bar.
 {
   const tr = TRACKS.offsite, penta = tr.drop.ladder.pentatonic, json = x => JSON.stringify(x, (k, v) => k === 'cut' ? `${v.role}@${v.at}` : v);
-  ok(typeof tr.band.impact === 'function' && typeof tr.band.graph === 'function' && !tr.sound.subDrop && !tr.sound.sawRiser, 'Offsite: BACK. on its own stomp and bloom, no sub drop, no saw riser');
+  ok(typeof tr.band.impact === 'function' && typeof tr.band.graph === 'function' && !tr.sound.subDrop && !tr.sound.sawRiser, 'Offsite: BACK. on its own bloom of voices, no sub drop, no saw riser');
   for (const post of POSTS) {
     const lyrics = lyricsFromPost(post), durations = Object.fromEntries(FORMS.drop60.voiced(lyrics, {track:'offsite'}).map(w => [w, .18 + .11 * syllables(w)]));
     const plan = arrangeDrop(lyrics, durations, {track:'offsite'}), T = plan.timing, sp = plan.step, at = x => T[Math.floor(x)] + (x % 1) * sp, label = `offsite/${lyrics.hook}`;
@@ -252,6 +253,24 @@ for (const id of TRACK_ORDER) {
     ok(chant.length >= 8 && chant.every(v => /^Drop/.test(plan.bars[Math.floor(v.at / 16)].section) && penta.includes(pc(v.midi)) && v.cut.role === 'impact')
       && chant.every(v => !hers.some(e => at(v.at) < at(e.at) + ladyLength(e) && at(e.at) < at(v.at) + v.gate)), `${label}: ${chant.length} chant voices, in the drops only, on the pentatonic, never over her own lines`);
     ok(json([...tr.voicesOf(arrangeDrop(lyrics, durations, {track:'offsite'})).values()].flat()) === json(voices), `${label}: her extra voices are deterministic`);
+    // P9: her round, slowed. Each hit of the first two rungs comes back at half speed an octave down, gone by 11:12.
+    const echo = voices.filter(v => v.role === 'echo'), hits = plan.lady.filter(e => e.role === 'ladder' && e.rung < 2);
+    ok(echo.length === hits.length && echo.every(v => v.cut.role === 'ladder' && v.midi === v.cut.midi - 12 && Math.abs(v.rate - v.cut.rate / 2) < 1e-12 && penta.includes(pc(v.midi)) && at(v.at) + v.gate <= Math.min(at(11 * 16 + 12), plan.choke.time) + 1e-6),
+      `${label}: ${echo.length} slowed echoes of her round, half speed and an octave down, gone by 11:12`);
+    // P9: the drone in runs. A pushed chord change lands on a bar's "and" of four, never across the choke, into or out of Sink In.
+    const runs = tr.runsOf(plan), bar = s => plan.bars[Math.floor(s / 16)];
+    ok(runs.every((r, i) => (!i || runs[i - 1].to === r.from) && (r.pushed ? r.from % 16 === 14 && bar(r.from).section === bar(r.from + 2).section || (bar(r.from).section === 'Drop B' && bar(r.from + 2).section === 'Outro') : r.from % 16 === 0)
+      && !(r.pushed && ([bar(r.from + 2), bar(r.from)].some(b => b.section === 'Sink In') || bar(r.from + 2).layers.impact))) && runs[0].from === 0 && runs.at(-1).to === plan.totalSteps,
+      `${label}: the drone in ${runs.length} runs, ${runs.filter(r => r.pushed).length} chord changes pushed onto the "and" of four, none across the choke or Sink In`);
+    // P9: the slow tape. Each window plays its own first half at half speed, so it hears one chord, and all of it is under that chord.
+    const slow = tr.slowOf(plan), windows = slow.filter(x => !x.whole && x.what !== 'her round, slowed'), stepAt = t => { let s = 0; while (s < plan.totalSteps && T[s + 1] <= t + 1e-9) s++; return s; };
+    ok(windows.length === 4 && windows.every(w => w.rate === .5 && w.to > w.from && new Set(Array.from({length:stepAt(w.to - 1e-6) - stepAt(w.from) + 1}, (_, k) => plan.bars[Math.floor((stepAt(w.from) + k) / 16)].chord.name)).size === 1)
+      && slow.filter(x => x.whole).length === 2 && slow.every(x => x.from < plan.choke.time ? x.to <= plan.choke.time : x.from >= T[plan.marks.impact]),
+      `${label}: ${windows.length} windows of the slow tape, each under one chord, none across the choke; ${slow.reduce((n, x) => n + x.to - x.from, 0).toFixed(1)} s below normal speed`);
+    // P9: one loop in every bar, from the first to the tape stop; no stomp on the unmute's downbeat; Sink In stomps only on its downbeat.
+    ok(plan.bars.every(b => b.layers.shaker && b.layers.clap && b.layers.toms && b.layers.loop > 0) && !plan.kicks.includes(plan.marks.unmute)
+      && plan.kicks.filter(k => Math.floor(k / 16) === plan.marks.sink / 16).join() === String(plan.marks.sink) && plan.kicks.includes(plan.marks.impact),
+      `${label}: the loop in all ${plan.bars.length} bars; the floor joins after the unmute's downbeat; Sink In stomps on its downbeat only; BACK.'s heartbeat is a kick`);
   }
 }
 // Sound check 00 is Circle Back's alone.

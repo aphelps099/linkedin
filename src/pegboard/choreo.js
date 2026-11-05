@@ -71,11 +71,15 @@ const STYLE = {host:'typewriter', verse:'scanline', hook:'wipe', answer:'pop', r
 
 // ---- whole words in stutters -----------------------------------------------------
 // A fragment of a word (her ladder's "LE" and "LET'S BU-", Synergy's stammer, the intro's tease
-// of BACK.) is shown as the whole word or words it comes from: the letters that sound lit, the
-// rest a dim ghost at FRAGMENT_GHOST, so the word always reads and the stutter still shows as the
-// lit letters re-pop on every retrigger. A screen word carries `lit`: how many of its leading
-// letters sound (all of them when it has none).
-export const FRAGMENT_GHOST = .2;
+// of BACK.) is shown as the whole word or words it comes from, every letter fully lit from the
+// screen's first frame: nothing in a stutter is dim. The letters that sound wear a white-hot
+// accent (FRAGMENT_ACCENT, a white mix) and re-pop on every retrigger: on the slow rungs a short
+// white-hot pop (white toward 1, the light overdriven for ~60 ms, the peg springing); on the fast
+// rungs ('steady', a quarter note and faster) the light holds and the letters move instead (the
+// size kick, the rung's row shift), so the climax never strobes. A screen word carries `lit`: how
+// many of its leading letters sound (all of them when it has none).
+export const FRAGMENT_FULL = 1;
+export const FRAGMENT_ACCENT = .55;
 // A letter that has not typed in yet: Synergy's read-ahead lines, and every typewriter screen, show it at
 // this intensity, so a phrase is whole on the board from its first frame and never reads "L", "LE".
 export const READ_AHEAD = .1;
@@ -334,18 +338,16 @@ function drawScreen(board, screen, t, {layoutOf, place, reduced, igniting}) {
     letterIndex++;
     const sung = t >= unit.start, ended = t > word.end;
     const pegs = ch.pegs, n = pegs.length / 2;
-    // The letters of a fragment's word that do not sound: a flat ghost, so the word reads.
-    const ghostLetter = word.lit !== undefined && charInWord >= word.lit;
+    // A fragment's word (a stutter): fully lit, its sounding letters accented (fragmentLight).
+    const frag = word.lit !== undefined, sounding = frag && charInWord < word.lit;
     for (let i = 0; i < n; i++) {
       const px = pegs[2 * i], py = pegs[2 * i + 1], x = origin.x + px, y = origin.y + py + (screen.fx.rowShift || 0);
       if (screen.ghost) { light(board, x, y, screen.ghost * fade, {tone}); continue; }
-      if (ghostLetter || (word.lit !== undefined && screen.voice === 'synergy' && !sung)) { light(board, x, y, FRAGMENT_GHOST * fade, {tone}); continue; }
       let I, white = 0, size = 1, dx = 0, dy = 0, peg = tone;
-      if (screen.voice === 'synergy' && !sung && screen.reveal !== 'wipe') { I = READ_AHEAD; }  // ghost: read ahead on mute
+      if (frag) ({I, white, size} = fragmentLight(screen, word, unit, {x, y, i, n, row:py - (ch.y || 0), rows:ch.h || rows}, t, ctx, sounding, reduced));
+      else if (screen.voice === 'synergy' && !sung && screen.reveal !== 'wipe') { I = READ_AHEAD; }  // ghost: read ahead on mute
       else {
         const l = reduced ? {I:clamp((t - unit.start) / .2), white:0, size:1} : pegLight(screen, word, unit, {x, y, i, n, row:py - (ch.y || 0), rows:ch.h || rows}, t, ctx);
-        // (A fragment's letters that have not sounded yet wait as its ghost, so the word never has a hole.)
-        if (!l && word.lit !== undefined) { light(board, x, y, FRAGMENT_GHOST * fade, {tone}); continue; }
         // No partial words: a typewriter screen (her tag, her whole-phrase rungs, "FULL STOP.", the board's
         // own titles) shows its whole phrase from its first frame as a dim read-ahead ghost, as Synergy's
         // lines do, and lights each letter as it types.
@@ -365,6 +367,20 @@ function drawScreen(board, screen, t, {layoutOf, place, reduced, igniting}) {
     // Drop words wear a 1-peg outline of dark pegs, so the ignition never swallows them.
     if (screen.fx.outline || igniting) outline(board, ch, origin);
   }
+}
+
+// A stutter's light for one peg of its word. Every letter at full (FRAGMENT_FULL; a fast rung's
+// steady 1.15), from the screen's first frame. The sounding letters: the white-hot accent from their
+// onset (FRAGMENT_ACCENT, held), and the reveal's own life on each retrigger: the slow rungs' pop
+// (white toward 1, the light overdriven, the spring), the fast rungs' size kick with the light held.
+// Before a sounding letter's onset (the tease's A, a typewriter's later letter) it is lit, unaccented.
+function fragmentLight(screen, word, unit, peg, t, ctx, sounding, reduced) {
+  const I = screen.reveal === 'steady' ? 1.15 : FRAGMENT_FULL;
+  if (!sounding) return {I, white:0, size:1};
+  if (reduced) return {I, white:t >= unit.start ? FRAGMENT_ACCENT : 0, size:1};
+  const l = pegLight(screen, word, unit, peg, t, ctx);
+  if (!l) return {I, white:0, size:1};
+  return {I:Math.max(I, l.I), white:Math.max(FRAGMENT_ACCENT, l.white), size:l.size};
 }
 
 // Seconds from a unit's onset to the next onset on this screen (or a full beat).

@@ -10,6 +10,7 @@
 //      Synergy's tile untouched by the effects around him, his mouth row green under his wash
 //   5. chrome: name bar, speaking border, toast, banner, Pat's camera-off tile, the lady's tile
 //   6. the board layer appears where scheduled (strip, tile, over a full frame), true black, ignition
+//  6c. psych imagery on the dot grid: under the words in the home, in a tile, footage through the grid, full frame
 //   7. same-origin proxies upload with texImage2D; the reversed proxy's frame N-1-k is frame k
 //   8. the element pool and the stutter cache (budget, exact frames)
 //   9. determinism: two fresh pages, the same frames, the same SHA-256 (synthetic and real footage)
@@ -529,6 +530,54 @@ let page = await freshPage();
   ok(r.dark.max <= 6, `frame ${r.her.black}: true black from the first frame after her (max luma ${r.dark.max.toFixed(1)})`);
   ok(r.ghostScreen === .08 && r.ghost.lit > 200 && r.ghost.out === 0 && r.ghost.max < 160, `frames ${r.G}-${r.N - 1}: the ghost BACK. at I .08 (${r.ghost.lit} lit px, max luma ${r.ghost.max.toFixed(0)}), every lit pixel inside frame 0's BACK. (x ${r.box.x}-${r.box.x + r.box.w}, y ${r.box.y}-${r.box.y + r.box.h} at half size)`);
   log(`6b. the ending: ${checks - before} checks`);
+}
+
+// ---- 6c. psych imagery on the dot grid (pegboard/psych.js through {type:'psych'} board cues) ----------------------
+// Under the song's words in the board's home, in its own tile, as footage through the grid (a tile of the test
+// card's greens: green must turn blue), as a full-frame tile with the home over it; true black at the choke; no
+// green anywhere it lights; the same pixels twice; no more governing than the film without it.
+{
+  const before = checks;
+  const r = await page.evaluate(async () => {
+    const plan = T.plan, T16 = s => Math.floor(plan.timing[s] * 24);
+    const clips = [...[0, 1, 2, 3, 4, 5].map(i => ({id:`g${i}`, at:64, len:64, cell:`G6.${i}`, asset:'shot:card', time:{in:1}})),
+      {id:'black', at:plan.choke.at, len:plan.choke.until - plan.choke.at, cell:'full', asset:'gen:color:#000000'}];
+    const song = {id:'song', at:0, text:{ref:'song'}};
+    const psych = [{type:'psych', id:'home', at:64, len:64, look:'mandala', params:{fold:8}}, {type:'psych', id:'tile', at:64, len:64, look:'ripples', cell:'G6.4'},
+      {type:'psych', id:'foot', at:64, len:64, look:'footage', cell:'G6.1'}, {type:'psych', id:'dark', at:plan.choke.at - 8, len:16, look:'plasma'}];
+    const base = T.compile(T.createEDL({format:'9:16', clips, board:[song]}), {plan, shots:T.fixture});
+    const p = T.compile(T.createEDL({format:'9:16', clips, board:[song, ...psych]}), {plan, shots:T.fixture});
+    const full = T.compile(T.createEDL({format:'9:16', clips, board:[song, {type:'psych', id:'full', at:64, len:64, look:'spiral', cell:'full'}]}), {plan, shots:T.fixture});
+    // A frame with Synergy's words lit in the home.
+    const f = [...Array(p.frames).keys()].find(g => g > T16(64) + 30 && g < T16(128) && p.frame(g).board.screen >= 0 && p.board.screens[p.frame(g).board.screen].voice === 'synergy' && p.board.screens[p.frame(g).board.screen].words.filter(w => w.start + .15 < g / 24).length >= 3);
+    const home = T.layout('G6', '9:16').board, half = r => ({x:r.x / 2, y:r.y / 2, w:r.w / 2, h:r.h / 2});
+    const stat = (img, r) => { let lit = 0, hot = 0, green = 0, blue = 0, warm = 0, max = 0; T.region(img, half(r), q => { const l = T.luma(q); max = Math.max(max, l); if (l > 25) lit++; if (l > 150) hot++; if (q[1] > q[0] + 30 && q[1] > q[2] + 30) green++; if (l > 25 && q[2] > q[0] + 30) blue++; if (l > 25 && q[0] > q[2] + 40 && q[1] > q[2] + 20) warm++; }); return {lit, hot, green, blue, warm, max}; };
+    const a = await T.render(base, f, {scale:.5}), b = await T.render(p, f, {scale:.5}), b2 = await T.render(p, f, {scale:.5}), c = await T.render(full, f, {scale:.5});
+    const tile = T.cellRect('9:16', 'G6.4'), foot = T.cellRect('9:16', 'G6.1');
+    const out = {f, screen:p.board.screens[p.frame(f).board.screen].text, psych:p.frame(f).board.psych.map(x => x.cue),
+      homeBase:stat(a.img, home), homePsych:stat(b.img, home), homeFull:stat(c.img, home), tileBase:stat(a.img, tile), tilePsych:stat(b.img, tile), footBase:stat(a.img, foot), footPsych:stat(b.img, foot),
+      fullTile:stat(c.img, T.cellRect('9:16', 'G6.0')), samples:b.stats.pegSamples || 0, same:(await T.sha(b.img.data)) === (await T.sha(b2.img.data)), gl:b.gl,
+      png1:T.png(b.img), png2:T.png(c.img)};
+    // True black at the choke, with a psych cue live across it.
+    const impact = Math.round(plan.timing[plan.choke.until] * 24), dark = await T.render(p, impact - 1, {scale:.5});
+    out.black = (() => { let m = 0; T.region(dark.img, {x:0, y:0, w:540, h:960}, q => { m = Math.max(m, T.luma(q)); }); return m; })();
+    out.blackLive = p.frame(impact - 1).board.psych.map(x => x.cue).join();
+    // The governor: the film with psych needs no more dimming than without it.
+    const comp = T.comp(.5, 'off', '9:16'); await comp.ready;
+    const g0 = comp.prepare(base, {plan, shots:T.fixture, governor:true}).gains, g1 = comp.prepare(p, {plan, shots:T.fixture, governor:true}).gains;
+    out.gov = {base:[...g0].filter(g => g < 1).length, psych:[...g1].filter(g => g < 1).length, frames:g1.length};
+    return out;
+  });
+  savePng('psych-home-tile-footage.png', r.png1); savePng('psych-full-tile.png', r.png2);
+  ok(r.gl === 0 && [...r.psych].sort().join() === 'foot,home,tile' && r.homePsych.lit > r.homeBase.lit * 1.5 && Math.abs(r.homePsych.hot - r.homeBase.hot) <= r.homeBase.hot * .15 + 20 && r.homePsych.max >= r.homeBase.max - 8,
+    `frame ${r.f}: a mandala fills the home under "${r.screen.slice(0, 24)}" (${r.homeBase.lit} to ${r.homePsych.lit} lit px at half size) and the words still burn brightest (${r.homeBase.hot} and ${r.homePsych.hot} px over luma 150)`);
+  ok(r.tilePsych.lit > 2000 && r.tilePsych.green === 0 && r.homePsych.green === 0, `G6.4: ripples on their own peg board over the tile (${r.tilePsych.lit} lit px); no green pixel in the home or the tile`);
+  ok(r.samples >= 1 && r.footBase.green > 5000 && r.footPsych.green === 0 && r.footPsych.blue > 1000 && r.footPsych.lit > 2000, `G6.1: footage through the grid, the card sampled at one value per peg (${r.samples} read-back): its ${r.footBase.green} green px become blue pegs (${r.footPsych.blue} blue px, ${r.footPsych.warm} warm, 0 green)`);
+  ok(r.fullTile.lit > 2000 && r.homeFull.hot >= r.homeBase.hot * .85 && r.homeFull.green === 0, `a full-frame psych tile with the home drawn over it: the words keep their light (${r.homeFull.hot} px over luma 150, ${r.homeBase.hot} without)`);
+  ok(r.blackLive === 'dark' && r.black <= 6, `the frame before the impact: true black with a plasma cue live across the choke (max luma ${r.black.toFixed(1)})`);
+  ok(r.same, 'psych frames: the same pixels twice (SHA-256)');
+  ok(r.gov.psych <= r.gov.base, `the governor: ${r.gov.psych} of ${r.gov.frames} frames dimmed with the psych cues, ${r.gov.base} without (whole frame and quadrants)`);
+  log(`6c. psych imagery: ${checks - before} checks`);
 }
 
 // ---- 7. proxies through texImage2D -----------------------------------------------------------------------------

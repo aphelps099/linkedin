@@ -427,15 +427,16 @@ export function cleanGuitar(ctx, out, t, notes, v = 1, {strum = .014, ring = .9}
 // src/audio.js office-key and office-printer, made deterministic.)
 
 // A stomp: a foot on a wooden floor. A low body falling to the key's root, the
-// floorboard's dull knock, no click: a floor, not a kick drum.
-export function stomp(ctx, out, t, v = 1, {top = 150, settle = 73.42, decay = .34, thud = .55} = {}) {
+// floorboard's dull knock, no click: a floor, not a kick drum. `heel`: how fast the
+// knock speaks (seconds; a quicker heel lands its onset on the sample, softly).
+export function stomp(ctx, out, t, v = 1, {top = 150, settle = 73.42, decay = .34, thud = .55, heel = .002} = {}) {
   const o = ctx.createOscillator(), g = amp(ctx), sh = drive(ctx, 1.4);
   o.frequency.setValueAtTime(top, t); o.frequency.exponentialRampToValueAtTime(settle * 1.18, t + .035); o.frequency.exponentialRampToValueAtTime(settle, t + .14);
   g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .004);
   g.gain.exponentialRampToValueAtTime(v * .32, t + .09); g.gain.exponentialRampToValueAtTime(.0008, t + decay);
   chain(o, sh, g, out); o.start(t); o.stop(t + decay + .02); done(o, [o, sh, g]);
   const n = noise(ctx, t, .1), lp = biquad(ctx, 'lowpass', 1100, .7), pk = biquad(ctx, 'peaking', 240, 1.3, 7), ng = amp(ctx);
-  ng.gain.setValueAtTime(0, t); ng.gain.linearRampToValueAtTime(thud * v, t + .002); ng.gain.exponentialRampToValueAtTime(.001, t + .085);
+  ng.gain.setValueAtTime(0, t); ng.gain.linearRampToValueAtTime(thud * v, t + heel); ng.gain.exponentialRampToValueAtTime(.001, t + .085);
   chain(n, lp, pk, ng, out); done(n, [n, lp, pk, ng]);
 }
 

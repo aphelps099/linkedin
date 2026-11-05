@@ -13,6 +13,7 @@ import {validate, parseAsset, FX} from './schema.js';
 import {FORMATS, cellRect, layout, layoutClassOf, sameRect, HOME} from '../layouts.js';
 import {buildScreens, activeScreen, indexWords, boardState, stopDarkAt, stopEndAt, TAG_TAIL, ladderWhole} from '../../pegboard/choreo.js';
 import {LADY_TABLE} from '../../allhands/lady-table.js';
+import {driveTrack, driveAt, psychFade} from '../../pegboard/psych.js';
 import MEETING_TRACKING from '../../meeting-room/robot-tracking.json' with {type:'json'};
 import STUDIO_TRACKING from '../media/robot-tracks.json' with {type:'json'};
 
@@ -181,6 +182,7 @@ function textScreen(cue, from, to, text) {
 function cueScreens(edl, plan, songScreens, table) {
   const main = [], cells = [];
   (Array.isArray(edl.board) ? edl.board : []).forEach((cue, i) => {
+    if (cue?.type === 'psych') return;                  // imagery, not type: psychCues
     const span = resolveSpan(plan, cue.at, cue.len ?? (plan.totalSteps * 4), FPS);
     const from = span.time, to = span.end, ref = typeof cue.text === 'object' ? cue.text.ref : null;
     const base = {id:cue.id ?? `cue${i}`, kind:'cue', voice:'board', from, to, reveal:cue.reveal ?? 'pop', tone:cue.palette ?? 'white', release:cue.release ?? 'cut', k:cue.k ?? 1, font:cue.font ?? 'peg9', accent:-1, fx:{}, cell:cue.cell ?? null, z:cue.z ?? (cue.cell ? 'over' : 'under')};
@@ -222,6 +224,21 @@ function cueScreens(edl, plan, songScreens, table) {
   main.sort(order); cells.sort(order);
   for (let i = 0; i < main.length - 1; i++) main[i].to = Math.min(main[i].to, main[i + 1].from);
   return {main:main.filter(s => s.to > s.from), cells};
+}
+
+// Psych cues: generative imagery on the dot grid (pegboard/psych.js). Each is a span in song seconds
+// with its fade (steps, at least 2: half a beat by default is 4 steps), its params compiled as
+// Params from the cue's own origin, and its cell (null: the board's own region at each frame).
+function psychCues(edl, plan, features, fps) {
+  const out = [];
+  (Array.isArray(edl.board) ? edl.board : []).forEach((cue, i) => {
+    if (cue?.type !== 'psych') return;
+    const span = resolveSpan(plan, cue.at, cue.len, fps), origin = {step:span.step, shift:span.shift, frame:span.frame}, pctx = {plan, features, origin, fps};
+    const fade = cue.fade ?? 4, fadeIn = stepTime(plan, span.step + fade) - stepTime(plan, span.step), fadeOut = span.end - (stepTime(plan, span.step + Math.max(0, cue.len - fade)) + span.shift);
+    out.push({id:cue.id ?? `psych${i}`, look:cue.look, seed:cue.seed ?? i, cell:cue.cell ?? null, from:span.time, to:span.end, fadeIn, fadeOut,
+      params:Object.entries(cue.params || {}).map(([k, v]) => [k, paramFn(v, pctx)])});
+  });
+  return out.sort((a, b) => a.from - b.from || (a.id < b.id ? -1 : 1));
 }
 
 // ---- compile ----------------------------------------------------------------------------------
@@ -353,6 +370,9 @@ export function compile(edlIn, opts = {}) {
   try {
     board = edl.board === 'song' ? {mode:'song', screens:song(), cells:[]} : (() => { const s = cueScreens(edl, plan, Array.isArray(edl.board) && edl.board.some(c => typeof c.text === 'object' && /^song/.test(c.text.ref)) ? song() : [], table); return {mode:'cues', screens:s.main, cells:s.cells}; })();
   } catch (e) { report('error', 'schema', `board: ${e.message}`, {path:'board'}); board = {mode:'cues', screens:[], cells:[]}; }
+  // Imagery on the dot grid, and the music it breathes with (the features: a render's or the plan's).
+  try { board.psych = psychCues(edl, plan, features, fps); } catch (e) { report('error', 'schema', `board psych: ${e.message}`, {path:'board'}); board.psych = []; }
+  const drive = board.psych.length ? driveTrack({plan, features}) : null;
 
   // ---- one frame ---------------------------------------------------------------------------------
   const NONE = Object.freeze([]), lead = audioLatency(plan);
@@ -516,6 +536,18 @@ export function compile(edlIn, opts = {}) {
     const screen = board.screens.length ? board.screens.indexOf(activeScreen(board.screens, bt + 1 / fps - lead)) : -1;
     const cellScreens = [];
     for (let i = 0; i < board.cells.length; i++) { const s = board.cells[i]; if (v >= s.from && v < s.to) { const r = cellRect(format, s.cell); if (r) cellScreens.push({screen:i, cell:s.cell, rect:{x:r.x, y:r.y, w:r.w, h:r.h}, z:s.z}); } }
+    // Psych imagery live on this frame, on the board's clock: its time, fade, evaluated params and drive
+    // (the compositor and the governor paint exactly this). rect: its own cell, or null for the board's region.
+    let psych = NONE;
+    for (const p of board.psych) {
+      const fade = psychFade(bt, p.from, p.to, p);
+      if (fade <= 0) continue;
+      const r = p.cell ? cellRect(format, p.cell) : null;
+      if (p.cell && !r) continue;
+      if (psych === NONE) psych = [];
+      psych.push({cue:p.id, look:p.look, seed:p.seed, cell:p.cell, rect:r ? {x:r.x, y:r.y, w:r.w, h:r.h} : null, time:bt, fade,
+        params:Object.fromEntries(p.params.map(([k, fn]) => [k, fn(bt)])), drive:driveAt(drive, bt)});
+    }
     // Lights out: when every tile of a layout is black, the call has gone dark and its board goes
     // with it (true black, sockets off). A full-frame black keeps the board: the choke's tag on
     // bare sockets. Never while her stop phrase still sounds: "FULL STOP." stays on the board
@@ -531,7 +563,7 @@ export function compile(edlIn, opts = {}) {
     const panel = !rect ? 0 : move ? moved.panel : panelOf(rect, over, layers);
     return {f, t, time:v, layout:cls, transport:tr ? {id:tr.id, kind:tr.kind, phase:(f - tr.from) / (tr.to - tr.from), rate:tr.kind === 'rewind' ? -tr.rate : tr.kind === 'jump' ? 1 : null, sound:tr.sound} : null,
       // lead: the engine's latency, so the compositor lights each peg on the frame that holds its sound.
-      camera, board:{time:bt, lead, screen, rect, over, panel, move, dark, banner:L?.banner ? {...L.banner} : null, cells:cellScreens}, layers};
+      camera, board:{time:bt, lead, screen, rect, over, panel, move, dark, banner:L?.banner ? {...L.banner} : null, cells:cellScreens, psych}, layers};
   }
 
   // Trails (fx trail): a layer's copies, the same clip as it was k·frames output frames earlier (its
@@ -794,7 +826,7 @@ function lintProgram({edl, plan, clips, byId, frames, transports, board, flag, r
         // The board never lights over his mouth row: a region laid over his picture, or one held
         // still while a camera move carries his face under it.
         const R = fr.board.rect;
-        if (R && litAt(fr)) {
+        if (R && (litAt(fr) || fr.board.psych?.some(p => !p.rect))) {
           const held = fr.camera && !fr.camera.board, onScreen = held ? boundsThrough(invert(fr.camera.matrix), box) : box;
           const over = held || fr.board.over || fr.layers.some(x => overlap(x.cell, R));
           if (over && overlap(onScreen, R)) per('error', 'G11', c.id, 'board', `${c.id}: the Peg Board lights over Synergy's mouth row (board y ${R.y}-${R.y + R.h})`, f);
@@ -802,6 +834,7 @@ function lintProgram({edl, plan, clips, byId, frames, transports, board, flag, r
         const inside = box.x >= l.cell.x && box.y >= l.cell.y && box.x + box.w <= l.cell.x + l.cell.w && box.y + box.h <= l.cell.y + l.cell.h;
         for (const above of fr.layers.slice(i + 1)) if (above.opacity > .01 && overlap(box, visible(above))) per('error', 'G11', c.id, above.clipId, `${c.id}: ${above.clipId} covers Synergy's mouth row`, f);
         for (const cs of fr.board.cells) if (cs.z === 'over' && overlap(box, cs.rect)) per('error', 'G11', c.id, cs.cell, `${c.id}: a board cue in ${cs.cell} covers Synergy's mouth row`, f);
+        for (const ps of fr.board.psych || []) if (ps.rect && overlap(box, ps.rect)) per('error', 'G11', c.id, ps.cell, `${c.id}: psych imagery in ${ps.cell} covers Synergy's mouth row`, f);
         if (inside && fr.camera && fr.camera.fx.some(x => FX[x.type]?.warps)) per('warn', 'G11', c.id, 'camera', `${c.id}: composite effects (${fr.camera.fx.map(x => x.type).join(', ')}) pass over Synergy's mouth row`, f);
       }
     });

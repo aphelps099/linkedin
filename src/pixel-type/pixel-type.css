@@ -150,6 +150,19 @@ canvas{display:block}
 .pt-chart-labels{position:absolute;inset:0;z-index:1;pointer-events:none}
 .pt-chart-labels span{position:absolute;font:500 9.5px/1 var(--mono);letter-spacing:.1em;text-align:center;color:rgba(169,196,255,.72);white-space:nowrap;transform:translateY(-50%)}
 
+/* psych */
+.pt-psych-stage{aspect-ratio:16/7}
+.pt-psych-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:36px 16px;margin:44px 0 0;padding:0;list-style:none}
+.pt-psych-grid button{display:block;width:100%;text-align:left}
+.pt-psych-grid .pt-frame{aspect-ratio:4/3;transition:box-shadow .25s}
+.pt-psych-grid button:hover .pt-frame{box-shadow:0 0 0 1px var(--faint)}
+.pt-psych-grid button[aria-pressed=true] .pt-frame{box-shadow:0 0 0 1px var(--blue),0 0 28px rgba(43,120,255,.35)}
+.pt-psych-cap{display:grid;grid-template-columns:auto 1fr;gap:5px 10px;margin-top:12px}
+.pt-psych-cap .n{font:500 10px/1.6 var(--mono);color:var(--signal)}
+.pt-psych-cap .t{font:600 17px/1.2 var(--sans);letter-spacing:-.02em}
+.pt-psych-cap .d{grid-column:2;margin:0;font-size:13.5px;line-height:1.45;color:var(--dim);text-wrap:pretty}
+.pt-psych-cap .m{grid-column:2;font:500 9.5px/1.4 var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--faint)}
+
 /* rules */
 .pt-rules{margin:0;padding:0;list-style:none;counter-reset:r;border-top:1px solid var(--rule)}
 .pt-rules li{counter-increment:r;display:grid;grid-template-columns:96px minmax(0,1fr);gap:28px;padding:26px 0 25px;border-bottom:1px solid var(--rule);font-size:clamp(19px,1.9vw,26px);line-height:1.3;letter-spacing:-.015em;color:var(--dim)}
@@ -183,6 +196,7 @@ canvas{display:block}
   .pt-formats{grid-template-columns:minmax(0,9fr) minmax(0,16fr)}
   .pt-formats .pt-format:last-child{grid-column:1/-1}
   .pt-checks{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pt-psych-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media (max-width:760px){
   :root{--gutter:16px}
@@ -204,6 +218,9 @@ canvas{display:block}
   .pt-cards[data-format="1:1"]{--card:150px}
   .pt-cards[data-format="16:9"]{--card:260px}
   .pt-chart{aspect-ratio:4/3}
+  .pt-psych-stage{aspect-ratio:4/5}
+  .pt-psych-grid{gap:28px 12px;margin-top:32px}
+  .pt-psych-cap .d{display:none}
   .pt-rules li{grid-template-columns:40px minmax(0,1fr);gap:12px}
   .pt-checks{grid-template-columns:1fr 1fr}
   .pt-checks label{padding:16px 14px}

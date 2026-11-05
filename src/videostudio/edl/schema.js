@@ -10,6 +10,7 @@
 //     fx?:[{type, ...Param}], chrome?:{name, role, mic, speaking:Param, toast, banner, cameraOff},
 //     origin?, scene?, signature?, why?}
 //   BoardCue {id?, at, len, text | {ref}, font?, k?, reveal?, release?, palette?, fx?:{detune, slow, ...}, cell?, z?, ghost?}
+//          | {type:'psych', id?, at, len, look, params?, seed?, fade?, cell?}   imagery on the dot grid (PSYCH)
 //   Transport {id?, at, len, kind:'rewind'|'tapestop'|'jump', audio:true, rate?, from?:At, seconds?}
 //   CameraCue {id?, at, len, zoom, cx, cy, rot, dx, dy:Param, fx?:[...], board?, clock?:'song'|'film'}   the whole composite
 //   BoardMove {id?, at, frames? (3-24, default 4), ease? (default inOutSine), align?:'start'|'end', why?}
@@ -25,6 +26,7 @@
 // round-trips byte for byte.
 import {checkParam, EASE_NAMES} from './params.js';
 import {FORMAT_NAMES, cellRect} from '../layouts.js';
+import {LOOKS, PSYCH_LOOKS, lookParams} from '../../pegboard/psych.js';
 
 export const VERSION = 1;
 export const FPS = 24;
@@ -113,6 +115,7 @@ const FIELDS = {
   chrome:['name', 'role', 'mic', 'speaking', 'toast', 'banner', 'cameraOff'],
   repeat:['unit', 'count', 'pingpong', 'vary', 'loop'],
   cue:['id', 'at', 'len', 'text', 'font', 'k', 'reveal', 'release', 'palette', 'fx', 'cell', 'z', 'ghost', 'why'],
+  psych:['id', 'type', 'at', 'len', 'look', 'params', 'seed', 'fade', 'cell', 'why'],
   transport:['id', 'at', 'len', 'kind', 'audio', 'rate', 'from', 'seconds', 'signature', 'why'],
   camera:['id', 'at', 'len', 'zoom', 'cx', 'cy', 'rot', 'dx', 'dy', 'fx', 'board', 'clock', 'why'],
   boardMove:['id', 'at', 'frames', 'ease', 'align', 'why'],
@@ -207,8 +210,28 @@ function checkClip(c, path, out, format) {
   for (const k of ['origin', 'scene', 'signature', 'why']) if (c[k] !== undefined && typeof c[k] !== 'string') out.push([`${path}.${k}`, 'must be a string']);
 }
 
+// A psych cue: generative imagery on the dot grid (pegboard/psych.js), under the board's type.
+//   {type:'psych', id?, at, len, look, params?:{name:Param}, seed?, fade? (steps, default 4), cell?}
+// No cell: painted into the board's own region at each frame (the home, the share's board, the
+// full-bleed board), under its words. cell: its own peg board laid over that tile ('full': the frame).
+export const PSYCH = Object.freeze({looks:PSYCH_LOOKS, params:look => lookParams(look), describe:look => LOOKS[look]});
+function checkPsych(c, path, out, format) {
+  unknown(c, 'psych', path, out);
+  checkAt(c.at, `${path}.at`, out);
+  if (!(Number.isFinite(c.len) && c.len > 0)) out.push([`${path}.len`, 'len is a positive number of steps']);
+  if (!PSYCH_LOOKS.includes(c.look)) { out.push([`${path}.look`, `is one of ${PSYCH_LOOKS.join(', ')}`]); return; }
+  if (c.params !== undefined) {
+    if (!isObj(c.params)) out.push([`${path}.params`, 'params is {name: Param}']);
+    else { const spec = lookParams(c.look); for (const [k, v] of Object.entries(c.params)) { if (!spec[k]) out.push([`${path}.params.${k}`, `${c.look} has no parameter "${k}" (${Object.keys(spec).join(', ')})`]); else for (const [q, m] of checkParam(v, `${path}.params.${k}`)) out.push([q, m]); } }
+  }
+  if (c.seed !== undefined && !Number.isInteger(c.seed)) out.push([`${path}.seed`, 'seed is a whole number']);
+  if (c.fade !== undefined && !(Number.isFinite(c.fade) && c.fade >= 2)) out.push([`${path}.fade`, 'fade is at least 2 steps: a pattern never switches on or off in one frame']);
+  if (c.cell !== undefined && format && !cellRect(format, c.cell)) out.push([`${path}.cell`, `no cell "${c.cell}" in ${format}`]);
+}
+
 function checkCue(c, path, out, format) {
   if (!isObj(c)) { out.push([path, 'a board cue is an object']); return; }
+  if (c.type !== undefined) { if (c.type === 'psych') checkPsych(c, path, out, format); else out.push([`${path}.type`, 'a board cue\'s type is "psych" (generative imagery) or none (type)']); return; }
   unknown(c, 'cue', path, out);
   checkAt(c.at, `${path}.at`, out);
   if (!(Number.isFinite(c.len) && c.len > 0) && !(c.len === undefined && c.text?.ref === 'song')) out.push([`${path}.len`, 'len is a positive number of steps (only a {ref:"song"} cue may run to the end)']);

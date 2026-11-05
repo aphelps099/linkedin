@@ -6,8 +6,12 @@
 // does on /allhands/ and /pixel-type/, bloom and sockets included.
 //
 //   const boards = createBoardLayer(gl, {plan, scale});
-//   const tex = boards.draw({w, h, screens, time, pitch?, sockets?, kick?, gain?, transient?})   // WebGLTexture, w×h output px
-//   boards.luma({w, h, screens, time})       predicted luminance (governor.js boardLuma)
+//   const tex = boards.draw({w, h, screens, time, pitch?, sockets?, kick?, gain?, transient?, psych?, sample?})   // WebGLTexture, w×h output px
+//   boards.luma({w, h, screens, time, psych?})       predicted luminance (governor.js boardLuma)
+//
+// psych: the frame's psych entries for this region (compile: frame.board.psych), painted after the
+// screens by pegboard/psych.js paintPsych, so the type always wins. sample(grid): the picture under the
+// region at one value per peg ({cols, rows, data} RGBA, top row first), for the 'footage' look.
 //
 // Pegs are hits (edl/anchors.js): each lights on the frame that holds its audible onset. choreo
 // keys every onset to the time it is given, and the compositor passes the middle of the frame
@@ -23,6 +27,7 @@ import {PEG9} from '../../pegboard/fonts/peg9.js';
 import {PEG5} from '../../pegboard/fonts/peg5.js';
 import {PEG3} from '../../pegboard/fonts/peg3.js';
 import {paint, boardState} from '../../pegboard/choreo.js';
+import {paintPsych} from '../../pegboard/psych.js';
 import {boardLuma} from '../../pegboard/governor.js';
 import {pitchFor} from '../../pegboard/stage.js';
 import {kickAt} from '../../pegboard/eq.js';
@@ -92,7 +97,7 @@ export function boardTypeBounds(w, h, screen, grid = boardGrid(w, h)) {
 export function createBoardLayer(gl, {plan, scale = 1, quality} = {}) {
   const instances = new Map();
   let tick = 0, moving = null;
-  const MAX = 4;
+  const MAX = 6;                       // the home, cue cells and psych cells: room for each without thrash
 
   function target(W, H) {
     const tex = gl.createTexture();
@@ -147,8 +152,10 @@ export function createBoardLayer(gl, {plan, scale = 1, quality} = {}) {
 
   // Paint the board for a region at song time t. sockets: false hides the empty sockets
   // (the board laid over footage shows only its light).
-  function paintGrid(grid, screens, t, {sockets = true, gain = 1} = {}) {
+  function paintGrid(grid, screens, t, {sockets = true, gain = 1, psych = null, sample = null} = {}) {
     paint(grid.board, screens, t, {plan, layoutOf:grid.layoutOf, place:grid.place});
+    // Imagery on the dot grid, under the type: each entry carries its own time, drive and params.
+    if (psych?.length) for (const p of psych) paintPsych(grid.board, p, p.time, {drive:p.drive, frame:p.look === 'footage' && sample ? sample(grid) : null});
     if (!sockets) grid.board.sockets = 0;
     grid.board.exposure *= gain;
     return grid.board;
@@ -156,10 +163,10 @@ export function createBoardLayer(gl, {plan, scale = 1, quality} = {}) {
 
   return {
     // Draw a board region; returns the texture (RGBA8, w×h output px at the render scale, framebuffer rows).
-    draw({w, h, screens, time, pitch, sockets = true, gain = 1, safe = null, transient:passing = false}) {
+    draw({w, h, screens, time, pitch, sockets = true, gain = 1, safe = null, transient:passing = false, psych = null, sample = null}) {
       w = Math.round(w); h = Math.round(h);
       const it = (passing ? transient : instance)(w, h, pitch ?? boardPitch(w, h), safe);
-      const board = paintGrid(it.grid, screens, time, {sockets, gain});
+      const board = paintGrid(it.grid, screens, time, {sockets, gain, psych, sample});
       // The kick's lift is a hit: it shows from the frame that holds the kick's sound (time is the
       // middle of the frame less the latency, so half a frame of lead lands it there).
       const kick = /^Drop/.test(sectionAt(plan, time)) && kickAt(plan, time, 1 / 48) ? 1 : 0;
@@ -167,11 +174,12 @@ export function createBoardLayer(gl, {plan, scale = 1, quality} = {}) {
       return {texture:it.tex, width:it.W, height:it.H, grid:it.grid, stats:it.renderer.stats};
     },
     // Predicted luminance of the board region at t, without drawing (the governor's input).
-    luma({w, h, screens, time, pitch, safe = null}, grids = new Map()) {
+    luma({w, h, screens, time, pitch, safe = null, psych = null}, grids = new Map()) {
       const key = `${Math.round(w)}x${Math.round(h)}@${pitch ?? boardPitch(w, h)}${safe ? `|${safe.x0}-${safe.x1}` : ''}`;
       let grid = grids.get(key);
       if (!grid) grids.set(key, grid = boardGrid(Math.round(w), Math.round(h), pitch ?? boardPitch(w, h), safe));
-      return boardLuma(paintGrid(grid, screens, time));
+      // (Footage is predicted from the picture it takes over, by the caller: no frame here.)
+      return boardLuma(paintGrid(grid, screens, time, {psych:psych?.filter(p => p.look !== 'footage')}));
     },
     state:t => boardState(plan, t),
     get size() { return instances.size; },

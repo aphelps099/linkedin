@@ -280,6 +280,21 @@ export const COPY_FS = HEAD + `
 uniform sampler2D uSrc; out vec4 o;
 void main() { o = texelFetch(uSrc, ivec2(gl_FragCoord.xy), 0); }`;
 
+// The picture under a board region, one value per peg (pegboard/psych.js 'footage'): each texel of a
+// cols × rows target averages 4 × 4 taps over its peg's cell of the composite. uRect is the grid's
+// rect in device px (top-left origin); the composite is a framebuffer texture (row 0 at the bottom).
+export const PEGS_FS = HEAD + `
+uniform sampler2D uSrc; uniform vec4 uRect; uniform vec2 uSize, uGrid; out vec4 o;
+void main() {
+  vec2 g = floor(gl_FragCoord.xy), cell = uRect.zw / uGrid, top = uRect.xy + vec2(g.x, uGrid.y - 1. - g.y) * cell;
+  vec3 s = vec3(0.);
+  for (int j = 0; j < 4; j++) for (int i = 0; i < 4; i++) {
+    vec2 p = top + (vec2(float(i), float(j)) + .5) * .25 * cell;
+    s += texture(uSrc, vec2(p.x / uSize.x, 1. - p.y / uSize.y)).rgb;
+  }
+  o = vec4(s / 16., 1.);
+}`;
+
 // Bloom source at half resolution: a 4-tap tent with a soft knee on the hottest channel.
 export const BRIGHT_FS = HEAD + `
 uniform sampler2D uSrc; uniform vec2 uTexel; uniform float uT, uK;

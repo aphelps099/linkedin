@@ -204,7 +204,7 @@ function App() {
   const current = playing ? cue : null;
   const stammer = current?.stutter ? current.stutter.word.split(' ')[0].slice(0, 3).toUpperCase() + '–' : null;
   const ladyLine = current?.lady ? current.lady.display : null;
-  // A fragment of her ladder ("LE") reads as the whole word, its sounding letters lit, as on the board.
+  // A fragment of her ladder ("LE") reads as the whole word, fully lit, its sounding letters accented, as on the board.
   const ladyWhole = current?.lady?.role === 'ladder' && plan ? ladderWhole(plan, current.lady) : null;
   const sections = plan?.sections || FORMS[playForm].sectionsOf(playTrack), songTrack = trackOf(playTrack);
   const sectionName = playing ? current?.section || 'Intro' : status === 'ended' ? 'Adjourned' : 'Waiting room';
@@ -222,7 +222,7 @@ function App() {
       <div className="ah-chart-labels" ref={labels} aria-hidden="true"/>
       <div className="ah-stage-meta"><span>{sectionName}</span><span>{playing && current ? `Bar ${String(current.bar + 1).padStart(2, '0')} / ${plan.bars.length}` : `${songTrack.bpm} BPM · ${songTrack.key}`}</span></div>
       <p className="ah-line" aria-live="polite"><span className={`ah-caption ${playing && !current?.line && !ladyLine ? 'empty' : ''}`}>
-        {playing && ladyLine && !stammer ? (ladyWhole ? ladyWhole.map((w, i) => <React.Fragment key={i}>{i ? ' ' : ''}<span className="sung">{w.text.slice(0, w.lit)}</span>{w.lit < w.text.length ? <span>{w.text.slice(w.lit)}</span> : null}</React.Fragment>) : <span className="sung">{current.lady.display}</span>)
+        {playing && ladyLine && !stammer ? (ladyWhole ? ladyWhole.map((w, i) => <React.Fragment key={i}>{i ? ' ' : ''}<span className="sung hot">{w.text.slice(0, w.lit)}</span>{w.lit < w.text.length ? <span className="sung">{w.text.slice(w.lit)}</span> : null}</React.Fragment>) : <span className="sung">{current.lady.display}</span>)
           : playing && current?.line ? current.line.words.filter(w => !!w.repeat === (current.word?.line === current.line.id && !!current.word.repeat)).map((w, i) => <span key={i} className={current.word && w.at <= current.word.at ? 'sung' : ''}>{w.display} </span>)
           : playing ? null : status === 'ended' ? 'Synergy has ended the meeting.' : 'This meeting could have been a song.'}
       </span></p>

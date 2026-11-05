@@ -153,7 +153,7 @@ play the Drop Edition; Sound check 00 stays Circle Back's own rehearsal.
 | **Circle Back** (`circle-back`, default) | 120 BPM, A minor, swing .12 | 30 bars, 60.0 s | French house. Am9 · Fmaj9 · Cmaj9 · G6/9, 909 kit, offbeat saw bass, detuned saw stabs, Kevin's muted chops. Drop A half-time on a wobble, Drop B four-on-the-floor. |
 | **Humbled and Honored** (`humbled-and-honored`) | 92 BPM, E-flat major, swing .24 | 24 bars, 62.6 s | Neo-soul slow jam. E♭maj9 · Cm9 · Fm9 · B♭13sus (I-vi-ii-V), electric piano (two-operator FM, tremolo pan), finger snaps and a sidestick 18 ms behind the beat, round finger bass, Kevin's clean double-stops. The build rocks IV-V and never resolves; BACK. lands on the relative minor in a half-time bounce on a gliding 808; Drop B comes home to I; the outro is the amen, IV to I. |
 | **Hustle** (`hustle`) | 130 BPM, F minor, swing .2 | 32 bars, 59.1 s | UK garage. Fm9 · D♭maj9 · E♭6/9 · Cm11 (i-VI-VII-v), shuffled 2-step kit (kick on one and the "and" of three, ghost snares), speed-garage reese bass jumping octaves, house organ stabs (drawbar harmonics, key click). The build rocks VI-iv under the ladder, VII for the last bar, BACK. on i. Drop A is the 2-step bass drop: every bass note sweeps its filter open and shut (the speed-garage growl) under the organ riff an octave up. Drop B goes four-on-the-floor with a sidechain that pumps bass, keys and pad. |
-| **Offsite** (`offsite`) | 108 BPM, D major, swing .08 | 27 bars, 60.0 s | Voice-loop psych pop, the Panda Bear lane (see "Offsite" below). Dadd9 · G6/9, droning; voices as the instrument (her ladder as a round, her impact word as a chant, his vocoder round a two-beat canon, a wordless formant choir), stomps, a room of clappers, tuned floor toms, desk slaps, the printer, keyboard clatter, a mug, a chair; a pump organ, Pat humming the root, Kevin's looping clean figure. BACK. is a stomp and a bloom of voices, no bass slam; Sink In goes under water. |
+| **Offsite** (`offsite`) | 108 BPM, D major, swing .1 | 27 bars, 60.0 s | Voice-loop psych pop, the Panda Bear lane (see "Offsite" below). Dadd9 · G6/9, droning, the changes pushed onto the "and" of four; voices as the instrument (her ladder as a round, her impact word as a chant, his vocoder round a two-beat canon, a wordless formant choir); one loop from the first bar to the tape stop, leaning on the offbeats (soft even stomps, a room of clappers, rolling floor toms, the printer, keyboard clatter, a mug), desk slaps into the choke; a pump organ, Pat humming the root on the offbeats, Kevin's looping clean figure; a slow tape (half speed, an octave down) under the second verse, into Sink In and under the sign-off. BACK. is a bloom of voices with no slam under it; Sink In goes under water. |
 
 **What a track defines.** `bpm`, `step` (one 16th in seconds), `swing`, `key`,
 `pitchClasses` (its scale), `chords` (each: `root` for Pat, `notes` for the
@@ -635,7 +635,7 @@ lyrics, samples or song structures.
 
 | | |
 |---|---|
-| Tempo and key | 108 BPM (a 16th is 0.139 s), swing .08, straight from the build's third bar; D major (Ionian: a haze song may be major) |
+| Tempo and key | 108 BPM (a 16th is 0.139 s), swing .1 (P9; .08 before), straight from the build's third bar; D major (Ionian: a haze song may be major) |
 | Harmony | Dadd9 and G6/9, I and IV: two bars each in the verse (a four-bar loop), a bar each in the build and the drops. Pat holds a D pedal under the verse. Melody on D major pentatonic (D E F♯ A B), every note on both chords. |
 | Form | 27 bars, 60.0 s. Intro 0-3 (the muted call: typing, the printer, a chair, the room; it unmutes at bar 2 on "Thanks for joining"), verse 3-9, build 9-15 (her ladder from F♯3, choke 14:8.75 on the sample), BACK. at bar 15, Drop A 15-18, Sink In 18, Drop B 19-23, outro 23-27, "Full stop." at 26:8 |
 
@@ -655,21 +655,121 @@ after; from bar 12 they sing with her, a chord under her line, gated as she is. 
 latest entry after her hit goes 12, 4, 2, 0, 0, 0 16ths: the round tightens
 into one voice at the choke. Her stem covers 96-98% of bars 9-10 with voice.
 
-**Hands, floors and the office.** Stomps on a wooden floor (the kick's role,
-tuned to D2: they pump the pad and Pat gently), a room of clappers on two and
-four (three to six people, each a few ms early or late, each hand its own
-pitch), floor toms on D3 and A2, desk slaps for the build's 16ths and 32nds,
-the printer as the shaker. The office is loop material: keyboard clatter as the
-hats, a mug (a ceramic tink on A5), a chair creak into the build and at the end,
-the room's own air under the muted call, the printer feeding a sheet.
+**One loop (P9).** Aaron, on the first Offsite film: "this one can use just a
+steady panda bear upbeat looping rhythm", "less of the downbeat", "a little more
+slow motion". The rhythm is one bar, the same in every section from the first
+bar (under the muted call) to the tape stop, and its weight is on the offbeats
+(`STOMPS`, `CLAPS`, `TOMS`, `SHAKE`, `TYPE` in offsite.js):
+- soft, even stomps on a wooden floor, one and three at .38, two and four at .42
+  (the kick's role, settling on D2, pumping the pad and Pat; one and three pump
+  a little less);
+- a room of clappers on two and four (two to six people, each a few ms early or
+  late, each hand its own pitch), with two hands on the "and" before each;
+- floor toms on A2 and D3 rolling on the "e" and the "and" after each beat,
+  never on it, and stopping two 16ths short of the next stomp;
+- the printer on every 16th, leaning on the "and" and the "a" (with swing .1,
+  the shuffle); keyboard clatter as the hats, on the "and"s; a mug on beat four
+  every other bar.
 
-**BACK.** is a stomp, both floor toms and every clapper at once (no drop kick,
-no sub drop, no downlifter: `band.impact`), Pat's hum rising under it, and her
-word as a chord of her: five copies on A3, D4, F♯4, D3 and A4, a breath apart,
-then four more a beat later under her deep echo, all into the bloom (a 7 s space
-that swells in over 180 ms and hears nothing before BACK., so it opens empty).
-The choir swells into it. Her stem after BACK.: about -26 dB at 1.5-2 s, where
-the shorter first version was at -34.
+The sections change by how much of the loop plays and how hard (`layers.loop`,
+0.3 under the call to 1.15 in Drop B: how many people clap, the "e" toms, the
+levels), by a second room of clappers on the "and"s of two and four in the
+drops, by the voices, the filters' brightness, and the canon and the bloom. The
+build's desk slaps roll on top of the loop while the drum bus high-passes it
+thin; Sink In's tape slows the same loop with everything else. Nothing slams a
+downbeat:
+- **BACK.** is the bloom of voices alone (below). Under her word only the loop's
+  heartbeat at its lightest, with no pump; Pat comes in on the "and" and the
+  rest of the loop on beat two. The stomp, both floor toms and every clapper at
+  once are gone.
+- The floor joins on beat two of the bar the call unmutes in.
+- The drone moves in runs (`runsOf`): a chord holds while it lasts, and a change
+  inside a section arrives an 8th early, on the "and" of four (15 changes on
+  the sample; never across the choke, into or out of Sink In). Pat's note there
+  is already the next root and Kevin's "and" of four plays the new chord.
+- Pat hums on the offbeats: the "and" of one and of four under the verse, and in
+  the drops a walk of root, octave, fifth and the next root. Kevin's figure sits
+  on the offbeats, Drop B's strum is on the "and" of one, and the choir's swell
+  into Drop B lets go across the bar line, not on it.
+- The drums are drier (reverb send .24 to .14): the wash belongs to the voices.
+  Every stomp lands clean over the room (below), except under the slow tape's
+  half-time ghost of the loop.
+
+**BACK.** is a bloom of voices with no slam under it (no drop kick, no sub drop,
+no downlifter: `band.impact`): her word as a chord of her, five copies on A3,
+D4, F♯4, D3 and A4 a breath apart, then four more a beat later under her deep
+echo, all into the bloom (a 7 s space that swells in over 180 ms and hears
+nothing before BACK., so it opens empty). The choir swells into it. The chord
+goes straight into the bloom, not through her stem, so it reads her stem's mute
+(`graph.muted`, engine.js `setMuted`, P9): a drums-alone render used to carry a
+7 s wash of her under every Drop A kick.
+
+**Slow motion (P9).** A tape-slowed copy of the room (`SLOW`, `slowWindow`): one
+delay line of Offsite's own whose delay grows at half the clock inside a window,
+so it plays what the room played from the window's start at half speed, an
+octave down (pitch = 1 - d'(t)), high-passed at 150 Hz and darkened at 2.4 kHz
+like a worn tape, silent outside its windows (bit-identical to the song without
+it there). No wow: that stays Sink In's and the stop's. Each window reads only
+its first half, so it hears one chord, and the whole window sits under that
+chord. It hears the loop's hands, the organ, the pad and Kevin (in the outro
+Synergy instead of the hands), never her: the claps of its half-time ghost land
+on beat three, the printer in 8ths.
+
+| Window | Bars | What slows | Level under the mix |
+|---|---|---|---|
+| The second verse | 5:0-6:14 | the loop's hands, the organ and the pad, Kevin | -12.6 LU |
+| The hook | 7:0-9:0 (spliced on bar 7) | the same | -12.2 LU |
+| The room starts to sink | 17:8-18:0, half a bar before Sink In | the same | -9.4 LU |
+| The sign-off | 25:0 to the tape stop | the organ and the pad, Kevin, Synergy's "Let's circle back" | -8.1 LU |
+
+And her round, slowed (`ECHO`, voicesOf role `echo`): each hit of the ladder's
+first two rungs comes back a dotted quarter later at half speed, an octave
+down, panned wide, gone by 11:12 before the round tightens. With Sink In and
+the tape stop (the whole room, as before), 19.7 s of the 60 s now run below
+normal speed (33%), against 2.7 s (4%) before; 19.4-20.4 s on every fixture
+post (`slowOf(plan)` lists the spans, for checks and for the picture). The
+levels above are a render minus the same render with the windows off; at the
+window edges and the splice no sample step exceeds the layer's own 99.5th
+percentile step (no click).
+
+**Measured (P9),** the sample post, before and after. Onset strength is
+spectral flux (2048 / hop 128, 30 Hz-16 kHz) at its peak in the 60 ms after
+each 16th, averaged by position; section downbeats (BACK., the unmute) apart:
+
+| | Before | After |
+|---|---|---|
+| Downbeats over the 8th offbeats, mix (verse to the tape stop) | +2.8 dB | -1.0 dB |
+| Downbeats over the other beats, mix | +3.2 dB | +0.1 dB |
+| Downbeats over the 8th offbeats: verse, build, Drop A, Drop B, outro | +2.1, +3.4, +0.5, +5.7, +0.2 dB | -1.3, +0.5, -6.0, -1.5, -1.6 dB |
+| Low end (40-160 Hz) on downbeats over the bar's mean, mix | +4.4 dB | +0.5 dB |
+| Drop B's downbeat, flux | 745 | 283 |
+| Low end in the 150 ms after BACK. | 45.5 dB | 34.6 dB (-10.9) |
+| Bars with the whole loop (claps, the printer, toms or stomps), from the call to the stop | 21 of 27 (none in bars 0-1, 12-14, 18) | 27 of 27 |
+| Each bar's onset pattern against the verse's, drums alone (correlation): Drop A, Drop B, outro, whole song | 0.09, 0.21, 0.21, 0.41 | 0.96, 0.93, 0.93, 0.78 |
+| Below normal speed | 2.7 s (Sink In, the tape stop) | 19.7 s |
+
+(Sink In reads 0.07 on the pattern: its tape slows the same loop off the grid.)
+The gates on the takes (sample, cold open off and on, fixtures 15 and 47
+cast by the post, and fixture 28): integrated -9.82 to -9.47 LUFS, true peak
+-1.29 dBTP at most, the drops +5.00 to +7.25 LU over the verse on the mix and
++3.46 to +6.25 on the phone (the sample: Drop A +5.00 / +3.58, Drop B +5.61 /
++4.46; before +5.18 / +3.29 and +5.62 / +4.17), digital silence before BACK.
+Whisper small.en hears "Let's circle back." whole on the sample (before too;
+an intermediate loop with toms and a clap on BACK.'s first beat lost "back",
+hence its quiet first beat). Two renders in fresh browsers: the same bytes.
+
+**Every kick lands clean (P9).** check-videostudio-export section 3 measures
+the engine's latency on every kick of the drums alone (the first sample within
+40 dB of the kick's peak, from 2 ms before its step) and wants 60% within
+0.5 ms of 16.33 ms. Before P9 Offsite had 40 of 72 (56%): tom and stomp tails,
+the room tone on the drum bus and her BACK. chord's bloom (which ignored her
+mute) sat above 1% of the kicks. Now 70 of 82 (85%), median 16.395 ms, latest
+16.599 ms: the toms stop two 16ths short of a stomp, the room tone, the chair
+and the printer's feed play on the keys stem (room, not kit), the bloom chord
+mutes with her, the stomp's heel speaks at once (`heel`), the drums' reverb is
+lower. The early ones are the 2 and 4 stomps under the slow tape's ghost, 15:8
+under her deep "BACK." (the deep bus is after the tape and ignores the mutes, on
+every track), Drop B's downbeat (the tape's reset) and the outro's (the fill).
 
 **Drop A** is the clap-and-chant groove: her impact word chanted on five
 16ths a bar, two voices a pentatonic third apart, stepping back 3 dB under his
@@ -677,13 +777,15 @@ words and never over her own lines. **Sink In** goes under water: the room
 slides to half speed and an octave down as on every track, the tape's low-pass
 closes to 650 Hz with resonance, and a 0.95 Hz wow rides the varispeed; her
 deep "sink in" sits on top, dry: from her "Let that" to the end of the bar
-she sends nothing to the canon or the bloom. **Drop B** is the wall: the chant
-under him, the falsetto, his choir, the canon at its widest, the room clapping
-on the 8ths into the outro. **The outro** winds down to the drone and the
-office (typing, the printer, a mug), and the tape stops under "Full stop.".
+she sends nothing to the canon or the bloom. The loop plays on under the tape
+(only its first stomp is a kick: the tape delays the rest). **Drop B** is the
+wall: the chant under him, the falsetto, his choir, the canon at its widest,
+the loop at its fullest, the room clapping on the 8ths into the outro. **The
+outro** winds down to the drone and the office (typing, the printer, a mug) on
+a thinning loop and the slow tape, and the tape stops under "Full stop.".
 
 **What it is made of.** Everything is synthesized in the browser
-(`instruments.js`: `stomp`, `floorTom`, `gangClap`, `keyClick`, `mug`,
+(`instruments.js`: `stomp` (P9: `heel`, how fast its knock speaks), `floorTom`, `gangClap`, `keyClick`, `mug`,
 `creak`, `roomTone`, `printerFeed`, `voicePad`, `harmonium`, `humBass`,
 `washImpulse`), plus her own recordings (`public/phrases`, the cast's files,
 which the page already loads) and Synergy's eSpeak words. Nothing else: `public/`
@@ -714,7 +816,10 @@ by a render quantum, so each line now feeds back on itself with one exit.
   and the cast seam. On Offsite (P7) also the band's extra voices of hers
   (`voicesOf`): the round on the pentatonic and gone before the choke, the
   round tightening bar by bar, the chant only in the drops and never over her
-  own lines, all deterministic.
+  own lines, all deterministic; P9 also her round's slowed echoes (half speed,
+  an octave down, gone by 11:12), the drone's pushed changes (on the "and" of
+  four, never across the choke or Sink In), the slow tape's four windows (each
+  under one chord) and the loop in every bar.
 - `npm run check:pegboard` and `npm run check:pixel` run for every track
   (screens on time, true black, ignition, the flash governor; Pixel Text cues);
   every recast ladder cut runs on Circle Back and on Offsite.

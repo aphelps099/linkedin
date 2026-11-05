@@ -25,7 +25,7 @@ import {lyricsFromPost, SAMPLE_POST, syllables} from '../src/allhands/lyrics.js'
 import {timingTable, STEP} from '../src/allhands/song.js';
 import {withColdOpen} from '../src/allhands/drop.js';
 import {kickSteps} from '../src/pegboard/eq.js';
-import {validate, stringify, parse, createEDL, merge, canonical, FX, FX_TYPES} from '../src/videostudio/edl/schema.js';
+import {validate, stringify, parse, createEDL, merge, canonical, FX, FX_TYPES, PSYCH} from '../src/videostudio/edl/schema.js';
 import {resolveAt, stepTime, stepAtTime, ladyTime, cutFrame, pegFrame, hitFrame, audioLatency, listAnchors} from '../src/videostudio/edl/anchors.js';
 import {EASES, evaluate, paramFn, integrateKeys, planFeatures, buildFeatures, envelope, levelOf, checkParam} from '../src/videostudio/edl/params.js';
 import {gauss, tapeCurve, speedFit, hitWarp, transportTime, clipTimeMap} from '../src/videostudio/edl/remap.js';
@@ -33,7 +33,7 @@ import {compile, shotIndex, layerMatrix, invert, apply, resolveCrop, DECODE_LIMI
 import {metronomeEDL, expectedCuts} from '../src/videostudio/edl/metronome.js';
 import {FORMATS, CLASSES, GUTTER, RADIUS, SAFE, HOME, FULL_BOARD, sameRect, insideSafeBand, layout, cellRect, layoutClassOf, cellIds} from '../src/videostudio/layouts.js';
 import {boardGrid, boardTypeBounds, safeSpan} from '../src/videostudio/gl/board-layer.js';
-import {buildScreens} from '../src/pegboard/choreo.js';
+import {buildScreens, boardState} from '../src/pegboard/choreo.js';
 import {LADY_TABLE} from '../src/allhands/lady-table.js';
 import {MOVES, MOVE_NAMES} from '../src/videostudio/moves/index.js';
 import {backbeatHits} from '../src/videostudio/edl/params.js';
@@ -698,10 +698,85 @@ if (fs.existsSync(SHOTS_JSON)) section('13. the Offsite cut on the real shot ind
         if (s && x.fx.some(e => e.type === 'radialFold') && (!s.mirrorable || (s.action || []).includes('play'))) unmirrorable++;
       }
       ok(!warped && !unmirrorable && edl.clips.every(c => !c.scene || T.labels[c.scene]), `offsite-psych on ${track} ${format}: no warp on Synergy, kaleidoscopes only on mirrorable shots, every scene labelled`);
+      if (format === '9:16') offsiteFlow(track, plan, edl, p, idx);
     }
     ok(NEW_FX.every(t => used.has(t)), `offsite-psych on ${track} uses every new effect (${NEW_FX.join(', ')})`);
   }
 });
+// Aaron's Offsite notes (a little more slow motion, less of the downbeat, the dot grid for psychedelic images):
+// inside a scene a tile changes only on the loop's "and"s and dissolves in; the call's footage runs mostly in slow
+// motion, and only R1 footage is ever slowed (R0 plates hold, instruments keep their tempo); the board's region
+// carries a psych look on most frames, a full-frame look plays between lines with no Synergy on screen, and
+// the BACK. bloom is a mandala on the impact's board.
+function offsiteFlow(track, plan, edl, p, idx) {
+  const start = new Map(), byCell = new Map();
+  for (const c of edl.clips) if (c.scene && typeof c.at === 'number') { start.set(c.scene, Math.min(start.get(c.scene) ?? Infinity, c.at)); if (!byCell.has(c.cell)) byCell.set(c.cell, []); byCell.get(c.cell).push(c); }
+  const changes = edl.clips.filter(c => typeof c.at === 'number' && c.asset.startsWith('shot:') && c.at > start.get(c.scene) && (byCell.get(c.cell) || []).some(o => o !== c && o.scene === c.scene && o.at < c.at && o.at + o.len >= c.at));
+  const offAnd = changes.filter(c => Math.abs(((c.at % 4) + 4) % 4 - 2) > 1e-9), hard = changes.filter(c => !(Array.isArray(c.frame?.opacity) && c.frame.opacity[0][1] === 0));
+  ok(changes.length >= 4 && !offAnd.length && !hard.length, `offsite-psych on ${track}: all ${changes.length} tile changes inside a scene land on an "and" and dissolve in (${changes.map(c => c.at).join(', ')})${offAnd.length ? `; off the "and": ${offAnd.map(c => c.id).join(', ')}` : ''}${hard.length ? `; hard: ${hard.map(c => c.id).join(', ')}` : ''}`);
+  let area = 0, slowA = 0; const fastR0 = new Set();
+  for (let f = 0; f + 1 < p.frames; f++) {
+    const a = p.frame(f), b = p.frame(f + 1);
+    for (const l of a.layers) {
+      if (l.trail || l.kind !== 'video' || a.transport || b.transport) continue;
+      const n = b.layers.find(x => x.clipId === l.clipId && !x.trail); if (!n) continue;
+      const v = Math.abs(n.srcTime - l.srcTime) * 24, w = l.cell.w * l.cell.h * l.opacity, s = idx.get(l.shotId);
+      area += w;
+      if (v > .05 && v < .95) slowA += w;
+    }
+  }
+  // (Slowed on purpose: a rate under 1 anywhere, or the tape. A canon tile's held start is not slow motion.)
+  for (const c of edl.clips) {
+    const r = c.time?.rate, slowed = c.time?.tape || (typeof r === 'number' ? r < 1 : Array.isArray(r) && r.some(k => k[1] < 1)), s = c.asset.startsWith('shot:') && idx.get(c.asset.slice(5));
+    if (slowed && s && (s.reverseClass !== 'R1' || (s.action || []).includes('play'))) fastR0.add(`${c.id} ${s.id}`);
+  }
+  ok(slowA / area >= .4 && !fastR0.size, `offsite-psych on ${track}: ${(100 * slowA / area).toFixed(0)} % of the footage on screen (by area) runs in slow motion, all of it R1 and none an instrument${fastR0.size ? `; slowed: ${[...fastR0].slice(0, 3).join(', ')}` : ''}`);
+  if (track !== 'offsite') return;
+  const region = p.all.filter(fr => fr.board.psych?.some(x => !x.rect)).length, full = p.all.filter(fr => fr.board.psych?.some(x => x.cell === 'full'));
+  const withHim = full.filter(fr => fr.layers.some(l => l.shotId && /^synergy$/i.test(idx.get(l.shotId)?.characters?.[0] ?? '')));
+  const I = hitFrame(stepTime(plan, plan.choke.until), plan), bloomAt = p.frame(I + 6).board.psych || [];
+  ok(region >= .8 * p.frames && full.length >= 48 && !withHim.length && bloomAt.some(x => x.look === 'mandala' && !x.rect) && p.frame(I + 6).layout === 'full',
+    `offsite-psych on offsite: a psych look in the board's region on ${region} of ${p.frames} frames; a full-frame look on ${full.length} frames, none with Synergy on screen; the BACK. bloom a mandala on the full board (frame ${I + 6})`);
+}
+
+// 14. Psych imagery on the dot grid (pegboard/psych.js): the board cue {type:'psych', look, params} validates,
+// compiles into frame.board.psych on the board's clock (fade, params, the drive), keeps Synergy's mouth row
+// clear and true black black, and round-trips.
+section('14. psych imagery on the dot grid', () => {
+  const T = drop.timing, F24 = s => Math.floor(T[s] * 24);
+  const cue = (o = {}) => ({type:'psych', id:'p', at:64, len:64, look:'mandala', params:{fold:8, level:[[0, .4], [64, .9]], breath:{bind:'voices', scale:.5, base:.5}}, seed:3, ...o});
+  const edl = (cues, clips = []) => createEDL({clips, board:[{id:'song', at:0, text:{ref:'song'}}, ...cues]});
+  ok(PSYCH.looks.length === 8 && PSYCH.looks.every(l => PSYCH.describe(l)?.caption && Object.keys(PSYCH.params(l)).includes('level')) && validate(edl([cue(), cue({id:'q', look:'footage', cell:'G6.1', params:{sharpen:1.2}})])).length === 0,
+    `the board takes psych cues: ${PSYCH.looks.join(', ')}, each with its params and a caption`);
+  const bad = validate(edl([cue({look:'lava'}), cue({params:{folds:8}}), cue({fade:1}), cue({type:'pattern'}), cue({params:{level:{bind:'choir'}}}), cue({cell:'G7.0'}), cue({text:'HI'})]));
+  ok(['board[1].look', 'board[2].params.folds', 'board[3].fade', 'board[4].type', 'board[5].params.level.bind', 'board[6].cell', 'board[7].text'].every(k => bad.some(e => e.path === k)), `bad psych cues are caught with readable paths (${bad.map(e => e.path).join(', ')})`);
+  const round = edl([cue(), cue({id:'q', look:'ripples', cell:'G6.1', params:{spacing:5}})]);
+  ok(stringify(parse(stringify(round))) === stringify(round), 'psych cues round-trip byte for byte');
+  // On the board's clock: a fade in and out over a beat, its params evaluated per frame, the drive from the features.
+  const p = run(round), a = F24(64), z = F24(128), list = f => p.frame(f).board.psych, main = f => list(f).find(x => x.cue === 'p');
+  const inside = [...Array(z - a).keys()].map(i => a + i).filter(f => main(f));
+  const fades = inside.map(f => main(f).fade), levels = inside.map(f => main(f).params.level);
+  ok(p.lint.errors.length === 0 && !main(a - 2) && !main(z + 2) && inside.length >= z - a - 2 && fades[0] < .2 && Math.max(...fades) === 1 && fades.at(-1) < .25 && fades.every((v, i) => !i || Math.abs(v - fades[i - 1]) < .25),
+    `psych "p" lives frames ${inside[0]}-${inside.at(-1)} (16ths 64-128), fading in and out over a beat (no step over .25)`);
+  ok(levels[0] < .45 && levels.at(-1) > .85 && levels.every((v, i) => !i || v >= levels[i - 1] - 1e-9) && inside.every(f => main(f).params.fold === 8 && main(f).time === p.frame(f).board.time && main(f).seed === 3),
+    `params are Params: level keyed .4 to .9 across the cue (${levels[0].toFixed(2)} to ${levels.at(-1).toFixed(2)}), fold held at 8, on the board's own clock`);
+  const drives = inside.map(f => main(f).drive), claps = drives.filter(d => d.clap > .9).length;
+  ok(drives.every((d, i) => !i || d.beat > drives[i - 1].beat) && Math.abs(drives[0].beat - (64 + (main(inside[0]).time - T[64]) / (T[68] - T[64]) * 4) / 4) < 1e-6 && claps > 4 && drives.some(d => d.voice > .3),
+    `the drive: the beat from plan.timing (beat ${drives[0].beat.toFixed(2)} at frame ${inside[0]}), ${claps} clap swells and the voices from the feature tracks`);
+  const cellCue = list(a + 40).find(x => x.cue === 'q');
+  ok(cellCue && cellCue.rect && cellCue.rect.x === cellRect('9:16', 'G6.1').x && cellCue.rect.w === cellRect('9:16', 'G6.1').w && !main(a + 40).rect && p.board.screens.length > 20,
+    'a psych cell carries its tile\'s rect; one without a cell paints the board\'s own region, under the song\'s words');
+  // The plan-only fallback (no render) and the same program twice.
+  ok(run(round, {features:undefined}).hash() === run(round, {features:undefined}).hash() && p.hash() === run(round).hash(), 'psych frames compile the same twice, with the render\'s features or the plan\'s');
+  // Synergy's mouth row: a psych cell over his tile is refused; the choke's black stays black (choreo paints nothing at exposure 0).
+  const syn = run(edl([cue({cell:'G6.0'})], [{id:'s', at:64, len:64, cell:'G6.0', asset:'shot:synergy', time:{in:1}}]));
+  ok(syn.lint.errors.some(e => e.rule === 'G11' && /psych imagery in G6.0 covers Synergy/.test(e.message)), 'G11: psych imagery over Synergy\'s mouth row is refused');
+  const ck = run(edl([cue({at:drop.choke.at - 16, len:48})])), dark = [...Array(ck.frames).keys()].filter(f => ck.frame(f).board.psych.length && boardStateAt(ck.frame(f)) === 0);
+  ok(dark.length > 3, `across the choke the psych cue is live on ${dark.length} true-black frames, where the board's exposure is 0 and nothing is painted (pegboard check: nothing on true black)`);
+  ok(cueCount(round) === 2 && run(edl([cue()])).board.screens.length === p.board.screens.length, 'psych cues are not screens: the song\'s screens are the same with or without them');
+});
+function boardStateAt(fr) { return boardState(drop, fr.board.time + .5 / 24 - fr.board.lead).exposure; }
+function cueCount(e) { return e.board.filter(c => c.type === 'psych').length; }
 
 const dump = process.argv.indexOf('--dump');
 if (dump > 0) {

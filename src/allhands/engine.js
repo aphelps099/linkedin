@@ -169,6 +169,8 @@ export function buildGraph(ctx, {mode = 'sung', muted = {}, tune = {}} = {}, pla
 export function setMuted(graph, muted, ramp = .015) {
   const t = graph.ctx.currentTime;
   for (const name of STEMS) graph.stems[name].mute.gain.setTargetAtTime(muted[name] ? 0 : 1, t, ramp || .0001);
+  // A track's own voices that skip a stem (Offsite's chord of her BACK. in the bloom) read this, so they mute with it.
+  graph.muted = {...muted};
 }
 
 export function setVoiceMode(graph, mode) {
