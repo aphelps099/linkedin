@@ -1,5 +1,5 @@
 // Every check in one command, on any machine (macOS has no `timeout`; this needs only Node):
-// each scripts/check-*.mjs in turn, then the Vite build. A log per check, one summary line each,
+// each scripts/check-*.mjs in turn, then the Vite build (into a scratch folder, removed after). A log per check, one summary line each,
 // exit 1 if anything failed. The default is the set every round runs before a commit;
 // --full adds check-compositor (WebGL, the slowest) and the full export check (real exports in Chromium).
 //
@@ -9,7 +9,7 @@
 // --jobs runs checks side by side. Several start their own servers on fixed ports, so keep it at 1
 // unless you know the set you picked does not.
 import {spawn} from 'node:child_process';
-import {readdirSync, mkdirSync, createWriteStream, readFileSync, writeFileSync} from 'node:fs';
+import {readdirSync, mkdirSync, createWriteStream, readFileSync, writeFileSync, rmSync} from 'node:fs';
 import {join} from 'node:path';
 import {tmpdir} from 'node:os';
 import {fileURLToPath} from 'node:url';
@@ -42,7 +42,7 @@ const run = (label, cmd, args) => new Promise(done => {
   child.stdout.pipe(file); child.stderr.pipe(file);
   child.on('close', (code, signal) => file.end(() => {
     clearTimeout(timer); running.delete(child.pid);
-    const text = readFileSync(log, 'utf8'), said = text.match(/^.*passed.*$/gim)?.at(-1)?.trim().slice(0, 110) ?? '';
+    const text = readFileSync(log, 'utf8'), said = text.match(/^.*(passed|built in).*$/gim)?.at(-1)?.trim().slice(0, 110) ?? '';
     const s = ((Date.now() - t0) / 1000).toFixed(0).padStart(5);
     const ok = code === 0;
     const line = `${ok ? 'PASS' : 'FAIL'} ${label.padEnd(28)} ${s} s  ${signal ? `killed (${signal}, over ${limit / 1000} s)` : ok ? said : `exit ${code}: see ${log}`}`;
@@ -55,7 +55,12 @@ const queue = [...names], results = [];
 await Promise.all(Array.from({length:jobs}, async () => {
   while (queue.length) { const n = queue.shift(); results.push(await run(n, process.execPath, [join('scripts', `check-${n}.mjs`), ...(ARGS[n] ?? [])])); }
 }));
-if (!flag('no-build') && !only.length) results.push(await run('vite-build', process.execPath, [join('node_modules', 'vite', 'bin', 'vite.js'), 'build']));
+// The build goes to a scratch folder and is removed after, so dist/ (the deploy's) is never touched.
+if (!flag('no-build') && !only.length) {
+  const dist = join(out, 'dist');
+  results.push(await run('vite-build', process.execPath, [join('node_modules', 'vite', 'bin', 'vite.js'), 'build', '--outDir', dist, '--emptyOutDir']));
+  rmSync(dist, {recursive:true, force:true});
+}
 
 const failed = results.filter(r => !r.ok);
 writeFileSync(join(out, 'summary.txt'), results.map(r => r.line).join('\n') + '\n');

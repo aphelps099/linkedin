@@ -123,13 +123,38 @@ Each script's header comment lists every flag.
 - Commit on this branch only, and push with `git push -u origin claude/gallant-ramanujan-6arg3u`. No force pushes, no rebases of pushed history.
 - Pull requests are drafts, titled "[WIP, don't merge]" until they're ready. Aaron merges. Claude never does.
 - Keep model names out of commits, PRs and code.
+- If Aaron merges the PR while you work, start the branch fresh from `main` (`git fetch origin main && git checkout -B claude/gallant-ramanujan-6arg3u origin/main`, rebasing any unmerged commits onto it) and open a new draft PR. Never stack new work on merged history.
 
 ## Where the last round left off
 
-The vocabulary polish round (couplet punchlines heard, clearer single words, the river's slow bloom, her rotating moments) is being verified in the cloud as this note is written. Its results and open gaps go here when it lands.
+The vocabulary polish round landed at `73358df`. Every check and the build pass.
+
+**Met:**
+- **The punchline:** heard 21 of 21 times, alone in the full mix, across 3 tracks and 8 posts.
+- **Determinism:** 9 of 9 fresh-browser re-renders are byte-identical.
+- **The river blooms:** 3 layers by bar 6, never more than 2 new in a bar, 3 clear phrases a song, nobody trading. Whisper heard no word in the loops alone (0 of 170 windows).
+- **Her moments rotate:** 11 to 18 distinct recordings per moment over 61 posts.
+- **The pickup gap:** worst 0.24 s, down from 2.9 s.
+- **The strike:** reads at phone size.
+
+**Open:**
+- **The board drops a couplet's Y early** on 33 of 101 screens: the next band screen starts half a beat before the last word ends. Example: "NO DAYS OFF" is on the board while "OFF." is still sung. See `src/pegboard/choreo.js`, around lines 199 and 371 at `73358df`.
+- **Hustle sits on two gate limits:**
+  - True peak is −0.99 to −1.02 dBTP on 5 of 7 renders.
+  - The sample's Drop A phone lift is +2.52 LU against a +2.5 floor.
+  - Lowering the limiter ceiling fixed the peak but broke the lift, so Hustle's mix needs the change, not the limiter.
+- **Fixture 35's Drop B fails the phone lift** on Circle Back (+2.45 LU) and Hustle (+2.11 LU): Synergy's hook line there is only "The green flag".
+- **"It's not X." over the build is heard only 7 of 34 times.** The "U-turn" line: 0 of 7, heard as "Utah". The board's strike carries the joke on video; the audio alone doesn't.
+- **Circle Back is the weakest track for the band's words.** Only 3 couplets are heard there, and a hash correlation makes U-turn/pivot the drop 10 times in 15. "Bandwidth?" and "Alignment" get masked on Circle Back and Hustle, and Synthia's short answers are heard 4 of 11 ("None." heard as "9").
+- **"Pivot" turns up in all four sample takes:** her moments rotate across posts, not across one post's tracks.
+
+The round's numbers are in the PR description. Aaron has the takes as MP3s; render your own with the commands above.
 
 ## What's next
 
-1. Aaron listens to this round's takes and gives notes.
-2. Proxies to production: `node scripts/build-videostudio-proxies.mjs --upload`, once `CATALOG_UPLOAD_TOKEN` is set in Render and exported in the Mac's shell (typed there, never pasted into a chat).
-3. P4, the Studio editor, only when Aaron asks.
+1. **Aaron's notes on this round's takes come first.**
+2. **Fix the early Y on the board.** Small and visible.
+3. **Hustle headroom and fixture 35's short Drop B line.** Re-run the gates on every track after.
+4. **The setup line:** make "It's not X." heard the way the punchline now is. Then give Circle Back more heard couplets (`scripts/measure-impacts.mjs`) and decorrelate its drop pick.
+5. **Proxies to production:** `node scripts/build-videostudio-proxies.mjs --upload`, once `CATALOG_UPLOAD_TOKEN` is set in Render and exported in the Mac's shell (typed there, never pasted into a chat).
+6. **P4, the Studio editor,** only when Aaron asks.
