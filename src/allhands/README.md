@@ -1293,10 +1293,13 @@ a natural river of electronic sound." The river is the haze lane's form
   hands join bar by bar, `RIVER_LOOP.from`: the printer from bar 5, the claps
   8, the toms 10, the typing 12, each over two bars). It repeats and
   thickens: her copies (3-7), the granular smear (6-10), the drone under it
-  (7-11), lush by bar 12. Only then do new sounds ramp in, one or two a bar:
-  Pat (10-13), the tambourine (11-14, in the background, a little later),
-  the pluck (12-15), his word and "It's not X." (13-16), Kevin and the felt
-  piano (14-16/17), the mallet (15-18).
+  (7-11), lush by bar 12. Only then do new sounds ramp in, two a bar at most:
+  Pat (10-13), the tambourine (11-14, in the background, a little later) and
+  Kevin (11.5-15), the pluck and his word (12-14, 12-15), "It's not X." and
+  the felt piano (13-16, 13.5-16), the mallet (15-18). Spread so the video's
+  river cut (`offsite-psych`) never needs more than eight live decodes at
+  once (G5): with Kevin and the felt piano both in from bar 14, bar 16 asked
+  for nine on 18 of 24 cuts.
 - **Every layer ramps** (`plan.layers`): it fades and its low-pass opens over
   2 to 8 bars, breathes, and leaves the same way, into the diffusion (a 6.5 s
   wash) and a dark dotted-8th delay. The flow drifts: the energy curve, each

@@ -594,8 +594,9 @@ const WINDOW_KEYS = [[0, 62], [8, 64], [16, 69], [22, 66], [27, 62]];   // the p
 // The bloom (Aaron, Nov 5: it opened as a groove, every layer in within six bars): her pattern first,
 // over the soft pulse of the stomps (the loop's other hands join it bar by bar, RIVER_LOOP.from); it
 // repeats and thickens (her copies from bar 3, the smear from bar 6) under the drone from bar 7, and is
-// lush around bar 12; only then do Pat, the tambourine (in the background, a little later), the pluck,
-// his word, "It's not X.", Kevin, the felt piano and the mallet ramp in, one or two a bar.
+// lush around bar 12; only then do Pat, the tambourine (in the background, a little later) and Kevin,
+// the pluck and his word, "It's not X." and the felt piano, then the mallet ramp in, two a bar at most
+// (spread so the video's river cut never asks for more than eight live decodes at once, G5).
 const LAYERS = [
   {id:'her', kind:'texture', source:'her', stem:'lady', what:'her syllables on a two-bar pattern, the first sound and the last', in:[0, 2], out:[23, 27], level:.8, open:6500, wash:[[0, .3], [12, .45], [24, .6], [27, .8]], delay:[[0, .18], [10, .24]], pans:[[0, -.15], [12, .15], [24, -.1]]},
   {id:'loop', kind:'loop', stem:'drums', what:'the loop: soft stomps from the first bar (the pulse), then the printer, a room clapping on two and four, floor toms after the beats, typing', in:[1, 4], out:[25, 27], level:1.4, open:16000, shut:1800, hp:70, swell:[[8, .9], [12, 1.05], [16, 1.15], [21, 1.15], [22, 1], [24, 1.1]]},
@@ -604,11 +605,11 @@ const LAYERS = [
   {id:'drone', kind:'drone', stem:'keys', what:'the pump organ and the wordless choir, one chord at a time', in:[7, 11], out:[24, 27], level:.75, open:4200, shut:300, filter:[[16, 5200], [21, 3200], [24, 4500]]},
   {id:'bass', kind:'bass', stem:'bass', what:'Pat humming the root on the offbeats', in:[10, 13], out:[24, 27], level:.36, open:2200, shut:120},
   {id:'tambourine', kind:'tambourine', stem:'drums', what:'the tambourine, in the background, a little later, up a little where the texture swells', in:[11, 14], out:[24, 27], level:2.2, open:16000, shut:3000, swell:[[15, 1], [17, 1.45], [21, 1.45], [22, 1], [24, 1.3]]},
-  {id:'plucks', kind:'colour', stem:'guitar', what:'a plucked string (Karplus-Strong), an arpeggio on the drifting pitch window', in:[12, 15], out:[22, 26], level:.28, open:7000, wash:[[12, .25], [16, .35]], delay:[[12, .25]], pans:[[12, -.2], [16, .2], [22, 0]]},
-  {id:'his', kind:'texture', source:'his', stem:'lady', hp:170, what:"Strategy's word in grains, low, looped", in:[13, 16], out:[21, 25], level:.75, open:4500, wash:[[13, .45]], delay:[[13, .25]], pans:[[13, -.3], [20, .1]]},
+  {id:'plucks', kind:'colour', stem:'guitar', what:'a plucked string (Karplus-Strong), an arpeggio on the drifting pitch window', in:[12, 14], out:[22, 26], level:.28, open:7000, wash:[[12, .25], [16, .35]], delay:[[12, .25]], pans:[[12, -.2], [16, .2], [22, 0]]},
+  {id:'his', kind:'texture', source:'his', stem:'lady', hp:170, what:"Strategy's word in grains, low, looped", in:[12, 15], out:[21, 25], level:.75, open:4500, wash:[[12, .45]], delay:[[12, .25]], pans:[[12, -.3], [20, .1]]},
   {id:'x', kind:'texture', source:'x', stem:'lady', hp:170, what:'"It\'s not X." in pieces, looped into the texture before Y rises', in:[13, 16], out:[17, 20], level:.68, open:3500, wash:[[13, .45]], delay:[[13, .3]], pans:[[13, .25], [17, -.25]]},
-  {id:'guitar', kind:'guitar', stem:'guitar', what:"Kevin's clean figure on the offbeats", in:[14, 16], out:[20, 23], level:.65, open:5000, delay:[[14, .3]]},
-  {id:'felt', kind:'colour', stem:'keys', hp:200, what:'a felt piano on the chord, twice a bar', in:[14, 17], out:[23, 26], level:.27, open:5000, wash:[[14, .3]]},
+  {id:'guitar', kind:'guitar', stem:'guitar', what:"Kevin's clean figure on the offbeats", in:[11.5, 15], out:[20, 23], level:.65, open:5000, delay:[[11.5, .3]]},
+  {id:'felt', kind:'colour', stem:'keys', hp:200, what:'a felt piano on the chord, twice a bar', in:[13.5, 16], out:[23, 26], level:.27, open:5000, wash:[[13.5, .3]]},
   {id:'mallet', kind:'colour', stem:'keys', what:'a kalimba-like mallet, a counter-line over the window', in:[15, 18], out:[24, 27], level:.19, open:9000, wash:[[15, .3], [24, .6]], delay:[[15, .35]]},
 ];
 // Two-bar texture patterns (16ths 0-31): `deg` pentatonic steps from the cut's own pitch; `len` 16ths
