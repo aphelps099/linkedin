@@ -235,26 +235,31 @@ export function placeBand({tr, cast, lyrics, words, stutters, lady, lines, timin
 
   // Try a part (or a pair: call and response) at each 8th of each region, in order of preference.
   // `wait` (16ths): an answer may come that much later than right after its call, in the next gap
-  // (Y a beat or a bar after X, where the pair does not fit back to back).
-  const fit = (srcs, {pref, kinds, role, gains, pans, seeds, ends, part, gap = .1, ignore = [], after = 0, wander = 0, extra = {}, wait = 0}) => {
+  // (Y a beat or a bar after X, where the pair does not fit back to back). `bind`: the parts that
+  // never wait, sung on the next 16th after the one before them (Synthia's "It's a" and her lady's
+  // word are one answer: the pair waits together, never "It's a" ... a bar ... "Pivot").
+  const fit = (srcs, {pref, kinds, role, gains, pans, seeds, ends, part, gap = .1, ignore = [], after = 0, wander = 0, extra = {}, wait = 0, bind = []}) => {
     const rs = regions.filter(r => (!kinds || kinds.includes(r.kind)) && pref.includes(r.section) && T[r.from] >= after).sort((a, b) => (pref.indexOf(a.section) + 99 * (pref.indexOf(a.section) < 0)) - (pref.indexOf(b.section) + 99 * (pref.indexOf(b.section) < 0)) || a.from - b.from);
     for (const r of rs) for (const rate of [1, 1.06, MAX_RATE]) for (let s = r.from + (r.from % 2); s < r.to; s += 2) {
-      const out = [];
-      let anchor = s, okAll = true, prevLast = null;
-      for (let k = 0; k < srcs.length; k++) {
-        const src = srcs[k], endStepT = T[Math.min(T.length - 1, r.to)];
-        let e = null;
-        for (let a = anchor; a <= anchor + (k ? wait : 0) && a < T.length - 1; a++) {
-          const c = eventOf(src, {role:role[k], part, anchor:a, rate, gain:gains[k], pan:pans[k], tr, T, step, seed:seeds[k], end:ends[k], from:prevLast, wander, extra});
+      const out = [], endStepT = T[Math.min(T.length - 1, r.to)];
+      // Part k from `anchor` on (or up to `wait` 16ths later), then the rest after it; a part that leaves
+      // the next nowhere to go tries its next 16th.
+      const place = (k, anchor, prevLast) => {
+        const span = k && !bind.includes(k) ? wait : 0;
+        for (let a = anchor; a <= anchor + span && a < T.length - 1; a++) {
+          const c = eventOf(srcs[k], {role:role[k], part, anchor:a, rate, gain:gains[k], pan:pans[k], tr, T, step, seed:seeds[k], end:ends[k], from:prevLast, wander, extra});
           if (a >= r.to + (k ? 32 : 0) || (!k || !wait ? c.end > endStepT + .25 : false) || !clear(c.start, c.end, ignore) || out.some(o => !(c.start >= o.end + gap || c.end <= o.start))) continue;
-          e = c; break;
+          out.push(c);
+          if (k + 1 === srcs.length) return true;
+          // The answer comes in on the next 16th after the call has finished, a breath later.
+          let n = Math.floor(c.at) + 1;
+          while (n < T.length - 1 && T[n] < c.end + gap + (srcs[k + 1].onset - srcs[k + 1].from) / rate) n++;
+          if (place(k + 1, n, c.midi ?? null)) return true;
+          out.pop();
         }
-        if (!e) { okAll = false; break; }
-        out.push(e); prevLast = e.midi ?? null;
-        // The answer comes in on the next 16th after the call has finished, a breath later.
-        if (k + 1 < srcs.length) { let n = Math.floor(e.at) + 1; while (n < T.length - 1 && T[n] < e.end + gap + (srcs[k + 1].onset - srcs[k + 1].from) / rate) n++; anchor = n; }
-      }
-      if (okAll && out.length === srcs.length) { for (const e of out) { events.push(e); take(e.start, e.end, 'band'); } return out; }
+        return false;
+      };
+      if (place(0, s, null)) { for (const e of out) { events.push(e); take(e.start, e.end, 'band'); } return out; }
     }
     return null;
   };
@@ -296,7 +301,7 @@ export function placeBand({tr, cast, lyrics, words, stutters, lady, lines, timin
       // Not back to back: Y in the next gap, up to a bar and a half after X.
       && !fit(srcs, {pref:couplet?.id === cp.id ? ['Drop B', 'Outro'] : ['Drop B', 'Outro', 'Drop A', 'Verse'], after:couplet?.id === cp.id ? impactT : 0,
         role:pick ? ['couplet-x', 'pickup', 'couplet-y'] : ['couplet-x', 'couplet-y'], gains:pick ? [1.5, 2, 3.5] : [1.5, 3.5], pans:pick ? [-.12, .15, 0] : [-.12, .15],
-        seeds:[seed0 + 3, seed0 + 4, seed0 + 5], ends:pick ? ['open', 'free', 'home'] : ['open', 'home'], part:'couplet', gap:.12, wait:24})) say('couplet', 'no gap long enough for X and Y');
+        seeds:[seed0 + 3, seed0 + 4, seed0 + 5], ends:pick ? ['open', 'free', 'home'] : ['open', 'home'], part:'couplet', gap:.12, wait:24, bind:pick ? [2] : []})) say('couplet', 'no gap long enough for X and Y');
     for (const e of events) if (e.part === 'couplet') e.couplet = cp.id;
   }
   // 4. The refrain.

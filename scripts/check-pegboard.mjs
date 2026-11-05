@@ -6,7 +6,8 @@ import {createBoard} from '../src/pegboard/board.js';
 import {compileFont, layoutText} from '../src/pegboard/font.js';
 import {PEG9} from '../src/pegboard/fonts/peg9.js';
 import {PEG5} from '../src/pegboard/fonts/peg5.js';
-import {buildScreens, paint, indexWords, activeScreen, syllableSpans, darkAt, TAG_TAIL, CHOKE_TAIL, CODEC_FLOOR, stopEndAt, stopDarkAt, STOP_DIM, FRAGMENT_FULL, FRAGMENT_ACCENT, READ_AHEAD, boardState, bandOf, strikeRows, STRIKE, ROCK, RIVER_PHRASES, TAG_MIN_PITCH, TAG_LIGHT, BAND_VOICES} from '../src/pegboard/choreo.js';
+import {PEG3} from '../src/pegboard/fonts/peg3.js';
+import {buildScreens, paint, indexWords, activeScreen, syllableSpans, darkAt, TAG_TAIL, CHOKE_TAIL, CODEC_FLOOR, stopEndAt, stopDarkAt, STOP_DIM, FRAGMENT_FULL, FRAGMENT_ACCENT, READ_AHEAD, boardState, bandOf, strikeRows, strikeWeight, STRIKE, ROCK, RIVER_PHRASES, TAG_MIN_PITCH, TAG_LIGHT, BAND_VOICES} from '../src/pegboard/choreo.js';
 import {LINE_BREAK, normalize} from '../src/pegboard/font.js';
 import {linesFor, stagePitch, STAGE_COLS} from '../src/pegboard/stage.js';
 import {castSong} from '../src/allhands/casting.js';
@@ -293,7 +294,7 @@ for (const track of TRACK_ORDER.filter(t => formPlays('drop60', t))) {
   console.log(`  psych: ${checks - before} checks`);
 }
 // ---- The band on the board (choreo.js bandScreens): the couplet moment, refrains, exchanges -------------
-// "IT'S NOT X." lights word by word, then a row of pegs strikes through X on the beat after it (signal,
+// "IT'S NOT X." lights word by word, then a bar of pegs (STRIKE.weight rows a k) strikes through X on the beat after it (signal,
 // every letter still at full under it), then "IT'S Y." lands, dark until it is sung. Every band word fully
 // lit when sung; a band screen's light only rises until it ends (so its own words make no flash at any size
 // of board), and the band needs no governing. On the engine's plans (castSong + the Drop Edition: plan.band)
@@ -343,7 +344,7 @@ for (const track of TRACK_ORDER.filter(t => formPlays('drop60', t))) {
   // Which page of a layout shows at t (choreo drawScreen: each page from when its first word is heard).
   const pageAt = (s, l, t) => { let page = l.pages[0]; for (const p of l.pages) { const first = p.lines[0]?.chars[0]; if (first && s.words[first.word]?.start <= t + .001) page = p; } return page; };
   const pegsOf = (s, l, page, o, pred) => { const out = []; for (const line of page.lines) for (const ch of line.chars) if (pred(s.words[ch.word], ch)) for (let i = 0; i < ch.pegs.length; i += 2) out.push((o.y + ch.pegs[i + 1]) * 1e4 + o.x + ch.pegs[i]); return out; };
-  let couplets = 0, struck = 0, bandWords = 0, bandScreensSeen = 0, events = 0, shown = 0, under = 0, pairsOnePage = 0, plansSeen = 0;
+  let couplets = 0, struck = 0, bandWords = 0, bandScreensSeen = 0, events = 0, shown = 0, under = 0, pairsOnePage = 0, plansSeen = 0, strikeH = Infinity;
   const sizes = [[120, 53, {}], [116, 45, {chart:9}], [97, 135, {chart:27}], [150, 48, {chart:0, span:131}]];
   for (const {label, plan} of [...realPlans, ...contract]) for (const [cols, rows, opt] of sizes) {
     const {board, screens, layoutOf, place, at} = rig(plan, cols, rows, opt), band = screens.filter(s => s.band), lab = `${label} ${cols}x${rows}`;
@@ -391,10 +392,11 @@ for (const track of TRACK_ORDER.filter(t => formPlays('drop60', t))) {
         // (Y's page, when it has its own, is not up yet: Y is dark either way.)
         at(t1); const page = pageAt(s, l, t1), o = place(s, l, page), xPegs = pegsOf(s, l, page, o, w => w.part === 0), yPegs = pegsOf(s, l, page, o, w => w.part === 1);
         if (!page.lines.some(line => line.chars.some(ch => s.words[ch.word]?.part === 0))) ok(false, `${lab} "${s.text.split(LS)[0]}": X is up when it is struck`);
-        const rows = strikeRows(s, l, page, o), sPegs = rows.flatMap(r => Array.from({length:(r.x1 - r.x0 + 1) * r.k}, (_, i) => (r.y0 + Math.floor(i / (r.x1 - r.x0 + 1))) * 1e4 + r.x0 + i % (r.x1 - r.x0 + 1))).filter(j => idx(j)[0] >= 0 && idx(j)[0] < cols);
-        ok(rows.length && xPegs.every(j => I(j) >= FRAGMENT_FULL - 1e-6) && sPegs.every(j => tone(j) === SIGNAL && I(j) >= 1 - 1e-6) && yPegs.every(j => I(j) === 0),
-          `${lab} "${s.text.split(LS)[0]}": struck: X's ${xPegs.length} pegs at full, the strike's ${sPegs.length} in signal across ${rows.length} line(s), Y's ${yPegs.length} pegs dark`);
-        struck++;
+        const rows = strikeRows(s, l, page, o), sPegs = rows.flatMap(r => Array.from({length:(r.x1 - r.x0 + 1) * r.h}, (_, i) => (r.y0 + Math.floor(i / (r.x1 - r.x0 + 1))) * 1e4 + r.x0 + i % (r.x1 - r.x0 + 1))).filter(j => idx(j)[0] >= 0 && idx(j)[0] < cols);
+        // (The strike's weight: STRIKE.weight's rows a k for the face, 2 in PEG-9 and PEG-5, on every line it crosses.)
+        ok(rows.length && rows.every(r => r.h === strikeWeight(l.font, l.k || 1) && r.h >= 2) && xPegs.every(j => I(j) >= FRAGMENT_FULL - 1e-6) && sPegs.every(j => tone(j) === SIGNAL && I(j) >= 1 - 1e-6) && yPegs.every(j => I(j) === 0),
+          `${lab} "${s.text.split(LS)[0]}": struck: X's ${xPegs.length} pegs at full, the strike's ${sPegs.length} in signal, ${rows.map(r => r.h).join(', ')} rows tall across ${rows.length} line(s), Y's ${yPegs.length} pegs dark`);
+        struck++; strikeH = Math.min(strikeH, ...rows.map(r => r.h));
       }
       // Landed: Y at full on its page, with X struck above it when they share one.
       if (yw.length) {
@@ -416,7 +418,36 @@ for (const track of TRACK_ORDER.filter(t => formPlays('drop60', t))) {
     }
   }
   say(events > 50 && shown === events, `every band part of the engine's plans is on the board: ${shown} of ${events}`);
-  say(couplets > 40 && struck > 30 && bandWords > 1000 && pairsOnePage > 20 && under > 0, `the couplet moment on ${plansSeen} boards: ${couplets} couplet screens struck on the beat after X, ${struck} seen struck with Y still dark, ${bandScreensSeen} band screens, ${bandWords} band words fully lit when sung, ${pairsOnePage} pairs on one page, ${under} ladder hits stepping back under the drop's X`);
+  say(couplets > 40 && struck > 30 && bandWords > 1000 && pairsOnePage > 20 && under > 0 && strikeH >= 2, `the couplet moment on ${plansSeen} boards: ${couplets} couplet screens struck on the beat after X, ${struck} seen struck with Y still dark (the strike ${strikeH} rows tall or more), ${bandScreensSeen} band screens, ${bandWords} band words fully lit when sung, ${pairsOnePage} pairs on one page, ${under} ladder hits stepping back under the drop's X`);
+  // The strike reads at every size: STRIKE.weight's rows a k (PEG-9's 2-peg stems, and 2 in PEG-5; one row was the
+  // crossbars' weight, on their row, a hairline at the phone's 3 px pegs and the 9:16 film's; PEG-3, the 16:9 film's
+  // fallback for a long X, keeps 1 of its 5), centred on the caps (half a peg high where the rows cannot split
+  // evenly), clear of the caps' top and bottom bars, in each face at k 1 to 3; and on the phone stages (270 px: 90 x 126 of 3 px pegs; 390 px: 97 x 135 of 4 px) no frame of a struck
+  // screen is governed and the strike adds no flash (the light around every strike, a second and a half either side).
+  {
+    let laid = 0;
+    for (const face of ['peg9', 'peg5', 'peg3']) for (const k of [1, 2, 3]) {
+      const plan = {timing:Array.from({length:64}, (_, i) => i * .125), step:.125, duration:8}, x = part("IT'S NOT A MEETING.", 'strategy', .5, 1), y = part("IT'S A VIBE.", 'synthia', 2.5, .8);
+      const sc = buildScreens({...plan, couplets:[{x, y}]}).map(indexWords).find(q => q.fx?.strike), font = faces[face] ?? (faces[face] = compileFont(PEG3)), cap = {peg9:9, peg5:7, peg3:5}[face] * k;
+      const l = layoutText(sc.text, {font, k, maxCols:400, maxLines:3}), page = l.pages[0], o = {x:2, y:2}, rows = strikeRows(sc, l, page, o);
+      const above = rows.map(r => r.y0 - (o.y + page.lines.find(ln => ln.chars.some(c => sc.fx.strike.words.includes(c.word))).y)), want = STRIKE.weight[face] * k;
+      ok(rows.length === 1 && rows[0].h === want && above.every(a => a === Math.floor((cap - want) / 2) && a >= 2 * k && cap - a - want >= 2 * k),
+        `the strike in ${face} at k ${k}: ${rows[0]?.h} rows of a ${cap}-row cap, ${above[0]} rows under its top (the bars stay clear)`);
+      laid++;
+    }
+    let seen = 0, governed = 0, worst = 0;
+    for (const {plan} of [...realPlans, ...contract]) for (const [cols, rows, chart] of [[90, 126, 25], [97, 135, 27]]) {
+      const {board, screens, at} = rig(plan, cols, rows, {chart});
+      for (const s of screens.filter(q => q.fx?.strike)) {
+        const f0 = Math.max(0, Math.floor((s.from - 1.5) * FPS)), f1 = Math.ceil((s.to + 1.5) * FPS), frames = [], own = new Set();
+        for (let f = f0; f < f1; f++) { at(f / FPS); frames.push(boardLuma(board)); if (activeScreen(screens, f / FPS) === s) own.add(f - f0); }
+        const gains = governorTrack(frames, FPS);
+        governed += [...own].filter(i => gains[i] < 1).length; seen++;
+        for (const q of [-1, 0, 1, 2, 3]) worst = Math.max(worst, worstWindow(flashes(frames.map(v => q < 0 ? v.whole : v.quads[q]), FPS).filter(e => own.has(e.frame)), FPS));
+      }
+    }
+    say(laid === 9 && seen > 40 && governed === 0 && worst <= 2, `the strike reads at every size: ${Object.entries(STRIKE.weight).map(([f, w]) => `${f} ${w}`).join(', ')} rows a k at k 1 to 3; on the phone stages ${seen} struck screens, ${governed} frames governed, at most ${worst} flashes a second`);
+  }
   // Role tags: STRATEGY and SYNTHIA in PEG-3 where the pitch reads them (12 px and up), never the lady.
   {
     const plan = contract[0].plan, lit = (pitch, t) => { const r = rig(plan, 120, 53, {pitch}); r.at(t); return [...r.board.I].filter(v => Math.abs(v - TAG_LIGHT) < 1e-6).length; };

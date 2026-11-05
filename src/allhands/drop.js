@@ -170,10 +170,21 @@ function coupletTagImpact(c, tr, window) {
     : {role:'tag', file:src.file, from:src.from, to:src.to, at:0, rate, gate:(src.to - src.from) / rate, gain:src.gainDb - 1, pan:0, display:src.display, couplet:c.id};
   // Dry, not blended into Synergy's vocoder as her BACK. is: the vocoder smears a word of two syllables
   // (Whisper heard "It's a pivot." only without it). The same dry level as the blend left (4 dB, not 5).
-  const len = imp.to - imp.from, base = {from:imp.from, to:imp.to, rate:1, gate:len + .02, gain:imp.gainDb + 4 + (imp.key ? vg(imp) : 0), pan:0, blend:0, vocoded:0, deep:.42, deepAt:4};
-  const impact = imp.key ? pixel(imp, 'impact', base) : {role:'impact', file:imp.file, ...base, display:imp.display, couplet:c.id};
+  const len = imp.to - imp.from, W = IMPACT_WORD, base = {from:imp.from, to:imp.to, rate:1, gate:len + .02, gain:imp.gainDb + W.gain + (imp.key ? vg(imp) : 0), pan:0, blend:0, vocoded:0, deep:W.deep,
+    deepAt:Math.max(4, Math.ceil((len + W.echoGap) / tr.step)), unmask:{dip:W.dip, all:W.all, dry:W.dry, after:W.after, hold:W.hold, lead:Math.max(0, Math.min(.15, (imp.onset ?? imp.from) - imp.from))}};
+  const impact = imp.key ? {...pixel(imp, 'impact', base), amount:Math.min(imp.amount ?? 1, W.amount)} : {role:'impact', file:imp.file, ...base, display:imp.display, couplet:c.id};
   return {tag, impact};
 }
+
+// A couplet's impact word keeps the drop's downbeat to itself: Whisper heard Synthia's Y there 0 of 9
+// times under the drop kick, the crash and the band, and the same render with the band muted heard it.
+// gain: dB over the take's level; amount: the most pixel it gets (the bank verified the take higher);
+// dip: what drums, bass, keys and guitar (all) step back to under it; dry: past the stems' reverb and
+// delay, centred; after: seconds after it ends before the crash and the downlifter; the deep echo
+// comes echoGap after it, a beat later at the soonest.
+// hookAfter: Synergy's Drop A hook waits this many 16ths (half a bar) after the downbeat, not one beat.
+// hold: the band's level from the downbeat to the word's vowel, while its first consonant speaks.
+export const IMPACT_WORD = Object.freeze({gain:4, amount:.3, dip:.2, hold:.05, all:true, dry:true, after:.04, echoGap:.15, deep:.42, hookAfter:8});
 
 export function ladyEvents(words, table = LADY_TABLE, {track, cast, timing, couplet = null} = {}) {
   const tr = trackOf(track), D = tr.drop, roles = castOf(cast), STEP = tr.step, events = [], seconds = s => s / STEP;
@@ -311,7 +322,10 @@ function arrangeWith(lyrics, durations, table, options, give) {
   // The couplet drops only where its tag fits the track's choke window (else her tag plays, and no X).
   const roles = castOf(cast), split = bandSetlist(D.slots(lyrics), tr, roles, {give}), cd = coupletDrop(roles, tr);
   const couplet = cd && coupletTagImpact(cd, tr, (D.impact * BAR_STEPS - (D.choke.bar * BAR_STEPS + D.choke.step)) * STEP) ? cd : null;
-  const lines = [], words = [], setlist = split.setlist, startOf = s => s.bar * BAR_STEPS + (s.startStep ?? 0);
+  // On a couplet drop the impact word has the downbeat to itself: his Drop A hook comes in half a bar later.
+  const late0 = s => couplet && s.kind === 'hook' && s.bar === D.impact && (s.startStep ?? 0) < IMPACT_WORD.hookAfter
+    ? {...s, startStep:IMPACT_WORD.hookAfter, window:(s.window ?? 30) - (IMPACT_WORD.hookAfter - (s.startStep ?? 0))} : s;
+  const lines = [], words = [], setlist = split.setlist.map(late0), startOf = s => s.bar * BAR_STEPS + (s.startStep ?? 0);
   // A slot that gives way (slot.give, 16ths) lets the phrase whose window ends
   // where it starts run on into those 16ths, and then starts as late as that
   // phrase ran; its window keeps its end. Every other phrase stays in its window.

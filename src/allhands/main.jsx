@@ -312,7 +312,9 @@ window.__allhands = {
     const casting = auto ? castSong(post, {track, available:AVAILABLE}) : null;
     if (casting) { track = casting.track; cast = cast ?? casting.cast; }
     const songForm = FORMS[form ?? formOf(track)] || FORMS[DEFAULT_FORM], lyrics = lyricsFromPost(post), {buffers, durations} = await loadWords(decoder(), songForm.voiced(lyrics, {track}));
-    const {plan} = settleCast(songForm.arrange, lyrics, durations, {track, cast, coldOpen}), lady = await prepareLady(decoder(), plan);
+    const {plan} = settleCast(songForm.arrange, lyrics, durations, {track, cast, coldOpen});
+    if (tune?.edit) for (const e of plan.lady) if (tune.edit[e.role]) { const {gainAdd = 0, unmask, ...x} = tune.edit[e.role]; Object.assign(e, x); e.gain += gainAdd; if (unmask && e.unmask) e.unmask = {...e.unmask, ...unmask}; }   // AP-EXPERIMENT (temporary)
+    const lady = await prepareLady(decoder(), plan);
     const bytes = new Uint8Array(await wav(await render(plan, buffers, {mode, muted, bars, tune}, lady)).arrayBuffer());
     let s = ''; for (let i = 0; i < bytes.length; i += 32768) s += String.fromCharCode(...bytes.subarray(i, i + 32768));
     const offset = RENDER_OFFSET - plan.timing[(bars?.[0] || 0) * BAR_STEPS];

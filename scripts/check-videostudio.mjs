@@ -36,11 +36,12 @@ import {gauss, tapeCurve, speedFit, hitWarp, transportTime, clipTimeMap} from '.
 import {compile, shotIndex, layerMatrix, invert, apply, resolveCrop, DECODE_LIMITS, UPSCALE} from '../src/videostudio/edl/compile.js';
 import {VOICE_SHOTS} from '../src/videostudio/treatments/shared.js';
 import {RIVER, RIVER_CLASSES} from '../src/videostudio/treatments/offsite-psych.js';
-import {chokeFrames} from '../src/videostudio/edl/anchors.js';
+import {chokeFrames, PEG_LEAD} from '../src/videostudio/edl/anchors.js';
 import {metronomeEDL, expectedCuts} from '../src/videostudio/edl/metronome.js';
 import {FORMATS, CLASSES, GUTTER, RADIUS, SAFE, HOME, FULL_BOARD, sameRect, insideSafeBand, layout, cellRect, layoutClassOf, cellIds} from '../src/videostudio/layouts.js';
 import {boardGrid, boardTypeBounds, safeSpan} from '../src/videostudio/gl/board-layer.js';
-import {buildScreens, boardState} from '../src/pegboard/choreo.js';
+import {buildScreens, boardState, paint, strikeRows, strikeWeight} from '../src/pegboard/choreo.js';
+import {PALETTE} from '../src/pegboard/board.js';
 import {LADY_TABLE} from '../src/allhands/lady-table.js';
 import {MOVES, MOVE_NAMES} from '../src/videostudio/moves/index.js';
 import {backbeatHits} from '../src/videostudio/edl/params.js';
@@ -832,6 +833,33 @@ if (fs.existsSync(SHOTS_JSON)) section('15. the band and the river', () => {
       if (s.fx?.strike) { const f = hitFrame(s.fx.strike.at + s.fx.strike.draw + .02, plan); if (at(f) !== s) off.push(`strike f${f}: ${at(f)?.text ?? 'none'}`); }
     }
     ok(xs.length >= 2 && !off.length, `${track} fixture ${i} ${format}: the couplet drop's X (${xs.length} screens) holds the film's board while sung and struck, her rungs under it${off.length ? ` (${off.slice(0, 3).join('; ')})` : ''}`);
+  }
+  // The strike reads in the film: on the frame after it is drawn, the board's own grid (the frame's rect, the
+  // format's safe span, painted at the frame's board time as the compositor paints it) carries it in signal,
+  // strikeWeight rows tall (2 in PEG-9 and PEG-5; 1 in PEG-3, the 16:9 home's fallback for a long X), across X:
+  // the drop's X (Circle Back fixture 42), the anthem's (Hustle fixture 31) and a pair (Circle Back fixture 12).
+  {
+    const seen = [], bad = [];
+    for (const [i, track] of [[42, 'circle-back'], [31, 'hustle'], [12, 'circle-back']]) {
+      const cast = castSong(fixtures[i], {track, available:AVAILABLE}).cast, plan = settleCast(FORMS.drop60.arrange, lyricsFromPost(fixtures[i]), {}, {track, cast, coldOpen:true}).plan;
+      for (const format of ['9:16', '1:1', '16:9']) {
+        const p = compile(treatmentFor(track).fn(plan, real, {format}), {plan, shots:real, format}), shifted = p.board.screens.map(s => ({...s, from:s.from - 1 / 48, to:s.to - 1 / 48}));
+        p.board.screens.forEach((s, j) => {
+          if (!s.fx?.strike) return;
+          const f = hitFrame(s.fx.strike.at + s.fx.strike.draw + .02, plan), fr = p.frame(f), r = fr.board?.rect;
+          if (fr.board?.screen !== j || !r) { if (s.over) bad.push(`${track} f${i} ${format} "${s.text}" not up at f${f}`); return; }
+          const g = boardGrid(Math.round(r.w), Math.round(r.h), undefined, safeSpan(r, SAFE[format])), sc = shifted[j], t = fr.board.time + 1 / 48 - (fr.board.lead ?? PEG_LEAD);
+          paint(g.board, shifted, t, {plan, layoutOf:g.layoutOf, place:g.place, pitch:g.pitch});
+          const l = g.layoutOf(sc); let page = l.pages[0]; for (const pg of l.pages) { const c0 = pg.lines[0]?.chars[0]; if (c0 && sc.words[c0.word]?.start <= t + .001) page = pg; }
+          const rows = strikeRows(sc, l, page, g.place(sc, l, page)), want = strikeWeight(l.font, l.k || 1);
+          const lit = rows.every(q => { for (let y = q.y0; y < q.y0 + q.h; y++) for (let x = Math.max(0, q.x0); x <= Math.min(g.cols - 1, q.x1); x++) { const n = y * g.cols + x; if (g.board.tone[n] !== PALETTE.signal.id || g.board.I[n] < 1 - 1e-6) return false; } return true; });
+          if (!rows.length || !lit || rows.some(q => q.h !== want)) bad.push(`${track} f${i} ${format} "${s.text}" f${f}: ${rows.map(q => q.h).join(',')} rows (want ${want})${lit ? '' : ', not lit'}`);
+          else seen.push({format, font:l.font, h:want, px:want * g.pitch});
+        });
+      }
+    }
+    const tall = seen.filter(q => q.format === '9:16');
+    ok(seen.length >= 9 && !bad.length && tall.length && tall.every(q => q.h >= 2), `the strike reads in the film: ${seen.length} struck frames across the three formats, each strikeWeight rows tall in signal across X (9:16 home: ${[...new Set(tall.map(q => `${q.h} rows of ${q.px / q.h} px, ${q.px / 4} px at 270 wide`))].join('; ')}; faces ${[...new Set(seen.map(q => `${q.format} ${q.font} ${q.h}`))].join(', ')})${bad.length ? `: ${bad.slice(0, 3).join('; ')}` : ''}`);
   }
   function bandFlow(label, plan, edl, p, format) {
     // Strategy's and Synthia's words: spoken in a tile of theirs, or no tile of the call could hold them there.

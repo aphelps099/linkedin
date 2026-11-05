@@ -198,7 +198,9 @@ export function prepare(plan, buffers, lady = {files:new Map(), deep:new Map(), 
   // The band's parts (band.js) play as her events do, on her stem.
   (plan.band || []).forEach((e, i) => { if (voiceBuffer(lady, e, `b${i}`)) push(Math.floor(e.at), 'lady', {...e, index:`b${i}`}); });
   const harmonyBars = new Set(plan.words.filter(w => w.harmony).map(w => Math.floor(w.at / BAR_STEPS)));
-  return {plan, buffers, lady, at, harmonyBars, track, step, band:bandOf(track, plan)};
+  // The couplet drop's impact word, when it asks for the downbeat to itself (drop.js unmask).
+  const unmask = (plan.lady || []).find(e => e.role === 'impact' && e.unmask) ?? null;
+  return {plan, buffers, lady, at, harmonyBars, track, step, band:bandOf(track, plan), unmask};
 }
 
 // The kick's sidechain. A track may pump harder (depth per stem, release time
@@ -256,7 +258,8 @@ function playLady(graph, song, e, t) {
   const dryLevel = gain * (1 - (e.blend || 0) * .5);
   const dryOut = I.amp(ctx, dryLevel), nodes = [s, env, dryOut];
   env.connect(dryOut);
-  if (e.role === 'tag') dryOut.connect(graph.tag);
+  // The tag, and a couplet's impact word (unmask.dry): dry and centred, past the stems' sends.
+  if (e.role === 'tag' || (e.role === 'impact' && e.unmask?.dry)) dryOut.connect(graph.tag);
   // A clear phrase of the river (wander.js): dry and centred over the stream, its tail sent into the river's
   // diffusion, where it sinks back in (river.js washIn). It skips her stem, so it reads graph.muted and mutes with it.
   else if (e.clear && graph.own?.washIn) { if (!graph.muted?.lady) { dryOut.connect(graph.tag); const w = I.amp(ctx, .3); dryOut.connect(w); w.connect(graph.own.washIn); nodes.push(w); } }
@@ -271,11 +274,17 @@ function playLady(graph, song, e, t) {
   s.start(t, e.from, (e.to - e.from) + .01);
   makeRoom(graph, t, length);
   if (e.role === 'impact' || e.dip) {
-    // The kick's transient passes, then drums and bass dip under the word and swell back.
-    const depth = e.role === 'impact' ? .45 : e.dip;
-    for (const name of ['drums', 'bass']) {
+    // The kick's transient passes, then drums and bass dip under the word and swell back
+    // (a couplet's impact word, unmask: deeper, and the keys and guitar with them).
+    // A couplet's impact word (unmask): the band is out from the downbeat while its first consonant speaks
+    // (to its vowel, `lead` seconds in: the drop kick's transient took "v" and "d" off VIBE. and DEMAND.),
+    // then under the word at `dip`, and back as it ends.
+    const u = e.role === 'impact' ? e.unmask : null, depth = e.role === 'impact' ? u?.dip ?? .45 : e.dip;
+    for (const name of u?.all ? STEMS.filter(n => n !== 'lady' && n !== 'voice') : ['drums', 'bass']) {
       const g = graph.stems[name].voiced.gain;
-      g.setValueAtTime(1, t + .015); g.linearRampToValueAtTime(depth, t + .03); g.setValueAtTime(depth, t + length); g.linearRampToValueAtTime(1, t + length + .16);
+      if (u?.hold !== undefined) { const h = t + u.lead + (u.holdFor ?? .01); g.setValueAtTime(u.hold, t); g.setValueAtTime(u.hold, h); g.linearRampToValueAtTime(depth, h + .03); }
+      else { g.setValueAtTime(1, t + .015); g.linearRampToValueAtTime(depth, t + .03); }
+      g.setValueAtTime(depth, t + length); g.linearRampToValueAtTime(1, t + length + .16);
     }
   }
   const deep = song.lady.deep.get(e.index);
@@ -397,7 +406,9 @@ export function scheduleStep(graph, song, step, t0) {
     const choir = harmonyBars.has(bar);
     graph.harmony.forEach((h, i) => { h.o.frequency.setValueAtTime(I.mtof(chord.notes[i]), t); h.g.gain.setTargetAtTime(choir ? .2 : 0, t, .03); });
     if (L.pad) band.pad(api, t, chord, barEnd - t, b);
-    if (L.crash) I.crash(ctx, D, t + (L.impact ? .12 : 0), L.impact ? .3 : .42);    // after the vowel of "BACK." has spoken
+    // A couplet's impact word (drop.js unmask) keeps the downbeat to itself: the crash and the downlifter wait for it to end.
+    const word = L.impact ? song.unmask : null, after = word ? ladyLength(word) + (word.unmask.after ?? .04) : 0;
+    if (L.crash) I.crash(ctx, D, t + (L.impact ? Math.max(.12, after) : 0), L.impact ? .3 : .42);    // after the vowel of "BACK." has spoken
     if (L.riser === true && bar === 14) I.riser(ctx, D, t, T(step + 2 * BAR_STEPS) - t);
     if (L.riser === 'short') I.riser(ctx, D, t, barEnd - t, .2);
     if (L.riser === 'long') {
@@ -409,8 +420,10 @@ export function scheduleStep(graph, song, step, t0) {
     if (L.impact && band.impact) band.impact(api, b, bar, t, barEnd, T, step);
     else if (L.impact) {
       // The impact is tuned: the drop kick settles on, and the sub falls through, the track's key.
-      I.dropKick(ctx, D, t, 1, track.sound.dropKick); duck(graph, t); I.subDrop(ctx, stems.bass.input, t, .75, track.sound.subDrop); I.impact(ctx, D, t, .6);
-      I.downlifter(ctx, D, t + .25, barEnd - t - .25);   // after the word, not over it
+      const boom = word?.unmask.boom ?? 1;
+      I.dropKick(ctx, D, t, boom, track.sound.dropKick); duck(graph, t); I.subDrop(ctx, stems.bass.input, t, .75 * boom, track.sound.subDrop); I.impact(ctx, D, t, .6 * boom);
+      const down = Math.max(.25, after);
+      I.downlifter(ctx, D, t + down, barEnd - t - down);   // after the word, not over it
     }
     if (L.reverseCrash) I.reverseCrash(ctx, D, T(step + 12), barEnd - T(step + 12));
     band.bar?.(api, b, bar, t, barEnd, T, step);

@@ -30,7 +30,8 @@ import {readFileSync, existsSync, mkdirSync, writeFileSync} from 'node:fs';
 import {spawnSync} from 'node:child_process';
 import {createRequire} from 'node:module';
 import {join} from 'node:path';
-import {castSong, castFiles, fits, settleCast, LIMITS, CONCEPTS, ROLE_ORDER, MIX_MIN, ROTATION, BAND_SLOTS} from '../src/allhands/casting.js';
+import {castSong, castFiles, fits, settleCast, LIMITS, CONCEPTS, ROLE_ORDER, MIX_MIN, ROTATION, BAND_SLOTS, LADY_ROTATION, LADY_SLOTS, ladyKey} from '../src/allhands/casting.js';
+import {AVAILABLE, voicesFor} from '../src/allhands/voices/voice-table.js';
 import {TAKES, takeOf, takeKey, clearFor, SYNTHIA} from '../src/allhands/vocabulary/takes.js';
 import {TRACKS, TRACK_ORDER, DEFAULT_TRACK, DEFAULT_CAST, LADY_ROLES, BAND_ROLES, castOf} from '../src/allhands/songbook/index.js';
 import {arrangeDrop, dropVoicedWords} from '../src/allhands/drop.js';
@@ -174,6 +175,12 @@ function validCast(r, where) {
       const heard = roleEntry(role, c.file, [a, b])?.mix?.[r.track]?.recall;
       if (role === 'tag' || role === 'sink') ok(heard === undefined || heard >= MIX_MIN, `${where} ${role} "${c.display}": heard in the ${r.track} mix (${heard})`);
       if (role === 'ladder' && roleEntry('ladder', c.file, [a, b])?.couplet) ok(r.cast.dropTag.kind === 'couplet', `${where}: "It's not" climbs only to a couplet's drop`);
+      // Her moments rotate, and only lines that keep the role's music play them (casting.js LADY_ROTATION).
+      if (LADY_SLOTS.includes(role)) {
+        const e = roleEntry(role, c.file, [a, b]);
+        ok(e.craft >= LADY_ROTATION.floor[role], `${where} ${role} "${c.display}": craft ${e.craft} plays the role (at least ${LADY_ROTATION.floor[role]})`);
+        if (role === 'sink') ok((e.mix?.[r.track]?.recall ?? 1) >= LADY_ROTATION.sinkRecall, `${where} sink "${c.display}": read at half speed in the ${r.track} mix (${e.mix?.[r.track]?.recall})`);
+      }
     }
     if (role !== 'impact') { ok(!files.has(c.file), `${where}: ${c.file} cast twice (${files.get(c.file)}, ${role})`); files.set(c.file, role); }
   }
@@ -184,7 +191,7 @@ function validCast(r, where) {
 }
 
 // A band part: Strategy's or Synthia's take (its id in takes.js, so in lexicon.json), the lady's file and words, or Synergy's text.
-function validPart(p, where, {stab = false} = {}) {
+function validPart(p, where, {stab = false, lead = false} = {}) {
   ok(p && typeof p.text === 'string' && p.text && typeof p.display === 'string' && drawable(p.display) && fitsBoard(p.display), `${where}: text and a display the board draws (${p?.display})`);
   if (p.voice === 'lady') {
     const entry = LADY_TABLE[p.file];
@@ -199,7 +206,9 @@ function validPart(p, where, {stab = false} = {}) {
   ok(['strategy', 'synthia'].includes(p.voice) && t && !p.file, `${where}: take ${p.id} in takes.js`);
   ok(t.text === p.text && t.display === p.display, `${where}: ${p.id} says what the lexicon says ("${t.text}")`);
   // Strategy may sing any line (the voice bank renders every line in his voice); Synthia only her own, short and clear.
-  ok(p.voice === 'strategy' || (t.voice === 'synthia' && clearFor(t, {stab})), `${where}: ${p.voice} sings "${p.text}" (the lexicon's ${t.voice}${p.voice === 'synthia' ? ', short and clear' : ''})`);
+  // (or a line of his the bank has only in her voice, voicesFor: she answers with it, short and clear)
+  const hers = t.voice === 'synthia' || (json(voicesFor(p.id)) === json(['synthia']) && !lead);
+  ok(p.voice === 'strategy' || (hers && clearFor({...t, voice:'synthia'}, {stab})), `${where}: ${p.voice} sings "${p.text}" (the lexicon's ${t.voice}${p.voice === 'synthia' ? ', short and clear' : ''})`);
 }
 
 function validBand(r, where, {available} = {}) {
@@ -233,13 +242,13 @@ function validBand(r, where, {available} = {}) {
     add('drop tag', d.tag); add('drop impact', d.impact);
   }
   ok(c.refrain && c.signoff, `${where}: a refrain and a sign-off`);
-  add('refrain', c.refrain); add('signoff', c.signoff);
+  add('refrain', c.refrain, {lead:true}); add('signoff', c.signoff);
   ok(c.refrain.voice !== 'synthia', `${where}: Synthia leads no refrain`);
   if (c.signoff.voice === 'synergy') ok(r.track === 'circle-back', `${where}: Synergy's "Let's circle back" only in Circle Back`);
   ok(c.exchanges.length >= 1 && c.exchanges.length <= ROTATION.exchanges, `${where}: ${c.exchanges.length} exchanges`);
   for (const [k, x] of c.exchanges.entries()) {
     ok(x.call.voice !== 'synthia' && (x.call.voice === 'lady' || x.call.voice !== x.response.voice), `${where}: exchange ${k}, ${x.call.voice} calls and ${x.response.voice} answers`);
-    add(`call ${k}`, x.call); add(`response ${k}`, x.response);
+    add(`call ${k}`, x.call, {lead:true}); add(`response ${k}`, x.response);
   }
   ok(c.stabs.length === ROTATION.stabs, `${where}: ${c.stabs.length} stabs`);
   for (const [k, s] of c.stabs.entries()) add(`stab ${k}`, s, {stab:true});
@@ -342,8 +351,24 @@ function corpus(rs, name) {
   console.log(`  the band's parts by voice: ${voices.map(([v, n]) => `${v} ${n}`).join(', ')}`);
   return s;
 }
+// As the page casts: with the voice bank's takes (voice-table.js AVAILABLE), hash only and with history.
+const paged = POSTS.map((post, i) => { const r = castSong(post, {available:AVAILABLE}); validCast(r, `${label(i)} (bank)`); validBand(r, `${label(i)} (bank)`, {available:AVAILABLE}); return r; });
+const pagedHistory = [];
+POSTS.forEach((post, i) => { const r = castSong(post, {available:AVAILABLE, recent:pagedHistory.map(x => x.keys)}); validCast(r, `${label(i)} (bank, history)`); validBand(r, `${label(i)} (bank, history)`, {available:AVAILABLE}); pagedHistory.push(r); });
 const H = corpus(results, 'hash only (the sample and the 60 fixtures)'), W = corpus(withHistory, 'with history (the corpus in order)');
-for (const [s, name] of [[H, 'hash only'], [W, 'with history']]) {
+const PH = corpus(paged, 'with the voice bank, hash only (as the page casts)'), PW = corpus(pagedHistory, 'with the voice bank and history');
+// Her moments: no line on more than LADY_ROTATION.caps.max songs, at least caps.distinct lines a role.
+for (const [rs, name] of [[results, 'hash only'], [withHistory, 'with history'], [paged, 'the bank, hash only'], [pagedHistory, 'the bank, with history']]) {
+  const parts = [];
+  for (const role of LADY_SLOTS) {
+    const t = tally(rs, r => r.keys[role]);
+    ok(t.length >= LADY_ROTATION.caps.distinct && t[0][1] <= LADY_ROTATION.caps.max, `${name}: her ${role} rotates (${t.length} lines, the most-cast ${t[0][0]} on ${t[0][1]})`);
+    ok(rs.every(r => r.keys[role] === ladyKey(r.cast[role])), `${name}: keys name her ${role}`);
+    parts.push(`${role} ${t.length} (top ${t[0][0]} ${t[0][1]}${t.length > 1 ? `, ${t[1][0]} ${t[1][1]}` : ''})`);
+  }
+  console.log(`her moments, ${name}: ${parts.join('; ')}`);
+}
+for (const [s, name] of [[H, 'hash only'], [W, 'with history'], [PH, 'the bank, hash only'], [PW, 'the bank, with history']]) {
   ok(s.ladderMax <= CAPS.ladderMax, `${name}: no ladder on more than ${CAPS.ladderMax} posts (${s.ladderMax})`);
   ok(s.dropMax <= CAPS.dropMax, `${name}: no drop on more than ${CAPS.dropMax} posts (${s.dropMax})`);
   ok(s.refrainMax <= CAPS.refrainMax, `${name}: no refrain on more than ${CAPS.refrainMax} posts (${s.refrainMax})`);

@@ -117,7 +117,7 @@ export function ladderWhole(plan, e) {
 //
 // The couplet moment, "IT'S NOT X." then "IT'S Y.": X lights word by word as Strategy sings it (the whole
 // line up from the screen's first frame as the read-ahead ghost, so it never reads "IT'S NO"), then on the
-// beat after it a row of pegs strikes through X (signal, drawn left to right over one 16th, every letter
+// beat after it a bar of pegs (STRIKE.weight) strikes through X (signal, drawn left to right over one 16th, every letter
 // still at full under it), then Y lands under it as it is sung. X and Y share the board when both fit one
 // page (each on lines of its own: font.js LINE_BREAK); on a board too small for both the page turns to Y
 // when Y is sung, after the strike has shown for STRUCK_MIN at least. Y is dark until it is sung: the joke
@@ -133,7 +133,12 @@ export const BAND_VOICES = Object.freeze({
   lady:{tone:'white', tag:null},
   synergy:{tone:'blue', tag:null},
 });
-export const STRIKE = Object.freeze({tone:'signal', draw:1, min:.25});   // draw: 16ths to cross X; min: seconds struck before Y
+// weight: the strike's rows a k, by face. PEG-9's stem (2 pegs), so it reads as a stroke of the face at every size
+// (one row was PEG-9's crossbar weight, on the crossbars' row: a hairline at the phone's 3 px pegs and in the 9:16
+// film at 270 px wide); PEG-5 takes the same 2, heavier than its 1-peg strokes, so it reads on a phone. PEG-3 (the
+// 16:9 film's narrow home, for a long X) keeps 1: two rows of a 5-row cap would make its B read as D and its K as H.
+export const STRIKE = Object.freeze({tone:'signal', draw:1, min:.25, weight:Object.freeze({peg9:2, peg5:2, peg3:1})});   // draw: 16ths to cross X; min: seconds struck before Y
+export const strikeWeight = (font, k = 1) => Math.min((CAP_ROWS[font] ?? 9) * k, (STRIKE.weight[font] ?? 2) * k);
 export const TAG_MIN_PITCH = 12;                                          // PEG-3 reads from 12 px a peg
 const PAIR_GAP = 16;                                                      // 16ths: a Y further than a bar from X gets a screen of its own
 const STRUCK_SKIP = new Set(['NOT', 'JUST', 'ABOUT', 'ONLY', 'EVEN']);
@@ -617,29 +622,30 @@ function bandLight(screen, word, unit, peg, t, ctx, reduced) {
   return {I:FRAGMENT_FULL, white:0, size:1 + .25 * Math.exp(-age * 9) * Math.cos(age * 2 * Math.PI * 6)};
 }
 
-// The strike: a row of pegs (k tall, at the middle of the caps) through X's struck words on each line
-// they sit on, a peg past each end, drawn left to right over STRIKE.draw from its beat, in signal, at full
-// over the letters (they stay lit under it). A peg springs as the stroke reaches it; its light never pops.
+// The strike: a bar of pegs (h, strikeWeight: STRIKE.weight's rows a k, centred on the caps, half a peg high
+// where the rows cannot split evenly) through X's struck words on each line they sit on, k pegs past each end, drawn
+// left to right over STRIKE.draw from its beat, in signal, at full over the letters (they stay lit under
+// it). A peg springs as the stroke reaches it; its light never pops.
 const CAP_ROWS = {peg9:9, peg5:7, peg3:5};
 const TRAILING = /[.,!?;:…'"\u2013-]/;
 export function strikeRows(screen, layout, page, origin) {
-  const st = screen.fx.strike, k = layout.k || 1, cap = (CAP_ROWS[layout.font] ?? 9) * k, struck = new Set(st.words), out = [];
+  const st = screen.fx.strike, k = layout.k || 1, cap = (CAP_ROWS[layout.font] ?? 9) * k, h = strikeWeight(layout.font, k), struck = new Set(st.words), out = [];
   for (const line of page.lines) {
     const chars = line.chars.filter(c => struck.has(c.word));
     while (chars.length && TRAILING.test(chars.at(-1).ch)) chars.pop();
     if (!chars.length) continue;
-    out.push({x0:origin.x + chars[0].x - k, x1:origin.x + chars.at(-1).x + chars.at(-1).w - 1 + k, y0:origin.y + line.y + Math.floor((cap - k) / 2), k});
+    out.push({x0:origin.x + chars[0].x - k, x1:origin.x + chars.at(-1).x + chars.at(-1).w - 1 + k, y0:origin.y + line.y + Math.floor((cap - h) / 2), h, k});
   }
   return out;
 }
 function drawStrike(board, screen, layout, page, origin, t, fade, reduced) {
   const st = screen.fx.strike, since = t - st.at, tone = PALETTE[st.tone]?.id ?? PALETTE.signal.id;
   if (since < -FRAME * .5) return;
-  for (const {x0, x1, y0, k} of strikeRows(screen, layout, page, origin)) for (let x = x0; x <= x1; x++) {
+  for (const {x0, x1, y0, h} of strikeRows(screen, layout, page, origin)) for (let x = x0; x <= x1; x++) {
     const age = since - (x - x0) / Math.max(1, x1 - x0) * st.draw;
     if (age < -FRAME * .5) continue;
     const size = reduced ? 1 : 1 + .2 * Math.exp(-Math.max(0, age) * 14);
-    for (let r = 0; r < k; r++) {
+    for (let r = 0; r < h; r++) {
       const y = y0 + r;
       if (x < 0 || y < 0 || x >= board.cols || y >= board.rows) continue;
       const j = y * board.cols + x;
