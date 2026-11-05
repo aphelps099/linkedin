@@ -52,12 +52,13 @@ import {MOVES} from '../moves/index.js';
 import {fitTime, rng} from '../moves/util.js';
 import {createEDL, merge} from '../edl/schema.js';
 import {backbeatHits} from '../edl/params.js';
-import {hitAt, ladyTime, cutFrame} from '../edl/anchors.js';
+import {hitAt, ladyTime, cutFrame, barSteps, beatSteps, stepTime, stepAtTime, hitFrame} from '../edl/anchors.js';
 import {shotIndex, isSynergy, isInstrument, resolveCrop, UPSCALE, TRACKING, layerMatrix, invert, apply} from '../edl/compile.js';
-import {cellRect, FORMATS, HOME} from '../layouts.js';
+import {cellRect, cellIds, FORMATS, HOME} from '../layouts.js';
+import {layerGain, riverTrack, riverAt} from '../../pegboard/psych.js';
 import {LADY_TABLE} from '../../allhands/lady-table.js';
 import {TRACKS} from '../../allhands/songbook/index.js';
-import {landmarks, coldOpen, ending, r6, BOARD_MOVE} from './shared.js';
+import {landmarks, coldOpen, ending, r6, BOARD_MOVE, speakingKeys} from './shared.js';
 
 // Who plays whom. Ids are shot-index aliases. The glass: mirrorable close-ups (never a robot or an
 // instrument), the only shots the kaleidoscope folds. glass are R0 takes, folded at speed (the build's
@@ -89,7 +90,9 @@ export const SCENE_LABELS = {cold:'Cold open', arrive:'Arrivals', join:'The call
 const HUE = [[0, 0], [.18, .15], [.32, .7], [.45, 1], [.55, 1.2], [.66, 1.7], [.72, 2], [.82, 1.5], [.92, 1.9], [1, 2]];
 const speaking = stem => ({bind:`stem:${stem}`, scale:1.5, base:-.3, attack:.02, release:.3});
 
-export function offsitePsych(plan, shots, {format = '9:16', features, seed = 11} = {}) {
+export function offsitePsych(plan, shots, {format = '9:16', features, seed = 11, notes} = {}) {
+  // The river (wander.js) has no ladder, choke, impact or tape stop: it is cut from its layers (below).
+  if (plan.form === 'wander') return riverCut(plan, shots, {format, features, seed, notes});
   const L = landmarks(plan), {BS, QS, T, S, impact, chokeBar, choke} = L, F = FORMATS[format], index = shotIndex(shots);
   const ctx0 = {plan, shots, features, format, seed};
   const m = (name, ctx) => MOVES[name].fn({...ctx0, ...ctx});
@@ -524,5 +527,380 @@ export function offsitePsych(plan, shots, {format = '9:16', features, seed = 11}
     for (const key of Object.keys(x)) if (x[key] === undefined) delete x[key];
     if (x.chrome) for (const key of Object.keys(x.chrome)) if (x.chrome[key] === undefined) delete x.chrome[key];
   }
+  return edl;
+}
+
+// ==== The river (plan.form 'wander', allhands/wander.js): Offsite's film since Nov 5 ========================================
+// Aaron: "a natural river of electronic sound": repeating samples building into a texture, layers ramping in,
+// a flow that gently changes, very few clear vocal phrases. The picture flows the same way. There is no ladder,
+// choke, impact or tape stop: the cut is built from the plan's own layers (plan.layers: each layer's ramp-in is
+// a picture easing in), its swells, its slow spans and its one or two clear phrases (plan.band), the only sharp
+// moments.
+//   - The call fills as the river does: a tile for each voice of the texture (the loop of hands and the office,
+//     the drone's slow glass, Pat humming the root, Strategy's word, her syllables as her waveform, a listener
+//     for each acoustic colour), each easing in from black through the dot grid over its layer's own ramp and
+//     out over its ramp out. The layout grows with the layers sounding (split, G4, G6, G9) and shrinks as they
+//     leave, on a bar line by a long dissolve, never under Synergy or a clear phrase.
+//   - Repeating samples: a tile's next shot dissolves in over a beat on an "and", two bars on; an empty tile
+//     carries a canon copy of another tile's picture, a few steps behind (one decode for both).
+//   - Slow motion: R1 footage at half speed, slower in the slow spans (the pool); R0 plates hold where the
+//     river slows; Synergy at speed; no instrument plays.
+//   - Echo trails as her copies come in, mosaics that breathe as the smear does, a shimmer with the tambourine,
+//     pegs blooming out of the board's home in the swells, the palette drifting with the colours' pitch window.
+//   - The dot grid: one river look in the board's region all film long (psych.js riverTrack: its light is the
+//     layers'), the whole frame as dots while her syllables play alone at the start and the end, and each tile
+//     born through the grid as its layer arrives.
+//   - The clear phrases: the speaker's tile (Strategy, Synthia, or her waveform: never a face) cuts sharp on
+//     the first word, at speed and without effects, its border lit on the words, as the board's type lands;
+//     then it sinks back into the stream as its last word loops (the echo layer). Synergy sings his hook once,
+//     washed, at speed, fully up while he sings.
+export const RIVER = Object.freeze({relayout:12, change:4, every:2, half:.5, pool:.3, enter:8, copy:.72});
+export const RIVER_CLASSES = Object.freeze(['split', 'G4', 'G6', 'G9']);
+export const RIVER_LANES = Object.freeze({
+  room:['the-professionals-arrive', 'people-linkedin-computer', 'banner-installation-blank-plates', 'printer-outward-feed'],
+  listen:['people-listening', 'linda-listening', 'arjun-listening', 'people-speaking', 'linda-speaking', 'arjun-speaking'],
+  strategy:['strategy-listening', 'strategy-speaking'], synthia:['synthia-clean-face-plate', 'synthia-conference-closeup'],
+});
+const LADY_NAME = 'Circle Back';
+const RIVER_SECTIONS = ['source', 'stream', 'current', 'swell', 'pool', 'delta'];
+for (const s of RIVER_SECTIONS) for (const k of ['', '2', '3']) SCENE_LABELS[`${s}${k}`] = `${s[0].toUpperCase()}${s.slice(1)}${k ? ` ${k}` : ''}`;
+SCENE_LABELS.river = 'The river';
+
+function riverCut(plan, shots, {format = '9:16', features, seed = 11, notes} = {}) {
+  const BS = barSteps(plan), QS = beatSteps(plan), T = s => stepTime(plan, s), S = t => stepAtTime(plan, t), NS = plan.totalSteps;
+  const F = FORMATS[format], H = HOME[format], index = shotIndex(shots), note = m => { if (Array.isArray(notes)) notes.push(m); };
+  const layers = plan.layers || [], loops = new Map((plan.loops || []).map(l => [l.id, l])), clamp01 = x => Math.max(0, Math.min(1, x));
+  const smooth = u => { const x = clamp01(u); return x * x * (3 - 2 * x); };
+  const gainOf = (L, s) => clamp01(layerGain(plan, L, T(Math.max(0, Math.min(NS, s)))) / (L.level || 1));
+  const levelOf = (Ls, s) => Ls.reduce((m, L) => Math.max(m, gainOf(L, s)), 0);
+  const ceiling = (id, cell) => { const s = index.get(id), r = cellRect(format, cell); if (!s || !r) return 0; return (UPSCALE[s.sharpTier] ?? 1.5) * resolveCrop(s, {}, format, r).h / r.h; };
+  const usable = id => { const s = index.get(id); return !!s && s.status !== 'E' && s.status !== 'R'; };
+  const and = s => s + (((QS / 2 - s) % QS) + QS) % QS;
+  const sh = id => `shot:${id}`;
+  const clips = [], board = [{id:'song', at:0, text:{ref:'song'}}];
+
+  // ---- time: the slow spans, rates, in points ------------------------------------------------------------------
+  const slows = (plan.slow || []).map(w => [S(w.from), S(w.to)]).filter(([a, b]) => b > a);
+  const slowAt = s => slows.some(([a, b]) => s >= a && s < b);
+  const rateOf = (at, len, base, low) => {
+    const keys = [[0, slowAt(at) ? low : base]];
+    for (const [a, b] of slows) {
+      if (b <= at || a >= at + len) continue;
+      if (a > at) keys.push([r6(a - at), base], [r6(Math.min(len, a - at + QS)), low, 'inOutSine']);
+      if (b < at + len) keys.push([r6(b - at), low], [r6(Math.min(len, b - at + QS)), base, 'inOutSine']);
+    }
+    const k = keys.filter((x, i) => !i || x[0] > keys[i - 1][0]);
+    return k.length === 1 ? k[0][1] : k;
+  };
+  const secs = (at, len) => T(at + len) - T(at);
+  const peak = rate => typeof rate === 'number' ? rate : Math.max(...rate.map(k => k[1]));
+  // A shot's time over a slot: R1 slowed (base, `low` in the slow spans); R0 at speed, holding its frame where
+  // the river slows; the in point from the seed, with room for the dissolve after the slot.
+  const timeOf = (id, at, len, k, {base = RIVER.half, low = RIVER.pool, speed = false} = {}) => {
+    const s = index.get(id), fps = s.fps || 24, room = s.duration - 2 / fps, r = rng(seed * 7919 + k * 104729 + Math.floor(at * 4));
+    if (s.reverseClass !== 'R1' || isInstrument(s) || speed) {
+      const w = slows.find(([a, b]) => b > at && a < at + len), hold = !speed && s.reverseClass !== 'R1' && w ? r6(Math.max(0, w[0] - at)) : null;
+      const used = Math.min(secs(at, len + RIVER.change), hold !== null ? secs(at, hold) + 2 / fps : Infinity), spare = room - used;
+      return {in:spare > 0 ? Math.round(r() * spare * fps) / fps : 0, ...(hold !== null ? {freezeAt:hold} : {})};
+    }
+    const rate = rateOf(at, len + RIVER.change, base, low), spare = room - peak(rate) * secs(at, len + RIVER.change);
+    if (spare < 0) return {in:0, rate:r6(Math.max(.25, Math.min(base, room / secs(at, len + RIVER.change))))};
+    return {in:Math.round(r() * spare * fps) / fps, rate};
+  };
+
+  // ---- the drifts: the palette with the colours' pitch window, the shimmer, the copies, the smear, the swells ---
+  const win = (plan.drifts || []).find(d => d.param === 'window')?.points ?? [];
+  const lo = win.length ? Math.min(...win.map(p => p[1])) : 0, hi = win.length ? Math.max(...win.map(p => p[1])) : 1;
+  const hueAt = s => {
+    if (!win.length) return r6(2 * clamp01(s / NS));
+    const t = T(s); let i = 1; while (i < win.length - 1 && win[i][0] < t) i++;
+    const [a, x] = win[i - 1], [b, y] = win[i], v = x + (y - x) * clamp01((t - a) / Math.max(1e-9, b - a));
+    return r6(2 * (v - lo) / Math.max(1e-9, hi - lo));
+  };
+  const byKind = k => layers.filter(L => L.kind === k);
+  const voiceOf = L => loops.get(L.source)?.voice;
+  const echoes = layers.filter(L => /-echo$/.test(L.source ?? L.id));
+  const texture = layers.filter(L => L.kind === 'texture' && !echoes.includes(L));
+  const copiesL = texture.filter(L => L.source === 'her' && L.id !== 'her'), smearL = texture.filter(L => /smear/.test(L.id)), tambL = byKind('tambourine');
+  const swellAt = s => (plan.swells || []).reduce((m, w) => { const t = T(s); return t > w.from && t < w.to ? Math.max(m, Math.sin(Math.PI * (t - w.from) / (w.to - w.from))) : m; }, 0);
+  // Keys every `step` steps over [at, at + len]; a run of equal values keeps only its ends (one value: a number).
+  const keyed = (at, len, fn, step = 2, ease = 'linear') => {
+    const keys = [];
+    for (let k = 0; k <= len + 1e-9; k = Math.min(len, k + step)) { keys.push([r6(k), r6(fn(at + k, k)), ...(keys.length ? [ease] : [])]); if (k >= len - 1e-9) break; }
+    const out = keys.filter((x, i) => i === 0 || i === keys.length - 1 || x[1] !== keys[i - 1][1] || x[1] !== keys[i + 1]?.[1]);
+    return out.every(x => x[1] === out[0][1]) ? out[0][1] : out;
+  };
+  const homeC = {cx:r6((H.x + H.w / 2) / F.w), cy:r6((H.y + H.h / 2) / F.h)};
+  const wash = (at, len, mix) => ({type:'paletteWash', mix, hue:keyed(at, len, hueAt, 4 * QS)});
+  // The stream's look on a tile: mosaics breathing with the voices and the smear, echo trails with her copies,
+  // the tambourine's shimmer, pegs blooming in the swells (and out of which a tile resolves as it enters).
+  const stream = (at, len, {mix = .5, fold:fd, enter = null, k = 0} = {}) => [
+    ...(fd ? [{type:'radialFold', wedges:fd, angle:[[0, 17 * k], [r6(len), 17 * k + (k % 2 ? -30 : 30)]]}] : []),
+    {type:'breathe', px:{add:[{bind:'voices', scale:7, base:-1, attack:.03, release:.25}, {bind:'clap', scale:4, attack:0, release:.2}, keyed(at, len, s => 7 * levelOf(smearL, s), QS)]}},
+    wash(at, len, mix),
+    {type:'trail', taps:3, frames:2, decay:{add:[{bind:'clap', scale:.22, attack:0, release:.3}, keyed(at, len, s => .42 * levelOf(copiesL, s), QS)]}},
+    {type:'chromaDrift', px:keyed(at, len, s => r6(2.5 * levelOf(tambL, s)), QS), angle:[[0, 40 * k], [r6(len), 40 * k + 35]], radial:1.5},
+    {type:'pegBloom', amount:keyed(at, len, s => Math.max(enter === null ? 0 : .85 * (1 - smooth((s - enter) / RIVER.enter)), .4 * swellAt(s)), 1), ...homeC, space:'frame', band:.12, pitch:12, levels:6, gamma:.8},
+  ];
+
+  // ---- the lanes: the voices of the texture, each a tile -------------------------------------------------------
+  // {id, Ls (the layers it follows), from, to (steps), prio, pref ('top' | 'bottom' | 'any'), pool | asset, ...}
+  const lanes = [];
+  const spanOf = Ls => [Math.max(0, Math.min(...Ls.map(L => S(L.in[0])))), Math.min(NS, Math.max(...Ls.map(L => S(L.out[1]))))];
+  const addLane = (id, Ls, o) => { if (!Ls.length) return null; const [from, to] = spanOf(Ls); if (to - from < BS) return null; const x = {id, Ls, from, to, level:s => levelOf(Ls, s), ...o}; lanes.push(x); return x; };
+  addLane('room', byKind('loop'), {prio:2, pref:'top', pool:RIVER_LANES.room.filter(usable), what:'the loop of hands and the office'});
+  addLane('glass', byKind('drone'), {prio:3, pref:'any', pool:CAST.still.filter(id => usable(id) && index.get(id).mirrorable), fold:true, what:'the drone: a slow kaleidoscope'});
+  addLane('pat', byKind('bass'), {prio:4, pref:'bottom', asset:PAT, chrome:{name:'Pat', mic:'on', speaking:{bind:'stem:bass', scale:1.4, base:-.35, attack:.05, release:.6}}, what:'Pat humming the root'});
+  const strat = addLane('strategy', texture.filter(L => voiceOf(L) === 'strategy'), {prio:5, pref:'any', pool:RIVER_LANES.strategy.filter(usable), what:'Strategy’s word, looped'});
+  // The acoustic colours: two listeners, the colours split by when they come in (one decode each).
+  const colours = [...byKind('colour'), ...byKind('guitar')].sort((a, b) => a.in[0] - b.in[0]), half = Math.ceil(colours.length / 2);
+  [colours.slice(0, half), colours.slice(half)].forEach((Ls, k) => addLane(`listen${k}`, Ls, {prio:6 + k, pref:'any', pool:[...RIVER_LANES.listen.slice(3 * k), ...RIVER_LANES.listen.slice(0, 3 * k)].filter(usable), what:`a listener for the ${Ls.map(L => L.id).join(' and the ')}`}));
+  const her = addLane('her', texture.filter(L => voiceOf(L) === 'lady'), {prio:20, pref:'bottom', lastRow:true, asset:PAT, chrome:{name:LADY_NAME, mic:'on', speaking:{bind:'stem:lady', scale:1.3, base:-.2, attack:.02, release:.25}}, what:'her syllables: her waveform, never a face'});
+  // Synergy: his hook once, washed; in over the bar before he sings, out over the bar after.
+  const hisWords = (plan.words || []).filter(w => w.at >= 0).sort((a, b) => a.at - b.at);
+  let synergy = null;
+  if (hisWords.length) {
+    const w0 = hisWords[0].at, w1 = Math.max(...hisWords.map(w => w.at + (w.steps ?? 1))), from = Math.max(0, Math.floor((w0 - 2 * BS) / BS) * BS), full = w0 - QS, out = w1 + QS, to = Math.min(NS, out + BS);
+    const id = ['synergy-camera-v2-listening', CAST.synergy, CAST.synergyClose].find(usable);
+    synergy = {id:'synergy', Ls:[], from, to, prio:0, pref:'top', pool:[id], whole:true, over:true, level:s => s < full ? smooth((s - from) / Math.max(1, full - from)) : s <= out ? 1 : 1 - smooth((s - out) / Math.max(1, to - out)), sings:[w0, w1], what:'Synergy sings his hook, once, washed'};
+    lanes.push(synergy);
+  }
+  // The clear phrases: the speaker's tile, sharp on the words, then sinking back in with its echo.
+  const speakers = (plan.band || []).filter(b => b.clear !== false && b.words?.length).map((b, k) => {
+    const echo = echoes.find(L => (L.source ?? L.id) === `${b.role}-echo`), cut = Math.max(0, hitFrame(b.words[0].start, plan) - 1);
+    // Sharp from a frame before the frame that holds the first word to the first "and" a half beat after the last.
+    const sharp = [r6(S(cut / 24)), r6(Math.min(NS, and(S(b.words.at(-1).end) + QS / 2)))];
+    const from = Math.max(0, Math.floor((S(b.rise?.[0] ?? b.start) - BS) / BS) * BS + QS / 2), to = Math.min(NS, Math.max(echo ? S(echo.out[1]) : 0, S(b.sink?.[1] ?? b.end) + BS));
+    const pool = b.voice === 'lady' ? null : (RIVER_LANES[b.voice] || []).filter(usable);
+    // (Held: no re-layout from its first bar to two beats after its last word; it may sink across one after.)
+    const x = {id:`speaker${k}`, Ls:echo ? [echo] : [], part:b, from, to, sharp, hold:[from, Math.min(NS, sharp[1] + 2 * QS)], prio:1, pref:'top', over:true, voice:b.voice,
+      ...(b.voice === 'lady' ? {asset:PAT, chrome:{name:LADY_NAME, mic:'on'}} : {pool, chrome:{name:{strategy:'Strategy', synthia:'Synthia'}[b.voice] ?? b.voice, mic:'on'}}),
+      level:s => s < sharp[0] ? .35 + .65 * smooth((s - from) / Math.max(1, sharp[0] - from)) : s <= sharp[1] + 2 * QS ? 1 : echo ? Math.max(.4 * (1 - smooth((s - sharp[1] - 2 * QS) / BS)), gainOf(echo, s)) : 1 - smooth((s - sharp[1] - 2 * QS) / (2 * BS)),
+      what:`${b.voice === 'lady' ? 'her waveform' : b.voice} sings "${b.display}" clear`};
+    lanes.push(x);
+    return x;
+  }).filter(x => x.voice === 'lady' || x.pool?.length);
+  // Strategy's stream tile and her waveform hand over to their clear phrase: one tile each.
+  for (const sp of speakers) for (const l of [sp.voice === 'strategy' ? strat : null, sp.voice === 'lady' ? her : null]) if (l && l.to > sp.from && l.from < sp.to) {
+    if (sp.from - l.from >= BS) l.to = Math.min(l.to, sp.from + RIVER.change); else if (l.to - sp.to >= BS) l.from = Math.max(l.from, sp.to); else lanes.splice(lanes.indexOf(l), 1);
+  }
+
+  // ---- the scenes: the layout grows and shrinks with the layers sounding --------------------------------------------
+  const nb = Math.ceil(NS / BS);
+  const density = Array.from({length:nb}, (_, b) => layers.filter(L => gainOf(L, Math.min(NS, b * BS + BS / 2)) > .3).length);
+  const cls = density.map((n, b) => Math.max(0, (n <= 3 ? 0 : n <= 7 ? 1 : n <= 11 ? 2 : 3) - (slowAt(b * BS + BS / 2) ? 1 : 0)));
+  // Held still under Synergy and each clear phrase: the class of the bar he (or it) sings in.
+  for (const l of [synergy, ...speakers].filter(Boolean)) {
+    const [h0, h1] = l.hold ?? [l.from, l.to], a = Math.floor(h0 / BS), b = Math.min(nb - 1, Math.floor((h1 - 1e-9) / BS)), k = cls[Math.min(nb - 1, Math.floor((l.sings?.[0] ?? l.sharp[0]) / BS))];
+    for (let i = a; i <= b; i++) cls[i] = k;
+  }
+  const runs = [];
+  for (let b = 0; b < nb; b++) { const r = runs.at(-1); if (r && r.k === cls[b]) r.to = b + 1; else runs.push({k:cls[b], from:b, to:b + 1}); }
+  // A run under two bars joins the one before it (never the first or the last).
+  for (let i = 1; i < runs.length - 1; i++) if (runs[i].to - runs[i].from < 2) { runs[i - 1].to = runs[i].to; runs.splice(i, 1); i--; if (runs[i + 1] && runs[i + 1].k === runs[i].k) { runs[i].to = runs[i + 1].to; runs.splice(i + 1, 1); } }
+  const used = new Map();
+  const scenes = runs.map(r => {
+    const from = r.from * BS, to = Math.min(NS, r.to * BS), sec = (plan.sections || []).map(s => ({s, o:Math.min(to, s.to * BS) - Math.max(from, s.from * BS)})).sort((a, b) => b.o - a.o)[0]?.s;
+    const base = RIVER_SECTIONS.includes(String(sec?.name).toLowerCase()) ? String(sec.name).toLowerCase() : 'river', n = (used.get(base) ?? 0) + 1;
+    used.set(base, n);
+    return {id:n > 1 && base !== 'river' ? `${base}${Math.min(n, 3)}` : base, cls:RIVER_CLASSES[r.k], from, to};
+  });
+
+  // ---- the tiles: each scene's lanes in its cells, the most important first ---------------------------------------
+  const cellsOf = k => cellIds(k, format).map(id => ({id, r:cellRect(format, id)})).sort((a, b) => a.r.y - b.r.y || a.r.x - b.r.x);
+  const freeIn = (list, a, b) => { const out = []; let x = a; for (const [p, q] of [...list].sort((u, v) => u[0] - v[0])) { if (q <= x) continue; if (p > x) out.push([x, Math.min(p, b)]); x = Math.max(x, q); if (x >= b) break; } if (x < b) out.push([x, b]); return out.filter(([p, q]) => q - p > 1e-9); };
+  const holds = (l, cell) => l.asset || l.pool.some(id => ceiling(id, cell) >= 1.04 - 1e-9);
+  const placed = [];
+  for (const sc of scenes) {
+    const cells = cellsOf(sc.cls), busy = new Map(cells.map(c => [c.id, []])), overs = new Map(cells.map(c => [c.id, []])), lastRow = Math.max(...cells.map(c => c.r.y));
+    for (const l of lanes.filter(l => l.from < sc.to && l.to > sc.from).sort((a, b) => a.prio - b.prio)) {
+      // A lane enters and leaves on an "and" (its first scene's first bar line aside).
+      const a = l.from <= sc.from ? sc.from : Math.min(sc.to, and(l.from)), b = l.to >= sc.to ? sc.to : Math.min(sc.to, and(l.to));
+      if (b - a < (l.whole || l.hold ? 1 : BS)) continue;
+      const need = l.hold ? [Math.max(a, l.hold[0]), Math.min(b, l.hold[1])] : null;
+      const order = l.pref === 'top' ? cells : l.pref === 'bottom' ? [...cells].reverse().filter(c => !l.lastRow || c.r.y === lastRow) : [...cells.slice(1), cells[0]];
+      // Synergy and the clear phrases are laid over a top tile (whatever plays there plays on under them).
+      if (l.over) {
+        const c = order.find(c => holds(l, c.id) && !overs.get(c.id).some(([p, q]) => p < b && q > a));
+        if (!c) { note(`${sc.id} (${sc.cls}): no tile for ${l.id} (${l.what})`); continue; }
+        overs.get(c.id).push([a, b]);
+        placed.push({l, sc, cell:c.id, from:a, to:b, over:true});
+        continue;
+      }
+      let best = null;
+      for (const c of order) {
+        if (!holds(l, c.id)) continue;
+        const iv = freeIn(busy.get(c.id), a, b).sort((x, y) => (y[1] - y[0]) - (x[1] - x[0]) || x[0] - y[0])[0];
+        if (!iv) continue;
+        if (iv[0] === a && iv[1] === b) { best = {c, iv}; break; }
+        if (need && !(iv[0] <= need[0] + 1e-9 && iv[1] >= need[1] - 1e-9)) continue;
+        if (!l.whole && iv[1] - iv[0] >= BS && (!best || iv[1] - iv[0] > best.iv[1] - best.iv[0] + 1e-9)) best = {c, iv};
+      }
+      if (!best) { note(`${sc.id} (${sc.cls}): no tile for ${l.id} (${l.what})`); continue; }
+      busy.get(best.c.id).push(best.iv);
+      placed.push({l, sc, cell:best.c.id, from:best.iv[0], to:best.iv[1]});
+    }
+    // A tile left empty the whole scene carries a canon copy of another tile's picture, a few steps behind
+    // (the same clips, one decode for both), the glass first.
+    const sources = placed.filter(p => p.sc === sc && !p.over && (p.l.id === 'glass' || p.l.id === 'room') && p.from === sc.from && p.to === sc.to).sort((x, y) => (x.l.fold ? 0 : 1) - (y.l.fold ? 0 : 1) || x.l.prio - y.l.prio);
+    let j = 0;
+    for (const c of cells) {
+      if (busy.get(c.id).length || !sources.length) continue;
+      const src = sources.filter(q => holds(q.l, c.id))[j % sources.length] ?? sources.find(q => holds(q.l, c.id));
+      if (!src) continue;
+      busy.get(c.id).push([sc.from, sc.to]);
+      placed.push({l:src.l, sc, cell:c.id, from:sc.from, to:sc.to, copy:2 + (j % 2), of:src});
+      j++;
+    }
+  }
+
+  // ---- the clips ---------------------------------------------------------------------------------------------------
+  // A placement plays its lane's shots in turn (the next dissolving in over a beat on an "and", RIVER.every bars
+  // on, staggered tile by tile so the call changes one tile at a time), its opacity the lane's level (the layers'
+  // ramps) times the dissolves. Across a re-layout a lane carries on: the incoming tile continues the outgoing
+  // one's shot and source time and fades in over RIVER.relayout steps while the outgoing one plays on under it
+  // and fades (one decode for both).
+  const easeOf = (e, u) => e === 'inOutSine' ? (1 - Math.cos(Math.PI * u)) / 2 : e === 'step' ? (u >= 1 ? 1 : 0) : u;
+  const rateAt = (keys, u) => { if (u <= keys[0][0]) return keys[0][1]; for (let i = 1; i < keys.length; i++) if (u <= keys[i][0]) return keys[i - 1][1] + (keys[i][1] - keys[i - 1][1]) * easeOf(keys[i][2], (u - keys[i - 1][0]) / Math.max(1e-9, keys[i][0] - keys[i - 1][0])); return keys.at(-1)[1]; };
+  // Source seconds a clip shows u steps after its start (its rate integrated; a hold stops it).
+  const srcAt = (x, u) => {
+    const t = x.time || {}, r = t.rate ?? 1, end = Math.min(u, typeof t.freezeAt === 'number' ? t.freezeAt : Infinity);
+    if (typeof r === 'number') return (t.in ?? 0) + r * secs(x.at, end);
+    let v = t.in ?? 0; const n = Math.max(1, Math.ceil(end * 32));
+    for (let i = 0; i < n; i++) { const p = end * i / n, q = end * (i + 1) / n; v += rateAt(r, (p + q) / 2) * secs(x.at + p, q - p); }
+    return v;
+  };
+  const continues = p => placed.find(q => q !== p && q.l === p.l && !q.copy && !p.copy && q.sc !== p.sc && Math.abs(q.to - p.from) < 1e-9) ?? null;
+  const goesOn = p => placed.some(q => q !== p && q.l === p.l && !q.copy && !p.copy && q.sc !== p.sc && Math.abs(p.to - q.from) < 1e-9);
+  // A lane's next shot: its pool in turn, the first that holds the cell and that no other tile shows meanwhile.
+  const showing = [];
+  const pick = (l, cell, k, a, b, zoom = 1.04) => {
+    const ok = l.pool.filter(id => ceiling(id, cell) >= zoom - 1e-9), n = ok.length;
+    for (let j = 0; j < n; j++) { const id = ok[(((k + j) % n) + n) % n]; if (!showing.some(x => x.id === id && x.l !== l && x.a < b && x.b > a)) return id; }
+    return n ? ok[((k % n) + n) % n] : null;
+  };
+  const clipsOf = new Map();
+  let nClip = 0;
+  for (const p of placed.filter(q => !q.copy)) {
+    const {l, sc, cell} = p, pred = continues(p), tail = goesOn(p) ? RIVER.relayout : 0, out = [];
+    const cells = cellIds(sc.cls, format), stagger = Math.round(cells.indexOf(cell) * RIVER.every * BS / Math.max(1, cells.length) / QS) * QS;
+    // The pieces: [at, to, mode] ('soft': the stream; 'sharp': a clear phrase's words; 'after': sinking back in).
+    const pieces = [];
+    if (l.sharp) {
+      const [s0, s1] = l.sharp;
+      if (s0 > p.from) pieces.push([p.from, Math.min(p.to, s0), 'soft']);
+      if (s1 > p.from && s0 < p.to) pieces.push([Math.max(p.from, s0), Math.min(p.to, s1), 'sharp']);
+      if (p.to > s1) pieces.push([Math.max(p.from, s1), p.to, 'after']);
+    } else if (l.asset || l.whole) pieces.push([p.from, p.to, 'soft']);
+    else {
+      let a = p.from;
+      for (let i = 1; i < 64; i++) { const c = and(p.from + stagger + i * RIVER.every * BS - QS); if (c >= p.to - BS) break; if (c - a >= BS) { pieces.push([a, c, 'soft']); a = c; } }
+      pieces.push([a, p.to, 'soft']);
+    }
+    // Carried across a re-layout: the first piece lasts only as long as the outgoing shot's source does (then
+    // the next shot dissolves in on an "and"), so the incoming tile can carry on from it.
+    const before = pred ? clipsOf.get(pred)?.at(-1) : null;
+    if (before?.asset.startsWith('shot:') && pieces[0]?.[2] !== 'sharp' && !l.asset && l !== synergy) {
+      const sct = index.get(before.asset.slice(5)), left = sct.duration - 2 / (sct.fps || 24) - srcAt(before, pieces[0][0] - before.at), [a0, b0, m0] = pieces[0];
+      let n = 0; while (a0 + n + QS <= b0 && RIVER.half * secs(a0, n + QS + RIVER.change) <= left) n += QS;
+      const c = and(a0 + n - QS);
+      if (c < b0 - QS && c - a0 >= RIVER.relayout + QS) pieces.splice(0, 1, [a0, c, m0], [c, b0, m0]);
+    }
+    pieces.forEach(([a, b, mode], i) => {
+      const next = pieces[i + 1], ext = !next ? tail : mode === 'sharp' ? 2 * QS : next[2] === 'sharp' ? 0 : RIVER.change;
+      const len = r6(b - a + ext), id = `${sc.id}.${l.id}.${i}`;
+      const din = i === 0 ? (pred ? RIVER.relayout : 0) : mode === 'sharp' ? 0 : mode === 'after' ? 2 * QS : RIVER.change;
+      // (A tile that enters from black after the film's first frame starts at no light, over a beat at least.)
+      const enters = i === 0 && !pred && a > 0 ? QS : 0;
+      const opacity = mode === 'sharp' ? 1 : keyed(a, len, (s, u) => clamp01(l.level(s)) * (din ? smooth(u / din) : 1) * (enters ? smooth(u / enters) : 1) * (ext && u > b - a + 1e-9 ? 1 - smooth((u - (b - a)) / ext) : 1), 2);
+      const x = {id, at:r6(a), len, cell, ...(p.over ? {z:1} : {}), scene:sc.id};
+      if (l.asset) {
+        x.asset = l.asset;
+        x.chrome = {...l.chrome, ...(l.part ? {speaking:speakingKeys(l.part.words, T(a))} : {})};
+        x.why = l.part ? (mode === 'sharp' ? `${l.what}: the sharp moment, her waveform at full on her words, cut on the first` : mode === 'after' ? `${l.what}: sinking back into the stream` : l.what) : l.what;
+      } else {
+        const prev = i === 0 && pred ? clipsOf.get(pred)?.at(-1) : mode === 'after' ? out.at(-1) : null;
+        const carry = prev && prev.asset.startsWith('shot:') && ceiling(prev.asset.slice(5), cell) >= 1 - 1e-9 ? prev.asset.slice(5) : null;
+        const shot = l === synergy ? l.pool[0] : carry ?? pick(l, cell, l.prio * 3 + i + (l.part ? 0 : Math.floor(a / BS)), a, a + len);
+        if (!shot) return;
+        x.asset = sh(shot);
+        showing.push({id:shot, l, a, b:a + len});
+        const k = nClip++, key = l.prio * 1000 + Math.round(a * 4), opts = l === synergy ? {base:1, low:.5} : mode === 'sharp' ? {speed:true} : {};
+        const t = timeOf(shot, a, len, key, opts);
+        if (carry) {
+          // Carry on from the outgoing tile's source time (the sinking tile from the sharp one, slowing over two beats).
+          const from = srcAt(prev, a - prev.at), s = index.get(shot), rate = mode === 'after' && i > 0 ? [[0, 1], [2 * QS, RIVER.half, 'inOutSine']] : t.rate;
+          if (from + peak(rate ?? 1) * secs(a, len) <= s.duration - 2 / (s.fps || 24)) { t.in = r6(from); if (rate !== undefined) t.rate = rate; }
+        }
+        x.time = t;
+        if (l === synergy) {
+          x.fx = [wash(a, len, .2)];
+          x.chrome = {mic:'on', speaking:{bind:'stem:voice', scale:1.5, base:-.3, attack:.02, release:.3}};
+          x.why = l.what;
+        } else if (mode === 'sharp') {
+          x.chrome = {...l.chrome, speaking:speakingKeys(l.part.words, T(a))};
+          x.why = `${l.what}: the sharp moment, at speed and without effects, cut on the first word`;
+        } else {
+          x.fx = stream(a, len, {mix:l.part ? .45 : .55, fold:l.fold && index.get(shot)?.mirrorable ? [6, 8, 6, 10, 12][(k + i) % 5] : 0, enter:i === 0 && !pred ? Math.max(a, l.from) : null, k});
+          if (l.chrome) x.chrome = {...l.chrome, ...(l.part ? {speaking:0} : {})};
+          x.why = `${l.what}${mode === 'after' ? ': sinking back into the stream' : pred && i === 0 ? ': carried across the re-layout' : ''}`;
+        }
+      }
+      if (opacity !== 1) x.frame = {...(x.frame || {}), opacity};
+      out.push(x);
+    });
+    clipsOf.set(p, out);
+    clips.push(...out);
+  }
+  // The canon copies: the source tile's clips in another tile, a few steps behind and a little dimmer, their own
+  // fold and drift (within 12 source frames of the source, so they share its decode).
+  for (const p of placed.filter(q => q.copy)) {
+    (clipsOf.get(p.of) || []).forEach((y, i) => {
+      const s = index.get(y.asset.slice(5)), lag = peak(y.time?.rate ?? 1) * secs(y.at, p.copy), k = nClip++;
+      const x = {...y, id:`${y.id}~${p.cell.replace(/\W/g, '')}`, cell:p.cell, time:{...y.time, in:r6(Math.max(0, (y.time?.in ?? 0) - lag))},
+        fx:stream(y.at, y.len, {mix:.6, fold:p.l.fold && s?.mirrorable ? [8, 6, 12, 10, 6][(k + i) % 5] : 0, enter:null, k}), why:`${y.why} (a canon copy, ${p.copy} steps behind)`};
+      const o = y.frame?.opacity ?? 1;
+      x.frame = {...(y.frame || {}), opacity:typeof o === 'number' ? r6(o * RIVER.copy) : o.map(([u, v, e]) => [u, r6(v * RIVER.copy), ...(e ? [e] : [])])};
+      clips.push(x);
+    });
+  }
+
+  // ---- the dot grid ------------------------------------------------------------------------------------------------
+  const psych = (id, at, len, look, params = {}, {fade = 4, cell, seed:sd} = {}) => {
+    if (!(len >= 4)) return;
+    board.push({type:'psych', id:`psych.${id}`, at:r6(at), len:r6(len), look, params, seed:sd ?? board.length, fade:Math.max(2, Math.min(fade, Math.floor(len / 2))), ...(cell ? {cell} : {})});
+  };
+  // The board's region, all film long: the river's look, its light the layers' (as the stage paints it), half
+  // speed in the slow spans.
+  const river = riverTrack(plan, {features});
+  psych('river', 0, NS, river.look, {level:keyed(0, NS, s => r6(riverAt(river, T(s)).spec.params.level), QS), speed:keyed(0, NS, s => slowAt(s) ? .5 : 1, QS, 'inOutSine'), breath:.7}, {fade:8, seed:river.seed});
+  // The whole frame as dots while her syllables play alone, at the start and the end (never with Synergy up).
+  const alive = s => lanes.filter(l => !l.part && l !== synergy && l.level(s) >= .5).length;
+  let open = 0; while (open < Math.min(4 * BS, NS / 3) && alive(open) < 2) open += QS;
+  open = Math.min(Math.ceil((open + BS) / BS) * BS, synergy ? synergy.from : Infinity);
+  let close = NS; while (close > NS - 4 * BS && alive(close - 1) < 2) close -= QS;
+  close = Math.max(Math.floor((close - BS) / BS) * BS, synergy ? synergy.to : 0, ...speakers.map(x => x.hold[1] + BS));
+  const herLv = s => Math.max(.35, levelOf(texture.filter(L => voiceOf(L) === 'lady'), s));
+  if (open >= 2 * BS) psych('source', 0, open, river.look, {level:keyed(0, open, s => r6(.85 * herLv(s)), QS), speed:.5, breath:1}, {cell:'full', fade:Math.min(BS, open / 3), seed:river.seed});
+  if (NS - close >= 2 * BS) psych('delta', close, NS - close, river.look, {level:keyed(close, NS - close, s => r6(.85 * herLv(s)), QS), speed:.5, breath:1}, {cell:'full', fade:Math.min(BS, (NS - close) / 3), seed:river.seed});
+  // Each tile born through the grid: the footage as dots over its layer's ramp in, until it has resolved.
+  const born = new Set();
+  for (const p of placed) {
+    if (p.copy || p.over || p.l.asset || born.has(p.l) || continues(p)) continue;
+    born.add(p.l);
+    const a = Math.max(p.from, and(p.l.from)), b = Math.min(p.to, a + 2 * BS, p.sc.to);
+    let full = a; while (full < b && p.l.level(full) < .9) full += 1;
+    // (It ends half a frame before the frame that cuts at its tile's end, so it never outlives the tile.)
+    const end = Math.min(b, Math.max(a + 2 * QS, full + QS)), len = Math.min(end, S((cutFrame(T(Math.min(p.to, p.sc.to))) - .5) / 24)) - a;
+    const under = placed.some(q => q.over && q.cell === p.cell && q.sc === p.sc && q.from < a + len && q.to > a);
+    if (a >= open - QS && a < close && !under) psych(`born.${p.l.id}`, a, len, 'footage', {sharpen:1.1, colour:1, level:.9}, {cell:p.cell, fade:Math.min(6, Math.floor(len / 3))});
+  }
+
+  const edl = merge(createEDL({form:'wander', format, loop:true, seed, track:plan.track, board, transports:[], camera:[], boardMoves:[], overrides:[]}), {clips});
+  for (const x of edl.clips) {
+    for (const key of Object.keys(x)) if (x[key] === undefined) delete x[key];
+    if (x.chrome) for (const key of Object.keys(x.chrome)) if (x.chrome[key] === undefined) delete x.chrome[key];
+  }
+  note(`scenes ${scenes.map(s => `${s.id} ${s.cls} ${s.from / BS}-${s.to / BS}`).join(', ')}`);
   return edl;
 }

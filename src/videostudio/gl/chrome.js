@@ -123,8 +123,14 @@ const PHONE_PT = {'9:16':390, '1:1':390, '16:9':844};
 export const LEGIBLE = Object.fromEntries(Object.entries({'9:16':1080, '1:1':1080, '16:9':1920}).map(([f, w]) => [f, {name:11 * w / PHONE_PT[f], role:9 * w / PHONE_PT[f]}]));
 const NONE = {name:0, role:0};
 
-// Pat's camera-off tile and the lady's tile: what replaces the picture.
-export function tileQuads(layer, atlas, {scale = 1, time = 0, legible = NONE} = {}) {
+// Pat's camera-off tile and the lady's tile: what replaces the picture. A tile fading in or out (the layer's
+// opacity, a dissolve) fades its card and its waveform with it.
+export function tileQuads(layer, atlas, opts = {}) {
+  const out = cardQuads(layer, atlas, opts), op = clamp(layer.opacity ?? 1, 0, 1);
+  if (op < 1) for (const q of out) q.color = [q.color[0], q.color[1], q.color[2], q.color[3] * op];
+  return out;
+}
+function cardQuads(layer, atlas, {scale = 1, time = 0, legible = NONE} = {}) {
   const out = [], {cell} = layer, k = chromeScale(cell), clip = {...cell, r:layer.radius}, kn = Math.max(k, legible.name / 24);
   const cx = cell.x + cell.w / 2, cy = cell.y + cell.h / 2 - (cell.h > 200 ? 10 * k : 0);
   if (isLadyTile(layer)) {

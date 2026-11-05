@@ -30,11 +30,14 @@ import {readFileSync, existsSync, mkdirSync, writeFileSync} from 'node:fs';
 import {spawnSync} from 'node:child_process';
 import {createRequire} from 'node:module';
 import {join} from 'node:path';
-import {castSong, castFiles, fits, settleCast, LIMITS, CONCEPTS, ROLE_ORDER, MIX_MIN, ROTATION, BAND_SLOTS} from '../src/allhands/casting.js';
+import {castSong, castFiles, fits, settleCast, LIMITS, CONCEPTS, ROLE_ORDER, MIX_MIN, ROTATION, BAND_SLOTS, LADY_ROTATION, LADY_SLOTS, ladyKey} from '../src/allhands/casting.js';
+import {AVAILABLE, voicesFor} from '../src/allhands/voices/voice-table.js';
 import {TAKES, takeOf, takeKey, clearFor, SYNTHIA} from '../src/allhands/vocabulary/takes.js';
 import {TRACKS, TRACK_ORDER, DEFAULT_TRACK, DEFAULT_CAST, LADY_ROLES, BAND_ROLES, castOf} from '../src/allhands/songbook/index.js';
 import {arrangeDrop, dropVoicedWords} from '../src/allhands/drop.js';
 import {LADY_TABLE, slice} from '../src/allhands/lady-table.js';
+// Her recordings and the voice bank's takes (a couplet drop's tag and impact are Synthia's or Strategy's).
+import {SONG_TABLE, RELEASE} from '../src/allhands/band.js';
 import {lyricsFromPost, SAMPLE_POST, syllables} from '../src/allhands/lyrics.js';
 import {buildScreens} from '../src/pegboard/choreo.js';
 import {compileFont, layoutText, CHARSET} from '../src/pegboard/font.js';
@@ -49,6 +52,7 @@ const arg = (name, fallback) => { const i = process.argv.indexOf(`--${name}`); r
 const ROLES = JSON.parse(readFileSync(join(ROOT, 'src/allhands/lady-roles.json'), 'utf8'));
 const MEASURED = JSON.parse(readFileSync(join(ROOT, 'src/allhands/lady-phrases.json'), 'utf8'));
 const LEXICON = JSON.parse(readFileSync(join(ROOT, 'src/allhands/vocabulary/lexicon.json'), 'utf8'));
+const IMPACT_HEARD = JSON.parse(readFileSync(join(ROOT, 'src/allhands/vocabulary/impact-heard.json'), 'utf8'));
 const FIXTURES = JSON.parse(readFileSync(join(ROOT, 'scripts/fixtures/pixel-posts.json'), 'utf8')).map(x => x.post);
 const POSTS = [SAMPLE_POST, ...FIXTURES];
 const label = i => (i === 0 ? 'sample' : `fixture ${i - 1}`);
@@ -172,6 +176,12 @@ function validCast(r, where) {
       const heard = roleEntry(role, c.file, [a, b])?.mix?.[r.track]?.recall;
       if (role === 'tag' || role === 'sink') ok(heard === undefined || heard >= MIX_MIN, `${where} ${role} "${c.display}": heard in the ${r.track} mix (${heard})`);
       if (role === 'ladder' && roleEntry('ladder', c.file, [a, b])?.couplet) ok(r.cast.dropTag.kind === 'couplet', `${where}: "It's not" climbs only to a couplet's drop`);
+      // Her moments rotate, and only lines that keep the role's music play them (casting.js LADY_ROTATION).
+      if (LADY_SLOTS.includes(role)) {
+        const e = roleEntry(role, c.file, [a, b]);
+        ok(e.craft >= LADY_ROTATION.floor[role], `${where} ${role} "${c.display}": craft ${e.craft} plays the role (at least ${LADY_ROTATION.floor[role]})`);
+        if (role === 'sink') ok((e.mix?.[r.track]?.recall ?? 1) >= LADY_ROTATION.sinkRecall, `${where} sink "${c.display}": read at half speed in the ${r.track} mix (${e.mix?.[r.track]?.recall})`);
+      }
     }
     if (role !== 'impact') { ok(!files.has(c.file), `${where}: ${c.file} cast twice (${files.get(c.file)}, ${role})`); files.set(c.file, role); }
   }
@@ -182,7 +192,7 @@ function validCast(r, where) {
 }
 
 // A band part: Strategy's or Synthia's take (its id in takes.js, so in lexicon.json), the lady's file and words, or Synergy's text.
-function validPart(p, where, {stab = false} = {}) {
+function validPart(p, where, {stab = false, lead = false} = {}) {
   ok(p && typeof p.text === 'string' && p.text && typeof p.display === 'string' && drawable(p.display) && fitsBoard(p.display), `${where}: text and a display the board draws (${p?.display})`);
   if (p.voice === 'lady') {
     const entry = LADY_TABLE[p.file];
@@ -197,7 +207,9 @@ function validPart(p, where, {stab = false} = {}) {
   ok(['strategy', 'synthia'].includes(p.voice) && t && !p.file, `${where}: take ${p.id} in takes.js`);
   ok(t.text === p.text && t.display === p.display, `${where}: ${p.id} says what the lexicon says ("${t.text}")`);
   // Strategy may sing any line (the voice bank renders every line in his voice); Synthia only her own, short and clear.
-  ok(p.voice === 'strategy' || (t.voice === 'synthia' && clearFor(t, {stab})), `${where}: ${p.voice} sings "${p.text}" (the lexicon's ${t.voice}${p.voice === 'synthia' ? ', short and clear' : ''})`);
+  // (or a line of his the bank has only in her voice, voicesFor: she answers with it, short and clear)
+  const hers = t.voice === 'synthia' || (json(voicesFor(p.id)) === json(['synthia']) && !lead);
+  ok(p.voice === 'strategy' || (hers && clearFor({...t, voice:'synthia'}, {stab})), `${where}: ${p.voice} sings "${p.text}" (the lexicon's ${t.voice}${p.voice === 'synthia' ? ', short and clear' : ''})`);
 }
 
 function validBand(r, where, {available} = {}) {
@@ -228,16 +240,19 @@ function validBand(r, where, {available} = {}) {
     ok(d.tag.id === `${d.id}-tag` && d.tag.display === lex.drop.tagDisplay && /-$/.test(d.tag.display), `${where}: the drop's lead-in "${d.tag.display}"`);
     ok(lex.drop.impactVoice === 'lady' ? d.impact.file === lex.lady.file && d.impact.words[0] === lex.lady.words[1] && d.impact.words[0] === d.impact.words[1] : d.impact.id === `${d.id}-impact`, `${where}: the impact is the couplet's Y word ("${d.impact.display}")`);
     ok(d.impact.display.split(' ').length === 1 && lex.drop.impactSyllables <= 2, `${where}: one impact word of one or two syllables`);
+    // The drop lands as a word: Whisper heard this impact, in this voice, in this track's mix (scripts/measure-impacts.mjs).
+    const heard = IMPACT_HEARD.tracks[r.track];
+    if (heard) ok(heard[d.id]?.[d.impact.voice]?.ok && (d.tag.voice === d.impact.voice || d.impact.voice === 'lady'), `${where}: the impact "${d.impact.display}" in ${d.impact.voice}'s voice was heard in the ${r.track} mix (${JSON.stringify(heard[d.id]?.[d.impact.voice]?.heard)})`);
     add('drop tag', d.tag); add('drop impact', d.impact);
   }
   ok(c.refrain && c.signoff, `${where}: a refrain and a sign-off`);
-  add('refrain', c.refrain); add('signoff', c.signoff);
+  add('refrain', c.refrain, {lead:true}); add('signoff', c.signoff);
   ok(c.refrain.voice !== 'synthia', `${where}: Synthia leads no refrain`);
   if (c.signoff.voice === 'synergy') ok(r.track === 'circle-back', `${where}: Synergy's "Let's circle back" only in Circle Back`);
   ok(c.exchanges.length >= 1 && c.exchanges.length <= ROTATION.exchanges, `${where}: ${c.exchanges.length} exchanges`);
   for (const [k, x] of c.exchanges.entries()) {
     ok(x.call.voice !== 'synthia' && (x.call.voice === 'lady' || x.call.voice !== x.response.voice), `${where}: exchange ${k}, ${x.call.voice} calls and ${x.response.voice} answers`);
-    add(`call ${k}`, x.call); add(`response ${k}`, x.response);
+    add(`call ${k}`, x.call, {lead:true}); add(`response ${k}`, x.response);
   }
   ok(c.stabs.length === ROTATION.stabs, `${where}: ${c.stabs.length} stabs`);
   for (const [k, s] of c.stabs.entries()) add(`stab ${k}`, s, {stab:true});
@@ -340,8 +355,24 @@ function corpus(rs, name) {
   console.log(`  the band's parts by voice: ${voices.map(([v, n]) => `${v} ${n}`).join(', ')}`);
   return s;
 }
+// As the page casts: with the voice bank's takes (voice-table.js AVAILABLE), hash only and with history.
+const paged = POSTS.map((post, i) => { const r = castSong(post, {available:AVAILABLE}); validCast(r, `${label(i)} (bank)`); validBand(r, `${label(i)} (bank)`, {available:AVAILABLE}); return r; });
+const pagedHistory = [];
+POSTS.forEach((post, i) => { const r = castSong(post, {available:AVAILABLE, recent:pagedHistory.map(x => x.keys)}); validCast(r, `${label(i)} (bank, history)`); validBand(r, `${label(i)} (bank, history)`, {available:AVAILABLE}); pagedHistory.push(r); });
 const H = corpus(results, 'hash only (the sample and the 60 fixtures)'), W = corpus(withHistory, 'with history (the corpus in order)');
-for (const [s, name] of [[H, 'hash only'], [W, 'with history']]) {
+const PH = corpus(paged, 'with the voice bank, hash only (as the page casts)'), PW = corpus(pagedHistory, 'with the voice bank and history');
+// Her moments: no line on more than LADY_ROTATION.caps.max songs, at least caps.distinct lines a role.
+for (const [rs, name] of [[results, 'hash only'], [withHistory, 'with history'], [paged, 'the bank, hash only'], [pagedHistory, 'the bank, with history']]) {
+  const parts = [];
+  for (const role of LADY_SLOTS) {
+    const t = tally(rs, r => r.keys[role]);
+    ok(t.length >= LADY_ROTATION.caps.distinct && t[0][1] <= LADY_ROTATION.caps.max, `${name}: her ${role} rotates (${t.length} lines, the most-cast ${t[0][0]} on ${t[0][1]})`);
+    ok(rs.every(r => r.keys[role] === ladyKey(r.cast[role])), `${name}: keys name her ${role}`);
+    parts.push(`${role} ${t.length} (top ${t[0][0]} ${t[0][1]}${t.length > 1 ? `, ${t[1][0]} ${t[1][1]}` : ''})`);
+  }
+  console.log(`her moments, ${name}: ${parts.join('; ')}`);
+}
+for (const [s, name] of [[H, 'hash only'], [W, 'with history'], [PH, 'the bank, hash only'], [PW, 'the bank, with history']]) {
   ok(s.ladderMax <= CAPS.ladderMax, `${name}: no ladder on more than ${CAPS.ladderMax} posts (${s.ladderMax})`);
   ok(s.dropMax <= CAPS.dropMax, `${name}: no drop on more than ${CAPS.dropMax} posts (${s.dropMax})`);
   ok(s.refrainMax <= CAPS.refrainMax, `${name}: no refrain on more than ${CAPS.refrainMax} posts (${s.refrainMax})`);
@@ -426,6 +457,7 @@ for (const file of ['src/allhands/casting.js', 'src/allhands/vocabulary/takes.js
 // ---- 6. Arranged: the cast plays whole, and the board and the export read her measured words
 const models = {fake:w => .18 + .11 * syllables(w), long:w => .3 + .19 * syllables(w)};
 let placed = 0, dropped = [], boardWords = 0, cueWords = 0;
+const PICKUP_GAP = .3, pickupGaps = [];
 POSTS.forEach((post, i) => {
   const r = results[i], lyrics = lyricsFromPost(post), tr = TRACKS[r.track];
   for (const [m, f] of Object.entries(models)) {
@@ -439,12 +471,14 @@ POSTS.forEach((post, i) => {
     for (const role of had) if (!have.has(role)) dropped.push(`${where} ${role}`);
     placed += have.size;
     for (const e of plan.lady) {
-      const entry = LADY_TABLE[e.file], inside = entry.words.filter(w => w.end > e.from + 1e-6 && w.start < e.to - 1e-6);
+      const entry = SONG_TABLE[e.file], inside = entry.words.filter(w => w.end > e.from + 1e-6 && w.start < e.to - 1e-6);
       ok(inside.length === e.display.split(' ').length, `${where} ${e.role} "${e.display}": one display word per measured word heard`);
       ok(inside.length === pixelText(e.display).split(' ').length, `${where} ${e.role} "${e.display}": Pixel Text keeps the word count`);
       // The sink starts where its dry words end: her pause before the deep words is kept.
       const k = entry.words.indexOf(inside[0]), from = e.role === 'sink' && k > 0 ? [inside[0].start, entry.words[k - 1].end] : [inside[0].start];
-      if (e.role !== 'ladder') ok(from.some(x => Math.abs(e.from - x) < 1e-9) && Math.abs(e.to - inside.at(-1).end) < 1e-9, `${where} ${e.role}: cut on the measured boundaries`);
+      // (A voice-bank take plays on through its last word's release, band.js RELEASE, where it ends the take.)
+      const past = e.to - inside.at(-1).end, release = e.key && past > 1e-9 && past <= RELEASE + 1e-9 && inside.at(-1) === entry.words.at(-1);
+      if (e.role !== 'ladder') ok(from.some(x => Math.abs(e.from - x) < 1e-9) && (Math.abs(past) < 1e-9 || release), `${where} ${e.role}: cut on the measured boundaries`);
     }
     const tag = plan.lady.find(e => e.role === 'tag'), impact = plan.lady.find(e => e.role === 'impact');
     ok(tag && impact, `${where}: tag and impact`);
@@ -454,20 +488,28 @@ POSTS.forEach((post, i) => {
       ok(tag.gate >= heard - 1e-9, `${where} tag "${tag.display}": heard whole (${heard.toFixed(3)} s, gate ${tag.gate.toFixed(3)})`);
       ok(window - tag.gate >= LIMITS.tag.silence - 1e-9, `${where} tag: ${(window - tag.gate).toFixed(3)} s of silence before the impact`);
     }
-    ok(impact.display === cast.impact.display && impact.file === tag.file, `${where}: the impact pays off the tag`);
+    // On a couplet drop the couplet's Y word pays off its tag (both cut from one take, or her word after Synthia's pickup).
+    const paid = tag.couplet ? cast.dropTag.impact : cast.impact;
+    ok(impact.display === paid.display && (impact.file === tag.file || !!tag.couplet), `${where}: the impact pays off the tag`);
+    // Synthia's "It's" / "It's a" and the lady's word are one answer: sung together, never a bar apart (band.js fit bind).
+    for (const p of plan.band.filter(e => e.role === 'pickup')) {
+      const y = plan.band.find(e => e.role === 'couplet-y' && e.couplet === p.couplet && e.start >= p.end - 1e-6);
+      ok(y && y.start - p.end <= PICKUP_GAP, `${where}: "${p.display}" and "${y?.display}" ${y ? (y.start - p.end).toFixed(3) : '?'} s apart`);
+      pickupGaps.push(y.start - p.end);
+    }
     // The Peg Board: each lady screen's words start where the measured words start.
-    const screens = buildScreens(plan, {table:LADY_TABLE}).filter(s => s.voice === 'lady');
+    const screens = buildScreens(plan, {table:SONG_TABLE}).filter(s => s.voice === 'lady');
     for (const e of plan.lady) {
       const t0 = plan.timing[Math.floor(e.at)] + (e.at - Math.floor(e.at)) * plan.step;
       const s = screens.find(x => Math.abs(x.from - t0) < 1e-6 && x.text === e.display);
       if (!s) continue;                               // a screen the next one covers
-      const inside = LADY_TABLE[e.file].words.filter(w => w.end > e.from + 1e-6 && w.start < e.to - 1e-6);
+      const inside = SONG_TABLE[e.file].words.filter(w => w.end > e.from + 1e-6 && w.start < e.to - 1e-6);
       s.words.forEach((w, k) => { ok(Math.abs(w.start - (t0 + Math.max(0, inside[k].start - e.from) / e.rate)) < 1e-6, `${where} board ${e.role} word ${k}`); boardWords++; });
     }
     // Pixel Text: the lady's cues are timed from her words, not spread.
-    const timeOf = planTimeOf(plan, 0), sources = ladyCueSources(plan.lady.filter(e => e.role !== 'ladder'), {timeOf, table:LADY_TABLE});
+    const timeOf = planTimeOf(plan, 0), sources = ladyCueSources(plan.lady.filter(e => e.role !== 'ladder'), {timeOf, table:SONG_TABLE});
     plan.lady.filter(e => e.role !== 'ladder').forEach((e, k) => {
-      const src = sources[k], inside = LADY_TABLE[e.file].words.filter(w => w.end > e.from + 1e-6 && w.start < e.to - 1e-6), t0 = timeOf(e.at);
+      const src = sources[k], inside = SONG_TABLE[e.file].words.filter(w => w.end > e.from + 1e-6 && w.start < e.to - 1e-6), t0 = timeOf(e.at);
       ok(src && src.words.length === inside.length, `${where} Pixel Text ${e.role}: one cue word per measured word`);
       src.words.forEach((w, j) => { ok(Math.abs(w.start - (t0 + (Math.max(inside[j].start, e.from) - e.from) / e.rate)) < 1e-6, `${where} Pixel Text ${e.role} word ${j}`); cueWords++; });
     });
@@ -475,6 +517,21 @@ POSTS.forEach((post, i) => {
 });
 console.log(`arranged: ${POSTS.length * 2} plans, ${placed} lady roles placed, ${boardWords} Peg Board words and ${cueWords} Pixel Text words on her measured boundaries`);
 console.log(`roles today's cast places but the post's cast does not: ${dropped.length}${dropped.length ? ` (${dropped.slice(0, 6).join('; ')})` : ''}`);
+// The same with the page's casts and the real eSpeak durations (fixtures 36 and 39 split "It's a" from "Pivot" by 2.9 and 1.0 s).
+{
+  const REAL = JSON.parse(readFileSync(join(ROOT, 'scripts/fixtures/allhands-durations.json'), 'utf8'));
+  POSTS.forEach((post, i) => {
+    const r = paged[i], lyrics = lyricsFromPost(post);
+    if (r.track === 'offsite') return;
+    const plan = settleCast(arrangeDrop, lyrics, REAL, {track:r.track, cast:r.cast}).plan;
+    for (const p of plan.band.filter(e => e.role === 'pickup')) {
+      const y = plan.band.find(e => e.role === 'couplet-y' && e.couplet === p.couplet && e.start >= p.end - 1e-6);
+      ok(y && y.start - p.end <= PICKUP_GAP, `${label(i)} (bank, real durations): "${p.display}" and "${y?.display}" ${y ? (y.start - p.end).toFixed(3) : '?'} s apart`);
+      pickupGaps.push(y.start - p.end);
+    }
+  });
+}
+console.log(`Synthia's pickup to her lady's word: ${pickupGaps.length} pairs, ${pickupGaps.length ? `${Math.min(...pickupGaps).toFixed(3)}-${Math.max(...pickupGaps).toFixed(3)} s` : 'none'} apart`);
 // settleCast (the page's arrangement): no change when every role is placed,
 // and today's line back when a longer recast finds no gap.
 {

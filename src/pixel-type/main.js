@@ -9,7 +9,8 @@ import {CHARSET, FORMATS, compileFont, fit, kern, layoutText, normalize} from '.
 import {PEG9} from '../pegboard/fonts/peg9.js';
 import {PEG5} from '../pegboard/fonts/peg5.js';
 import {PEG3} from '../pegboard/fonts/peg3.js';
-import {activeScreen, indexWords, paint} from '../pegboard/choreo.js';
+import {activeScreen, buildScreens, indexWords, paint} from '../pegboard/choreo.js';
+import {linesFor, stagePitch} from '../pegboard/stage.js';
 import {boardLuma, governorTrack} from '../pegboard/governor.js';
 import {createFollower, departments, scoreAccent, LEAD} from '../pegboard/eq.js';
 import {LOOKS, PSYCH_LOOKS, paintPsych, driveTrack, driveAt} from '../pegboard/psych.js';
@@ -736,6 +737,101 @@ function psych() {
   select(cur);
 }
 
+// ---- 10 the couplet ------------------------------------------------------------------
+
+// Three couplets from the lexicon, a cycle of two bars each at 120 BPM: Strategy's X from the first beat,
+// the strike on the beat after it (choreo's own rule), the answer from the next bar's downbeat. The third
+// is the lady's: she owns the word after Synthia's pickup.
+const COUPLETS = [
+  {x:"IT'S NOT A COMPLAINT.", y:"IT'S A GIFT.", xv:'strategy', yv:'synthia', who:'Strategy, Synthia'},
+  {x:"IT'S NOT AN HOUR.", y:"IT'S A QUICK SYNC.", xv:'strategy', yv:'synthia', who:'Strategy, Synthia'},
+  {x:"IT'S NOT A LOAN.", y:"IT'S LEVERAGE.", xv:'strategy', yv:'lady', who:'Strategy, the lady'},
+];
+const CP_STEP = .125, CP_BARS = 2, CP_PERIOD = CP_BARS * 16 * CP_STEP;
+// A part on the plan contract: its words spread by letters over [at, at + dur].
+function cpPart(text, voice, at, dur) {
+  const ws = text.split(' '), total = ws.reduce((a, w) => a + w.length + 1, 0), words = [];
+  let t = at;
+  for (const w of ws) { const d = dur * (w.length + 1) / total; words.push({text:w, start:t, end:t + d * .9}); t += d; }
+  return {text, voice, at, end:at + dur, words};
+}
+function coupletPlan() {
+  const n = COUPLETS.length * CP_BARS * 16 + 16, timing = Float64Array.from({length:n + 1}, (_, i) => i * CP_STEP);
+  const couplets = COUPLETS.map((c, i) => { const t0 = i * CP_PERIOD; return {x:cpPart(c.x, c.xv, t0 + .25, 1.1), y:cpPart(c.y, c.yv, t0 + 2, .9)}; });
+  return {form:'specimen', step:CP_STEP, timing, duration:COUPLETS.length * CP_PERIOD, sections:[], lines:[], words:[], stutters:[], lady:[], couplets};
+}
+
+function couplet() {
+  const frame = $('[data-live=couplet]'), seg = $('[data-couplet-board]'), meta = $('[data-couplet-meta]'), list = $('[data-couplet-list]');
+  const plan = coupletPlan(), screens = buildScreens(plan).map(indexWords), loop = plan.duration;
+  let mode = 'stage', geo = null, layouts = new Map(), span = 0, c0 = 0, gains = null, job = 0, t0 = null, shown = -1, jump = null, held = null;
+  // A moment held still, for review and screenshots: window.__pixelType.couplet(i, seconds), null to run on.
+  (window.__pixelType ||= {}).couplet = (i, s) => { held = i === null ? null : i * CP_PERIOD + s; };
+  // The film's 9:16 home: 150 x 48 pegs over 1056 x 342 px; type keeps to the platform-safe columns 8 to
+  // 133 (x 64 to 944 of the 1080 frame: left of the right rail), as the film lays it out.
+  const FILM = {cols:150, rows:48, c0:8, span:125};
+  const layoutOf = s => {
+    if (layouts.has(s)) return layouts.get(s);
+    let out = null;
+    for (const face of ['peg9', 'peg5']) {
+      for (let k = s.k; k >= 1 && !out; k--) { const l = layoutText(s.text, {font:F[face], k, maxCols:span, maxLines:linesFor(s, F[face], k, geo.rows - 2)}); if (l.width <= span && l.height <= geo.rows - 2) out = l; }
+      if (out) break;
+    }
+    layouts.set(s, out);
+    return out;
+  };
+  const place = (s, l, page) => ({x:c0 + Math.floor((span - Math.max(...page.lines.map(x => x.width))) / 2), y:Math.max(1, Math.floor((geo.rows - l.height) / 2))});
+  // The loop obeys the house rule too (it never needs to: the couplet's light only rises).
+  const govern = (L, id) => {
+    const board = createBoard(L.board.cols, L.board.rows), frames = [], n = Math.ceil(loop * FPS);
+    const step = () => {
+      if (id !== job) return;
+      for (let c = 0; c < 48 && frames.length < n; c++) { paint(board, screens, frames.length / FPS, {layoutOf, place, pitch:geo.pitch}); frames.push(boardLuma(board)); }
+      if (frames.length < n) setTimeout(step, 0); else gains = governorTrack(frames, FPS);
+    };
+    setTimeout(step, 200);
+  };
+  const L = liveFrame(frame, {
+    pitchFor:(w, h) => mode === 'film' ? Math.max(1, w / (FILM.cols + 1e-6)) : stagePitch(w, h),
+    resize(L) {
+      geo = L.geo; layouts = new Map(); gains = null;
+      if (mode === 'film') { span = Math.min(FILM.span, geo.cols - FILM.c0 - 2); c0 = FILM.c0; } else { span = geo.cols - 8; c0 = 4; }
+      govern(L, ++job);
+    },
+    tick(L, t) {
+      t0 ??= t;
+      if (jump !== null) { t0 = t - jump * CP_PERIOD; jump = null; }
+      // Reduced motion: each couplet held landed (X struck, Y lit), one after another.
+      const raw = (t - t0) % loop, lt = held ?? (REDUCED ? Math.floor(raw / CP_PERIOD) * CP_PERIOD + 3.2 : raw + LEAD);
+      paint(L.board, screens, lt, {layoutOf, place, reduced:REDUCED, pitch:geo.pitch});
+      const g = gains?.[Math.floor(lt * FPS)];
+      if (g) L.board.exposure *= g;
+      const i = Math.min(COUPLETS.length - 1, Math.floor(lt / CP_PERIOD));
+      if (i !== shown) {
+        shown = i;
+        const st = screens.find(x => x.fx.strike && x.words[0].start >= i * CP_PERIOD)?.fx.strike;
+        meta.textContent = `${pad(i + 1)} / ${pad(COUPLETS.length)} · ${COUPLETS[i].who}${st ? ` · struck on beat ${Math.round((st.at - i * CP_PERIOD) / .5) + 1}` : ''}`;
+        $$('button', list).forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
+      }
+    },
+  });
+  COUPLETS.forEach((c, i) => {
+    const li = el('li'), b = el('button'), struck = c.x.replace(/^IT'S NOT /, '');
+    b.type = 'button'; b.setAttribute('aria-pressed', 'false');
+    b.innerHTML = `<span class="n">${pad(i + 1)}</span><span class="x">It's not <s>${esc(struck.toLowerCase())}</s></span><span class="y">${esc(c.y[0] + c.y.slice(1).toLowerCase())}</span><span class="m">${esc(c.who)}</span>`;
+    b.addEventListener('click', () => { jump = i; });
+    li.append(b); list.append(li);
+  });
+  seg.addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    mode = btn.dataset.board;
+    frame.dataset.board = mode;
+    $$('button', seg).forEach(x => x.setAttribute('aria-pressed', String(x === btn)));
+    requestAnimationFrame(() => L.size());
+  });
+}
+
 // ---- nav, sign-off, loop -------------------------------------------------------------
 
 function nav() {
@@ -770,5 +866,5 @@ function loop(ms) {
   requestAnimationFrame(loop);
 }
 
-hero(); faces(); scale(); palette(); kerning(); theatre(); formats(); phrases(); chart(); psych(); nav(); signoff();
+hero(); faces(); scale(); palette(); kerning(); theatre(); formats(); phrases(); chart(); psych(); couplet(); nav(); signoff();
 requestAnimationFrame(loop);

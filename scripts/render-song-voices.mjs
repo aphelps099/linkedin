@@ -15,6 +15,8 @@
 //            else light (.3). A take passes when every one of those is heard exactly.
 //   publish  the passing takes as FLAC (the pitch track in a Vorbis comment) -> public/allhands/voices/,
 //            the manifest -> src/allhands/voices/song-voices.json, the report -> DIR/report.{json,md}
+//   verify   the published takes heard again through loadVoices and sing() (the cut ones; --verify all: every one)
+//   pitch    every kept take's test renders, each syllable against its note -> DIR/pitch.json
 //   tambourine  instruments.js's tambourine alone (shake, hit, groove, a bar of 16ths), measured -> DIR/tambourine.json
 //   sketch   the 20 s Offsite direction sketch from the published bank, Whisper on it -> DIR/listen, DIR/sketch.json
 //
@@ -233,7 +235,28 @@ function verdict(t) {
     at:Object.fromEntries(amountsOf(t.voice).map(m => [m, passAt(m)]))};
 }
 
+// Whisper's words are kept, so a change to the matching (measure.py wer: spellings,
+// numbers, homophones) re-scores every cached take without hearing it again.
+function rescore() {
+  const jobs = [];
+  for (const j of JOBS) for (const spoken of j.variants) {
+    const t = takeOf(j, spoken), r = resultOf(t);
+    for (const [variant, h] of Object.entries(r.hear || {})) jobs.push({name:t.name, variant, text:t.text, heard:h.heard, errors:h.errors});
+  }
+  const rows = py('rescore', jobs, [], () => {}, 100000);
+  let changed = 0;
+  for (const row of rows) {
+    if (row.errors === jobs.find(x => x.name === row.name && x.variant === row.variant).errors) continue;
+    const path = join(OUT, 'work', 'results', `${row.name}.json`), r = readJson(path);
+    r.hear[row.variant].errors = row.errors;
+    writeAtomic(path, JSON.stringify(r, null, 1));
+    changed++;
+  }
+  if (changed) console.log(`rescore: ${changed} results changed`);
+}
+
 async function run() {
+  if (STEPS.has('hear')) rescore();
   for (let round = 0; round < ROUNDS; round++) {
     const pending = JOBS.filter(j => !j.done && j.variants[round] !== undefined);
     if (!pending.length) break;
@@ -251,6 +274,24 @@ async function run() {
 }
 
 // ---------------------------------------------------------------- publish
+// Kokoro leaves up to 0.6 s of model noise about 50 dB down after the last word,
+// which the TTS trim (45 dB) keeps. The published take ends 40 ms after the
+// last 5 ms frame within 30 dB of the loudest, never sooner than 80 ms and never
+// later than 250 ms after the aligner's last word, with a 10 ms raised-cosine fade. The pixel chain is
+// causal, so the sung samples before the cut are the ones Whisper heard;
+// `verify` hears every cut take again through the play-time path, and a take it
+// does not hear exactly is published whole (work/no-trim.json).
+function trimTail(x, lastEnd) {
+  const F = Math.round(.005 * SR), env = [];
+  for (let i = 0; i < x.length; i += F) { let s = 0; const n = Math.min(F, x.length - i); for (let j = 0; j < n; j++) s += x[i + j] ** 2; env.push(Math.sqrt(s / n)); }
+  const top = Math.max(...env), last = env.findLastIndex(e => e > top * 10 ** (-30 / 20));
+  const end = Math.min(x.length, Math.round(Math.min(Math.max((last + 1) * F / SR + .04, lastEnd + .08), lastEnd + .25) * SR));
+  if (end >= x.length - Math.round(.01 * SR)) return x;
+  const y = x.slice(0, end), fo = Math.round(.01 * SR);
+  for (let i = 0; i < fo; i++) y[y.length - 1 - i] *= .5 - .5 * Math.cos(Math.PI * i / fo);
+  return y;
+}
+
 function flacOf(wav, tag, out) {
   ff(['-i', wav, '-map_metadata', '-1', '-fflags', '+bitexact', '-flags:a', '+bitexact', '-c:a', 'flac', '-compression_level', '12',
     '-metadata', `PIXEL_PITCH=${tag}`, '-f', 'flac', mk(out)]);
@@ -258,7 +299,7 @@ function flacOf(wav, tag, out) {
 }
 
 function publish() {
-  const identity = readJson(join(OUT, 'work', 'identity.json'), {});
+  const identity = readJson(join(OUT, 'work', 'identity.json'), {}), noTrim = readJson(join(OUT, 'work', 'no-trim.json'), []);
   const old = readJson(MANIFEST, {entries:[]});
   const partial = !!ONLY || VOICE_SET.size < 2;
   const entries = new Map(partial ? (old.entries || []).filter(e => old.version === 2).map(e => [e.file, e]) : []);
@@ -267,12 +308,14 @@ function publish() {
     entries.delete(file);
     if (!job.chosen) continue;
     const t = job.chosen, r = resultOf(t), a = r.align, line = job.line;
-    const {x} = readMono(t.wav), track = pitchTrack(x, SR), bytes = flacOf(t.wav, pitchToTag(track), join(PUBLIC, file));
-    const back = decodeFlac(bytes), pcm = decodeWav(readFileSync(t.wav)).channels[0];
+    const {x} = readMono(t.wav), y = noTrim.includes(file) ? x : trimTail(x, a.words.at(-1).end), trimmed = y.length < x.length, wav = trimmed ? join(OUT, 'work', 'publish', `${t.name}.wav`) : t.wav;
+    if (trimmed) writeWav(wav, [y]);
+    const track = pitchTrack(y, SR), bytes = flacOf(wav, pitchToTag(track), join(PUBLIC, file));
+    const back = decodeFlac(bytes), pcm = decodeWav(readFileSync(wav)).channels[0];
     if (back.samples !== pcm.length || back.channels[0].some((v, i) => v !== pcm[i])) throw new Error(`${file}: the FLAC does not decode to the take`);
     entries.set(file, {
       id:line.id, voice:job.voice, kind:line.kind, text:line.text, spoken:t.spoken !== line.text ? t.spoken : undefined, ask:line.ask || undefined,
-      file, ref:line.ref, samples:back.samples, duration:+(back.samples / SR).toFixed(4), voiced:a.voiced, f0:a.f0, rmsDb:a.rmsDb, gainDb:a.gainDb, amount:job.amount,
+      file, ref:line.ref, samples:back.samples, duration:+(back.samples / SR).toFixed(4), trimmedFrom:trimmed ? x.length : undefined, voiced:a.voiced, f0:a.f0, rmsDb:a.rmsDb, gainDb:a.gainDb, amount:job.amount,
       words:a.words.map(w => ({text:w.text, start:w.start, end:w.end, onset:w.onset, syllables:w.syllables, f0:w.f0, check:w.check})),
       confidence:a.confidence, method:a.method, heard:r.hear.dry.heard, bytes:bytes.length, sha256:sha(bytes),
     });
@@ -294,8 +337,8 @@ function publish() {
   for (const line of [...LINES, ...CUTS.map(c => ({...c, owner:'synthia', voices:['synthia', 'strategy'], why:null}))]) {
     const source = line.from ? LINES.find(l => l.id === line.from) : line;
     const voices = (source?.voices ?? line.voices).filter(v => has(v, line.id));
-    const why = source?.why ?? line.why ?? (voices.includes('synthia') ? null : 'failed');
-    lines[line.id] = {voices, owner:source?.owner ?? line.owner, ...(line.owner === 'synthia' || source?.owner === 'synthia') && !voices.includes('synthia') ? {strategyOnly:why ?? 'failed'} : {}};
+    const owner = source?.owner ?? line.owner, why = owner === 'synthia' ? (source?.why ?? line.why ?? 'failed') : null;
+    lines[line.id] = {voices, owner, ...owner === 'synthia' && !voices.includes('synthia') ? {strategyOnly:why} : {}};
   }
   const order = new Map(LINES.flatMap((l, i) => ['synthia', 'strategy'].map((v, k) => [fileOf(v, l.id), 2 * i + k])));
   const list = [...entries.values()].sort((a, b) => (order.get(a.file) ?? 1e9) - (order.get(b.file) ?? 1e9));
@@ -349,6 +392,58 @@ function report(manifest) {
   console.log(md.slice(0, 24).join('\n'));
 }
 
+// ---------------------------------------------------------------- verify
+// The published bank heard again through the page's own path: loadVoices
+// (flac.js), then sing() at the take's amount onto the same test lines. Every
+// take whose tail was cut, or all of them with --verify all.
+async function verify() {
+  const {VOICE_TABLE, loadVoices, sing} = await import('../src/allhands/voices/voice-table.js');
+  const {readVoice} = await import('../src/allhands/voices/node.js');
+  const cut = new Set(readJson(MANIFEST, {entries:[]}).entries.filter(e => e.trimmedFrom).map(e => e.file));
+  const files = Object.values(VOICE_TABLE).filter(e => (arg('verify') === 'all' || cut.has(e.file)) && only(e.id)).map(e => e.file);
+  const takes = await loadVoices(files, {read:readVoice(PUBLIC + '/')}), jobs = [];
+  for (const f of files) {
+    const take = takes.get(f), e = take.entry, line = LINES.find(l => l.id === e.id), base = join(OUT, 'verify', f.replace(/\.flac$/, ''));
+    writeWav(`${base}.dry.wav`, [take.samples]);
+    jobs.push({id:f, variant:'dry', text:e.text, path:`${base}.dry.wav`});
+    for (const k of TEST_KEYS) {
+      const y = sing(take, {notes:testNotes(e, line, e.voice, k), amount:e.amount}).samples;
+      writeWav(`${base}.${k.join('-')}.wav`, [y]);
+      jobs.push({id:f, variant:`${e.amount}|${k.join(' ')}`, text:e.text, path:`${base}.${k.join('-')}.wav`});
+    }
+  }
+  const rows = py('hear', jobs, [], () => {}, 150), bad = rows.filter(r => r.errors);
+  writeFileSync(join(OUT, 'verify.json'), JSON.stringify({files:files.length, renders:rows.length, failed:bad}, null, 1));
+  // a cut take Whisper no longer hears exactly (the cut took a final z, th or t) is published whole next time
+  const noTrim = readJson(join(OUT, 'work', 'no-trim.json'), []);
+  writeAtomic(join(OUT, 'work', 'no-trim.json'), JSON.stringify([...new Set([...noTrim, ...bad.map(b => b.id)])].sort(), null, 1));
+  console.log(`verify: ${files.length} published takes, ${rows.length} renders through loadVoices and sing(), ${rows.length - bad.length} heard exactly`);
+  for (const b of bad) console.log(`  ${b.id} ${b.variant}: "${b.heard}"`);
+}
+
+// ---------------------------------------------------------------- pitch
+// Every kept take's two test renders, each syllable nucleus against its note
+// (measure.py pitch: normalised autocorrelation and subharmonic summation, no
+// code shared with pixel.js) -> DIR/pitch.json
+function pitch() {
+  const jobs = [];
+  for (const j of JOBS.filter(j => j.chosen)) {
+    const t = j.chosen, r = resultOf(t), entry = entryOf(t, r.align);
+    for (const k of TEST_KEYS) jobs.push({id:t.name, voice:t.voice, variant:`${j.amount}|${k.join(' ')}`, path:join(OUT, 'test', `${j.amount}`, k.join('-'), `${t.name}.wav`),
+      notes:testNotes(entry, j.line, t.voice, k).map(n => ({from:n.from, to:n.to, midi:n.midi}))});
+  }
+  const rows = py('pitch', jobs.filter(x => existsSync(x.path)), [], () => {}, 1000);
+  const summary = {};
+  for (const voice of ['strategy', 'synthia']) {
+    const ns = rows.filter(r => r.voice === voice).flatMap(r => r.notes), c = ns.filter(n => n.cents !== null).map(n => Math.abs(n.cents)).sort((a, b) => a - b);
+    const longer = ns.filter(n => n.to - n.from >= .06 && n.cents !== null), hit = n => Math.abs(n.cents) <= 25 || (n.shsCents !== null && Math.abs(n.shsCents) <= 25);
+    summary[voice] = {renders:rows.filter(r => r.voice === voice).length, notes:ns.length, measured:c.length, medianCents:c[c.length >> 1], p90Cents:c[Math.floor(.9 * c.length)],
+      within25:c.filter(x => x <= 25).length, nuclei60ms:longer.length, nuclei60msWithin25:longer.filter(hit).length};
+  }
+  writeFileSync(join(OUT, 'pitch.json'), JSON.stringify({summary, rows}, null, 1));
+  console.log('pitch', JSON.stringify(summary));
+}
+
 // ---------------------------------------------------------------- listen
 // The tambourine (instruments.js) alone, measured: one shake, one hit, four bars
 // of the groove, and a bar of even 16ths (do its strikes ring the same lines?).
@@ -391,5 +486,7 @@ async function sketch() {
 await run();
 if (STEPS.has('publish')) publish();
 else if (JOBS.some(j => j.tried.length)) report({entries:[], lines:{}});
+if (STEPS.has('verify')) await verify();
+if (STEPS.has('pitch')) pitch();
 if (STEPS.has('tambourine')) tambourine();
 if (STEPS.has('sketch')) await sketch();

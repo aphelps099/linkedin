@@ -72,7 +72,8 @@ export function buildGraph(ctx, {mode = 'sung', muted = {}, tune = {}} = {}, pla
   glue.threshold.value = -10; glue.ratio.value = 2; glue.knee.value = 6; glue.attack.value = .03; glue.release.value = .16;
   const limiter = ctx.createDynamicsCompressor();
   limiter.threshold.value = -3; limiter.ratio.value = 20; limiter.knee.value = 0; limiter.attack.value = .001; limiter.release.value = .09;
-  const output = I.amp(ctx, tune.output ?? mix.output ?? 1.25), analyser = ctx.createAnalyser();
+  // plan.makeup (dB): a band cast's level (band.js BAND_MAKEUP): his repeats were the loudest thing in the room.
+  const output = I.amp(ctx, (tune.output ?? mix.output ?? 1.25) * dB(plan?.makeup ?? 0)), analyser = ctx.createAnalyser();
   analyser.fftSize = 1024; analyser.smoothingTimeConstant = .72;
   // tune.raw skips the bus compressor and limiter, for measuring stem balance.
   // Trim: the drop should arrive just under the limiter, not deep into it.
@@ -159,7 +160,7 @@ export function buildGraph(ctx, {mode = 'sung', muted = {}, tune = {}} = {}, pla
   // A track's own structure (band.graph: Offsite's round of voices and its
   // bloom), built with the rest of the graph; the choke closes it and the
   // impact reopens it through its own choke(c) and release(t).
-  graph.own = track.band.graph?.({ctx, I, graph, step:STEP, sends, master}) ?? null;
+  graph.own = bandOf(track, plan).graph?.({ctx, I, graph, step:STEP, sends, master, plan, tune}) ?? null;
   for (const bus of graph.own?.buses ?? []) exact.bus(bus);
   setMuted(graph, muted, 0);
   exact.play();
@@ -178,16 +179,28 @@ export function setVoiceMode(graph, mode) {
   graph.dry.gain.setTargetAtTime(m.dry, t, .02); graph.sung.gain.setTargetAtTime(m.vocoder, t, .02);
 }
 
-// Index the plan's events by step, once. `lady` holds decoded files and baked deep takes.
-export function prepare(plan, buffers, lady = {files:new Map(), deep:new Map()}) {
+// The buffer one of the voices' events plays: her recording, or (a pixel voice,
+// e.key) the take sung onto its notes (lady.js prepareLady), by the event's id.
+const voiceBuffer = (lady, e, id) => (e.key ? lady.sung?.get(id) : lady.files.get(e.file));
+
+// The band that plays a plan: the track's own, or its river's (the wander form, river.js).
+export const bandOf = (track, plan) => (plan?.form === 'wander' && track.wander ? track.wander.band : track.band);
+
+// Index the plan's events by step, once. `lady` holds decoded files, the sung
+// takes of the pixel voices and baked deep takes.
+export function prepare(plan, buffers, lady = {files:new Map(), deep:new Map(), sung:new Map()}) {
   const track = trackOf(plan.track), step = plan.step ?? track.step;
   const at = new Map(), push = (step, key, value) => { if (!at.has(step)) at.set(step, {words:[], notes:[], stutters:[], lady:[]}); at.get(step)[key].push(value); };
   // A silent word (the cold open's source, below) keeps its notes and its choir bar: only his voice is gone.
   plan.words.forEach(w => { if (buffers.get(w.word) && !w.silent) push(w.at, 'words', w); w.notes.forEach(n => push(n.at, 'notes', n)); });
   plan.stutters.forEach(s => { if (buffers.get(s.word)) push(s.at, 'stutters', s); });
-  (plan.lady || []).forEach((e, i) => { if (lady.files.get(e.file)) push(Math.floor(e.at), 'lady', {...e, index:i}); });
+  (plan.lady || []).forEach((e, i) => { if (voiceBuffer(lady, e, i)) push(Math.floor(e.at), 'lady', {...e, index:i}); });
+  // The band's parts (band.js) play as her events do, on her stem.
+  (plan.band || []).forEach((e, i) => { if (voiceBuffer(lady, e, `b${i}`)) push(Math.floor(e.at), 'lady', {...e, index:`b${i}`}); });
   const harmonyBars = new Set(plan.words.filter(w => w.harmony).map(w => Math.floor(w.at / BAR_STEPS)));
-  return {plan, buffers, lady, at, harmonyBars, track, step};
+  // The couplet drop's impact word, when it asks for the downbeat to itself (drop.js unmask).
+  const unmask = (plan.lady || []).find(e => e.role === 'impact' && e.unmask) ?? null;
+  return {plan, buffers, lady, at, harmonyBars, track, step, band:bandOf(track, plan), unmask};
 }
 
 // The kick's sidechain. A track may pump harder (depth per stem, release time
@@ -230,7 +243,7 @@ function note(graph, t, midi) {
 // One of the lady's events: dry to her stem (or the post-choke tag bus),
 // optionally into Synergy's vocoder, optionally with a baked deep layer.
 function playLady(graph, song, e, t) {
-  const {ctx} = graph, buffer = song.lady.files.get(e.file);
+  const {ctx} = graph, buffer = voiceBuffer(song.lady, e, e.index);
   if (!buffer) return;
   const length = ladyLength(e), gain = dB(e.gain || 0);
   const s = ctx.createBufferSource(), env = I.amp(ctx);
@@ -239,13 +252,24 @@ function playLady(graph, song, e, t) {
     s.detune.setValueAtTime(0, t); s.detune.linearRampToValueAtTime(e.bend.cents, t + length * e.bend.at); s.detune.linearRampToValueAtTime(0, t + length * e.bend.back);
   }
   if (e.lift) { s.detune.setValueAtTime(0, t + length * e.lift.from); s.detune.linearRampToValueAtTime(e.lift.cents, t + length); }
-  env.gain.setValueAtTime(0, t); env.gain.linearRampToValueAtTime(1, t + .003);
-  env.gain.setValueAtTime(1, t + Math.max(.004, length - .015)); env.gain.linearRampToValueAtTime(0, t + length);
+  // A couplet's impact word (unmask.boost, dB): its first consonant up, so "v" and "d" speak over what
+  // is left of the band, then the word at its level from its vowel on.
+  const u0 = e.role === 'impact' ? e.unmask : null, lift = u0?.boost ? dB(u0.boost) : 1;
+  env.gain.setValueAtTime(0, t); env.gain.linearRampToValueAtTime(lift, t + .003);
+  if (lift !== 1) { env.gain.setValueAtTime(lift, t + u0.lead); env.gain.linearRampToValueAtTime(1, t + u0.lead + .03); }
+  // A band part's last word lifts into its release (band.js RELEASE_LIFT: the final "t" of "double-booked").
+  const rel = e.release && e.release.at < length - .04 ? e.release : null;
+  if (rel) { env.gain.setValueAtTime(1, t + rel.at); env.gain.linearRampToValueAtTime(dB(rel.gain), t + rel.at + .02); }
+  env.gain.setValueAtTime(rel ? dB(rel.gain) : 1, t + Math.max(.004, length - .015)); env.gain.linearRampToValueAtTime(0, t + length);
   s.connect(env);
   const dryLevel = gain * (1 - (e.blend || 0) * .5);
   const dryOut = I.amp(ctx, dryLevel), nodes = [s, env, dryOut];
   env.connect(dryOut);
-  if (e.role === 'tag') dryOut.connect(graph.tag);
+  // The tag, and a couplet's impact word (unmask.dry): dry and centred, past the stems' sends.
+  if (e.role === 'tag' || (e.role === 'impact' && e.unmask?.dry)) dryOut.connect(graph.tag);
+  // A clear phrase of the river (wander.js): dry and centred over the stream, its tail sent into the river's
+  // diffusion, where it sinks back in (river.js washIn). It skips her stem, so it reads graph.muted and mutes with it.
+  else if (e.clear && graph.own?.washIn) { if (!graph.muted?.lady) { dryOut.connect(graph.tag); const w = I.amp(ctx, .3); dryOut.connect(w); w.connect(graph.own.washIn); nodes.push(w); } }
   else if (e.role === 'stop') { dryOut.gain.value = dryLevel / 1.4; dryOut.connect(graph.deep); }   // she stops the tape; the tape does not stop her
   else if (e.pan) { const p = ctx.createStereoPanner(); p.pan.value = e.pan; dryOut.connect(p); p.connect(graph.stems.lady.input); nodes.push(p); }
   else dryOut.connect(graph.stems.lady.input);
@@ -257,11 +281,18 @@ function playLady(graph, song, e, t) {
   s.start(t, e.from, (e.to - e.from) + .01);
   makeRoom(graph, t, length);
   if (e.role === 'impact' || e.dip) {
-    // The kick's transient passes, then drums and bass dip under the word and swell back.
-    const depth = e.role === 'impact' ? .45 : e.dip;
-    for (const name of ['drums', 'bass']) {
+    // The kick's transient passes, then drums and bass dip under the word and swell back
+    // (a couplet's impact word, unmask: deeper, and the keys and guitar with them).
+    // A couplet's impact word (unmask): the band is out from the downbeat while its first consonant speaks
+    // (to its vowel, `lead` seconds in: the drop kick's transient took "v" and "d" off VIBE. and DEMAND.),
+    // then under the word at `dip`, and back as it ends.
+    const u = e.role === 'impact' ? e.unmask : null, depth = e.role === 'impact' ? u?.dip ?? .45 : e.dip;
+    for (const name of u?.all ? STEMS.filter(n => n !== 'lady' && n !== 'voice') : ['drums', 'bass']) {
       const g = graph.stems[name].voiced.gain;
-      g.setValueAtTime(1, t + .015); g.linearRampToValueAtTime(depth, t + .03); g.setValueAtTime(depth, t + length); g.linearRampToValueAtTime(1, t + length + .16);
+      if (u?.hold !== undefined) { const h = t + u.lead + (u.holdFor ?? .01); g.setValueAtTime(u.hold, t); g.setValueAtTime(u.hold, h); g.linearRampToValueAtTime(depth, h + .03); }
+      else { g.setValueAtTime(1, t + .015); g.linearRampToValueAtTime(depth, t + .03); }
+      const back = t + length + (u?.tail ?? 0);
+      g.setValueAtTime(depth, back); g.linearRampToValueAtTime(1, back + .16);
     }
   }
   const deep = song.lady.deep.get(e.index);
@@ -353,7 +384,7 @@ function bandApi(graph, song) {
 }
 
 export function scheduleStep(graph, song, step, t0) {
-  const {ctx, stems} = graph, {plan, buffers, at, harmonyBars, track} = song, band = track.band, STEP = song.step, api = bandApi(graph, song);
+  const {ctx, stems} = graph, {plan, buffers, at, harmonyBars, track} = song, band = song.band ?? track.band, STEP = song.step, api = bandApi(graph, song);
   const T = n => t0 + plan.timing[Math.min(n, plan.timing.length - 1)];
   const bar = Math.floor(step / BAR_STEPS), s = step % BAR_STEPS, t = T(step);
   const D = graph.drumHp;
@@ -378,23 +409,29 @@ export function scheduleStep(graph, song, step, t0) {
     graph.voiceLp.frequency.setValueAtTime(L.voiceLp || 20000, t);
     // The section's energy, less the room the verse leaves the drops (plan.energyTrim, dB).
     if (plan.form === 'drop60') graph.energy.gain.setTargetAtTime((track.drop.energy[b.section] ?? 1) * dB(-(plan.energyTrim?.[b.section] ?? 0)), t, .02);
+    // The river's energy drifts: a slow glide toward each bar's level, never a step.
+    else if (plan.form === 'wander' && b.energy !== undefined) { if (bar === 0) graph.energy.gain.setValueAtTime(b.energy, t); else graph.energy.gain.setTargetAtTime(b.energy, t, 1.1); }
     const choir = harmonyBars.has(bar);
     graph.harmony.forEach((h, i) => { h.o.frequency.setValueAtTime(I.mtof(chord.notes[i]), t); h.g.gain.setTargetAtTime(choir ? .2 : 0, t, .03); });
     if (L.pad) band.pad(api, t, chord, barEnd - t, b);
-    if (L.crash) I.crash(ctx, D, t + (L.impact ? .12 : 0), L.impact ? .3 : .42);    // after the vowel of "BACK." has spoken
+    // A couplet's impact word (drop.js unmask) keeps the downbeat to itself: the crash and the downlifter wait for it to end.
+    const word = L.impact ? song.unmask : null, after = word ? ladyLength(word) + (word.unmask.after ?? .04) : 0;
+    if (L.crash) I.crash(ctx, D, t + (L.impact ? Math.max(.12, after) : 0), L.impact ? .3 : .42);    // after the vowel of "BACK." has spoken
     if (L.riser === true && bar === 14) I.riser(ctx, D, t, T(step + 2 * BAR_STEPS) - t);
     if (L.riser === 'short') I.riser(ctx, D, t, barEnd - t, .2);
     if (L.riser === 'long') {
       const end = T(Math.floor(plan.choke.at)) + (plan.choke.at % 1) * STEP;
       I.riser(ctx, D, t, end - t, .3); I.sawRiser(ctx, stems.keys.input, t, end - t, ...(track.sound.sawRiser || []));
     }
-    if (bar === 16 && plan.form !== 'drop60') I.impact(ctx, D, t, .8);
+    if (bar === 16 && plan.form === 'soundcheck') I.impact(ctx, D, t, .8);   // the sound check's drop (the river has none)
     // A track may make its own impact (band.impact: Offsite's stomp and bloom of voices, no bass slam).
     if (L.impact && band.impact) band.impact(api, b, bar, t, barEnd, T, step);
     else if (L.impact) {
       // The impact is tuned: the drop kick settles on, and the sub falls through, the track's key.
-      I.dropKick(ctx, D, t, 1, track.sound.dropKick); duck(graph, t); I.subDrop(ctx, stems.bass.input, t, .75, track.sound.subDrop); I.impact(ctx, D, t, .6);
-      I.downlifter(ctx, D, t + .25, barEnd - t - .25);   // after the word, not over it
+      const boom = word?.unmask.boom ?? 1;
+      I.dropKick(ctx, D, t, boom, track.sound.dropKick); duck(graph, t); I.subDrop(ctx, stems.bass.input, t, .75 * boom, track.sound.subDrop); I.impact(ctx, D, t, .6 * boom);
+      const down = Math.max(.25, after);
+      I.downlifter(ctx, D, t + down, barEnd - t - down);   // after the word, not over it
     }
     if (L.reverseCrash) I.reverseCrash(ctx, D, T(step + 12), barEnd - T(step + 12));
     band.bar?.(api, b, bar, t, barEnd, T, step);

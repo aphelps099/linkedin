@@ -7,8 +7,9 @@ import express from 'express';
 import {execFile} from 'node:child_process';
 
 const VOICE = ['-v', 'en-us', '-s', '175', '-p', '35', '-a', '140', '-z'];
-// A sung unit is one word, or a short respelling such as "chat G P T".
-const WORD = /^[\p{L}\p{N}](?:[\p{L}\p{N}'’.%&-]| (?! )){0,39}$/u;
+// A sung unit is one word, or a short respelling such as "chat G P T". A comma only
+// between digits ("1,200": lyrics.js counts its syllables; fixtures 27, 35 and 36 say one).
+const WORD = /^[\p{L}\p{N}](?:[\p{L}\p{N}'’.%&-]|(?<=\p{N}),(?=\p{N})| (?! )){0,39}$/u;
 export const MAX_WORDS = 64;
 
 const fault = (status, message) => Object.assign(new Error(message), {status});

@@ -8,6 +8,8 @@
 // landmarks are plan.marks (Circle Back's values when a plan has none). The
 // reveal animations below keep their own clock in seconds.
 import {clearBoard, light, PALETTE} from './board.js';
+import {compileFont, layoutText, normalize, LINE_BREAK} from './font.js';
+import {PEG3} from './fonts/peg3.js';
 
 const STEP = .125, BEAT = .5;
 const FRAME = 1 / 24;
@@ -79,6 +81,9 @@ const STYLE = {host:'typewriter', verse:'scanline', hook:'wipe', answer:'pop', r
 // size kick, the rung's row shift), so the climax never strobes. A screen word carries `lit`: how
 // many of its leading letters sound (all of them when it has none).
 export const FRAGMENT_FULL = 1;
+// How far a fast rung rocks its letters, in pitch units: inside the socket (a renderer draws a peg off
+// its socket past .5), so the light stays on the same pegs and the governor sees no change.
+export const ROCK = .4;
 export const FRAGMENT_ACCENT = .55;
 // A letter that has not typed in yet: Synergy's read-ahead lines, and every typewriter screen, show it at
 // this intensity, so a phrase is whole on the board from its first frame and never reads "L", "LE".
@@ -105,10 +110,179 @@ export function ladderWhole(plan, e) {
   return whole && (whole.some(w => w.lit < w.text.length) || /-$/.test(e.display)) ? whole : null;
 }
 
+// ---- the band's lines: couplets, refrains, exchanges -----------------------------------------
+// Synergy sings the post; the band (Strategy, Synthia, the lady's recordings) sings the lexicon, and the
+// board shows it. A band part on the plan is {text, display?, voice, at, end, words:[{text, start, end}]}
+// in song seconds (plan.couplets [{x, y}], plan.refrains [part], plan.exchanges [{call, response}]).
+//
+// The couplet moment, "IT'S NOT X." then "IT'S Y.": X lights word by word as Strategy sings it (the whole
+// line up from the screen's first frame as the read-ahead ghost, so it never reads "IT'S NO"), then on the
+// beat after it a bar of pegs (STRIKE.weight) strikes through X (signal, drawn left to right over one 16th, every letter
+// still at full under it), then Y lands under it as it is sung. X and Y share the board when both fit one
+// page (each on lines of its own: font.js LINE_BREAK); on a board too small for both the page turns to Y
+// when Y is sung, after the strike has shown for STRUCK_MIN at least. Y is dark until it is sung: the joke
+// never lands early. An exchange is the same two-part screen without the strike: the call, then the
+// answer under it. A refrain is one part, and its repeats hold the board between them.
+//
+// Every word is fully lit when sung (1, the pop's overdrive above it), held at full through the build's
+// dim (screen.hold), and voices wear their tone: Strategy blue, Synthia and the lady white. A part may
+// carry a role tag in PEG-3 (STRATEGY, SYNTHIA; the lady never has one) where the board's pitch reads it.
+export const BAND_VOICES = Object.freeze({
+  strategy:{tone:'blue', tag:'STRATEGY'},
+  synthia:{tone:'white', tag:'SYNTHIA'},
+  lady:{tone:'white', tag:null},
+  synergy:{tone:'blue', tag:null},
+});
+// weight: the strike's rows a k, by face. PEG-9's stem (2 pegs), so it reads as a stroke of the face at every size
+// (one row was PEG-9's crossbar weight, on the crossbars' row: a hairline at the phone's 3 px pegs and in the 9:16
+// film at 270 px wide); PEG-5 takes the same 2, heavier than its 1-peg strokes, so it reads on a phone. PEG-3 (the
+// 16:9 film's narrow home, for a long X) keeps 1: two rows of a 5-row cap would make its B read as D and its K as H.
+export const STRIKE = Object.freeze({tone:'signal', draw:1, min:.25, weight:Object.freeze({peg9:2, peg5:2, peg3:1})});   // draw: 16ths to cross X; min: seconds struck before Y
+export const strikeWeight = (font, k = 1) => Math.min((CAP_ROWS[font] ?? 9) * k, (STRIKE.weight[font] ?? 2) * k);
+export const TAG_MIN_PITCH = 12;                                          // PEG-3 reads from 12 px a peg
+const PAIR_GAP = 16;                                                      // 16ths: a Y further than a bar from X gets a screen of its own
+const STRUCK_SKIP = new Set(['NOT', 'JUST', 'ABOUT', 'ONLY', 'EVEN']);
+
+// A part's words as the board shows them: the display's words (capitals), each on the time the plan
+// gives it; spread evenly over the part's span when the plan has no word times.
+export function partWords(plan, part) {
+  if (!part) return [];
+  const shown = normalize(part.display ?? part.text ?? '').text.split(/[ \u2028]+/).filter(Boolean);
+  const timed = (part.words || []).filter(w => Number.isFinite(w?.start));
+  const at = Number.isFinite(part.at) ? part.at : timed[0]?.start, end = Number.isFinite(part.end) ? part.end : timed.at(-1)?.end ?? at + .5;
+  let words;
+  if (timed.length && timed.length === shown.length) words = timed.map((w, i) => ({text:shown[i], start:w.start, end:Number.isFinite(w.end) ? w.end : w.start + .2}));
+  else if (timed.length) words = timed.flatMap(w => { const ws = normalize(w.text).text.split(' ').filter(Boolean), per = ((w.end ?? w.start + .2) - w.start) / Math.max(1, ws.length); return ws.map((x, i) => ({text:x, start:w.start + i * per, end:w.start + (i + 1) * per})); });
+  else if (Number.isFinite(at)) { const per = Math.max(FRAME, (end - at) / Math.max(1, shown.length)); words = shown.map((x, i) => ({text:x, start:at + i * per, end:at + (i + 1) * per})); }
+  else return [];
+  return words.filter(w => w.text).map(w => ({...w, end:Math.max(w.end, w.start + FRAME), units:[{chars:[0, w.text.length], start:w.start}]}));
+}
+
+// The first time on the plan's grid of `div` 16ths at or after t (swing included), or Infinity.
+function gridAfter(plan, t, div) {
+  const tm = plan.timing; let lo = 0, hi = tm.length - 1, at = -1;
+  while (lo <= hi) { const mid = (lo + hi) >> 1; if (tm[mid] >= t - 1e-9) { at = mid; hi = mid - 1; } else lo = mid + 1; }
+  if (at < 0) return Infinity;
+  for (let s = Math.ceil(at / div) * div; s < tm.length; s += div) if (tm[s] >= t - 1e-9) return tm[s];
+  return Infinity;
+}
+// When the strike crosses X: on the first beat after X has been sung that leaves the struck X up for
+// STRIKE.min before Y; else the first 8th, else the first 16th; else as late as leaves STRIKE.min (never
+// before X's last word has started). yAt is Infinity when Y is far (the drop's couplet: Y is the impact).
+export function strikeAt(plan, xWords, yAt = Infinity) {
+  const xEnd = xWords.at(-1).end, last = xWords.at(-1).start;
+  for (const div of [4, 2, 1]) { const g = gridAfter(plan, xEnd, div); if (g + STRIKE.min <= yAt + 1e-9) return g; }
+  return Math.max(last + 2 * FRAME, Math.min(xEnd, yAt - STRIKE.min));
+}
+// The words a strike crosses: X itself, after "IT'S NOT" (and her template's "ABOUT"), never the denial.
+export function struckWords(words) {
+  const not = words.findIndex(w => /^NOT\b/.test(w.text));
+  let i = not < 0 ? Math.min(1, words.length - 1) : not + 1;
+  while (i < words.length - 1 && STRUCK_SKIP.has(words[i].text.replace(/[^A-Z]/g, ''))) i++;
+  return words.map((_, j) => j).filter(j => j >= i);
+}
+
+// One band screen from one or two parts. strike: strike X (part 0) before part 1.
+function bandScreen(plan, kind, parts, {strike = false, k = 1, lines = 3, yAt} = {}) {
+  const words = [], info = [];
+  for (const p of parts) {
+    const ws = partWords(plan, p);
+    if (!ws.length) continue;
+    const v = BAND_VOICES[p.voice] ?? BAND_VOICES.strategy;
+    info.push({voice:p.voice, tone:v.tone, tag:v.tag, first:words.length, count:ws.length, start:ws[0].start, end:ws.at(-1).end});
+    words.push(...ws.map(w => ({...w, part:info.length - 1})));
+  }
+  if (!words.length) return null;
+  const step = stepOf(plan), text = info.map(p => words.slice(p.first, p.first + p.count).map(w => w.text).join(' ')).join(LINE_BREAK);
+  // fill: a layout may give a two-part screen as many lines as its board's text rows hold (at least
+  // `lines`), so X and Y share one page wherever they fit (stage.js, the video's board-layer.js).
+  const screen = {kind, voice:info[0].voice, band:true, hold:true, parts:info, from:words[0].start - BEAT * .5, to:words.at(-1).end + 4 * step,
+    text, words, accent:-1, reveal:'pop', tone:info[0].tone, k, lines, fill:info.length > 1, release:'cut', fx:{}};
+  if (strike) {
+    const x = words.slice(0, info[0].count), at = strikeAt(plan, x, info[1]?.start ?? yAt ?? Infinity);
+    screen.fx.strike = {at, words:struckWords(x), draw:STRIKE.draw * step, tone:STRIKE.tone};
+    if (info.length === 1) screen.to = Math.max(screen.to, at + STRIKE.draw * step + BEAT);
+  }
+  return screen;
+}
+
+// The band's screens for a plan: the couplets (as pairs, or X and Y apart when Y is the drop's impact),
+// the refrains, the exchanges. The lady's own events stay hers (her screens above), so a part that is one
+// of her events already on the board is not drawn twice.
+// The band's parts on a plan, grouped as the board shows them. The engine's events (plan.band, drop.js
+// and band.js: {role, part, voice, display, words:[{text, display, start, end}], start, end, couplet?})
+// or the contract's lists (plan.couplets [{x, y}], plan.refrains, plan.exchanges [{call, response}]):
+//   couplets [{x, y}]   "IT'S NOT X." then "IT'S Y." (Synthia's pickup "IT'S" and her word joined as one Y)
+//   dropX [part]        the couplet drop's X over the build's answer bars (Y is the impact: her impact screen)
+//   refrains, exchanges [{call, response}], singles (the sign-off, the stabs: one part each)
+// plan.phrases (the river's clear phrases) join them by shape: {x, y}, {call, response} or one part.
+export function bandOf(plan) {
+  const out = {couplets:[...(plan.couplets || [])], dropX:[], refrains:[...(plan.refrains || [])], exchanges:[...(plan.exchanges || [])], singles:[]};
+  const groups = new Map();
+  for (const e of plan.band || []) { if (!groups.has(e.part)) groups.set(e.part, []); groups.get(e.part).push(e); }
+  const join = parts => parts.length < 2 ? parts[0] : {...parts.at(-1), display:parts.map(p => p.display ?? p.text).join(' '), text:parts.map(p => p.text).join(' '),
+    words:parts.flatMap(p => p.words || []), start:parts[0].start, at:parts[0].at, voice:parts.at(-1).voice};
+  // The river's clear phrases (plan.phrases): a couplet, an exchange or one phrase each.
+  for (const ph of (plan.phrases || []).filter(p => !(plan.band || []).includes(p))) {
+    if (ph?.x || ph?.y) out.couplets.push(ph);
+    else if (ph?.call) out.exchanges.push(ph);
+    else if (ph) out.refrains.push(ph);
+  }
+  for (const [part, es] of groups) {
+    const by = r => es.filter(e => e.role === r);
+    if (part === 'couplet') { const x = by('couplet-x')[0], y = join([...by('pickup'), ...by('couplet-y')]); if (x || y) out.couplets.push({x, y, id:es[0].couplet}); }
+    else if (part === 'dropTag') out.dropX.push(...by('x'));
+    else if (part === 'refrain') out.refrains.push(...by('refrain'));
+    else if (/^exchanges/.test(part)) out.exchanges.push({call:by('call')[0], response:by('response')[0]});
+    else out.singles.push(...es.map(e => ({...e, kind:e.role})));
+  }
+  return out;
+}
+
+export function bandScreens(plan) {
+  const out = [], step = stepOf(plan), near = (p, q) => q && Number.isFinite(p?.start) && Math.abs(p.start - q.start) < FRAME;
+  const B = bandOf(plan);
+  // The drop's impact: a Y that lands on it is the impact word, drawn as her impact is (centre, k 3, the
+  // outline through the ignition), unless her own impact screen (the couplet drop's impact event) shows it.
+  const impactAt = plan.form === 'drop60' && plan.choke ? T(plan, plan.choke.until) : null;
+  const onImpact = ws => impactAt !== null && ws.length && Math.abs(ws[0].start - impactAt) < BEAT;
+  const theirImpact = (plan.lady || []).some(e => e.role === 'impact');
+  const two = (kind, a, b, strike) => {
+    const wa = partWords(plan, a), wb = partWords(plan, b);
+    if (!wa.length) { if (wb.length) out.push(bandScreen(plan, kind, [b])); return; }
+    if (wb.length && !onImpact(wb) && wb[0].start - wa.at(-1).end <= PAIR_GAP * step + 1e-9) out.push(bandScreen(plan, kind, [a, b], {strike}));
+    else {
+      out.push(bandScreen(plan, kind, [a], {strike, yAt:wb[0]?.start}));
+      if (!wb.length) return;
+      if (onImpact(wb)) { if (!theirImpact) { const y = bandScreen(plan, 'impact', [b], {k:3, lines:1}); Object.assign(y, {from:impactAt, to:impactAt + 2.6 * BEAT, reveal:'centre', ignite:true, hold:false, fx:{outline:true}}); out.push(y); } }
+      else out.push(bandScreen(plan, `${kind}-y`, [b]));
+    }
+  };
+  for (const c of B.couplets) two('couplet', c.x, c.y, true);
+  // The drop's X, over the build: struck on the beat after it; its Y is the impact, after the silence.
+  // (Sung twice, one bar apart, it lights twice and is struck after the second.)
+  const dropX = [...B.dropX].sort((a, b) => (a.start ?? a.at) - (b.start ?? b.at));
+  dropX.forEach((x, i) => { const sc = bandScreen(plan, 'couplet', [x], {strike:i === dropX.length - 1, yAt:impactAt ?? Infinity}); if (sc) out.push(Object.assign(sc, {over:true})); });
+  for (const e of B.exchanges) two('exchange', e.call, e.response ?? e.answer, false);
+  // A refrain or a sign-off is one phrase on one page (k 1, as Synergy's lines); a stab, a verdict, takes
+  // k 2 where its word fits (two lines at most, so it never pages).
+  for (const r of B.refrains) out.push(bandScreen(plan, 'refrain', [r]));
+  for (const s of B.singles) out.push(bandScreen(plan, s.kind === 'stab' ? 'stab' : s.kind ?? 'band', [s], s.kind === 'stab' ? {k:2, lines:2} : {}));
+  return out.filter(Boolean).filter((s, i, a) => !a.slice(0, i).some(o => near(o.words[0], s.words[0]) && o.text === s.text));
+}
+
+// The river (plan.form 'wander', Offsite): the board is mostly texture (psych.js riverTrack), and type only
+// for its clear phrases, the one or two that rise out of the stream: a line, an event or a band part the
+// plan marks `clear`, and the band's parts that are not the stream's own (`clear:false`, role loop or
+// layer), two distinct phrases at most (their repeats included). Nothing else is type.
+export const RIVER_PHRASES = 2;
+const streamPart = p => p?.clear === false || /^(loop|layer|stream)$/.test(p?.role ?? '');
+
 export function buildScreens(plan, {table} = {}) {
-  const screens = [], drop = plan.form === 'drop60', section = t => plan.sections.find(s => t >= T(plan, s.from * 16) && t < T(plan, s.to * 16))?.name, step = stepOf(plan);
+  const screens = [], drop = plan.form === 'drop60', river = plan.form === 'wander', step = stepOf(plan);
+  const section = t => (plan.sections || []).find(s => t >= T(plan, s.from * 16) && t < T(plan, s.to * 16))?.name;
   const add = s => { screens.push({k:1, tone:'blue', release:'cut', fx:{}, ...s}); };
-  for (const line of plan.lines) {
+  for (const line of (plan.lines || []).filter(l => !river || l.clear)) {
     for (const half of [false, true]) {
       const words = wordsOfLine(plan, line, half);
       if (!words.length) continue;
@@ -121,7 +295,7 @@ export function buildScreens(plan, {table} = {}) {
     }
   }
   // Words Synergy sings outside a line (his answers in the build).
-  for (const w of plan.words.filter(x => x.line === -1)) {
+  for (const w of (plan.words || []).filter(x => x.line === -1 && (!river || x.clear))) {
     const start = T(plan, w.at);
     add({kind:'answer', voice:'synergy', from:start, to:start + w.steps * step, text:w.display, words:[{text:w.display, start, end:start + w.gate, units:[{chars:[0, w.display.length], start}]}], reveal:'pop', tone:'white', k:1});
   }
@@ -129,13 +303,13 @@ export function buildScreens(plan, {table} = {}) {
   // ghost, on its own 16th. Where the lady's ladder owns the board (the drop's bar 18) it is heard,
   // not shown.
   const ladderSteps = new Set((plan.lady || []).filter(e => e.role === 'ladder').map(e => Math.floor(e.at / 16)));
-  for (const s of plan.stutters) {
+  for (const s of river ? [] : plan.stutters || []) {
     if (ladderSteps.has(Math.floor(s.at / 16))) continue;
     const start = T(plan, s.at), word = ((plan.words || []).find(w => w.word === s.word)?.display ?? s.word).split(' ')[0].toUpperCase(), lit = Math.min(3, word.length);
-    add({kind:'stammer', voice:'synergy', from:start, to:start + step, text:word, fragment:`${word.slice(0, lit)}-`, words:[{text:word, lit, start, end:start + step * .9, units:[{chars:[0, lit], start}]}], reveal:'pop', tone:'white', k:drop ? 2 : 1});
+    add({kind:'stammer', voice:'synergy', hold:true, from:start, to:start + step, text:word, fragment:`${word.slice(0, lit)}-`, words:[{text:word, lit, start, end:start + step * .9, units:[{chars:[0, lit], start}]}], reveal:'pop', tone:'white', k:drop ? 2 : 1});
   }
   // The lady.
-  for (const e of plan.lady || []) {
+  for (const e of (plan.lady || []).filter(x => !river || x.clear)) {
     const words = ladyWords(plan, e, table), t0 = T(plan, e.at);
     const base = {kind:e.role, voice:'lady', from:t0, to:t0 + Math.max(e.gate, step), text:e.display, words, accent:-1, tone:'white', reveal:'pop', k:1};
     if (e.role === 'ladder') {
@@ -148,8 +322,11 @@ export function buildScreens(plan, {table} = {}) {
       // (Two words may stack on two lines, so both are always on the board at once.)
       if (whole) Object.assign(base, {text:whole.map(w => w.text).join(' '), fragment:e.display, ...(whole.length > 1 ? {lines:2} : {}),
         words:words.map((w, i) => ({...w, text:whole[i].text, lit:whole[i].lit, units:[{chars:[0, whole[i].lit], start:w.start}]}))});
-      add({...base, reveal:r < 2 ? 'typewriter' : r < 4 ? 'pop' : 'steady', k, tone:r >= 2 && r < 4 && Math.round(e.at * 2) % 4 >= 2 ? 'white' : 'blue',
-        fx:{rowShift:r >= 4 ? [0, -1, 0, 1][Math.round(e.at * 2) % 4] : 0, sparkle:r === 7 ? clamp((e.at % 16) / 8) : 0}});
+      add({...base, hold:true, reveal:r < 2 ? 'typewriter' : r < 4 ? 'pop' : 'steady', k, tone:r >= 2 && r < 4 && Math.round(e.at * 2) % 4 >= 2 ? 'white' : 'blue',
+        // The fast rungs rock the letters in their sockets (ROCK pitch, up, home, down) instead of moving them
+        // a whole row: a row shift carried a word's light across the board's middle and flashed its quarters
+        // on a stage-sized board (102 x 45: 16 to 27 of the climax's frames governed down to a fifth).
+        fx:{rock:r >= 4 ? ROCK * [0, -1, 0, 1][Math.round(e.at * 2) % 4] : 0, sparkle:r === 7 ? clamp((e.at % 16) / 8) : 0}});
     // Her tag holds the board until it goes black (a frame past her envelope's end), so the
     // typewriter's last letter is up on the last frame she is heard in.
     } else if (e.role === 'tag') add({...base, to:Math.max(base.to, plan.choke?.tagEnd ?? base.to) + CHOKE_TAIL + FRAME, reveal:'typewriter', tone:'white', sockets:0});
@@ -160,6 +337,10 @@ export function buildScreens(plan, {table} = {}) {
     else if (e.role === 'stop') { const end = stopEndAt(plan) ?? t0 + e.gate; add({...base, to:end + TAG_TAIL + FRAME, reveal:'typewriter', tone:'white', fx:{stop:{from:t0, end}}}); }
     else add({...base, fx:e.bend ? {detune:e.bend.cents} : e.lift ? {lift:true} : {}});
   }
+  // The band: couplets, exchanges, refrains (bandScreens).
+  const band = bandScreens(river ? {...plan, band:(plan.band || []).filter(p => !streamPart(p)), refrains:(plan.refrains || []).filter(p => !streamPart(p)), phrases:(plan.phrases || []).filter(p => !streamPart(p))} : plan);
+  const phrases = [...new Set(band.map(b => b.text))].slice(0, river ? RIVER_PHRASES : Infinity);
+  for (const b of band) if (phrases.includes(b.text)) add(b);
   // The muted intro: YOU'RE ON MUTE, then the tease of the drop that comes later.
   // It ends on the unmute (Circle Back's 16th 32; a track's own plan.call.until).
   if (drop) {
@@ -171,15 +352,53 @@ export function buildScreens(plan, {table} = {}) {
   }
   screens.sort((a, b) => a.from - b.from);
   // One screen at a time: a screen ends when the next begins. Synergy's lines
-  // arrive half a beat early as read-ahead ghosts, but they never take the
-  // board from the lady before his first word is actually sung.
-  for (let i = 0; i < screens.length - 1; i++) {
-    const cur = screens[i], next = screens[i + 1];
-    // A ladder hit holds the board until the next one: the letters stay lit
-    // between retriggers instead of blinking at the retrigger rate.
-    if (cur.kind === 'ladder' && next.kind === 'ladder') cur.to = next.from;
-    if (next.voice === 'synergy' && cur.voice !== 'synergy') next.from = Math.max(next.from, Math.min(cur.to, next.words[0].start));
-    cur.to = Math.min(cur.to, next.from);
+  // and the band's arrive half a beat early as read-ahead ghosts, but they never
+  // take the board from the lady before their first word is actually sung.
+  // Her ladder steps back under the band's line (the couplet drop's "IT'S NOT X." over the build, screen.over):
+  // a rung that starts while that screen holds the board stays in the list (screen.under) but does not take
+  // the board until that screen is done (activeScreen); then the rung that is sounding shows.
+  const ahead = s => s.voice === 'synergy' || s.band, under = [];
+  let cur = null;
+  for (const next of screens) {
+    if (cur?.over && next.kind === 'ladder' && next.from < cur.to - 1e-9) { next.under = true; under.push(next); continue; }
+    if (cur) {
+      // A ladder hit holds the board until the next one: the letters stay lit between retriggers instead
+      // of blinking at the retrigger rate. So does a band line until its next repeat (a refrain, the drop's X).
+      if (cur.kind === 'ladder' && next.kind === 'ladder') cur.to = next.from;
+      // (A band line's repeat keeps its words lit, sung or not: it re-pops them as they come round again.)
+      else if (cur.band && next.band && cur.text === next.text && next.from - cur.to < 16 * step) { cur.to = next.from; next.relit = true; }
+      if (ahead(next) && !ahead(cur)) next.from = Math.max(next.from, Math.min(cur.to, next.words[0].start));
+      cur.to = Math.min(cur.to, next.from);
+    }
+    cur = next;
+  }
+  for (const u of under) {
+    const next = screens.find(x => x.from > u.from + 1e-9 && x !== u);
+    if (next) u.to = next.kind === 'ladder' ? next.from : Math.min(u.to, next.from);
+  }
+  // A couplet another screen interrupts (Synergy's next line, her punct, a rung or a stab between X and Y):
+  // its strike moves up so the struck X holds STRIKE.min before the board turns (strikeAt, the turn as its
+  // Y), and a Y sung after the turn gets a screen of its own, as a Y a bar away does (bandScreens two()).
+  for (const s of [...screens]) {
+    const st = s.fx?.strike;
+    if (!st || s.over || s.under) continue;
+    const x = s.words.filter(w => !w.part), y = s.words.filter(w => w.part === 1);
+    if (st.at + STRIKE.min > s.to + 1e-9) {
+      // (On the grid still: else the latest 16th from X's last word on that leaves STRIKE.min.)
+      const a = strikeAt(plan, x, s.to), tm = plan.timing || [], last = x.at(-1).start + 2 * FRAME;
+      const g = a + STRIKE.min <= s.to + 1e-9 && tm.some(v => Math.abs(v - a) < 1e-9) ? a : tm.filter(v => v >= last - 1e-9 && v + STRIKE.min <= s.to + 1e-9).at(-1);
+      st.at = g ?? a;
+    }
+    if (!y.length || y[0].start < s.to - 1e-9) continue;
+    Object.assign(s, {words:x, parts:[s.parts[0]], text:x.map(w => w.text).join(' '), fill:false});
+    const p = {...s.parts[1], first:0}, ys = {...s, kind:`${s.kind}-y`, voice:p.voice, tone:p.tone, parts:[p], words:y.map(w => ({...w, part:0})),
+      text:y.map(w => w.text).join(' '), from:Math.max(s.to, y[0].start - BEAT * .5), to:y.at(-1).end + 4 * step, fx:{}, relit:false};
+    const prev = screens.filter(o => !o.under && o !== s && o.from <= ys.from + 1e-9 && ys.from < o.to).at(-1);
+    if (prev && !ahead(prev)) ys.from = Math.max(ys.from, Math.min(prev.to, y[0].start));
+    if (prev) prev.to = Math.min(prev.to, ys.from);
+    const next = screens.filter(o => !o.under && o.from > ys.from + 1e-9).sort((a, b) => a.from - b.from)[0];
+    if (next) ys.to = Math.min(ys.to, next.from);
+    screens.push(ys);
   }
   screens.sort((a, b) => a.from - b.from);
   return screens.filter(s => s.to > s.from);
@@ -217,7 +436,7 @@ export function stopEndAt(plan) {
 export const stopDarkAt = plan => { const end = stopEndAt(plan); return end === null ? null : end + TAG_TAIL + FRAME * .5; };
 export const STOP_DIM = .7;
 export function boardState(plan, t) {
-  const state = {sockets:1, exposure:1, bloom:1, ignite:-1};
+  const state = {sockets:1, exposure:1, bloom:1, ignite:-1, build:1};
   if (plan.form !== 'drop60') {
     state.sockets = clamp(t / BEAT);
     return state;
@@ -227,6 +446,7 @@ export function boardState(plan, t) {
   state.sockets = clamp(t / BEAT);                                        // power on over 1 beat
   if (t >= build && t < rise) state.exposure = .55;                       // the build starts dim
   else if (t >= rise && t < choke) state.exposure = .55 + .45 * clamp((t - rise) / (choke - rise));
+  state.build = state.exposure;                                           // (a screen that holds leaves it out: paint)
   if (t >= dark && t < lit) { state.sockets = 0; state.exposure = 0; }     // true black, once her tag has stopped sounding
   if (t >= lit && t < lit + 2.6 * BEAT) state.ignite = t - lit;           // one frame fully lit, then the settle
   if (t >= sinkFrom && t < sinkTo) state.bloom = 1.6;
@@ -274,27 +494,41 @@ function pegLight(screen, word, unit, peg, t, ctx) {
 
 // layout(screen) -> {pages:[{lines:[{chars:[{index, word, pegs:Int16Array}]}]}], width, height}
 // (font.js layoutText), cached per screen. place(screen, layout) -> {x, y} board origin.
-export function paint(board, screens, t, {plan, layoutOf, place, eq, reduced = false} = {}) {
+// pitch (optional): the board's px a peg, so a role tag shows only where PEG-3 reads (TAG_MIN_PITCH).
+export function paint(board, screens, t, {plan, layoutOf, place, eq, reduced = false, pitch = 0} = {}) {
   clearBoard(board);
   // A ghost screen (the loop seam's BACK., screen.ghost its intensity): only its letters, flat, on
   // true black, on the same pegs as the screen it copies.
   const ghost = activeScreen(screens, t);
-  if (ghost?.ghost) { board.sockets = 0; drawScreen(board, ghost, t, {layoutOf, place, reduced, igniting:false}); return board; }
-  const state = plan ? boardState(plan, t) : {sockets:1, exposure:1, bloom:1, ignite:-1};
+  if (ghost?.ghost) { board.sockets = 0; drawScreen(board, ghost, t, {layoutOf, place, reduced, igniting:false, pitch}); return board; }
+  const state = plan ? boardState(plan, t) : {sockets:1, exposure:1, bloom:1, ignite:-1, build:1};
   board.sockets = state.sockets; board.exposure = state.exposure; board.bloom = state.bloom;
   if (state.exposure <= 0) return board;
   const screen = activeScreen(screens, t);
+  // The build dims the board, not the words being sung: under a screen that holds (her ladder, a stutter,
+  // the band), the board's exposure leaves out the build's dim and the sockets and everything that is not
+  // type (the chart, psych imagery: board.ambient) take it instead, so they look exactly as dim as before.
+  if (screen?.hold && state.build < 1) { board.exposure = state.exposure / state.build; board.sockets *= state.build; board.ambient = state.build; }
   if (eq) eq(board, t, screen);
+  if (board.ambient < 1) for (let i = 0; i < board.I.length; i++) board.I[i] *= board.ambient;
   if (state.ignite >= 0) ignite(board, state.ignite);
-  if (screen) drawScreen(board, screen, t, {layoutOf, place, reduced, igniting:state.ignite >= 0});
+  if (screen) drawScreen(board, screen, t, {layoutOf, place, reduced, igniting:state.ignite >= 0, pitch});
   return board;
 }
 
 export function activeScreen(screens, t) {
   let lo = 0, hi = screens.length - 1, found = null;
   while (lo <= hi) { const mid = (lo + hi) >> 1; if (screens[mid].from <= t) { found = mid; lo = mid + 1; } else hi = mid - 1; }
-  const s = found === null ? null : screens[found];
-  return s && t < s.to + releaseTime(s) ? s : null;
+  if (found === null) return null;
+  // A rung under a band line (screen.under) shows only once the line has let go of the board.
+  let low = null;
+  for (let i = found; i >= 0; i--) {
+    const s = screens[i];
+    if (s.under) { low ??= s; continue; }
+    if (t < s.to + releaseTime(s)) return s;
+    break;
+  }
+  return low && t < low.to + releaseTime(low) ? low : null;
 }
 const releaseTime = s => s.release === 'afterglow' ? .3 : s.release === 'dissolve' ? BEAT : 0;
 
@@ -309,7 +543,7 @@ function ignite(board, age) {
   }
 }
 
-function drawScreen(board, screen, t, {layoutOf, place, reduced, igniting}) {
+function drawScreen(board, screen, t, {layoutOf, place, reduced, igniting, pitch = 0}) {
   const layout = layoutOf(screen);
   if (!layout?.pages?.length) return;
   // Paging: each page appears when its first word is heard.
@@ -338,6 +572,10 @@ function drawScreen(board, screen, t, {layoutOf, place, reduced, igniting}) {
     letterIndex++;
     const sung = t >= unit.start, ended = t > word.end;
     const pegs = ch.pegs, n = pegs.length / 2;
+    // The band: a part after the first is dark until it is sung (Y never lands early); then its words
+    // read ahead and light as they are sung, in the voice's tone (bandLight).
+    const part = screen.band ? screen.parts[word.part] : null;
+    if (part && word.part > 0 && t < part.start - FRAME * .5) continue;
     // A fragment's word (a stutter): fully lit, its sounding letters accented (fragmentLight).
     const frag = word.lit !== undefined, sounding = frag && charInWord < word.lit;
     for (let i = 0; i < n; i++) {
@@ -345,6 +583,7 @@ function drawScreen(board, screen, t, {layoutOf, place, reduced, igniting}) {
       if (screen.ghost) { light(board, x, y, screen.ghost * fade, {tone}); continue; }
       let I, white = 0, size = 1, dx = 0, dy = 0, peg = tone;
       if (frag) ({I, white, size} = fragmentLight(screen, word, unit, {x, y, i, n, row:py - (ch.y || 0), rows:ch.h || rows}, t, ctx, sounding, reduced));
+      else if (part) { ({I, white, size} = bandLight(screen, word, unit, {x, y, i, n, row:py - (ch.y || 0), rows:ch.h || rows}, t, ctx, reduced)); peg = PALETTE[part.tone]?.id ?? tone; }
       else if (screen.voice === 'synergy' && !sung && screen.reveal !== 'wipe') { I = READ_AHEAD; }  // ghost: read ahead on mute
       else {
         const l = reduced ? {I:clamp((t - unit.start) / .2), white:0, size:1} : pegLight(screen, word, unit, {x, y, i, n, row:py - (ch.y || 0), rows:ch.h || rows}, t, ctx);
@@ -362,11 +601,83 @@ function drawScreen(board, screen, t, {layoutOf, place, reduced, igniting}) {
       if (screen.fx.stop) { const st = screen.fx.stop, p = clamp((t - (st.from ?? screen.from)) / Math.max(FRAME, (st.end ?? screen.to) - (st.from ?? screen.from))); dy = 2 * (1 - (1 - p) ** 2); I *= 1 - .2 * p; }
       if (screen.fx.tape && sung) dy = clamp((t - screen.from) / 2) * .6;
       if (screen.fx.sparkle) { if (hash2(x, y, Math.floor(t * 32)) > 1 - screen.fx.sparkle * .8) { white = 1; I = 1.5; } }
+      if (screen.fx.rock && !reduced) dy += screen.fx.rock;
       light(board, x, y, I * fade, {tone:peg, white, size, dx, dy});
     }
     // Drop words wear a 1-peg outline of dark pegs, so the ignition never swallows them.
     if (screen.fx.outline || igniting) outline(board, ch, origin);
   }
+  if (screen.fx.strike) drawStrike(board, screen, layout, page, origin, t, fade, reduced);
+  if (screen.parts && pitch >= TAG_MIN_PITCH) drawTags(board, screen, layout, page, origin, t, fade);
+}
+
+// A band word's light: the read-ahead ghost until it is sung, then full (1) from its onset to the screen's
+// end. It pops in size only (the peg springs to 1.25 and settles), never in light: a band screen's light
+// only rises until it ends, so its words make no flash of their own at any size of board (a k 2 refrain's
+// white-hot pops flashed the 9:16 home 3.5 times a second).
+function bandLight(screen, word, unit, peg, t, ctx, reduced) {
+  if (t < unit.start - FRAME * .5) return {I:screen.relit ? FRAGMENT_FULL : READ_AHEAD, white:0, size:1};
+  if (reduced) return {I:Math.max(READ_AHEAD, clamp((t - unit.start) / .2)), white:0, size:1};
+  const age = Math.max(0, t - unit.start);
+  return {I:FRAGMENT_FULL, white:0, size:1 + .25 * Math.exp(-age * 9) * Math.cos(age * 2 * Math.PI * 6)};
+}
+
+// The strike: a bar of pegs (h, strikeWeight: STRIKE.weight's rows a k, centred on the caps, half a peg high
+// where the rows cannot split evenly) through X's struck words on each line they sit on, k pegs past each end, drawn
+// left to right over STRIKE.draw from its beat, in signal, at full over the letters (they stay lit under
+// it). A peg springs as the stroke reaches it; its light never pops.
+const CAP_ROWS = {peg9:9, peg5:7, peg3:5};
+const TRAILING = /[.,!?;:…'"\u2013-]/;
+export function strikeRows(screen, layout, page, origin) {
+  const st = screen.fx.strike, k = layout.k || 1, cap = (CAP_ROWS[layout.font] ?? 9) * k, h = strikeWeight(layout.font, k), struck = new Set(st.words), out = [];
+  for (const line of page.lines) {
+    const chars = line.chars.filter(c => struck.has(c.word));
+    while (chars.length && TRAILING.test(chars.at(-1).ch)) chars.pop();
+    if (!chars.length) continue;
+    out.push({x0:origin.x + chars[0].x - k, x1:origin.x + chars.at(-1).x + chars.at(-1).w - 1 + k, y0:origin.y + line.y + Math.floor((cap - h) / 2), h, k});
+  }
+  return out;
+}
+function drawStrike(board, screen, layout, page, origin, t, fade, reduced) {
+  const st = screen.fx.strike, since = t - st.at, tone = PALETTE[st.tone]?.id ?? PALETTE.signal.id;
+  if (since < -FRAME * .5) return;
+  for (const {x0, x1, y0, h} of strikeRows(screen, layout, page, origin)) for (let x = x0; x <= x1; x++) {
+    const age = since - (x - x0) / Math.max(1, x1 - x0) * st.draw;
+    if (age < -FRAME * .5) continue;
+    const size = reduced ? 1 : 1 + .2 * Math.exp(-Math.max(0, age) * 14);
+    for (let r = 0; r < h; r++) {
+      const y = y0 + r;
+      if (x < 0 || y < 0 || x >= board.cols || y >= board.rows) continue;
+      const j = y * board.cols + x;
+      board.I[j] = Math.max(board.I[j], 1) * fade; board.tone[j] = tone; board.white[j] = 0; board.size[j] = size; board.dx[j] = 0; board.dy[j] = 0;
+    }
+  }
+}
+
+// A part's role tag in PEG-3 (STRATEGY, SYNTHIA), from when it is sung: over the first part's first line,
+// under the second part's last line, at the line's left edge, only inside the room the screen was centred
+// in and only on pegs nothing else lit. At pitch TAG_MIN_PITCH and up (paint's pitch); never the lady.
+let TAG_FONT = null;
+const TAG_CACHE = new Map();
+function tagGlyphs(text) {
+  TAG_FONT ||= compileFont(PEG3);
+  if (!TAG_CACHE.has(text)) { const l = layoutText(text, {font:TAG_FONT, k:1, maxLines:1}); TAG_CACHE.set(text, {w:l.width, h:TAG_FONT.rows, pegs:l.pages[0]?.lines[0]?.chars.flatMap(c => [...c.pegs]) ?? []}); }
+  return TAG_CACHE.get(text);
+}
+export const TAG_LIGHT = .7;
+function drawTags(board, screen, layout, page, origin, t, fade) {
+  const k = layout.k || 1, cap = (CAP_ROWS[layout.font] ?? 9) * k, bottom = page.lines.length ? Math.max(...page.lines.map(l => l.y)) + layout.k * ((CAP_ROWS[layout.font] ?? 9) + (layout.font === 'peg5' ? 1 : 2)) : layout.height;
+  const room = 2 * origin.y + bottom;
+  screen.parts.forEach((part, n) => {
+    if (!part.tag || t < part.start - FRAME * .5) return;
+    const lines = page.lines.filter(l => l.chars.some(c => screen.words[c.word]?.part === n));
+    if (!lines.length) return;
+    const g = tagGlyphs(part.tag), line = n === 0 ? lines[0] : lines.at(-1), x = origin.x + line.x;
+    const y = n === 0 ? origin.y + line.y - 2 - g.h : origin.y + line.y + cap + 2 * k + 1;
+    if (y < 0 || y + g.h > Math.min(board.rows, room) || x + g.w > board.cols) return;
+    for (let i = 0; i < g.pegs.length; i += 2) if (board.I[(y + g.pegs[i + 1]) * board.cols + x + g.pegs[i]] > 0) return;
+    for (let i = 0; i < g.pegs.length; i += 2) light(board, x + g.pegs[i], y + g.pegs[i + 1], TAG_LIGHT * fade, {tone:PALETTE.blue.id});
+  });
 }
 
 // A stutter's light for one peg of its word. Every letter at full (FRAGMENT_FULL; a fast rung's

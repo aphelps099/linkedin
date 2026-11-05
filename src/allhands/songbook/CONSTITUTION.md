@@ -49,6 +49,9 @@ Influence means sound and approach. Never their melodies, lyrics, samples or son
 - Filters arrange the song: the intro opens up, the outro closes down.
 - Wobble is a spice, not the meal.
 
+### Forms
+A song plays one form. The Drop Edition is the dance floor's: Circle Back, Humbled and Honored and Hustle. The river (`wander`) is the haze lane's: Offsite.
+
 ### Form: the Drop Edition
 About 60 seconds, always in this order:
 1. The muted call intro, unmuting on Synergy's welcome.
@@ -59,16 +62,22 @@ About 60 seconds, always in this order:
 6. A drop, Sink In (half speed, an octave down), a second drop.
 7. The tape stop under the closing phrase.
 
-### The river: the haze lane's form (Aaron, Nov 5)
-The Panda Bear and Washed Out songs do not run the Drop Edition. They run like a river of electronic sound: it has a steady flow, and sometimes the flow gently changes.
+### Form: the river, the haze lane's (Aaron, Nov 5)
+The Panda Bear and Washed Out songs do not run the Drop Edition. They run like a river of electronic sound: it has a steady flow, and sometimes the flow gently changes. No ladder, no choke, no BACK.
+- About 60 seconds. It may start sparse and ends on its fullest texture dissolving, in a long fade or the tape stop.
 - Repetition is the instrument. Short samples (her syllables, Strategy's words, office sounds, the tambourine, acoustic-sounding plucks and mallets) repeat in a steady rhythmic pattern until they diffuse into a pixelated, melodic stream.
-- Layer only once the texture is lush, and always ramp in: no layer arrives or leaves in less than two bars.
-- Few clear vocal phrases, one or two that rise out of the stream and sink back in. Singers never trade phrases back to back.
-- Tambourine and acoustic colours woven through a sound that stays about 90% electronic.
+- One pattern first, alone for three bars at least; it repeats and thickens (copies, offsets, pitch steps, grains). Other samples join only once the texture is lush, around the middle, one or two a bar. Only the steady pulse runs under it from the start; the loop's other hands join as it thickens.
+- Vocal fragments are texture: short grains from inside the word, never a whole word, unless the fragment is one of the clear phrases.
+- Always ramp: no layer arrives or leaves in less than two bars, and none takes more than eight.
+- The steady rhythmic loop runs in every bar, to the fade.
+- Few clear vocal phrases: at most two of the band's, which rise out of the stream and sink back in, and Synergy at most once (his hook). Four bars at least between any two. Singers never trade phrases back to back.
+- No hard section boundaries: the flow changes gently (filter, density, pan, pitch window, space), never by more than a step a bar.
+- The tambourine sits in the background and comes up a little where the texture swells.
+- Acoustic colours (at least two) woven through a sound that stays about 90% electronic.
 
 ### Mix targets
 - −10 LUFS integrated, true peak −1 dBTP or lower.
-- Every drop at least +2.5 LU over the verse, including on a phone speaker.
+- Every drop at least +2.5 LU over the verse, including on a phone speaker. On the river: every swell at least +2 LU over the stream it grew from, on a phone speaker; no silence is asked for.
 - Digital silence before the impact.
 - Synergy and the lady stay intelligible: Whisper must hear her lines.
 

@@ -6,7 +6,12 @@ import {createBoard} from '../src/pegboard/board.js';
 import {compileFont, layoutText} from '../src/pegboard/font.js';
 import {PEG9} from '../src/pegboard/fonts/peg9.js';
 import {PEG5} from '../src/pegboard/fonts/peg5.js';
-import {buildScreens, paint, indexWords, activeScreen, syllableSpans, darkAt, TAG_TAIL, CHOKE_TAIL, CODEC_FLOOR, stopEndAt, stopDarkAt, STOP_DIM, FRAGMENT_FULL, FRAGMENT_ACCENT, READ_AHEAD} from '../src/pegboard/choreo.js';
+import {PEG3} from '../src/pegboard/fonts/peg3.js';
+import {buildScreens, paint, indexWords, activeScreen, syllableSpans, darkAt, TAG_TAIL, CHOKE_TAIL, CODEC_FLOOR, stopEndAt, stopDarkAt, STOP_DIM, FRAGMENT_FULL, FRAGMENT_ACCENT, READ_AHEAD, boardState, bandOf, strikeRows, strikeWeight, STRIKE, ROCK, RIVER_PHRASES, TAG_MIN_PITCH, TAG_LIGHT, BAND_VOICES} from '../src/pegboard/choreo.js';
+import {LINE_BREAK, normalize} from '../src/pegboard/font.js';
+import {linesFor, stagePitch, STAGE_COLS} from '../src/pegboard/stage.js';
+import {castSong} from '../src/allhands/casting.js';
+import {PALETTE} from '../src/pegboard/board.js';
 import {ladyLength} from '../src/allhands/drop.js';
 import {boardLuma, flashes, worstWindow, governorTrack} from '../src/pegboard/governor.js';
 import {FORMS, formPlays} from '../src/allhands/forms.js';
@@ -15,7 +20,7 @@ import {kickSteps} from '../src/pegboard/eq.js';
 import {lyricsFromPost, SAMPLE_POST, syllables} from '../src/allhands/lyrics.js';
 import {LADY_TABLE} from '../src/allhands/lady-table.js';
 import {clearBoard, TONES} from '../src/pegboard/board.js';
-import {paintPsych, PSYCH_LOOKS, PSYCH_TONES, PSYCH_MAX, TYPE_HALO, driveTrack, driveAt} from '../src/pegboard/psych.js';
+import {paintPsych, PSYCH_LOOKS, PSYCH_TONES, PSYCH_MAX, TYPE_HALO, driveTrack, driveAt, riverTrack, riverAt, layerGain} from '../src/pegboard/psych.js';
 import {planFeatures} from '../src/videostudio/edl/params.js';
 
 let checks = 0;
@@ -24,18 +29,20 @@ const FPS = 24, FRAME = 1 / FPS;
 const faces = {peg9:compileFont(PEG9), peg5:compileFont(PEG5)};
 const POSTS = [SAMPLE_POST, `Humbled and honored to share that I've been promoted to Senior Director of Synergy. This journey taught me that leadership is a mindset, not a title. Grateful for every step. Agree?`];
 
-function rig(plan, cols = 120, rows = 53) {
-  const board = createBoard(cols, rows), textRows = rows - 12, cache = new Map();
+// A board with the stage's fitting rules (stage.js layoutOf, linesFor): chart rows under the type, the
+// type inside `span` columns, `pitch` for the role tags.
+function rig(plan, cols = 120, rows = 53, {chart = 11, span = cols - 4, pitch = 0} = {}) {
+  const board = createBoard(cols, rows), textRows = rows - chart - 1, cache = new Map(), c0 = Math.floor((cols - span) / 2);
   const screens = buildScreens(plan, {table:LADY_TABLE}).map(indexWords);
   const layoutOf = s => {
     if (cache.has(s)) return cache.get(s);
     let out = null;
-    for (const f of ['peg9', 'peg5']) { for (let k = s.k; k >= 1 && !out; k--) { const l = layoutText(s.text, {font:faces[f], k, maxCols:cols - 4, maxLines:s.lines ?? (s.k > 1 ? 1 : 3)}); if (l.width <= cols - 4 && l.height <= textRows) out = l; } if (out) break; }
+    for (const f of ['peg9', 'peg5']) { for (let k = s.k; k >= 1 && !out; k--) { const l = layoutText(s.text, {font:faces[f], k, maxCols:span, maxLines:linesFor(s, faces[f], k, textRows)}); if (l.width <= span && l.height <= textRows) out = l; } if (out) break; }
     cache.set(s, out); return out;
   };
-  const place = (s, l, page) => ({x:Math.floor((cols - Math.max(...page.lines.map(x => x.width))) / 2), y:Math.max(1, Math.floor((textRows - l.height) / 2))});
-  const at = t => paint(board, screens, t, {plan, layoutOf, place});
-  return {board, screens, layoutOf, place, at};
+  const place = (s, l, page) => ({x:c0 + Math.floor((span - Math.max(...page.lines.map(x => x.width))) / 2), y:Math.max(1, Math.floor((textRows - l.height) / 2))});
+  const at = t => paint(board, screens, t, {plan, layoutOf, place, pitch});
+  return {board, screens, layoutOf, place, at, textRows};
 }
 
 ok(JSON.stringify(syllableSpans('BUILDING', 2)) === '[[0,3],[3,8]]' || syllableSpans('BUILDING', 2).length === 2, 'syllables split a word into its notes');
@@ -47,7 +54,7 @@ for (const id of ['drop60', 'soundcheck']) for (const track of TRACK_ORDER.filte
   const plan = form.arrange(lyrics, Object.fromEntries(form.voiced(lyrics, {track}).map(w => [w, .18 + .11 * syllables(w)])), {track});
   const {board, screens, layoutOf, at} = rig(plan), label = `${id}/${track}/${post.slice(0, 12)}`, place = rig(plan).place;
   ok(screens.every((s, i) => s.to > s.from && (!i || s.from >= screens[i - 1].from)), `${label}: screens ordered`);
-  ok(screens.every((s, i) => i === screens.length - 1 || s.to <= screens[i + 1].from + 1e-9), `${label}: one screen at a time`);
+  ok(screens.filter(s => !s.under).every((s, i, a) => i === a.length - 1 || s.to <= a[i + 1].from + 1e-9), `${label}: one screen at a time`);
   ok(screens.every(s => layoutOf(s)?.pages?.length), `${label}: every screen lays out on the board`);
   // Every sung unit lights on time: hot within a frame of its onset, not before.
   let units = 0, late = 0, early = 0;
@@ -285,5 +292,304 @@ for (const track of TRACK_ORDER.filter(t => formPlays('drop60', t))) {
     ok(worst <= typeWorst && governed <= typeGoverned, `psych ${look} under Offsite's words: adds no flash (worst ${worst} a second with it, ${typeWorst} with the words alone; ${governed} frames governed, ${typeGoverned} without)`);
   }
   console.log(`  psych: ${checks - before} checks`);
+}
+// ---- The band on the board (choreo.js bandScreens): the couplet moment, refrains, exchanges -------------
+// "IT'S NOT X." lights word by word, then a bar of pegs (STRIKE.weight rows a k) strikes through X on the beat after it (signal,
+// every letter still at full under it), then "IT'S Y." lands, dark until it is sung. Every band word fully
+// lit when sung; a band screen's light only rises until it ends (so its own words make no flash at any size
+// of board), and the band needs no governing. On the engine's plans (castSong + the Drop Edition: plan.band)
+// and on the contract's lists (plan.couplets, refrains, exchanges), both forms (the river: plan.form
+// 'wander' shows its one or two clear phrases as type and the rest as texture breathing with its layers).
+{
+  const before = checks, say = (v, m) => { ok(v, m); console.log(`  ${m}`); };
+  const LS = LINE_BREAK, FIXTURES = JSON.parse(fs.readFileSync(new URL('./fixtures/pixel-posts.json', import.meta.url), 'utf8')).map(x => x.post);
+  const LEX = JSON.parse(fs.readFileSync(new URL('../src/allhands/vocabulary/lexicon.json', import.meta.url), 'utf8')), COUPLET = Object.fromEntries(LEX.couplets.map(c => [c.id, c]));
+  const SIGNAL = PALETTE.signal.id;
+  // The layout: a hard break keeps each part on lines of its own, and both share a page where they fit.
+  {
+    const pair = `IT'S NOT A SEVERANCE PACKAGE.${LS}IT'S A CARE PACKAGE.`, n = normalize(`  It's not a severance package. ${LS} ${LS}It's a care package. ${LS}`).text;
+    ok(n === pair && [...n].filter(c => c === LS).length === 1 && normalize("IT'S NOT A LAYOFF. IT'S A LAUNCH.").text.indexOf(LS) < 0, 'LINE_BREAK: normalize keeps one between the parts (no space either side, never at the ends) and makes none of its own');
+    let crossing = 0, pages = 0, laid = 0;
+    for (const c of LEX.couplets) for (const cols of [300, 131, 116, 97, 69]) {
+      const l = layoutText(`${c.display[0]}${LS}${c.display[1]}`, {font:faces.peg9, k:1, maxCols:cols, maxLines:cols >= 116 ? 3 : 6}), xWords = normalize(c.display[0]).text.split(' ').length;
+      for (const page of l.pages) for (const line of page.lines) { const parts = new Set(line.chars.map(ch => ch.word < xWords ? 0 : 1)); if (parts.size > 1) crossing++; }
+      if (cols === 300 && l.pages.length === 1 && l.pages[0].lines.length === 2) pages++;
+      laid++;
+    }
+    say(crossing === 0 && pages === LEX.couplets.length, `LINE_BREAK: ${laid} layouts of the ${LEX.couplets.length} couplets, X and Y never share a line; on a wide board each is one line and both one page`);
+    ok(linesFor({fill:true, lines:3}, faces.peg9, 1, 137) === 11 && linesFor({fill:true, lines:3}, faces.peg9, 1, 35) === 3 && linesFor({lines:2, k:2}, faces.peg9, 2, 137) === 2 && linesFor({k:1}, faces.peg9, 1, 137) === 3, 'linesFor: a two-part screen takes as many lines as the room holds, every other screen its own');
+    ok(stagePitch(390, 540) === 4 && Math.floor(390 / stagePitch(390, 540)) >= STAGE_COLS && stagePitch(1440, 630) === 14 && stagePitch(1920, 756) === 16, `the stage keeps ${STAGE_COLS} columns on a phone (390 px: pitch ${stagePitch(390, 540)}), desktop pitches as before`);
+  }
+  // A part on the contract's shape: words spread by letters over [at, at + dur].
+  const part = (text, voice, at, dur) => { const ws = text.split(' '), total = ws.reduce((a, w) => a + w.length + 1, 0), words = []; let t = at; for (const w of ws) { const d = dur * (w.length + 1) / total; words.push({text:w, start:t, end:t + d * .9}); t += d; } return {text, voice, at, end:at + dur, words}; };
+  const durationsOf = (lyrics, track) => Object.fromEntries(FORMS.drop60.voiced(lyrics, {track}).map(w => [w, .18 + .11 * syllables(w)]));
+  // The contract's lists on a Drop Edition plan: the anthem in Drop B (a couplet a bar, X on one, Y on three),
+  // the drop's X over the build's first bars (Y is the impact), a refrain twice in Drop A, an exchange in the outro.
+  function contractPlan(track, ids) {
+    const lyrics = lyricsFromPost(SAMPLE_POST), plan = FORMS.drop60.arrange(lyrics, durationsOf(lyrics, track), {track}), T = s => plan.timing[Math.min(plan.timing.length - 1, s)], bar = n => T(n * 16), st = plan.step, sec = n => plan.sections.find(s => s.name === n);
+    plan.couplets = ids.map((id, i) => ({id, x:part(COUPLET[id].display[0], 'strategy', bar(sec('Drop B').from + 1 + i), 7 * st), y:part(COUPLET[id].display[1], COUPLET[id].yVoice === 'lady' ? 'lady' : 'synthia', bar(sec('Drop B').from + 1 + i) + 8 * st, 6 * st)}));
+    plan.couplets.unshift({id:'hour-quick-sync', x:part("IT'S NOT AN HOUR.", 'strategy', bar(plan.marks.build / 16) + 4 * st, 8 * st), y:part('SYNC.', 'synthia', T(plan.choke.until), 4 * st)});
+    plan.refrains = [0, 1].map(r => part('MOMENTUM COMPOUNDS.', 'strategy', bar(sec('Drop A').from + 1) + r * 16 * st, 10 * st));
+    plan.exchanges = [{call:part('BANDWIDTH?', 'lady', bar(sec('Outro').from), 4 * st), response:part('NONE.', 'synthia', bar(sec('Outro').from) + 6 * st, 3 * st)}];
+    const busy = [...plan.couplets.flatMap(c => [c.x, c.y]), ...plan.refrains, ...plan.exchanges.flatMap(e => [e.call, e.response])].map(p => [p.at - .3, p.end + .6]);
+    plan.lines = plan.lines.filter(l => !busy.some(([a, b]) => T(l.to) > a && T(l.from) < b));
+    plan.lady = plan.lady.filter(e => e.role !== 'punct' || !busy.some(([a, b]) => T(Math.floor(e.at)) + .5 > a && T(Math.floor(e.at)) < b));
+    return plan;
+  }
+  // The engine's plans: the sample and fixtures cast by the post (every track among them), and the sample on every track.
+  const realPlans = [];
+  for (const post of [SAMPLE_POST, ...FIXTURES.slice(0, 15)]) { const c = castSong(post), lyrics = lyricsFromPost(post); realPlans.push({label:`${c.track}/${post.slice(0, 14)}`, plan:FORMS.drop60.arrange(lyrics, durationsOf(lyrics, c.track), {track:c.track, cast:c.cast})}); }
+  for (const track of TRACK_ORDER.filter(t => formPlays('drop60', t))) { const c = castSong(SAMPLE_POST, {track}), lyrics = lyricsFromPost(SAMPLE_POST); realPlans.push({label:`${track}/sample forced`, plan:FORMS.drop60.arrange(lyrics, durationsOf(lyrics, track), {track, cast:c.cast})}); }
+  const contract = TRACK_ORDER.filter(t => formPlays('drop60', t)).map((track, i) => ({label:`${track}/contract`, plan:contractPlan(track, [['complaint-gift', 'severance-care', 'agenda-vibe'], ['new-title-growth', 'no-not-now', 'loss-investment'], ['freeze-focus', 'burnout-bandwidth', 'one-customer'], ['mandatory-retreat', 'cult-culture', 'lanyard-belonging']][i])}));
+  // Which page of a layout shows at t (choreo drawScreen: each page from when its first word is heard).
+  const pageAt = (s, l, t) => { let page = l.pages[0]; for (const p of l.pages) { const first = p.lines[0]?.chars[0]; if (first && s.words[first.word]?.start <= t + .001) page = p; } return page; };
+  const pegsOf = (s, l, page, o, pred) => { const out = []; for (const line of page.lines) for (const ch of line.chars) if (pred(s.words[ch.word], ch)) for (let i = 0; i < ch.pegs.length; i += 2) out.push((o.y + ch.pegs[i + 1]) * 1e4 + o.x + ch.pegs[i]); return out; };
+  let couplets = 0, struck = 0, bandWords = 0, bandScreensSeen = 0, events = 0, shown = 0, under = 0, pairsOnePage = 0, plansSeen = 0, strikeH = Infinity;
+  const sizes = [[120, 53, {}], [116, 45, {chart:9}], [97, 135, {chart:27}], [150, 48, {chart:0, span:131}]];
+  for (const {label, plan} of [...realPlans, ...contract]) for (const [cols, rows, opt] of sizes) {
+    const {board, screens, layoutOf, place, at} = rig(plan, cols, rows, opt), band = screens.filter(s => s.band), lab = `${label} ${cols}x${rows}`;
+    const idx = j => [j % 1e4, Math.floor(j / 1e4)], I = j => { const [x, y] = idx(j); return board.I[y * cols + x]; }, tone = j => { const [x, y] = idx(j); return board.tone[y * cols + x]; };
+    plansSeen++;
+    // Every band part of the engine's plan is on the board: a band screen holds its words, on time.
+    if (cols === 120) for (const e of plan.band || []) {
+      events++;
+      const w0 = e.words?.[0]?.start ?? e.start;
+      if (screens.some(s => s.band && s.words.some(w => Math.abs(w.start - w0) < 1e-6)) || screens.some(s => s.kind === 'impact' && Math.abs(s.from - w0) < .5)) shown++;
+    }
+    under += screens.filter(s => s.under).length;
+    for (const s of band) {
+      const l = layoutOf(s);
+      if (!l?.pages?.length) { ok(false, `${lab}: band screen "${s.text}" lays out`); continue; }
+      bandScreensSeen++;
+      // Every word fully lit when sung: from its onset (half a frame of lead) to the screen's end, on its page.
+      for (const w of s.words) for (const t of [w.start + FRAME * .51, Math.max(w.start + FRAME * .51, s.to - FRAME * .5)]) {
+        if (t >= s.to || activeScreen(screens, t) !== s) continue;
+        at(t); const page = pageAt(s, l, t), o = place(s, l, page), mine = pegsOf(s, l, page, o, x => x === w);
+        if (mine.length) { bandWords++; if (!mine.every(j => I(j) >= FRAGMENT_FULL - 1e-6)) ok(false, `${lab} "${s.text}": "${w.text}" fully lit from when it is sung (${t.toFixed(3)} s)`); }
+      }
+      // The light only rises: paint every frame the screen holds the board; luma, whole and by quarter, never
+      // falls (a page turn aside), so a band screen makes no flash of its own.
+      let prev = null, falls = 0, prevPage = null;
+      for (let f = Math.ceil(s.from * FPS); f / FPS < s.to; f++) {
+        // (The drop's ignition settles under the words for 2.6 beats: that light is the board's, not the band's.)
+        const t = f / FPS; if (activeScreen(screens, t) !== s || boardState(plan, t).ignite >= 0) { prev = null; continue; }
+        at(t); const L = boardLuma(board), page = pageAt(s, l, t);
+        if (prev && page === prevPage && board.exposure === prev.exposure && [L.whole, ...L.quads].some((v, k) => v < [prev.whole, ...prev.quads][k] - 1e-6)) falls++;
+        prev = {...L, exposure:board.exposure}; prevPage = page;
+      }
+      if (falls) ok(false, `${lab} "${s.text}": its light only rises (${falls} frames fall)`);
+      if (s.parts.length === 2 && l.pages.length === 1) pairsOnePage++;
+      // The couplet moment: X, then the strike on the beat, then Y.
+      if (!s.fx.strike) continue;
+      const st = s.fx.strike, xw = s.words.filter(w => w.part === 0), yw = s.words.filter(w => w.part === 1), xLast = xw.at(-1);
+      const grid = [4, 2, 1].some(d => { for (let k = 0; k < plan.timing.length; k += d) if (Math.abs(plan.timing[k] - st.at) < 1e-9) return true; return false; });
+      ok(st.at >= xLast.start + 2 * FRAME - 1e-9 && (!yw.length || st.at + STRIKE.min <= yw[0].start + 1e-9 || st.at < yw[0].start) && st.words.length && st.words.every(i => s.words[i].part === 0) && !/^NOT/.test(s.words[st.words[0]].text) && (grid || yw.length),
+        `${lab} "${s.text.split(LS).join(' / ')}": the strike at ${st.at.toFixed(3)} s, after X is sung (${xLast.start.toFixed(3)}), on the plan's grid, ${yw.length ? `${(yw[0].start - st.at).toFixed(3)} s before Y` : 'Y is the impact'}; it crosses ${st.words.map(i => s.words[i].text).join(' ')}`);
+      couplets++;
+      // Struck: X whole and at full, the strike's row in signal across it, Y dark.
+      const t1 = st.at + st.draw + FRAME * .51;
+      if (t1 < s.to && activeScreen(screens, t1) === s && (!yw.length || t1 < yw[0].start - FRAME * .5)) {
+        // (Y's page, when it has its own, is not up yet: Y is dark either way.)
+        at(t1); const page = pageAt(s, l, t1), o = place(s, l, page), xPegs = pegsOf(s, l, page, o, w => w.part === 0), yPegs = pegsOf(s, l, page, o, w => w.part === 1);
+        if (!page.lines.some(line => line.chars.some(ch => s.words[ch.word]?.part === 0))) ok(false, `${lab} "${s.text.split(LS)[0]}": X is up when it is struck`);
+        const rows = strikeRows(s, l, page, o), sPegs = rows.flatMap(r => Array.from({length:(r.x1 - r.x0 + 1) * r.h}, (_, i) => (r.y0 + Math.floor(i / (r.x1 - r.x0 + 1))) * 1e4 + r.x0 + i % (r.x1 - r.x0 + 1))).filter(j => idx(j)[0] >= 0 && idx(j)[0] < cols);
+        // (The strike's weight: STRIKE.weight's rows a k for the face, 2 in PEG-9 and PEG-5, on every line it crosses.)
+        ok(rows.length && rows.every(r => r.h === strikeWeight(l.font, l.k || 1) && r.h >= 2) && xPegs.every(j => I(j) >= FRAGMENT_FULL - 1e-6) && sPegs.every(j => tone(j) === SIGNAL && I(j) >= 1 - 1e-6) && yPegs.every(j => I(j) === 0),
+          `${lab} "${s.text.split(LS)[0]}": struck: X's ${xPegs.length} pegs at full, the strike's ${sPegs.length} in signal, ${rows.map(r => r.h).join(', ')} rows tall across ${rows.length} line(s), Y's ${yPegs.length} pegs dark`);
+        struck++; strikeH = Math.min(strikeH, ...rows.map(r => r.h));
+      }
+      // Landed: Y at full on its page, with X struck above it when they share one.
+      if (yw.length) {
+        const t2 = yw.at(-1).start + FRAME * .51;
+        if (t2 < s.to && activeScreen(screens, t2) === s) {
+          at(t2); const page = pageAt(s, l, t2), o = place(s, l, page), yPegs = pegsOf(s, l, page, o, w => w.part === 1), xPegs = pegsOf(s, l, page, o, w => w.part === 0);
+          ok(yPegs.length && yPegs.every(j => I(j) >= FRAGMENT_FULL - 1e-6) && xPegs.every(j => I(j) >= FRAGMENT_FULL - 1e-6) && (!xPegs.length || strikeRows(s, l, page, o).length),
+            `${lab} "${s.text.split(LS).join(' / ')}": Y lands at full (${yPegs.length} pegs)${xPegs.length ? ` under X, struck` : ' on its own page'}`);
+        }
+      }
+    }
+    // Governor-safe: over the whole song, no band frame is governed, and the band's spans hold at most 3 flashes a second ungoverned.
+    if (cols !== 97) {
+      const frames = [];
+      for (let f = 0; f < Math.ceil(plan.duration * FPS); f++) { at(f / FPS); frames.push(boardLuma(board)); }
+      const gains = governorTrack(frames, FPS), bandF = new Set(frames.map((_, f) => activeScreen(screens, f / FPS)?.band ? f : -1).filter(f => f >= 0));
+      const worst = Math.max(...[-1, 0, 1, 2, 3].map(k => worstWindow(flashes(frames.map(x => k < 0 ? x.whole : x.quads[k]), FPS).filter(e => bandF.has(e.frame)), FPS)));
+      ok(worst <= 3 && [...bandF].filter(f => gains[f] < 1).length <= (label.includes('contract') ? 0 : 4), `${lab}: the band's ${bandF.size} frames need no governing (${[...bandF].filter(f => gains[f] < 1).length} touched next to a drop's ignition), at most ${worst} flashes a second ungoverned`);
+    }
+  }
+  say(events > 50 && shown === events, `every band part of the engine's plans is on the board: ${shown} of ${events}`);
+  say(couplets > 40 && struck > 30 && bandWords > 1000 && pairsOnePage > 20 && under > 0 && strikeH >= 2, `the couplet moment on ${plansSeen} boards: ${couplets} couplet screens struck on the beat after X, ${struck} seen struck with Y still dark (the strike ${strikeH} rows tall or more), ${bandScreensSeen} band screens, ${bandWords} band words fully lit when sung, ${pairsOnePage} pairs on one page, ${under} ladder hits stepping back under the drop's X`);
+  // The strike reads at every size: STRIKE.weight's rows a k (PEG-9's 2-peg stems, and 2 in PEG-5; one row was the
+  // crossbars' weight, on their row, a hairline at the phone's 3 px pegs and the 9:16 film's; PEG-3, the 16:9 film's
+  // fallback for a long X, keeps 1 of its 5), centred on the caps (half a peg high where the rows cannot split
+  // evenly), clear of the caps' top and bottom bars, in each face at k 1 to 3; and on the phone stages (270 px: 90 x 126 of 3 px pegs; 390 px: 97 x 135 of 4 px) no frame of a struck
+  // screen is governed and the strike adds no flash (the light around every strike, a second and a half either side).
+  {
+    let laid = 0;
+    for (const face of ['peg9', 'peg5', 'peg3']) for (const k of [1, 2, 3]) {
+      const plan = {timing:Array.from({length:64}, (_, i) => i * .125), step:.125, duration:8}, x = part("IT'S NOT A MEETING.", 'strategy', .5, 1), y = part("IT'S A VIBE.", 'synthia', 2.5, .8);
+      const sc = buildScreens({...plan, couplets:[{x, y}]}).map(indexWords).find(q => q.fx?.strike), font = faces[face] ?? (faces[face] = compileFont(PEG3)), cap = {peg9:9, peg5:7, peg3:5}[face] * k;
+      const l = layoutText(sc.text, {font, k, maxCols:400, maxLines:3}), page = l.pages[0], o = {x:2, y:2}, rows = strikeRows(sc, l, page, o);
+      const above = rows.map(r => r.y0 - (o.y + page.lines.find(ln => ln.chars.some(c => sc.fx.strike.words.includes(c.word))).y)), want = STRIKE.weight[face] * k;
+      ok(rows.length === 1 && rows[0].h === want && above.every(a => a === Math.floor((cap - want) / 2) && a >= 2 * k && cap - a - want >= 2 * k),
+        `the strike in ${face} at k ${k}: ${rows[0]?.h} rows of a ${cap}-row cap, ${above[0]} rows under its top (the bars stay clear)`);
+      laid++;
+    }
+    let seen = 0, governed = 0, worst = 0;
+    for (const {plan} of [...realPlans, ...contract]) for (const [cols, rows, chart] of [[90, 126, 25], [97, 135, 27]]) {
+      const {board, screens, at} = rig(plan, cols, rows, {chart});
+      for (const s of screens.filter(q => q.fx?.strike)) {
+        const f0 = Math.max(0, Math.floor((s.from - 1.5) * FPS)), f1 = Math.ceil((s.to + 1.5) * FPS), frames = [], own = new Set();
+        for (let f = f0; f < f1; f++) { at(f / FPS); frames.push(boardLuma(board)); if (activeScreen(screens, f / FPS) === s) own.add(f - f0); }
+        const gains = governorTrack(frames, FPS);
+        governed += [...own].filter(i => gains[i] < 1).length; seen++;
+        for (const q of [-1, 0, 1, 2, 3]) worst = Math.max(worst, worstWindow(flashes(frames.map(v => q < 0 ? v.whole : v.quads[q]), FPS).filter(e => own.has(e.frame)), FPS));
+      }
+    }
+    say(laid === 9 && seen > 40 && governed === 0 && worst <= 2, `the strike reads at every size: ${Object.entries(STRIKE.weight).map(([f, w]) => `${f} ${w}`).join(', ')} rows a k at k 1 to 3; on the phone stages ${seen} struck screens, ${governed} frames governed, at most ${worst} flashes a second`);
+  }
+  // Role tags: STRATEGY and SYNTHIA in PEG-3 where the pitch reads them (12 px and up), never the lady.
+  {
+    const plan = contract[0].plan, lit = (pitch, t) => { const r = rig(plan, 120, 53, {pitch}); r.at(t); return [...r.board.I].filter(v => Math.abs(v - TAG_LIGHT) < 1e-6).length; };
+    const ex = plan.exchanges[0], ladyOnly = lit(13, ex.call.words[0].start + .05), both = lit(13, ex.response.words[0].start + .05), small = lit(7, ex.response.words[0].start + .05);
+    say(ladyOnly === 0 && both > 20 && small === 0 && BAND_VOICES.lady.tag === null, `role tags: none for the lady's call, SYNTHIA under the answer at pitch 13 (${both} pegs), none at pitch 7 (PEG-3 reads from ${TAG_MIN_PITCH})`);
+  }
+  // The build's dim: every stutter (her ladder, the stammer) and the band hold full brightness while the
+  // board dims; the sockets (and anything not type) keep the dim; no stutter needs governing on the stage's
+  // boards (where the fast rungs used to move a whole row and flash a quarter: they rock in their sockets now).
+  let holdRuns = 0, holdFrames = 0;
+  for (const track of TRACK_ORDER.filter(t => formPlays('drop60', t))) for (const post of POSTS) for (const [cols, rows, opt] of [[120, 53, {}], [102, 45, {chart:9}], [116, 45, {chart:9}]]) {
+    const lyrics = lyricsFromPost(post), plan = FORMS.drop60.arrange(lyrics, durationsOf(lyrics, track), {track});
+    const {board, screens, layoutOf, place, at} = rig(plan, cols, rows, opt), b0 = plan.timing[plan.marks.build], b1 = plan.choke.time, lab = `${track}/${post.slice(0, 8)} ${cols}x${rows}`;
+    let held = 0, dimHeld = 0, wrong = 0, sockets = 0, rock = 0;
+    const frames = [], f0 = Math.floor((b0 - 1) * FPS), f1 = Math.ceil((b1 + .5) * FPS);
+    for (let f = f0; f < f1; f++) {
+      const t = f / FPS; at(t); frames.push(boardLuma(board));
+      const s = activeScreen(screens, t), st = boardState(plan, t);
+      if (!s || !s.hold || t < b0 || t >= b1 || board.sockets === 0) continue;
+      held++; if (st.build < 1 - 1e-9) dimHeld++;
+      const l = layoutOf(s), page = pageAt(s, l, t), o = place(s, l, page);
+      for (const line of page.lines) for (const ch of line.chars) { const w = s.words[ch.word]; if (!w || (w.lit === undefined && t < w.units[0].start - FRAME * .5 && s.reveal !== 'steady')) continue; for (let i = 0; i < ch.pegs.length; i += 2) { const j = (o.y + ch.pegs[i + 1]) * cols + o.x + ch.pegs[i]; if (board.I[j] > 0 && board.I[j] * board.exposure < (s.reveal === 'typewriter' ? READ_AHEAD : 1) - 1e-6) wrong++; } }
+      if (Math.abs(board.sockets - st.sockets * st.build) > 1e-9) sockets++;
+      if (s.fx.rowShift) rock++; if (s.fx.rock && (Math.abs(Math.abs(s.fx.rock) - ROCK) > 1e-9 || ROCK > .5)) rock++;
+    }
+    const gains = governorTrack(frames, FPS), fragGoverned = frames.filter((_, i) => { const s = activeScreen(screens, (f0 + i) / FPS); return s?.hold && gains[i] < 1; }).length;
+    ok(dimHeld > 24 && !wrong && !sockets && !rock && !fragGoverned, `${lab}: the build's stutters hold full brightness on ${dimHeld} of ${held} dimmed frames (${wrong} pegs under full), the sockets keep the dim, the fast rungs rock in their sockets (ROCK ${ROCK}), none governed`);
+    holdRuns++; holdFrames += dimHeld;
+  }
+  say(holdRuns === 24, `the build's dim: on ${holdRuns} runs (4 tracks, 2 posts, 120 x 53 and the stage's 102 x 45 and 116 x 45) every stutter and band word holds full on ${holdFrames} dimmed frames, the sockets keep the dim, no stutter governed`);
+  // The river: Offsite's wander form shows its one or two clear phrases as type, never the stream's loops;
+  // the texture breathes with its layers (dim before they ramp in, full with all of them), takes no flash of
+  // its own and needs no governing; the words win over it.
+  {
+    const lyrics = lyricsFromPost(SAMPLE_POST), base = FORMS.drop60.arrange(lyrics, durationsOf(lyrics, 'offsite'), {track:'offsite'}), T = s => base.timing[Math.min(base.timing.length - 1, s)], bar = n => T(n * 16), st = base.step, B = base.totalSteps / 16;
+    const plan = {...base, form:'wander', lines:[], words:[], stutters:[], lady:[], choke:undefined,
+      layers:Array.from({length:6}, (_, i) => ({id:`loop${i}`, from:bar(1 + 2 * i), rampIn:[bar(1 + 2 * i), bar(3 + 2 * i)], rampOut:[bar(B - 6 + i % 3), bar(B - 3 + i % 3)], to:bar(B - 3 + i % 3), gain:i % 2 ? -3 : 1})),
+      swells:[{from:bar(12), to:bar(14), amount:.3}], slow:[{from:bar(18), to:bar(20)}],
+      band:[...Array.from({length:24}, (_, i) => ({...part('PROUD', 'lady', bar(2) + i * 8 * st, .4), role:'loop', part:'stream'})),
+        {...part('MOMENTUM COMPOUNDS.', 'strategy', bar(10), 1.4), role:'refrain', part:'refrain'}, {...part('MOMENTUM COMPOUNDS.', 'strategy', bar(11), 1.4), role:'refrain', part:'refrain'},
+        {...part("IT'S NOT A RETREAT.", 'strategy', bar(20), 1.2), role:'couplet-x', part:'couplet'}, {...part("IT'S MANDATORY.", 'synthia', bar(20) + 10 * st, 1), role:'couplet-y', part:'couplet'},
+        {...part('MORE TO COME.', 'lady', bar(23), 1), role:'refrain', part:'refrain2'}].map(e => ({...e, start:e.at, display:e.text}))};
+    // The engine's own shape (wander.js): layers with in/out ramps and a gain curve, the clear phrases as band
+    // events marked clear (plan.phrases the same list), Synergy's hook once, washed into the stream (not type).
+    const hook = base.lines.find(l => l.kind === 'hook'), sh = {...plan, lines:[hook], words:hook.words,
+      layers:plan.layers.map(L => ({id:L.id, in:L.rampIn, out:L.rampOut, level:1, gain:[[0, 0], [L.rampIn[0], 0], [L.rampIn[1], 1], [L.rampOut[0], 1], [L.rampOut[1], 0]]})),
+      band:plan.band.filter(e => e.role !== 'loop').map(e => ({...e, clear:true}))};
+    sh.phrases = sh.band;
+    const shTexts = [...new Set(rig(sh, 116, 45, {chart:9}).screens.map(s => s.text))], shRiver = riverTrack(sh);
+    say(shTexts.length === 2 && !shTexts.some(x => x.includes(hook.words[0].display.toUpperCase()) && !/MOMENTUM|RETREAT|MANDATORY/.test(x)) && Math.abs(riverAt(shRiver, bar(16)).layers - 1) < .05 && riverAt(shRiver, bar(1) - .1).layers < .05,
+      `the river on wander.js's shape (in/out ramps, gain curves, band = phrases marked clear): type for ${shTexts.length} phrases, not Synergy's washed hook; layers ${riverAt(shRiver, bar(1) - .1).layers.toFixed(2)} before, ${riverAt(shRiver, bar(16)).layers.toFixed(2)} with all`);
+    const {board, screens} = rig(plan, 116, 45, {chart:9}), river = riverTrack(plan), texts = [...new Set(screens.map(s => s.text))];
+    say(texts.length <= RIVER_PHRASES && texts.length === 2 && !screens.some(s => /PROUD/.test(s.text)) && screens.every(s => s.band), `the river: type for its ${texts.length} clear phrases only (${texts.map(x => x.split(LS).join(' / ')).join('; ')}), never the stream's 24 loops`);
+    const r = rig(plan, 116, 45, {chart:9}), frames = [], light = [];
+    for (let f = 0; f < Math.ceil(plan.duration * FPS); f++) {
+      const t = f / FPS; r.at(t); const typeLit = r.board.I.map(v => v > 0 ? 1 : 0), ref = r.board.I.slice();
+      const x = riverAt(river, t); paintPsych(r.board, x.spec, t, {drive:x.drive}); frames.push(boardLuma(r.board));
+      let tex = 0, n = 0, changed = 0; for (let i = 0; i < ref.length; i++) { if (typeLit[i]) { if (r.board.I[i] !== ref[i]) changed++; } else { tex += r.board.I[i]; n++; } }
+      light.push(tex / n); if (changed) ok(false, `the river at ${t.toFixed(2)} s: the words win (${changed} type pegs relit)`);
+    }
+    const at = t => light[Math.floor(t * FPS)], worst = Math.max(...[-1, 0, 1, 2, 3].map(k => worstWindow(flashes(frames.map(x => k < 0 ? x.whole : x.quads[k]), FPS), FPS))), gains = governorTrack(frames, FPS);
+    say(at(bar(1) - .1) * 2 < at(bar(16)) && at(plan.duration - .2) * 2 < at(bar(16)) && Math.abs(layerGain(plan, plan.layers[0], bar(2)) - .5) < .05, `the river breathes with its layers: texture light ${at(bar(1) - .1).toFixed(3)} before they ramp in, ${at(bar(16)).toFixed(3)} with all six, ${at(plan.duration - .2).toFixed(3)} as they let go (a layer halfway up its two-bar ramp: ${layerGain(plan, plan.layers[0], bar(2)).toFixed(2)})`);
+    say(worst <= 2 && gains.every(g => g === 1), `the river needs no governing: at most ${worst} flashes a second ungoverned over ${frames.length} frames`);
+    const a = riverAt(river, bar(19)).drive, b = riverAt(river, bar(19) + .5).drive, c = riverAt(river, bar(8)).drive, d = riverAt(river, bar(8) + .5).drive;
+    say(b.beat - a.beat < .7 * (d.beat - c.beat) && b.beat > a.beat, `the river slows in plan.slow (${(b.beat - a.beat).toFixed(2)} beats a half second against ${(d.beat - c.beat).toFixed(2)}), never jumping`);
+  }
+  // The engine's river (forms.js 'wander', wander.js) on Offsite, for the sample and five fixtures cast by the
+  // post: its type is its clear phrases (the couplet's Y, the refrain), nothing of the stream or Synergy's
+  // washed hook; its texture follows its layers and needs no governing; the words win over it.
+  if (FORMS.wander) {
+    let runs = 0, phraseScreens = 0, worstAll = 0, governed = 0, relit = 0, lows = [], highs = [];
+    for (const post of [SAMPLE_POST, ...FIXTURES.slice(0, 5)]) {
+      const c = castSong(post, {track:'offsite'}), lyrics = lyricsFromPost(post), F = FORMS.wander;
+      const plan = F.arrange(lyrics, Object.fromEntries(F.voiced(lyrics, {track:'offsite'}).map(w => [w, .18 + .11 * syllables(w)])), {track:'offsite', cast:c.cast});
+      const r = rig(plan, 116, 45, {chart:9}), river = riverTrack(plan), clear = (plan.band || []).filter(e => e.clear !== false);
+      ok(r.screens.every(s => s.band) && new Set(r.screens.map(s => s.text)).size <= RIVER_PHRASES && clear.every(e => r.screens.some(s => s.words.some(w => Math.abs(w.start - (e.words?.[0]?.start ?? e.start)) < 1e-6))),
+        `the river (${post.slice(0, 14)}): type for its ${new Set(r.screens.map(s => s.text)).size} clear phrases (${[...new Set(r.screens.map(s => s.text))].join('; ')}) and nothing else`);
+      phraseScreens += r.screens.length;
+      const frames = [];
+      for (let f = 0; f < Math.ceil(plan.duration * FPS); f++) {
+        const t = f / FPS; r.at(t); const ref = r.board.I.slice(), x = riverAt(river, t); paintPsych(r.board, x.spec, t, {drive:x.drive}); frames.push(boardLuma(r.board));
+        for (let i = 0; i < ref.length; i++) if (ref[i] > 0 && r.board.I[i] !== ref[i]) relit++;
+      }
+      const worst = Math.max(...[-1, 0, 1, 2, 3].map(k => worstWindow(flashes(frames.map(x => k < 0 ? x.whole : x.quads[k]), FPS), FPS)));
+      worstAll = Math.max(worstAll, worst); governed += governorTrack(frames, FPS).filter(g => g < 1).length; runs++;
+      lows.push(frames[Math.floor(.5 * FPS)].whole); highs.push(Math.max(...frames.map(x => x.whole)));
+    }
+    say(runs === 6 && worstAll <= 2 && !governed && !relit && lows.every((v, i) => v * 3 < highs[i]), `the engine's river on Offsite, ${runs} posts: ${phraseScreens} phrase screens, the texture ${Math.max(...lows).toFixed(3)} at most before the layers ramp in and up to ${Math.min(...highs).toFixed(3)}-${Math.max(...highs).toFixed(3)} with them, at most ${worstAll} flashes a second ungoverned, ${governed} frames governed, ${relit} type pegs relit`);
+  }
+  console.log(`  band: ${checks - before} checks`);
+}
+// ---- The plan fields the Peg Board and the video read, on both forms (the engine's contract:
+// src/allhands/README.md "Where the band sings" and "The river"). Every band part has its voice, words
+// and seconds; the river has its phases, layers with ramps and curves, loop sources, swells, slow spans,
+// the clear phrases, no choke; the board builds and lights both.
+{
+  const before = checks, num = x => Number.isFinite(x);
+  const {AVAILABLE} = await import('../src/allhands/voices/voice-table.js');
+  const {WANDER_SECTIONS} = await import('../src/allhands/wander.js');
+  const {TRACKS} = await import('../src/allhands/songbook/index.js');
+  const FIXTURES = JSON.parse(fs.readFileSync(new URL('./fixtures/pixel-posts.json', import.meta.url), 'utf8')).map(x => x.post);
+  const durationsOf = (lyrics, track) => Object.fromEntries([...FORMS.drop60.voiced(lyrics, {track}), ...FORMS.wander.voiced(lyrics, {track})].map(w => [w, .18 + .11 * syllables(w)]));
+  const part = (e, label) => ok(typeof e.role === 'string' && typeof e.part === 'string' && ['strategy', 'synthia', 'lady'].includes(e.voice) && typeof e.display === 'string' && num(e.at) && num(e.start) && e.end > e.start
+    && e.words.length === e.display.split(' ').length && e.words.every(w => typeof w.text === 'string' && w.end > w.start && w.start >= e.start - 1e-6), `${label}: ${e.role} "${e.display}" (${e.voice}) has its words and seconds`);
+  for (const track of TRACK_ORDER.filter(t => (TRACKS[t].form ?? 'drop60') === 'drop60')) for (const post of [SAMPLE_POST, ...FIXTURES.slice(0, 3)]) {
+    const c = castSong(post, {track, available:AVAILABLE}), lyrics = lyricsFromPost(post), plan = FORMS.drop60.arrange(lyrics, durationsOf(lyrics, track), {track, cast:c.cast}), label = `plan fields ${track}/${post.slice(0, 12)}`;
+    ok(Array.isArray(plan.band) && Array.isArray(plan.bandLeft) && ['couplet', 'lady'].includes(plan.drop.kind) && num(plan.choke.tagEnd), `${label}: band, bandLeft, drop (${plan.drop.kind})`);
+    for (const e of plan.band) part(e, label);
+    for (const e of plan.lady.filter(x => x.voice)) ok(['tag', 'impact'].includes(e.role) && e.couplet === plan.drop.couplet && e.key && e.notes.length, `${label}: the couplet's ${e.role} "${e.display}" is ${e.voice}'s`);
+    ok(buildScreens(plan, {table:LADY_TABLE}).length > 10, `${label}: the board builds its screens`);
+  }
+  for (const post of [SAMPLE_POST, ...FIXTURES.slice(0, 3)]) for (const own of [false, true]) {
+    const c = own ? castSong(post, {track:'offsite', available:AVAILABLE}) : null, lyrics = lyricsFromPost(post), F = FORMS.wander;
+    const plan = F.arrange(lyrics, durationsOf(lyrics, 'offsite'), {track:'offsite', cast:c?.cast}), label = `plan fields river/${post.slice(0, 12)}${own ? ' (its cast)' : ''}`;
+    ok(plan.form === 'wander' && plan.choke === null && plan.sections.every(x => WANDER_SECTIONS.includes(x.name)) && plan.phrases === plan.band && plan.band.length >= 1 && plan.band.length <= 3,
+      `${label}: the river's phases, no choke, ${plan.band.length} phrase parts`);
+    ok(plan.layers.length >= 10 && plan.layers.every(l => typeof l.id === 'string' && typeof l.kind === 'string' && l.in[0] < l.in[1] && l.in[1] <= l.out[0] && l.out[0] < l.out[1] && l.gain.length >= 3 && l.filter.length >= 3),
+      `${label}: ${plan.layers.length} layers, each with its ramps and curves`);
+    ok(plan.loops.length >= 2 && plan.loops.every(l => l.cuts.length && l.cuts.every(x => x.to > x.from)) && plan.swells.length && plan.slow.length && plan.stop.fade[1] > plan.stop.fade[0] && plan.kicks.length > 90,
+      `${label}: loops, swells, slow spans, the fade, the loop's stomps`);
+    for (const e of plan.band) { part(e, label); ok(e.clear && e.rise[1] === e.start && e.sink[0] === e.end, `${label}: "${e.display}" rises and sinks`); }
+    const screens = buildScreens(plan, {table:LADY_TABLE}), st = boardState(plan, 20);
+    ok(screens.length >= 1 && st.exposure > 0, `${label}: the board builds ${screens.length} screens and is lit`);
+  }
+  console.log(`  plan fields (engine-forms): ${checks - before} checks`);
+}
+// Couplets another screen interrupts (build-verify, Nov 5): with the real eSpeak durations, Synergy's next line,
+// her punct or a rung can take the board between X and Y. The strike still holds STRIKE.min on the board before
+// it turns, and a Y sung after the turn gets a screen of its own: every word of the band is up when it is sung.
+{
+  const before = checks, {AVAILABLE} = await import('../src/allhands/voices/voice-table.js'), {SONG_TABLE} = await import('../src/allhands/band.js'), {settleCast} = await import('../src/allhands/casting.js');
+  const REAL = JSON.parse(fs.readFileSync(new URL('./fixtures/allhands-durations.json', import.meta.url), 'utf8'));
+  const FX = JSON.parse(fs.readFileSync(new URL('./fixtures/pixel-posts.json', import.meta.url), 'utf8')).map(x => x.post);
+  for (const [i, track] of [[40, 'circle-back'], [2, 'circle-back'], [7, 'humbled-and-honored'], [38, 'humbled-and-honored'], [31, 'hustle'], [1, 'hustle']]) {
+    const plan = settleCast(FORMS.drop60.arrange, lyricsFromPost(FX[i]), REAL, {track, cast:castSong(FX[i], {track, available:AVAILABLE}).cast}).plan, sc = buildScreens(plan, {table:SONG_TABLE});
+    for (const s of sc.filter(x => x.fx?.strike)) {
+      let shown = 0; for (let t = s.fx.strike.at + 1 / 48; activeScreen(sc, t) === s && t < s.fx.strike.at + 1; t += 1 / 24) shown += 1 / 24;
+      ok(shown >= STRIKE.min - 1e-9 && s.fx.strike.at > s.words.filter(w => !w.part).at(-1).start, `interrupted couplets: fixture ${i} ${track} "${s.text.split(LINE_BREAK)[0]}" struck at ${s.fx.strike.at.toFixed(2)} s, on the board ${shown.toFixed(2)} s`);
+    }
+    const missed = plan.band.flatMap(b => b.words.filter(w => !(activeScreen(sc, w.start + 1 / 24)?.words || []).some(x => Math.abs(x.start - w.start) < .03)).map(w => `${b.role} ${w.text}`));
+    ok(!missed.length, `interrupted couplets: fixture ${i} ${track}: every band word on the board when sung${missed.length ? ` (missed ${missed.join(', ')})` : ''}`);
+  }
+  console.log(`  interrupted couplets: ${checks - before} checks`);
 }
 console.log(`pegboard: ${checks} checks passed`);

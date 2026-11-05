@@ -21,10 +21,61 @@ export const SAY = {
   strategy:[
     [/^It's a$/, ["It's a", "It's uh", "It's a-"]],          // Kokoro: "a" alone is the letter ("Let's eye")
     [/\blayoff\b/, ['layoff', 'lay-off']],                   // "a leg off"
+    [/^Agentic\.$/, ['Agentic.', 'Uh-jen-tic.', 'Ay-jentic.', 'Agentik.']],   // "Oijantic", "authentic"
+    [/\balumni\b/, ['alumni', 'alum-nye']],                  // "alumnae"
+    [/^Blessed\.$/, ['Blessed.', 'Bless-ed.']],               // "Bless"
+    [/\bcopy-paste\b/, ['copy-paste', 'copy paste']],        // "copper paste"
+    [/^Per my\b/, ['Per my', 'Purr my']],                     // "for my last email"
+    [/^It's a remix\.$/, ["It's a remix.", "It's a ree-mix."]],   // "It's over, Max"
+    [/^Trust the process\.$/, ['Trust the process.', 'Trust the prah-cess.', 'Trust, the process.']],   // "Trust the bra's ass"
+    // Round 1's misses (render-song-voices report): what Whisper heard, then what to try.
+    ...[["It's a next step.", "It's ay next step.", "It's a, next step."],         // "with the next step"
+      ["It's a reset year.", "It's a ree-set year.", "It's a reset year!"],          // "already set year"
+      ["It's a quick sync.", "It's a quick sink.", "It's a quick sinc."],           // sung: "a quick think"
+      ["It's a retreat.", "It's a ree-treat.", "It's a retreat!"],                  // "a rut tree"
+      ["It's a segment.", "It's a segment!", "It's, a segment."],                   // sung: "with a segment"
+      ["It's a hackathon.", "It's a hack-athon.", "It's uh hackathon."],           // "O'Hackathon"
+      ["It's async.", "It's ay-sink.", "It's a-sync."],                             // "With us, Link"
+      ["It's a workation.", "It's a werk-ay-shun.", "It's a work-ation."],          // "a work-cation"
+      ["It's a colleague.", "It's a kah-leeg.", "It's a colleague!"],               // sung: "a calling"
+      ["It's co-creation.", "It's co creation.", "It's ko-creation."],             // sung: "called creation"
+      ["It's the edge.", "It's the edge!", "It's thee edge."],                      // "the odds"
+      ["It's not a hot desk.", "It's not a hott desk.", "It's not a hot-desk.", "It's not a haht desk.", "It's not a hot, desk."],   // "a hard desk"
+      ["It's not a loan.", "It's not a loan!", "It's not a, loan."],                // "alone"
+      ["It's not a miss.", "It's not a miss!", "It's not a mis.", "It's not a missss.", "It's not uh miss."],   // "a mess", "a myth"
+      ["It's not a pay cut.", "It's not a pay-cut.", "It's not a pay, cut."],       // "a paid cut"
+      ["It's not silence.", "It's not silence!", "It's not sigh-lence.", "It's not sighlence.", "It's not silens."],   // "silent"
+      ['AI-first.', 'A.I. first.', 'AI first.'],                                    // sung: "May I first?"
+      ['Pending.', 'Pen-ding.', 'Pending!'],                                         // "Punding"
+      ['Plot twist.', 'Plott twist.', 'Plot, twist.', 'Plaht twist.', 'Plot twist!'],   // "Blot twist"
+      ['Seamless.', 'Seemless.', 'Seam-less.'],                                      // sung: "Same luck"
+      ['A testament to.', 'A testament, to.', 'A testament to!'],                    // sung: "A testament to you"
+      ['Repost if you agree.', 'Ree-post if you agree.', 'Re-post if you agree.'],   // "Rapost"
+    ].map(alts => [new RegExp(`^${alts[0].replace(/[.?*+()]/g, '\\$&')}$`), alts]),
   ],
   synthia:[
     [/\bgrateful\b/i, ['grateful', 'great-ful']],          // Flite: "Greatville"
     [/^It's ownership/, ["It's ownership", "It's, ownership"]],   // "It's still nourishing"
+    // Flite's weak "a" is heard "the" ("It's the next step"); a full "ay" is heard "a".
+    ...[['next step', 'ay'], ['focus season', 'ay'], ['not right now', 'ay'], ['retreat', 'ay'], ['remix', 'ay'], ['vibe', 'ay'],
+      ['dependency', 'ay'], ['forecast', 'ay'], ['ritual', 'ay'], ['hackathon', 'ay'], ['starter kit', 'uh'], ['family', 'uh']]
+      .map(([y, a]) => [new RegExp(`^It's a ${y}\\.$`), [`It's a ${y}.`, `It's ${a} ${y}.`]]),
+    [/^It's a workation\.$/, ["It's a workation.", "It's ay werkation."]],          // "a word-cation"
+    [/^It's a listening tour\.$/, ["It's a listening tour.", "It's a listening tooer."]],   // "a listening tear"
+    [/^It's a reset year\.$/, ["It's a reset year.", "It's ay reset yeer.", "It's a reset, year."]],   // "the reset here"
+    [/^It's a learning\.$/, ["It's a learning.", "It's a lerning.", "It's ay lurning."]],   // "the learning"
+    [/^It's a tiger team\.$/, ["It's a tiger team.", "It's a tie-gur team.", "It's a tiger teem."]],   // "a tighter team"
+    [/^It's async\.$/, ["It's async.", "It's ay-sync."]],                // sung: "It's a thing"
+    [/^It's visibility\.$/, ["It's visibility.", "It's, visibility."]],  // "feasibility"
+    [/^Pending\.$/, ['Pending.', 'Pen-ding.']],                          // "Bending", "Ending"
+    [/^Huge shout-out\.$/, ['Huge shout-out.', 'Huge, shout-out.']],      // "You just shout out"
+    [/^DM me\.$/, ['DM me.', 'Dee em me.', 'Dee-em me.', 'D. M. me.']],     // "Yeah me"
+    [/^A testament to\.$/, ['A testament to.', 'A testament, to.']],      // "A testamenta"
+    [/^Seamless\.$/, ['Seamless.', 'Seemless.']],                         // "Seamus"
+    [/^Blessed\.$/, ['Blessed.', 'Blest.']],                              // sung: "Laughing"
+    [/^Deep dive\.$/, ['Deep dive.', 'Deep, dive.', 'Deep dyve.']],       // sung: "Keep knifed"
+    [/^Follow for more\.$/, ['Follow for more.', 'Follow, for more.']],   // sung: "Follow it for more"
+    [/^Per my\b/, ['Per my', 'Pur, my']],                                // "for my last email"
   ],
 };
 

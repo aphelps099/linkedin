@@ -4,8 +4,10 @@
 // "Full stop.", the loop seam's ghost BACK.). drop60-draft.js carries the same steps inline (it came
 // first, and its films are signed off); offsite-psych.js builds on these.
 import {MOVES} from '../moves/index.js';
+import {rng} from '../moves/util.js';
 import {barSteps, beatSteps, stepTime, stepAtTime, hitFrame, cutFrame, stopFrames} from '../edl/anchors.js';
-import {TRACKING} from '../edl/compile.js';
+import {TRACKING, compile, shotIndex, isSynergy, isInstrument, resolveCrop, UPSCALE} from '../edl/compile.js';
+import {cellRect} from '../layouts.js';
 
 // A board move's length, in frames: about a 16th at 92-130 BPM.
 export const BOARD_MOVE = 4;
@@ -72,6 +74,122 @@ export function ending(plan, L, {clips, pitch = 12, index, shots, format}) {
   if (ghostFrom < N) {
     out.clips.push({id:'ghost', at:at(ghostFrom), len:span(ghostFrom, N), cell:'full', asset:'gen:color:#000000', fx:[{type:'pegVideo', mix:1, pitch, levels:6, gamma:1.4}], why:'the loop seam: black on the ignition’s peg grid, under the ghost BACK.'});
     out.board.push({id:'ghost', at:at(ghostFrom), len:span(ghostFrom, N), text:{ref:'song:impact'}, ghost:GHOST, why:'ghost BACK.: frame 0’s BACK. on the same pegs, at I .08 (plan §2 row 29)'});
+  }
+  return out;
+}
+
+// ---- the band on screen -------------------------------------------------------------------------------
+// The band sings the lexicon in Synergy's other repeats (allhands/band.js, plan.band): Strategy and Synthia
+// are on the call, so whoever sings has a tile that speaks. Pat's camera stays off, and the lady never has a
+// face (her parts are the board's).
+export const VOICE_SHOTS = Object.freeze({strategy:['strategy-speaking', 'strategy-unlock-v2', 'strategy-onboarding-v1', 'strategy-listening'],
+  synthia:['synthia-clean-face-plate', 'synthia-conference-closeup']});
+export const VOICE_NAMES = Object.freeze({strategy:'Strategy', synthia:'Synthia', lady:'Circle Back'});
+const CHARACTER = {strategy:/^strategy$/i, synthia:/^synthia$/i};
+// A speaking border that follows a part's words: on from each word's start to its end, runs joined across
+// gaps shorter than `gap`, in seconds from `t0` (a Param with unit 'seconds').
+export function speakingKeys(words, t0, {gap = .2, tail = .08} = {}) {
+  const runs = [];
+  for (const w of words || []) {
+    const a = w.start - t0, b = w.end + tail - t0, last = runs.at(-1);
+    if (last && a - last[1] < gap) last[1] = Math.max(last[1], b); else runs.push([a, b]);
+  }
+  // (A run already sounding when the clip starts lights it from its first frame; one over by then is dropped.)
+  const live = runs.filter(([, b]) => b > 1e-3), keys = [[0, live.length && live[0][0] <= 0 ? 1 : 0]];
+  for (const [a, b] of live) { if (a > 0) keys.push([r6(a), 1, 'step']); keys.push([r6(Math.max(a + 1 / 24, b, 1e-3)), 0, 'step']); }
+  return {keys:keys.filter((k, i) => !i || k[0] > keys[i - 1][0]), unit:'seconds'};
+}
+// The parts that sing together: an exchange's call and its answer, a couplet's X and its Y (and its pickup).
+const lexLess = (a, b) => { for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return a[i] < b[i]; return false; };
+const partnerOf = (b, band) => band.find(o => o !== b && o.start > b.start && ((b.role === 'call' && o.role === 'response' && o.part === b.part)
+  || (b.role === 'couplet-x' && (o.role === 'couplet-y' || o.role === 'pickup') && o.couplet === b.couplet)));
+
+// bandSpeakers(edl, plan, shots, {format, seed}) -> {clips, notes}: a tile of the singer over a tile of the
+// call for each of Strategy's and Synthia's parts (plan.band), from a frame before the frame that holds the
+// first word (a vocal cut) to a quarter second after the last. The tile is the one that stays on screen
+// longest: theirs when the call already shows them (Strategy thaws to speak in a frozen call), else a
+// listener's, else an instrument's; never Synergy's, Pat's, the board's, a full-frame picture or L1 (the
+// board's panel is over it). Where the call re-lays out under the part, the singer moves with it, one
+// segment per layout (each at least a quarter second). The caller stays up through the answer, in another
+// tile, when one holds both. Each segment is laid over its host (an opaque layer hides the one under it, so
+// the host costs no decode) and joins the host's scene; a part no tile holds (a transport, the choke's
+// black, the ignition, the full board, L1) keeps the board alone, and a segment the lint refuses is dropped:
+// notes say which and why.
+export function bandSpeakers(edl, plan, shots, {format, seed = 7} = {}) {
+  const parts = (plan.band || []).filter(b => VOICE_SHOTS[b.voice] && b.words?.length && !b.clear);
+  const out = {clips:[], notes:[]};
+  if (!parts.length) return out;
+  const index = shotIndex(shots), S = t => stepAtTime(plan, t), N = cutFrame(stepTime(plan, plan.totalSteps)), MIN = 6;
+  const base = compile(edl, {plan, shots, format});
+  const byId = new Map(edl.clips.map(x => [x.id, x]));
+  const who = l => (l.shotId && index.get(l.shotId)?.characters) || [];
+  const ceiling = (s, cell) => { const r = cellRect(format, cell); return r ? (UPSCALE[s.sharpTier] ?? 1.5) * resolveCrop(s, {}, format, r).h / r.h : 0; };
+  // The tiles that can carry a singer on a frame: cell id -> {l, s}.
+  const memo = new Map();
+  const hosts = f => {
+    if (memo.has(f)) return memo.get(f);
+    const fr = base.frame(f), here = new Map();
+    if (!fr.transport && fr.layout && !/^(full|L1|BOARD)$/.test(fr.layout)) for (const l of fr.layers) {
+      if (l.trail || l.cell.id === 'full' || /^L1\./.test(l.cell.id) || l.opacity < .9) continue;
+      const s = l.shotId && index.get(l.shotId);
+      if (l.kind === 'video' && s && !isSynergy(s)) here.set(l.cell.id, {l, s});
+    }
+    memo.set(f, here);
+    return here;
+  };
+  // The singer's take for a cell: the first that holds it under the upscale ceiling.
+  const takeFor = (voice, cell) => VOICE_SHOTS[voice].map(id => index.get(id)).find(s => s && s.status !== 'E' && s.status !== 'R' && ceiling(s, cell) >= 1 - 1e-9) ?? null;
+  const taken = [];
+  const busy = (cell, fa, fb) => taken.some(x => x.cell === cell && x.fa < fb && x.fb > fa);
+  // Segments over [fa, fb): from each frame, the cell (not busy) that runs longest, theirs first.
+  const segments = (b, fa, fb) => {
+    const segs = [];
+    let f = fa;
+    while (f < fb) {
+      const here = hosts(f);
+      let best = null;
+      for (const [cell, x] of here) {
+        if (!takeFor(b.voice, cell)) continue;
+        let g = f; while (g < fb && hosts(g).has(cell)) g++;
+        if (busy(cell, f, g)) continue;
+        const rank = who(x.l).some(c => CHARACTER[b.voice].test(c)) ? 0 : !isInstrument(x.s) ? 1 : 2, same = segs.at(-1)?.cell === cell ? 0 : 1;
+        const score = [g - f >= MIN ? 0 : 1, same, rank, -(g - f), -(x.l.cell.w * x.l.cell.h)];
+        if (!best || lexLess(score, best.score)) best = {cell, x, to:g, score};
+      }
+      if (!best) { f++; continue; }
+      if (best.to - f >= MIN) segs.push({cell:best.cell, l:best.x.l, from:f, to:best.to});
+      f = best.to;
+    }
+    return segs;
+  };
+  for (const [i, b] of parts.entries()) {
+    const pair = partnerOf(b, parts), w0 = b.words[0], w1 = b.words.at(-1), fa = Math.max(0, hitFrame(w0.start, plan) - 1);
+    const end = t => Math.min(N, Math.ceil((t + .25) * 24));
+    // Up through the answer where one run of tiles holds both; else its own words.
+    let segs = pair ? segments(b, fa, end(pair.words.at(-1).end)) : [];
+    if (!segs.length || segs.length > 1) segs = segments(b, fa, end(w1.end));
+    const words = b.words.filter(w => segs.some(g => hitFrame((w.start + w.end) / 2, plan) >= g.from && hitFrame((w.start + w.end) / 2, plan) < g.to));
+    if (!segs.length || !words.length) { out.notes.push(`${b.role} ${b.voice} "${b.display}" at ${w0.start.toFixed(2)} s: no tile holds it (the board carries it alone)`); continue; }
+    segs.forEach((g, j) => {
+      const shot = takeFor(b.voice, g.cell);
+      const mine = who(g.l).some(c => CHARACTER[b.voice].test(c)), at = r6(S(g.from / 24)), len = r6(S(g.to / 24) - at);
+      const slot = (g.to - g.from) / 24, spare = Math.max(0, shot.duration - 2 / (shot.fps || 24) - slot), hostClip = byId.get(g.l.clipId);
+      out.clips.push({id:`band.${i}${j ? `.${j}` : ''}`, at, len, cell:g.cell, z:2, asset:`shot:${shot.id}`, time:{in:r6(Math.round(rng(seed * 7919 + i * 104729 + g.from)() * spare * 24) / 24)},
+        chrome:{name:VOICE_NAMES[b.voice], mic:'on', speaking:speakingKeys(b.words, g.from / 24)}, ...(hostClip?.scene ? {scene:hostClip.scene} : {}),
+        why:`${VOICE_NAMES[b.voice]} sings the ${b.role === 'x' ? 'drop’s X' : b.role} "${b.display}"${mine ? ', live in their own tile' : ` over ${g.l.shotId} (${g.cell})`}${segs.length > 1 ? `, segment ${j + 1} of ${segs.length}` : ''}`});
+      taken.push({fa:g.from, fb:g.to, cell:g.cell});
+    });
+  }
+  // A tile the lint refuses (an upscale under the camera, a decode too many, or one that covers Synergy's
+  // mouth row as a whip slides him under it: G11 names the covered clip, the tile only in its message) goes;
+  // the board carries its part.
+  const named = e => [e.clipId, ...(String(e.message).match(/\bband\.\d+(?:\.\d+)?(?![\d.])/g) || [])];
+  for (let pass = 0; pass < 4 && out.clips.length; pass++) {
+    const p = compile({...edl, clips:[...edl.clips, ...out.clips]}, {plan, shots, format}), ids = new Set(out.clips.map(x => x.id));
+    const bad = new Set(p.lint.errors.flatMap(named).filter(id => ids.has(id)));
+    if (!bad.size) break;
+    for (const id of bad) { const x = out.clips.find(c => c.id === id); out.notes.push(`${x.why}: dropped (${p.lint.errors.find(e => named(e).includes(id)).rule})`); }
+    out.clips = out.clips.filter(x => !bad.has(x.id));
   }
   return out;
 }

@@ -40,11 +40,19 @@ import {lintTrack, lintPlan, describe, REFERENCES, BAND} from '../src/allhands/s
 import {FORMS} from '../src/allhands/forms.js';
 import {TRACKS, TRACK_ORDER} from '../src/allhands/songbook/index.js';
 import * as E from '../src/allhands/engine.js';
+import {voiceEvents} from '../src/allhands/lady.js';
+import {SONG_TABLE, SYNERGY_HOOKS, GUARD, MAX_RATE, TAG_MAX_RATE, hasBand} from '../src/allhands/band.js';
+import {AVAILABLE} from '../src/allhands/voices/voice-table.js';
+import {VOICES} from '../src/allhands/voices/items.js';
+import {RIVER} from '../src/allhands/wander.js';
+import {textureHits, levelAt} from '../src/allhands/river.js';
+import {HOST} from '../src/allhands/song.js';
 
 let checks = 0;
 const ok = (v, m) => { assert.ok(v, m); checks++; };
 const fixtures = JSON.parse(readFileSync(new URL('./fixtures/pixel-posts.json', import.meta.url), 'utf8')).map(x => x.post);
 const sha = s => createHash('sha256').update(s).digest('hex');
+const json = x => JSON.stringify(x, (k, v) => v instanceof Float64Array ? Array.from(v) : v);
 const canon = x => JSON.stringify(x, (k, v) => v instanceof Float64Array || v instanceof Float32Array ? Array.from(v) : typeof v === 'number' && !Number.isFinite(v) ? String(v) : v);
 
 // ---- 1a. Circle Back's plans, as they were
@@ -55,7 +63,7 @@ const canon = x => JSON.stringify(x, (k, v) => v instanceof Float64Array || v in
 // rate; they are found from at, steps and timing alone, so the same words in
 // the old plans and the new.
 function legacy(plan) {
-  const {track, trackTitle, kicks, marks, energyTrim, stop, ...old} = plan;
+  const {track, trackTitle, kicks, marks, energyTrim, stop, band, bandLeft, drop, makeup, ...old} = plan;
   if (old.choke) { const {dark, tagEnd, time, gap, ...choke} = old.choke; old.choke = choke; }
   old.lady = old.lady.map(({period, ...e}) => { if (e.role === 'ladder') { delete e.rate; delete e.gate; } return e; });
   const T = plan.timing, sung = [...plan.words, ...plan.stutters].sort((a, b) => a.at - b.at), next = new Map(sung.map((w, i) => [w, sung[i + 1]]));
@@ -151,10 +159,12 @@ const fakeBuffer = (seconds, seed) => {
 async function record(plan, options, exact = 'on') {
   const words = [...new Set([...plan.words, ...plan.stutters].map(w => w.word))];
   const buffers = new Map(words.map((w, i) => [w, {audio:fakeBuffer(.25 + .1 * (i % 5), i), lead:.01 * (i % 3), duration:.25}]));
-  const files = new Map([...new Set(plan.lady.map(e => e.file))].map((f, i) => [f, fakeBuffer(2.4, 40 + i)]));
+  // Her recordings by file; the voice bank's takes sung per event (lady.js voiceEvents: hers, the band's, the river's loops).
+  const all = voiceEvents(plan), files = new Map([...new Set(all.filter(x => !x.e.key).map(x => x.e.file))].map((f, i) => [f, fakeBuffer(2.4, 40 + i)]));
+  const sung = new Map(all.filter(x => x.e.key).map((x, i) => [x.id, fakeBuffer(2, 70 + i)]));
   const deep = new Map(plan.lady.map((e, i) => [e, i]).filter(([e]) => e.deep).map(([e, i]) => [i, fakeBuffer(3, i)]));
   globalThis.__exact = exact;
-  try { await E.render(plan, buffers, options, {files, deep}); } finally { delete globalThis.__exact; }
+  try { await E.render(plan, buffers, options, {files, deep, sung}); } finally { delete globalThis.__exact; }
   return {calls:last.log.length, sha:sha(canon(last.log)), log:last.log, ctx:last};
 }
 // The graph as connections, with exact.js's lane links collapsed: [from, to, output, input].
@@ -205,7 +215,8 @@ for (const track of TRACK_ORDER) for (const post of [SAMPLE_POST, ...fixtures.sl
     const lyrics = lyricsFromPost(post), label = i ? `fixture ${i - 1}` : 'sample';
     for (const track of TRACK_ORDER) for (const own of [false, true]) {
       const cast = own ? castSong(post, {track}).cast : undefined, plan = settleCast(FORMS.drop60.arrange, lyrics, REAL, {track, cast}).plan, T = plan.timing, at = e => T[Math.floor(e.at)] + (e.at % 1) * plan.step;
-      const tag = `${label} ${track}${own ? ' (its cast)' : ''}`, setlist = TRACKS[track].drop.slots(lyrics);
+      // With the band cast, Synergy sings the slots the plan kept (plan.setlist: band.js bandSetlist).
+      const tag = `${label} ${track}${own ? ' (its cast)' : ''}`, setlist = plan.setlist ?? TRACKS[track].drop.slots(lyrics);
       n++;
       // One word at a time: every word (and the stammer, gated at 0.8 of a 16th by the engine) has stopped when the next one starts.
       const sung = [...plan.words, ...plan.stutters.map(s => ({...s, gate:plan.step * .8}))].sort((a, b) => a.at - b.at);
@@ -218,7 +229,7 @@ for (const track of TRACK_ORDER) for (const post of [SAMPLE_POST, ...fixtures.sl
       let late = 0;
       plan.lines.forEach((l, id) => {
         const slot = setlist[id], next = setlist[id + 1], from = slot.bar * 16 + (slot.startStep ?? 0), end = from + (slot.window ?? 30), nextAt = next ? next.bar * 16 + (next.startStep ?? 0) : end;
-        const give = next?.give && nextAt === end ? next.give : 0, twice = l.words.some(w => w.repeat), last = Math.max(...l.words.map(w => w.at + w.steps));
+        const give = (next?.give && nextAt === end ? next.give : 0) || (slot.spillInto ?? 0), twice = l.words.some(w => w.repeat), last = Math.max(...l.words.map(w => w.at + w.steps));
         ok(l.words.filter(w => !w.repeat).length === tokens(slot.text).length && l.words[0].at >= from + late && last <= (twice ? Math.max(end, nextAt) : end) + give,
           `${tag}: line ${id} "${slot.text}" sung whole, ${from + late}-${last} (window ${from}-${end}${give ? `, the next slot gives ${give}` : ''})`);
         late = Math.max(0, last - nextAt); given += late > 0;
@@ -277,9 +288,18 @@ for (const track of TRACK_ORDER) for (const post of [SAMPLE_POST, ...fixtures.sl
   const hh = TRACKS['humbled-and-honored'];
   ok(!rules(hh).includes('harmony.home') && rules({...hh, references:{'daft-punk':hh.references['daft-punk'], air:hh.references.air}}).includes('harmony.home'), 'lint: E-flat major is a haze song\'s (Washed Out), not a lounge song\'s');
   // Offsite is the Panda Bear lane: D major is allowed because it takes Panda Bear and Washed Out; without them it is an error.
-  const os = TRACKS.offsite;
-  ok(!rules(os).includes('harmony.home') && rules({...os, references:{'daft-punk':os.references['daft-punk'], kraftwerk:os.references.kraftwerk}}).includes('harmony.home'), 'lint: Offsite\'s D major is a haze song\'s (Panda Bear, Washed Out), not a machine song\'s');
-  ok(lintTrack(os).length === 0, 'lint: Offsite keeps the constitution with no warnings at all');
+  const os = TRACKS.offsite, drop = t => lintTrack(t, {form:'drop60'}).filter(x => x.level === 'error').map(x => x.rule);
+  ok(!drop(os).includes('harmony.home') && drop({...os, references:{'daft-punk':os.references['daft-punk'], kraftwerk:os.references.kraftwerk}}).includes('harmony.home'), 'lint: Offsite\'s D major is a haze song\'s (Panda Bear, Washed Out), not a machine song\'s');
+  ok(lintTrack(os, {form:'drop60'}).length === 0, 'lint: Offsite\'s Drop Edition chart (kept for the video studio) keeps the constitution with no warnings at all');
+  // The river (CONSTITUTION.md): Offsite's own form lints clean, and its rules bite.
+  ok(os.form === 'wander' && lintTrack(os).length === 0, 'lint: Offsite\'s river keeps the constitution with no warnings at all');
+  const W = os.wander, river = w => rules({...os, wander:{...W, ...w}});
+  ok(river({layerSpec:W.layerSpec.map(l => l.id === 'plucks' ? {...l, in:[4, 5]} : l)}).includes('river.ramps'), 'lint: a layer ramping in over one bar is an error');
+  ok(river({layerSpec:W.layerSpec.map(l => l.id === 'his' ? {...l, in:[3, 6]} : l)}).includes('river.lush'), 'lint: his word joining before her texture is lush is an error');
+  ok(river({phrases:{y:17, refrain:22, extra:24}}).includes('river.phrases') && river({phrases:{y:9, refrain:22}}).includes('river.phrases'), 'lint: three clear phrases, or one two bars after his hook, is an error');
+  ok(river({layerSpec:W.layerSpec.filter(l => l.kind !== 'tambourine')}).includes('river.tambourine') && river({layerSpec:W.layerSpec.filter(l => l.kind !== 'loop')}).includes('river.loop'), 'lint: a river without its tambourine or its loop is an error');
+  ok(river({layerSpec:W.layerSpec.filter(l => l.kind !== 'colour')}).includes('river.acoustic'), 'lint: a river without its acoustic colours is an error');
+  ok(lintTrack({...os, wander:{...W, energy:b => (b === 12 ? 1 : W.energy(b))}}).some(x => x.rule === 'river.flow'), 'lint: an energy step between bars is reported (the flow changes gently)');
   ok(lintTrack({...cb, story:{...cb.story, synthia:'an arpeggio'}}).some(x => x.rule === 'story.synthia' && /no bar plays her part/.test(x.reason)), 'lint: a Synthia part declared but never played is reported');
   // Every plan of section 4's corpus keeps the plan's rules.
   const REAL = JSON.parse(readFileSync(new URL('./fixtures/allhands-durations.json', import.meta.url), 'utf8')), warned = {};
@@ -323,5 +343,110 @@ if (url && baseline) {
     console.log(`render vs baseline: ${n} of ${(a.length - 44) / 2} samples differ, max ${max} LSB (${(20 * Math.log10(Math.max(1, max) / 32768)).toFixed(1)} dBFS)`);
     ok(max <= 32, `render: within the renderer's own run-to-run noise (max ${max} LSB)`);
   } finally { await browser.close(); }
+}
+// ---- 7. The band in the Drop Edition (band.js): Synergy sings the post and his hook at most
+// three times; Strategy, Synthia and her recordings sing the lexicon in his other repeats. On the
+// sample and the 60 fixtures, every Drop Edition track, cast by the post with the voice bank's
+// takes (castSong available), real eSpeak durations.
+{
+  const REAL = JSON.parse(readFileSync(new URL('./fixtures/allhands-durations.json', import.meta.url), 'utf8'));
+  const DROP = TRACK_ORDER.filter(t => (TRACKS[t].form ?? 'drop60') === 'drop60'), tally = {}, left = {};
+  let n = 0;
+  const hookCount = plan => plan.lines.filter(l => l.kind === 'hook' || l.kind === 'answer').reduce((k, l) => k + 1 + l.words.some(w => w.repeat), 0);
+  posts.forEach((post, i) => {
+    const lyrics = lyricsFromPost(post);
+    for (const track of DROP) {
+      const r = castSong(post, {track, available:AVAILABLE}), plan = settleCast(FORMS.drop60.arrange, lyrics, REAL, {track, cast:r.cast}).plan, T = plan.timing, tr = TRACKS[track];
+      const tag = `${i ? `fixture ${i - 1}` : 'sample'} ${track}`, at = e => T[Math.floor(e.at)] + (e.at % 1) * plan.step, len = e => Math.min(e.gate, (e.to - e.from) / e.rate + .01);
+      n++;
+      ok(hasBand(r.cast) && hookCount(plan) <= SYNERGY_HOOKS, `${tag}: Synergy sings his hook ${hookCount(plan)} times (at most ${SYNERGY_HOOKS})`);
+      ok(json(plan) === json(settleCast(FORMS.drop60.arrange, lyrics, REAL, {track, cast:r.cast}).plan), `${tag}: the band's plan is deterministic`);
+      const voices = [...plan.words.map(w => [T[w.at], T[w.at] + w.gate, 'synergy']), ...plan.stutters.map(x => [T[x.at], T[x.at] + plan.step * .8, 'synergy']), ...plan.lady.map(e => [at(e), at(e) + len(e), e.role === 'ladder' ? 'ladder' : 'lady'])];
+      for (const e of plan.band) {
+        const entry = SONG_TABLE[e.file], words = (e.display ?? '').split(' ');
+        ok(entry && e.to > e.from && e.gate >= (e.to - e.from) / e.rate - 1e-9 && Math.abs(e.start - at(e)) < 1e-9 && Math.abs(e.end - (e.start + len(e))) < 1e-9 && e.end <= plan.duration,
+          `${tag}: ${e.role} "${e.display}" (${e.voice}) plays whole, ${e.start.toFixed(2)}-${e.end.toFixed(2)} s`);
+        ok(e.words.length === words.length && e.words.every(w => w.start >= e.start - 1e-9 && w.end <= e.end + .011 && w.end > w.start), `${tag}: ${e.role} "${e.display}": one word per display word, on its measured times`);
+        if (e.key) {
+          const reg = VOICES[e.voice].register;
+          ok(e.notes.length && e.notes.every(x => tr.pitchClasses.includes(((x.midi % 12) + 12) % 12) && tr.drop.ladder.pentatonic.includes(((x.midi % 12) + 12) % 12) && x.midi >= reg.lo - 2 && x.midi <= reg.hi + 2) && e.rate <= MAX_RATE + 1e-9,
+            `${tag}: ${e.role} "${e.display}" sung on the ${tr.key} pentatonic in ${e.voice}'s register (${e.notes.map(x => x.midi).join(' ')}), x${e.rate.toFixed(2)}`);
+        }
+        // No two voices at once: the band keeps GUARD from Synergy, her lines and each other (the couplet drop's X sings over her ladder, by design).
+        const clash = [...voices.filter(v => !(e.role === 'x' && v[2] === 'ladder')), ...plan.band.filter(b => b !== e).map(b => [b.start, b.end, 'band'])].find(([a, b]) => e.end + GUARD - 1e-6 > a && e.start < b + GUARD - 1e-6);
+        ok(!clash, `${tag}: ${e.role} "${e.display}" keeps its air${clash ? ` (meets ${clash[2]} at ${clash[0].toFixed(2)} s)` : ''}`);
+        ok(e.end <= plan.choke.time + 1e-9 || e.start >= T[plan.choke.until] - 1e-9, `${tag}: ${e.role} "${e.display}" stays out of the choke's silence`);
+        tally[`${track} ${e.part.replace(/\.\d$/, '')}`] = (tally[`${track} ${e.part.replace(/\.\d$/, '')}`] ?? 0) + 1;
+      }
+      for (const l of plan.bandLeft) left[`${track} ${l.part.replace(/ \(bar \d+\)/, '')}`] = (left[`${track} ${l.part.replace(/ \(bar \d+\)/, '')}`] ?? 0) + 1;
+      // The couplet's drop: her tag and impact roles, sung by the band, the same moment.
+      const tg = plan.lady.find(e => e.role === 'tag'), imp = plan.lady.find(e => e.role === 'impact');
+      if (plan.drop.kind === 'couplet') {
+        ok(tg.couplet === r.cast.dropTag.id && imp.display === r.cast.dropTag.impact.display && tg.rate <= TAG_MAX_RATE + 1e-9 && tg.gate >= (tg.to - tg.from) / tg.rate - 1e-9 && imp.at === plan.marks.impact,
+          `${tag}: the couplet drops, "${tg.display}" then "${imp.display}" on the downbeat`);
+        const xs = plan.band.filter(e => e.role === 'x');
+        ok(xs.length >= 1 && xs.every(x => tr.drop.answers.bars.includes(Math.floor((x.at + 1) / 16))) && !plan.words.some(w => w.kind === 'answer'), `${tag}: "${xs[0]?.display}" over the build's answer bars, ${xs.length}x, his answers gone`);
+      } else ok(!tg.couplet && !plan.band.some(e => e.role === 'x'), `${tag}: her drop`);
+      // The sign-off: the band's line where his "Let's circle back" was (Circle Back's title gives it back to him), and nothing of the band after it.
+      const so = plan.band.find(e => e.role === 'signoff'), close = plan.lines.some(l => l.text === HOST.close);
+      if (r.cast.signoff?.voice === 'synergy') ok(close && !so, `${tag}: Synergy signs off, "Let's circle back"`);
+      else ok(!close && (!so || plan.band.every(e => e === so || e.end <= so.start + 1e-9)), `${tag}: the sign-off "${so?.display ?? '(no gap)'}" is the band's last line`);
+      const circle = plan.lines.filter(l => l.text === HOST.close).length + plan.lady.filter(e => e.role === 'tag' && e.file === '06.wav').length;
+      ok(circle <= 1, `${tag}: "Let's circle back" at most once`);
+    }
+  });
+  console.log(`the band, ${n} Drop Edition songs: ${Object.entries(tally).map(([k, v]) => `${k} ${v}`).join(', ')}; left out (no gap): ${Object.entries(left).map(([k, v]) => `${k} ${v}`).join(', ') || 'none'}`);
+  // Every track schedules the band cleanly, the same twice; the default cast's plan has no band.
+  for (const track of DROP) {
+    const lyrics = lyricsFromPost(SAMPLE_POST), r = castSong(SAMPLE_POST, {track, available:AVAILABLE}), d = Object.fromEntries(FORMS.drop60.voiced(lyrics, {track}).map(w => [w, models.fake(w)]));
+    const plan = FORMS.drop60.arrange(lyrics, d, {track, cast:r.cast}), a = await record(plan, {mode:'sung'}), b = await record(FORMS.drop60.arrange(lyrics, d, {track, cast:r.cast}), {mode:'sung'});
+    ok(a.calls > 10000 && a.sha === b.sha && E.exactReport(a.ctx).every(x => x.overlap <= 2), `${track}: the band's Drop Edition makes ${a.calls} valid Web Audio calls, the same twice, every input at most two at once`);
+    ok(FORMS.drop60.arrange(lyrics, d, {track}).band.length === 0, `${track}: today's cast has no band (the A/B against the stock lines)`);
+  }
+}
+
+// ---- 8. The river (wander.js, river.js): Offsite's form. The sample and the 60 fixtures, cast by the post
+// and with today's cast: the constitution's river rules on every plan, the fields the Peg Board and the video
+// read, the textures in key, the loop in every bar, the few clear phrases; scheduling, deterministic.
+{
+  const REAL = JSON.parse(readFileSync(new URL('./fixtures/allhands-durations.json', import.meta.url), 'utf8'));
+  const RT = TRACK_ORDER.filter(t => TRACKS[t].form === 'wander'), stats = {phrases:[], layers:[]};
+  ok(RT.length === 1 && RT[0] === 'offsite' && FORMS.wander.tracks.join() === 'offsite', 'the river: Offsite plays it');
+  posts.forEach((post, i) => {
+    const lyrics = lyricsFromPost(post);
+    for (const track of RT) for (const own of [false, true]) {
+      const cast = own ? castSong(post, {track, available:AVAILABLE}).cast : undefined, plan = FORMS.wander.arrange(lyrics, REAL, {track, cast}), T = plan.timing, W = TRACKS[track].wander;
+      const tag = `${i ? `fixture ${i - 1}` : 'sample'} ${track} river${own ? ' (its cast)' : ''}`, bar = 16 * plan.step, errors = lintPlan(plan).filter(x => x.level === 'error');
+      ok(!errors.length, `${tag}: keeps the constitution${errors.length ? `: ${describe(errors).join('; ')}` : ''}`);
+      ok(json(plan) === json(FORMS.wander.arrange(lyrics, REAL, {track, cast})), `${tag}: deterministic`);
+      ok(plan.form === 'wander' && plan.choke === null && plan.call === null && plan.lady.length === 0 && plan.stutters.length === 0 && Math.abs(T[plan.totalSteps] - 60) < 1 && plan.stop.fade[1] <= T[plan.totalSteps] + 1e-9,
+        `${tag}: no ladder, choke or BACK., ${T[plan.totalSteps].toFixed(1)} s, a long fade ${plan.stop.fade.map(x => x.toFixed(1)).join('-')} s`);
+      // The layers: each ramps in and out over 2 to 8 bars on curves in time order.
+      for (const l of plan.layers) {
+        const mono = pts => pts.every((p, k) => !k || p[0] > pts[k - 1][0]);
+        ok(l.in[1] - l.in[0] >= RIVER.minRamp * bar - 1e-6 && l.out[1] - l.out[0] >= RIVER.minRamp * bar - 1e-6 && l.in[1] - l.in[0] <= RIVER.maxRamp * bar + 1e-6 && l.out[1] - l.out[0] <= RIVER.maxRamp * bar + 1e-6
+          && mono(l.gain) && mono(l.filter) && l.gain[0][1] === 0 && l.gain.at(-1)[1] === 0 && levelAt(l, (l.in[1] + l.out[0]) / 2) > 0, `${tag}: layer ${l.id} ramps in ${((l.in[1] - l.in[0]) / bar).toFixed(1)} and out ${((l.out[1] - l.out[0]) / bar).toFixed(1)} bars`);
+        if (l.kind === 'texture') {
+          const loop = plan.loops.find(x => x.id === l.source), hits = textureHits(W, l, loop, plan);
+          ok(loop && loop.cuts.every(c => c.to > c.from && Number.isFinite(c.base)) && hits.length && hits.every(h => W.pentatonic.includes(((h.midi % 12) + 12) % 12) && h.at >= 0 && h.at < 32 * plan.step),
+            `${tag}: texture ${l.id} cuts "${loop?.text}" on ${hits.length} hits in key`);
+        }
+      }
+      // The clear phrases: the band's (her or Synthia's word after a pickup is one), Synergy's hook once.
+      for (const e of plan.band) ok(e.clear && e.rise[1] === e.start && e.sink[0] === e.end && e.words.length && SONG_TABLE[e.file], `${tag}: "${e.display}" rises out of the stream at ${e.start.toFixed(2)} s and sinks back in`);
+      ok(plan.lines.length <= 1 && plan.words.every(w => !w.repeat), `${tag}: Synergy sings his hook ${plan.lines.length ? 'once' : 'not at all'}`);
+      ok(plan.swells.every(w => w.from > w.ref[1] - 1e-9 && w.to <= T[plan.totalSteps] + 1e-9) && plan.slow.every(w => w.to > w.from && !w.whole), `${tag}: swells and slow spans`);
+      if (own) { stats.phrases.push(plan.band.filter(e => e.role !== 'pickup').length + plan.lines.length); stats.layers.push(plan.layers.length); }
+    }
+  });
+  console.log(`the river, ${posts.length * 2} plans: 0 constitution errors; clear phrases per song ${Math.min(...stats.phrases)}-${Math.max(...stats.phrases)} (Synergy's hook included), layers ${Math.min(...stats.layers)}-${Math.max(...stats.layers)}`);
+  // Schedules cleanly through the validating fake context, the same twice, every input at most two at once.
+  for (const own of [false, true]) {
+    const lyrics = lyricsFromPost(SAMPLE_POST), cast = own ? castSong(SAMPLE_POST, {track:'offsite', available:AVAILABLE}).cast : undefined, d = Object.fromEntries(FORMS.wander.voiced(lyrics, {track:'offsite'}).map(w => [w, models.fake(w)]));
+    const plan = FORMS.wander.arrange(lyrics, d, {track:'offsite', cast}), a = await record(plan, {mode:'sung'}), b = await record(FORMS.wander.arrange(lyrics, d, {track:'offsite', cast}), {mode:'sung'});
+    ok(a.calls > 10000 && a.sha === b.sha && E.exactReport(a.ctx).every(x => x.overlap <= 2), `the river${own ? ' (the sample\'s cast)' : ''}: ${a.calls} valid Web Audio calls, the same twice, every input at most two at once`);
+    const ex = await record(plan, {mode:'sung', bars:[12, 16]});
+    ok(ex.calls > 1000, `the river: an excerpt (bars 12-16) schedules from mid-song (${ex.calls} calls)`);
+  }
 }
 console.log(`song book: ${checks} checks passed`);

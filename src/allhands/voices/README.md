@@ -35,7 +35,7 @@ come from the current bank.
 
 | Path | What |
 |---|---|
-| `public/allhands/voices/<voice>/<id>.flac` | A take: FLAC, 44.1 kHz, mono, 16-bit, the dry voice trimmed to the speech (15 ms before the first frame within 45 dB of the loudest, 40 ms after the last; 3 and 10 ms raised-cosine edges), active speech at -20 dBFS RMS, peak at most -1 dBFS. Its pitch track (pixel.js `pitchTrack`, 5 ms, 0.1 Hz) rides in the Vorbis comment `PIXEL_PITCH`. Served at `/allhands/voices/<voice>/<id>.flac`. |
+| `public/allhands/voices/<voice>/<id>.flac` | A take: FLAC, 44.1 kHz, mono, 16-bit, the dry voice trimmed to the speech (15 ms before the first frame within 45 dB of the loudest; the end 80 to 250 ms after the last word; 3 and 10 ms raised-cosine edges), active speech at -20 dBFS RMS, peak at most -1 dBFS. Its pitch track (pixel.js `pitchTrack`, 5 ms, 0.1 Hz) rides in the Vorbis comment `PIXEL_PITCH`. Served at `/allhands/voices/<voice>/<id>.flac`. |
 | `src/allhands/voices/song-voices.json` | The manifest (imported by `voice-table.js`, like `lady-phrases.json`). |
 
 `<voice>` is `strategy` or `synthia`; `<id>` is casting's take id
@@ -43,8 +43,8 @@ come from the current bank.
 
 | id | What | Who renders it |
 |---|---|---|
-| `<bank id>` | an expression ("proud-and-humbled", "per-my-last-email") | Strategy; Synthia too if the lexicon gives it to her and it is short |
-| `<couplet>-call` | "It's not X." | Strategy |
+| `<bank id>` | an expression ("proud-and-humbled", "per-my-last-email") | Strategy; Synthia too if the lexicon gives it to her and it is short, or as his fallback (`SYNTHIA_FALLBACK`) |
+| `<couplet>-call` | "It's not X." | Strategy (Synthia as his fallback on three) |
 | `<couplet>-response` | "It's Y." (the 61 couplets whose Y is not the lady's) | Strategy; Synthia if short |
 | `<couplet>-tag`, `<couplet>-impact` | the drop: "It's a quick-" and "sync.", **cut** from the response take (no file of their own); before the lady's impact the tag is the `its-a` pickup, or its own take ("It's just") | as the take they are cut from |
 | `its`, `its-a` | "It's", "It's a" before the lady's own Y word | both |
@@ -58,9 +58,11 @@ come from the current bank.
 {version:2, sampleRate:44100, base:'allhands/voices/', format:'flac',
  test:{keys:['D majorPenta', 'F minorPenta'], amounts:{strategy:[.6], synthia:[.6, .3]}, whisper},
  identity:{strategy:{...the voice bank's Kokoro hashes, matchesVoiceBank:true}, synthia:{...}},
- lines:{                                  // every line and cut: who can sing it, in preference order
-   'forty-slides':..., 'layoff-launch-response':{voices:['synthia', 'strategy'], owner:'synthia'},
+ lines:{                                  // every line and cut: who can sing it, in preference order (the owner's voice first)
+   'layoff-launch-response':{voices:['synthia', 'strategy'], owner:'synthia'},
    'ever-evolving':{voices:['strategy'], owner:'synthia', strategyOnly:'long'},     // or 'failed': she did not pass
+   'this':{voices:['synthia'], owner:'strategy'},                                  // Kokoro never passed it; Synthia's fallback
+   'dm-me':{voices:[], owner:'synthia', strategyOnly:'failed'},                    // nobody passed it: not available
  },
  cuts:[{id:'hour-quick-sync-impact', voice:'synthia', kind:'impact', text:'sync.', from:'synthia/hour-quick-sync-response.flac',
         words:[3, 3], start, end, onset, ready:true}],     // ready: every word of the impact heard alone (the aligner's isolated check)
@@ -69,7 +71,7 @@ come from the current bank.
    text:"It's a launch.", spoken,                 // spoken: what the engine was given, only when respelled
    ask,                                           // a question: its line rises
    file:'synthia/layoff-launch-response.flac', ref:{couplet:'layoff-launch', part:'y'},
-   samples, duration, voiced:[start, end],        // seconds in the file
+   samples, duration, voiced:[start, end],        // seconds in the file; trimmedFrom: samples before the tail cut
    f0, rmsDb, gainDb,                             // median Hz; gainDb brings it to the lady's -14 dBFS reference
    amount:.6,                                     // the pixel amount Whisper verified it at
    words:[{text:'launch.', start, end, onset,     // onset: the vowel's attack, put it on the beat
@@ -127,7 +129,74 @@ them (`pixelate(..., {space})` is the offline reference).
 
 ## The bank, measured
 
-@@RATES@@
+294 takes (Strategy 201, Synthia 93), 388.3 s of voice, **12.32 MB of FLAC**
+(34.3 MB as PCM16 WAV; Strategy 9.15 MB, Synthia 3.17 MB; median take 1.41 s
+and 1.09 s), plus 88 cuts. 221 lines and 56 cuts in all: 270 have a passing
+take; 7 do not (below), and those are not in `AVAILABLE`, so casting never casts
+them.
+
+Whisper `small.en`, exact, on the dry take and on the take sung at its amount
+in D major and F minor pentatonic (`DIR/report.md` has every take, every
+spelling tried and what Whisper heard):
+
+| Voice | Lines | Kept | On the first spelling | At medium (.6) | At light (.3) only |
+|---|---|---|---|---|---|
+| Strategy, all | 221 | 201 (91.0%) | 187 (84.6%) | 201 | |
+| expressions | 73 | 67 | 61 | 67 | |
+| "It's not X." | 71 | 68 | 65 | 68 | |
+| "It's Y." | 61 | 53 | 48 | 53 | |
+| exchange sides | 13 | 12 | 12 | 12 | |
+| pickups, the "It's just" tag | 3 | 1 | 1 | 1 | |
+| Synthia, her candidates | 99 | 85 (85.9%) | 74 (74.7%) | 75 | 10 |
+| expressions | 34 | 29 | 27 | 27 | 2 |
+| "It's Y." | 57 | 49 | 40 | 41 | 8 |
+| exchange sides | 5 | 4 | 4 | 4 | |
+| pickups, the "It's just" tag | 3 | 3 | 3 | 3 | |
+| Synthia, backing Strategy | 8 | 8 | 8 | 4 | 4 |
+
+- **Synthia.** The lexicon gives her 106 lines: 7 are longer than six
+  syllables (Strategy-only by rule), 99 were rendered, 85 kept. The 14 she did
+  not pass are Strategy-only (`strategyOnly:'failed'`): "Huge shout-out.",
+  "Deep dive.", "A testament to.", "Follow for more.", "It's a starter kit.",
+  "It's a listening tour.", "It's a tiger team.", "It's ownership.", "It's a
+  not right now.", "It's a learning.", "It's a family.", "It's a reset year.",
+  and "DM me." and "Pending." (no voice, below). Flite's weak "a" is heard
+  "the" ("It's the next step"); a full "ay" fixed 8 of those.
+- **Strategy.** Kokoro never said 20 lines so Whisper heard them, in up to five
+  spellings each: six expressions ("This." is "This one.", "Move the needle."
+  "nidal", "Plot twist." "Blot", "Agentic." "authentic", "Seamless.", "DM
+  me."), three calls ("It's not a miss." is "a mess", "a hot desk" "a hard
+  desk", "silence" "silent"), eight responses ("It's a remix." is "It's over,
+  Max", "It's the edge." "the odds", "It's a next step." "with the next
+  step"...), the pickups "It's" and "It's a", and "Pending.". Synthia sings 18
+  of them: the four expressions and four calls of `lines.js SYNTHIA_FALLBACK`
+  (his lines, so she renders them after him; "It's not a loan." passed for both),
+  and "Seamless.", the pickups and the eight responses, which are hers anyway.
+  For those 18 `voicesFor(id)` is `['synthia']`.
+- **Not available** (7): "DM me." (Strategy "They are me.", Synthia "Yeah me",
+  four spellings each) and "Pending." ("Punding", "Bending"); and five drop
+  impacts whose word Whisper does not hear alone in any voice: "remix."
+  ("or a mix."), "team." ("again."), "async." ("The sink."), "sync." ("Zinc."),
+  "learning." ("a learning."). Those couplets still play as couplets; they
+  cannot be the drop. 22 of the 27 impacts are ready (Synthia 17, Strategy 15).
+- **Respelled** (25 kept): "Forever great-ful.", "Bless-ed.", "Trust the
+  prah-cess.", "Purr my last email." / "Pur, my last email.", "AI first.",
+  "It's not a lay-off.", "It's alum-nye.", "It's a kah-leeg.", "It's ay vibe."
+  and more (`items.js SAY`, each with what Whisper heard before).
+- **Spellings Whisper may choose**, matched as the same words: digits ("40
+  slides"), "OK", "impostor", and homophones ("a quick sink", "a knot right
+  now", "It's not alone" for "a loan"): the listener hears the same sound and
+  the board shows the lyric.
+- **Boundaries.** The aligner's confidence: median .58 (min .08). Of 930 words,
+  650 are heard cut alone, 234 only in context, 46 neither (mostly "a", "to",
+  "the": a cut of those is never cast alone). A take's tail of Kokoro noise
+  (about 50 dB down) is cut 80 to 250 ms after its last word at publish (180
+  takes), and the `verify` step hears every cut take again through
+  `loadVoices` and `sing()` (180 cut takes, 540 renders: 534 exact; the three takes it missed, where the cut took a final "z", "th" or "t" ("It's not a race.", "double book"), are published whole, `work/no-trim.json`, and heard exactly again, 12 of 12).
+- **Casting with this bank** (`check-song-voices.mjs`): the sample post and the
+  60 fixture posts on all four tracks, `castSong(post, {track, available:AVAILABLE})`:
+  244 songs, 1625 Strategy and Synthia parts, 180 distinct takes (82 of them
+  Synthia's), every one a passing take.
 
 ## Rendering it
 
@@ -200,7 +269,23 @@ node scripts/check-song-voices.mjs
 | note glide | 27.5 ms | 20 ms | 12.5 ms |
 | clean consonant mixed back | .85 | .7 | .55 |
 
-@@COST@@
+Cost, in Node on this shared CPU over the whole bank (387.7 s of audio):
+decoding the FLAC 8.4 ms per second of audio, `sing()` 7.0 ms per second the
+first time (pitch marks; the stored track skips YIN) and 4.1 ms after. A song's
+20 cues of 1.3 s decode and sing in about 0.4 s. In Chromium, 13 takes loaded
+in 301 ms and sang in 332 ms, to the same samples as in Node.
+
+**Pitch in key** (`--steps pitch`, `DIR/pitch.json`): each kept take's two test
+renders, every syllable nucleus against its note, measured by normalised
+autocorrelation and subharmonic summation (no code shared with `pixel.js`):
+
+| Voice | renders | notes measured | median error | 90th percentile | within 25 cents | nuclei of 60 ms or more within 25 cents (either estimator) |
+|---|---|---|---|---|---|---|
+| Strategy (medium) | 396 | 1899 | 3.6 c | 15.1 c | 1781 (93.8%) | 1492 of 1544 (96.6%) |
+| Synthia (medium or light) | 180 | 749 | 2.1 c | 6.4 c | 746 (99.6%) | 626 of 626 |
+
+Strategy's misses are the short unstressed nuclei the prototype found (an
+article, "-tion"), where Kokoro's 70 Hz creak survives the placement.
 
 ## Where they sing
 
@@ -245,7 +330,31 @@ between variants as jingles turn on their pins) and played up to 6 cents off
 again, both chosen from its time: deterministic, and no two strikes of a bar
 alike. At v 1 a shake peaks near -9 dBFS and a hit near -5 dBFS.
 
-@@TAMB@@
+Measured (`render-song-voices.mjs --steps tambourine`, `DIR/tambourine.json`;
+the prototype's `voices/tambourine.js` in brackets, same events):
+
+| | one shake (v .8) | one hit (v .8) | the groove, 4 bars |
+|---|---|---|---|
+| spectral centroid | 5.4 kHz (7.0) | 4.3 kHz (5.5) | 5.9 kHz (8.6) |
+| energy below 1k / 1-3k / 3-6k / 6-10k / 10-16k, dB of the total | -40 / **-21** / -1.5 / -7 / -10 (-38 / -35 / -2.5 / -7 / -7) | -7 / **-13** / -2.4 / -9 / -12 (-9 / -39 / -2.5 / -8 / -9) | -11 / **-11** / -3.5 / -7 / -8 (-12 / -25 / -5 / -6 / -5) |
+| attack, down 20 dB after the peak | 20 ms (the swish), 174 ms | 2.0 ms, 99 ms | |
+
+- **The body.** 1-3 kHz went from 35 to 39 dB under the total to 11 to 21 dB
+  under it: the frame's knock and the "chk" now sit where a real tambourine's
+  wood and rattle are, so alone it is no longer thin and bright (the centroid
+  came down from 8.6 to 5.9 kHz over the groove; most of the energy is still in
+  the jingles, 3 to 16 kHz).
+- **No steady lines.** Over a bar of even 16ths at one velocity, the 30
+  strongest lines of the long-term spectrum (3-16 kHz) stand 11.5 dB above
+  their +-40 Hz neighbourhood, against 21.8 dB for the prototype, where every
+  collision rang the same 84 modes. Every strike of the bar is a different
+  variant and rate (`check-song-voices.mjs`), and the twelve rendered shakes of
+  a layer all differ.
+- Deterministic: two renders of a bar are the same samples; the Web Audio voice
+  plays the same strike buffer at the same rate. A strike renders in about 15 ms
+  in Node; a song's pool (two or three velocity layers) in 0.1 to 0.4 s, once.
+- Placing it is the engine's: Aaron asked for it "in the background", so a
+  track sends it at the level of its shaker or below, panned right of centre.
 
 ## The sketch
 
@@ -255,13 +364,21 @@ on the "and" of four): a two-bar loop tiled as a sampled loop would be (soft
 stomps, four people clapping on two and four, floor toms on the "e" and "and",
 the tambourine), a pump organ drone and Pat humming the root, both pumped by
 the stomps and dipped under every sung word. Over it Strategy leads eight
-expressions (proud and humbled to announce, north star, move the needle, in
+expressions (proud and humbled to announce, north star, low-hanging fruit, in
 this economy, trust the process) with Synthia's short answers (blessed,
 learnings, and that's okay), then three couplets as call and response (an
 hour / a quick sync, a reorg / a remix, an agenda / a vibe) and "Bandwidth?"
 "None.". Each take at the amount Whisper verified it at.
 
-@@SKETCH@@
+Measured (`DIR/sketch.json`): Whisper on the voices' stem hears 42 of the 45
+words (7% word error; the prototype's sketch, 20%): "Blessed." is "Lesson.",
+"a quick sync" is "a quicksink" (the homophone; counted wrong here). Each cue cut
+from the full band: 10 of 16 exact (the prototype's, 7 of 17). Every Strategy cue
+holds in the band; Synthia's one-word answers are the ones lost ("Blessed." as
+"Bye, I see.", "Learnings." as "What is?"), and "It's a quick sync." / "It's a
+remix." lose their last word to the loop. A single short word in a dense loop
+is a hard test for Whisper; the engine's mix (a voice over the band, the band
+ducked under it) decides the rest.
 
 ## Files
 

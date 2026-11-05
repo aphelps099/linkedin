@@ -11,6 +11,8 @@
 //   8. reverse, mirror, repeat, zoom, decode and canon violations are caught
 //   9. a 60 s film: deterministic (hash of two runs) and fast (best of 7 warm compiles <= 100 ms)
 //  10. the real shot index (src/videostudio/media/shots.json), when present
+//  15. the band and the river: every track on its own form, the sample and three casting picks with the voice
+//      bank, three formats: 0 lint errors; Strategy and Synthia speak in their own tiles; the couplet drop; the river
 //  11. with --render: feature tracks from a real engine.render stems render, in
 //      headless Chromium (about 30 s): channel mapping, the choke, the ladder
 // node scripts/check-videostudio.mjs [--verbose] [--render] [--dump DIR]   (--dump writes the film's EDL and the fixture shots)
@@ -20,7 +22,9 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import http from 'node:http';
 import {createRequire} from 'node:module';
-import {FORMS} from '../src/allhands/forms.js';
+import {FORMS, formOf} from '../src/allhands/forms.js';
+import {castSong, settleCast} from '../src/allhands/casting.js';
+import {AVAILABLE} from '../src/allhands/voices/voice-table.js';
 import {lyricsFromPost, SAMPLE_POST, syllables} from '../src/allhands/lyrics.js';
 import {timingTable, STEP} from '../src/allhands/song.js';
 import {withColdOpen} from '../src/allhands/drop.js';
@@ -29,11 +33,15 @@ import {validate, stringify, parse, createEDL, merge, canonical, FX, FX_TYPES, P
 import {resolveAt, stepTime, stepAtTime, ladyTime, cutFrame, pegFrame, hitFrame, audioLatency, listAnchors} from '../src/videostudio/edl/anchors.js';
 import {EASES, evaluate, paramFn, integrateKeys, planFeatures, buildFeatures, envelope, levelOf, checkParam} from '../src/videostudio/edl/params.js';
 import {gauss, tapeCurve, speedFit, hitWarp, transportTime, clipTimeMap} from '../src/videostudio/edl/remap.js';
-import {compile, shotIndex, layerMatrix, invert, apply, resolveCrop, DECODE_LIMITS} from '../src/videostudio/edl/compile.js';
+import {compile, shotIndex, layerMatrix, invert, apply, resolveCrop, DECODE_LIMITS, UPSCALE} from '../src/videostudio/edl/compile.js';
+import {VOICE_SHOTS} from '../src/videostudio/treatments/shared.js';
+import {RIVER, RIVER_CLASSES} from '../src/videostudio/treatments/offsite-psych.js';
+import {chokeFrames, PEG_LEAD} from '../src/videostudio/edl/anchors.js';
 import {metronomeEDL, expectedCuts} from '../src/videostudio/edl/metronome.js';
 import {FORMATS, CLASSES, GUTTER, RADIUS, SAFE, HOME, FULL_BOARD, sameRect, insideSafeBand, layout, cellRect, layoutClassOf, cellIds} from '../src/videostudio/layouts.js';
 import {boardGrid, boardTypeBounds, safeSpan} from '../src/videostudio/gl/board-layer.js';
-import {buildScreens, boardState} from '../src/pegboard/choreo.js';
+import {buildScreens, boardState, paint, strikeRows, strikeWeight} from '../src/pegboard/choreo.js';
+import {PALETTE} from '../src/pegboard/board.js';
 import {LADY_TABLE} from '../src/allhands/lady-table.js';
 import {MOVES, MOVE_NAMES} from '../src/videostudio/moves/index.js';
 import {backbeatHits} from '../src/videostudio/edl/params.js';
@@ -776,6 +784,150 @@ section('14. psych imagery on the dot grid', () => {
   ok(cueCount(round) === 2 && run(edl([cue()])).board.screens.length === p.board.screens.length, 'psych cues are not screens: the song\'s screens are the same with or without them');
 });
 function boardStateAt(fr) { return boardState(drop, fr.board.time + .5 / 24 - fr.board.lead).exposure; }
+
+// 15. The band and the river (Nov 5). Every track on its own form (forms.js formOf: Offsite plays the river), cast
+// by the post with the voice bank's takes (castSong available), the sample and three picks per track, in all three
+// formats: 0 lint errors and the same bytes twice. The Drop Edition: Strategy and Synthia speak in a tile of their
+// own on the words of their band parts wherever a tile of the call can hold them (never Synergy's, Pat's, the
+// board's, a full-frame picture or L1), and a couplet drop keeps the choke's black and the ignition on the plan's
+// frames with its Y word on the board at the impact. The river: no transport, cold open, camera or board move; the
+// layout grows and shrinks with the layers on bar lines, each re-layout a dissolve; tiles enter from black and
+// change only on an "and", dissolving in, save one sharp cut per clear phrase, on its first word, where the
+// speaker's tile is at full, without effects and speaking on the words while the board shows them; Synergy at full
+// whenever he sings; most of the footage slowed, all of it R1; the river look in the board's region on nearly
+// every frame and the frame as dots at both ends; frame 0 and the last frame in one layout (the loop seam).
+const PICKS = {'circle-back':[4, 44, 59], 'humbled-and-honored':[0, 5, 13], hustle:[1, 25, 38], offsite:[24, 47, 14]};
+if (fs.existsSync(SHOTS_JSON)) section('15. the band and the river', () => {
+  const real = JSON.parse(fs.readFileSync(SHOTS_JSON, 'utf8')), idx = shotIndex(real);
+  const fixtures = JSON.parse(fs.readFileSync(path.join(ROOT, 'scripts/fixtures/pixel-posts.json'), 'utf8')).map(x => x.post);
+  const RE = {strategy:/^strategy$/i, synthia:/^synthia$/i}, chars = l => (l.shotId && idx.get(l.shotId)?.characters) || [];
+  const ceiling = (s, r) => (UPSCALE[s.sharpTier] ?? 1.5) * resolveCrop(s, {}, '9:16', r).h / r.h;
+  const tally = {words:0, spoken:0, held:0, couplets:0, rivers:0};
+  for (const track of TRACK_ORDER) for (const [name, post] of [['the sample', SAMPLE_POST], ...(PICKS[track] || []).map(i => [`fixture ${i}`, fixtures[i]])]) {
+    const form = formOf(track), cast = castSong(post, {track, available:AVAILABLE}).cast, T = treatmentFor(track);
+    const plan = settleCast(FORMS[form].arrange, lyricsFromPost(post), {}, {track, cast, coldOpen:form === 'drop60'}).plan;
+    for (const format of ['9:16', '1:1', '16:9']) {
+      const edl = T.fn(plan, real, {format}), p = compile(edl, {plan, shots:real, format}), label = `${track} ${name} ${format} (${form})`;
+      ok(p.lint.errors.length === 0 && stringify(T.fn(plan, real, {format})) === stringify(edl), `${label}: ${T.id}, ${edl.clips.length} clips, 0 lint errors${p.lint.errors.length ? ` (${p.lint.errors.slice(0, 2).map(e => `${e.rule} ${e.message}`).join('; ')})` : ''}, peak ${p.decode.max} decodes; the same bytes twice`);
+      if (form === 'drop60') bandFlow(label, plan, edl, p, format);
+      else { riverFlow(label, plan, edl, p, format); tally.rivers++; }
+    }
+  }
+  // A whip slides Synergy under a band tile (Circle Back 16:9, frame 1044, fixtures 7 and 38): G11 names the
+  // whip, the tile only in its message; bandSpeakers drops that tile and the board carries the part.
+  for (const i of [7, 38]) {
+    const track = 'circle-back', format = '16:9', cast = castSong(fixtures[i], {track, available:AVAILABLE}).cast;
+    const plan = settleCast(FORMS.drop60.arrange, lyricsFromPost(fixtures[i]), {}, {track, cast, coldOpen:true}).plan, notes = [];
+    const edl = treatmentFor(track).fn(plan, real, {format, notes}), p = compile(edl, {plan, shots:real, format});
+    ok(p.lint.errors.length === 0, `${track} fixture ${i} ${format}: no band tile covers Synergy's mouth row as a whip slides him under it (${p.lint.errors.length} lint errors${p.lint.errors.length ? `: ${p.lint.errors[0].message}` : ''})`);
+  }
+  // The couplet drop's X over the build: the film's board shows it while it is sung and when it is struck; her
+  // rungs under it (choreo screen.under) wait until it lets go, as on /allhands/'s stage (compile's screen pass).
+  // The fixture: the one named if the post still casts a couplet drop on the track, else the first that does
+  // (Nov 5: a couplet is the drop only where Whisper heard its impact, vocabulary/impact-heard.json, and
+  // fixture 42's is not heard on Circle Back).
+  const dropFixture = (track, prefer) => [prefer, ...fixtures.keys()].find(i => castSong(fixtures[i], {track, available:AVAILABLE}).cast.dropTag?.kind === 'couplet');
+  const CB = dropFixture('circle-back', 42), HU = dropFixture('hustle', 31);
+  for (const [i, track] of [[CB, 'circle-back'], [HU, 'hustle']]) {
+    const cast = castSong(fixtures[i], {track, available:AVAILABLE}).cast, format = '9:16';
+    const plan = settleCast(FORMS.drop60.arrange, lyricsFromPost(fixtures[i]), {}, {track, cast, coldOpen:true}).plan;
+    const p = compile(treatmentFor(track).fn(plan, real, {format}), {plan, shots:real, format}), at = f => p.board.screens[p.frame(f).board.screen];
+    const xs = p.board.screens.filter(s => s.over), off = [];
+    for (const s of xs) {
+      for (const w of s.words) { const f = hitFrame((w.start + w.end) / 2, plan); if (at(f) !== s) off.push(`"${w.text}" f${f}: ${at(f)?.text ?? 'none'}`); }
+      if (s.fx?.strike) { const f = hitFrame(s.fx.strike.at + s.fx.strike.draw + .02, plan); if (at(f) !== s) off.push(`strike f${f}: ${at(f)?.text ?? 'none'}`); }
+    }
+    ok(xs.length >= 2 && !off.length, `${track} fixture ${i} ${format}: the couplet drop's X (${xs.length} screens) holds the film's board while sung and struck, her rungs under it${off.length ? ` (${off.slice(0, 3).join('; ')})` : ''}`);
+  }
+  // The strike reads in the film: on the frame after it is drawn, the board's own grid (the frame's rect, the
+  // format's safe span, painted at the frame's board time as the compositor paints it) carries it in signal,
+  // strikeWeight rows tall (2 in PEG-9 and PEG-5; 1 in PEG-3, the 16:9 home's fallback for a long X), across X:
+  // the drop's X (a Circle Back couplet drop, above), the anthem's (Hustle fixture 31) and a pair (Circle Back fixture 12).
+  {
+    const seen = [], bad = [];
+    for (const [i, track] of [[CB, 'circle-back'], [HU, 'hustle'], [12, 'circle-back']]) {
+      const cast = castSong(fixtures[i], {track, available:AVAILABLE}).cast, plan = settleCast(FORMS.drop60.arrange, lyricsFromPost(fixtures[i]), {}, {track, cast, coldOpen:true}).plan;
+      for (const format of ['9:16', '1:1', '16:9']) {
+        const p = compile(treatmentFor(track).fn(plan, real, {format}), {plan, shots:real, format}), shifted = p.board.screens.map(s => ({...s, from:s.from - 1 / 48, to:s.to - 1 / 48}));
+        p.board.screens.forEach((s, j) => {
+          if (!s.fx?.strike) return;
+          const f = hitFrame(s.fx.strike.at + s.fx.strike.draw + .02, plan), fr = p.frame(f), r = fr.board?.rect;
+          if (fr.board?.screen !== j || !r) { if (s.over) bad.push(`${track} f${i} ${format} "${s.text}" not up at f${f}`); return; }
+          const g = boardGrid(Math.round(r.w), Math.round(r.h), undefined, safeSpan(r, SAFE[format])), sc = shifted[j], t = fr.board.time + 1 / 48 - (fr.board.lead ?? PEG_LEAD);
+          paint(g.board, shifted, t, {plan, layoutOf:g.layoutOf, place:g.place, pitch:g.pitch});
+          const l = g.layoutOf(sc); let page = l.pages[0]; for (const pg of l.pages) { const c0 = pg.lines[0]?.chars[0]; if (c0 && sc.words[c0.word]?.start <= t + .001) page = pg; }
+          const rows = strikeRows(sc, l, page, g.place(sc, l, page)), want = strikeWeight(l.font, l.k || 1);
+          const lit = rows.every(q => { for (let y = q.y0; y < q.y0 + q.h; y++) for (let x = Math.max(0, q.x0); x <= Math.min(g.cols - 1, q.x1); x++) { const n = y * g.cols + x; if (g.board.tone[n] !== PALETTE.signal.id || g.board.I[n] < 1 - 1e-6) return false; } return true; });
+          if (!rows.length || !lit || rows.some(q => q.h !== want)) bad.push(`${track} f${i} ${format} "${s.text}" f${f}: ${rows.map(q => q.h).join(',')} rows (want ${want})${lit ? '' : ', not lit'}`);
+          else seen.push({format, font:l.font, h:want, px:want * g.pitch});
+        });
+      }
+    }
+    const tall = seen.filter(q => q.format === '9:16');
+    ok(seen.length >= 9 && !bad.length && tall.length && tall.every(q => q.h >= 2), `the strike reads in the film: ${seen.length} struck frames across the three formats, each strikeWeight rows tall in signal across X (9:16 home: ${[...new Set(tall.map(q => `${q.h} rows of ${q.px / q.h} px, ${q.px / 4} px at 270 wide`))].join('; ')}; faces ${[...new Set(seen.map(q => `${q.format} ${q.font} ${q.h}`))].join(', ')})${bad.length ? `: ${bad.slice(0, 3).join('; ')}` : ''}`);
+  }
+  function bandFlow(label, plan, edl, p, format) {
+    // Strategy's and Synthia's words: spoken in a tile of theirs, or no tile of the call could hold them there.
+    const misses = [];
+    for (const b of (plan.band || []).filter(x => RE[x.voice])) for (const w of b.words) {
+      const f = hitFrame((w.start + w.end) / 2, plan), fr = p.frame(f);
+      tally.words++;
+      if (fr.layers.some(l => chars(l).some(c => RE[b.voice].test(c)) && l.chrome?.speaking >= .5 && l.opacity >= .99)) { tally.spoken++; continue; }
+      const takes = VOICE_SHOTS[b.voice].map(id => idx.get(id)).filter(Boolean);
+      const host = !fr.transport && fr.layout && !/^(full|L1|BOARD)/.test(fr.layout) && fr.layers.some(l => l.kind === 'video' && !l.trail && l.opacity >= .9 && l.cell.id !== 'full' && !/^L1\./.test(l.cell.id)
+        && !chars(l).some(c => /^synergy$/i.test(c)) && takes.some(s => (UPSCALE[s.sharpTier] ?? 1.5) * resolveCrop(s, {}, format, l.cell).h / l.cell.h >= 1 - 1e-9));
+      if (host) misses.push(`${b.role} "${w.display}" f${f}`); else tally.held++;
+    }
+    // The band's tiles: over a tile of the call, never over Synergy, Pat or the board.
+    const bandClips = new Set(edl.clips.filter(c => c.id.startsWith('band.')).map(c => c.id)), under = [];
+    for (const fr of p.all) for (const l of fr.layers) if (bandClips.has(l.clipId)) for (const o of fr.layers) if (o !== l && o.cell.id === l.cell.id && (chars(o).some(c => /^synergy$/i.test(c)) || o.kind !== 'video')) under.push(fr.f);
+    ok(!misses.length && !under.length, `${label}: Strategy and Synthia speak in their own tiles on every word a tile of the call can hold (${misses.length ? `missed ${misses.slice(0, 3).join(', ')}` : `${bandClips.size} band tiles`}), never over Synergy, Pat or the board`);
+    if (plan.drop?.kind === 'couplet') {
+      const {black:B, impact:I} = chokeFrames(plan), imp = plan.lady.find(e => e.role === 'impact'), sc = p.board.screens[p.frame(I).board.screen];
+      ok(p.all.slice(B, I).every(x => x.layers.every(l => l.gen === 'color:#000000')) && p.frame(B - 1).board.rect && p.frame(I).layers.some(l => l.fx.some(x => x.type === 'pegVideo')) && sc?.kind === 'impact' && !!imp,
+        `${label}: the couplet drop: true black f${B}-f${I - 1}, the ignition on f${I}, "${sc?.text}" (${imp?.voice ?? 'her'}) on the board at the impact`);
+      tally.couplets++;
+    }
+  }
+  function riverFlow(label, plan, edl, p, format) {
+    const BS = 16, QS = 4, N = p.frames, H = HOME[format];
+    ok(!edl.transports.length && !(edl.camera || []).length && !(edl.boardMoves || []).length && p.all.every(fr => sameRect(fr.board.rect, H)) && p.frame(0).layout === p.frame(N - 1).layout,
+      `${label}: no transport, camera or board move: the board stays home on all ${N} frames; frame 0 and the last frame are both ${p.frame(0).layout}`);
+    // The scenes: on bar lines, a new layout each, every one a call layout the river grows through.
+    const scenes = [...new Set(edl.clips.map(c => c.scene))].map(id => ({id, from:Math.min(...edl.clips.filter(c => c.scene === id).map(c => c.at))})).sort((a, b) => a.from - b.from);
+    const cls = scenes.map(s => layoutClassOf(edl.clips.find(c => c.scene === s.id && c.at === s.from).cell));
+    ok(scenes.every(s => s.from % BS === 0) && cls.every((k, i) => RIVER_CLASSES.includes(k) && (!i || k !== cls[i - 1])),
+      `${label}: ${scenes.length} scenes on bar lines, the layout growing and shrinking with the layers (${scenes.map((s, i) => `${cls[i]} at bar ${s.from / BS}`).join(', ')})`);
+    // Tiles: every one that starts after the film's first step starts at zero light (a dissolve, a ramp in), on an
+    // "and" or a bar line, save the clear phrases' sharp cuts.
+    const sharp = edl.clips.filter(c => /the sharp moment/.test(c.why ?? '')), soft = edl.clips.filter(c => c.at > 0 && !sharp.includes(c));
+    const zero = c => Array.isArray(c.frame?.opacity) && c.frame.opacity[0][1] === 0;
+    const bad = soft.filter(c => !zero(c) && !(c.at === scenes.find(s => s.id === c.scene)?.from && (c.frame?.opacity === undefined || zero(c))));
+    const off = soft.filter(c => c.at % BS !== 0 && Math.abs(((c.at % QS) + QS) % QS - QS / 2) > 1e-6);
+    const phrases = (plan.band || []).filter(b => b.clear !== false);
+    ok(!bad.length && !off.length && sharp.length <= phrases.length + 1 && sharp.length >= 1,
+      `${label}: every tile eases in from no light on an "and" or a bar line (${soft.length} clips); the only hard cuts are the ${sharp.length} sharp moment${sharp.length === 1 ? '' : 's'} of ${phrases.length} clear phrase${phrases.length === 1 ? '' : 's'}${bad.length ? `; hard: ${bad.slice(0, 3).map(c => c.id).join(', ')}` : ''}${off.length ? `; off the "and": ${off.slice(0, 3).map(c => `${c.id}@${c.at}`).join(', ')}` : ''}`);
+    // The clear phrases: the speaker's tile at full, without effects, speaking on each word, while the board shows it.
+    const unclear = [];
+    for (const b of phrases) for (const w of b.words) {
+      const f = hitFrame((w.start + w.end) / 2, plan), fr = p.frame(f), sc = p.board.screens[fr.board.screen];
+      const tile = fr.layers.find(l => l.opacity >= .999 && (l.chrome?.speaking ?? 0) >= .5 && (b.voice === 'lady' ? /circle back/i.test(l.chrome?.name ?? '') : chars(l).some(c => RE[b.voice]?.test(c))) && !l.fx.length);
+      if (!tile || !sc || !String(sc.text).toUpperCase().includes(String(w.display ?? w.text).toUpperCase().replace(/[.?!,]+$/, ''))) unclear.push(`"${w.display}" f${f}`);
+    }
+    ok(!unclear.length, `${label}: ${phrases.map(b => `"${b.display}" (${b.voice})`).join(' and ')}: the speaker's tile sharp and speaking on every word, the words on the board${unclear.length ? `; not on ${unclear.join(', ')}` : ''}`);
+    // Synergy at full whenever he sings, no warp, nothing over his mouth row.
+    const his = (plan.words || []).map(w => hitFrame(stepTime(plan, w.at), plan)), down = his.filter(f => !p.frame(f).layers.some(l => chars(l).some(c => /^synergy$/i.test(c)) && l.opacity >= .999 && !l.fx.some(x => FX[x.type]?.warps)));
+    ok(!down.length && p.lint.errors.every(e => e.rule !== 'G11'), `${label}: Synergy at full on all ${his.length} of his words (his hook, once), no warp, his mouth row clear`);
+    // Slow motion, R1 only; the dot grid.
+    let area = 0, slowA = 0;
+    for (let f = 0; f + 1 < N; f++) { const a = p.frame(f), b = p.frame(f + 1); for (const l of a.layers) { if (l.trail || l.kind !== 'video') continue; const n = b.layers.find(x => x.clipId === l.clipId && !x.trail); if (!n) continue; const v = Math.abs(n.srcTime - l.srcTime) * 24, w = l.cell.w * l.cell.h * l.opacity; area += w; if (v > .05 && v < .95) slowA += w; } }
+    const fast = edl.clips.filter(c => { const r = c.time?.rate, s = c.asset.startsWith('shot:') && idx.get(c.asset.slice(5)); return s && (typeof r === 'number' ? r < 1 : Array.isArray(r) && r.some(k => k[1] < 1)) && (s.reverseClass !== 'R1' || (s.action || []).includes('play')); });
+    const region = p.all.filter(fr => fr.board.psych?.some(x => !x.rect)).length, full = p.all.filter(fr => fr.board.psych?.some(x => x.cell === 'full')).map(fr => fr.f);
+    ok(slowA / area >= .5 && !fast.length && region >= .95 * N && full.some(f => f < N / 6) && full.some(f => f > N * 5 / 6),
+      `${label}: ${(100 * slowA / area).toFixed(0)} % of the footage on screen slowed, all R1; the river look in the board's region on ${region} of ${N} frames; the frame as dots at the start and the end (${full.length} frames)`);
+  }
+  ok(tally.spoken >= .8 * tally.words && tally.couplets >= 6 && tally.rivers === 12, `the band on screen: ${tally.spoken} of ${tally.words} sung words of Strategy's and Synthia's in their own speaking tiles, ${tally.held} where no tile of the call can hold one (L1, the full board, the dub delay's four Synergys); ${tally.couplets} couplet drops; ${tally.rivers} river cuts`);
+});
 function cueCount(e) { return e.board.filter(c => c.type === 'psych').length; }
 
 const dump = process.argv.indexOf('--dump');

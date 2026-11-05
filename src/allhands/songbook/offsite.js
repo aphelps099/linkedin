@@ -24,6 +24,7 @@
 // "Full stop." at 26:8 over the tape stop.
 import {HOST} from '../song.js';
 import {pitchOf} from '../drop.js';
+import {riverBand} from '../river.js';
 
 const BPM = 108, STEP = 60 / BPM / 4, SWING = .1;
 const SCALE_PCS = [2, 4, 6, 7, 9, 11, 1];            // D major
@@ -82,10 +83,12 @@ function layers(bar) {
   if (s === 'Verse') return {...base, guitar:bar >= 5, light:true, lean:bar === 8};
   if (s === 'Build') {
     const r = bar - 9;
-    // The loop runs on under her ladder, thinning as the drum bus high-passes upward; the desk slaps roll on top.
-    return {...base, drums:'build', groove:'build', rung:r, loop:[.6, .58, .55, .5, .45, .4][r], kick:bar < 12, typing:bar < 12 ? .3 : 0, mug:false, bass:bar < 11 ? 'pedal' : false, guitar:bar < 11,
-      roll:[[4, .2, .26], [2, .26, .34], [2, .32, .42], [1, .42, .56], [.5, .56, .72], [.5, .72, .86]][r],
-      drumHp:[[30, 90], [90, 140], [140, 220], [220, 340], [340, 500], [500, 500]][r], rise:bar >= 12, voiceLp:bar < 11 ? 1800 : false};
+    // The loop runs on under her ladder to the choke, steady (Nov 5, the last verification: it used to drop
+    // out in the last two build bars, the stomps gone and the bus high-passed to 500 Hz); the drum bus
+    // high-passes a little, and the desk slaps roll on top, a step under the loop.
+    return {...base, drums:'build', groove:'build', rung:r, loop:[.6, .6, .58, .57, .56, .55][r], kick:true, typing:bar < 12 ? .3 : .2, mug:false, bass:bar < 11 ? 'pedal' : false, guitar:bar < 11,
+      roll:[[4, .2, .26], [2, .26, .34], [2, .32, .42], [1, .36, .48], [.5, .42, .54], [.5, .5, .6]][r],
+      drumHp:[[30, 90], [90, 120], [120, 150], [150, 170], [170, 180], [180, 180]][r], rise:bar >= 12, voiceLp:bar < 11 ? 1800 : false};
   }
   // The drops lift through the voices, brightness and the loop's fullness: every hand in the room, a second room on the "and"s.
   if (s === 'Drop A') return {...base, groove:'chant', loop:1, typing:.3, bass:'walk', vowel:'ah', guitar:true, loud:true, impact:bar === IMPACT, chant:bar > IMPACT};
@@ -552,8 +555,145 @@ const band = {
   graph:buildOwn,
 };
 
+// ---- the river (forms.js 'wander'): Offsite's form since Nov 5 ------------------------
+// Aaron, on the Panda Bear sketch: "it's probably too much vocals packed in the panda bear
+// sounds. We want our repetitious rhythmatic and use samples in a repeating pattern so you
+// get like a pixelated diffusion of sound that builds in a beautiful melodic stream with
+// overlays and sound textures. That pair with beautiful tambourine and some acoustic
+// sounding instruments although it's 90% electronic. Think of it as a natural river of
+// electronic sound: it has a nice flow, however sometimes the flow gently changes."
+// 27 bars, 60.0 s, the same 108 BPM and D major. No ladder, no choke, no BACK.: her
+// syllables loop first and alone, repeat and thicken (copies, offsets, pitch steps, a
+// granular smear) into a pixelated stream; only then do his word and the couplet's
+// "It's not X." join, each fading and filtering in over bars; the loop of hands runs
+// every bar; the tambourine stays in the background and comes up where the texture
+// swells; a pluck, a felt piano and a kalimba-like mallet carry the melody on a pitch
+// window that drifts. Two clear phrases rise out of the stream and sink back in (the
+// couplet's "It's Y." at the swell, the refrain in the pool), and Synergy sings his
+// hook once, early, washed. It ends on the fullest texture dissolving, a long fade.
+const RIVER_SECTIONS = [
+  {name:'Source', from:0, to:2},       // her syllables alone over a soft pulse, the room waking up
+  {name:'Stream', from:2, to:10},      // the pattern repeats and thickens (copies, the smear); the drone; his hook, once
+  {name:'Current', from:10, to:15},    // lush by bar 12: then Pat, the tambourine, the pluck, his word, "It's not X." 
+  {name:'Swell', from:15, to:21},      // the fullest: the mallet, the tambourine up, "It's Y." rises
+  {name:'Pool', from:21, to:24},       // the flow slows under itself; the refrain rises
+  {name:'Delta', from:24, to:27},      // the fullest texture dissolving, a long fade
+];
+const RIVER_BARS = 27;
+const riverChord = bar => (bar % 4 < 2 ? C.Dadd9 : C.G69);
+const riverSection = bar => (RIVER_SECTIONS.find(s => bar >= s.from && bar < s.to) || RIVER_SECTIONS.at(-1)).name;
+// Keyframes over bars, cosine-eased: the river's slow drifts.
+const ease = (keys, x) => {
+  if (x <= keys[0][0]) return keys[0][1];
+  for (let i = 1; i < keys.length; i++) if (x <= keys[i][0]) { const [a, u] = keys[i - 1], [b, v] = keys[i], k = (1 - Math.cos(Math.PI * (x - a) / (b - a))) / 2; return u + (v - u) * k; }
+  return keys.at(-1)[1];
+};
+const ENERGY_KEYS = [[0, .7], [2, .69], [4, .67], [10, .64], [14, .68], [16, .74], [18, .78], [21, .76], [22, .66], [23.5, .7], [25, .74], [27, 0]];
+const WINDOW_KEYS = [[0, 62], [8, 64], [16, 69], [22, 66], [27, 62]];   // the pitch window of the colours: D4, up to A4 at the swell, home
+// The chart's layers (bars). Every ramp is two to eight bars; nothing arrives or leaves on a bar line.
+// The bloom (Aaron, Nov 5: it opened as a groove, every layer in within six bars): her pattern first,
+// over the soft pulse of the stomps (the loop's other hands join it bar by bar, RIVER_LOOP.from); it
+// repeats and thickens (her copies from bar 3, the smear from bar 6) under the drone from bar 7, and is
+// lush around bar 12; only then do Pat, the tambourine (in the background, a little later) and Kevin,
+// the pluck and his word, "It's not X." and the felt piano, then the mallet ramp in, two a bar at most
+// (spread so the video's river cut never asks for more than eight live decodes at once, G5).
+const LAYERS = [
+  {id:'her', kind:'texture', source:'her', stem:'lady', what:'her syllables on a two-bar pattern, the first sound and the last', in:[0, 2], out:[23, 27], level:.8, open:6500, wash:[[0, .3], [12, .45], [24, .6], [27, .8]], delay:[[0, .18], [10, .24]], pans:[[0, -.15], [12, .15], [24, -.1]]},
+  {id:'loop', kind:'loop', stem:'drums', what:'the loop: soft stomps from the first bar (the pulse), then the printer, a room clapping on two and four, floor toms after the beats, typing', in:[1, 4], out:[25, 27], level:1.4, open:16000, shut:1800, hp:70, swell:[[8, .9], [12, 1.05], [16, 1.15], [21, 1.15], [22, 1], [24, 1.1]]},
+  {id:'her-copies', kind:'texture', source:'her', stem:'lady', what:'her syllables again: copies a dotted 8th on, pitch steps, both words', in:[3, 7], out:[22, 26], level:.6, open:7000, wash:[[3, .4], [18, .55]], delay:[[3, .3]], pans:[[3, .2], [16, -.2]]},
+  {id:'smear', kind:'texture', source:'her', stem:'lady', what:'the granular smear: her syllables in grains, heavily pixelated, wide', in:[6, 10], out:[24, 27], level:.7, open:9000, wash:[[6, .5], [22, .65], [27, .9]], delay:[[6, .3]], swell:[[18, 1.1], [24, 1.3]]},
+  {id:'drone', kind:'drone', stem:'keys', what:'the pump organ and the wordless choir, one chord at a time', in:[7, 11], out:[24, 27], level:.75, open:4200, shut:300, filter:[[16, 5200], [21, 3200], [24, 4500]]},
+  {id:'bass', kind:'bass', stem:'bass', what:'Pat humming the root on the offbeats', in:[10, 13], out:[24, 27], level:.36, open:2200, shut:120},
+  {id:'tambourine', kind:'tambourine', stem:'drums', what:'the tambourine, in the background, a little later, up a little where the texture swells', in:[11, 14], out:[24, 27], level:2.2, open:16000, shut:3000, swell:[[15, 1], [17, 1.45], [21, 1.45], [22, 1], [24, 1.3]]},
+  {id:'plucks', kind:'colour', stem:'guitar', what:'a plucked string (Karplus-Strong), an arpeggio on the drifting pitch window', in:[12, 14], out:[22, 26], level:.28, open:7000, wash:[[12, .25], [16, .35]], delay:[[12, .25]], pans:[[12, -.2], [16, .2], [22, 0]]},
+  {id:'his', kind:'texture', source:'his', stem:'lady', hp:170, what:"Strategy's word in grains, low, looped", in:[12, 15], out:[21, 25], level:.75, open:4500, wash:[[12, .45]], delay:[[12, .25]], pans:[[12, -.3], [20, .1]]},
+  {id:'x', kind:'texture', source:'x', stem:'lady', hp:170, what:'"It\'s not X." in pieces, looped into the texture before Y rises', in:[13, 16], out:[17, 20], level:.68, open:3500, wash:[[13, .45]], delay:[[13, .3]], pans:[[13, .25], [17, -.25]]},
+  {id:'guitar', kind:'guitar', stem:'guitar', what:"Kevin's clean figure on the offbeats", in:[11.5, 15], out:[20, 23], level:.65, open:5000, delay:[[11.5, .3]]},
+  {id:'felt', kind:'colour', stem:'keys', hp:200, what:'a felt piano on the chord, twice a bar', in:[13.5, 16], out:[23, 26], level:.27, open:5000, wash:[[13.5, .3]]},
+  {id:'mallet', kind:'colour', stem:'keys', what:'a kalimba-like mallet, a counter-line over the window', in:[15, 18], out:[24, 27], level:.19, open:9000, wash:[[15, .3], [24, .6]], delay:[[15, .35]]},
+];
+// Two-bar texture patterns (16ths 0-31): `deg` pentatonic steps from the cut's own pitch; `len` 16ths
+// of the cut from `pos` of the way into it. Grains, not words: no hit plays a whole word (the old len-2
+// hits did, and Whisper heard fixture 31's "drop, drop, drop" through the stream), each half a 16th
+// (about 70 ms) from inside the word, past its onset, a pitch step from the last, a few smeared grains
+// round it, into the diffusion.
+// The words are heard only in the clear phrases.
+const RIVER_ECHO = {amount:.65, smear:3, smearSteps:[0, 2, -2], seed:5, hits:[{at:4, deg:0, len:.5, pos:.35}, {at:12, deg:2, pan:.3, len:.5, pos:.55}, {at:20, deg:1, pan:-.3, len:.5, pos:.3}, {at:28, deg:-1, len:.5, pos:.45}]};
+const TEXTURES = {
+  her:{amount:.65, smear:2, smearSteps:[0, 2, -2], seed:1, hits:[[2, 0, .3], [6, 2, .45], [10, 1, .35], [14, 3, .55], [18, 0, .4], [22, 2, .5], [26, 4, .3], [30, 1, .6]].map(([at, deg, pos]) => ({at, deg, pos, len:.5}))},
+  'her-copies':{amount:.7, smear:2, smearSteps:[0, 2, 4], seed:2, hits:[[0, 2, 1, -.5, .35], [3, 4, 0, .5, .5], [8, 1, 1, -.3, .3], [11, 3, 0, .4, .45], [16, 2, 1, .5, .6], [19, 5, 0, -.5, .3], [24, 1, 1, .3, .5], [27, 3, 0, -.4, .4]].map(([at, deg, cut, pan, pos]) => ({at, deg, cut, pan, pos, len:.5}))},
+  his:{amount:.65, smear:2, smearSteps:[0, -2, 2], seed:3, hits:[{at:7, deg:0, len:.5, pos:.35}, {at:14, deg:-1, len:.5, pos:.55}, {at:23, deg:1, len:.5, pos:.3}, {at:30, deg:0, len:.5, pos:.6}]},
+  smear:{amount:.85, smear:5, smearSteps:[-2, 0, 2, 4], seed:4, hits:Array.from({length:16}, (_, i) => ({at:i * 2 + 1, deg:[0, 2, 4, 1, 3, 5, 2, 0][i % 8], cut:i % 2, len:.5, pos:[.35, .55, .45, .6][i % 4], gain:.55, pan:i % 2 ? .6 : -.6}))},
+  x:{amount:.6, smear:2, smearSteps:[0, 2], seed:6, hits:[{at:0, cut:0, len:.5, pos:.3}, {at:2, cut:1, len:.5, pos:.4}, {at:6, cut:9, len:.5, pos:.35}, {at:9, cut:9, len:.5, pos:.6, deg:2}, {at:16, cut:0, len:.5, pos:.3, deg:1}, {at:18, cut:1, len:.5, pos:.5, deg:1}, {at:22, cut:9, len:.5, pos:.3, deg:-1}, {at:25, cut:9, len:.5, pos:.55, deg:1}]},
+  'couplet-y-echo':RIVER_ECHO,
+  'refrain-echo':RIVER_ECHO,
+};
+const PLUCKS = [0, null, 2, 4, null, 3, 1, null, 2, null, 4, 5, null, 3, 2, null, 1, null, 3, 5, null, 4, 2, null, 3, null, 5, 6, null, 4, 2, null];
+const MALLET = Array.from({length:64}, (_, i) => ({3:4, 7:2, 11:3, 14:1, 19:5, 27:2, 35:4, 39:3, 46:2, 55:1, 59:0})[i] ?? null);
+const RIVER_LOOP = {
+  // The bar each part of the loop starts to ramp in from (over two bars): the stomps are the pulse from
+  // the start, the printer, the room's claps, the toms and the typing join as the texture thickens.
+  from:{stomps:1, shaker:5, claps:8, toms:10, type:12},
+  stomps:[[0, .22], [4, .26], [8, .22], [12, .26]], stomp:STOMP,
+  claps:[[4, .72, 0], [12, .72, 0], [2, .22, 2], [10, .2, 2]],
+  toms:TOMS.map(([at, v, midi, decay]) => [at, v * .4, midi, decay * .8]),
+  shake:[.08, .14, .26, .17], type:TYPE.map(v => v * .8),
+};
+const riverLayers = bar => ({drums:'river', groove:'river', loop:bar >= 1, kick:bar >= 1, clap:bar >= 1, toms:bar >= 1, shaker:bar >= 1, tambourine:bar >= 2, bass:bar >= 3 ? 'hum' : false,
+  keys:'drone', pad:bar >= 1, guitar:bar >= 9 && bar < 22, colours:bar >= 4, textures:true});
+const WANDER = {
+  bars:RIVER_BARS, sections:RIVER_SECTIONS, swing:.08, pentatonic:PENTA, chordAt:riverChord,
+  layers:riverLayers, cutoff:() => ({keys:[16000, 16000], pad:[16000, 16000]}), energy:bar => ease(ENERGY_KEYS, bar), window:x => ease(WINDOW_KEYS, x),
+  // Synergy, once: his hook in the stream, washed (or null: not at all).
+  hook:{bar:7, startStep:0, window:24},
+  // Where the clear phrases rise (bars): the couplet's "It's Y." at the swell, the refrain in the pool.
+  phrases:{y:17, refrain:22},
+  layerSpec:LAYERS, textures:TEXTURES, plucks:PLUCKS, mallet:MALLET, figure:[[2, 0], [6, 1], [10, 3], [14, 1]],
+  loop:RIVER_LOOP, tambourine:{shakes:[.2, .11, .46, .16], hits:[12]},
+  // Where the texture comes up (the swell, then the pool where the refrain rises), over the stream it grew from.
+  swells:[{name:'Swell', from:16, to:21, ref:[3, 10]}, {name:'Pool', from:21.5, to:24, ref:[3, 10]}],
+  slow:[{from:21, to:23.5, what:'the pool: the river slows to half speed under itself', level:.55, fade:1.5}],
+  fade:[25, 27],
+  // dB on the river's output (plan.makeup, engine.js): the bloom's sparse first bars sit low, so the song
+  // comes back to -10 LUFS here (the swells keep their lift over the stream).
+  makeup:2,
+  // His hook, washed into the stream (his stem's level), and the clear phrases' rise over the texture (dB).
+  voiceLevel:.6, phraseGain:2, yLift:3,     // the couplet's Y, a short word or two at the swell, a little more
+  synthiaAmount:.3,                          // her pixels over the stream: light
+  drifts:[{what:'the pitch window of the colours (MIDI)', param:'window', points:WINDOW_KEYS}, {what:'the river\'s energy', param:'energy', points:ENERGY_KEYS}],
+  // A song picked by hand (today's cast, no band): the river's own couplet and refrain.
+  defaults:{
+    couplet:{id:'hour-quick-sync', topic:'meetings', line:"It's not an hour. It's a quick sync.", recorded:false,
+      x:{voice:'strategy', id:'hour-quick-sync-call', text:"It's not an hour.", display:"IT'S NOT AN HOUR."}, y:{voice:'synthia', id:'hour-quick-sync-response', text:"It's a quick sync.", display:"IT'S A QUICK SYNC."}},
+    refrain:{voice:'lady', file:'41.wav', words:[0, 2], text:'The journey continues.', display:'THE JOURNEY CONTINUES.'},
+    stabs:[{voice:'strategy', id:'north-star', text:'North star', display:'NORTH STAR'}],
+  },
+  kicksOf:(bar, L) => (L.kick ? [0, 4, 8, 12] : []),
+  // The constitution (CONSTITUTION.md, the river): what each band role plays here.
+  palette:{
+    synth:"Synergy's vocoder, once (his hook, washed into the diffusion); the textures: her syllables and Strategy's words cut, pitched onto the pentatonic and pixelated.",
+    keys:'A pump organ and the wordless choir as the drone; a felt piano on the chord, twice a bar; a kalimba-like mallet, a counter-line.',
+    drums:'One loop of hands and floors in every bar: soft stomps, a room clapping on two and four, floor toms after the beats, the printer as the shaker, keyboard clatter; the tambourine in the background.',
+    bass:'Pat: a warm hum on the root, on the offbeats.',
+    guitar:"Kevin: a clean figure on the offbeats, and a plucked string's arpeggio. Never a solo.",
+  },
+  acoustic:['plucks', 'felt', 'mallet', 'tambourine'],
+  references:{
+    'panda-bear':'The lane: short samples of voices repeating in a steady pattern until they diffuse into a melodic stream, layered only once the texture is lush; delay and diffusion as rhythm and space.',
+    'washed-out':'The warmth: soft focus, the drone, the slow tape under the pool, a long fade.',
+    'daft-punk':'The spine, worn lightly: his vocoder once, a soft four on the floor pumping the drone and Pat.',
+    kraftwerk:'The grid under the haze: every sample cut to the 16th, pixelated (the sample-and-hold, the crush).',
+  },
+  story:{synergy:'Simple and a little stiff: his hook once, early, washed into the stream.', synthia:null},
+};
+WANDER.band = riverBand(WANDER);
+
 export default {
   id:'offsite',
+  // The form this track plays (forms.js): the river. Its Drop Edition below stays arrangeable (the
+  // video studio's Offsite treatment and the older checks read it), but the page plays the river.
+  form:'wander',
+  wander:WANDER,
   title:'Offsite',
   genre:'Voice-loop psych pop',
   note:'108 BPM · D major · one loop, a round of voices, hands and floors',

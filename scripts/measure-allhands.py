@@ -8,6 +8,8 @@ Gates (defaults; every limit has a flag):
   integrated loudness -10 +-1 LUFS; true peak <= -1.0 dBTP; LRA 5-8 LU (warn)
   every Drop* section >= +2.5 LU over the Verse* sections (section-integrated,
     BS.1770 gated), on the mix and through a phone speaker (mono, HP 300 Hz, LP 8 kHz)
+  the river (plan form 'wander'): every plan swell >= +2 LU over its reference
+    span on the phone (--swell-lift; the mix lift reported), no Drop/Verse gate
   --silence windows: sample peak < -60 dBFS
   side/mid in each Drop* section -13..-10 dB (warn); mono fold-down loss < 2 dB
   clipped samples (digital full scale) == 0
@@ -158,7 +160,7 @@ def load_plan(path):
     plan = data.get('plan', data) if isinstance(data, dict) else {}
     pick = lambda key: plan.get(key, data.get(key)) if isinstance(plan, dict) else data.get(key)
     return {'path': path, 'lines': pick('lines') or [], 'sections': pick('sections'), 'timing': pick('timing'),
-            'bpm': pick('bpm'), 'swing': pick('swing')}
+            'bpm': pick('bpm'), 'swing': pick('swing'), 'form': pick('form'), 'swells': pick('swells') or [], 'offset': pick('offset')}
 
 
 class Clock:
@@ -538,6 +540,7 @@ def main(argv=None):
     g.add_argument('--lra-min', type=float, default=5.0)
     g.add_argument('--lra-max', type=float, default=8.0)
     g.add_argument('--drop-lift', type=float, default=2.5, help='LU the Drop must exceed the Verse by')
+    g.add_argument('--swell-lift', type=float, default=2.0, help='LU a river swell must exceed its reference by, on the phone')
     g.add_argument('--phone-hp', type=float, default=300.0)
     g.add_argument('--phone-lp', type=float, default=8000.0)
     g.add_argument('--silence-max', type=float, default=-60.0, help='dBFS sample peak')
@@ -691,11 +694,29 @@ def main(argv=None):
             gate(f'{label} (mix)', 'PASS' if lift >= args.drop_lift else 'FAIL', f'{lift:+.2f} LU', f'>= +{args.drop_lift:g}')
             gate(f'{label} (phone)', 'PASS' if lift_phone >= args.drop_lift else 'FAIL', f'{lift_phone:+.2f} LU',
                  f'>= +{args.drop_lift:g}', f'mono, HP {args.phone_hp:g} Hz, LP {args.phone_lp:g} Hz')
+    elif (plan or {}).get('form') == 'wander':
+        pass   # the river has swells, not drops (below)
     else:
         outside = [s['name'] for s in sections if s['missing']]
         gate('Drop vs Verse', 'WARN', '--', f'>= +{args.drop_lift:g}',
              'no sections given' if not sections else 'needs a Drop* and a Verse* section'
              + (f'; outside the file: {", ".join(outside)}' if outside else ''))
+
+    # The river's swells (wander.js plan.swells, plan seconds): each over its reference span.
+    swells = []
+    if plan and plan.get('form') == 'wander':
+        off = plan.get('offset') if plan.get('offset') is not None else args.offset
+        for w in plan.get('swells') or []:
+            a, b, ra, rb = off + w['from'], off + w['to'], off + w['ref'][0], off + w['ref'][1]
+            mix, ref = meter.integrated(a, b), meter.integrated(ra, rb)
+            ph, ref_ph = phone.integrated(a, b), phone.integrated(ra, rb)
+            row = {'name': w['name'], 'span': [a, b], 'ref': [ra, rb], 'lufs': mix, 'ref_lufs': ref, 'lift_lu': mix - ref,
+                   'phone_lufs': ph, 'ref_phone_lufs': ref_ph, 'phone_lift_lu': ph - ref_ph}
+            swells.append(row)
+            gate(f'Swell {w["name"]} (phone)', 'PASS' if row['phone_lift_lu'] >= args.swell_lift else 'FAIL', f'{row["phone_lift_lu"]:+.2f} LU',
+                 f'>= +{args.swell_lift:g}', f'mix {row["lift_lu"]:+.2f} LU over {ra:.1f}-{rb:.1f} s')
+        if not swells:
+            gate('Swells', 'WARN', '--', f'>= +{args.swell_lift:g}', 'the plan names no swells')
 
     for s in silences:
         ok = s['inside_file'] and s['peak_dbfs'] < args.silence_max
@@ -820,7 +841,7 @@ def main(argv=None):
             'loudness': {'integrated_lufs': I, 'lra_lu': LRA, 'lra_low': ff['LRA_low'], 'lra_high': ff['LRA_high'],
                          'true_peak_dbtp': TP, 'sample_peak_dbfs': ff['SP'], 'plr_db': TP - I},
             'overall': {k: v for k, v in overall.items() if k not in ('short_term', 'momentary')},
-            'clipping': clip, 'sections': present, 'drop_vs_verse': drop_vs_verse, 'silence': silences,
+            'clipping': clip, 'sections': present, 'drop_vs_verse': drop_vs_verse, 'swells': swells, 'silence': silences,
             'whisper': whisper, 'crosscheck': cross, 'bars': bars, 'gates': gates, 'result': result,
         }
         with open(args.json_out, 'w') as f:

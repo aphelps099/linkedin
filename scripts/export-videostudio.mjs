@@ -9,7 +9,8 @@
 //       [--post FILE] [--auto] [--no-cold-open] [--no-audio] [--no-governor] [--out DIR] [--name NAME] [--url http://127.0.0.1:5351 | --port 5351]
 //
 // The film opens cold (the impact at frame 0, then the rewind), as the monitor's does. --post cuts
-// another post; --auto lets the post choose its track and the lady's lines (casting.js castSong),
+// another post; --auto lets the post choose its track and the lady's lines (casting.js castSong; with --track, the
+// post's cast on that track),
 // as /allhands/ and the monitor's Let the post choose do; --track picks one by hand.
 //
 // Without --url it starts its own Vite dev server (the project's config, so the
@@ -58,7 +59,8 @@ export async function exportPage(browser, origin, {log = () => {}} = {}) {
     const X = window.X = {};
     Object.assign(X, await m('/src/videostudio/render/export.js'), await m('/src/videostudio/edl/compile.js'), await m('/src/videostudio/edl/schema.js'),
       await m('/src/videostudio/edl/metronome.js'), await m('/src/videostudio/edl/anchors.js'), await m('/src/videostudio/media/decoder.js'));
-    X.FORMS = (await m('/src/allhands/forms.js')).FORMS;
+    ({FORMS:X.FORMS, formOf:X.formOf} = await m('/src/allhands/forms.js'));
+    X.AVAILABLE = (await m('/src/allhands/voices/voice-table.js')).AVAILABLE;
     X.L = await m('/src/allhands/lyrics.js');
     X.voice = await m('/src/allhands/voice.js');
     X.lady = await m('/src/allhands/lady.js');
@@ -69,14 +71,17 @@ export async function exportPage(browser, origin, {log = () => {}} = {}) {
     // offsite-psych, every other track drop60-draft); 'draft' is drop60-draft; or a treatment id.
     X.T = await m('/src/videostudio/treatments/index.js');
     X.treatment = async (name, track) => name === 'studio' ? {id:'studio', fn:(await m('/src/videostudio/studio-film.js')).studioFilm} : X.T.treatmentNamed(name, track);
-    // The song as the monitor plays it: the post's track and cast (auto) or a track by hand,
-    // Synergy's measured words, then the lady; the cold open unless coldOpen is false.
+    // The song as the monitor plays it: the post's track and cast (auto; with a track, the post's cast on that
+    // track, as /allhands/ renders it) or a track by hand, each on its own form (Offsite: the river), with the
+    // voice bank's takes; Synergy's measured words, then the lady; the cold open (the Drop Edition only) unless
+    // coldOpen is false.
     X.song = async ({track, voice = true, post, auto = false, coldOpen = true} = {}) => {
-      const form = X.FORMS.drop60, text = post ?? X.L.SAMPLE_POST, lyrics = X.L.lyricsFromPost(text), ctx = new OfflineAudioContext(1, 1, 44100);
-      const casting = auto ? X.casting.castSong(text) : null, playTrack = casting ? casting.track : track;
+      const text = post ?? X.L.SAMPLE_POST, lyrics = X.L.lyricsFromPost(text), ctx = new OfflineAudioContext(1, 1, 44100);
+      const casting = auto ? X.casting.castSong(text, {track, available:X.AVAILABLE}) : null, playTrack = casting ? casting.track : track;
+      const form = X.FORMS[X.formOf(playTrack)] ?? X.FORMS.drop60;
       let buffers = new Map(), durations = {};
       if (voice) ({buffers, durations} = await X.voice.loadWords(ctx, form.voiced(lyrics, {track:playTrack})));
-      const {plan} = X.casting.settleCast(form.arrange, lyrics, durations, {track:playTrack, cast:casting?.cast, coldOpen});
+      const {plan} = X.casting.settleCast(form.arrange, lyrics, durations, {track:playTrack, cast:casting?.cast, coldOpen:coldOpen && form.id === 'drop60'});
       const lady = await X.lady.prepareLady(ctx, plan);
       return {plan, song:{buffers, lady}, voiced:buffers.size, casting:casting && {track:casting.track, line:casting.line, recast:casting.recast}};
     };

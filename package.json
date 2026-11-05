@@ -29,6 +29,7 @@
     "check:pegboard": "node scripts/check-pegboard.mjs",
     "check:songbook": "node scripts/check-songbook.mjs",
     "check:casting": "node scripts/check-casting.mjs",
+    "check:song-voices": "node scripts/check-song-voices.mjs",
     "check:review-audio": "node scripts/check-review-audio.mjs",
     "check:review-video": "node scripts/check-review-video.mjs",
     "check:shots": "node scripts/check-shot-index.mjs",

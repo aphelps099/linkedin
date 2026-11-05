@@ -192,7 +192,8 @@ export function placeSlot(slot, lyrics, durations, id, music = {}) {
   const window = slot.window ?? 30, startStep = slot.startStep ?? 0;
   // A phrase that fits in one bar is sung twice: once is a line, twice is a hook.
   const once = fitPhrase(slot.text, durations, Math.min(14, window), step);
-  const short = slot.kind === 'hook' && window >= 30 - startStep && once.length === tokens(slot.text).length && once.every(w => w.rate < 1.25)
+  // slot.once: the band answers the hook (band.js), so Synergy sings it once.
+  const short = !slot.once && slot.kind === 'hook' && window >= 30 - startStep && once.length === tokens(slot.text).length && once.every(w => w.rate < 1.25)
     && once.at(-1).at + once.at(-1).steps <= BAR_STEPS - startStep;
   const fitted = short ? [...once, ...once.map(w => ({...w, at:w.at + BAR_STEPS, echo:true}))] : fitPhrase(slot.text, durations, window, step, slot.spill ?? 0);
   // A repeated hook answers itself: same tune, but the second time it comes home.

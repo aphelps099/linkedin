@@ -150,6 +150,19 @@ canvas{display:block}
 .pt-chart-labels{position:absolute;inset:0;z-index:1;pointer-events:none}
 .pt-chart-labels span{position:absolute;font:500 9.5px/1 var(--mono);letter-spacing:.1em;text-align:center;color:rgba(169,196,255,.72);white-space:nowrap;transform:translateY(-50%)}
 
+/* couplet */
+.pt-couplet-stage{aspect-ratio:16/7;transition:aspect-ratio .3s}
+.pt-couplet-stage[data-board=film]{aspect-ratio:1056/342}
+.pt-couplet-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:28px 0 0;padding:0;list-style:none;counter-reset:cp}
+.pt-couplet-list button{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;width:100%;padding:14px 16px;text-align:left;box-shadow:inset 0 0 0 1px var(--rule);transition:box-shadow .2s}
+.pt-couplet-list button:hover{box-shadow:inset 0 0 0 1px var(--faint)}
+.pt-couplet-list button[aria-pressed=true]{box-shadow:inset 0 0 0 1px var(--blue),0 0 22px rgba(43,120,255,.3)}
+.pt-couplet-list .n{font:500 10px/1.7 var(--mono);color:var(--signal)}
+.pt-couplet-list .x{font:600 15px/1.35 var(--sans);letter-spacing:-.01em;color:var(--dim)}
+.pt-couplet-list .x s{text-decoration-color:var(--signal);text-decoration-thickness:2px}
+.pt-couplet-list .y{grid-column:2;font:600 15px/1.35 var(--sans);letter-spacing:-.01em}
+.pt-couplet-list .m{grid-column:2;font:500 9.5px/1.4 var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--faint)}
+
 /* psych */
 .pt-psych-stage{aspect-ratio:16/7}
 .pt-psych-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:36px 16px;margin:44px 0 0;padding:0;list-style:none}
@@ -219,6 +232,8 @@ canvas{display:block}
   .pt-cards[data-format="16:9"]{--card:260px}
   .pt-chart{aspect-ratio:4/3}
   .pt-psych-stage{aspect-ratio:4/5}
+  .pt-couplet-stage{aspect-ratio:4/3}
+  .pt-couplet-list{grid-template-columns:1fr;gap:10px}
   .pt-psych-grid{gap:28px 12px;margin-top:32px}
   .pt-psych-cap .d{display:none}
   .pt-rules li{grid-template-columns:40px minmax(0,1fr);gap:12px}

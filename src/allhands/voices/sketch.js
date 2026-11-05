@@ -25,7 +25,7 @@ const PROGRESSION = ['D', 'D', 'G', 'G', 'D', 'D', 'G', 'G', 'D'];
 // lands on the 16th. Strategy leads the lexicon; Synthia answers in a few words.
 export const CUES = [
   [1, 0, 'strategy/proud-and-humbled'], [1, 12, 'synthia/blessed'],
-  [2, 0, 'strategy/north-star'], [2, 8, 'strategy/move-the-needle'],
+  [2, 0, 'strategy/north-star'], [2, 8, 'strategy/low-hanging-fruit'],
   [3, 0, 'strategy/in-this-economy'], [3, 10, 'synthia/learnings'],
   [4, 0, 'strategy/trust-the-process'], [4, 10, 'synthia/and-thats-okay'],
   [5, 0, 'strategy/hour-quick-sync-call'], [5, 8, 'synthia/hour-quick-sync-response'],
