@@ -451,7 +451,7 @@ const fitOf = (role, c, track) => { const key = `${role}|${c.file}|${c.words}|${
 // followed at half speed in the song's mix (`sinkRecall` of her words). Today's line
 // is one of them, a little likelier (`today`), never fixed.
 export const LADY_ROTATION = Object.freeze({
-  floor:{sink:.7, punct:.6, stop:.6, lift:.6, bend:.6}, sinkRecall:.75, today:.3, homeWeight:1.5, near:.6, caps:{max:16, distinct:8},
+  floor:{sink:.7, punct:.6, stop:.6, lift:.6, bend:.6}, sinkRecall:.75, today:.8, homeWeight:1.5, near:.6, caps:{max:16, distinct:8},
   salt:{sink:41, punct:42, stop:43, lift:44, bend:45},
 });
 export const LADY_SLOTS = BEAM_ROLES;
@@ -581,7 +581,6 @@ export const ROTATION = Object.freeze({
   sensitiveFamilies:['jargon', 'single', 'call', 'closer'],
 });
 export const BAND_SLOTS = ['drop', 'couplet', 'ladder', 'refrain', 'signoff', 'exchanges', 'stabs'];
-const UNIFORM = 40;
 const P = ROTATION;
 const HOME = LEXICON.casting.home, HOUSE = LEXICON.casting.house, EVERGREEN = LEXICON.casting.evergreen;
 const TOPIC_GROUPS = Object.fromEntries(Object.entries(LEXICON.topics).map(([t, d]) => [t, d.concepts]));
@@ -796,7 +795,7 @@ function makeState(reading, track, {seed, recent, available, hook, flags}) {
 }
 
 const levelName = {topic:'on topic', house:'the house rotation', evergreen:'an evergreen line', any:'the best that fits'};
-function pick(slot, pool, S, {salt, allow = () => true, shown = c => c.shown, also = () => 1, wide = null}) {
+function pick(slot, pool, S, {salt, allow = () => true, shown = c => c.shown, also = () => 1, wide = null, any = false}) {
   let list = [];
   for (const c of pool) {
     if (!c.ok(S.track) || !allow(c) || !S.free(c)) continue;
@@ -814,7 +813,8 @@ function pick(slot, pool, S, {salt, allow = () => true, shown = c => c.shown, al
   const fresh = list.filter(x => !x.repeats);
   if (fresh.length) list = fresh;
   const house = houseOf(slot, S.track, pool), ever = evergreenOf(slot, pool);
-  let level = 'topic', tier = list.filter(x => x.rel.points >= P.minRel[slot]);
+  // any: every free line as likely (less freshness and repeats), whatever its topic.
+  let level = any ? 'any' : 'topic', tier = any ? list : list.filter(x => x.rel.points >= P.minRel[slot]);
   // The house: the track's own rotation and the lines at home in it.
   if (!tier.length) { level = 'house'; tier = list.filter(x => house.has(x.c.key) || x.home); }
   if (!tier.length) { level = 'evergreen'; tier = list.filter(x => ever.has(x.c.key)); }
@@ -883,9 +883,9 @@ export function castSong(post, {seed = 0, track, recent, available, candidates =
     // the couplet slot's close calls do, P.near.couplet), so a track with few couplets heard does not drop on
     // the same one every time. Strongly on topic, the couplets join her tags and the best wins.
     const byHash = fnv(reading.text, S.salt(P.salt.coupletDrop)) < P.coupletShare;
-    // The hash's couplet drop is not a topic call: any couplet heard on the track, about as likely as
-    // any other (UNIFORM: the closeness to the best barely weighs). Argued or on topic, the closest wins.
-    const cpl = open ? pick('drop', dropCouplets, S, {salt:P.salt.drop, wide:byHash && !flags.notabout && !strong ? UNIFORM : P.near.couplet}) : null;
+    // The hash's couplet drop is not a topic call, and a post that argues "not X, it's Y" takes any couplet:
+    // any couplet heard on the track, as likely as any other. Strongly on topic, the closest wins.
+    const cpl = open ? pick('drop', dropCouplets, S, {salt:P.salt.drop, ...((byHash || flags.notabout) && !strong ? {any:true} : {wide:P.near.couplet})}) : null;
     if (open) drop = flags.notabout || byHash ? cpl : pick('drop', [...(cpl ? [cpl.c] : []), ...LADY_TAGS], S, {salt:P.salt.drop});
     drop ??= pick('drop', LADY_TAGS, S, {salt:P.salt.drop});
     flags.coupletDrop = drop.c.kind === 'couplet';

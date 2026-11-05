@@ -653,8 +653,9 @@ const WANDER = {
   swells:[{name:'Swell', from:16, to:21, ref:[3, 10]}, {name:'Pool', from:21.5, to:24, ref:[3, 10]}],
   slow:[{from:21, to:23.5, what:'the pool: the river slows to half speed under itself', level:.55, fade:1.5}],
   fade:[25, 27],
-  // dB on the river's output (plan.makeup, engine.js): its mix sits a touch under the Drop Edition's bus.
-  makeup:.9,
+  // dB on the river's output (plan.makeup, engine.js): the bloom's sparse first bars sit low, so the song
+  // comes back to -10 LUFS here (the swells keep their lift over the stream).
+  makeup:2,
   // His hook, washed into the stream (his stem's level), and the clear phrases' rise over the texture (dB).
   voiceLevel:.6, phraseGain:2, yLift:3,     // the couplet's Y, a short word or two at the swell, a little more
   synthiaAmount:.3,                          // her pixels over the stream: light

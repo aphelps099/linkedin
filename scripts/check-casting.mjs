@@ -37,7 +37,7 @@ import {TRACKS, TRACK_ORDER, DEFAULT_TRACK, DEFAULT_CAST, LADY_ROLES, BAND_ROLES
 import {arrangeDrop, dropVoicedWords} from '../src/allhands/drop.js';
 import {LADY_TABLE, slice} from '../src/allhands/lady-table.js';
 // Her recordings and the voice bank's takes (a couplet drop's tag and impact are Synthia's or Strategy's).
-import {SONG_TABLE} from '../src/allhands/band.js';
+import {SONG_TABLE, RELEASE} from '../src/allhands/band.js';
 import {lyricsFromPost, SAMPLE_POST, syllables} from '../src/allhands/lyrics.js';
 import {buildScreens} from '../src/pegboard/choreo.js';
 import {compileFont, layoutText, CHARSET} from '../src/pegboard/font.js';
@@ -52,6 +52,7 @@ const arg = (name, fallback) => { const i = process.argv.indexOf(`--${name}`); r
 const ROLES = JSON.parse(readFileSync(join(ROOT, 'src/allhands/lady-roles.json'), 'utf8'));
 const MEASURED = JSON.parse(readFileSync(join(ROOT, 'src/allhands/lady-phrases.json'), 'utf8'));
 const LEXICON = JSON.parse(readFileSync(join(ROOT, 'src/allhands/vocabulary/lexicon.json'), 'utf8'));
+const IMPACT_HEARD = JSON.parse(readFileSync(join(ROOT, 'src/allhands/vocabulary/impact-heard.json'), 'utf8'));
 const FIXTURES = JSON.parse(readFileSync(join(ROOT, 'scripts/fixtures/pixel-posts.json'), 'utf8')).map(x => x.post);
 const POSTS = [SAMPLE_POST, ...FIXTURES];
 const label = i => (i === 0 ? 'sample' : `fixture ${i - 1}`);
@@ -239,6 +240,9 @@ function validBand(r, where, {available} = {}) {
     ok(d.tag.id === `${d.id}-tag` && d.tag.display === lex.drop.tagDisplay && /-$/.test(d.tag.display), `${where}: the drop's lead-in "${d.tag.display}"`);
     ok(lex.drop.impactVoice === 'lady' ? d.impact.file === lex.lady.file && d.impact.words[0] === lex.lady.words[1] && d.impact.words[0] === d.impact.words[1] : d.impact.id === `${d.id}-impact`, `${where}: the impact is the couplet's Y word ("${d.impact.display}")`);
     ok(d.impact.display.split(' ').length === 1 && lex.drop.impactSyllables <= 2, `${where}: one impact word of one or two syllables`);
+    // The drop lands as a word: Whisper heard this impact, in this voice, in this track's mix (scripts/measure-impacts.mjs).
+    const heard = IMPACT_HEARD.tracks[r.track];
+    if (heard) ok(heard[d.id]?.[d.impact.voice]?.ok && (d.tag.voice === d.impact.voice || d.impact.voice === 'lady'), `${where}: the impact "${d.impact.display}" in ${d.impact.voice}'s voice was heard in the ${r.track} mix (${JSON.stringify(heard[d.id]?.[d.impact.voice]?.heard)})`);
     add('drop tag', d.tag); add('drop impact', d.impact);
   }
   ok(c.refrain && c.signoff, `${where}: a refrain and a sign-off`);
@@ -472,7 +476,9 @@ POSTS.forEach((post, i) => {
       ok(inside.length === pixelText(e.display).split(' ').length, `${where} ${e.role} "${e.display}": Pixel Text keeps the word count`);
       // The sink starts where its dry words end: her pause before the deep words is kept.
       const k = entry.words.indexOf(inside[0]), from = e.role === 'sink' && k > 0 ? [inside[0].start, entry.words[k - 1].end] : [inside[0].start];
-      if (e.role !== 'ladder') ok(from.some(x => Math.abs(e.from - x) < 1e-9) && Math.abs(e.to - inside.at(-1).end) < 1e-9, `${where} ${e.role}: cut on the measured boundaries`);
+      // (A voice-bank take plays on through its last word's release, band.js RELEASE, where it ends the take.)
+      const past = e.to - inside.at(-1).end, release = e.key && past > 1e-9 && past <= RELEASE + 1e-9 && inside.at(-1) === entry.words.at(-1);
+      if (e.role !== 'ladder') ok(from.some(x => Math.abs(e.from - x) < 1e-9) && (Math.abs(past) < 1e-9 || release), `${where} ${e.role}: cut on the measured boundaries`);
     }
     const tag = plan.lady.find(e => e.role === 'tag'), impact = plan.lady.find(e => e.role === 'impact');
     ok(tag && impact, `${where}: tag and impact`);

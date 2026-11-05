@@ -66,7 +66,8 @@ About 60 seconds, always in this order:
 The Panda Bear and Washed Out songs do not run the Drop Edition. They run like a river of electronic sound: it has a steady flow, and sometimes the flow gently changes. No ladder, no choke, no BACK.
 - About 60 seconds. It may start sparse and ends on its fullest texture dissolving, in a long fade or the tape stop.
 - Repetition is the instrument. Short samples (her syllables, Strategy's words, office sounds, the tambourine, acoustic-sounding plucks and mallets) repeat in a steady rhythmic pattern until they diffuse into a pixelated, melodic stream.
-- One pattern first, alone for three bars at least; it repeats and thickens (copies, offsets, pitch steps, grains). Other samples join only once the texture is lush.
+- One pattern first, alone for three bars at least; it repeats and thickens (copies, offsets, pitch steps, grains). Other samples join only once the texture is lush, around the middle, one or two a bar. Only the steady pulse runs under it from the start; the loop's other hands join as it thickens.
+- Vocal fragments are texture: short grains from inside the word, never a whole word, unless the fragment is one of the clear phrases.
 - Always ramp: no layer arrives or leaves in less than two bars, and none takes more than eight.
 - The steady rhythmic loop runs in every bar, to the fade.
 - Few clear vocal phrases: at most two of the band's, which rise out of the stream and sink back in, and Synergy at most once (his hook). Four bars at least between any two. Singers never trade phrases back to back.

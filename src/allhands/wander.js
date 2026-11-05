@@ -104,7 +104,7 @@ export function arrangeWander(lyrics, durations, options = {}) {
   // The clear phrases: the couplet's Y once, the refrain once, each rising out of the stream at its bar.
   const band = [], at = W.phrases;
   const phrase = (part, role, partName, bar, {extra = {}, gain = W.phraseGain ?? 2, seed = 0} = {}) => {
-    const src = partOf(part);
+    const src = partOf(part, {release:role !== 'pickup'});
     if (!src) return null;
     const e = eventOf(src, {role, part:partName, anchor:bar * BAR_STEPS, gain, pan:0, tr:{...tr, drop:{ladder:{pentatonic:W.pentatonic}}, chordAt:W.chordAt}, T, step:STEP, seed:seed0 + seed, end:'home', extra:{clear:true, ...extra}});
     const beat = 4 * STEP;

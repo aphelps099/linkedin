@@ -7,7 +7,8 @@
 // a couplet is the drop on a track only in a voice Whisper heard there exactly, in
 // every host's render (README, "The couplet's impact").
 //
-//   node scripts/measure-impacts.mjs --url http://localhost:5173 --work DIR [--hosts sample,16] [--only id,id]
+//   node scripts/measure-impacts.mjs --url http://localhost:5173 --work DIR [--hosts sample,16] [--only id,id] [--out table.json]
+// (--out: write the table elsewhere; a run with --only should, or the repo's table loses the other couplets)
 //
 // Needs a dev server, Playwright, ffmpeg and faster-whisper (small.en). About 6 s a render
 // and 1 s a Whisper window on one core: 160 renders for two hosts.
@@ -107,7 +108,7 @@ const doc = {version:1,
   about:"Whisper small.en (int8, beam 5) on each couplet drop's impact word alone (50 ms before it to 150 ms after it ends), cut from the full mix of the drop rendered through /allhands/ (each host post's cast with only the drop recast, the bars around the impact). ok: heard exactly in every host's render. casting.js casts a couplet as the drop on a track only in a voice that is ok there.",
   engine:{...IMPACT_WORD}, hosts:HOSTS.map(([h]) => h),
   tracks:Object.fromEntries(DROP_TRACKS.map(t => [t, sorted(Object.fromEntries(Object.entries(tracks[t]).map(([c, v]) => [c, sorted(v)])))]))};
-writeFileSync(join(ROOT, 'src/allhands/vocabulary/impact-heard.json'), JSON.stringify(doc, null, 1) + '\n');
+writeFileSync(arg('out', join(ROOT, 'src/allhands/vocabulary/impact-heard.json')), JSON.stringify(doc, null, 1) + '\n');
 for (const t of DROP_TRACKS) {
   const ok = Object.entries(doc.tracks[t]).flatMap(([c, v]) => Object.entries(v).filter(([, e]) => e.ok).map(([voice]) => `${c}/${voice}`));
   console.log(`${t}: ${ok.length} of ${Object.values(doc.tracks[t]).reduce((n, v) => n + Object.keys(v).length, 0)} heard: ${ok.join(', ')}`);

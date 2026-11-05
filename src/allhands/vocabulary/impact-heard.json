@@ -51,14 +51,14 @@
     "strategy": {
      "heard": {
       "sample": "BANDWIG",
-      "f16": "Band with me."
+      "f16": "Band with me"
      },
      "ok": false
     },
     "synthia": {
      "heard": {
-      "sample": "and",
-      "f16": "and"
+      "sample": "And when",
+      "f16": "And when"
      },
      "ok": false
     }
@@ -83,7 +83,7 @@
     "synthia": {
      "heard": {
       "sample": "Marry three",
-      "f16": "Murray Street"
+      "f16": "Marry three"
      },
      "ok": false
     }
@@ -133,9 +133,9 @@
     "synthia": {
      "heard": {
       "sample": "teammate",
-      "f16": "teammate"
+      "f16": "T-Mate"
      },
-     "ok": true
+     "ok": false
     }
    },
    "u-turn-pivot": {
@@ -168,7 +168,7 @@
    "agenda-vibe": {
     "strategy": {
      "heard": {
-      "sample": "Buh-Bye",
+      "sample": "Bye",
       "f16": "Bye"
      },
      "ok": false
@@ -176,7 +176,7 @@
     "synthia": {
      "heard": {
       "sample": "Bye.",
-      "f16": "Bye"
+      "f16": "Bye."
      },
      "ok": false
     }
@@ -200,8 +200,8 @@
     },
     "synthia": {
      "heard": {
-      "sample": "And with",
-      "f16": "bandwidth."
+      "sample": "And once",
+      "f16": "penguins"
      },
      "ok": false
     }
@@ -226,7 +226,7 @@
     "synthia": {
      "heard": {
       "sample": "calling",
-      "f16": "calling"
+      "f16": "Colleen"
      },
      "ok": false
     }
@@ -285,7 +285,7 @@
     "synthia": {
      "heard": {
       "sample": "Amen.",
-      "f16": "Amen."
+      "f16": "daemond"
      },
      "ok": false
     }
@@ -303,7 +303,7 @@
     "synthia": {
      "heard": {
       "sample": "Season",
-      "f16": "Season"
+      "f16": "Season."
      },
      "ok": true
     }
@@ -328,15 +328,15 @@
     "synthia": {
      "heard": {
       "sample": "Launch",
-      "f16": "Lunch"
+      "f16": "launch"
      },
-     "ok": false
+     "ok": true
     }
    },
    "mandatory-retreat": {
     "synthia": {
      "heard": {
-      "sample": "Murray Street",
+      "sample": "Hurry tree",
       "f16": "Murray Street"
      },
      "ok": false
@@ -361,8 +361,8 @@
     },
     "synthia": {
      "heard": {
-      "sample": "Gross",
-      "f16": "Hello"
+      "sample": "Gross.",
+      "f16": "No"
      },
      "ok": false
     }
@@ -404,17 +404,17 @@
    "replacement": {
     "strategy": {
      "heard": {
-      "sample": "Teammate",
-      "f16": "Teammate"
+      "sample": "teammate",
+      "f16": "teammate"
      },
      "ok": true
     },
     "synthia": {
      "heard": {
-      "sample": "TEENATE",
-      "f16": "T-Mate"
+      "sample": "Teammate!",
+      "f16": "Teammate!"
      },
-     "ok": false
+     "ok": true
     }
    },
    "second-job": {
@@ -429,10 +429,10 @@
    "severance-care": {
     "synthia": {
      "heard": {
-      "sample": "Hackage",
+      "sample": "Package",
       "f16": "Package"
      },
-     "ok": false
+     "ok": true
     }
    },
    "u-turn-pivot": {
@@ -454,7 +454,7 @@
     },
     "synthia": {
      "heard": {
-      "sample": "Star.",
+      "sample": "Star",
       "f16": "Star"
      },
      "ok": true
@@ -490,14 +490,14 @@
    "burnout-bandwidth": {
     "strategy": {
      "heard": {
-      "sample": "Bandwidth",
-      "f16": "BANDWIT"
+      "sample": "BANDWID",
+      "f16": "Bandwidth"
      },
      "ok": false
     },
     "synthia": {
      "heard": {
-      "sample": "And with",
+      "sample": "Ben wins.",
       "f16": "And with"
      },
      "ok": false
@@ -581,10 +581,10 @@
    "no-sleep-edge": {
     "synthia": {
      "heard": {
-      "sample": "Edge",
+      "sample": "Yes",
       "f16": "Edge"
      },
-     "ok": true
+     "ok": false
     }
    },
    "one-customer": {
@@ -597,7 +597,7 @@
     },
     "synthia": {
      "heard": {
-      "sample": "Segment",
+      "sample": "SEGMENT",
       "f16": "SEGMENT"
      },
      "ok": true
@@ -622,10 +622,10 @@
    "vanity-north-star": {
     "strategy": {
      "heard": {
-      "sample": "Start",
+      "sample": "star",
       "f16": "Star"
      },
-     "ok": false
+     "ok": true
     },
     "synthia": {
      "heard": {

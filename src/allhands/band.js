@@ -66,7 +66,7 @@ const pc = m => ((Math.round(m) % 12) + 12) % 12;
 // cuts of them, a drop's tag and impact); hers are her recordings, cut on her
 // measured words. null when the bank has no take for it (the page did not pass
 // castSong `available`): the part is left out.
-export function partOf(part) {
+export function partOf(part, {release = true} = {}) {
   if (!part) return null;
   if (part.voice === 'lady') {
     const entry = LADY_TABLE[part.file];
@@ -80,7 +80,8 @@ export function partOf(part) {
   if (!take) return null;
   // A part that ends where its take ends plays on through the last word's release (RELEASE): the aligner
   // ends a word at its closure, and Whisper heard "double book", "Align", "a lie" and "Stakeholder" without it.
-  const entry = VOICE_TABLE[take.file], last = !take.cut || take.cut.words[1] === entry.words.length - 1;
+  // (Not a drop's tag: it is cut off on purpose, the silence after it is the joke.)
+  const entry = VOICE_TABLE[take.file], last = release && (!take.cut || take.cut.words[1] === entry.words.length - 1);
   const to = last ? Math.max(take.end, Math.min(entry.duration - .005, take.end + RELEASE)) : take.end;
   return {voice:part.voice, file:take.file, key:take.key, from:take.start, to, end:take.end, onset:take.onset ?? take.start, words:take.words, gainDb:take.gainDb,
     entry, amount:take.amount, text:part.text ?? take.text, display:part.display, cut:take.cut};
@@ -91,7 +92,8 @@ export function partOf(part) {
 export const RELEASE = .2, RELEASE_LIFT = Object.freeze({before:.06, gain:8});
 // A single word (a stab, an answer, a call: "Alignment", "Aligned.", "Bandwidth?"): lighter pixels and a
 // little more level than a line, so it reads in the mix (Whisper heard "Alignment" and "Aligned." 0 of 3).
-export const SINGLE = Object.freeze({amount:.3, gain:2});
+// It is placed as her puncts are in the drops: the drums and bass dip under it (`dip`, everywhere).
+export const SINGLE = Object.freeze({amount:.3, gain:3, dip:.6});
 
 // Notes for a pixel take: one per syllable nucleus (melody.js lineFor), a seeded
 // wandering line in the voice's register, in the track's pentatonic, each note
@@ -168,7 +170,7 @@ export function bandSetlist(setlist, tr, cast, {give = []} = {}) {
 export function coupletDrop(cast, tr) {
   const d = cast?.dropTag;
   if (!d || d.kind !== 'couplet' || (d.tracks && !d.tracks.includes(tr.id))) return null;
-  const tag = partOf(d.tag), impact = partOf(d.impact), x = partOf(d.x);
+  const tag = partOf(d.tag, {release:false}), impact = partOf(d.impact), x = partOf(d.x);
   if (!tag || !impact) return null;
   return {id:d.id, x, tag, impact, parts:d};
 }
@@ -194,7 +196,7 @@ export function eventOf(src, {role, part, anchor, rate = 1, gain = 0, pan = 0, t
   if (src.key) {
     const single = src.words.length === 1 && role !== 'impact' && role !== 'tag';
     e.key = src.key; e.amount = single ? Math.min(src.amount ?? 1, SINGLE.amount) : src.amount;
-    if (single) e.gain += SINGLE.gain;
+    if (single) { e.gain += SINGLE.gain; e.dip = SINGLE.dip; }
     e.notes = pixelLine(src, tr, {seed, end, from, last, timeAt, barOf});
     e.midi = e.notes.at(-1).midi;
   } else {
@@ -305,7 +307,7 @@ export function placeBand({tr, cast, lyrics, words, stutters, lady, lines, timin
   // 3. The couplet: X then Y (or her own word after Synthia's pickup).
   const cp = cast.couplet;
   if (cp) {
-    const x = partOf(cp.x), y = partOf(cp.y), pick = cp.y?.pickup ? partOf(cp.y.pickup) : null;
+    const x = partOf(cp.x), y = partOf(cp.y), pick = cp.y?.pickup ? partOf(cp.y.pickup, {release:false}) : null;
     const srcs = [x, ...(pick ? [pick] : []), y];
     // (Her recorded couplets, 09 and 33, are her two halves of one recording: X and Y all the same.)
     if (srcs.some(s => !s)) say('couplet', 'no take in the bank');
