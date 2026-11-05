@@ -49,7 +49,7 @@ engine.dispose();assert.equal(context.state,'closed');
 // Exercise the first-render component tree, real assets and link/control contracts.
 globalThis.window={location:{search:''},matchMedia:()=>({matches:false})};
 const temp='node_modules/.cache/check-meeting-render.mjs';await mkdir('node_modules/.cache',{recursive:true});
-const ui=await build({entryPoints:['src/meeting-studio/MeetingStudio.jsx'],bundle:true,format:'esm',platform:'node',packages:'external',write:false});
+const ui=await build({entryPoints:['src/meeting-studio/MeetingStudio.jsx'],bundle:true,format:'esm',platform:'node',packages:'external',loader:{'.css':'empty'},write:false});
 await writeFile(temp,ui.outputFiles[0].text);
 try{
   const {MeetingStudio}=await import(pathToFileURL(process.cwd()+'/'+temp));

@@ -67,7 +67,7 @@ const ctx2=new Context();const slow=createRemixEngine({...options,contextFactory
 const pending=slow.select(0);await slow.select(1);resolveSlow();await pending;assert.equal(slow.getState().index,1);assert.equal(slow.getState().playing,true);slow.dispose();
 // Deep links select the matching names, playlist and initial song without playback.
 const temp='node_modules/.cache/check-rooms-render.mjs';await mkdir('node_modules/.cache',{recursive:true});
-const ui=await build({entryPoints:['src/meeting-studio/MeetingStudio.jsx'],bundle:true,format:'esm',platform:'node',packages:'external',write:false});await writeFile(temp,ui.outputFiles[0].text);
+const ui=await build({entryPoints:['src/meeting-studio/MeetingStudio.jsx'],bundle:true,format:'esm',platform:'node',packages:'external',loader:{'.css':'empty'},write:false});await writeFile(temp,ui.outputFiles[0].text);
 globalThis.window={location:{search:''},matchMedia:()=>({matches:false})};
 try{const {MeetingStudio}=await import(pathToFileURL(process.cwd()+'/'+temp));
  for(const room of ROOMS){window.location.search='?room='+room.id;const html=renderToString(React.createElement(MeetingStudio));assert(html.includes(room.title+' music player'));assert(html.includes(room.names[3]+': connecting to audio'));assert(!/<video[^>]*autoPlay/i.test(html));for(const id of room.tracks)assert(html.includes(tracks.find(t=>t.id===id).title.replaceAll('&','&amp;').replaceAll("'",'&#x27;')));}
