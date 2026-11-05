@@ -13,7 +13,7 @@
 // Synthia is doubled a pentatonic step up, panned. Then three couplets as call
 // and response, and the two questions. An 8th-note tape echo and a long room.
 import {pixelate, lowpass, highpass, midiHz} from './pixel.js';
-import {makeTambourine, renderTambourine, tambourinePattern} from './tambourine.js';
+import {renderTambourine, tambourinePattern} from '../instruments.js';
 import {rng, scaleNotes} from './melody.js';
 
 const BPM = 108, STEP = 60 / BPM / 4, BAR = 16 * STEP, BARS = 9;   // 9 bars = 20.0 s
@@ -21,18 +21,19 @@ const BPM = 108, STEP = 60 / BPM / 4, BAR = 16 * STEP, BARS = 9;   // 9 bars = 2
 const CHORDS = {D:{root:38, keys:[50, 54, 57, 62, 64]}, G:{root:43, keys:[50, 55, 59, 64, 69]}};
 const PROGRESSION = ['D', 'D', 'G', 'G', 'D', 'D', 'G', 'G', 'D'];
 
-// Voice cues: bar, 16th, take id; the first vowel lands on the 16th.
-const CUES = [
-  [1, 0, 'synthia/humbled-to-announce'], [1, 10, 'strategy/proud'],
-  [2, 0, 'synthia/thrilled-to-share'], [2, 10, 'strategy/grateful'],
-  [3, 0, 'synthia/learnings'], [3, 6, 'synthia/delve'], [3, 10, 'strategy/north-star'],
-  [4, 0, 'synthia/game-changer'], [4, 8, 'strategy/unpopular-opinion'],
-  [5, 0, 'strategy/burnout-bandwidth-call'], [5, 8, 'synthia/burnout-bandwidth-response'],
-  [6, 0, 'strategy/overtime-ownership-call'], [6, 8, 'synthia/overtime-ownership-response'],
-  [7, 0, 'strategy/layoff-launch-call'], [7, 8, 'synthia/layoff-launch-response'],
-  [8, 0, 'synthia/agree'], [8, 6, 'strategy/thoughts'],
+// Voice cues: bar, 16th, take key (voice-table.js TAKE_TABLE); the first vowel
+// lands on the 16th. Strategy leads the lexicon; Synthia answers in a few words.
+export const CUES = [
+  [1, 0, 'strategy/proud-and-humbled'], [1, 12, 'synthia/blessed'],
+  [2, 0, 'strategy/north-star'], [2, 8, 'strategy/move-the-needle'],
+  [3, 0, 'strategy/in-this-economy'], [3, 10, 'synthia/learnings'],
+  [4, 0, 'strategy/trust-the-process'], [4, 10, 'synthia/and-thats-okay'],
+  [5, 0, 'strategy/hour-quick-sync-call'], [5, 8, 'synthia/hour-quick-sync-response'],
+  [6, 0, 'strategy/reorg-remix-call'], [6, 8, 'synthia/reorg-remix-response'],
+  [7, 0, 'strategy/agenda-vibe-call'], [7, 8, 'synthia/agenda-vibe-response'],
+  [8, 0, 'strategy/ex-bandwidth'], [8, 6, 'synthia/ex-none'],
 ];
-const AMOUNT = {synthia:.4, strategy:.6};
+const AMOUNT = {synthia:null, strategy:null};      // null: each take at the amount Whisper verified it at
 const VOICE_OVER = 2.5;
 
 // ---------------------------------------------------------------- the room
@@ -107,7 +108,7 @@ function clap(sr, v, R) {
   return highpass(lowpass(y, sr, centre * 2.2, 1.2), sr, centre * .6, 1.2);
 }
 
-function loop(sr, tamb) {
+function loop(sr) {
   const R = rng(5), n = Math.round(2 * BAR * sr), L = new Float32Array(n), Rt = new Float32Array(n);
   const drums = [L, Rt], stomps = [];
   for (let bar = 0; bar < 2; bar++) for (let s = 0; s < 16; s++) {
@@ -118,7 +119,7 @@ function loop(sr, tamb) {
     if (toms[s]) add(drums, tom(sr, toms[s][0], toms[s][1] * (.9 + .2 * R()), R), t, 1, toms[s][0] > 120 ? -.25 : .2, sr);
   }
   const events = tambourinePattern({bars:2, step:STEP, swing:.1, hits:[12], every:2, seed:9});
-  const tambStem = renderTambourine(tamb, events, 2 * BAR + .5);
+  const tambStem = renderTambourine(events, 2 * BAR + .5, {sampleRate:sr});
   return {drums, stomps, tamb:tambStem.subarray(0, n), tambTail:tambStem};
 }
 
@@ -165,8 +166,8 @@ function hum(sr, n) {
 // ---------------------------------------------------------------- the sketch
 export function renderSketch({sr = 44100, entry, take, melodyFor, key = 'D', scale = 'majorPenta'}) {
   const n = Math.round((BARS * BAR + .02) * sr);
-  const R = rng(17), tamb = makeTambourine({sampleRate:sr, seed:11});
-  const lp = loop(sr, tamb);
+  const R = rng(17);
+  const lp = loop(sr);
   const drums = [new Float32Array(n), new Float32Array(n)], tambourine = new Float32Array(n), stomps = [];
   for (let k = 0; k * 2 * BAR < BARS * BAR; k++) {
     const at = k * 2 * BAR, o = Math.round(at * sr);
@@ -195,12 +196,13 @@ export function renderSketch({sr = 44100, entry, take, melodyFor, key = 'D', sca
     last[v] = line.at(-1).midi;
     if (e.kind === 'call') last.callEnd = line.at(-1).midi;
     const at = (bar * 16 + step) * STEP + (step % 2 ? .1 * STEP : 0) - e.words[0].onset;
-    const lead = pixelate(x, sr, {notes:line, amount:AMOUNT[v], space});
+    const amount = AMOUNT[v] ?? e.amount;
+    const lead = pixelate(x, sr, {notes:line, amount, space});
     const own = [new Float32Array(lead.left.length + 600), new Float32Array(lead.left.length + 600)];   // this cue alone, for the check
     add(own, [lead.left, lead.right], 0, v === 'strategy' ? 1.05 : .9, v === 'strategy' ? -.08 : .1, sr);
     if (v === 'synthia') {
       const up = line.map(nt => ({...nt, midi:shift(nt.midi, 2)}));
-      const harm = pixelate(x, sr, {notes:up, amount:AMOUNT[v] + .1, space});
+      const harm = pixelate(x, sr, {notes:up, amount, space});
       add(own, [harm.left, harm.right], .012, .2, -.55, sr);
     }
     add(voices, own, at, 1, 0, sr);
@@ -263,11 +265,11 @@ export function renderSketch({sr = 44100, entry, take, melodyFor, key = 'D', sca
 
 // The tambourine alone: one shake, one hit, and four bars of the groove.
 export function renderTambourineSolo({sr = 44100} = {}) {
-  const t = makeTambourine({sampleRate:sr, seed:11});
   const norm = y => { let p = 0; for (const v of y) p = Math.max(p, Math.abs(v)); for (let i = 0; i < y.length; i++) y[i] *= .89 / p; return y; };
-  const shake = norm(renderTambourine(t, [{t:.02, type:'shake', v:.8}], .5));
-  const hit = norm(renderTambourine(makeTambourine({sampleRate:sr, seed:11}), [{t:.02, type:'hit', v:.8}], .7));
-  const groove = norm(renderTambourine(makeTambourine({sampleRate:sr, seed:11}),
-    tambourinePattern({bars:4, step:STEP, swing:.1, hits:[12], every:2, seed:9}), 4 * BAR + .5));
-  return {shake, hit, groove};
+  const shake = norm(renderTambourine([{t:.02, kind:'shake', v:.8}], .5, {sampleRate:sr}));
+  const hit = norm(renderTambourine([{t:.02, kind:'hit', v:.8}], .7, {sampleRate:sr}));
+  const groove = norm(renderTambourine(tambourinePattern({bars:4, step:STEP, swing:.1, hits:[12], every:2, seed:9}), 4 * BAR + .5, {sampleRate:sr}));
+  // a bar of even 16ths at one velocity: the same strike would ring the same lines
+  const sixteenths = renderTambourine(Array.from({length:16}, (_, s) => ({t:s * STEP, kind:'shake', v:.5})), BAR + .3, {sampleRate:sr});
+  return {shake, hit, groove, sixteenths};
 }

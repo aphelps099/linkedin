@@ -34,10 +34,39 @@ _spec.loader.exec_module(LADY)            # the lady's aligner, unchanged (its m
 SR = LADY.SR                               # 24 kHz: the aligner's rate
 
 # Spellings Whisper gives for the word itself (added to the lady aligner's list).
-LADY.ALIKE.update({'grateful': {'greatful'}, 'thoughts': set(), 'delve': {'delv'}})
+LADY.ALIKE.update({'grateful': {'greatful'}, 'thoughts': set(), 'delve': {'delv'}, 'okay': {'ok'}, 'ok': {'okay'}})
+
+# Whisper writes numbers as digits ("40 slides", "10,000 likes"); the lyric spells them.
+ONES = ('zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen '
+        'sixteen seventeen eighteen nineteen').split()
+TENS = 'zero ten twenty thirty forty fifty sixty seventy eighty ninety'.split()
+
+
+def say_int(n):
+    if n < 20:
+        return ONES[n]
+    if n < 100:
+        return TENS[n // 10] + ('' if n % 10 == 0 else ' ' + ONES[n % 10])
+    if n < 1000:
+        return ONES[n // 100] + ' hundred' + ('' if n % 100 == 0 else ' ' + say_int(n % 100))
+    if n < 1000000:
+        return say_int(n // 1000) + ' thousand' + ('' if n % 1000 == 0 else ' ' + say_int(n % 1000))
+    return str(n)
+
+
+def spell_numbers(s):
+    s = re.sub(r'(?<=\d),(?=\d{3})', '', s)
+    return re.sub(r'\d+', lambda m: say_int(int(m.group())), s)
+
+
+_norm_words = LADY.norm_words
+LADY.norm_words = lambda s: _norm_words(spell_numbers(s))     # the verifier's word matching, too
 
 # Words the CMU dictionary lacks, in its phone set.
-EXTRA_WORDS = {'learnings': 'L ER N IH NG Z', 'delve': 'D EH L V'}
+EXTRA_WORDS = {'learnings': 'L ER N IH NG Z', 'delve': 'D EH L V', 'agentic': 'AH JH EH N T IH K', 'dm': 'D IY EH M',
+               'reorg': 'R IY AO R G', 'remix': 'R IY M IH K S', 'autocomplete': 'AO T OW K AH M P L IY T',
+               'ghostwriter': 'G OW S T R AY T ER', 'chatbot': 'CH AE T B AA T', 'async': 'EY S IH NG K',
+               'workation': 'W ER K EY SH AH N'}
 
 
 def load(path):
@@ -350,9 +379,30 @@ def tamb(jobs):
         above = np.flatnonzero(edb > pk - 20)
         res['widthMs'] = round(float((above[-1] - above[0]) / sr * 1000), 1)
         res['crestDb'] = round(float(20 * np.log10(np.abs(x).max() / (np.sqrt(np.mean(x ** 2)) + 1e-12))), 1)
+        if job.get('lines'):
+            res['linesDb'] = line_prominence(x, sr)
         out.append(res)
         print(job['path'].split('/')[-1], json.dumps({k: v for k, v in res.items() if k != 'path'}), file=sys.stderr)
     return out
+
+
+def line_prominence(x, sr, top=30):
+    """The long-term spectrum of a passage, 3-16 kHz: how far its 30 strongest lines stand above the
+    median of their +-40 Hz neighbourhood, dB. Strikes that ring the same modes every time leave sharp,
+    steady lines; jingles that turn on their pins smear them."""
+    n = 1 << int(np.ceil(np.log2(len(x))))
+    sp = np.abs(np.fft.rfft(x * np.hanning(len(x)), n)) ** 2
+    f = np.fft.rfftfreq(n, 1 / sr)
+    w = int(40 / f[1])
+    idx = np.flatnonzero((f > 3000) & (f < 16000))
+    loc = idx[(sp[idx] > sp[idx - 1]) & (sp[idx] >= sp[idx + 1])]
+    chosen = []
+    for j in loc[np.argsort(-sp[loc])]:
+        if all(abs(j - c) > w for c in chosen):
+            chosen.append(j)
+        if len(chosen) == top:
+            break
+    return round(float(np.mean([10 * np.log10(sp[j] / np.median(sp[j - w:j + w])) for j in chosen])), 1)
 
 
 def main():

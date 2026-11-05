@@ -1,8 +1,25 @@
 {
- "version": 1,
- "note": "Pixel-voice bank: dry takes, 44.1 kHz mono PCM16, trimmed, active speech at -20 dBFS. Times are seconds in the file. Written by scripts/render-song-voices.mjs; boundaries by src/allhands/voices/measure.py (the lady aligner).",
+ "version": 2,
+ "note": "The pixel-voice bank: every lexicon line Strategy and Synthia sing (src/allhands/voices/lines.js), dry, FLAC 44.1 kHz mono 16-bit, trimmed, active speech at -20 dBFS, the pitch track in the Vorbis comment PIXEL_PITCH. Times are seconds in the file. Each take was heard exactly by Whisper small.en dry and sung at `amount` in two keys. Written by scripts/render-song-voices.mjs; boundaries by src/allhands/voices/measure.py (the lady aligner).",
  "sampleRate": 44100,
- "base": "song-voices/",
+ "base": "allhands/voices/",
+ "format": "flac",
+ "test": {
+  "keys": [
+   "D majorPenta",
+   "F minorPenta"
+  ],
+  "amounts": {
+   "strategy": [
+    0.6
+   ],
+   "synthia": [
+    0.6,
+    0.3
+   ]
+  },
+  "whisper": "faster-whisper small.en int8, beam 5, temperature 0"
+ },
  "identity": {
   "strategy": {
    "provider": "local-kokoro",
@@ -24,2824 +41,1522 @@
    "chain": "lavfi flite -> aresample 24000, asetrate 24960, aresample 24000, atempo 0.961538 (render-meeting-season.py)"
   }
  },
- "entries": [
+ "lines": {
+  "thrilled-to-share": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "proud-and-humbled": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "proud-to-announce": {
+   "voices": [
+    "strategy"
+   ],
+   "owner": "strategy"
+  },
+  "next-chapter": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "long"
+  },
+  "join-me-in-congratulating": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "humbled-small-update": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "huge-shout-out": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "forever-grateful": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "blessed": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "couldnt-be-prouder": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "be-vulnerable": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "ill-be-honest": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "imposter-syndrome": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "stay-humble": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "learnings": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "plot-twist": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "heres-the-thing": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "ask-me-how-i-know": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "trust-the-process": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "growth-mindset": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "and-thats-okay": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "rise-and-grind": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "no-days-off": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "in-this-economy": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "north-star": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "move-the-needle": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "bandwidth": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "double-click": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "low-hanging-fruit": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "deep-dive": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "alignment": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "stakeholders": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "touch-base": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "take-this-offline": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "offline": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "per-my-last-email": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "boil-the-ocean": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "paradigm-shift": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "ecosystem": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "ownership": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "unlock-the-potential": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "optimize": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "testament": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "navigate": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "long"
+  },
+  "elevate": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "seamless": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "robust": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "ever-evolving": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "long"
+  },
+  "important-to-note": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "in-the-realm-of": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "foster": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "agentic": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "ai-first": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "human-in-the-loop": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "future-of-work": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "in-conclusion": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "great-question": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "bring-your-whole-self": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "protect-your-peace": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "hold-space": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "were-a-family": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "boundaries": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "wellness": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "repost-if-you-agree": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "follow-for-more": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "link-in-the-comments": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "lets-discuss": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "be-honest": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "this": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "dm-me": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "same-time-next-week": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "lets-go": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "heres-to-whats-next": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "its": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "its-a": {
+   "voices": [
+    "synthia"
+   ],
+   "owner": "synthia"
+  },
+  "layoff-launch-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "layoff-launch-response": {
+   "voices": [
+    "synthia",
+    "strategy"
+   ],
+   "owner": "synthia"
+  },
+  "pink-slip-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "pink-slip-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "cardboard-box-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "cardboard-box-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "reorg-remix-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "reorg-remix-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "severance-care-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "severance-care-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "attrition-alumni-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "attrition-alumni-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "freeze-focus-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "freeze-focus-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "exit-listening-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "exit-listening-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "skeleton-tiger-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "skeleton-tiger-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "merger-synergy-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "autocomplete-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "autocomplete-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "hallucination-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "hallucination-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "ghostwriter-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "ghostwriter-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "replacement-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "replacement-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "copy-paste-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "copy-paste-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "chatbot-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "chatbot-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "guess-forecast-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "guess-forecast-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "reading-delve-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "update-game-changer-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "overtime-ownership-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "overtime-ownership-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "insomnia-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "insomnia-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "saturday-hackathon-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "saturday-hackathon-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "espresso-discipline-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "espresso-discipline-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "second-job-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "second-job-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "cold-shower-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "cold-shower-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "no-sleep-edge-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "no-sleep-edge-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "unpaid-calling-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "burnout-bandwidth-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "burnout-bandwidth-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "pizza-wellness-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "pizza-wellness-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "long"
+  },
+  "raise-meditation-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "raise-meditation-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "long"
+  },
+  "sick-day-async-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "sick-day-async-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "vacation-workation-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "vacation-workation-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "lunch-and-learn-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "lunch-and-learn-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "demotion-lateral-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "demotion-lateral-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "long"
+  },
+  "more-work-stretch-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "more-work-stretch-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "pay-cut-equity-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "pay-cut-equity-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "gift-card-recognition-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "gift-card-recognition-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "bigger-desk-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "bigger-desk-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "long"
+  },
+  "new-title-growth-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "new-title-growth-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "hour-quick-sync-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "hour-quick-sync-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "reply-all-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "reply-all-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "delay-dependency-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "delay-dependency-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "no-not-now-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "no-not-now-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "mistake-learning-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "mistake-learning-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "silence-parking-lot-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "silence-parking-lot-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "pre-meeting-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "pre-meeting-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "status-visibility-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "status-visibility-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "deck-narrative-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "deck-narrative-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "recurring-ritual-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "recurring-ritual-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "agenda-vibe-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "agenda-vibe-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "decision-next-step-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "decision-next-step-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "double-booked-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "double-booked-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "avoidance-camera-off-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "avoidance-camera-off-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "u-turn-pivot-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "performance-plan-family-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "performance-plan-family-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "ping-pong-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "ping-pong-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "complaint-gift-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "mandatory-retreat-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "mandatory-retreat-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "open-plan-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "open-plan-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "hot-desk-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "hot-desk-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "cult-culture-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "lanyard-belonging-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "lanyard-belonging-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "vanity-north-star-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "vanity-north-star-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "rounding-momentum-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "miss-stretch-goal-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "miss-stretch-goal-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "loss-investment-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "loss-investment-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "churn-graduation-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "churn-graduation-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "cherry-picking-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "cherry-picking-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "one-customer-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "one-customer-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "down-quarter-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "down-quarter-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "loan-leverage-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "ex-aligned": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "ex-room-temperature": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "ex-ten-thousand-likes": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "ex-same-team-new-logo": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "ex-forty-slides": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "ex-pending": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "ex-nothing-scheduled": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "ex-year-nine": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "ex-it-stays-empty": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "ex-paragraph-two": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "ex-bandwidth": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "ex-none": {
+   "voices": [
+    "synthia",
+    "strategy"
+   ],
+   "owner": "synthia"
+  },
+  "ex-nothing-there": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "layoff-launch-tag": {
+   "voices": [
+    "synthia",
+    "strategy"
+   ],
+   "owner": "synthia"
+  },
+  "layoff-launch-impact": {
+   "voices": [
+    "synthia"
+   ],
+   "owner": "synthia"
+  },
+  "cardboard-box-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "cardboard-box-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "reorg-remix-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "reorg-remix-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "severance-care-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "severance-care-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "freeze-focus-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "freeze-focus-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "skeleton-tiger-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "skeleton-tiger-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "replacement-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "replacement-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "chatbot-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "chatbot-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "insomnia-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "insomnia-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "second-job-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "second-job-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "cold-shower-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "cold-shower-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "no-sleep-edge-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "no-sleep-edge-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "burnout-bandwidth-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "burnout-bandwidth-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "sick-day-async-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "sick-day-async-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "new-title-growth-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "new-title-growth-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "hour-quick-sync-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "hour-quick-sync-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "no-not-now-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "no-not-now-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "mistake-learning-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "mistake-learning-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "agenda-vibe-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "agenda-vibe-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "decision-next-step-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "decision-next-step-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "double-booked-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "double-booked-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "avoidance-camera-off-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "avoidance-camera-off-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "u-turn-pivot-tag": {
+   "voices": [
+    "synthia"
+   ],
+   "owner": "synthia"
+  },
+  "complaint-gift-tag": {
+   "voices": [
+    "synthia"
+   ],
+   "owner": "synthia"
+  },
+  "mandatory-retreat-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "mandatory-retreat-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "vanity-north-star-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "vanity-north-star-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "miss-stretch-goal-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "miss-stretch-goal-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "one-customer-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "one-customer-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "down-quarter-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "down-quarter-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  }
+ },
+ "cuts": [
   {
-   "id": "strategy/delve",
-   "file": "strategy/delve.wav",
-   "voice": "strategy",
-   "text": "Delve.",
-   "kind": "expression",
-   "duration": 0.73,
-   "voiced": [
-    0.066,
-    0.651
-   ],
-   "f0": 88.4,
-   "rmsDb": -20.37,
-   "gainDb": 6.37,
+   "id": "layoff-launch-tag",
+   "voice": "synthia",
+   "kind": "tag",
+   "text": "It's a-",
+   "from": "synthia/layoff-launch-response.flac",
    "words": [
-    {
-     "text": "Delve.",
-     "start": 0.066,
-     "end": 0.651,
-     "onset": 0.135,
-     "syllables": [
-      [
-       0.15,
-       0.28
-      ]
-     ],
-     "f0": 88.4,
-     "check": "isolated",
-     "heard": "Delve"
-    }
+    0,
+    1
    ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:single",
-   "confidence": 0.83,
-   "heard": "Delve.",
-   "item": "delve",
-   "bytes": 64388,
-   "sha256": "9b14b742c3fbc546b28b8439ef8811bcde6c2e42d83a73801e3e1d115f0f792d"
+   "start": 0.012,
+   "end": 0.32,
+   "onset": 0.012,
+   "ready": true
   },
   {
-   "id": "strategy/humbled-to-announce",
-   "file": "strategy/humbled-to-announce.wav",
+   "id": "layoff-launch-tag",
    "voice": "strategy",
-   "text": "Humbled to announce.",
-   "kind": "expression",
-   "duration": 1.704,
-   "voiced": [
-    0.056,
-    1.413
+   "kind": "tag",
+   "text": "It's a-",
+   "from": "strategy/layoff-launch-response.flac",
+   "words": [
+    0,
+    1
    ],
-   "f0": 91.1,
-   "rmsDb": -21.01,
-   "gainDb": 7.01,
+   "start": 0.06,
+   "end": 0.32,
+   "onset": 0.06,
+   "ready": true
+  },
+  {
+   "id": "layoff-launch-impact",
+   "voice": "synthia",
+   "kind": "impact",
+   "text": "launch.",
+   "from": "synthia/layoff-launch-response.flac",
+   "words": [
+    2,
+    2
+   ],
+   "start": 0.32,
+   "end": 0.904,
+   "onset": 0.39,
+   "ready": true
+  },
+  {
+   "id": "layoff-launch-impact",
+   "voice": "strategy",
+   "kind": "impact",
+   "text": "launch.",
+   "from": "strategy/layoff-launch-response.flac",
+   "words": [
+    2,
+    2
+   ],
+   "start": 0.32,
+   "end": 1.011,
+   "onset": 0.49,
+   "ready": false
+  },
+  {
+   "id": "u-turn-pivot-tag",
+   "voice": "synthia",
+   "kind": "tag",
+   "text": "It's a-",
+   "from": "synthia/its-a.flac",
+   "words": [
+    0,
+    1
+   ],
+   "start": 0.017,
+   "end": 0.554,
+   "onset": 0.017,
+   "ready": true
+  },
+  {
+   "id": "complaint-gift-tag",
+   "voice": "synthia",
+   "kind": "tag",
+   "text": "It's a-",
+   "from": "synthia/its-a.flac",
+   "words": [
+    0,
+    1
+   ],
+   "start": 0.017,
+   "end": 0.554,
+   "onset": 0.017,
+   "ready": true
+  }
+ ],
+ "entries": [
+  {
+   "id": "proud-to-announce",
+   "voice": "strategy",
+   "kind": "expression",
+   "text": "Proud to announce.",
+   "file": "strategy/proud-to-announce.flac",
+   "ref": {
+    "bank": "proud-to-announce"
+   },
+   "samples": 66295,
+   "duration": 1.5033,
+   "voiced": [
+    0.08,
+    1.305
+   ],
+   "f0": 92.7,
+   "rmsDb": -20.93,
+   "gainDb": 6.93,
+   "amount": 0.6,
    "words": [
     {
-     "text": "Humbled",
-     "start": 0.056,
-     "end": 0.551,
-     "onset": 0.143,
+     "text": "Proud",
+     "start": 0.08,
+     "end": 0.501,
+     "onset": 0.194,
      "syllables": [
       [
-       0.14,
-       0.2
-      ],
-      [
-       0.35,
-       0.38
+       0.18,
+       0.41
       ]
      ],
-     "f0": 109.6,
-     "check": "context",
-     "heard": "Humble..."
+     "f0": 108.6,
+     "check": "isolated"
     },
     {
      "text": "to",
-     "start": 0.586,
-     "end": 0.74,
-     "onset": 0.627,
+     "start": 0.501,
+     "end": 0.67,
+     "onset": 0.556,
      "syllables": [
       [
-       0.63,
-       0.74
+       0.56,
+       0.67
       ]
      ],
-     "f0": 88.1,
-     "check": "isolated",
-     "heard": "to..."
+     "f0": 92.3,
+     "check": "context"
     },
     {
      "text": "announce.",
-     "start": 0.74,
-     "end": 1.413,
-     "onset": 0.764,
-     "syllables": [
-      [
-       0.74,
-       0.78
-      ],
-      [
-       0.87,
-       1.15
-      ]
-     ],
-     "f0": 82.5,
-     "check": "context",
-     "heard": "Renounce."
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:gap,join:V|V",
-   "confidence": 0.53,
-   "heard": "humbled to announce.",
-   "item": "humbled-to-announce",
-   "bytes": 150314,
-   "sha256": "04e6059c102a21e8022f227df535a5cf98b220b5e57582d029cdb0c1481f2ea7"
-  },
-  {
-   "id": "strategy/thrilled-to-share",
-   "file": "strategy/thrilled-to-share.wav",
-   "voice": "strategy",
-   "text": "Thrilled to share.",
-   "kind": "expression",
-   "duration": 1.423,
-   "voiced": [
-    0.105,
-    1.21
-   ],
-   "f0": 97.6,
-   "rmsDb": -20.23,
-   "gainDb": 6.23,
-   "words": [
-    {
-     "text": "Thrilled",
-     "start": 0.105,
-     "end": 0.535,
-     "onset": 0.23,
-     "syllables": [
-      [
-       0.23,
-       0.27
-      ]
-     ],
-     "f0": 105,
-     "check": "isolated",
-     "heard": "Thrilled."
-    },
-    {
-     "text": "to",
-     "start": 0.535,
-     "end": 0.671,
-     "onset": 0.557,
-     "syllables": [
-      [
-       0.58,
-       0.66
-      ]
-     ],
-     "f0": 85.1,
-     "check": "context",
-     "heard": "the sh-"
-    },
-    {
-     "text": "share.",
-     "start": 0.671,
-     "end": 1.21,
-     "onset": 0.843,
-     "syllables": [
-      [
-       0.85,
-       1.03
-      ]
-     ],
-     "f0": 78.4,
-     "check": "isolated",
-     "heard": "Share"
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:P|P,join:V|F",
-   "confidence": 0.43,
-   "heard": "Thrilled to share.",
-   "item": "thrilled-to-share",
-   "bytes": 125562,
-   "sha256": "f1d6a537f1e5ce8530bbcd29dc961d5f10b671420d6cca2c04a889f7a4d496d2"
-  },
-  {
-   "id": "strategy/proud",
-   "file": "strategy/proud.wav",
-   "voice": "strategy",
-   "text": "Proud.",
-   "kind": "expression",
-   "duration": 0.802,
-   "voiced": [
-    0.128,
-    0.735
-   ],
-   "f0": 87.8,
-   "rmsDb": -20.15,
-   "gainDb": 6.15,
-   "words": [
-    {
-     "text": "Proud.",
-     "start": 0.128,
-     "end": 0.735,
-     "onset": 0.267,
-     "syllables": [
-      [
-       0.26,
-       0.61
-      ]
-     ],
-     "f0": 87.8,
-     "check": "isolated",
-     "heard": "proud"
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:single",
-   "confidence": 0.86,
-   "heard": "proud",
-   "item": "proud",
-   "bytes": 70754,
-   "sha256": "8fd5cf998447b6c14fc6790b96d8440f01711023e3b674c8976166c41256092a"
-  },
-  {
-   "id": "strategy/grateful",
-   "file": "strategy/grateful.wav",
-   "voice": "strategy",
-   "text": "Grateful.",
-   "kind": "expression",
-   "duration": 0.905,
-   "voiced": [
-    0.043,
-    0.814
-   ],
-   "f0": 94.1,
-   "rmsDb": -21.15,
-   "gainDb": 7.15,
-   "words": [
-    {
-     "text": "Grateful.",
-     "start": 0.043,
-     "end": 0.814,
-     "onset": 0.27,
-     "syllables": [
-      [
-       0.27,
-       0.43
-      ],
-      [
-       0.6,
-       0.64
-      ]
-     ],
-     "f0": 94.1,
-     "check": "isolated",
-     "heard": "grateful."
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:single",
-   "confidence": 0.94,
-   "heard": "grateful.",
-   "item": "grateful",
-   "bytes": 79824,
-   "sha256": "6aed54cc9d6c3e2210664511099bf64a3f0550ed09a78df7ecca374d3fced648"
-  },
-  {
-   "id": "strategy/learnings",
-   "file": "strategy/learnings.wav",
-   "voice": "strategy",
-   "text": "Learnings.",
-   "kind": "expression",
-   "duration": 0.877,
-   "voiced": [
-    0.059,
-    0.788
-   ],
-   "f0": 84.1,
-   "rmsDb": -20.45,
-   "gainDb": 6.45,
-   "words": [
-    {
-     "text": "Learnings.",
-     "start": 0.059,
-     "end": 0.788,
-     "onset": 0.224,
-     "syllables": [
-      [
-       0.22,
-       0.35
-      ],
-      [
-       0.42,
-       0.47
-      ]
-     ],
-     "f0": 84.1,
-     "check": "isolated",
-     "heard": "Learnings"
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:single",
-   "confidence": 0.9,
-   "heard": "Learnings",
-   "item": "learnings",
-   "bytes": 77384,
-   "sha256": "b4244777d5c758db13f4d810de9d8c5aa1c51b5d6db25c8e2ff95a48deb92a1d"
-  },
-  {
-   "id": "strategy/unpopular-opinion",
-   "file": "strategy/unpopular-opinion.wav",
-   "voice": "strategy",
-   "text": "Unpopular opinion.",
-   "kind": "expression",
-   "duration": 2.14,
-   "voiced": [
-    0.035,
-    1.58
-   ],
-   "f0": 86.3,
-   "rmsDb": -20.57,
-   "gainDb": 6.57,
-   "words": [
-    {
-     "text": "Unpopular",
-     "start": 0.035,
-     "end": 0.96,
-     "onset": 0.035,
-     "syllables": [
-      [
-       0.035,
-       0.14
-      ],
-      [
-       0.4,
-       0.57
-      ],
-      [
-       0.7,
-       0.74
-      ],
-      [
-       0.83,
-       0.96
-      ]
-     ],
-     "f0": 95.6,
-     "check": "isolated",
-     "heard": "unpopular"
-    },
-    {
-     "text": "opinion.",
-     "start": 0.96,
-     "end": 1.58,
-     "onset": 0.97,
-     "syllables": [
-      [
-       0.96,
-       1
-      ],
-      [
-       1.15,
-       1.21
-      ],
-      [
-       1.38,
-       1.44
-      ]
-     ],
-     "f0": 80.3,
-     "check": "isolated",
-     "heard": "Opinion."
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:V|V",
-   "confidence": 0.64,
-   "heard": "unpopular opinion.",
-   "item": "unpopular-opinion",
-   "bytes": 188768,
-   "sha256": "fba9aa71b49343daa0df103018f01f9cabd1a5278d5791a34bfea5413b57b3c3"
-  },
-  {
-   "id": "strategy/agree",
-   "file": "strategy/agree.wav",
-   "voice": "strategy",
-   "text": "Agree?",
-   "kind": "expression",
-   "duration": 0.83,
-   "voiced": [
-    0.063,
-    0.713
-   ],
-   "f0": 82.9,
-   "rmsDb": -20.12,
-   "gainDb": 6.12,
-   "words": [
-    {
-     "text": "Agree?",
-     "start": 0.063,
-     "end": 0.713,
-     "onset": 0.063,
-     "syllables": [
-      [
-       0.063,
-       0.18
-      ],
-      [
-       0.43,
-       0.69
-      ]
-     ],
-     "f0": 82.9,
-     "check": "isolated",
-     "heard": "Agree."
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:single",
-   "confidence": 0.79,
-   "heard": "Agree.",
-   "item": "agree",
-   "ask": true,
-   "bytes": 73208,
-   "sha256": "16990b3ab5bc17ee2144af59555674603bf73ea296c75630296061742e4f2a18"
-  },
-  {
-   "id": "strategy/thoughts",
-   "file": "strategy/thoughts.wav",
-   "voice": "strategy",
-   "text": "Thoughts?",
-   "kind": "expression",
-   "duration": 0.76,
-   "voiced": [
-    0.132,
-    0.709
-   ],
-   "f0": 95.2,
-   "rmsDb": -20.23,
-   "gainDb": 6.23,
-   "words": [
-    {
-     "text": "Thoughts?",
-     "start": 0.132,
-     "end": 0.709,
-     "onset": 0.159,
-     "syllables": [
-      [
-       0.17,
-       0.47
-      ]
-     ],
-     "f0": 95.2,
-     "check": "isolated",
-     "heard": "thoughts."
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:single",
-   "confidence": 0.52,
-   "heard": "thought.",
-   "item": "thoughts",
-   "ask": true,
-   "bytes": 67036,
-   "sha256": "91f2d71323de0d45650f9a8417dd55e69e8ac6da0bbb8cfc6f751cb325382c4c"
-  },
-  {
-   "id": "strategy/north-star",
-   "file": "strategy/north-star.wav",
-   "voice": "strategy",
-   "text": "North star.",
-   "kind": "expression",
-   "duration": 1.107,
-   "voiced": [
-    0.023,
-    1.01
-   ],
-   "f0": 96,
-   "rmsDb": -20.61,
-   "gainDb": 6.61,
-   "words": [
-    {
-     "text": "North",
-     "start": 0.023,
-     "end": 0.44,
-     "onset": 0.136,
-     "syllables": [
-      [
-       0.13,
-       0.31
-      ]
-     ],
-     "f0": 99.6,
-     "check": "isolated",
-     "heard": "NORTH"
-    },
-    {
-     "text": "star.",
-     "start": 0.44,
-     "end": 1.01,
-     "onset": 0.624,
-     "syllables": [
-      [
-       0.64,
-       0.83
-      ]
-     ],
-     "f0": 83.5,
-     "check": "isolated",
-     "heard": "star"
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|F",
-   "confidence": 0.57,
-   "heard": "North Star.",
-   "item": "north-star",
-   "bytes": 97716,
-   "sha256": "10e8e779331e03d5fcef39e677c51c81c524bfed1a6bb14a5c2ba5ceb4886f8a"
-  },
-  {
-   "id": "strategy/bandwidth",
-   "file": "strategy/bandwidth.wav",
-   "voice": "strategy",
-   "text": "Bandwidth.",
-   "kind": "expression",
-   "duration": 0.972,
-   "voiced": [
-    0.066,
-    0.889
-   ],
-   "f0": 92,
-   "rmsDb": -21.01,
-   "gainDb": 7.01,
-   "words": [
-    {
-     "text": "Bandwidth.",
-     "start": 0.066,
-     "end": 0.889,
-     "onset": 0.139,
-     "syllables": [
-      [
-       0.16,
-       0.4
-      ],
-      [
-       0.66,
-       0.71
-      ]
-     ],
-     "f0": 92,
-     "check": "isolated",
-     "heard": "Bandwidth"
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:single",
-   "confidence": 0.76,
-   "heard": "Bandwidth.",
-   "item": "bandwidth",
-   "bytes": 85782,
-   "sha256": "75644d631bc63d9ad2973bab8d0ec61b907ec9100dbe047c16c10f22251addf2"
-  },
-  {
-   "id": "strategy/game-changer",
-   "file": "strategy/game-changer.wav",
-   "voice": "strategy",
-   "text": "Game-changer.",
-   "kind": "expression",
-   "duration": 1.398,
-   "voiced": [
-    0.063,
-    1.244
-   ],
-   "f0": 98.4,
-   "rmsDb": -20.24,
-   "gainDb": 6.24,
-   "words": [
-    {
-     "text": "Game-changer.",
-     "start": 0.063,
-     "end": 1.244,
-     "onset": 0.133,
-     "syllables": [
-      [
-       0.14,
-       0.35
-      ],
-      [
-       0.66,
-       0.85
-      ],
-      [
-       1.08,
-       1.21
-      ]
-     ],
-     "f0": 98.4,
-     "check": "isolated",
-     "heard": "Game changer."
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:single",
-   "confidence": 0.64,
-   "heard": "Game changer.",
-   "item": "game-changer",
-   "bytes": 123352,
-   "sha256": "fd9550a5362328db2ac4851a727d797517354135bc2b7ed95166418401e6ffa6"
-  },
-  {
-   "id": "strategy/layoff-launch",
-   "file": "strategy/layoff-launch.wav",
-   "voice": "strategy",
-   "text": "It's not a layoff. It's a launch.",
-   "kind": "couplet",
-   "duration": 2.541,
-   "voiced": [
-    0.025,
-    1.962
-   ],
-   "f0": 90.4,
-   "rmsDb": -20.79,
-   "gainDb": 6.79,
-   "words": [
-    {
-     "text": "It's",
-     "start": 0.025,
-     "end": 0.208,
-     "onset": 0.025,
-     "syllables": [
-      [
-       0.025,
-       0.09
-      ]
-     ],
-     "f0": 93.4,
-     "check": "isolated",
-     "heard": "It's"
-    },
-    {
-     "text": "not",
-     "start": 0.208,
-     "end": 0.442,
-     "onset": 0.286,
-     "syllables": [
-      [
-       0.29,
-       0.41
-      ]
-     ],
-     "f0": 115.9,
-     "check": "isolated",
-     "heard": "Not"
-    },
-    {
-     "text": "a",
-     "start": 0.442,
-     "end": 0.48,
-     "onset": 0.442,
-     "syllables": [
-      [
-       0.45,
-       0.48
-      ]
-     ],
-     "f0": 0,
-     "check": "context",
-     "heard": ""
-    },
-    {
-     "text": "layoff.",
-     "start": 0.48,
-     "end": 1.059,
-     "onset": 0.66,
-     "syllables": [
-      [
-       0.66,
-       0.82
-      ],
-      [
-       0.82,
-       0.96
-      ]
-     ],
-     "f0": 93,
-     "check": "context",
-     "heard": "A layoff."
-    },
-    {
-     "text": "It's",
-     "start": 1.096,
-     "end": 1.3,
-     "onset": 1.104,
-     "syllables": [
-      [
-       1.096,
-       1.18
-      ]
-     ],
-     "f0": 76.3,
-     "check": "isolated",
-     "heard": "It's..."
-    },
-    {
-     "text": "a",
-     "start": 1.3,
-     "end": 1.33,
-     "onset": 1.313,
-     "syllables": [
-      [
-       1.3,
-       1.33
-      ]
-     ],
-     "f0": 0,
-     "check": "context",
-     "heard": ""
-    },
-    {
-     "text": "launch.",
-     "start": 1.33,
-     "end": 1.962,
-     "onset": 1.497,
-     "syllables": [
-      [
-       1.48,
-       1.66
-      ]
-     ],
-     "f0": 76.9,
-     "check": "context",
-     "heard": "the launch."
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|N,join:P|V,join:V|A,gap,join:F|V,join:V|A",
-   "confidence": 0.38,
-   "heard": "It's not a layoff, it's a launch.",
-   "item": "layoff-launch",
-   "bytes": 224128,
-   "sha256": "266c4fefc0dfce40365d552ebc421ea12aed52a9f81c95fd2d785f52eaef0236"
-  },
-  {
-   "id": "strategy/burnout-bandwidth",
-   "file": "strategy/burnout-bandwidth.wav",
-   "voice": "strategy",
-   "text": "It's not burnout. It's bandwidth.",
-   "kind": "couplet",
-   "duration": 2.576,
-   "voiced": [
-    0.015,
-    1.842
-   ],
-   "f0": 83.3,
-   "rmsDb": -20.67,
-   "gainDb": 6.67,
-   "words": [
-    {
-     "text": "It's",
-     "start": 0.015,
-     "end": 0.202,
-     "onset": 0.019,
-     "syllables": [
-      [
-       0.015,
-       0.08
-      ]
-     ],
-     "f0": 92.3,
-     "check": "isolated",
-     "heard": "It's"
-    },
-    {
-     "text": "not",
-     "start": 0.202,
-     "end": 0.425,
-     "onset": 0.268,
-     "syllables": [
-      [
-       0.27,
-       0.41
-      ]
-     ],
-     "f0": 118.8,
-     "check": "context",
-     "heard": "No."
-    },
-    {
-     "text": "burnout.",
-     "start": 0.425,
-     "end": 1.036,
-     "onset": 0.54,
-     "syllables": [
-      [
-       0.55,
-       0.7
-      ],
-      [
-       0.76,
-       0.98
-      ]
-     ],
-     "f0": 94.3,
-     "check": "isolated",
-     "heard": "burnout"
-    },
-    {
-     "text": "It's",
-     "start": 1.039,
-     "end": 1.255,
-     "onset": 1.044,
-     "syllables": [
-      [
-       1.05,
-       1.12
-      ]
-     ],
-     "f0": 77.8,
-     "check": "isolated",
-     "heard": "It's..."
-    },
-    {
-     "text": "bandwidth.",
-     "start": 1.263,
-     "end": 1.842,
-     "onset": 1.335,
-     "syllables": [
-      [
-       1.35,
-       1.52
-      ],
-      [
-       1.71,
-       1.77
-      ]
-     ],
-     "f0": 78.9,
-     "check": "isolated",
-     "heard": "Bandwidth"
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|N,join:P|P,gap,gap",
-   "confidence": 0.55,
-   "heard": "it's not burnout it's bandwidth",
-   "item": "burnout-bandwidth",
-   "bytes": 227222,
-   "sha256": "56a3ef8cfa8d3ee0e30d2cebec04ad7c1176eb70e909bceffb06b37f9bac26b6"
-  },
-  {
-   "id": "strategy/overtime-ownership",
-   "file": "strategy/overtime-ownership.wav",
-   "voice": "strategy",
-   "text": "It's not overtime. It's ownership.",
-   "kind": "couplet",
-   "duration": 2.676,
-   "voiced": [
-    0.018,
-    2.108
-   ],
-   "f0": 85.1,
-   "rmsDb": -20.68,
-   "gainDb": 6.68,
-   "words": [
-    {
-     "text": "It's",
-     "start": 0.018,
-     "end": 0.201,
-     "onset": 0.022,
-     "syllables": [
-      [
-       0.018,
-       0.09
-      ]
-     ],
-     "f0": 90.9,
-     "check": "isolated",
-     "heard": "It's"
-    },
-    {
-     "text": "not",
-     "start": 0.201,
-     "end": 0.42,
-     "onset": 0.265,
-     "syllables": [
-      [
-       0.26,
-       0.39
-      ]
-     ],
-     "f0": 116.2,
-     "check": "isolated",
-     "heard": "Not"
-    },
-    {
-     "text": "overtime.",
-     "start": 0.42,
-     "end": 1.179,
-     "onset": 0.42,
-     "syllables": [
-      [
-       0.42,
-       0.58
-      ],
-      [
-       0.66,
-       0.74
-      ],
-      [
-       0.84,
-       1.07
-      ]
-     ],
-     "f0": 87.3,
-     "check": "isolated",
-     "heard": "over time."
-    },
-    {
-     "text": "It's",
-     "start": 1.179,
-     "end": 1.413,
-     "onset": 1.179,
-     "syllables": [
-      [
-       1.18,
-       1.28
-      ]
-     ],
-     "f0": 74.3,
-     "check": "isolated",
-     "heard": "It's..."
-    },
-    {
-     "text": "ownership.",
-     "start": 1.413,
-     "end": 2.108,
-     "onset": 1.415,
-     "syllables": [
-      [
-       1.413,
-       1.58
-      ],
-      [
-       1.65,
-       1.7
-      ],
-      [
-       1.85,
-       1.97
-      ]
-     ],
-     "f0": 79.7,
-     "check": "isolated",
-     "heard": "ownership."
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|N,join:P|V,join:N|V,gap",
-   "confidence": 0.64,
-   "heard": "It's not over time, it's ownership.",
-   "item": "overtime-ownership",
-   "bytes": 236062,
-   "sha256": "6b75d78a97d5d6aeaca6c4f2e485571ed48a386749383da5ba175326508d70f5"
-  },
-  {
-   "id": "strategy/meeting-moment",
-   "file": "strategy/meeting-moment.wav",
-   "voice": "strategy",
-   "text": "It's not a meeting. It's a moment.",
-   "kind": "couplet",
-   "duration": 2.606,
-   "voiced": [
-    0.031,
-    2.095
-   ],
-   "f0": 86.3,
-   "rmsDb": -20.72,
-   "gainDb": 6.72,
-   "words": [
-    {
-     "text": "It's",
-     "start": 0.031,
-     "end": 0.218,
-     "onset": 0.033,
-     "syllables": [
-      [
-       0.031,
-       0.1
-      ]
-     ],
-     "f0": 93.4,
-     "check": "isolated",
-     "heard": "It's."
-    },
-    {
-     "text": "not",
-     "start": 0.218,
-     "end": 0.5,
-     "onset": 0.288,
-     "syllables": [
-      [
-       0.29,
-       0.46
-      ]
-     ],
-     "f0": 112.7,
-     "check": "isolated",
-     "heard": "Not"
-    },
-    {
-     "text": "a",
-     "start": 0.5,
-     "end": 0.568,
-     "onset": 0.501,
-     "syllables": [
-      [
-       0.5,
-       0.56
-      ]
-     ],
-     "f0": 92.3,
-     "check": "context",
-     "heard": ""
-    },
-    {
-     "text": "meeting.",
-     "start": 0.568,
-     "end": 1.187,
-     "onset": 0.695,
-     "syllables": [
-      [
-       0.72,
-       0.87
-      ],
-      [
-       0.9,
-       1
-      ]
-     ],
-     "f0": 89.1,
-     "check": "context",
-     "heard": "Mating"
-    },
-    {
-     "text": "It's",
-     "start": 1.231,
-     "end": 1.41,
-     "onset": 1.231,
-     "syllables": [
-      [
-       1.231,
-       1.29
-      ]
-     ],
-     "f0": 83.3,
-     "check": "isolated",
-     "heard": "It's..."
-    },
-    {
-     "text": "a",
-     "start": 1.41,
-     "end": 1.461,
-     "onset": 1.417,
-     "syllables": [
-      [
-       1.41,
-       1.44
-      ]
-     ],
-     "f0": 80.5,
-     "check": "context",
-     "heard": "the"
-    },
-    {
-     "text": "moment.",
-     "start": 1.461,
-     "end": 2.095,
-     "onset": 1.57,
-     "syllables": [
-      [
-       1.58,
-       1.71
-      ],
-      [
-       1.8,
-       1.85
-      ]
-     ],
-     "f0": 77.7,
-     "check": "isolated",
-     "heard": "moment"
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|N,join:P|V,join:V|N,gap,join:F|V,join:V|N",
-   "confidence": 0.5,
-   "heard": "It's not a meeting, it's a moment.",
-   "item": "meeting-moment",
-   "bytes": 229874,
-   "sha256": "90c27154b212f15d8f97b671d62381be1328e88412c58eed7f3b5d20c51fecb8"
-  },
-  {
-   "id": "strategy/demotion-pivot",
-   "file": "strategy/demotion-pivot.wav",
-   "voice": "strategy",
-   "text": "It's not a demotion. It's a pivot.",
-   "kind": "couplet",
-   "duration": 2.741,
-   "voiced": [
-    0.015,
-    2.075
-   ],
-   "f0": 90.2,
-   "rmsDb": -20.41,
-   "gainDb": 6.41,
-   "words": [
-    {
-     "text": "It's",
-     "start": 0.015,
-     "end": 0.201,
-     "onset": 0.021,
-     "syllables": [
-      [
-       0.015,
-       0.09
-      ]
-     ],
-     "f0": 92,
-     "check": "isolated",
-     "heard": "It's"
-    },
-    {
-     "text": "not",
-     "start": 0.201,
-     "end": 0.49,
-     "onset": 0.275,
-     "syllables": [
-      [
-       0.27,
-       0.45
-      ]
-     ],
-     "f0": 114.3,
-     "check": "isolated",
-     "heard": "Not"
-    },
-    {
-     "text": "a",
-     "start": 0.49,
-     "end": 0.563,
-     "onset": 0.49,
-     "syllables": [
-      [
-       0.49,
-       0.56
-      ]
-     ],
-     "f0": 98.8,
-     "check": "fail",
-     "heard": "but"
-    },
-    {
-     "text": "demotion.",
-     "start": 0.563,
-     "end": 1.336,
-     "onset": 0.631,
-     "syllables": [
-      [
-       0.63,
-       0.67
-      ],
-      [
-       0.79,
-       0.96
-      ],
-      [
-       1.11,
-       1.17
-      ]
-     ],
-     "f0": 87.6,
-     "check": "fail",
-     "heard": "The motion."
-    },
-    {
-     "text": "It's",
-     "start": 1.339,
-     "end": 1.552,
-     "onset": 1.339,
-     "syllables": [
-      [
-       1.339,
-       1.43
-      ]
-     ],
-     "f0": 76.6,
-     "check": "isolated",
-     "heard": "It's..."
-    },
-    {
-     "text": "a",
-     "start": 1.552,
-     "end": 1.63,
-     "onset": 1.555,
-     "syllables": [
-      [
-       1.552,
-       1.59
-      ]
-     ],
-     "f0": 0,
-     "check": "fail",
-     "heard": ""
-    },
-    {
-     "text": "pivot.",
-     "start": 1.701,
-     "end": 2.075,
-     "onset": 1.782,
-     "syllables": [
-      [
-       1.77,
-       1.86
-      ],
-      [
-       1.93,
-       2.05
-      ]
-     ],
-     "f0": 90.6,
-     "check": "isolated",
-     "heard": "Pivot"
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|N,join:P|V,join:V|P,gap,join:F|V,gap",
-   "confidence": 0.28,
-   "heard": "It's not a demotion, it's a pivot.",
-   "item": "demotion-pivot",
-   "bytes": 241808,
-   "sha256": "0114fab9db62297d87ab25d2a9dec926427658d14f829658c2d88aeeebe4b9d0"
-  },
-  {
-   "id": "strategy/bug-feature",
-   "file": "strategy/bug-feature.wav",
-   "voice": "strategy",
-   "text": "It's not a bug. It's a feature.",
-   "kind": "couplet",
-   "duration": 2.475,
-   "voiced": [
-    0.016,
-    1.867
-   ],
-   "f0": 92.3,
-   "rmsDb": -20.56,
-   "gainDb": 6.56,
-   "words": [
-    {
-     "text": "It's",
-     "start": 0.016,
-     "end": 0.2,
-     "onset": 0.019,
-     "syllables": [
-      [
-       0.016,
-       0.09
-      ]
-     ],
-     "f0": 92.3,
-     "check": "isolated",
-     "heard": "It's"
-    },
-    {
-     "text": "not",
-     "start": 0.2,
-     "end": 0.489,
-     "onset": 0.274,
-     "syllables": [
-      [
-       0.27,
-       0.45
-      ]
-     ],
-     "f0": 114.3,
-     "check": "isolated",
-     "heard": "Not"
-    },
-    {
-     "text": "a",
-     "start": 0.489,
-     "end": 0.597,
-     "onset": 0.489,
-     "syllables": [
-      [
-       0.5,
-       0.58
-      ]
-     ],
-     "f0": 94.1,
-     "check": "context",
-     "heard": ""
-    },
-    {
-     "text": "bug.",
-     "start": 0.597,
-     "end": 0.944,
-     "onset": 0.66,
+     "start": 0.67,
+     "end": 1.305,
+     "onset": 0.682,
      "syllables": [
       [
        0.67,
-       0.87
-      ]
-     ],
-     "f0": 91.1,
-     "check": "isolated",
-     "heard": "bug"
-    },
-    {
-     "text": "It's",
-     "start": 0.944,
-     "end": 1.16,
-     "onset": 0.945,
-     "syllables": [
-      [
-       0.95,
-       1.05
-      ]
-     ],
-     "f0": 75,
-     "check": "isolated",
-     "heard": "It's"
-    },
-    {
-     "text": "a",
-     "start": 1.16,
-     "end": 1.213,
-     "onset": 1.16,
-     "syllables": [
-      [
-       1.16,
-       1.19
-      ]
-     ],
-     "f0": 76.4,
-     "check": "context",
-     "heard": "the"
-    },
-    {
-     "text": "feature.",
-     "start": 1.213,
-     "end": 1.867,
-     "onset": 1.351,
-     "syllables": [
-      [
-       1.33,
-       1.46
-      ],
-      [
-       1.6,
-       1.867
-      ]
-     ],
-     "f0": 77.2,
-     "check": "isolated",
-     "heard": "feature."
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|N,join:P|V,join:V|P,join:P|V,join:F|V,join:V|F",
-   "confidence": 0.58,
-   "heard": "It's not a bug, it's a feature.",
-   "item": "bug-feature",
-   "bytes": 218382,
-   "sha256": "76248d7d21b4ba19e3994dd7209be0f0ec5543ea70f33f60544f2b8cc40c2dc5"
-  },
-  {
-   "id": "synthia/delve",
-   "file": "synthia/delve.wav",
-   "voice": "synthia",
-   "text": "Delve.",
-   "kind": "expression",
-   "duration": 0.576,
-   "voiced": [
-    0.012,
-    0.518
-   ],
-   "f0": 203.4,
-   "rmsDb": -20.59,
-   "gainDb": 6.59,
-   "words": [
-    {
-     "text": "Delve.",
-     "start": 0.012,
-     "end": 0.518,
-     "onset": 0.015,
-     "syllables": [
-      [
-       0.04,
-       0.17
-      ]
-     ],
-     "f0": 203.4,
-     "check": "isolated",
-     "heard": "Delve"
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:single",
-   "confidence": 0.56,
-   "heard": "Delve",
-   "item": "delve",
-   "bytes": 50864,
-   "sha256": "00105b96473ca9c26741c9eee61560128fdf16631c2a16276161a7bfc42187e4"
-  },
-  {
-   "id": "synthia/humbled-to-announce",
-   "file": "synthia/humbled-to-announce.wav",
-   "voice": "synthia",
-   "text": "Humbled to announce.",
-   "kind": "expression",
-   "duration": 1.343,
-   "voiced": [
-    0.061,
-    1.307
-   ],
-   "f0": 177.8,
-   "rmsDb": -20.31,
-   "gainDb": 6.31,
-   "words": [
-    {
-     "text": "Humbled",
-     "start": 0.061,
-     "end": 0.454,
-     "onset": 0.102,
-     "syllables": [
-      [
-       0.09,
-       0.19
-      ],
-      [
-       0.29,
-       0.32
-      ]
-     ],
-     "f0": 201.7,
-     "check": "context",
-     "heard": "I'm old"
-    },
-    {
-     "text": "to",
-     "start": 0.463,
-     "end": 0.65,
-     "onset": 0.55,
-     "syllables": [
-      [
-       0.53,
-       0.65
-      ]
-     ],
-     "f0": 177.8,
-     "check": "isolated",
-     "heard": "to"
-    },
-    {
-     "text": "announce.",
-     "start": 0.65,
-     "end": 1.307,
-     "onset": 0.65,
-     "syllables": [
-      [
-       0.65,
-       0.72
+       0.71
       ],
       [
        0.8,
-       1.11
+       1.04
       ]
      ],
-     "f0": 175.2,
-     "check": "context",
-     "heard": "Renounce"
+     "f0": 83.2,
+     "check": "fail"
     }
    ],
+   "confidence": 0.26,
    "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:gap,join:V|V",
-   "confidence": 0.37,
-   "heard": "humbled to announce",
-   "spoken": "Humbled tu announce.",
-   "item": "humbled-to-announce",
-   "bytes": 118490,
-   "sha256": "bd1f3ac4d80ae61f3d5f3e82fb599f9b958c5d4d818c819e4285ec97ac45a43a"
+   "heard": "Proud to announce.",
+   "bytes": 43408,
+   "sha256": "970db854a8c5794da0565090f27e6ea37dbceaa669c370bb924dfab97cf61bbc"
   },
   {
-   "id": "synthia/thrilled-to-share",
-   "file": "synthia/thrilled-to-share.wav",
+   "id": "its-a",
    "voice": "synthia",
-   "text": "Thrilled to share.",
-   "kind": "expression",
-   "duration": 1.002,
+   "kind": "pickup",
+   "text": "It's a",
+   "file": "synthia/its-a.flac",
+   "ref": {
+    "frame": "It's a"
+   },
+   "samples": 27399,
+   "duration": 0.6213,
    "voiced": [
-    0.016,
-    0.952
+    0.017,
+    0.554
    ],
-   "f0": 180.5,
-   "rmsDb": -20.46,
-   "gainDb": 6.46,
-   "words": [
-    {
-     "text": "Thrilled",
-     "start": 0.016,
-     "end": 0.429,
-     "onset": 0.15,
-     "syllables": [
-      [
-       0.15,
-       0.22
-      ]
-     ],
-     "f0": 205.1,
-     "check": "isolated",
-     "heard": "Thrilled."
-    },
-    {
-     "text": "to",
-     "start": 0.429,
-     "end": 0.551,
-     "onset": 0.49,
-     "syllables": [
-      [
-       0.48,
-       0.53
-      ]
-     ],
-     "f0": 169,
-     "check": "context",
-     "heard": "Just."
-    },
-    {
-     "text": "share.",
-     "start": 0.551,
-     "end": 0.952,
-     "onset": 0.663,
-     "syllables": [
-      [
-       0.66,
-       0.81
-      ]
-     ],
-     "f0": 172.7,
-     "check": "isolated",
-     "heard": "Share"
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:P|P,join:V|F",
-   "confidence": 0.28,
-   "heard": "Thrilled to share.",
-   "item": "thrilled-to-share",
-   "bytes": 88434,
-   "sha256": "dd78e684fe0af4e06370e0034a55ad8579ffc5491058fcc265041216d3184209"
-  },
-  {
-   "id": "synthia/proud",
-   "file": "synthia/proud.wav",
-   "voice": "synthia",
-   "text": "Proud.",
-   "kind": "expression",
-   "duration": 0.606,
-   "voiced": [
-    0.062,
-    0.545
-   ],
-   "f0": 187.5,
-   "rmsDb": -20.7,
-   "gainDb": 6.7,
-   "words": [
-    {
-     "text": "Proud.",
-     "start": 0.062,
-     "end": 0.545,
-     "onset": 0.19,
-     "syllables": [
-      [
-       0.19,
-       0.43
-      ]
-     ],
-     "f0": 187.5,
-     "check": "isolated",
-     "heard": "proud"
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:single",
-   "confidence": 0.73,
-   "heard": "Proud.",
-   "item": "proud",
-   "bytes": 53516,
-   "sha256": "dc478f3eee2bd88aabef8788ccf9070920d21b042b852b69fce30c5692d0d9b2"
-  },
-  {
-   "id": "synthia/grateful",
-   "file": "synthia/grateful.wav",
-   "voice": "synthia",
-   "text": "Grateful.",
-   "kind": "expression",
-   "duration": 0.832,
-   "voiced": [
-    0.011,
-    0.734
-   ],
-   "f0": 167.8,
-   "rmsDb": -21.38,
-   "gainDb": 7.38,
-   "words": [
-    {
-     "text": "Grateful.",
-     "start": 0.011,
-     "end": 0.734,
-     "onset": 0.11,
-     "syllables": [
-      [
-       0.11,
-       0.22
-      ],
-      [
-       0.37,
-       0.43
-      ]
-     ],
-     "f0": 167.8,
-     "check": "isolated",
-     "heard": "Greatful"
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:single",
-   "confidence": 0.77,
-   "heard": "Greatful.",
-   "spoken": "Great-ful.",
-   "item": "grateful",
-   "bytes": 73406,
-   "sha256": "cc179e1adad348dcfdced49c78bd54f9ad350c7bf8ef1bf37d74e979d7a8ed7f"
-  },
-  {
-   "id": "synthia/learnings",
-   "file": "synthia/learnings.wav",
-   "voice": "synthia",
-   "text": "Learnings.",
-   "kind": "expression",
-   "duration": 0.696,
-   "voiced": [
-    0.014,
-    0.65
-   ],
-   "f0": 176.5,
-   "rmsDb": -20.24,
-   "gainDb": 6.24,
-   "words": [
-    {
-     "text": "Learnings.",
-     "start": 0.014,
-     "end": 0.65,
-     "onset": 0.14,
-     "syllables": [
-      [
-       0.14,
-       0.22
-      ],
-      [
-       0.27,
-       0.36
-      ]
-     ],
-     "f0": 176.5,
-     "check": "isolated",
-     "heard": "Learnings"
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:single",
-   "confidence": 0.93,
-   "heard": "Learnings",
-   "item": "learnings",
-   "bytes": 61472,
-   "sha256": "3ffe68c777ca5e9f98d5283139e49f420a16231d9ebfdc4a070659932e2bfa92"
-  },
-  {
-   "id": "synthia/unpopular-opinion",
-   "file": "synthia/unpopular-opinion.wav",
-   "voice": "synthia",
-   "text": "Unpopular opinion.",
-   "kind": "expression",
-   "duration": 1.388,
-   "voiced": [
-    0.013,
-    1.324
-   ],
-   "f0": 176.5,
-   "rmsDb": -20.93,
-   "gainDb": 6.93,
-   "words": [
-    {
-     "text": "Unpopular",
-     "start": 0.013,
-     "end": 0.8,
-     "onset": 0.013,
-     "syllables": [
-      [
-       0.03,
-       0.11
-      ],
-      [
-       0.28,
-       0.4
-      ],
-      [
-       0.56,
-       0.6
-      ],
-      [
-       0.68,
-       0.8
-      ]
-     ],
-     "f0": 187.5,
-     "check": "isolated",
-     "heard": "unpopular"
-    },
-    {
-     "text": "opinion.",
-     "start": 0.8,
-     "end": 1.324,
-     "onset": 0.8,
-     "syllables": [
-      [
-       0.8,
-       0.85
-      ],
-      [
-       0.94,
-       1
-      ],
-      [
-       1.15,
-       1.2
-      ]
-     ],
-     "f0": 168.4,
-     "check": "isolated",
-     "heard": "Opinion."
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:V|V",
-   "confidence": 0.67,
-   "heard": "unpopular opinion.",
-   "item": "unpopular-opinion",
-   "bytes": 122468,
-   "sha256": "ac47e13b2256f705bb67fb5c3dd239d54e91b2d14a633b7c7889b026af79d527"
-  },
-  {
-   "id": "synthia/agree",
-   "file": "synthia/agree.wav",
-   "voice": "synthia",
-   "text": "Agree?",
-   "kind": "expression",
-   "duration": 0.691,
-   "voiced": [
-    0.015,
-    0.591
-   ],
-   "f0": 198.3,
-   "rmsDb": -20.31,
-   "gainDb": 6.31,
-   "words": [
-    {
-     "text": "Agree?",
-     "start": 0.015,
-     "end": 0.591,
-     "onset": 0.015,
-     "syllables": [
-      [
-       0.015,
-       0.08
-      ],
-      [
-       0.28,
-       0.591
-      ]
-     ],
-     "f0": 198.3,
-     "check": "isolated",
-     "heard": "Agree."
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:single",
-   "confidence": 0.8,
-   "heard": "Agree.",
-   "item": "agree",
-   "ask": true,
-   "bytes": 61030,
-   "sha256": "a018439c501ea3fd85841812c6414e13c17875a07f1a396e8ae38ffd73b22a60"
-  },
-  {
-   "id": "synthia/thoughts",
-   "file": "synthia/thoughts.wav",
-   "voice": "synthia",
-   "text": "Thoughts?",
-   "kind": "expression",
-   "duration": 0.431,
-   "voiced": [
-    0.053,
-    0.397
-   ],
-   "f0": 206.9,
-   "rmsDb": -21.04,
-   "gainDb": 7.04,
-   "words": [
-    {
-     "text": "Thoughts?",
-     "start": 0.053,
-     "end": 0.397,
-     "onset": 0.096,
-     "syllables": [
-      [
-       0.1,
-       0.22
-      ]
-     ],
-     "f0": 206.9,
-     "check": "isolated",
-     "heard": "Thoughts?"
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:single",
-   "confidence": 0.57,
-   "heard": "Thoughts?",
-   "item": "thoughts",
-   "ask": true,
-   "bytes": 38046,
-   "sha256": "52e62824ba597e49ee4980861123733f694fcb7834eb7f0894a47655b0a2ffc4"
-  },
-  {
-   "id": "synthia/north-star",
-   "file": "synthia/north-star.wav",
-   "voice": "synthia",
-   "text": "North star.",
-   "kind": "expression",
-   "duration": 0.787,
-   "voiced": [
-    0.011,
-    0.752
-   ],
-   "f0": 181.8,
-   "rmsDb": -20.83,
-   "gainDb": 6.83,
-   "words": [
-    {
-     "text": "North",
-     "start": 0.011,
-     "end": 0.3,
-     "onset": 0.09,
-     "syllables": [
-      [
-       0.09,
-       0.17
-      ]
-     ],
-     "f0": 204.3,
-     "check": "isolated",
-     "heard": "North."
-    },
-    {
-     "text": "star.",
-     "start": 0.3,
-     "end": 0.752,
-     "onset": 0.526,
-     "syllables": [
-      [
-       0.52,
-       0.64
-      ]
-     ],
-     "f0": 174.5,
-     "check": "isolated",
-     "heard": "Star."
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|F",
-   "confidence": 0.53,
-   "heard": "North Star.",
-   "item": "north-star",
-   "bytes": 69428,
-   "sha256": "724890b5efefe0782df2696e8d390f8ddc8db8aceb0dd5c2f38fc6b8723f0bab"
-  },
-  {
-   "id": "synthia/bandwidth",
-   "file": "synthia/bandwidth.wav",
-   "voice": "synthia",
-   "text": "Bandwidth.",
-   "kind": "expression",
-   "duration": 0.536,
-   "voiced": [
-    0.015,
-    0.506
-   ],
-   "f0": 186,
-   "rmsDb": -21.22,
-   "gainDb": 7.22,
-   "words": [
-    {
-     "text": "Bandwidth.",
-     "start": 0.015,
-     "end": 0.506,
-     "onset": 0.015,
-     "syllables": [
-      [
-       0.03,
-       0.11
-      ],
-      [
-       0.27,
-       0.33
-      ]
-     ],
-     "f0": 186,
-     "check": "isolated",
-     "heard": "Bandwidth."
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:single",
-   "confidence": 0.54,
-   "heard": "bandwidth.",
-   "item": "bandwidth",
-   "bytes": 47328,
-   "sha256": "78381513b4474234160bf979367fab7c4be1ab253433dfa1f6af70395827c2af"
-  },
-  {
-   "id": "synthia/game-changer",
-   "file": "synthia/game-changer.wav",
-   "voice": "synthia",
-   "text": "Game-changer.",
-   "kind": "expression",
-   "duration": 0.777,
-   "voiced": [
-    0.014,
-    0.74
-   ],
-   "f0": 186.1,
-   "rmsDb": -20.47,
-   "gainDb": 6.47,
-   "words": [
-    {
-     "text": "Game-changer.",
-     "start": 0.014,
-     "end": 0.74,
-     "onset": 0.055,
-     "syllables": [
-      [
-       0.08,
-       0.24
-      ],
-      [
-       0.42,
-       0.47
-      ],
-      [
-       0.54,
-       0.74
-      ]
-     ],
-     "f0": 186.1,
-     "check": "isolated",
-     "heard": "Game changer"
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:single",
-   "confidence": 0.59,
-   "heard": "game changer.",
-   "item": "game-changer",
-   "bytes": 68544,
-   "sha256": "79bfa460b5cb829dffae07dce1531a15255fdd11a024b8aeda8a92afea0d0b4f"
-  },
-  {
-   "id": "synthia/layoff-launch",
-   "file": "synthia/layoff-launch.wav",
-   "voice": "synthia",
-   "text": "It's not a layoff. It's a launch.",
-   "kind": "couplet",
-   "duration": 2.195,
-   "voiced": [
-    0.012,
-    2.176
-   ],
-   "f0": 173.9,
-   "rmsDb": -20.71,
-   "gainDb": 6.71,
+   "f0": 192,
+   "rmsDb": -20.95,
+   "gainDb": 6.95,
+   "amount": 0.6,
    "words": [
     {
      "text": "It's",
-     "start": 0.012,
-     "end": 0.261,
-     "onset": 0.012,
+     "start": 0.017,
+     "end": 0.246,
+     "onset": 0.017,
      "syllables": [
       [
-       0.012,
+       0.017,
        0.08
+      ]
+     ],
+     "f0": 182.5,
+     "check": "isolated"
+    },
+    {
+     "text": "a",
+     "start": 0.246,
+     "end": 0.554,
+     "onset": 0.252,
+     "syllables": [
+      [
+       0.246,
+       0.55
       ]
      ],
      "f0": 193.5,
-     "check": "isolated",
-     "heard": "It's."
-    },
-    {
-     "text": "not",
-     "start": 0.261,
-     "end": 0.502,
-     "onset": 0.316,
-     "syllables": [
-      [
-       0.32,
-       0.47
-      ]
-     ],
-     "f0": 187.5,
-     "check": "isolated",
-     "heard": "Not."
-    },
-    {
-     "text": "a",
-     "start": 0.502,
-     "end": 0.6,
-     "onset": 0.505,
-     "syllables": [
-      [
-       0.52,
-       0.6
-      ]
-     ],
-     "f0": 191.3,
-     "check": "fail",
-     "heard": "No."
-    },
-    {
-     "text": "layoff.",
-     "start": 0.6,
-     "end": 1.137,
-     "onset": 0.71,
-     "syllables": [
-      [
-       0.71,
-       0.78
-      ],
-      [
-       0.78,
-       1.02
-      ]
-     ],
-     "f0": 173.9,
-     "check": "isolated",
-     "heard": "Lay off."
-    },
-    {
-     "text": "It's",
-     "start": 1.232,
-     "end": 1.496,
-     "onset": 1.233,
-     "syllables": [
-      [
-       1.232,
-       1.33
-      ]
-     ],
-     "f0": 180.5,
-     "check": "isolated",
-     "heard": "It's"
-    },
-    {
-     "text": "a",
-     "start": 1.496,
-     "end": 1.59,
-     "onset": 1.502,
-     "syllables": [
-      [
-       1.496,
-       1.59
-      ]
-     ],
-     "f0": 177.1,
-     "check": "fail",
-     "heard": ""
-    },
-    {
-     "text": "launch.",
-     "start": 1.59,
-     "end": 2.176,
-     "onset": 1.65,
-     "syllables": [
-      [
-       1.65,
-       1.84
-      ]
-     ],
-     "f0": 165,
-     "check": "isolated",
-     "heard": "Launch"
+     "check": "fail"
     }
    ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|N,join:P|V,join:V|A,gap,join:F|V,join:V|A",
-   "confidence": 0.12,
-   "heard": "It's not a layoff, it's a launch.",
-   "item": "layoff-launch",
-   "bytes": 193630,
-   "sha256": "190ed2a54a7e271a3abfefc7000e230fb3d15e15e0f26c717a6aa80fd6c04848"
+   "confidence": 0.1,
+   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|V",
+   "heard": "It's A.",
+   "bytes": 23411,
+   "sha256": "c9e5f212eaba9f51d5e27a234bfb17055638e49b7561f35718e94d4bd46980c9"
   },
   {
-   "id": "synthia/burnout-bandwidth",
-   "file": "synthia/burnout-bandwidth.wav",
+   "id": "layoff-launch-response",
    "voice": "synthia",
-   "text": "It's not burnout. It's bandwidth.",
-   "kind": "couplet",
-   "duration": 2.12,
-   "voiced": [
-    0.012,
-    2.086
-   ],
-   "f0": 170.2,
-   "rmsDb": -20.69,
-   "gainDb": 6.69,
-   "words": [
-    {
-     "text": "It's",
-     "start": 0.012,
-     "end": 0.249,
-     "onset": 0.012,
-     "syllables": [
-      [
-       0.012,
-       0.08
-      ]
-     ],
-     "f0": 193.5,
-     "check": "isolated",
-     "heard": "It's."
-    },
-    {
-     "text": "not",
-     "start": 0.249,
-     "end": 0.487,
-     "onset": 0.303,
-     "syllables": [
-      [
-       0.31,
-       0.46
-      ]
-     ],
-     "f0": 195.1,
-     "check": "isolated",
-     "heard": "Not."
-    },
-    {
-     "text": "burnout.",
-     "start": 0.487,
-     "end": 1.085,
-     "onset": 0.532,
-     "syllables": [
-      [
-       0.54,
-       0.72
-      ],
-      [
-       0.83,
-       1.01
-      ]
-     ],
-     "f0": 170.2,
-     "check": "isolated",
-     "heard": "burnout"
-    },
-    {
-     "text": "It's",
-     "start": 1.214,
-     "end": 1.406,
-     "onset": 1.214,
-     "syllables": [
-      [
-       1.214,
-       1.29
-      ]
-     ],
-     "f0": 184.6,
-     "check": "isolated",
-     "heard": "It's"
-    },
-    {
-     "text": "bandwidth.",
-     "start": 1.406,
-     "end": 2.086,
-     "onset": 1.473,
-     "syllables": [
-      [
-       1.48,
-       1.57
-      ],
-      [
-       1.77,
-       1.89
-      ]
-     ],
-     "f0": 164.4,
-     "check": "isolated",
-     "heard": "Bandwidth"
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|N,join:P|P,gap,join:F|P",
-   "confidence": 0.61,
-   "heard": "It's not burnout, it's bandwidth.",
-   "item": "burnout-bandwidth",
-   "bytes": 187000,
-   "sha256": "0f06efbd1d5c339b4af72b39fa4edf14eb4053bc193852aca91ef3eaa2d197af"
-  },
-  {
-   "id": "synthia/overtime-ownership",
-   "file": "synthia/overtime-ownership.wav",
-   "voice": "synthia",
-   "text": "It's not overtime. It's ownership.",
-   "kind": "couplet",
-   "duration": 2.586,
-   "voiced": [
-    0.012,
-    2.493
-   ],
-   "f0": 172.7,
-   "rmsDb": -20.48,
-   "gainDb": 6.48,
-   "words": [
-    {
-     "text": "It's",
-     "start": 0.012,
-     "end": 0.249,
-     "onset": 0.012,
-     "syllables": [
-      [
-       0.012,
-       0.08
-      ]
-     ],
-     "f0": 193.5,
-     "check": "isolated",
-     "heard": "It's."
-    },
-    {
-     "text": "not",
-     "start": 0.249,
-     "end": 0.5,
-     "onset": 0.302,
-     "syllables": [
-      [
-       0.31,
-       0.46
-      ]
-     ],
-     "f0": 194.3,
-     "check": "isolated",
-     "heard": "Not."
-    },
-    {
-     "text": "overtime.",
-     "start": 0.5,
-     "end": 1.371,
-     "onset": 0.501,
-     "syllables": [
-      [
-       0.5,
-       0.68
-      ],
-      [
-       0.73,
-       0.82
-      ],
-      [
-       0.93,
-       1.21
-      ]
-     ],
-     "f0": 171.4,
-     "check": "isolated",
-     "heard": "Over time."
-    },
-    {
-     "text": "It's",
-     "start": 1.465,
-     "end": 1.712,
-     "onset": 1.465,
-     "syllables": [
-      [
-       1.465,
-       1.54
-      ]
-     ],
-     "f0": 180.5,
-     "check": "isolated",
-     "heard": "It's"
-    },
-    {
-     "text": "ownership.",
-     "start": 1.809,
-     "end": 2.493,
-     "onset": 1.809,
-     "syllables": [
-      [
-       1.83,
-       1.92
-      ],
-      [
-       1.97,
-       2.14
-      ],
-      [
-       2.3,
-       2.38
-      ]
-     ],
-     "f0": 171.4,
-     "check": "isolated",
-     "heard": "Ownership."
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|N,join:P|V,gap,gap",
-   "confidence": 0.69,
-   "heard": "It's not overtime, it's ownership.",
-   "spoken": "It's not overtime. It's, ownership.",
-   "item": "overtime-ownership",
-   "bytes": 228106,
-   "sha256": "70f976a7b4aef78ed5ca39ed7ec192757a1db7e56bb02d3c5029083f84513bfe"
-  },
-  {
-   "id": "synthia/meeting-moment",
-   "file": "synthia/meeting-moment.wav",
-   "voice": "synthia",
-   "text": "It's not a meeting. It's a moment.",
-   "kind": "couplet",
-   "duration": 2.019,
-   "voiced": [
-    0.012,
-    1.987
-   ],
-   "f0": 172.7,
-   "rmsDb": -20.38,
-   "gainDb": 6.38,
-   "words": [
-    {
-     "text": "It's",
-     "start": 0.012,
-     "end": 0.263,
-     "onset": 0.012,
-     "syllables": [
-      [
-       0.012,
-       0.08
-      ]
-     ],
-     "f0": 193.5,
-     "check": "isolated",
-     "heard": "It's."
-    },
-    {
-     "text": "not",
-     "start": 0.263,
-     "end": 0.509,
-     "onset": 0.306,
-     "syllables": [
-      [
-       0.32,
-       0.47
-      ]
-     ],
-     "f0": 187.5,
-     "check": "isolated",
-     "heard": "Not."
-    },
-    {
-     "text": "a",
-     "start": 0.509,
-     "end": 0.577,
-     "onset": 0.511,
-     "syllables": [
-      [
-       0.51,
-       0.57
-      ]
-     ],
-     "f0": 196.7,
-     "check": "context",
-     "heard": ""
-    },
-    {
-     "text": "meeting.",
-     "start": 0.577,
-     "end": 1.133,
-     "onset": 0.63,
-     "syllables": [
-      [
-       0.63,
-       0.76
-      ],
-      [
-       0.79,
-       0.85
-      ]
-     ],
-     "f0": 172.7,
-     "check": "isolated",
-     "heard": "Meeting."
-    },
-    {
-     "text": "It's",
-     "start": 1.209,
-     "end": 1.467,
-     "onset": 1.209,
-     "syllables": [
-      [
-       1.209,
-       1.3
-      ]
-     ],
-     "f0": 177.8,
-     "check": "isolated",
-     "heard": "It's"
-    },
-    {
-     "text": "a",
-     "start": 1.467,
-     "end": 1.52,
-     "onset": 1.475,
-     "syllables": [
-      [
-       1.47,
-       1.51
-      ]
-     ],
-     "f0": 179.8,
-     "check": "context",
-     "heard": ""
-    },
-    {
-     "text": "moment.",
-     "start": 1.52,
-     "end": 1.987,
-     "onset": 1.614,
-     "syllables": [
-      [
-       1.62,
-       1.71
-      ],
-      [
-       1.82,
-       1.87
-      ]
-     ],
-     "f0": 169,
-     "check": "isolated",
-     "heard": "moment."
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|N,join:P|V,join:V|N,gap,join:F|V,join:V|N",
-   "confidence": 0.45,
-   "heard": "It's not a meeting, it's a moment.",
-   "item": "meeting-moment",
-   "bytes": 178160,
-   "sha256": "e35848f0462e8f30035c4d95e8fbfac824a78821c34dd1d48b2ccfa7b4d9e7c3"
-  },
-  {
-   "id": "synthia/demotion-pivot",
-   "file": "synthia/demotion-pivot.wav",
-   "voice": "synthia",
-   "text": "It's not a demotion. It's a pivot.",
-   "kind": "couplet",
-   "duration": 2.125,
-   "voiced": [
-    0.012,
-    2.091
-   ],
-   "f0": 178.4,
-   "rmsDb": -20.54,
-   "gainDb": 6.54,
-   "words": [
-    {
-     "text": "It's",
-     "start": 0.012,
-     "end": 0.263,
-     "onset": 0.012,
-     "syllables": [
-      [
-       0.012,
-       0.08
-      ]
-     ],
-     "f0": 193.5,
-     "check": "isolated",
-     "heard": "It's."
-    },
-    {
-     "text": "not",
-     "start": 0.263,
-     "end": 0.513,
-     "onset": 0.306,
-     "syllables": [
-      [
-       0.32,
-       0.47
-      ]
-     ],
-     "f0": 187.5,
-     "check": "isolated",
-     "heard": "Not."
-    },
-    {
-     "text": "a",
-     "start": 0.513,
-     "end": 0.6,
-     "onset": 0.516,
-     "syllables": [
-      [
-       0.52,
-       0.58
-      ]
-     ],
-     "f0": 192,
-     "check": "context",
-     "heard": "It."
-    },
-    {
-     "text": "demotion.",
-     "start": 0.6,
-     "end": 1.341,
-     "onset": 0.636,
-     "syllables": [
-      [
-       0.65,
-       0.72
-      ],
-      [
-       0.82,
-       0.92
-      ],
-      [
-       1.06,
-       1.18
-      ]
-     ],
-     "f0": 175.2,
-     "check": "isolated",
-     "heard": "Demotion"
-    },
-    {
-     "text": "It's",
-     "start": 1.427,
-     "end": 1.684,
-     "onset": 1.428,
-     "syllables": [
-      [
-       1.427,
-       1.52
-      ]
-     ],
-     "f0": 181.1,
-     "check": "isolated",
-     "heard": "It's"
-    },
-    {
-     "text": "a",
-     "start": 1.684,
-     "end": 1.771,
-     "onset": 1.69,
-     "syllables": [
-      [
-       1.69,
-       1.74
-      ]
-     ],
-     "f0": 175.2,
-     "check": "context",
-     "heard": ""
-    },
-    {
-     "text": "pivot.",
-     "start": 1.801,
-     "end": 2.091,
-     "onset": 1.805,
-     "syllables": [
-      [
-       1.83,
-       1.88
-      ],
-      [
-       1.95,
-       2.04
-      ]
-     ],
-     "f0": 169.6,
-     "check": "context",
-     "heard": "Give it."
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|N,join:P|V,join:V|P,gap,join:F|V,gap",
-   "confidence": 0.45,
-   "heard": "It's not a demotion, it's a pivot.",
-   "spoken": "It's not a demotion. It's a pivvot.",
-   "item": "demotion-pivot",
-   "bytes": 187442,
-   "sha256": "2fd03c693fb9656d808ab23aae7951435610d2f7c19aabe21cede7860ab04d0b"
-  },
-  {
-   "id": "synthia/bug-feature",
-   "file": "synthia/bug-feature.wav",
-   "voice": "synthia",
-   "text": "It's not a bug. It's a feature.",
-   "kind": "couplet",
-   "duration": 1.829,
-   "voiced": [
-    0.012,
-    1.804
-   ],
-   "f0": 180.5,
-   "rmsDb": -20.98,
-   "gainDb": 6.98,
-   "words": [
-    {
-     "text": "It's",
-     "start": 0.012,
-     "end": 0.263,
-     "onset": 0.012,
-     "syllables": [
-      [
-       0.012,
-       0.08
-      ]
-     ],
-     "f0": 193.5,
-     "check": "isolated",
-     "heard": "It's."
-    },
-    {
-     "text": "not",
-     "start": 0.263,
-     "end": 0.512,
-     "onset": 0.306,
-     "syllables": [
-      [
-       0.32,
-       0.47
-      ]
-     ],
-     "f0": 187.5,
-     "check": "isolated",
-     "heard": "Not."
-    },
-    {
-     "text": "a",
-     "start": 0.512,
-     "end": 0.59,
-     "onset": 0.512,
-     "syllables": [
-      [
-       0.52,
-       0.58
-      ]
-     ],
-     "f0": 191.2,
-     "check": "context",
-     "heard": ""
-    },
-    {
-     "text": "bug.",
-     "start": 0.59,
-     "end": 0.966,
-     "onset": 0.633,
-     "syllables": [
-      [
-       0.65,
-       0.78
-      ]
-     ],
-     "f0": 180.5,
-     "check": "context",
-     "heard": "Bud."
-    },
-    {
-     "text": "It's",
-     "start": 0.966,
-     "end": 1.22,
-     "onset": 0.966,
-     "syllables": [
-      [
-       0.966,
-       1.05
-      ]
-     ],
-     "f0": 181.1,
-     "check": "isolated",
-     "heard": "It's."
-    },
-    {
-     "text": "a",
-     "start": 1.22,
-     "end": 1.304,
-     "onset": 1.226,
-     "syllables": [
-      [
-       1.22,
-       1.28
-      ]
-     ],
-     "f0": 177.8,
-     "check": "context",
-     "heard": ""
-    },
-    {
-     "text": "feature.",
-     "start": 1.304,
-     "end": 1.804,
-     "onset": 1.417,
-     "syllables": [
-      [
-       1.4,
-       1.48
-      ],
-      [
-       1.6,
-       1.78
-      ]
-     ],
-     "f0": 167.2,
-     "check": "isolated",
-     "heard": "feature."
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|N,join:P|V,join:V|P,release:P|V,join:F|V,join:V|F",
-   "confidence": 0.32,
-   "heard": "It's not above, it's a feature.",
-   "item": "bug-feature",
-   "bytes": 161364,
-   "sha256": "b46940fd3cb086ed9bafefad7320153ff5f095434427dab9e0d617a1baf04af9"
-  },
-  {
-   "id": "strategy/layoff-launch-call",
-   "file": "strategy/layoff-launch-call.wav",
-   "voice": "strategy",
-   "text": "It's not a layoff.",
-   "kind": "call",
-   "duration": 1.438,
-   "voiced": [
-    0.067,
-    1.347
-   ],
-   "f0": 91.4,
-   "rmsDb": -20.82,
-   "gainDb": 6.82,
-   "words": [
-    {
-     "text": "It's",
-     "start": 0.067,
-     "end": 0.271,
-     "onset": 0.067,
-     "syllables": [
-      [
-       0.067,
-       0.13
-      ]
-     ],
-     "f0": 92.7,
-     "check": "isolated",
-     "heard": "It's"
-    },
-    {
-     "text": "not",
-     "start": 0.271,
-     "end": 0.613,
-     "onset": 0.369,
-     "syllables": [
-      [
-       0.38,
-       0.57
-      ]
-     ],
-     "f0": 107.6,
-     "check": "isolated",
-     "heard": "Not"
-    },
-    {
-     "text": "a",
-     "start": 0.613,
-     "end": 0.65,
-     "onset": 0.613,
-     "syllables": [
-      [
-       0.62,
-       0.65
-      ]
-     ],
-     "f0": 0,
-     "check": "context",
-     "heard": ""
-    },
-    {
-     "text": "layoff.",
-     "start": 0.65,
-     "end": 1.347,
-     "onset": 0.84,
-     "syllables": [
-      [
-       0.84,
-       1.07
-      ],
-      [
-       1.07,
-       1.2
-      ]
-     ],
-     "f0": 78.7,
-     "check": "context",
-     "heard": "A layoff."
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|N,join:P|V,join:V|A",
-   "confidence": 0.38,
-   "heard": "It's not a layoff.",
-   "item": "layoff-launch",
-   "bytes": 126888,
-   "sha256": "339dc9b53e7e169ac06de78383c03c684665b6ba9dbbc2b8fcbead32f8a8c5db"
-  },
-  {
-   "id": "synthia/layoff-launch-response",
-   "file": "synthia/layoff-launch-response.wav",
-   "voice": "synthia",
-   "text": "It's a launch.",
    "kind": "response",
+   "text": "It's a launch.",
+   "file": "synthia/layoff-launch-response.flac",
+   "ref": {
+    "couplet": "layoff-launch",
+    "part": "y"
+   },
+   "samples": 41322,
    "duration": 0.937,
    "voiced": [
     0.012,
@@ -2850,6 +1565,7 @@
    "f0": 183.2,
    "rmsDb": -20.86,
    "gainDb": 6.86,
+   "amount": 0.6,
    "words": [
     {
      "text": "It's",
@@ -2863,8 +1579,7 @@
       ]
      ],
      "f0": 182.5,
-     "check": "isolated",
-     "heard": "It's."
+     "check": "isolated"
     },
     {
      "text": "a",
@@ -2878,8 +1593,7 @@
       ]
      ],
      "f0": 206.9,
-     "check": "fail",
-     "heard": "the"
+     "check": "fail"
     },
     {
      "text": "launch.",
@@ -2893,761 +1607,168 @@
       ]
      ],
      "f0": 181.8,
-     "check": "isolated",
-     "heard": "Launch"
+     "check": "isolated"
     }
    ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|V,join:V|A",
    "confidence": 0.16,
+   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|V,join:V|A",
    "heard": "It's a launch.",
-   "item": "layoff-launch",
-   "bytes": 82688,
-   "sha256": "7e02be39d1c65fe8d89d1606299a4ed147acec98a677ddbd329033fca8a8efe1"
+   "bytes": 30910,
+   "sha256": "5f248925b13b0883ea30a11c398bb2345b7f56b34a74e55b437d340813446538"
   },
   {
-   "id": "strategy/burnout-bandwidth-call",
-   "file": "strategy/burnout-bandwidth-call.wav",
+   "id": "layoff-launch-response",
    "voice": "strategy",
-   "text": "It's not burnout.",
-   "kind": "call",
-   "duration": 1.373,
-   "voiced": [
-    0.066,
-    1.161
-   ],
-   "f0": 84.2,
-   "rmsDb": -20.38,
-   "gainDb": 6.38,
-   "words": [
-    {
-     "text": "It's",
-     "start": 0.066,
-     "end": 0.265,
-     "onset": 0.066,
-     "syllables": [
-      [
-       0.066,
-       0.14
-      ]
-     ],
-     "f0": 90.6,
-     "check": "isolated",
-     "heard": "It's"
-    },
-    {
-     "text": "not",
-     "start": 0.265,
-     "end": 0.521,
-     "onset": 0.335,
-     "syllables": [
-      [
-       0.34,
-       0.51
-      ]
-     ],
-     "f0": 112.1,
-     "check": "isolated",
-     "heard": "not"
-    },
-    {
-     "text": "burnout.",
-     "start": 0.521,
-     "end": 1.161,
-     "onset": 0.675,
-     "syllables": [
-      [
-       0.69,
-       0.86
-      ],
-      [
-       0.92,
-       1.11
-      ]
-     ],
-     "f0": 83,
-     "check": "isolated",
-     "heard": "Burnout"
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|N,join:P|P",
-   "confidence": 0.58,
-   "heard": "It's not burnout.",
-   "item": "burnout-bandwidth",
-   "bytes": 121142,
-   "sha256": "72308b8de924daffd767cb68009ead0dff57c25b48aab0869baec63e2959438f"
-  },
-  {
-   "id": "synthia/burnout-bandwidth-response",
-   "file": "synthia/burnout-bandwidth-response.wav",
-   "voice": "synthia",
-   "text": "It's bandwidth.",
    "kind": "response",
-   "duration": 0.762,
+   "text": "It's a launch.",
+   "file": "strategy/layoff-launch-response.flac",
+   "ref": {
+    "couplet": "layoff-launch",
+    "part": "y"
+   },
+   "samples": 46626,
+   "duration": 1.0573,
    "voiced": [
-    0.012,
-    0.63
+    0.06,
+    1.011
    ],
-   "f0": 181.8,
-   "rmsDb": -20.57,
-   "gainDb": 6.57,
+   "f0": 91.6,
+   "rmsDb": -21.1,
+   "gainDb": 7.1,
+   "amount": 0.6,
    "words": [
     {
      "text": "It's",
-     "start": 0.012,
-     "end": 0.2,
-     "onset": 0.012,
+     "start": 0.06,
+     "end": 0.29,
+     "onset": 0.06,
      "syllables": [
       [
-       0.012,
-       0.08
+       0.06,
+       0.17
       ]
      ],
-     "f0": 182.5,
-     "check": "isolated",
-     "heard": "It's."
+     "f0": 91.6,
+     "check": "isolated"
     },
     {
-     "text": "bandwidth.",
-     "start": 0.2,
-     "end": 0.63,
-     "onset": 0.256,
+     "text": "a",
+     "start": 0.29,
+     "end": 0.32,
+     "onset": 0.29,
      "syllables": [
       [
-       0.26,
-       0.34
-      ],
-      [
-       0.49,
-       0.56
+       0.29,
+       0.32
       ]
      ],
-     "f0": 181.1,
-     "check": "isolated",
-     "heard": "bandwidth."
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|P",
-   "confidence": 0.66,
-   "heard": "It's bandwidth.",
-   "item": "burnout-bandwidth",
-   "bytes": 67218,
-   "sha256": "08e27468e4ce2abf3877fa8ecac376f8f0564be3ce23ca7b33ffe4bf3bb1f814"
-  },
-  {
-   "id": "strategy/overtime-ownership-call",
-   "file": "strategy/overtime-ownership-call.wav",
-   "voice": "strategy",
-   "text": "It's not overtime.",
-   "kind": "call",
-   "duration": 1.573,
-   "voiced": [
-    0.062,
-    1.376
-   ],
-   "f0": 88.9,
-   "rmsDb": -20.64,
-   "gainDb": 6.64,
-   "words": [
-    {
-     "text": "It's",
-     "start": 0.062,
-     "end": 0.269,
-     "onset": 0.062,
-     "syllables": [
-      [
-       0.062,
-       0.13
-      ]
-     ],
-     "f0": 91.3,
-     "check": "isolated",
-     "heard": "It's"
+     "f0": 0,
+     "check": "context"
     },
     {
-     "text": "not",
-     "start": 0.269,
-     "end": 0.591,
-     "onset": 0.327,
+     "text": "launch.",
+     "start": 0.32,
+     "end": 1.011,
+     "onset": 0.49,
      "syllables": [
-      [
-       0.33,
-       0.53
-      ]
-     ],
-     "f0": 113.5,
-     "check": "isolated",
-     "heard": "Not."
-    },
-    {
-     "text": "overtime.",
-     "start": 0.597,
-     "end": 1.376,
-     "onset": 0.597,
-     "syllables": [
-      [
-       0.597,
-       0.76
-      ],
-      [
-       0.84,
-       0.92
-      ],
-      [
-       1.05,
-       1.29
-      ]
-     ],
-     "f0": 77.4,
-     "check": "isolated",
-     "heard": "over time."
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|N,gap",
-   "confidence": 0.78,
-   "heard": "It's not over time.",
-   "item": "overtime-ownership",
-   "bytes": 138822,
-   "sha256": "7ef460f3418960bd169e2a969e240af6180d4f37c3f7537e1ac12e07d8fb4617"
-  },
-  {
-   "id": "synthia/overtime-ownership-response",
-   "file": "synthia/overtime-ownership-response.wav",
-   "voice": "synthia",
-   "text": "It's ownership.",
-   "kind": "response",
-   "duration": 1.102,
-   "voiced": [
-    0.012,
-    1.057
-   ],
-   "f0": 176.5,
-   "rmsDb": -21.03,
-   "gainDb": 7.03,
-   "words": [
-    {
-     "text": "It's",
-     "start": 0.012,
-     "end": 0.269,
-     "onset": 0.012,
-     "syllables": [
-      [
-       0.012,
-       0.08
-      ]
-     ],
-     "f0": 182.5,
-     "check": "isolated",
-     "heard": "It's"
-    },
-    {
-     "text": "ownership.",
-     "start": 0.347,
-     "end": 1.057,
-     "onset": 0.349,
-     "syllables": [
-      [
-       0.36,
-       0.46
-      ],
       [
        0.51,
-       0.68
-      ],
-      [
-       0.81,
-       0.92
+       0.74
       ]
      ],
-     "f0": 172.7,
-     "check": "isolated",
-     "heard": "Ownership."
+     "f0": 91.8,
+     "check": "context"
     }
    ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:gap",
-   "confidence": 0.69,
-   "heard": "It's ownership.",
-   "spoken": "It's, ownership.",
-   "item": "overtime-ownership",
-   "bytes": 97274,
-   "sha256": "01ebffae9b358f06faefbc8d2a32a4168677bcae61f23e18d7f800cf984dabc5"
+   "confidence": 0.29,
+   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|V,join:V|A",
+   "heard": "It's a launch.",
+   "bytes": 35021,
+   "sha256": "aac31a4b30e1f420c674603ebc41781889acafb97df698713185cb1e7ab6bc3e"
   },
   {
-   "id": "strategy/meeting-moment-call",
-   "file": "strategy/meeting-moment-call.wav",
-   "voice": "strategy",
-   "text": "It's not a meeting.",
-   "kind": "call",
-   "duration": 1.448,
-   "voiced": [
-    0.067,
-    1.249
-   ],
-   "f0": 83.6,
-   "rmsDb": -20.38,
-   "gainDb": 6.38,
-   "words": [
-    {
-     "text": "It's",
-     "start": 0.067,
-     "end": 0.281,
-     "onset": 0.067,
-     "syllables": [
-      [
-       0.067,
-       0.14
-      ]
-     ],
-     "f0": 92.1,
-     "check": "isolated",
-     "heard": "It's."
-    },
-    {
-     "text": "not",
-     "start": 0.281,
-     "end": 0.615,
-     "onset": 0.378,
-     "syllables": [
-      [
-       0.38,
-       0.58
-      ]
-     ],
-     "f0": 108.6,
-     "check": "isolated",
-     "heard": "Not."
-    },
-    {
-     "text": "a",
-     "start": 0.615,
-     "end": 0.686,
-     "onset": 0.632,
-     "syllables": [
-      [
-       0.62,
-       0.67
-      ]
-     ],
-     "f0": 75,
-     "check": "context",
-     "heard": ""
-    },
-    {
-     "text": "meeting.",
-     "start": 0.686,
-     "end": 1.249,
-     "onset": 0.804,
-     "syllables": [
-      [
-       0.82,
-       1
-      ],
-      [
-       1.05,
-       1.15
-      ]
-     ],
-     "f0": 78.7,
-     "check": "isolated",
-     "heard": "Meeting."
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|N,join:P|V,join:V|N",
-   "confidence": 0.55,
-   "heard": "It's not a meeting.",
-   "item": "meeting-moment",
-   "bytes": 127772,
-   "sha256": "7ad1a39056aa177f38d521e032c668ce8a7272b4d03d03857f31d603aa11d246"
-  },
-  {
-   "id": "synthia/meeting-moment-response",
-   "file": "synthia/meeting-moment-response.wav",
+   "id": "ex-none",
    "voice": "synthia",
-   "text": "It's a moment.",
-   "kind": "response",
-   "duration": 0.817,
+   "kind": "exchange",
+   "text": "None.",
+   "file": "synthia/ex-none.flac",
+   "ref": {
+    "exchange": 13,
+    "side": "answer"
+   },
+   "samples": 22095,
+   "duration": 0.501,
    "voiced": [
-    0.012,
-    0.737
+    0.013,
+    0.466
    ],
-   "f0": 175.2,
-   "rmsDb": -20.43,
-   "gainDb": 6.43,
+   "f0": 186,
+   "rmsDb": -20.32,
+   "gainDb": 6.32,
+   "amount": 0.6,
    "words": [
     {
-     "text": "It's",
-     "start": 0.012,
-     "end": 0.24,
-     "onset": 0.012,
+     "text": "None.",
+     "start": 0.013,
+     "end": 0.466,
+     "onset": 0.11,
      "syllables": [
       [
-       0.012,
-       0.08
+       0.11,
+       0.27
       ]
      ],
-     "f0": 182.5,
-     "check": "isolated",
-     "heard": "It's."
-    },
-    {
-     "text": "a",
-     "start": 0.24,
-     "end": 0.305,
-     "onset": 0.252,
-     "syllables": [
-      [
-       0.24,
-       0.3
-      ]
-     ],
-     "f0": 198.3,
-     "check": "fail",
-     "heard": ""
-    },
-    {
-     "text": "moment.",
-     "start": 0.305,
-     "end": 0.737,
-     "onset": 0.384,
-     "syllables": [
-      [
-       0.4,
-       0.49
-      ],
-      [
-       0.56,
-       0.65
-      ]
-     ],
-     "f0": 170.2,
-     "check": "isolated",
-     "heard": "moment."
+     "f0": 186,
+     "check": "isolated"
     }
    ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|V,join:V|N",
-   "confidence": 0.16,
-   "heard": "It's a moment.",
-   "item": "meeting-moment",
-   "bytes": 72080,
-   "sha256": "6cc4eefb9b54147fa7707eb8b624475827985479380946d6dac912659d05b47a"
+   "confidence": 0.77,
+   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:single",
+   "heard": "None.",
+   "bytes": 19199,
+   "sha256": "3378e63800f910c9851d24253c806ca1bd4d91e8666f65719c05587d1e359628"
   },
   {
-   "id": "strategy/demotion-pivot-call",
-   "file": "strategy/demotion-pivot-call.wav",
+   "id": "ex-none",
    "voice": "strategy",
-   "text": "It's not a demotion.",
-   "kind": "call",
-   "duration": 1.929,
+   "kind": "exchange",
+   "text": "None.",
+   "file": "strategy/ex-none.flac",
+   "ref": {
+    "exchange": 13,
+    "side": "answer"
+   },
+   "samples": 29968,
+   "duration": 0.6795,
    "voiced": [
-    0.055,
-    1.573
+    0.057,
+    0.528
    ],
-   "f0": 82.8,
-   "rmsDb": -20.34,
-   "gainDb": 6.34,
+   "f0": 80.3,
+   "rmsDb": -19.61,
+   "gainDb": 5.61,
+   "amount": 0.6,
    "words": [
     {
-     "text": "It's",
-     "start": 0.055,
-     "end": 0.267,
-     "onset": 0.055,
+     "text": "None.",
+     "start": 0.057,
+     "end": 0.528,
+     "onset": 0.146,
      "syllables": [
       [
-       0.055,
-       0.13
+       0.17,
+       0.35
       ]
      ],
-     "f0": 96.4,
-     "check": "isolated",
-     "heard": "It's"
-    },
-    {
-     "text": "not",
-     "start": 0.267,
-     "end": 0.615,
-     "onset": 0.378,
-     "syllables": [
-      [
-       0.37,
-       0.58
-      ]
-     ],
-     "f0": 111.6,
-     "check": "isolated",
-     "heard": "Not"
-    },
-    {
-     "text": "a",
-     "start": 0.615,
-     "end": 0.771,
-     "onset": 0.615,
-     "syllables": [
-      [
-       0.62,
-       0.76
-      ]
-     ],
-     "f0": 86,
-     "check": "fail",
-     "heard": "But..."
-    },
-    {
-     "text": "demotion.",
-     "start": 0.771,
-     "end": 1.573,
-     "onset": 0.831,
-     "syllables": [
-      [
-       0.83,
-       0.88
-      ],
-      [
-       1.01,
-       1.21
-      ],
-      [
-       1.36,
-       1.42
-      ]
-     ],
-     "f0": 77.4,
-     "check": "fail",
-     "heard": "The motion."
+     "f0": 80.3,
+     "check": "isolated"
     }
    ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|N,join:P|V,join:V|P",
-   "confidence": 0.21,
-   "heard": "It's not a demotion.",
-   "item": "demotion-pivot",
-   "bytes": 170204,
-   "sha256": "4ff4754e3a43f8ca7fdc86cc64dd28b17d9c59c26896c38f7d152b33e18c96c4"
-  },
-  {
-   "id": "synthia/demotion-pivot-response",
-   "file": "synthia/demotion-pivot-response.wav",
-   "voice": "synthia",
-   "text": "It's a pivot.",
-   "kind": "response",
-   "duration": 0.701,
-   "voiced": [
-    0.012,
-    0.679
-   ],
-   "f0": 183.9,
-   "rmsDb": -20.89,
-   "gainDb": 6.89,
-   "words": [
-    {
-     "text": "It's",
-     "start": 0.012,
-     "end": 0.24,
-     "onset": 0.012,
-     "syllables": [
-      [
-       0.012,
-       0.08
-      ]
-     ],
-     "f0": 182.5,
-     "check": "isolated",
-     "heard": "It's."
-    },
-    {
-     "text": "a",
-     "start": 0.24,
-     "end": 0.335,
-     "onset": 0.251,
-     "syllables": [
-      [
-       0.24,
-       0.31
-      ]
-     ],
-     "f0": 186.8,
-     "check": "fail",
-     "heard": ""
-    },
-    {
-     "text": "pivot.",
-     "start": 0.356,
-     "end": 0.679,
-     "onset": 0.41,
-     "syllables": [
-      [
-       0.39,
-       0.45
-      ],
-      [
-       0.49,
-       0.61
-      ]
-     ],
-     "f0": 188.2,
-     "check": "context",
-     "heard": "Hey, mate."
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|V,gap",
-   "confidence": 0.12,
-   "heard": "It's a bevel.",
-   "spoken": "It's a pivvot.",
-   "item": "demotion-pivot",
-   "bytes": 61914,
-   "sha256": "4c0e50a234c790e90d7493d32355aab0dfbbab0aa2f450357212426d2c3818e5"
-  },
-  {
-   "id": "strategy/bug-feature-call",
-   "file": "strategy/bug-feature-call.wav",
-   "voice": "strategy",
-   "text": "It's not a bug.",
-   "kind": "call",
-   "duration": 1.353,
-   "voiced": [
-    0.052,
-    1.181
-   ],
-   "f0": 94.5,
-   "rmsDb": -20.47,
-   "gainDb": 6.47,
-   "words": [
-    {
-     "text": "It's",
-     "start": 0.052,
-     "end": 0.286,
-     "onset": 0.053,
-     "syllables": [
-      [
-       0.052,
-       0.14
-      ]
-     ],
-     "f0": 94.5,
-     "check": "isolated",
-     "heard": "It's"
-    },
-    {
-     "text": "not",
-     "start": 0.286,
-     "end": 0.62,
-     "onset": 0.376,
-     "syllables": [
-      [
-       0.38,
-       0.58
-      ]
-     ],
-     "f0": 102.8,
-     "check": "isolated",
-     "heard": "Not."
-    },
-    {
-     "text": "a",
-     "start": 0.62,
-     "end": 0.704,
-     "onset": 0.62,
-     "syllables": [
-      [
-       0.62,
-       0.7
-      ]
-     ],
-     "f0": 79.5,
-     "check": "context",
-     "heard": ""
-    },
-    {
-     "text": "bug.",
-     "start": 0.704,
-     "end": 1.181,
-     "onset": 0.825,
-     "syllables": [
-      [
-       0.83,
-       1.06
-      ]
-     ],
-     "f0": 76.2,
-     "check": "isolated",
-     "heard": "bug"
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|N,join:P|V,join:V|P",
-   "confidence": 0.56,
-   "heard": "It's not a bug.",
-   "item": "bug-feature",
-   "bytes": 119374,
-   "sha256": "50b4d3440f69fe9bd1f11c20d8831c708c16d0830a51181cc1b9c618ae6e5ccd"
-  },
-  {
-   "id": "synthia/bug-feature-response",
-   "file": "synthia/bug-feature-response.wav",
-   "voice": "synthia",
-   "text": "It's a feature.",
-   "kind": "response",
-   "duration": 0.897,
-   "voiced": [
-    0.012,
-    0.861
-   ],
-   "f0": 172.7,
-   "rmsDb": -21.21,
-   "gainDb": 7.21,
-   "words": [
-    {
-     "text": "It's",
-     "start": 0.012,
-     "end": 0.24,
-     "onset": 0.012,
-     "syllables": [
-      [
-       0.012,
-       0.08
-      ]
-     ],
-     "f0": 182.5,
-     "check": "isolated",
-     "heard": "It's."
-    },
-    {
-     "text": "a",
-     "start": 0.24,
-     "end": 0.332,
-     "onset": 0.251,
-     "syllables": [
-      [
-       0.24,
-       0.31
-      ]
-     ],
-     "f0": 197.5,
-     "check": "fail",
-     "heard": ""
-    },
-    {
-     "text": "feature.",
-     "start": 0.332,
-     "end": 0.861,
-     "onset": 0.442,
-     "syllables": [
-      [
-       0.42,
-       0.5
-      ],
-      [
-       0.63,
-       0.85
-      ]
-     ],
-     "f0": 170.2,
-     "check": "isolated",
-     "heard": "feature."
-    }
-   ],
-   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|V,join:V|F",
-   "confidence": 0.28,
-   "heard": "It's a feature.",
-   "item": "bug-feature",
-   "bytes": 79152,
-   "sha256": "38256ce497bdc772b4338708e8ff74aaa025a393bbd85c4c64aa4555b65d32b4"
+   "confidence": 0.74,
+   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:single",
+   "heard": "None.",
+   "bytes": 24467,
+   "sha256": "4031e484b1d3ae865d8e30b3a9517249a497f4b118dc0613e2a2afce4c43f20f"
   }
  ]
 }

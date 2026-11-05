@@ -1,39 +1,53 @@
-// Offline renderer for the pixel voices (src/allhands/voices/README.md). Never
-// invoked by a page view; no paid API: Strategy is the local Kokoro model
-// (the voice bank's exact q8 artifact, am_onyx at .95), Synthia is Flite slt
-// through FFmpeg's libflite at pitch 1.04, as the meeting season renders her.
+// Offline renderer for the production voice bank: every lexicon line Strategy
+// or Synthia can be cast to sing (src/allhands/voices/lines.js), sung through
+// the pixel chain and kept only if Whisper hears it. Never invoked by a page
+// view; no paid API: Strategy is the local Kokoro model (the voice bank's exact
+// q8 artifact, am_onyx at .95), Synthia is Flite slt through FFmpeg's libflite
+// at pitch 1.04, as the meeting season renders her.
 //
-//   node scripts/render-song-voices.mjs --out DIR [--steps bank,align,listen,measure,sketch]
-//        [--manifest src/allhands/voices/song-voices.json] [--models DIR] [--only TEXT,TEXT] [--key D]
+//   node scripts/render-song-voices.mjs --out DIR --models DIR [--steps tts,align,hear,publish]
+//        [--only KEY,KEY] [--voices strategy,synthia] [--rounds N] [--manifest PATH] [--public DIR]
 //
-//   bank     dry takes: render, trim, level, 44.1 kHz mono 16-bit  -> DIR/bank/<voice>/<item>.wav
-//   align    word boundaries, syllables, f0, level (measure.py)    -> the manifest, and its pitch tracks
-//   pitch    only the pitch tracks (song-voices-pitch.json)
-//   listen   test renders (dry, sung, light, medium, heavy) and Aaron's listening set -> DIR/test, DIR/listen
-//   measure  Whisper small.en WER and pitch-in-key on every test render -> DIR/report.json, DIR/report.md
-//   sketch   the 20 s Offsite sketch and the tambourine solos        -> DIR/listen
+//   tts      the dry take: render, trim, level, 44.1 kHz mono 16-bit     -> DIR/takes/<voice>/<stem>~<spelling>.wav
+//   align    word boundaries, syllable nuclei, f0, level (measure.py, the lady's aligner, every word re-heard)
+//   hear     Whisper small.en on the dry take and on the take sung at its pixel amount, onto a wandering
+//            line in two keys (D major and F minor pentatonic): Strategy at medium (.6), Synthia at medium,
+//            else light (.3). A take passes when every one of those is heard exactly.
+//   publish  the passing takes as FLAC (the pitch track in a Vorbis comment) -> public/allhands/voices/,
+//            the manifest -> src/allhands/voices/song-voices.json, the report -> DIR/report.{json,md}
+//   tambourine  instruments.js's tambourine alone (shake, hit, groove, a bar of 16ths), measured -> DIR/tambourine.json
+//   sketch   the 20 s Offsite direction sketch from the published bank, Whisper on it -> DIR/listen, DIR/sketch.json
+//
+// A line that fails walks its respellings (items.js SAY), one round each. Results are
+// cached per take under DIR/work, so a run after a new respelling renders only that.
 import {createHash} from 'node:crypto';
-import {readFileSync, writeFileSync, mkdirSync, existsSync, statSync, readdirSync} from 'node:fs';
+import {readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, rmSync, renameSync} from 'node:fs';
 import {resolve, dirname, join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {execFileSync} from 'node:child_process';
-import {tmpdir} from 'node:os';
-import {takes, VOICES, COUPLETS, EXPRESSIONS} from '../src/allhands/voices/items.js';
+import {VOICES, variantsOf} from '../src/allhands/voices/items.js';
+import {LINES, CUTS, fileOf} from '../src/allhands/voices/lines.js';
 import {encodeWav, decodeWav} from '../src/allhands/voices/wav.js';
-import {analyse, pixelate, pitchTrack, AMOUNTS} from '../src/allhands/voices/pixel.js';
-import {lineFor, syllablesOf, scaleNotes, wander, hash, notesFor, noteName} from '../src/allhands/voices/melody.js';
-import {renderSketch, renderTambourineSolo} from '../src/allhands/voices/sketch.js';
+import {decodeFlac, pitchToTag, pitchFromTag} from '../src/allhands/voices/flac.js';
+import {analyse, pixelate, pitchTrack} from '../src/allhands/voices/pixel.js';
+import {lineFor, hash} from '../src/allhands/voices/melody.js';
+import {renderTambourineSolo} from '../src/allhands/voices/sketch.js';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const arg = (name, fallback) => { const i = process.argv.indexOf(`--${name}`); return i > 0 ? process.argv[i + 1] : fallback; };
 const OUT = arg('out');
-if (!OUT) throw new Error('Pass --out DIR (the bank, the test renders and the listening set go there).');
+if (!OUT) throw new Error('Pass --out DIR (the takes, the test renders and the report go there).');
 const MANIFEST = resolve(root, arg('manifest', 'src/allhands/voices/song-voices.json'));
-const STEPS = new Set(arg('steps', 'bank,align,listen,measure,sketch').split(','));
-const ONLY = arg('only', ''), only = id => !ONLY || ONLY.split(',').some(o => id.includes(o));
-const KEY = arg('key', 'D'), SCALE = arg('scale', 'majorPenta');
+const PUBLIC = resolve(root, arg('public', 'public/allhands/voices'));
+const STEPS = new Set(arg('steps', 'tts,align,hear,publish').split(','));
+const ONLY = arg('only', ''), only = id => !ONLY || ONLY.split(',').some(o => id === o || id.includes(o));
+const VOICE_SET = new Set(arg('voices', 'strategy,synthia').split(','));
+const ROUNDS = +arg('rounds', 6);
 const SR = 44100, MEASURE = resolve(root, 'src/allhands/voices/measure.py');
+// Where a take is tested: two keys a track sings in, a line that wanders through each voice's register.
+export const TEST_KEYS = [['D', 'majorPenta'], ['F', 'minorPenta']];
 const sha = b => createHash('sha256').update(b).digest('hex');
+const short = s => createHash('sha1').update(s).digest('hex').slice(0, 8);
 const mk = p => (mkdirSync(dirname(p), {recursive:true}), p);
 const ff = (args, input) => execFileSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', ...args], {input, maxBuffer:256 * 1024 * 1024});
 const f32 = buf => new Float32Array(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength));
@@ -41,16 +55,23 @@ const resample = (x, from, to) => from === to ? x : f32(ff(['-f', 'f32le', '-ar'
   '-af', 'aresample=resampler=soxr:precision=28', '-ar', String(to), '-f', 'f32le', 'pipe:1'], Buffer.from(x.buffer, x.byteOffset, x.byteLength)));
 const readMono = path => { const {sampleRate, channels} = decodeWav(readFileSync(path)); return {sr:sampleRate, x:channels[0]}; };
 const writeWav = (path, ch, sr = SR) => writeFileSync(mk(path), encodeWav(ch, sr));
-const db = v => 20 * Math.log10(Math.max(v, 1e-9));
-const py = (cmd, jobs, extra = []) => {
-  const tmp = join(OUT, 'work'), src = join(tmp, `${cmd}-jobs.json`), dst = join(tmp, `${cmd}-out.json`);
-  writeFileSync(mk(src), JSON.stringify(jobs));
-  execFileSync('python3', ['-I', '-B', MEASURE, cmd, src, dst, ...extra], {stdio:['ignore', 'inherit', 'inherit'], maxBuffer:64 * 1024 * 1024});
-  return JSON.parse(readFileSync(dst, 'utf8'));
+const readJson = (p, d) => existsSync(p) ? JSON.parse(readFileSync(p, 'utf8')) : d;
+// Written whole or not at all (two lanes, one per voice, may share DIR).
+const writeAtomic = (p, text) => { const tmp = `${p}.${process.pid}.tmp`; writeFileSync(mk(tmp), text); renameSync(tmp, p); };
+// measure.py on a job list, in chunks (each chunk's results are kept as soon as it returns: `done`).
+const py = (cmd, jobs, extra = [], done = () => {}, chunk = 40) => {
+  const out = [];
+  for (let i = 0; i < jobs.length; i += chunk) {
+    const part = jobs.slice(i, i + chunk), tmp = join(OUT, 'work'), tag = `${cmd}-${process.pid}`, src = join(tmp, `${tag}-jobs.json`), dst = join(tmp, `${tag}-out.json`);
+    writeFileSync(mk(src), JSON.stringify(part));
+    execFileSync('python3', ['-I', '-B', MEASURE, cmd, src, dst, ...extra], {stdio:['ignore', 'inherit', 'inherit'], maxBuffer:64 * 1024 * 1024});
+    const rows = JSON.parse(readFileSync(dst, 'utf8'));
+    done(rows, part);
+    out.push(...rows);
+    console.log(`${cmd}: ${Math.min(jobs.length, i + chunk)}/${jobs.length}`);
+  }
+  return out;
 };
-
-const ALL = takes().filter(t => only(t.id));
-const bankPath = t => join(OUT, 'bank', `${t.id}.wav`);
 
 // ---------------------------------------------------------------- the dry take
 // Trim to the speech (5 ms frames above the loudest less 45 dB, 15 ms before,
@@ -67,7 +88,7 @@ function finish(x) {
   for (let i = 0; i < fi; i++) y[i] *= .5 - .5 * Math.cos(Math.PI * i / fi);
   for (let i = 0; i < fo; i++) y[y.length - 1 - i] *= .5 - .5 * Math.cos(Math.PI * i / fo);
   let e = 0, n = 0;
-  env.forEach((v, k) => { if (v > top * 10 ** (-30 / 20)) { e += v * v; n++; } });
+  env.forEach(v => { if (v > top * 10 ** (-30 / 20)) { e += v * v; n++; } });
   let g = 10 ** (-20 / 20) / Math.sqrt(e / n), peak = 0;
   for (const v of y) peak = Math.max(peak, Math.abs(v));
   g = Math.min(g, 10 ** (-1 / 20) / peak);
@@ -97,7 +118,7 @@ async function kokoro() {
 }
 
 function flite(text) {
-  const tmp = join(OUT, 'work', 'flite.txt');
+  const tmp = join(OUT, 'work', `flite-${process.pid}.txt`);
   writeFileSync(mk(tmp), text.replace(/’/g, "'"));
   // The meeting season's Synthia: 24 kHz, asetrate x1.04, tempo restored (scripts/render-meeting-season.py).
   const p = VOICES.synthia.pitch, r = 24000;
@@ -106,10 +127,24 @@ function flite(text) {
 }
 const ffmpegVersion = () => execFileSync('ffmpeg', ['-version']).toString().split('\n')[0];
 
-async function bank() {
+// ---------------------------------------------------------------- jobs and takes
+// A job is one line in one voice; a take is one spelling of it.
+const JOBS = LINES.filter(l => only(l.id)).flatMap(line => line.voices.filter(v => VOICE_SET.has(v)).map(voice => ({
+  line, voice, stem:`${voice}/${line.id}`, variants:variantsOf(voice, line.text), done:false, chosen:null, tried:[],
+})));
+const takeOf = (job, spoken) => {
+  const name = `${job.stem}~${short(spoken)}`;
+  return {job, voice:job.voice, id:job.line.id, text:job.line.text, spoken, name,
+    wav:join(OUT, 'takes', `${name}.wav`), result:join(OUT, 'work', 'results', `${name}.json`)};
+};
+const resultOf = t => readJson(t.result, {name:t.name, voice:t.voice, id:t.id, text:t.text, spoken:t.spoken});
+const saveResult = (t, r) => writeAtomic(t.result, JSON.stringify(r, null, 1));
+
+async function tts(takes) {
   let k = null;
-  const identity = {};
-  for (const t of ALL) {
+  const idPath = join(OUT, 'work', 'identity.json'), identity = readJson(idPath, {}), todo = takes.filter(t => !existsSync(t.wav));
+  if (!todo.length) return;
+  for (const t of todo) {
     let raw, rate;
     if (t.voice === 'strategy') {
       k ??= await kokoro();
@@ -122,260 +157,239 @@ async function bank() {
         chain:'lavfi flite -> aresample 24000, asetrate 24960, aresample 24000, atempo 0.961538 (render-meeting-season.py)'};
     }
     const y = finish(resample(raw, rate, SR));
-    writeWav(bankPath(t), y);
-    console.log(`bank ${t.id.padEnd(36)} ${(y.length / SR).toFixed(3)} s`);
+    writeWav(t.wav, y);
+    console.log(`tts ${t.name.padEnd(56)} ${(y.length / SR).toFixed(3)} s  ${JSON.stringify(t.spoken)}`);
   }
-  writeFileSync(mk(join(OUT, 'work', 'identity.json')), JSON.stringify(identity, null, 1));
+  writeAtomic(idPath, JSON.stringify(identity, null, 1));
 }
 
-function align() {
-  const jobs = ALL.map(t => ({id:t.id, voice:t.voice, kind:t.kind, text:t.text, file:`${t.id}.wav`, path:bankPath(t)}));
-  const rows = py('align', jobs, ['--verify']);
-  const identity = JSON.parse(readFileSync(join(OUT, 'work', 'identity.json'), 'utf8'));
-  let old = {entries:[]};
-  if (ONLY && existsSync(MANIFEST)) old = JSON.parse(readFileSync(MANIFEST, 'utf8'));
-  const byId = new Map(old.entries.map(e => [e.id, e]));
-  for (const r of rows) {
-    const t = ALL.find(a => a.id === r.id), bytes = readFileSync(bankPath(t));
-    byId.set(r.id, {...r, spoken:t.spoken !== t.text ? t.spoken : undefined, item:t.item, ask:t.ask || undefined, bytes:bytes.length, sha256:sha(bytes)});
+function align(takes) {
+  const todo = takes.filter(t => !resultOf(t).align);
+  py('align', todo.map(t => ({id:t.name, voice:t.voice, kind:t.job.line.kind, text:t.text, file:fileOf(t.voice, t.id), path:t.wav})), ['--verify'], rows => {
+    for (const row of rows) {
+      const t = todo.find(x => x.name === row.id), r = resultOf(t);
+      r.align = row;
+      saveResult(t, r);
+    }
+  });
+}
+
+// The stored pitch track exactly as the page reads it back (0.1 Hz), so a test
+// render is the play-time chain, sample for sample.
+const storedTrack = x => pitchFromTag(pitchToTag(pitchTrack(x, SR)));
+const amountsOf = voice => voice === 'synthia' ? [VOICES.synthia.amount, VOICES.synthia.fallbackAmount] : [VOICES.strategy.amount];
+const endOf = line => line.ask ? 'up' : line.kind === 'pickup' || line.kind === 'tag' ? 'free' : line.kind === 'call' || line.ref?.side === 'call' ? 'open' : 'home';
+export function testNotes(entry, line, voice, [tonic, scale]) {
+  return lineFor(entry, {register:VOICES[voice].register, tonic, scale, seed:hash(`${entry.file}|${tonic}${scale}`), end:endOf(line)});
+}
+const entryOf = (t, row) => ({...row, file:fileOf(t.voice, t.id), voice:t.voice});
+
+// Two passes: the dry take and the voice's amount; then, for Synthia, light (.3)
+// where medium was not heard exactly (as clarity allows).
+function hear(takes) {
+  const exact = h => h && h.errors === 0;
+  for (const pass of [0, 1]) {
+    const jobs = [];
+    for (const t of takes) {
+      const r = resultOf(t);
+      if (!r.align) continue;
+      r.hear ??= {};
+      if (pass === 0 && !r.hear.dry) jobs.push({id:t.name, variant:'dry', text:t.text, path:t.wav});
+      const [primary, fallback] = amountsOf(t.voice);
+      if (pass === 1 && (fallback === undefined || TEST_KEYS.every(k => exact(r.hear[`${primary}|${k.join(' ')}`])))) continue;
+      const amount = pass === 0 ? primary : fallback;
+      const todo = TEST_KEYS.filter(k => !r.hear[`${amount}|${k.join(' ')}`]);
+      if (!todo.length) continue;
+      const {x} = readMono(t.wav), track = storedTrack(x), analysis = analyse(x, SR, {track}), entry = entryOf(t, r.align);
+      for (const k of todo) {
+        const variant = `${amount}|${k.join(' ')}`;
+        const notes = testNotes(entry, t.job.line, t.voice, k), y = pixelate(x, SR, {notes, amount, analysis}).samples;
+        const path = join(OUT, 'test', `${amount}`, k.join('-'), `${t.name}.wav`);
+        writeWav(path, [y]);
+        jobs.push({id:t.name, variant, text:t.text, path, notes:notes.map(n => n.midi)});
+      }
+      saveResult(t, r);
+    }
+    py('hear', jobs, [], rows => {
+      for (const h of rows) {
+        const t = takes.find(x => x.name === h.id), r = resultOf(t);
+        r.hear[h.variant] = {heard:h.heard, errors:h.errors, words:h.words, notes:h.notes};
+        saveResult(t, r);
+      }
+    }, 120);
   }
-  const order = takes().map(t => t.id);
+}
+
+// Pass: the aligner found every word, Whisper hears the dry take exactly and the
+// sung take exactly in both keys at the amount. Synthia tries medium, then light.
+function verdict(t) {
+  const r = resultOf(t), a = r.align;
+  if (!a || !r.hear?.dry) return null;
+  const words = a.words || [], sane = words.length && words.every((w, i) => w.start < w.end && w.start >= 0 && w.end <= a.duration + 1e-6 && (i === 0 || w.start >= words[i - 1].end - 1e-6));
+  const exact = h => h && h.errors === 0;
+  const passAt = amount => TEST_KEYS.every(k => exact(r.hear[`${amount}|${k.join(' ')}`]));
+  const amount = amountsOf(t.voice).find(passAt);
+  return {pass:!!(sane && exact(r.hear.dry) && amount), amount:amount ?? null, sane:!!sane, dry:exact(r.hear.dry),
+    at:Object.fromEntries(amountsOf(t.voice).map(m => [m, passAt(m)]))};
+}
+
+async function run() {
+  for (let round = 0; round < ROUNDS; round++) {
+    const pending = JOBS.filter(j => !j.done && j.variants[round] !== undefined);
+    if (!pending.length) break;
+    const takes = pending.map(j => takeOf(j, j.variants[round]));
+    console.log(`round ${round + 1}: ${takes.length} takes`);
+    if (STEPS.has('tts')) await tts(takes);
+    if (STEPS.has('align')) align(takes.filter(t => existsSync(t.wav)));
+    if (STEPS.has('hear')) hear(takes);
+    for (const t of takes) {
+      const v = verdict(t);
+      t.job.tried.push({spoken:t.spoken, name:t.name, ...v});
+      if (v?.pass) { t.job.done = true; t.job.chosen = t; t.job.amount = v.amount; }
+    }
+  }
+}
+
+// ---------------------------------------------------------------- publish
+function flacOf(wav, tag, out) {
+  ff(['-i', wav, '-map_metadata', '-1', '-fflags', '+bitexact', '-flags:a', '+bitexact', '-c:a', 'flac', '-compression_level', '12',
+    '-metadata', `PIXEL_PITCH=${tag}`, '-f', 'flac', mk(out)]);
+  return readFileSync(out);
+}
+
+function publish() {
+  const identity = readJson(join(OUT, 'work', 'identity.json'), {});
+  const old = readJson(MANIFEST, {entries:[]});
+  const partial = !!ONLY || VOICE_SET.size < 2;
+  const entries = new Map(partial ? (old.entries || []).filter(e => old.version === 2).map(e => [e.file, e]) : []);
+  for (const job of JOBS) {
+    const file = fileOf(job.voice, job.line.id);
+    entries.delete(file);
+    if (!job.chosen) continue;
+    const t = job.chosen, r = resultOf(t), a = r.align, line = job.line;
+    const {x} = readMono(t.wav), track = pitchTrack(x, SR), bytes = flacOf(t.wav, pitchToTag(track), join(PUBLIC, file));
+    const back = decodeFlac(bytes), pcm = decodeWav(readFileSync(t.wav)).channels[0];
+    if (back.samples !== pcm.length || back.channels[0].some((v, i) => v !== pcm[i])) throw new Error(`${file}: the FLAC does not decode to the take`);
+    entries.set(file, {
+      id:line.id, voice:job.voice, kind:line.kind, text:line.text, spoken:t.spoken !== line.text ? t.spoken : undefined, ask:line.ask || undefined,
+      file, ref:line.ref, samples:back.samples, duration:+(back.samples / SR).toFixed(4), voiced:a.voiced, f0:a.f0, rmsDb:a.rmsDb, gainDb:a.gainDb, amount:job.amount,
+      words:a.words.map(w => ({text:w.text, start:w.start, end:w.end, onset:w.onset, syllables:w.syllables, f0:w.f0, check:w.check})),
+      confidence:a.confidence, method:a.method, heard:r.hear.dry.heard, bytes:bytes.length, sha256:sha(bytes),
+    });
+  }
+  // Cuts (a drop's tag and impact) from a published take: word indexes, times, and whether the
+  // impact is a drop: every word of it heard alone (the aligner's isolated check).
+  const cuts = [];
+  for (const c of CUTS) for (const voice of ['synthia', 'strategy']) {
+    const src = entries.get(fileOf(voice, c.from));
+    if (!src) continue;
+    const n = src.words.length, a = c.words[0] < 0 ? n + c.words[0] : c.words[0], b = c.words[1] < 0 ? n + c.words[1] : c.words[1];
+    const ws = src.words.slice(a, b + 1);
+    cuts.push({id:c.id, voice, kind:c.kind, text:c.text, from:src.file, words:[a, b], start:ws[0].start, end:ws.at(-1).end, onset:ws[0].onset,
+      ready:c.kind !== 'impact' || ws.every(w => w.check === 'isolated')});
+  }
+  // the line index: who can sing each line, in preference order; a Synthia line she fails is Strategy-only
+  const lines = {};
+  const has = (voice, id) => entries.has(fileOf(voice, id)) || cuts.some(c => c.voice === voice && c.id === id && c.ready);
+  for (const line of [...LINES, ...CUTS.map(c => ({...c, owner:'synthia', voices:['synthia', 'strategy'], why:null}))]) {
+    const source = line.from ? LINES.find(l => l.id === line.from) : line;
+    const voices = (source?.voices ?? line.voices).filter(v => has(v, line.id));
+    const why = source?.why ?? line.why ?? (voices.includes('synthia') ? null : 'failed');
+    lines[line.id] = {voices, owner:source?.owner ?? line.owner, ...(line.owner === 'synthia' || source?.owner === 'synthia') && !voices.includes('synthia') ? {strategyOnly:why ?? 'failed'} : {}};
+  }
+  const order = new Map(LINES.flatMap((l, i) => ['synthia', 'strategy'].map((v, k) => [fileOf(v, l.id), 2 * i + k])));
+  const list = [...entries.values()].sort((a, b) => (order.get(a.file) ?? 1e9) - (order.get(b.file) ?? 1e9));
   const manifest = {
-    version:1,
-    note:'Pixel-voice bank: dry takes, 44.1 kHz mono PCM16, trimmed, active speech at -20 dBFS. Times are seconds in the file. Written by scripts/render-song-voices.mjs; boundaries by src/allhands/voices/measure.py (the lady aligner).',
-    sampleRate:SR, base:'song-voices/', identity:{...old.identity, ...identity},
-    entries:[...byId.values()].sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id)),
+    version:2,
+    note:'The pixel-voice bank: every lexicon line Strategy and Synthia sing (src/allhands/voices/lines.js), dry, FLAC 44.1 kHz mono 16-bit, trimmed, active speech at -20 dBFS, the pitch track in the Vorbis comment PIXEL_PITCH. Times are seconds in the file. Each take was heard exactly by Whisper small.en dry and sung at `amount` in two keys. Written by scripts/render-song-voices.mjs; boundaries by src/allhands/voices/measure.py (the lady aligner).',
+    sampleRate:SR, base:'allhands/voices/', format:'flac',
+    test:{keys:TEST_KEYS.map(k => k.join(' ')), amounts:{strategy:amountsOf('strategy'), synthia:amountsOf('synthia')}, whisper:'faster-whisper small.en int8, beam 5, temperature 0'},
+    identity:{...old.identity, ...identity},
+    lines,
+    cuts,
+    entries:list,
   };
   writeFileSync(MANIFEST, JSON.stringify(manifest, null, 1) + '\n');
-  console.log(`manifest ${MANIFEST}: ${manifest.entries.length} takes`);
-  writePitch(manifest);
+  // the published folder holds exactly the manifest's files
+  if (!partial) for (const voice of readdirSync(PUBLIC)) for (const f of readdirSync(join(PUBLIC, voice))) if (!entries.has(`${voice}/${f}`)) rmSync(join(PUBLIC, voice, f));
+  const total = list.reduce((s, e) => s + e.bytes, 0);
+  console.log(`manifest ${MANIFEST}: ${list.length} takes, ${cuts.length} cuts, ${(total / 1e6).toFixed(2)} MB of FLAC in ${PUBLIC}`);
+  report(manifest);
 }
 
-// The JS pitch track of every take (pixel.js pitchTrack), 0.1 Hz integers, as lady-pitch.json is to her.
-function writePitch(manifest = JSON.parse(readFileSync(MANIFEST, 'utf8'))) {
-  const pitchPath = MANIFEST.replace(/\.json$/, '-pitch.json');
-  const pitch = {};
-  for (const e of manifest.entries) {
-    const {x} = readMono(join(OUT, 'bank', e.file)), tr = pitchTrack(x, SR);
-    pitch[e.file] = {hop:tr.hop, offset:tr.offset, f0:Array.from(tr.f0, v => Math.round(v * 10))};
+function report(manifest) {
+  const rows = JOBS.map(j => ({id:j.line.id, voice:j.voice, kind:j.line.kind, text:j.line.text,
+    pass:!!j.chosen, amount:j.amount ?? null, tries:j.tried.length, tried:j.tried.map(t => ({spoken:t.spoken, ...(t.pass === undefined ? {} : t),
+      heard:Object.fromEntries(Object.entries(resultOf(takeOf(j, t.spoken)).hear || {}).map(([k, h]) => [k, h.errors ? h.heard : 0]))}))}));
+  const rate = rs => `${rs.filter(r => r.pass).length}/${rs.length} (${(100 * rs.filter(r => r.pass).length / Math.max(1, rs.length)).toFixed(1)}%)`;
+  const first = rs => `${rs.filter(r => r.tried[0]?.pass).length}/${rs.length}`;
+  const md = ['# The voice bank: pass rates', '', `Whisper small.en, exact, dry and sung in ${TEST_KEYS.map(k => k.join(' ')).join(' and ')}.`, '',
+    '| Voice | Kind | lines | pass | first spelling | at medium | at light only |', '|---|---|---|---|---|---|---|'];
+  for (const voice of ['strategy', 'synthia']) {
+    const vr = rows.filter(r => r.voice === voice);
+    for (const kind of [...new Set(vr.map(r => r.kind)), 'all']) {
+      const rs = kind === 'all' ? vr : vr.filter(r => r.kind === kind);
+      if (!rs.length) continue;
+      md.push(`| ${VOICES[voice].name} | ${kind} | ${rs.length} | ${rate(rs)} | ${first(rs)} | ${rs.filter(r => r.amount === .6).length} | ${rs.filter(r => r.amount === .3).length} |`);
+    }
   }
-  writeFileSync(pitchPath, '{\n' + Object.entries(pitch).map(([k, v]) => ` ${JSON.stringify(k)}:${JSON.stringify(v)}`).join(',\n') + '\n}\n');
-  console.log(`pitch tracks ${pitchPath}`);
-}
-
-// ---------------------------------------------------------------- melodies
-// Expressions wander and land home (questions rise); a couplet's first sentence
-// ends open, its second comes home; a call ends open in Strategy's register and
-// its response starts from the call's last note, an octave up, in Synthia's.
-const sentenceSplit = e => { const i = e.words.findIndex(w => /\.$/.test(w.text)); return i < 0 ? e.words.length : i + 1; };
-function melodyFor(e, {from = null} = {}) {
-  const reg = VOICES[e.voice].register, seed = hash(e.id);
-  if (e.kind === 'couplet') {
-    const cut = sentenceSplit(e), syl = syllablesOf(e), n1 = syl.filter(s => s.word < cut).length;
-    const notes = scaleNotes(KEY, SCALE, reg.lo, reg.hi);
-    const a = wander(n1, {notes, center:reg.center, tonic:KEY, seed, end:'open'});
-    const b = wander(syl.length - n1, {notes, center:reg.center, tonic:KEY, seed:seed + 1, end:'home', from:a.at(-1)});
-    return notesFor(e, [...a, ...b]);
+  md.push('', '## Not kept', '', '| Voice | Line | Spellings tried | Heard |', '|---|---|---|---|');
+  for (const r of rows.filter(r => !r.pass)) {
+    const last = r.tried.at(-1);
+    md.push(`| ${r.voice} | ${r.text} | ${r.tried.map(t => JSON.stringify(t.spoken)).join(', ')} | ${last ? Object.entries(last.heard).filter(([, h]) => h).map(([k, h]) => `${k}: "${h}"`).join('; ') : 'not rendered'} |`);
   }
-  return lineFor(e, {register:reg, tonic:KEY, scale:SCALE, seed, end:e.ask ? 'up' : e.kind === 'call' ? 'open' : 'home', from});
+  md.push('', '## Respelled', '', '| Voice | Line | Spoken as |', '|---|---|---|');
+  for (const r of rows.filter(r => r.pass && r.tries > 1)) md.push(`| ${r.voice} | ${r.text} | ${JSON.stringify(r.tried.at(-1).spoken)} |`);
+  const total = manifest.entries.reduce((s, e) => s + e.bytes, 0), dur = manifest.entries.reduce((s, e) => s + e.duration, 0);
+  md.push('', `Published: ${manifest.entries.length} takes, ${dur.toFixed(1)} s, ${(total / 1e6).toFixed(2)} MB FLAC (${(total / manifest.entries.length / 1e3).toFixed(1)} KB a take; ${(dur * SR * 2 / 1e6).toFixed(2)} MB as PCM16 WAV).`);
+  const strategyOnly = Object.entries(manifest.lines).filter(([, l]) => l.strategyOnly);
+  md.push('', `Strategy-only lines the lexicon gives Synthia: ${strategyOnly.length} (${['long', 'failed'].map(w => `${w} ${strategyOnly.filter(([, l]) => l.strategyOnly === w).length}`).join(', ')}).`);
+  writeFileSync(join(OUT, 'report.json'), JSON.stringify(rows, null, 1));
+  writeFileSync(join(OUT, 'report.md'), md.join('\n') + '\n');
+  console.log(md.slice(0, 24).join('\n'));
 }
 
 // ---------------------------------------------------------------- listen
-// A dotted-8th tape echo at 108 BPM, dark (2.2 kHz in the loop) so its
-// consonants do not answer the voice's; an 8th at .2 made Whisper hear the
-// repeats as words ("Agree" as "A great rain").
-const SPACE = {echo:{time:3 * 60 / 108 / 4, feedback:.3, mix:.16, tone:2200, tail:1.2}, chorus:{mix:.2}};
-const VARIANTS = {dry:null, sung:0, light:AMOUNTS.light, medium:AMOUNTS.medium, heavy:AMOUNTS.heavy};
-const mono = (l, r) => Float32Array.from(l, (v, i) => (v + r[i]) / 2);
-
-function render(e, x, variant, notes, {space = false} = {}) {
-  const amount = VARIANTS[variant];
-  if (amount === null) return space ? (() => { const r = pixelate(x, SR, {amount:0, space:SPACE}); return [r.left, r.right]; })() : [x];
-  const r = pixelate(x, SR, {notes, amount, space:space ? SPACE : null});
-  return space ? [r.left, r.right] : [r.samples];
-}
-
-function listen() {
-  const manifest = JSON.parse(readFileSync(MANIFEST, 'utf8'));
-  const entries = manifest.entries.filter(e => only(e.id));
-  const tests = [];
-  const t0 = performance.now();
-  let dspSeconds = 0, audioSeconds = 0;
-  for (const e of entries) {
-    const {x} = readMono(join(OUT, 'bank', e.file));
-    const notes = melodyFor(e);
-    for (const v of Object.keys(VARIANTS)) {
-      const a = performance.now();
-      const dry = render(e, x, v, notes);
-      const wet = render(e, x, v, notes, {space:true});
-      dspSeconds += (performance.now() - a) / 1000; audioSeconds += 2 * x.length / SR;
-      const base = join(OUT, 'test', v, e.file);
-      writeWav(base, dry);
-      writeWav(base.replace(/\.wav$/, '.space.wav'), [mono(...wet)]);
-      tests.push({id:e.id, voice:e.voice, kind:e.kind, variant:v, text:e.text, path:base, notes:v === 'dry' ? [] : notes.map(n => ({from:n.from, to:n.to, midi:n.midi}))});
-      tests.push({id:e.id, voice:e.voice, kind:e.kind, variant:v, text:e.text, path:base.replace(/\.wav$/, '.space.wav'), space:true, notes:[]});
-    }
-  }
-  writeFileSync(mk(join(OUT, 'work', ONLY ? 'tests-only.json' : 'tests.json')), JSON.stringify(tests));
-  console.log(`test renders: ${tests.length} files; chain ${(dspSeconds * 1000 / audioSeconds).toFixed(1)} ms per second of audio (${((performance.now() - t0) / 1000).toFixed(1)} s total)`);
-  if (!ONLY) reels(manifest);
-}
-
-// Aaron's listening set: per voice, the twelve expressions one bar apart (108
-// BPM, the first vowel on the downbeat), dry and at three amounts; the six
-// couplets as call and response; a sweep of one phrase from 0 to heavy.
-const BAR = 60 / 108 * 4, BEAT = 60 / 108;
-function place(bus, ch, at) {
-  ch.forEach((c, k) => { const o = Math.round(at * SR), d = bus[k % bus.length]; for (let i = 0; i < c.length && o + i < d.length; i++) if (o + i >= 0) d[o + i] += c[i]; });
-}
-function stereo(ch) { return ch.length === 2 ? ch : [ch[0], ch[0]]; }
-function normalise(L, R, peakDb = -1) {
-  let p = 0;
-  for (let i = 0; i < L.length; i++) p = Math.max(p, Math.abs(L[i]), Math.abs(R[i]));
-  const g = 10 ** (peakDb / 20) / (p || 1);
-  for (let i = 0; i < L.length; i++) { L[i] *= g; R[i] *= g; }
-}
-function reels(manifest) {
-  const by = id => manifest.entries.find(e => e.id === id);
-  const take = id => readMono(join(OUT, 'bank', by(id).file)).x;
-  const dir = join(OUT, 'listen');
-  for (const voice of Object.keys(VOICES)) {
-    VOICES[voice].reel = {};
-    for (const [i, v] of ['dry', 'light', 'medium', 'heavy'].entries()) {
-      const n = Math.round((EXPRESSIONS.length * BAR + 1.5) * SR), L = new Float32Array(n), R = new Float32Array(n);
-      let prev = null;
-      EXPRESSIONS.forEach((x, k) => {
-        const e = by(`${voice}/${x.id}`), notes = melodyFor(e, {from:prev});
-        prev = notes.at(-1).midi;
-        const ch = stereo(render(e, take(e.id), v, notes, {space:true}));
-        place([L, R], ch, .4 + k * BAR - e.words[0].onset);
-      });
-      normalise(L, R);
-      writeWav(join(dir, `${voice}-${i + 1}-${v}.wav`), [L, R]);
-    }
-  }
-  // call and response: Strategy on beat one, Synthia on beat three, one bar each, medium
-  for (const v of ['light', 'medium']) {
-    const n = Math.round((COUPLETS.length * BAR + 1.5) * SR), L = new Float32Array(n), R = new Float32Array(n);
-    COUPLETS.forEach((c, k) => {
-      const call = by(`strategy/${c.id}-call`), resp = by(`synthia/${c.id}-response`);
-      const cn = melodyFor(call), rn = melodyFor(resp, {from:cn.at(-1).midi + 12});
-      const callAt = .4 + k * BAR, callEnd = callAt - call.words[0].onset + call.voiced[1];
-      const beat3 = callAt + 2 * BEAT, respAt = Math.max(beat3, Math.ceil((callEnd + .05 - .4) / (BEAT / 2)) * (BEAT / 2) + .4);
-      place([L, R], stereo(render(call, take(call.id), v, cn, {space:true})), callAt - call.words[0].onset);
-      place([L, R], stereo(render(resp, take(resp.id), v, rn, {space:true})), respAt - resp.words[0].onset);
-    });
-    normalise(L, R);
-    writeWav(join(dir, `couplets-call-and-response-${v}.wav`), [L, R]);
-  }
-  // the sweep: one phrase per voice at amount 0, .15, ... .9 (seven passes)
-  for (const id of ['strategy/humbled-to-announce', 'synthia/thrilled-to-share']) {
-    const e = by(id), x = take(id), notes = melodyFor(e), amounts = [0, .15, .3, .45, .6, .75, .9];
-    const n = Math.round((amounts.length * BAR / 2 + 1.5) * SR), L = new Float32Array(n), R = new Float32Array(n);
-    amounts.forEach((a, k) => {
-      const r = pixelate(x, SR, {notes, amount:a, space:SPACE});
-      place([L, R], [r.left, r.right], .4 + k * BAR / 2 - e.words[0].onset);
-    });
-    normalise(L, R);
-    writeWav(join(dir, `sweep-${id.replace('/', '-')}.wav`), [L, R]);
-  }
-}
-
-// ---------------------------------------------------------------- measure
-function measure() {
-  const tests = JSON.parse(readFileSync(join(OUT, 'work', ONLY ? 'tests-only.json' : 'tests.json'), 'utf8'));
-  // the space (echo and chorus) is heard only on the pixel amounts: that is the chain as a song plays it
-  const heard = py('hear', tests.filter(t => !t.space || !['dry', 'sung'].includes(t.variant)).map(({id, variant, text, path, space}) => ({id, variant, text, path, space:!!space})));
-  const pitched = py('pitch', tests.filter(t => t.notes.length));
-  let report = {heard, pitched};
-  if (ONLY && existsSync(join(OUT, 'report.json'))) {             // a partial run replaces only its own takes
-    const old = JSON.parse(readFileSync(join(OUT, 'report.json'), 'utf8')), mine = new Set(tests.map(t => t.id));
-    report = {heard:[...old.heard.filter(h => !mine.has(h.id)), ...heard], pitched:[...old.pitched.filter(h => !mine.has(h.id)), ...pitched]};
-  }
-  writeFileSync(join(OUT, 'report.json'), JSON.stringify(report, null, 1));
-  writeFileSync(join(OUT, 'report.md'), summarise(report));
-  console.log(readFileSync(join(OUT, 'report.md'), 'utf8').split('\n').slice(0, 40).join('\n'));
-}
-
-function summarise({heard, pitched}) {
-  const lines = ['# Pixel voices: measurements', ''];
-  const variants = Object.keys(VARIANTS);
-  lines.push('## Whisper small.en, word error rate (whole take, 0.3 s of silence each side)', '');
-  lines.push('| Voice | Chain | ' + variants.join(' | ') + ' |', '|---|---|' + variants.map(() => '---|').join(''));
-  for (const voice of Object.keys(VOICES)) for (const space of [false, true]) {
-    const row = variants.map(v => {
-      const r = heard.filter(h => h.id.startsWith(voice) && h.variant === v && h.space === space);
-      if (!r.length) return '';
-      const words = r.reduce((s, h) => s + h.words, 0), errs = r.reduce((s, h) => s + h.errors, 0);
-      return `${(100 * errs / words).toFixed(1)}% (${r.filter(h => h.errors === 0).length}/${r.length} exact)`;
-    });
-    lines.push(`| ${VOICES[voice].name} | ${space ? 'with echo and chorus' : 'no space'} | ${row.join(' | ')} |`);
-  }
-  lines.push('', '## Pitch against the target notes (syllable nuclei, vowel frames within 6 dB of the loudest)', '');
-  lines.push('| Voice | Chain | notes | median abs cents | 90th pct | within 25 c | within 50 c | SHS median abs cents |', '|---|---|---|---|---|---|---|---|');
-  for (const voice of Object.keys(VOICES)) for (const v of variants.filter(v => v !== 'dry')) {
-    const ns = pitched.filter(p => p.id.startsWith(voice) && p.variant === v).flatMap(p => p.notes).filter(n => n.cents !== null);
-    const c = ns.map(n => Math.abs(n.cents)).sort((a, b) => a - b), s = ns.filter(n => n.shsCents !== null).map(n => Math.abs(n.shsCents)).sort((a, b) => a - b);
-    const q = (a, p) => a.length ? a[Math.min(a.length - 1, Math.floor(p * a.length))].toFixed(1) : '-';
-    lines.push(`| ${VOICES[voice].name} | ${v} | ${ns.length} | ${q(c, .5)} | ${q(c, .9)} | ${(100 * c.filter(x => x <= 25).length / c.length).toFixed(0)}% | ${(100 * c.filter(x => x <= 50).length / c.length).toFixed(0)}% | ${q(s, .5)} |`);
-  }
-  lines.push('', '## Every take, word error per chain (no space / with space)', '');
-  lines.push('| Take | ' + variants.join(' | ') + ' |', '|---|' + variants.map(() => '---|').join(''));
-  const ids = [...new Set(heard.map(h => h.id))];
-  for (const id of ids) {
-    lines.push(`| ${id} | ` + variants.map(v => {
-      const a = heard.find(h => h.id === id && h.variant === v && !h.space), b = heard.find(h => h.id === id && h.variant === v && h.space);
-      const f = h => h ? (h.errors ? `${h.errors}: "${h.heard}"` : '0') : '';
-      return `${f(a)} / ${f(b)}`;
-    }).join(' | ') + ' |');
-  }
-  return lines.join('\n') + '\n';
-}
-
-// ---------------------------------------------------------------- sketch
-function sketch() {
-  const manifest = JSON.parse(readFileSync(MANIFEST, 'utf8'));
-  const by = id => manifest.entries.find(e => e.id === id);
-  const take = id => readMono(join(OUT, 'bank', by(id).file)).x;
-  const dir = join(OUT, 'listen');
-  const out = renderSketch({sr:SR, entry:by, take, melodyFor, key:KEY, scale:SCALE});
-  writeWav(join(dir, 'sketch-offsite-20s.wav'), [out.left, out.right]);
-  const solo = renderTambourineSolo({sr:SR});
-  writeWav(join(dir, 'tambourine-groove.wav'), [solo.groove]);
-  writeWav(join(OUT, 'test', 'tambourine-shake.wav'), [solo.shake]);
-  writeWav(join(OUT, 'test', 'tambourine-hit.wav'), [solo.hit]);
-  writeWav(join(OUT, 'test', 'tambourine-stem.wav'), [out.stems.tambourine]);
-  writeWav(join(OUT, 'test', 'sketch-voices.wav'), out.stems.voices);
-  writeWav(join(OUT, 'test', 'sketch-band.wav'), [0, 1].map(c => Float32Array.from(out.stems.drums[c], (v, i) =>
-    .9 * v + .55 * out.stems.tambourine[i] + out.stems.pad[c][i] + .9 * out.stems.bass[i])));
-  console.log(`sketch voices at ${out.voiceGainDb} dB over their stem level`);
-  const lyric = out.cues.map(c => by(c.id).text).join(' ');
-  const t = py('tamb', [{path:join(OUT, 'test', 'tambourine-shake.wav'), what:'one shake'}, {path:join(OUT, 'test', 'tambourine-hit.wav'), what:'one hit'},
-    {path:join(dir, 'tambourine-groove.wav'), what:'the groove, 4 bars'}]);
+// The tambourine (instruments.js) alone, measured: one shake, one hit, four bars
+// of the groove, and a bar of even 16ths (do its strikes ring the same lines?).
+function tambourine() {
+  const dir = join(OUT, 'listen'), solo = renderTambourineSolo({sr:SR}), files = {};
+  for (const [k, y] of Object.entries(solo)) writeWav(files[k] = join(dir, `tambourine-${k}.wav`), [y]);
+  const t = py('tamb', [{path:files.shake, what:'one shake'}, {path:files.hit, what:'one hit'}, {path:files.groove, what:'the groove, 4 bars'},
+    {path:files.sixteenths, what:'a bar of even 16ths', lines:true}]);
   writeFileSync(join(OUT, 'tambourine.json'), JSON.stringify(t, null, 1));
-  // the sketch heard whole (its voices alone, and the mix), then each cue cut
-  // from the mix, from 0.25 s before its first vowel to 0.3 s after its last word
-  const jobs = [{id:'sketch', variant:'voices', text:lyric, path:join(OUT, 'test', 'sketch-voices.wav')},
-    {id:'sketch', variant:'mix', text:lyric, path:join(dir, 'sketch-offsite-20s.wav')}];
-  out.cues.forEach((c, k) => {
-    const e = by(c.id), a = Math.max(0, Math.round((c.at - .25) * SR)), b = Math.round((c.end + .3) * SR);
-    const path = join(OUT, 'test', 'sketch-cuts', `${String(k).padStart(2, '0')}-mix.wav`);
-    writeWav(path, [mono(out.left.subarray(a, b), out.right.subarray(a, b))]);
-    jobs.push({id:c.id, variant:'cue in the mix', text:e.text, path, at:c.at});
-  });
+}
+
+// The 20 s Offsite direction sketch (sketch.js) from the published bank, read
+// through the loader as a page reads it; Whisper on the voices' stem.
+async function sketch() {
+  const {TAKE_TABLE, loadVoices} = await import('../src/allhands/voices/voice-table.js');
+  const {readVoice} = await import('../src/allhands/voices/node.js');
+  const {renderSketch, CUES} = await import('../src/allhands/voices/sketch.js');
+  const missing = CUES.map(c => c[2]).filter(k => !TAKE_TABLE[k]);
+  if (missing.length) throw new Error(`the sketch needs takes the bank does not hold: ${missing.join(', ')}`);
+  const takes = await loadVoices([...new Set(CUES.map(c => TAKE_TABLE[c[2]].file))], {read:readVoice(PUBLIC + '/')});
+  const entry = key => ({...TAKE_TABLE[key], voiced:[TAKE_TABLE[key].start, TAKE_TABLE[key].end], kind:TAKE_TABLE[key].kind}), take = key => takes.get(TAKE_TABLE[key].file).samples;
+  const melodyFor = (e, {from = null} = {}) => lineFor(e, {register:VOICES[e.voice].register, tonic:'D', scale:'majorPenta', seed:hash(e.file), from,
+    end:e.kind === 'call' ? 'open' : /\?$/.test(e.text) ? 'up' : 'home'});
+  const out = renderSketch({sr:SR, entry, take, melodyFor});
+  const dir = join(OUT, 'listen');
+  writeWav(join(dir, 'sketch-offsite-20s.wav'), [out.left, out.right]);
+  writeWav(join(dir, 'sketch-voices.wav'), [Float32Array.from(out.stems.voices[0], (v, i) => (v + out.stems.voices[1][i]) / 2)]);
+  const lyric = out.cues.map(c => TAKE_TABLE[c.id].text).join(' ');
+  const jobs = [{id:'sketch', variant:'voices', text:lyric, path:join(dir, 'sketch-voices.wav')}];
   out.cueCuts().forEach((c, k) => {
     const path = join(OUT, 'test', 'sketch-cuts', `${String(k).padStart(2, '0')}-alone.wav`);
     writeWav(path, [c.samples]);
-    jobs.push({id:c.id, variant:'cue alone in the band', text:by(c.id).text, path, at:c.at});
+    jobs.push({id:c.id, variant:'cue alone in the band', text:TAKE_TABLE[c.id].text, path, at:c.at});
   });
   const heard = py('hear', jobs);
   writeFileSync(join(OUT, 'sketch.json'), JSON.stringify({cues:out.cues, voiceGainDb:out.voiceGainDb, heard}, null, 1));
-  console.log('sketch', out.cues.length, 'voice cues');
+  console.log(`sketch: ${out.cues.length} cues; voices' stem ${heard[0].errors} of ${heard[0].words} words wrong; cues alone in the band exact ${heard.slice(1).filter(h => !h.errors).length}/${heard.length - 1}`);
 }
 
-if (STEPS.has('bank')) await bank();
-if (STEPS.has('align')) align();
-else if (STEPS.has('pitch')) writePitch();
-if (STEPS.has('listen')) listen();
-if (STEPS.has('measure')) measure();
-if (STEPS.has('sketch')) sketch();
+await run();
+if (STEPS.has('publish')) publish();
+else if (JOBS.some(j => j.tried.length)) report({entries:[], lines:{}});
+if (STEPS.has('tambourine')) tambourine();
+if (STEPS.has('sketch')) await sketch();

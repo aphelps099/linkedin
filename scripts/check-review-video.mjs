@@ -52,9 +52,9 @@ const FPS = 24, t00 = Date.now();
 const SHOTS = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/videostudio/media/shots.json'), 'utf8')), idx = shotIndex(SHOTS);
 const lyrics = lyricsFromPost(SAMPLE_POST);
 // The film as the studio makes it, with the cold open: the sample post on a track chosen by hand
-// (today's cast; with Let the post choose the sample picks Circle Back with the same cast).
+// (today's cast; with Let the post choose the sample picks Circle Back and the lexicon's lines, casting.js).
 const planOf = track => FORMS.drop60.arrange(lyrics, {}, {track, coldOpen:true});
-ok(castSong(SAMPLE_POST).track === 'circle-back' && !castSong(SAMPLE_POST).recast.length, 'the sample post chooses Circle Back and today\'s cast');
+ok(castSong(SAMPLE_POST).track === 'circle-back', 'the sample post chooses Circle Back');
 // The choke's frames: true black from the first frame that starts after her tag stops sounding
 // (plan.choke.tagEnd plus the engine's latency), the ignition on the frame that holds the impact.
 // (edl/anchors.js chokeFrames: plus the choke's 30 ms codec tail, CHOKE_TAIL, so nothing of her, and no

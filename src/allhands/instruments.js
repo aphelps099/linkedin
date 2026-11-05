@@ -596,3 +596,185 @@ export function washImpulse(ctx, seconds = 5, bloom = .12, seed = 7) {
   }
   return s[key] = b;
 }
+
+// ---- The tambourine ------------------------------------------------------
+// A wooden frame with six pairs of metal jingles and a calfskin head, modal
+// synthesis, no samples (src/allhands/voices/README.md, "The tambourine").
+//
+// Each jingle is a thin dished disc: seven damped resonators at inharmonic
+// ratios (1, 1.43, 1.79, 2.28, 2.71, 3.2, 3.83) from a base between 2.6 and
+// 4.4 kHz, so its partials run from about 2.6 to 17 kHz and ring 80 ms (the
+// lowest) to 40 ms. The two discs of a pair sit 0.4 to 1.1% apart, so every
+// pair beats. A collision is three things: both discs struck, each partial by
+// its own amount (where the discs met, and how flat: no two collisions ring the
+// same way); the metal-on-metal "chk", a 2 to 6 ms burst of noise through a
+// resonance between 1.1 and 2.9 kHz, a new one each collision; and a knock into
+// the frame, whose five wooden modes (420 Hz to 2.4 kHz) fill the 1 to 3 kHz body
+// a real tambourine has and a bank of jingles alone does not.
+//   shake  the wrist: every pair collides 2 to 8 times over 40 to 90 ms, bunched a
+//          third of the way in, under a swish of 5-11 kHz noise (jingles on pins).
+//   hit    the palm on the head: the membrane (95, 190, 310 Hz), a hard knock into
+//          the frame, every pair at once within 3 ms, then a rattle over 80 ms.
+// Every strike is rendered once per context (12 per kind and velocity layer, each
+// with its own collisions and the whole set drifting by up to 7 cents: jingles
+// turn on their pins), and played a few cents off again, chosen by its time:
+// two strikes never ring the same tones. Deterministic: the same time, kind and
+// velocity give the same samples in every render.
+const TAMB_RATIOS = [1, 1.43, 1.79, 2.28, 2.71, 3.2, 3.83];
+const TAMB_WOOD = [[420, .03, .12], [690, .024, .25], [1130, .02, .8], [1710, .015, .9], [2380, .011, .7]];   // Hz, decay (s), level
+const TAMB_LAYERS = {shake:[.35, .65, 1], hit:[.6, 1]};
+const TAMB_VARIANTS = 12;
+const TAMB_LEVEL = .68;
+const lcg = seed => { let s = (seed >>> 0) || 1; return () => (s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 4294967296; };
+const mix32 = h => { h = Math.imul(h ^ (h >>> 16), 0x85ebca6b); h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35); return (h ^ (h >>> 16)) >>> 0; };
+
+// The instrument itself: the same tambourine every time (its jingles' tuning).
+function tambourineModel(sampleRate, seed = 11) {
+  const R = lcg(seed * 2654435761), pairs = 6;
+  return Array.from({length:pairs}, (_, p) => {
+    const base = 2600 + 1800 * (p + R() * .8) / pairs, detune = .004 + .007 * R();
+    return [1 - detune / 2, 1 + detune / 2].map(k => TAMB_RATIOS.map((ratio, m) => {
+      const f = base * k * ratio * (1 + .012 * (R() - .5));
+      return f > sampleRate * .45 ? null : {f, tau:.08 * ratio ** -.45 * (.8 + .4 * R()), gain:(.6 + .4 * R()) * ratio ** -.6, ratio, m};
+    }).filter(Boolean));
+  });
+}
+
+// One damped resonator (a sine that decays by tau), excited by `e`, added into `y`.
+function ring(y, e, sr, f, tau, gain) {
+  const r = Math.exp(-1 / (tau * sr)), c = 2 * r * Math.cos(2 * Math.PI * f / sr), r2 = r * r, g = gain * Math.sin(2 * Math.PI * f / sr);
+  let y1 = 0, y2 = 0;
+  for (let i = 0; i < y.length; i++) { const v = c * y1 - r2 * y2 + e[i]; y2 = y1; y1 = v; y[i] += g * v; }
+}
+// A band-pass of a short noise burst (RBJ, constant skirt), added into y at i0.
+function chk(y, R, i0, sr, f, q, length, a) {
+  const w = 2 * Math.PI * f / sr, al = Math.sin(w) / (2 * q), a0 = 1 + al;
+  const b0 = al / a0, a1 = -2 * Math.cos(w) / a0, a2 = (1 - al) / a0, L = Math.round(length * sr), tail = Math.round(.012 * sr);
+  let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+  for (let j = 0; j < L + tail && i0 + j < y.length; j++) {
+    const x = j < L ? (R() * 2 - 1) * (1 - j / L) ** 2 : 0, v = b0 * x - b0 * x2 - a1 * y1 - a2 * y2;
+    x2 = x1; x1 = x; y2 = y1; y1 = v;
+    if (i0 + j >= 0) y[i0 + j] += a * v;
+  }
+}
+
+// One strike as samples (mono, at sampleRate): kind 'shake' | 'hit', at velocity v
+// (0..1, brighter and busier as it rises), variant k. Pure: Node renders it too.
+export function tambourineSamples(sampleRate, {kind = 'shake', v = .65, k = 0, seed = 11} = {}) {
+  const sr = sampleRate, set = tambourineModel(sr, seed), R = lcg(mix32(seed * 7919 + (kind === 'hit' ? 104729 : 0) + Math.round(v * 100) * 31 + k * 977));
+  const n = Math.round((kind === 'hit' ? .3 : .22) * sr), drift = 1 + .004 * (R() - .5);
+  const collisions = [];                                 // [pair, time (s), amplitude]
+  if (kind === 'hit') {
+    set.forEach((_, p) => collisions.push([p, .003 * R(), v * (.8 + .2 * R())]));
+    set.forEach((_, p) => {
+      const c = 3 + Math.floor(4 * R());
+      for (let j = 0; j < c; j++) { const dt = .008 + .075 * R() ** 1.6; collisions.push([p, dt, v * .45 * (1 - dt / .09) * (.5 + .5 * R())]); }
+    });
+  } else {
+    const D = .04 + .05 * R() * (.5 + v / 2);
+    set.forEach((_, p) => {
+      const c = 2 + Math.floor((3 + 6 * v) * R());
+      for (let j = 0; j < c; j++) { const u = (R() + R() + R()) / 3 * .9; collisions.push([p, .002 + D * u * u * 1.6, v * (.25 + .75 * R()) * .6]); }
+    });
+  }
+  const y = new Float32Array(n), e = new Float32Array(n), wood = new Float32Array(n);
+  // the jingles: each partial excited by every collision of its pair, each by its own amount
+  set.forEach((discs, p) => {
+    const mine = collisions.filter(c => c[0] === p), pairDrift = drift * (1 + .002 * (R() - .5));
+    for (const modes of discs) for (const mode of modes) {
+      e.fill(0);
+      for (const [, t, a] of mine) {
+        const i = Math.round(t * sr);
+        if (i < 0 || i + 2 >= n) continue;
+        const w = a * (.25 + .75 * R()) ** 1.5 * (R() < .5 ? -1 : 1);              // where they met, how flat
+        e[i] += w; e[i + 1] -= .6 * w; e[i + 2] += .25 * w;
+      }
+      ring(y, e, sr, mode.f * pairDrift, mode.tau, .16 * mode.gain * mode.ratio ** (-.45 * (1 - v)));
+    }
+  });
+  // the chk of metal on metal, and the knock each collision gives the frame
+  for (const [, t, a] of collisions) {
+    const i = Math.round(t * sr);
+    chk(y, R, i, sr, 1100 + 1800 * R(), 1.6 + R(), .002 + .004 * R(), .04 * a);
+    if (i >= 0 && i < n) wood[i] += .035 * a * (R() < .5 ? -1 : 1);
+  }
+  if (kind === 'hit') {
+    wood[0] += .3 * v;
+    for (const [f, tau, g] of [[190, .045, .22], [310, .03, .14], [95, .06, .1]])      // the head
+      for (let j = 0; j < Math.min(n, Math.round(tau * 6 * sr)); j++) y[j] += v * g * Math.exp(-j / (tau * sr)) * Math.sin(2 * Math.PI * f * j / sr) * Math.min(1, j / 20);
+  } else {
+    wood[0] += .05 * v;                                  // the hand's grip as the wrist turns
+    const L = Math.round((.05 + .04 * v) * 1.3 * sr), aLo = Math.exp(-2 * Math.PI * 11000 / sr), aHi = Math.exp(-2 * Math.PI * 5000 / sr);
+    let lo = 0, hi = 0;
+    for (let j = 0; j < L && j < n; j++) {                 // the swish: noise between two one-poles, under a sine envelope
+      const w = R() * 2 - 1;
+      lo = (1 - aLo) * w + aLo * lo; hi = (1 - aHi) * w + aHi * hi;
+      y[j] += .05 * v * (lo - hi) * Math.sin(Math.PI * j / L) ** 2;
+    }
+  }
+  for (const [f, tau, g] of TAMB_WOOD) ring(y, wood, sr, f * (1 + .01 * (R() - .5)), tau, .5 * g);
+  // a 2 ms fade at the end, then the instrument's level
+  const F = Math.round(.002 * sr);
+  for (let j = 0; j < F; j++) y[n - 1 - j] *= j / F;
+  for (let i = 0; i < n; i++) y[i] *= TAMB_LEVEL;
+  return y;
+}
+
+// Which rendered strike a strike at time t plays, and how: its velocity layer,
+// variant, playback rate (a few cents off) and gain. Shared by the Web Audio
+// voice and the offline renderer, so both choose the same strikes.
+export function tambourineStrike(t, v = .5, kind = 'shake') {
+  const layers = TAMB_LAYERS[kind] || TAMB_LAYERS.shake, found = layers.findIndex(x => v <= x + 1e-9), L = found < 0 ? layers.length - 1 : found;
+  const h = mix32(Math.round(t * 2000) * 2654435761 + (kind === 'hit' ? 1 : 0));
+  return {kind, layer:L, v:layers[L], k:h % TAMB_VARIANTS, rate:2 ** ((((h >>> 8) % 1001) / 1000 - .5) * 12 / 1200), gain:v / layers[L]};
+}
+
+function tambourineBuffer(ctx, s) {
+  const st = store(ctx), key = `tamb:${s.kind}:${s.layer}:${s.k}`;
+  if (st[key]) return st[key];
+  const y = tambourineSamples(ctx.sampleRate, {kind:s.kind, v:s.v, k:s.k}), b = ctx.createBuffer(1, y.length, ctx.sampleRate);
+  b.getChannelData(0).set(y);
+  return st[key] = b;
+}
+
+// The tambourine, for a track: a shake (the 16ths) or a hit (the accent), at
+// velocity v, panned `side` (it sits in the background, a little right). At v 1
+// a shake peaks near -9 dBFS and a hit near -4 dBFS before the bus.
+export function tambourine(ctx, out, t, v = .5, {kind = 'shake', side = .35} = {}) {
+  const s = tambourineStrike(t, v, kind), src = ctx.createBufferSource(), g = amp(ctx, s.gain), p = spread(ctx, side);
+  src.buffer = tambourineBuffer(ctx, s); src.playbackRate.value = s.rate;
+  chain(src, g, p, out); src.start(t); src.stop(t + src.buffer.duration / s.rate + .005); done(src, [src, g, p]);
+}
+
+// The same strikes rendered offline into a mono Float32Array (measurements,
+// sketches): events [{t, v, kind}]. Linear interpolation plays the off-rate.
+export function renderTambourine(events, duration, {sampleRate = 44100} = {}) {
+  const sr = sampleRate, y = new Float32Array(Math.ceil(duration * sr)), cache = new Map();
+  for (const ev of events) {
+    const s = tambourineStrike(ev.t, ev.v ?? .5, ev.kind ?? ev.type ?? 'shake'), key = `${s.kind}:${s.layer}:${s.k}`;
+    if (!cache.has(key)) cache.set(key, tambourineSamples(sr, {kind:s.kind, v:s.v, k:s.k}));
+    const x = cache.get(key), o = ev.t * sr;
+    for (let i = Math.max(0, Math.ceil(o)); i < y.length; i++) {
+      const p = (i - o) * s.rate, i0 = Math.floor(p);
+      if (i0 + 1 >= x.length) break;
+      y[i] += s.gain * (x[i0] + (x[i0 + 1] - x[i0]) * (p - i0));
+    }
+  }
+  return y;
+}
+
+// A groove for a track to place: per 16th, a shake at shakes[s % 4] (0 = none),
+// leaning on the "and"; `hits` are 16ths of the bar struck instead (on bars where
+// bar % every === every - 1). Timing breathes by up to `humanize` seconds, seeded.
+export function tambourinePattern({bars, step, swing = 0, shakes = [.32, .16, .78, .26], hits = [], humanize = .004, seed = 3, every = 1, from = 0}) {
+  const R = lcg(seed * 40503 + 1), events = [];
+  for (let s = 0; s < bars * 16; s++) {
+    const t = from + s * step + (s % 2 ? swing * step : 0) + (R() - .5) * 2 * humanize;
+    if (hits.includes(s % 16) && Math.floor(s / 16) % every === every - 1) events.push({t:Math.max(0, t), kind:'hit', v:.8});
+    else {
+      const v = shakes[s % shakes.length], j = R();
+      if (v > 0) events.push({t:Math.max(0, t), kind:'shake', v:v * (.88 + .24 * j)});
+    }
+  }
+  return events;
+}

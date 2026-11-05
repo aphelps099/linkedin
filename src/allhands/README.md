@@ -828,27 +828,61 @@ by a render quantum, so each line now feeds back on itself with one exit.
 ## Casting
 
 **Let the post choose** (on by default) is the fourth cell of the Song
-picker: performing a post picks its song and the lady's lines. `casting.js`
-reads the post with a small lexicon, picks a track, then casts each of her
-roles from `lady-roles.json`. The page says why in one line under the picker
-("Hustle, for “fired our entire sales team”, “revenue was up 12%” and “AI
-agents”. No days off.") and prints her lines in the setlist. Picking a song by
-hand overrides it with today's cast: the A/B against the stock lines. The
-Peg Board and the Pixel Text export read the cast from the plan, so her words
-light and land on her measured boundaries.
+picker: performing a post picks its song, the lady's lines and the band's
+vocabulary. Synergy sings the post; the band (Strategy, Synthia and the
+lady's recordings) sings the lexicon (`vocabulary/LEXICON.md`,
+`vocabulary/lexicon.json`). `casting.js` reads the post with a small lexicon,
+picks a track, casts the band's slots from `lexicon.json` and her roles from
+`lady-roles.json`. The page says why in one line under the picker, naming
+the song's couplet ("Hustle, for “fired our entire sales team”, “revenue was
+up 12%” and “AI agents”. It's not a hiring freeze. It's a focus season."), or
+on a post about family, health or grief its refrain ("The lady's refrain:
+The rest is history."). Picking a song by hand overrides it with today's cast: the A/B
+against the stock lines. The Peg Board and the Pixel Text export read the cast
+from the plan, so her words light and land on her measured boundaries.
 
 ```js
 import {castSong} from './casting.js';
-const {track, cast, why, line} = castSong(post, {seed, track});   // pure, deterministic, ~1.5 ms
+const {track, cast, why, line, keys} = castSong(post, {seed, track, recent, available});   // pure, deterministic, ~3 ms
 FORMS.drop60.arrange(lyrics, durations, {track, cast});
 window.__allhands.render({post, auto:true})                        // the render hook casts the same way
 ```
 
-`why.track` lists the concepts that scored, with the post's own words;
-`why.lady[role]` says why each line was chosen ("the post says it", a keyword,
-a topic, or "nothing in the post beats today's line"). `track` forces a song
-and still casts for it; `seed` only moves tie-breaks; `recast` names the roles
-that left today's cast.
+`track` forces a song and still casts for it; `seed` only moves tie-breaks;
+`recent` is the songs before this one, oldest first: earlier results, their
+`keys`, or `{slot:[key, ...]}` (a line one of the last 3 songs used scores
+x0.15, the last 10 x0.5); `available` is the voice bank's Set of
+`${voice}/${id}` takes that passed Whisper (`voices/voice-table.js`
+`AVAILABLE`), or a function of a part: a line of Synthia's she did not pass
+moves to Strategy, a line neither has is not cast. `why.track` lists the
+concepts that scored; `why.lady[role]` and `why.band[slot]` say why each line
+was chosen; `recast` names her roles that left today's cast; `keys` is what
+the next song's `recent` reads; `flags` says what the post is
+(`sensitive`, `layoffs`, `building`, `circleBack`, `notabout`) and what the
+song did (`title`, `coupletDrop`, `itsNot`).
+
+### The band's parts
+
+Her roles stay as they were (`ladder`, `tag`, `impact`, `bend`, `sink`,
+`lift`, `punct`, `stop`: "The cast", above). The band's ride beside them, and
+`castOf` passes them through (`songbook/index.js BAND_ROLES`). A part is
+`{voice, id, text, display}` for Strategy or Synthia (`id` is the take,
+`vocabulary/takes.js`; the voice bank keys it `${voice}/${id}`),
+`{voice:'lady', file, words:[first, last], text, display}` for her, or
+`{voice:'synergy', text, display}` for his sign-off.
+
+| Slot | Shape | What it is |
+|---|---|---|
+| `couplet` | `{id, topic, line, recorded, x:part, y:part}` | "It's not X." (Strategy) and "It's Y." (Synthia, or the lady when she owns the word: then `y.pickup` is Synthia's "It's" or "It's a", `its` / `its-a`). Her recorded couplets (09, 33) are hers whole. The anthem: Drop B and the outro, where the hook's later repeats were. |
+| `refrain` | part | A phrase that loops and wanders: Strategy's or hers. |
+| `exchanges` | `[{call:part, response:part, topics}]` | One call and its answer, two where the post asks for it (it says the line, or it is strongly on topic). Two voices, unless she answers herself ("Agree or disagree?" "Agree"). |
+| `signoff` | part | The last line before the tape stop, where Synergy's "Let's circle back" was. Synergy keeps it only in Circle Back. |
+| `stabs` | `[part, part]` | One word said like a verdict (or her two-word verdicts, "Milestone unlocked."), two voices where they can. |
+| `dropTag` | `{kind:'lady', tag, impact}` or `{kind:'couplet', id, x, tag, impact, tracks}` | The drop. `lady`: her tag and impact, the same as `cast.tag` and `cast.impact`. `couplet`: Strategy's X over the build's first two bars, Synthia's lead-in cut off (`tag`, "IT'S A QUICK-", take `<id>-tag`), the silence, the impact (`<id>-impact`, "SYNC.", or her word when she owns it). On a couplet drop `cast.tag` and `cast.impact` still hold her best free tag, for an engine that does not place the couplet. |
+
+Every take part and its text and display come from `lexicon.json` through
+`takes.js`: `<bank id>`, `<couplet>-call`, `<couplet>-response`,
+`<couplet>-tag`, `<couplet>-impact`, `its`, `its-a`, `ex-<words>`.
 
 ### The role table
 
@@ -907,43 +941,86 @@ post's hash, so similar posts spread across songs. Under 1.0 nothing is
 decisive and the post is Circle Back. The line quotes the strongest cues in
 the post's own spelling, joined when a word apart, then a quip from the track.
 
-**Her lines.** A recording's relevance to the post: its whole text quoted
-(+4) or the role's own words quoted (+2.5), its keywords (+1.2 a word, +2 a
-phrase, at most 3.6), its topics (+0.45 a hit, at most 1.8). A line's score is
-relevance × (0.4 + 0.6 craft) × the mix factor × the role's weight (tag 1.6, ladder 1.3, sink
-1.1, punct 1, stop 0.9, lift and bend 0.8). Today's line holds a baseline plus
-its own relevance: the moments named after their line (the sink, "Read that
-again.", "Full stop.") need the post's words to move them (2.1-2.2); the
-ladder and tag 1.5-1.6; bend and lift 1.4. In Circle Back "Let's circle back"
-is the song's title and holds +2; in the other songs the tag is open (1.0).
-A line needs 1.0 of relevance and a quote or a keyword (or, for the tag,
-ladder, bend and lift, 0.7 of topic) to be a recast at all.
+**The band, and her ladder and tag** rotate as the lexicon says
+(`lexicon.json` `casting`; `casting.js` `ROTATION`). A line's score in a
+slot is (0.4 + relevance + 0.6 at home) x (0.6 + 0.4 craft), less 0.8 for each
+content word the song already shows (the post's hook included: Synergy sings
+it, the band does not sing it back), times freshness. Relevance is the line's
+concepts against the post's, per topic group (a couplet's topics), the best
+group plus half the next, at most 3, plus 2.5 when the post says the line
+(its words, or the couplet's X or Y). Home is the track of the line's family
+or topic. When nothing clears 0.7 (1.0 for the sign-off), the track's house
+rotation and the lines at home in it take the slot, then the evergreen lines.
+Close calls go to FNV-1a of the post, salted per slot (drop 11, ladder 12,
+refrain 14, sign-off 15, exchanges 16, stabs 18, couplet 30) so the slots do
+not move together: within 0.35 of the best for the drop, the ladder and the
+sign-off (the closer the likelier), within 1.2 for the couplet, the refrain
+and the exchanges and 1.5 for the stabs.
 
-**Near-ties.** Lines within 0.3 of the best in a role, today's included, are
-settled by the post's hash weighted by how close each is (as the songs are):
-the chosen line takes the best score and the best takes its, nothing else
-moves. Its reasons say so ("a close call with …").
+The order: the drop, the couplet, the refrain, her ladder, the sign-off, the
+exchanges, the stabs, then her other roles (below), then her fallback tag. No
+recording twice, no lexicon line twice, no take twice.
+
+- **The drop.** Circle Back keeps its title, "Let's circle- BACK.", on one
+  Circle Back song in four (by hash; the salt, 57, puts 6 of the corpus's 24
+  Circle Back songs there and the sample, the flagship, on the new
+  vocabulary). Elsewhere a couplet joins her tags on 40% of the posts by
+  hash, or where a couplet scores 2 on topic, and the best wins; where the
+  post argues "not X, it's Y" itself, the drop is a couplet.
+- **The couplet.** Never at a person: a post that matches `SENSITIVE`
+  (family, health, grief; the work-family joke excepted) gets no couplet in its
+  drop and only meetings and metrics couplets. The ten layoff couplets aim at
+  the euphemism and play only on a layoff or restructuring post (`restructuring`,
+  a concept with no weight: "laid off", "fired our", "restructuring",
+  "severance"; not "cut our cloud bill").
+- **Her ladder.** "Let's build." only where the post is about building and
+  its hook is not already the build line (the sample's "Let's keep building"
+  sung by Synergy over 42 of her "Let's build." was the chorus Aaron heard).
+  On one couplet drop in three her ladder is the denial itself, "It's not"
+  (22 or 09, `lady-roles.json`, `couplet:true`; Whisper hears both cuts
+  exactly), climbing to the choke.
+- **"Let's circle back"** is said at most once a song (her 06 in any role, or
+  Synergy's sign-off), and her 06 only as the title or where the post says it.
+- **Synthia answers in short, clear words.** Strategy leads: the lexicon's
+  refrains and calls of hers are his, and so is any line of hers over six
+  syllables or with a word she lost in the prototype's Whisper runs
+  (`takes.js SYNTHIA`). She keeps couplet Ys, answers, stabs of three
+  syllables or fewer and sign-offs of five.
+- **Her template**, "It's not about X. It's about Y." (22), is the refrain
+  where the post argues "not X, it's Y". The refrain pool is the lexicon's
+  refrains plus any line of hers or Strategy's that sings (2 to 9 syllables).
+
+**Her other roles** (sink, punct, stop, lift, bend) are scored as before: a
+recording's relevance to the post, its whole text quoted (+4) or the role's
+own words (+2.5), its keywords (+1.2 a word, +2 a phrase, at most 3.6), its
+topics (+0.45 a hit, at most 1.8), times (0.4 + 0.6 craft), the mix factor
+and the role's weight (sink 1.1, punct 1, stop 0.9, lift and bend 0.8).
+Today's line holds a baseline plus its own relevance: the moments named after
+their line (the sink, "Read that again.", "Full stop.") need the post's words
+to move them (2.1-2.2); bend and lift 1.4. A line needs 1.0 of relevance and a
+quote or a keyword (bend and lift: 0.7 of topic) to be a recast. Lines within
+0.3 of the best are settled by the post's hash. A beam (160 states) then pair
+swaps pick the set around every recording the band took: no recording twice,
+no content word shown twice (-0.8 each), a line that is not relevant only
+when today's line is taken (by the band too: a stab can take "Pivot").
 
 **The copy line** never ends a quote on a function word (a cue like "Head of"
 takes the post's next word: "Head of Brand"), never quotes someone's family or
-health back at them, drops a lone "thank" or "day", and on Humbled and Honored
-a goodbye or personal news ends "Grateful for this journey.", not "Someone is
-very honored."
+health back at them, drops a lone "thank" or "day". Curly quotes are the
+post's words only; the band's line is said plainly after them. A goodbye or
+personal news on Humbled and Honored ends "Grateful for this journey.".
 
-**A coherent set.** A beam over the roles (160 states) then pair swaps pick
-the best total under the rules: no recording twice (the tag and its impact
-are one recording, by design), no content word shown twice (−0.8 each), a
-line that is not relevant only when today's line is taken. The impact is
-always the word the tag leaves out.
-
-Over the sample and the 60 fixtures: Circle Back 29, Humbled and Honored 14,
-Hustle 17 of the fixtures (the sample is Circle Back); 1.02 recasts a post,
-20 posts keep today's cast; the tag is recast 15 times, the lift 15, the
-ladder 10, the bend 8, the punct 7, the sink 6, the stop once. The sample
-keeps today's cast exactly: it is the flagship film. "Proud of this… TEAM."
-is still the tag on 5 posts: on 4 of them it is the only line the post is
-about (scores 2.2 to 5.3 against today's 1.6), so only a less relevant line
-could replace it; the near-tie rule moves only close calls.
+Over the sample and the 60 fixtures, hash only (with the corpus's history in
+order): 26 drops (31), 14 ladders (16), 30 refrains (32), 16 sign-offs (17),
+32 couplets (36); the most-used ladder on 8 posts (6), drop 7 (6), refrain 6
+(5), couplet 5 (4), sign-off 10 (8). "Let's build." 0 (1), was 49;
+"Let's circle- BACK." 6 of 24 Circle Back songs, was 44 of 61. A couplet drops
+on 23 posts (25), "It's not" climbs on 9. 51 of her 57 recordings are cast (55
+with history), was 46: Delve on 7, her template (22) on 10, 09 on 5, 33 on 3.
+No content word twice in the band and no echo of the hook. The band's parts:
+Strategy 207, Synthia 185, the lady 148, Synergy 2. Her roles below the beam
+keep today's lines on most posts ("Full stop." 58, "Pivot" 59, "Read that
+again." 57, "Let that sink in" 55, "Leverage" 51).
 
 `settleCast(arrange, lyrics, durations, {track, cast})` is how the page
 arranges: a recast bend, lift or punct that finds no gap in Synergy's line
@@ -952,24 +1029,44 @@ today's line, which is shorter or the same.
 
 ### Checks and takes
 
-`npm run check:casting` (`scripts/check-casting.mjs`, 2 s):
+`npm run check:casting` (`scripts/check-casting.mjs`, 7 s, 73,006 checks):
 - the role table against `lady-phrases.json` and `fits()`, every display
   drawable on the Peg Board and in Pixel Text as is;
-- every post (sample and 60 fixtures, plus all four songs forced): files on
-  disk, words inside the measured words, every recast inside its limits on
-  its track, no recording twice, the impact the tag's next word, the copy one
-  line without an em dash, reasons for every role, deterministic, under 20 ms;
-- the distribution is not degenerate (each song 10-70% of the fixtures);
+- the takes: every id in `takes.js` resolves to `lexicon.json`, every lady
+  line of the lexicon sits on her measured words, every display draws;
+- every post (sample and 60 fixtures, hash only and with the corpus's
+  history, plus all four songs forced): her roles as before (files on disk,
+  words inside the measured words, every recast inside its limits on its
+  track, the impact the tag's next word) and every band part valid (the take
+  exists, says what the lexicon says, Synthia only short and clear; her files
+  and words exist; the drop's couplet fits the track), no recording, take or
+  lexicon id twice, "Let's circle back" at most once, the line names the
+  couplet or the refrain, deterministic, under 20 ms;
+- the lexicon's limits (`casting.caps.corpus`), hash only and with history:
+  no ladder on more than 12 posts, drop 10, refrain 6, couplet 8, sign-off 10;
+  at least 14 ladders, 25 drops, 25 refrains; "Let's build." on 6 at most;
+  "Let's circle- BACK." on one Circle Back song in four; couplet drops 25-50%;
+  with history wider; the distribution printed;
+- the rules: sensitive posts, layoff posts, the sample, Delve and her
+  never-cast recordings in the rotation, `available` (a full bank casts as
+  the static rule; without Synthia's takes Strategy sings her lines; with
+  none, the lady carries the band's slots);
 - 122 arranged plans (two duration models): every cast cut plays whole, the
   recast tags keep their silence, no role lost to a missing gap, and every
   Peg Board and Pixel Text word of hers starts on her measured boundary.
 
+`node scripts/check-casting.mjs --page --url http://localhost:6021` checks
+that /allhands/ casts all 61 posts exactly as Node does (hash only and with
+history) and shows the sample's why line under the picker.
+
 `node scripts/check-casting.mjs --render --url http://localhost:5331 --out dir`
-also renders eight fixture posts through `render-allhands.mjs`, runs every
+also renders nine fixture posts through `render-allhands.mjs`, runs every
 `measure-allhands.py` gate plus Whisper (small.en) on each lady moment, writes
 MP3s and an `index.txt`, and checks that the page casts all 61 posts exactly
 as Node does. A failed gate is rendered again with today's cast on the same
 post and song: it counts against casting only if today's cast passes it.
+
+The takes below were rendered with the casting before the lexicon (her roles only); the band's parts play once the engine places them.
 
 | Fixture | Song | Recast | I / TP / LRA | Drop A, mix / phone | Drop B, mix / phone | Silence | Whisper on her recast lines |
 |---|---|---|---|---|---|---|---|

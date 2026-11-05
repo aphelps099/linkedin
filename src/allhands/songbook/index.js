@@ -47,6 +47,11 @@ export const DEFAULT_CAST = Object.freeze({
   stop:{file:'16.wav', words:[0, -1], display:'FULL STOP.'},
 });
 
+// The band's parts of a cast (casting.js castSong, README.md "Casting"): the
+// couplet, the refrain, the exchanges, the sign-off, the stabs and the drop's
+// tag. castOf passes them through as they are; the engine places them.
+export const BAND_ROLES = ['couplet', 'refrain', 'exchanges', 'signoff', 'stabs', 'dropTag'];
+
 // A cast names only the roles it changes; the rest stay the default. A role
 // set to null is left out (the arrangement plays without it). Throws on an
 // unknown role or a malformed entry, so a casting bug fails loudly.
@@ -54,6 +59,7 @@ export function castOf(cast) {
   if (!cast) return DEFAULT_CAST;
   const out = {...DEFAULT_CAST};
   for (const [role, entry] of Object.entries(cast)) {
+    if (BAND_ROLES.includes(role)) { out[role] = entry; continue; }
     if (!LADY_ROLES.includes(role)) throw Error(`Unknown lady role "${role}". Roles: ${LADY_ROLES.join(', ')}.`);
     if (entry === null) { out[role] = null; continue; }
     if (!entry || typeof entry.file !== 'string' || !/^\d\d\.wav$/.test(entry.file)) throw Error(`Cast ${role}: file must look like "NN.wav".`);

@@ -1,5 +1,5 @@
 {
- "about": "What each of the lady's 57 recordings can play in a Drop Edition, with which of its measured words (lady-phrases.json), and what it is about. Built by hand, checked by scripts/check-casting.mjs. words: [first, last] word indexes; tag: its impact is the next word; sink: split is the first deep word; tracks: where the cut fits the role's limits (casting.js fits()); craft: how well it plays the role, 0-1; heard: what Whisper (small.en) hears in the cut alone, enveloped as the engine plays it; mix (tag and sink): what it hears in two bars of the band on each track, and the share of her words it hears in order.",
+ "about": "What each of the lady's 57 recordings can play in a Drop Edition, with which of its measured words (lady-phrases.json), and what it is about. Built by hand, checked by scripts/check-casting.mjs. words: [first, last] word indexes; tag: its impact is the next word; sink: split is the first deep word; tracks: where the cut fits the role's limits (casting.js fits()); craft: how well it plays the role, 0-1; heard: what Whisper (small.en) hears in the cut alone, enveloped as the engine plays it; couplet (ladder): \"It's not\", cast only as the ladder of a couplet drop (casting.js); mix (tag and sink): what it hears in two bars of the band on each track, and the share of her words it hears in order.",
  "phrases": [
   {
    "file": "01.wav",
@@ -505,6 +505,16 @@
    "topics": ["notabout", "mindset", "ai"],
    "keywords": ["mindset", "tools", "growth mindset"],
    "roles": {
+    "ladder": [
+     {
+      "words": [0, 1],
+      "display": "IT'S NOT",
+      "craft": 0.8,
+      "couplet": true,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle", "offsite"],
+      "heard": "It's not"
+     }
+    ],
     "stop": [
      {
       "words": [8, 8],
@@ -1182,6 +1192,16 @@
    "topics": ["notabout", "mindset"],
    "keywords": ["it's not about", "it's about"],
    "roles": {
+    "ladder": [
+     {
+      "words": [0, 1],
+      "display": "IT'S NOT",
+      "craft": 0.8,
+      "couplet": true,
+      "tracks": ["circle-back", "humbled-and-honored", "hustle", "offsite"],
+      "heard": "It's not"
+     }
+    ],
     "sink": [
      {
       "words": [4, 6],
