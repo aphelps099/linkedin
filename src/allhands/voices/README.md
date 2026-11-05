@@ -157,17 +157,19 @@ The first sweep reached 5.4 kHz and 6 bits at heavy; Whisper lost single
 words there ("Delve" as "No.", "Learnings" as "Lightning."), so heavy now stops
 at 7 kHz and 7.2 bits.
 
-Cost: the chain runs at about 26 ms per second of audio in Node including YIN
-(about 60 ms per second of audio alone; `sing()` skips it with the stored
-track). A song's 20 cues of 1.5 s bake in well under a second.
+Cost, in Node on this (shared) CPU over all 48 takes (66 s of audio): YIN 19
+ms per second of audio; `sing()` with the stored pitch track 4 to 6.5 ms per
+second of audio. A song's 20 cues of 1.5 s bake in about 0.2 s. The chain is
+deterministic: the same take and options give the same samples.
 
 ## Where they sing
 
 `items.js` registers: Strategy D2 to D3 around A2 (110 Hz, a little above his
-88 Hz speaking median, as singing sits), Synthia D3 to D4 around G3 (her
-speaking median is 180 Hz). `melody.js wander()` walks the scale one syllable at
-a time: mostly steps (62%), thirds (21%), a few repeats and leaps, pulled back
-toward the centre, reflecting off the register's edges. A statement lands home
+88 Hz speaking median, as singing sits), Synthia D3 to D4 centred between F#3
+and A3 (her speaking median is 180 Hz). `melody.js wander()` walks the scale
+one syllable at a time: one scale step 62% of the time, two 21%, a repeat 12%
+(never three in a row), three 5%, pulled back toward the centre when it strays
+more than two steps, reflecting off the register's edges. A statement lands home
 (tonic or fifth), a question rises, a couplet's first sentence ends open (2nd
 or 6th) and its second comes home; a response starts an octave above the
 call's last note, so call and response sound like one line handed across. A
