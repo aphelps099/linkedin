@@ -123,7 +123,7 @@ POSTS.forEach((post, i) => {
     const trim = plan.energyTrim?.Verse ?? 0;
     ok(trim >= 0 && trim <= 2.5, `${label(i)} ${track}: the verse's room ${trim} dB`);
     if (!own) trims[track].push(trim);
-    if (i === 0 && track === 'circle-back') ok(trim === 0, 'sample: Circle Back leaves its verse as it was (no room trim)');
+    if (i === 0 && track === 'circle-back' && !own) ok(trim === 0, 'sample: Circle Back leaves its verse as it was (no room trim)');
   }
 });
 
@@ -149,16 +149,23 @@ if (url) {
     const browser = await chromium.launch();
     try {
       const page = await browser.newPage();
+      // No HMR in a render: an edit elsewhere must not reload the page mid-render (Vite's client never connects).
+      await page.addInitScript(() => { window.WebSocket = class { constructor() {} addEventListener() {} removeEventListener() {} send() {} close() {} }; });
       await page.goto(`${url}/allhands/`, {waitUntil:'networkidle'});
       await page.waitForFunction(() => window.__allhands);
       const r = await page.evaluate(o => window.__allhands.render(o), job);
       return createHash('sha256').update(Buffer.from(r.wav, 'base64')).digest('hex');
     } finally { await browser.close(); }
   };
-  for (const job of [...TRACK_ORDER.map(track => ({track})), {track:'circle-back', coldOpen:true}, {track:'offsite', coldOpen:true}]) {
+  // Every track in its own form (Offsite: the river), the cold opens, Offsite's Drop Edition (kept for the video
+  // studio), and the band cast by the post (castSong with the voice bank): the sample's couplet drop on Circle
+  // Back, fixture 1's layoff couplet on Hustle, the river with the sample's couplet and refrain.
+  for (const job of [...TRACK_ORDER.map(track => ({track})), {track:'circle-back', coldOpen:true}, {track:'offsite', form:'drop60', coldOpen:true},
+    {track:'circle-back', auto:true}, {track:'hustle', auto:true, post:FIXTURES[1]}, {track:'offsite', auto:true}]) {
     const a = await take(job), b = await take(job);
-    ok(a === b, `${JSON.stringify(job)}: two renders in fresh browsers are the same bytes (${a.slice(0, 16)})`);
-    console.log(`  ${JSON.stringify(job)} ${a.slice(0, 16)} = ${b.slice(0, 16)}`);
+    const name = JSON.stringify({...job, ...(job.post ? {post:'fixture 1'} : {})});
+    ok(a === b, `${name}: two renders in fresh browsers are the same bytes (${a.slice(0, 16)})`);
+    console.log(`  ${name} ${a.slice(0, 16)} = ${b.slice(0, 16)}`);
   }
   // P4 review: a live tick that reaches the Sink In downbeat late (the main thread
   // stalled past the 0.3 s look-ahead) must not throw. Web Audio starts a late

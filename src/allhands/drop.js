@@ -10,6 +10,7 @@ import {slice, LADY_TABLE} from './lady-table.js';
 import {trackOf, castOf} from './songbook/index.js';
 import circleBack from './songbook/circle-back.js';
 import PITCH from './lady-pitch.json' with {type:'json'};
+import {bandSetlist, coupletDrop, placeBand, pixelLine, TAG_MAX_RATE, PHONE_WEIGHT, BAND_MAKEUP, VOICE_GAIN} from './band.js';
 
 // Circle Back's form, still exported under its old names.
 export {DROP_BARS, DROP_SECTIONS, UNMUTE_BAR, CHOKE, IMPACT_BAR, swingOf, dropLayers, dropCutoff, dropSlots} from './songbook/circle-back.js';
@@ -140,7 +141,41 @@ export function ladyStepAt(timing, step, t) {
 // The time of a (fractional) step on the lady's clock.
 export const ladyClock = (timing, step, at) => timing[Math.floor(at)] + (at - Math.floor(at)) * step;
 
-export function ladyEvents(words, table = LADY_TABLE, {track, cast, timing} = {}) {
+// The couplet drop's tag and impact as her tag and impact events. A take of the
+// bank (voice 'synthia' or 'strategy') carries key, notes (the whole take's line,
+// take seconds, sung once and cut: the tag's "It's in-", the impact's "demand.")
+// and amount; her own impact word is cut as hers. The tag plays at the rate that
+// keeps it inside the track's choke window (the cap her tags keep), up to
+// TAG_MAX_RATE, its notes sung lower to land in key; too long, and her tag plays.
+function coupletTagImpact(c, tr, window) {
+  // Heard whole and leaving at least the silence her recast tags leave (casting.js LIMITS.tag.silence).
+  const D = tr.drop, cap = window - Math.max(.45, D.tag.tune ? D.tag.silence ?? .47 : .45), src = c.tag, imp = c.impact;
+  const rate = Math.max(1, (src.to - src.from) / cap);
+  if (rate > TAG_MAX_RATE + 1e-9) return null;
+  const same = src.key && imp.key && src.file === imp.file, seed = hash(`${c.id}|${tr.id}`);
+  // The chord under a syllable: the build's last bar for the tag, the drop's downbeat for the impact.
+  const fitChord = (notes, s0) => notes.map((n, i) => {
+    const bar = n.from < imp.from - 1e-9 || !same && s0 === src ? D.choke.bar : D.impact, avail = tr.chordAt(bar)?.avail;
+    if (!avail || avail.includes(((n.midi % 12) + 12) % 12) || (i === notes.length - 1 && s0 === imp)) return n;
+    for (let d = 1; d <= 3; d++) for (const m of [n.midi - d, n.midi + d]) if (tr.pitchClasses.includes(((m % 12) + 12) % 12) && avail.includes(((m % 12) + 12) % 12) && tr.drop.ladder.pentatonic.includes(((m % 12) + 12) % 12)) return {...n, midi:m};
+    return n;
+  });
+  const lineOf = (s, last, end = 'home') => fitChord(pixelLine(s, tr, {seed, end, last}), s);
+  // One line through the whole take when tag and impact are cut from it: the melody runs on across the silence.
+  const notes = same ? lineOf(imp, D.impactNote) : null;
+  const pixel = (s, role, extra) => ({role, voice:s.voice, key:s.key, file:s.file, from:s.from, to:s.to, amount:s.amount, notes:notes ?? (role === 'impact' ? lineOf(s, D.impactNote) : lineOf(s, null, 'open')), display:s.display, text:s.text, couplet:c.id, ...extra});
+  // (Synthia's Flite takes sit higher in the mix than Strategy's: band.js VOICE_GAIN.)
+  const vg = s => VOICE_GAIN[s.voice] ?? 0;
+  const tag = src.key ? pixel(src, 'tag', {at:0, rate, gate:(src.to - src.from) / rate, gain:src.gainDb - 1 + vg(src), pan:0})
+    : {role:'tag', file:src.file, from:src.from, to:src.to, at:0, rate, gate:(src.to - src.from) / rate, gain:src.gainDb - 1, pan:0, display:src.display, couplet:c.id};
+  // Dry, not blended into Synergy's vocoder as her BACK. is: the vocoder smears a word of two syllables
+  // (Whisper heard "It's a pivot." only without it). The same dry level as the blend left (4 dB, not 5).
+  const len = imp.to - imp.from, base = {from:imp.from, to:imp.to, rate:1, gate:len + .02, gain:imp.gainDb + 4 + (imp.key ? vg(imp) : 0), pan:0, blend:0, vocoded:0, deep:.42, deepAt:4};
+  const impact = imp.key ? pixel(imp, 'impact', base) : {role:'impact', file:imp.file, ...base, display:imp.display, couplet:c.id};
+  return {tag, impact};
+}
+
+export function ladyEvents(words, table = LADY_TABLE, {track, cast, timing, couplet = null} = {}) {
   const tr = trackOf(track), D = tr.drop, roles = castOf(cast), STEP = tr.step, events = [], seconds = s => s / STEP;
   const impactStep = D.impact * BAR_STEPS, chokeStep = D.choke.bar * BAR_STEPS + D.choke.step;
   const T = timing ?? timingTable(D.bars * BAR_STEPS + BAR_STEPS, D.swing, STEP);
@@ -155,7 +190,12 @@ export function ladyEvents(words, table = LADY_TABLE, {track, cast, timing} = {}
   // falls by that rule), and starts on the 128th that leaves IMPACT_GAP before
   // the impact. Circle Back's sample post: 19:8, as it always was.
   let tagEvent = null, chokeAt = chokeStep;
-  if (tagEntry) {
+  // The couplet's drop (band.js coupletDrop): its tag and impact, sung by the band, in her places.
+  const drop = couplet && coupletTagImpact(couplet, tr, (impactStep - chokeStep) * STEP);
+  if (drop) {
+    tagEvent = drop.tag;
+    chokeAt = tagEvent.at = ladyStepAt(T, STEP, T[impactStep] - (D.tag.gap ?? IMPACT_GAP.target) - ladyLength(tagEvent));
+  } else if (tagEntry) {
     const range = span(tagEntry, roles.tag.words), tag = slice(tagEntry, ...range), window = (impactStep - chokeStep) * STEP;   // the build is straight: no swing in it
     const {rate, room} = tagRate(D.tag, tagEntry, tag[1] - tag[0], window, tr.pitchClasses);
     // Circle Back gates at 0.64 s; a tuned tag is heard whole, inside the room its silence leaves.
@@ -190,7 +230,8 @@ export function ladyEvents(words, table = LADY_TABLE, {track, cast, timing} = {}
   if (tagEvent) events.push(tagEvent);
   // "BACK." owns the impact, dry and loud with the machine under it; her deep
   // robotic "BACK." answers one beat later, so the two never blur into one word.
-  if (impactEntry) {
+  if (drop) events.push({...drop.impact, at:impactStep, root:tr.chordAt(D.impact).root, midi:D.impactNote, ...comb(D.impact)});
+  else if (impactEntry) {
     const range = span(impactEntry, roles.impact.words), back = slice(impactEntry, ...range);
     events.push({role:'impact', file:roles.impact.file, from:back[0], to:back[1], at:impactStep, rate:1, gate:back[1] - back[0] + .02, gain:impactEntry.gainDb + 5, pan:0, blend:.25, vocoded:.3, deep:.42, deepAt:4,
       root:tr.chordAt(D.impact).root, midi:D.impactNote, display:roles.impact.display ?? upper(impactEntry, ...range), ...comb(D.impact)});
@@ -251,24 +292,41 @@ export function arrangeDrop(lyrics, durations, table = LADY_TABLE, options) {
   // A lady table is keyed by her recordings ("NN.wav"); any other object is the
   // options, even {} or {track:undefined} (the render hook's default call).
   if (table && !Object.keys(table).some(k => k.endsWith('.wav'))) { options = table; table = options.table ?? LADY_TABLE; }
-  const {track, cast, coldOpen = false} = options || {};
+  // When the couplet finds no gap and the drop is not the couplet, Synergy gives
+  // up his Drop A hook to it (twice, not three times): the couplet is the song's line.
+  const plan = arrangeWith(lyrics, durations, table, options || {}, []);
+  const dropIsCouplet = plan.lady.some(e => e.role === 'tag' && e.couplet);
+  if (!dropIsCouplet && plan.bandLeft.some(l => l.part === 'couplet')) {
+    const again = arrangeWith(lyrics, durations, table, options || {}, ['Drop A']);
+    if (!again.bandLeft.some(l => l.part === 'couplet')) return again;
+  }
+  return plan;
+}
+
+function arrangeWith(lyrics, durations, table, options, give) {
+  const {track, cast, coldOpen = false} = options;
   const tr = trackOf(track), D = tr.drop, STEP = tr.step;
   const music = {step:STEP, scale:tr.music.scale, resolve:tr.music.resolve, home:tr.music.home, fit:fitter(tr)};
-  const lines = [], words = [], setlist = D.slots(lyrics), startOf = s => s.bar * BAR_STEPS + (s.startStep ?? 0);
+  // The band (casting.js): Synergy keeps three hook slots, the band takes the rest (band.js).
+  // The couplet drops only where its tag fits the track's choke window (else her tag plays, and no X).
+  const roles = castOf(cast), split = bandSetlist(D.slots(lyrics), tr, roles, {give}), cd = coupletDrop(roles, tr);
+  const couplet = cd && coupletTagImpact(cd, tr, (D.impact * BAR_STEPS - (D.choke.bar * BAR_STEPS + D.choke.step)) * STEP) ? cd : null;
+  const lines = [], words = [], setlist = split.setlist, startOf = s => s.bar * BAR_STEPS + (s.startStep ?? 0);
   // A slot that gives way (slot.give, 16ths) lets the phrase whose window ends
   // where it starts run on into those 16ths, and then starts as late as that
   // phrase ran; its window keeps its end. Every other phrase stays in its window.
   let late = 0;
   setlist.forEach((slot0, id) => {
     const next = setlist[id + 1], slot = late ? {...slot0, startStep:(slot0.startStep ?? 0) + late, window:(slot0.window ?? 30) - late} : slot0;
-    const end = startOf(slot) + (slot.window ?? 30), spill = next?.give && startOf(next) === end ? next.give : 0;
+    const end = startOf(slot) + (slot.window ?? 30), spill = next?.give && startOf(next) === end ? next.give : (slot.spillInto ?? 0);
     const placed = placeSlot(spill ? {...slot, spill} : slot, lyrics, durations, id, music);
     lines.push(placed.line); words.push(...placed.words);
     late = next ? Math.max(0, ...placed.words.map(w => w.at + w.steps - startOf(next))) : 0;
   });
   // Synergy answers her in the build: the hook's first word between her hits.
   const hookFirst = tokens(lyrics.hook)[0], A = D.answers;
-  if (hookFirst) for (const bar of A.bars) for (const s of A.steps) {
+  // (On a couplet drop Strategy's "It's not X." takes those bars instead: band.js placeBand.)
+  if (hookFirst && !couplet?.x) for (const bar of A.bars) for (const s of A.steps) {
     const word = {display:hookFirst.display, word:hookFirst.word, line:-1, at:bar * 16 + s, steps:3, rate:1, gate:Math.min(.36, (durations[hookFirst.word] ?? .4)), notes:[{at:bar * 16 + s, steps:3, midi:A.notes[A.steps.indexOf(s)]}], kind:'answer', harmony:false, repeat:false};
     words.push(word);
   }
@@ -278,14 +336,15 @@ export function arrangeDrop(lyrics, durations, table = LADY_TABLE, options) {
   const totalSteps = D.bars * BAR_STEPS, sectionOf = bar => D.sections.find(s => bar >= s.from && bar < s.to) || D.sections.at(-1);
   const timing = timingTable(totalSteps + BAR_STEPS, D.swing, STEP);
   clearWords(words, timing, durations, stutters);                     // one word at a time, in seconds
-  const lady = ladyEvents(words, table, {track:tr, cast, timing});
+  const lady = ladyEvents(words, table, {track:tr, cast, timing, couplet});
   const bars = Array.from({length:D.bars}, (_, index) => ({index, section:sectionOf(index).name, chord:tr.chordAt(index), layers:D.layers(index), cutoff:D.cutoff(index), swing:D.swing(index)}));
   // The choke is where her tag starts (ladyEvents): a step on the 128th grid, the lady's clock.
   const tag = lady.find(e => e.role === 'tag'), chokeAt = tag ? tag.at : D.choke.bar * 16 + D.choke.step, chokeT = ladyClock(timing, STEP, chokeAt);
   // Kick steps, as the band plays them, plus the drop kick on the impact.
   const kicks = [];
   bars.forEach(b => { const own = tr.kicksOf(b.index, b.layers); if (b.layers.impact && !own.includes(0)) own.unshift(0); own.forEach(s => kicks.push(b.index * 16 + s)); });
-  const energyTrim = roomTrim(tr, words, timing);
+  const impactT = timing[D.impact * 16], band = split.freed.length || couplet ? placeBand({tr, cast:roles, lyrics, words, stutters, lady, lines, timing, step:STEP, freed:split.freed, couplet, chokeT, impactT}) : null;
+  const energyTrim = roomTrim(tr, words, timing, band?.events);
   // Her stop phrase: it starts with the tape-stop (or leads it: D.stop.lead) and is routed after the tape, so it outlasts it.
   const stopStep = D.stop.bar * BAR_STEPS + D.stop.step, stopEvent = lady.find(e => e.role === 'stop'), stopLine = stopEvent ? ladyClock(timing, STEP, stopEvent.at) : null;
   const plan = {form:'drop60', title:'Drop edition', bpm:tr.bpm, step:STEP, swing:tr.swing, key:tr.key, sections:D.sections, bars, lines, words, stutters, lady,
@@ -301,16 +360,22 @@ export function arrangeDrop(lyrics, durations, table = LADY_TABLE, options) {
     stop:{at:timing[stopStep], tapeEnd:timing[stopStep] + D.stop.seconds, line:stopLine, end:stopEvent ? stopLine + ladyLength(stopEvent) : null, display:stopEvent?.display ?? null},
     timing, finale:false, totalSteps, duration:timing[totalSteps] + .6,
     track:tr.id, trackTitle:tr.title, kicks, energyTrim,
+    // The band's parts (band.js): Strategy, Synthia and her recordings singing the lexicon; the
+    // drop as cast (her tag, or the couplet's); the parts that found no gap.
+    band:band?.events ?? [], bandLeft:band?.left ?? [], ...(band ? {makeup:BAND_MAKEUP, setlist} : {}),
+    drop:{kind:lady.some(e => e.role === 'tag' && e.couplet) ? 'couplet' : 'lady', couplet:lady.find(e => e.role === 'tag')?.couplet ?? null},
     marks:{unmute:D.unmute * 16, build:D.ladder.rungs[0].bar * 16, rise:D.rise * 16, choke:chokeAt, impact:D.impact * 16, sink:D.sink * 16, sinkEnd:(D.sink + 1) * 16, stop:D.stop.bar * 16 + D.stop.step}};
   return coldOpen ? withColdOpen(plan) : plan;
 }
 
 // How much of a section Synergy sings: the share of its seconds inside his
 // words (his answers in the build aside).
-export function sungShare(words, timing, section) {
+export function sungShare(words, timing, section, band = []) {
   const a = timing[section.from * BAR_STEPS], b = timing[section.to * BAR_STEPS];
   let sung = 0;
   for (const w of words) { if (w.line < 0) continue; const x = timing[w.at], y = x + w.gate; sung += Math.max(0, Math.min(b, y) - Math.max(a, x)); }
+  // The band's parts carry a drop on a phone as his words do.
+  for (const e of band) sung += (PHONE_WEIGHT[e.voice] ?? .6) * Math.max(0, Math.min(b, e.end) - Math.max(a, e.start));
   return sung / (b - a);
 }
 
@@ -321,10 +386,10 @@ export function sungShare(words, timing, section) {
 // k * (its reference share - its share), plus kVerse * (the verse's share - its
 // reference); the most any drop needs, up to `max` dB. Zero at the reference
 // post; the same in the live performance and the render (the plan carries it).
-function roomTrim(tr, words, timing) {
+function roomTrim(tr, words, timing, band) {
   const R = tr.drop.room;
   if (!R) return {};
-  const share = name => sungShare(words, timing, tr.drop.sections.find(s => s.name === name));
+  const share = name => sungShare(words, timing, tr.drop.sections.find(s => s.name === name), band);
   const verse = share(R.verse.section), over = (verse - R.verse.ref) * R.verse.k;
   const need = Math.max(0, ...Object.entries(R.drops).map(([name, d]) => d.k * (d.ref - share(name)) + over));
   return need > 1e-6 ? {[R.verse.section]:Math.round(Math.min(R.max, need) * 100) / 100} : {};

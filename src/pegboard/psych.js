@@ -137,6 +137,74 @@ export function driveAt(track, t) {
   return {t, beat:track.beat(t), voice:lerp(track.voice), clap:lerp(track.clap)};
 }
 
+// ---- the river: the haze lane's board (plan.form 'wander') -------------------------------------------
+// Offsite runs as a river: repeating samples layered into a texture, one or two clear phrases rising out of
+// it. Its board is mostly texture: one look for the song, its light the loop's layers as they ramp in and
+// out (plan.layers), so the dot grid thickens as the stream does and thins as it lets go; the words, when a
+// clear phrase sings, win as always (paintPsych after choreo.paint).
+//   const river = riverTrack(plan);                     // once per song
+//   const {spec, drive} = riverAt(river, t);            // then paintPsych(board, spec, t, {drive})
+// A layer is {from, to} (seconds; or steps, at, len), ramping in over rampIn or in (or [from, full]) and out
+// over rampOut or out (or [fade, to]), each two bars when the plan gives none, at gain (linear, or dB below 0)
+// times level; or it carries its own gain curve, [[t, v], ...] (wander.js), read as it is.
+// plan.swells [{at|from, to|len, amount}] lift the light a little more; plan.slow [{from, to}] spans run the
+// pattern at half speed (the beat is integrated, so the motion slows, never jumps).
+export const RIVER_LOOKS = Object.freeze(['plasma', 'moire', 'ripples', 'lissajous']);
+export const RIVER_LEVEL = Object.freeze({floor:.15, span:.7});        // params.level = floor + span * layers
+const secOf = (plan, v) => {
+  if (!Number.isFinite(v)) return null;
+  const T = plan?.timing;
+  // A value past the song's end is a step on plan.timing (16ths), else seconds.
+  if (T && v > (plan.duration ?? T[T.length - 1]) + 1) return T[Math.min(T.length - 1, Math.floor(v))] + (v % 1) * (plan.step ?? (T[1] - T[0]));
+  return v;
+};
+export function layerGain(plan, L, t) {
+  // A gain curve [[t, v], ...] (wander.js: its ramps and swells already in it) is read as it is.
+  if (Array.isArray(L.gain) && L.gain.length) {
+    const g = L.gain, at = p => [secOf(plan, p[0]), p[1]];
+    if (t <= at(g[0])[0]) return g[0][1];
+    for (let i = 1; i < g.length; i++) { const [t1, v1] = at(g[i]), [t0, v0] = at(g[i - 1]); if (t <= t1) return t1 > t0 ? v0 + (v1 - v0) * (t - t0) / (t1 - t0) : v1; }
+    return g.at(-1)[1];
+  }
+  const bar = 16 * (plan.step ?? .125);
+  const from = secOf(plan, L.from ?? L.rampIn?.[0] ?? L.in?.[0] ?? L.at), to = secOf(plan, L.to ?? L.rampOut?.[1] ?? L.out?.[1] ?? (Number.isFinite(L.len) ? (L.from ?? L.at) + L.len : null)) ?? plan.duration ?? Infinity;
+  if (from === null || t < from || t >= to) return 0;
+  const full = secOf(plan, L.rampIn?.[1] ?? L.in?.[1]) ?? from + 2 * bar, fade = secOf(plan, L.rampOut?.[0] ?? L.out?.[0]) ?? to - 2 * bar;
+  const g = (Number.isFinite(L.gain) ? (L.gain < 0 ? 10 ** (L.gain / 20) : L.gain) : 1) * (Number.isFinite(L.level) ? L.level : 1);
+  return g * Math.min(full > from ? smooth(from, full, t) : 1, fade < to ? 1 - smooth(fade, to, t) : 1);
+}
+const riverCache = new WeakMap();
+export function riverTrack(plan, {features = null, fps = 24} = {}) {
+  if (riverCache.has(plan) && !features) return riverCache.get(plan);
+  const base = driveTrack({plan, features, fps}), f = base.fps, frames = base.frames, layers = plan.layers || [];
+  const raw = new Float32Array(frames), swell = new Float32Array(frames), speed = new Float32Array(frames).fill(1);
+  for (let g = 0; g < frames; g++) { const t = g / f; for (const L of layers) raw[g] += layerGain(plan, L, t); }
+  const top = Math.max(1e-6, ...raw);
+  for (let g = 0; g < frames; g++) raw[g] /= top;
+  for (const w of plan.swells || []) {
+    const a = secOf(plan, w.from ?? w.at), b = secOf(plan, w.to) ?? (a + (w.len ?? 2 * 16 * (plan.step ?? .125)));
+    if (a === null) continue;
+    for (let g = Math.max(0, Math.floor(a * f)); g < frames && g / f < b; g++) swell[g] = Math.max(swell[g], (w.amount ?? .25) * Math.sin(Math.PI * (g / f - a) / Math.max(1e-3, b - a)));
+  }
+  for (const s of plan.slow || []) { const a = secOf(plan, s.from ?? s.at), b = secOf(plan, s.to) ?? a; if (a !== null) for (let g = Math.max(0, Math.floor(a * f)); g < frames && g / f < b; g++) speed[g] = s.rate ?? .5; }
+  // The layers' light, slowed (nothing moves faster than the ramps: attack and release of a bar).
+  const level = env(raw, f, 2, 2), sp = env(speed, f, 1, 1), beat = new Float64Array(frames + 1);
+  for (let g = 0; g < frames; g++) beat[g + 1] = beat[g] + (base.beat((g + 1) / f) - base.beat(g / f)) * sp[g];
+  // The look: by the song (its track and the words it carries), so one track's songs do not all share one.
+  const words = [...(plan.band || []), ...(plan.loops || [])].map(x => x.display ?? x.text ?? '').join('|');
+  let h = 2166136261; for (const c of `${plan.track ?? ''}|${plan.trackTitle ?? ''}|${words}`) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
+  const out = {...base, layers:level, swell:env(swell, f, 1, 1), beatAt:beat, look:RIVER_LOOKS[(h >>> 0) % RIVER_LOOKS.length], seed:(h >>> 8) % 97};
+  if (!features) riverCache.set(plan, out);
+  return out;
+}
+export function riverAt(river, t) {
+  const x = Math.max(0, t * river.fps), g = Math.min(river.frames - 1, Math.floor(x)), u = x - Math.floor(x), h = Math.min(river.frames - 1, g + 1);
+  const lerp = a => a[g] + (a[h] - a[g]) * u, layers = clamp(lerp(river.layers)), d = driveAt(river, t);
+  const beat = river.beatAt[g] + (river.beatAt[g + 1] - river.beatAt[g]) * u;
+  return {spec:{look:river.look, seed:river.seed, params:{level:clamp(RIVER_LEVEL.floor + RIVER_LEVEL.span * layers + .1 * lerp(river.swell))}},
+    drive:{t, beat, voice:Math.max(d.voice * .5, layers), clap:d.clap * layers}, layers};
+}
+
 // ---- the field --------------------------------------------------------------------------------------
 // A look's light for every peg of a cols × rows board at time t: {I, tone, white, size}, typed arrays.
 // Pure. frame: for 'footage', the picture sampled one value per peg ({cols, rows, data} RGBA, top row
@@ -303,7 +371,9 @@ export function paintPsych(board, spec, t, {drive, frame} = {}) {
       dist[i] = d;
     }
   }
-  const global = (words ? TYPE_DIM : 1) * fade;
+  // (board.ambient: the share of the board's exposure that light which is not type takes; under a screen
+  // that holds full through the build's dim, choreo.paint sets it to that dim.)
+  const global = (words ? TYPE_DIM : 1) * fade * (board.ambient ?? 1);
   for (let i = 0; i < n; i++) {
     if (mask[i]) continue;
     const near = words ? smooth(1.2, TYPE_HALO, dist[i]) : 1, I = F.I[i] * near * global;

@@ -153,7 +153,7 @@ play the Drop Edition; Sound check 00 stays Circle Back's own rehearsal.
 | **Circle Back** (`circle-back`, default) | 120 BPM, A minor, swing .12 | 30 bars, 60.0 s | French house. Am9 · Fmaj9 · Cmaj9 · G6/9, 909 kit, offbeat saw bass, detuned saw stabs, Kevin's muted chops. Drop A half-time on a wobble, Drop B four-on-the-floor. |
 | **Humbled and Honored** (`humbled-and-honored`) | 92 BPM, E-flat major, swing .24 | 24 bars, 62.6 s | Neo-soul slow jam. E♭maj9 · Cm9 · Fm9 · B♭13sus (I-vi-ii-V), electric piano (two-operator FM, tremolo pan), finger snaps and a sidestick 18 ms behind the beat, round finger bass, Kevin's clean double-stops. The build rocks IV-V and never resolves; BACK. lands on the relative minor in a half-time bounce on a gliding 808; Drop B comes home to I; the outro is the amen, IV to I. |
 | **Hustle** (`hustle`) | 130 BPM, F minor, swing .2 | 32 bars, 59.1 s | UK garage. Fm9 · D♭maj9 · E♭6/9 · Cm11 (i-VI-VII-v), shuffled 2-step kit (kick on one and the "and" of three, ghost snares), speed-garage reese bass jumping octaves, house organ stabs (drawbar harmonics, key click). The build rocks VI-iv under the ladder, VII for the last bar, BACK. on i. Drop A is the 2-step bass drop: every bass note sweeps its filter open and shut (the speed-garage growl) under the organ riff an octave up. Drop B goes four-on-the-floor with a sidechain that pumps bass, keys and pad. |
-| **Offsite** (`offsite`) | 108 BPM, D major, swing .1 | 27 bars, 60.0 s | Voice-loop psych pop, the Panda Bear lane (see "Offsite" below). Dadd9 · G6/9, droning, the changes pushed onto the "and" of four; voices as the instrument (her ladder as a round, her impact word as a chant, his vocoder round a two-beat canon, a wordless formant choir); one loop from the first bar to the tape stop, leaning on the offbeats (soft even stomps, a room of clappers, rolling floor toms, the printer, keyboard clatter, a mug), desk slaps into the choke; a pump organ, Pat humming the root on the offbeats, Kevin's looping clean figure; a slow tape (half speed, an octave down) under the second verse, into Sink In and under the sign-off. BACK. is a bloom of voices with no slam under it; Sink In goes under water. |
+| **Offsite** (`offsite`) | 108 BPM, D major, swing .1 (the river: .08) | 27 bars, 60.0 s | Since Nov 5 Offsite plays **the river** (`wander`, below); its Drop Edition stays arrangeable for the video studio and the older checks. Voice-loop psych pop, the Panda Bear lane (see "Offsite" below). Dadd9 · G6/9, droning, the changes pushed onto the "and" of four; voices as the instrument (her ladder as a round, her impact word as a chant, his vocoder round a two-beat canon, a wordless formant choir); one loop from the first bar to the tape stop, leaning on the offbeats (soft even stomps, a room of clappers, rolling floor toms, the printer, keyboard clatter, a mug), desk slaps into the choke; a pump organ, Pat humming the root on the offbeats, Kevin's looping clean figure; a slow tape (half speed, an octave down) under the second verse, into Sink In and under the sign-off. BACK. is a bloom of voices with no slam under it; Sink In goes under water. |
 
 **What a track defines.** `bpm`, `step` (one 16th in seconds), `swing`, `key`,
 `pitchClasses` (its scale), `chords` (each: `root` for Pat, `notes` for the
@@ -203,6 +203,8 @@ const plan = arrangeDrop(lyrics, durations, {track:'hustle', cast});   // or (ly
 FORMS.drop60.voiced(lyrics, {track})          // the words Synergy needs for that track
 FORMS.drop60.arrange(lyrics, durations, {track, cast})
 formPlays('soundcheck', 'hustle')             // false: Sound check 00 is Circle Back's
+formOf('offsite')                             // 'wander': the form a track plays unless one is picked
+FORMS.wander.arrange(lyrics, durations, {track:'offsite', cast})   // the river (wander.js, below)
 ```
 
 `buildGraph(ctx, options, plan)` takes the plan, so its track picks the mix;
@@ -626,6 +628,11 @@ Humbled and Honored's loudness range on its sparsest posts (up to 8.9 LU).
 
 ### Offsite (P7)
 
+Since Nov 5 Offsite plays the river ("The river", below; `formOf('offsite')` is
+`'wander'`). What follows is its Drop Edition, which stays arrangeable
+(`FORMS.drop60` with `{track:'offsite'}`, and "Drop edition" in the page's form
+picker): the video studio's Offsite treatment and the older checks read it.
+
 Aaron: "lets get more of a panda bear style song... Comfy in Nautica / or
 Bros... this means the video may be a bit more psychedelic pixelation."
 `songbook/offsite.js` is the team retreat in the Panda Bear lane of the
@@ -884,6 +891,116 @@ Every take part and its text and display come from `lexicon.json` through
 `takes.js`: `<bank id>`, `<couplet>-call`, `<couplet>-response`,
 `<couplet>-tag`, `<couplet>-impact`, `its`, `its-a`, `ex-<words>`.
 
+### Where the band sings (band.js, Nov 5)
+
+Synergy sings the post; the band sings the lexicon in his other repeats.
+`arrangeDrop` places a cast's band parts (`band.js`); today's cast (a song
+picked by hand, the A/B against the stock lines) has none and arranges exactly
+as before (`check-songbook` section 1).
+
+- **His hook, at most three times** (`SYNERGY_HOOKS`): the first before the
+  build, the first of Drop A and the last of Drop B (after her "Read that
+  again.", which is the joke), each sung once (`slot.once`: no echo). His other
+  hook slots, the build's half-bar answers and his "Let's circle back" go to the
+  band (`bandSetlist`); Circle Back's title gives the sign-off back to him.
+  When the couplet finds no gap and the drop is hers, he gives up his Drop A
+  hook too (twice, then).
+- **The couplet drop** (`cast.dropTag.kind === 'couplet'`): Strategy's "It's
+  not X." over the build's answer bars (`drop.answers`, once a bar where it
+  fits; her ladder steps back 4 dB under it; his answers are gone), then the
+  couplet's tag where her tag was ("IT'S IN-", the start of Synthia's Y take),
+  the same choke, silence and `IMPACT_GAP`, and the Y word as the impact on the
+  downbeat ("DEMAND.", vocoded on the key's tonic, a deep echo a beat later),
+  both cut from one take sung once, so the line runs on across the silence.
+  The tag plays at the rate that leaves `LIMITS.tag.silence` of the track's
+  choke window, up to `TAG_MAX_RATE` (1.25x, its notes sung lower to land in
+  key); too long, and her tag plays instead (and no X).
+- **The rest, in his gaps** (`placeBand`, greedy, each at the first 8th of its
+  sections where it fits whole and keeps `GUARD` (60 ms) from every other
+  voice, sped up to `MAX_RATE` (1.12x) at most): the sign-off where his "Let's
+  circle back" was (nothing of the band after it); the couplet, X then Y a
+  breath apart (or Y in the next gap, up to a bar and a half on), in Drop B,
+  the outro or Drop A, or the verse when the drop is hers (when the drop is
+  this couplet, its anthem is the payoff in Drop B or the outro, or nothing:
+  the drop already said it); the refrain in Drop A, then up to `REFRAIN_REPEATS` (2) more times in
+  the drops, each on a new path through the pentatonic (hers a scale step up
+  or down); the exchange (the verse hook's free bar, then the drops); the stabs
+  (the build's half-bar answers). A part that fits nowhere is left out:
+  `plan.bandLeft` says which and why.
+- **Sung in key.** Strategy and Synthia are the voice bank's takes, sung at
+  prepare time (`lady.js prepareLady`, `voices/voice-table.js sing`) onto a
+  seeded wandering line in the voice's register on the track's pentatonic,
+  each note moved to what the chord under it allows; X ends open, Y comes home
+  on the impact note. Her parts are her recordings, cut on her measured words
+  and tuned to the nearest pentatonic note.
+- **The mix.** The band plays on her stem (`stems.lady`: her recordings and
+  the pixel voices; `stems.voice` stays Synergy's, for his mouth row), at
+  `BAND_GAIN` (+6 dB over the take's speech level), `DROP_LIFT` (+3.5 dB) and a
+  drums-and-bass dip in the drops. The verse's room for the drops counts the
+  band at `PHONE_WEIGHT` of his share (Strategy 0.35: most of his voice is
+  under a phone's 300 Hz; Synthia 0.8; her 0.7); `plan.makeup` (+0.7 dB,
+  `BAND_MAKEUP`, on the output) brings a band song back to -10 LUFS.
+
+**Plan fields** (Drop Edition, every plan; empty with today's cast):
+
+```js
+plan.band = [{                        // the band's parts, in time order
+  role,                               // 'x' (the couplet drop's X), 'couplet-x', 'pickup', 'couplet-y', 'refrain',
+                                      // 'call', 'response', 'stab', 'signoff'
+  part,                               // the cast slot: 'dropTag', 'couplet', 'refrain', 'exchanges.0', 'stabs.1', 'signoff'
+  voice,                              // 'strategy' | 'synthia' | 'lady'
+  text, display, file,                // file: 'strategy/<id>.flac' (voices/voice-table.js VOICE_TABLE) or her 'NN.wav'
+  key, notes, amount, midi,           // a pixel voice: the take key, its line ([{from, to, midi}], take seconds, the
+                                      // notes in key before the rate), the pixel amount; her parts: midi, her tuned note
+  from, to, at, rate, gate, gain, pan, dip,   // as her events (at: fractional step, the lady's clock)
+  start, end,                         // seconds the part sounds (plan time)
+  words:[{text, display, start, end, onset}], // each word in song seconds
+  couplet, repeat,                    // the couplet's id (X, Y, pickup); a refrain's round (0, 1, 2)
+}];
+plan.bandLeft = [{part, why}];        // parts that found no gap
+plan.drop = {kind:'couplet' | 'lady', couplet:id | null};
+plan.setlist                          // Synergy's slots (band casts only)
+plan.makeup                           // dB on the output (band casts only)
+// On a couplet drop her tag and impact events in plan.lady are the band's:
+// {role:'tag' | 'impact', voice, key, file:'synthia/<id>.flac', notes, amount, couplet, from, to, at, rate, gate, ...}
+// The impact keeps her deep echo (deep, deepAt) but is dry (blend:0, vocoded:0): Synergy's vocoder,
+// which her one-syllable BACK. rides, smears a word of two (Whisper heard "It's a pivot." only dry).
+```
+
+`band.js SONG_TABLE` is `LADY_TABLE` and `VOICE_TABLE` together: an event's
+words through its file, cut and rate, for the Peg Board (`/allhands/` passes
+it to the stage) and the exports.
+
+**What lands** (the sample and the 60 fixtures forced onto each Drop Edition
+track, cast by the post with the voice bank's takes, real eSpeak durations;
+songs out of 61):
+
+| | Circle Back | Humbled and Honored | Hustle |
+|---|---|---|---|
+| A couplet heard whole (the drop's X and Y, or the anthem) | 61 | 61 | 58 |
+| The couplet drops (of those cast to) | 18 (20) | 24 (24) | 26 (27) |
+| The refrain | 53 | 61 | 54 |
+| The sign-off (the band's; the rest Synergy's title) | 53 | 61 | 61 |
+| An exchange | 23 | 41 | 33 |
+| A stab | 60 | 58 | 60 |
+| His hook three times / twice (he gave Drop A to the couplet) | 47 / 14 | 61 / 0 | 61 / 0 |
+
+Circle Back, at 120 BPM with the most of Synergy's verses, has the least room:
+its exchanges find a gap on 23 posts. A couplet drop whose tag is too long for
+the choke window falls back to her tag (2 of 20 on Circle Back, 1 of 27 on
+Hustle).
+
+**Heard** (Whisper small.en, beam 5, on the twelve Nov 5 takes, each phrase cut
+from the mix): the refrain exact on 7 of 11, the sign-off on 7 of 9, a couplet's
+X alone on 3 of 7 and its Y alone on 3 of 7 (mean WER 0.16 and 0.29). The drop's
+Y as the impact: 1 of 5, the lady's "PIVOT." (dry since Nov 5; with the vocoder
+blend it was heard as noise). Synthia's Y on the drop's downbeat ("DEMAND.",
+"GROWTH.") is not heard in the mix, though the same render with the band muted
+is ("It's in demand."): the drop kick, the sub and the downbeat's soft clip
+(the master's clipper takes 3 to 26% of the word's samples past its knee) cover
+her two syllables. Synthia owns 57 of the 68 couplet drops of the fixtures
+(Strategy 5, the lady 6).
+
 ### The role table
 
 `lady-roles.json` has all 57 recordings. Each lists its `topics` (the same
@@ -1087,6 +1204,100 @@ both were cast again and rendered again. Clipped samples 0 and
 the silence −inf dBFS in all eight. Whisper hears every recast tag with its
 impact as one phrase; the impact alone, in a 0.55 s window that also holds
 the drop kick and its deep echo, often reads as noise ("Well...", "2.").
+
+## The river (wander.js, river.js, Nov 5)
+
+Aaron, on the Panda Bear sketch: "it's probably too much vocals packed in the
+panda bear sounds. We want our repetitious rhythmatic and use samples in a
+repeating pattern so you get like a pixelated diffusion of sound that builds in
+a beautiful melodic stream with overlays and sound textures ... Think of it as
+a natural river of electronic sound." The river is the haze lane's form
+(`FORMS.wander`, the constitution's "Form: the river"); Offsite plays it
+(`track.form = 'wander'`, its chart `track.wander`), and any track with a
+`wander` chart can.
+
+- **No ladder, no choke, no BACK.** 27 bars, 60.0 s at 108 BPM in D major,
+  phases Source 0-2, Stream 2-10, Current 10-15, Swell 15-21, Pool 21-24,
+  Delta 24-27 (labels for the picture, not boundaries: nothing changes on a bar
+  line).
+- **Sample loops are the instrument.** A texture is a two-bar pattern of cuts
+  of one voice (her ladder's words, Strategy's word, the couplet's "It's not
+  X."), each hit pitched onto the pentatonic, rendered once in JS
+  (`river.js renderTexture`: the same samples in Node and every browser),
+  pixelated (pixel.js: sample-and-hold and the shared-exponent crush) and
+  looped on the grid. Her syllables come first and alone (bars 0-6), then
+  their copies (offsets, pitch steps, both words), then the granular smear;
+  only once that texture is lush do his word (bar 12) and "It's not X." (bar
+  13) join.
+- **Every layer ramps** (`plan.layers`): it fades and its low-pass opens over
+  2 to 8 bars, breathes, and leaves the same way, into the diffusion (a 6.5 s
+  wash) and a dark dotted-8th delay. The flow drifts: the energy curve, each
+  layer's level and filter, the pans, and the pitch window of the colours
+  (D4 up to A4 at the swell and home).
+- **The loop** of hands and the office (soft stomps pumping the drone and Pat,
+  a room clapping on two and four, floor toms after the beats, the printer,
+  typing, a mug) plays in every bar from bar 1 to the fade, the old build bars
+  included. **The tambourine** sits in the background and comes up 1.45x where
+  the texture swells.
+- **The acoustic colours**, synthesized (`river.js colourSamples`), carry the
+  melodic stream: a Karplus-Strong pluck (an all-pass tuned delay line), a
+  kalimba-like mallet (modes at 1, 3.93, 9.2), a felt piano (two strings,
+  stretched partials, a soft hammer).
+- **Few clear phrases.** The couplet's "It's Y." rises out of the stream at the
+  swell (bar 17) after its "It's not X." has looped in the texture; the refrain
+  rises once in the pool (bar 22); each sinks back in as its last word loops,
+  low, in an echo layer. Synergy sings his hook once, early (bar 7), washed. At
+  least four bars between any two; nobody trades phrases.
+- **The pool** slows: a tape-slowed copy of the textures (half speed, an
+  octave down) under bars 21-23.5. **The end** is the fullest texture
+  dissolving in a long fade (bars 25-27).
+
+**Plan fields** (`plan.form === 'wander'`, seconds are plan time):
+
+```js
+plan.sections                          // the phases, in bars (Source, Stream, Current, Swell, Pool, Delta)
+plan.bars[i] = {index, section, chord, layers, cutoff, swing, energy}   // energy: the river's level (0..1)
+plan.lines, plan.words                 // Synergy's hook, once (or nothing); plan.stutters [], plan.lady []
+plan.band = plan.phrases = [{...a band part (above), clear:true, rise:[a, b], sink:[a, b]}]   // the clear phrases
+plan.loops = [{id, what, voice, file, key?, notes?, amount?, text, display, cuts:[{from, to, base, text}]}]
+plan.layers = [{id, kind, what, stem, source, in:[a, b], out:[c, d], inBars, outBars, level, open, shut, hp,
+  gain:[[t, v]], filter:[[t, hz]], pan:[[t, p]], wash:[[t, x]], delay:[[t, x]], slow}]
+  // kind: 'texture' | 'loop' | 'drone' | 'tambourine' | 'bass' | 'colour' | 'guitar'; source: a loop's id
+plan.swells = [{name, from, to, ref:[a, b], bars, refBars}]   // where the texture comes up, over the stream it grew from
+plan.slow = [{from, to, rate:.5, what, whole:false}]          // the pool's slow tape
+plan.drifts = [{what, param, points:[[t, x]]}]                 // the pitch window, the energy
+plan.choke = null; plan.call = null; plan.tape = []
+plan.stop = {at, tapeEnd:null, line:null, end, display:null, fade:[a, b]}
+plan.marks = {flow:0, swell, fade}     // 16ths
+plan.kicks                             // the stomps, every bar from 1
+plan.makeup                            // dB on the output (the river's mix)
+```
+
+`river.js levelAt(layer, t)` is a layer's level at a moment; `textureHits` the
+notes a texture plays. The render hook returns `layers`, `loops`, `swells`,
+`slow` and `phrases` with the plan. `tune.solo` (a list of layer ids) renders
+only those layers, for measurements.
+
+**Measured** (the sample post, a render through `/allhands/`; the solos are
+`tune.solo` renders with the voices muted; Circle Back's sample for comparison):
+
+| | The river | Circle Back |
+|---|---|---|
+| Clear phrases | 3 a minute (2 of the band's, Synergy once), none overlapping, 10.1 s (4.55 bars) apart at the least | |
+| Layers | 15; ramps in and out 2 to 4 bars (median 3); at most 2 entering in one bar | |
+| The loop alone, bar by bar against its median bar (16th onsets) | r 0.98 median, 22 of 24 bars at 0.8 or more; the full mix 0.755 | |
+| Slow spectral change, steepest (24 bands, dB per 0.1 s) | 2.28 (p99 1.59) | 17.18 at BACK. (p99 3.74) |
+| Short-term loudness, steepest climb / fall | 5.42 / 3.21 LU/s (the climb is Synergy's hook) | 5.95 / 6.65 LU/s |
+| The tambourine | -27.95 LUFS, 17.7 LU under the mix, 0.6% of the energy, +5.7 LU in the swell over the stream | |
+| The acoustic colours (plucks, felt piano, mallet, tambourine, guitar) | 9.9% of the energy: the sound stays about 90% electronic | |
+| The loop / the textures | -22.9 / -15.1 LUFS (6.0% / 27.9% of the energy) | |
+| Gates | -10.24 LUFS, -1.50 dBTP, LRA 11.6 LU (warn), Swell +4.56 LU and Pool +5.39 LU on a phone | |
+
+The LRA warning is the form: a river that starts sparse and ends in a long
+fade spans more than a drop that holds its level. The river's clear phrases skip
+her stem (they run dry over the stream), so they read `graph.muted.lady` and mute
+with her. The sound check's bar-16 impact (a 70 Hz boom) plays only in the sound
+check: the river has no drop.
 
 ## Pixel Text
 

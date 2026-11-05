@@ -30,13 +30,25 @@ const MAP = {
 };
 const segmenter = new Intl.Segmenter('en', {granularity:'grapheme'});
 
+// A hard line break (U+2028, LINE SEPARATOR) inside a screen's text: the band's two-part lines (a
+// couplet's "IT'S NOT X." and "IT'S Y.", an exchange's call and its answer) keep each part on lines of
+// its own, and when both parts do not fit one page the page turns between them. normalize() keeps one
+// between two words (no space either side, never at the ends); layoutText never sets a line across it.
+// Nothing else in the site's text carries one, so every other layout is as before.
+export const LINE_BREAK = '\u2028';
+
 export function normalize(text) {
   const chars = [], source = [], dropped = [];
   const push = (c, at) => {
-    if (c === ' ' && (!chars.length || chars[chars.length - 1] === ' ')) return;   // collapse, no leading space
+    if (c === ' ' && (!chars.length || chars[chars.length - 1] === ' ' || chars[chars.length - 1] === LINE_BREAK)) return;   // collapse, no leading space
     chars.push(c); source.push(at);
   };
   for (const {segment, index} of segmenter.segment(String(text ?? ''))) {
+    if (segment === LINE_BREAK) {
+      while (chars[chars.length - 1] === ' ') { chars.pop(); source.pop(); }
+      if (chars.length && chars[chars.length - 1] !== LINE_BREAK) { chars.push(LINE_BREAK); source.push(index); }
+      continue;
+    }
     if (/^\s+$/u.test(segment)) { push(' ', index); continue; }
     const t = [...segment.normalize('NFKD').replace(/\p{M}/gu, '')]
       .map(c => MAP[c] ?? c).join('').toUpperCase().replace(/[\p{Cf}\p{Cc}]/gu, '');
@@ -55,7 +67,7 @@ export function normalize(text) {
     if (chars[i] === ' ' && out.endsWith(' ')) continue;
     out += chars[i]; src.push(source[i]);
   }
-  while (out.endsWith(' ')) { out = out.slice(0, -1); src.pop(); }
+  while (out.endsWith(' ') || out.endsWith(LINE_BREAK)) { out = out.slice(0, -1); src.pop(); }
   return {text:out, dropped, source:src};
 }
 
@@ -217,13 +229,15 @@ function measureWord(font, word, k) {
 
 // Fewest lines for words [i, j) within maxCols. A single word always gets its
 // own line (it may overflow; fit() then lowers the pitch). `short[w]`: word w
-// may not end a line; `glue[w]`: word w (a lone dash or ellipsis) may not start one.
-function linesNeeded(W, gap, maxCols, short, glue, i, j, strict) {
+// may not end a line; `glue[w]`: word w (a lone dash or ellipsis) may not start one;
+// `brk[w]`: a hard break (LINE_BREAK) stands before word w, so no line holds w and the word before it.
+function linesNeeded(W, gap, maxCols, short, glue, i, j, strict, brk) {
   const best = new Array(j - i + 1).fill(Infinity);   // best[m]: lines for words i..i+m-1
   best[0] = 0;
   for (let m = 1; m <= j - i; m++) {
     let width = -gap;
     for (let s = m - 1; s >= 0; s--) {                // the last line holds words i+s .. i+m-1
+      if (s < m - 1 && brk?.[i + s + 1]) break;       // a line never crosses a hard break
       width += W[i + s] + gap;
       if (width > maxCols && s < m - 1) break;
       if (s > 0 && strict && (short[i + s - 1] || glue[i + s])) continue;
@@ -235,15 +249,19 @@ function linesNeeded(W, gap, maxCols, short, glue, i, j, strict) {
 
 // Balanced break of words [i, j) into exactly L lines: minimise the sum of
 // squared line widths (relative to the mean), favouring breaks at punctuation.
-function balance(W, words, gap, maxCols, short, glue, i, j, L, strict) {
+function balance(W, words, gap, maxCols, short, glue, i, j, L, strict, brk) {
   const n = j - i, mean = (W.slice(i, j).reduce((a, b) => a + b, 0) + gap * (n - L)) / L || 1;
   const lineW = (a, b) => W.slice(a, b).reduce((s, v) => s + v, 0) + gap * (b - a - 1);
   // cost[l][m]: best cost for l lines covering words i .. i+m-1
   const cost = Array.from({length:L + 1}, () => new Array(n + 1).fill(Infinity));
   const from = Array.from({length:L + 1}, () => new Array(n + 1).fill(-1));
   cost[0][0] = 0;
+  // Hard breaks before each word, counted, so a line [a, b) crosses one when the count moves inside it.
+  const brks = [0];
+  for (let w = i; w < j; w++) brks.push(brks[brks.length - 1] + (brk?.[w] && w > i ? 1 : 0));
   for (let l = 1; l <= L; l++) for (let m = l; m <= n; m++) for (let s = l - 1; s < m; s++) {
     if (cost[l - 1][s] === Infinity) continue;
+    if (brks[m] - brks[s + 1] > 0) continue;
     const w = lineW(i + s, i + m);
     if (w > maxCols && m - s > 1) continue;
     if (s > 0 && strict && (short[i + s - 1] || glue[i + s])) continue;
@@ -265,19 +283,21 @@ export function layoutText(text, {font, k = 1, maxCols = Infinity, maxLines = 3,
 function prepare(text, font, k) {
   if (!font) throw new Error('layoutText needs a compiled font');
   const {text:norm, dropped} = normalize(text);
-  const missing = [...new Set(norm)].filter(c => !font.has(c));
+  const missing = [...new Set(norm)].filter(c => c !== LINE_BREAK && !font.has(c));
   if (missing.length) throw new Error(`${font.name} has no glyph for ${missing.join(' ')}`);
   // Words, with each character's index in the normalized text.
   const words = [], starts = [];
-  for (const m of norm.matchAll(/[^ ]+/g)) { words.push(m[0]); starts.push(m.index); }
+  for (const m of norm.matchAll(/[^ \u2028]+/g)) { words.push(m[0]); starts.push(m.index); }
   const measured = words.map(w => measureWord(font, w, k));
   const W = measured.map(m => m.w);
+  // brk[w]: a hard break stands before word w. The word before one ends its line anyway, so it is never short.
+  const brk = starts.map(at => at > 0 && norm[at - 1] === LINE_BREAK);
   return {font, k, norm, dropped, words, starts, measured, W, gap:font.space * k,
-    short:words.map(isShort), glue:words.map(w => GLUE.test(w))};
+    short:words.map((w, i) => isShort(w) && !brk[i + 1]), glue:words.map(w => GLUE.test(w)), brk:brk.some(Boolean) ? brk : null};
 }
 
 // Lines and pages for one column budget; geometry only, no pegs.
-function plan({font, k, words, W, gap, short, glue}, maxCols, maxLines) {
+function plan({font, k, words, W, gap, short, glue, brk}, maxCols, maxLines) {
   const n = words.length;
   maxLines = Math.max(1, Math.floor(maxLines));
   // Fewest lines per span of words; strict: no line ends on a short word or
@@ -285,7 +305,7 @@ function plan({font, k, words, W, gap, short, glue}, maxCols, maxLines) {
   const memo = new Map();
   const lines = (i, j, strict) => {
     const key = (i * 65536 + j) * 2 + (strict ? 1 : 0);
-    if (!memo.has(key)) memo.set(key, j - i === 1 ? 1 : linesNeeded(W, gap, maxCols, short, glue, i, j, strict));
+    if (!memo.has(key)) memo.set(key, j - i === 1 ? 1 : linesNeeded(W, gap, maxCols, short, glue, i, j, strict, brk));
     return memo.get(key);
   };
   // Pages: fewest first, then balanced by width, broken at punctuation where it
@@ -301,8 +321,9 @@ function plan({font, k, words, W, gap, short, glue}, maxCols, maxLines) {
       for (let i = j - 1; i >= 0; i--) {
         if (!best[i] || (hard && i > 0 && glue[i])) continue;
         if (lines(i, j, hard) > maxLines) break;    // longer spans only need more lines
+        // (A page that ends on a hard break ends a part: the next page is the answer.)
         const cost = (W.slice(i, j).reduce((a, b) => a + b, 0) / total) ** 2
-          - (j < n ? 2 * breakBonus(words[j - 1]) - (short[j - 1] ? 1 : 0) : 0);
+          - (j < n ? 2 * breakBonus(words[j - 1]) - (short[j - 1] ? 1 : 0) + (brk?.[j] ? 2 : 0) : 0);
         const cand = [best[i][0] + 1, best[i][1] + cost, i];
         if (!best[j] || cand[0] < best[j][0] || (cand[0] === best[j][0] && cand[1] < best[j][1] - 1e-9)) best[j] = cand;
       }
@@ -313,7 +334,7 @@ function plan({font, k, words, W, gap, short, glue}, maxCols, maxLines) {
   const spans = [];
   for (let j = n; j > 0; j = best[j][2]) spans.unshift([best[j][2], j]);
   const pages = spans.map(([i, j]) => {
-    const cuts = balance(W, words, gap, maxCols, short, glue, i, j, lines(i, j, hard), hard) || [[i, j]];
+    const cuts = balance(W, words, gap, maxCols, short, glue, i, j, lines(i, j, hard), hard, brk) || [[i, j]];
     return cuts.map(([a, b]) => ({a, b, width:W.slice(a, b).reduce((s, v) => s + v, 0) + gap * (b - a - 1)}));
   });
   const cell = font.height * k, adv = font.advance * k;

@@ -2,14 +2,15 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import {SAMPLE_POST, lyricsFromPost} from './lyrics.js';
 import {BAR_STEPS} from './song.js';
-import {FORMS, DEFAULT_FORM, stepAt, formPlays} from './forms.js';
+import {FORMS, DEFAULT_FORM, stepAt, formPlays, formOf} from './forms.js';
 import {TRACKS, TRACK_ORDER, DEFAULT_TRACK, DEFAULT_CAST, trackOf} from './songbook/index.js';
 import {castSong, settleCast} from './casting.js';
 import {loadWords} from './voice.js';
 import {prepareLady} from './lady.js';
 import {Performance, render, wav, STEMS, RENDER_OFFSET} from './engine.js';
 import {planToCues, toPixelProject} from './pixel-export.js';
-import {LADY_TABLE} from './lady-table.js';
+import {SONG_TABLE} from './band.js';
+import {AVAILABLE} from './voices/voice-table.js';
 import {createStage} from '../pegboard/stage.js';
 import {ladderWhole} from '../pegboard/choreo.js';
 import {claimAudio, onAudioFocus} from '../brand/audio-focus.js';
@@ -61,7 +62,7 @@ function usePegStage(canvas, plan) {
   const stage = useRef(null), [ready, setReady] = useState(0);
   useEffect(() => {
     const el = canvas.current; if (!el || !plan) return;
-    const s = createStage(el, {plan, table:LADY_TABLE, reduced:reduced()});
+    const s = createStage(el, {plan, table:SONG_TABLE, reduced:reduced()});
     stage.current = s;
     const resize = () => { s.resize(el.clientWidth, el.clientHeight); setReady(n => n + 1); };
     resize();
@@ -76,14 +77,16 @@ function App() {
   const [draft, setDraft] = useState(SAMPLE_POST), [post, setPost] = useState(SAMPLE_POST);
   const [song, setSong] = useState(null), [error, setError] = useState(''), [status, setStatus] = useState('loading');
   const [mode, setMode] = useState('sung'), [muted, setMuted] = useState({}), [cue, setCue] = useState(null), [elapsed, setElapsed] = useState(0);
-  const [rendering, setRendering] = useState(false), [form, setForm] = useState(DEFAULT_FORM), [track, setTrack] = useState(DEFAULT_TRACK);
+  const [rendering, setRendering] = useState(false), [form, setForm] = useState(null), [track, setTrack] = useState(DEFAULT_TRACK);
   // Let the post choose (on by default): the post picks the song and the lady's
   // lines (casting.js). The Song picker overrides it with today's cast.
   const [auto, setAuto] = useState(true);
   const canvas = useRef(null), section = useRef('Intro'), meters = useRef({}), cueKey = useRef(''), labels = useRef(null), labelKey = useRef('');
   const lyrics = useMemo(() => { try { return lyricsFromPost(post); } catch { return null; } }, [post]);
-  const casting = useMemo(() => auto && lyrics ? castSong(post) : null, [auto, post, lyrics]);
-  const playTrack = casting ? casting.track : track, playForm = formPlays(form, playTrack) ? form : DEFAULT_FORM, cast = casting?.cast;
+  // Only lines the voice bank sings (voices/voice-table.js AVAILABLE): Node and the page cast the same.
+  const casting = useMemo(() => auto && lyrics ? castSong(post, {available:AVAILABLE}) : null, [auto, post, lyrics]);
+  // The form: the one picked, if this song plays it, else the song's own (Offsite: the river).
+  const playTrack = casting ? casting.track : track, playForm = form && formPlays(form, playTrack) ? form : formOf(playTrack), cast = casting?.cast;
   const [stage, stageReady] = usePegStage(canvas, song?.plan);
 
   // Prepare the voice before anyone presses Play: a decode-only context needs no gesture.
@@ -166,7 +169,7 @@ function App() {
   function chooseTrack(id) {
     if (!auto && id === track) return;
     stop(); setCue(null); setElapsed(0); setSong(null); setTrack(id); setAuto(false);
-    if (!formPlays(form, id)) setForm(DEFAULT_FORM);
+    if (form && !formPlays(form, id)) setForm(null);
   }
   function chooseAuto() {
     if (auto) return;
@@ -268,7 +271,7 @@ function App() {
         <p className="ah-hint ah-casting" aria-live="polite">{casting ? casting.line : songTrack.blurb}</p>
         <h2 id="form-title" className="ah-gap">The form</h2>
         <div className="ah-modes ah-forms" role="radiogroup" aria-labelledby="form-title">
-          {Object.values(FORMS).map(f => { const plays = formPlays(f.id, playTrack); return <button key={f.id} role="radio" aria-checked={playForm === f.id} disabled={!plays} title={plays ? undefined : `${f.title} is ${trackOf(DEFAULT_TRACK).title}'s alone.`} className={playForm === f.id ? 'on' : ''} onClick={() => { if (playForm !== f.id) { stop(); setCue(null); setElapsed(0); setSong(null); setForm(f.id); } }}>{f.title}</button>; })}
+          {Object.values(FORMS).map(f => { const plays = formPlays(f.id, playTrack); return <button key={f.id} role="radio" aria-checked={playForm === f.id} disabled={!plays} title={plays ? undefined : `${f.title} is ${f.tracks.map(t => trackOf(t).title).join(', ')}'s alone.`} className={playForm === f.id ? 'on' : ''} onClick={() => { if (playForm !== f.id) { stop(); setCue(null); setElapsed(0); setSong(null); setForm(f.id); } }}>{f.title}</button>; })}
         </div>
         <p className="ah-hint">{FORMS[playForm].id === 'drop60' ? `${Math.round(songTrack.drop.bars * 16 * songTrack.step)} s · the lady builds, the room drops` : FORMS[playForm].note}</p>
         <h2 id="voice-title" className="ah-gap">Synergy’s delivery</h2>
@@ -290,13 +293,13 @@ function App() {
         </div>
         {lyrics && <dl className="ah-setlist"><dt>Hook</dt><dd>{lyrics.hook}</dd><dt>Verses</dt>{lyrics.verses.map((v, i) => <dd key={i}>{v}</dd>)}
           {playForm === 'drop60' && <><dt>The lady</dt><dd className="ah-lady-lines">{ladyLines(song && song.castIn === cast ? song.cast : cast).join(' · ')}</dd></>}</dl>}
-        <p className="ah-hint">Every sung word comes from the post. Synergy adds only his welcome and his sign-off.</p>
+        <p className="ah-hint">Synergy sings only the post (and his welcome). The band answers in the lexicon.</p>
       </form>
     </main>
 
     <footer className="ah-foot">
       <p><b>Phase 0 asks one question.</b> Would you play this at a party? Listen on good speakers, then on a phone.</p>
-      <p>Synergy: eSpeak NG through a 28-band vocoder. The band: synthesized live in your browser. The lady: 57 recorded phrases, cut at her own word boundaries, the only samples in the room. No generated music.</p>
+      <p>Synergy: eSpeak NG through a 28-band vocoder. Strategy and Synthia: the voice bank's takes, sung in key and pixelated in your browser. The lady: 57 recorded phrases, cut at her own word boundaries. The band: synthesized live in your browser. No generated music.</p>
     </footer>
   </div>;
 }
@@ -305,10 +308,10 @@ function App() {
 window.__allhands = {
   // auto: the post picks the track and the cast, as on the page (casting.js).
   // coldOpen: the film's cold open (drop.js withColdOpen), off unless asked for.
-  async render({post = SAMPLE_POST, form = DEFAULT_FORM, track, cast, auto = false, mode = 'sung', muted = {}, bars, tune, coldOpen = false} = {}) {
-    const casting = auto ? castSong(post, {track}) : null;
+  async render({post = SAMPLE_POST, form, track, cast, auto = false, mode = 'sung', muted = {}, bars, tune, coldOpen = false} = {}) {
+    const casting = auto ? castSong(post, {track, available:AVAILABLE}) : null;
     if (casting) { track = casting.track; cast = cast ?? casting.cast; }
-    const songForm = FORMS[form] || FORMS[DEFAULT_FORM], lyrics = lyricsFromPost(post), {buffers, durations} = await loadWords(decoder(), songForm.voiced(lyrics, {track}));
+    const songForm = FORMS[form ?? formOf(track)] || FORMS[DEFAULT_FORM], lyrics = lyricsFromPost(post), {buffers, durations} = await loadWords(decoder(), songForm.voiced(lyrics, {track}));
     const {plan} = settleCast(songForm.arrange, lyrics, durations, {track, cast, coldOpen}), lady = await prepareLady(decoder(), plan);
     const bytes = new Uint8Array(await wav(await render(plan, buffers, {mode, muted, bars, tune}, lady)).arrayBuffer());
     let s = ''; for (let i = 0; i < bytes.length; i += 32768) s += String.fromCharCode(...bytes.subarray(i, i + 32768));
@@ -322,7 +325,11 @@ window.__allhands = {
       words:plan.words.filter(w => w.line === -1).map(w => ({display:w.display, word:w.word, at:w.at, steps:w.steps, rate:w.rate, gate:w.gate, kind:w.kind, line:-1})),
       stutters:plan.stutters, tape:plan.tape || [],
       lady:plan.lady.map(e => ({role:e.role, rung:e.rung, display:e.display, file:e.file, at:e.at, from:e.from, to:e.to, rate:e.rate, gate:e.gate, midi:e.midi, root:e.root,
-        start:plan.timing[Math.floor(e.at)] + (e.at - Math.floor(e.at)) * plan.step, length:+Math.min(e.gate, (e.to - e.from) / e.rate).toFixed(3)}))}};
+        ...(e.voice ? {voice:e.voice, key:e.key, notes:e.notes} : {}),
+        start:plan.timing[Math.floor(e.at)] + (e.at - Math.floor(e.at)) * plan.step, length:+Math.min(e.gate, (e.to - e.from) / e.rate).toFixed(3)})),
+      // The band's parts (band.js) and, on the river (wander.js), its layers, loops, swells and slow spans.
+      band:plan.band ?? [], bandLeft:plan.bandLeft ?? [], drop:plan.drop ?? null,
+      ...(plan.form === 'wander' ? {layers:plan.layers, loops:plan.loops, swells:plan.swells, slow:plan.slow, phrases:plan.phrases} : {})}};
   },
 };
 

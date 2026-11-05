@@ -28,12 +28,13 @@ export function createBoard(cols, rows) {
     sockets:1,                        // 0..1: how visible the empty sockets are (board power)
     exposure:1,                       // whole-board gain (kick lift, breakdown dim)
     bloom:1,                          // bloom radius multiplier (slow-mo 1.6)
+    ambient:1,                        // 0..1: gain on light that is not type (choreo.paint: the build's dim under a held screen)
   };
 }
 
 export function clearBoard(b) {
   b.I.fill(0); b.white.fill(0); b.tone.fill(0); b.size.fill(1); b.dx.fill(0); b.dy.fill(0);
-  b.sockets = 1; b.exposure = 1; b.bloom = 1;
+  b.sockets = 1; b.exposure = 1; b.bloom = 1; b.ambient = 1;
   return b;
 }
 

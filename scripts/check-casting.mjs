@@ -35,6 +35,8 @@ import {TAKES, takeOf, takeKey, clearFor, SYNTHIA} from '../src/allhands/vocabul
 import {TRACKS, TRACK_ORDER, DEFAULT_TRACK, DEFAULT_CAST, LADY_ROLES, BAND_ROLES, castOf} from '../src/allhands/songbook/index.js';
 import {arrangeDrop, dropVoicedWords} from '../src/allhands/drop.js';
 import {LADY_TABLE, slice} from '../src/allhands/lady-table.js';
+// Her recordings and the voice bank's takes (a couplet drop's tag and impact are Synthia's or Strategy's).
+import {SONG_TABLE} from '../src/allhands/band.js';
 import {lyricsFromPost, SAMPLE_POST, syllables} from '../src/allhands/lyrics.js';
 import {buildScreens} from '../src/pegboard/choreo.js';
 import {compileFont, layoutText, CHARSET} from '../src/pegboard/font.js';
@@ -439,7 +441,7 @@ POSTS.forEach((post, i) => {
     for (const role of had) if (!have.has(role)) dropped.push(`${where} ${role}`);
     placed += have.size;
     for (const e of plan.lady) {
-      const entry = LADY_TABLE[e.file], inside = entry.words.filter(w => w.end > e.from + 1e-6 && w.start < e.to - 1e-6);
+      const entry = SONG_TABLE[e.file], inside = entry.words.filter(w => w.end > e.from + 1e-6 && w.start < e.to - 1e-6);
       ok(inside.length === e.display.split(' ').length, `${where} ${e.role} "${e.display}": one display word per measured word heard`);
       ok(inside.length === pixelText(e.display).split(' ').length, `${where} ${e.role} "${e.display}": Pixel Text keeps the word count`);
       // The sink starts where its dry words end: her pause before the deep words is kept.
@@ -454,20 +456,22 @@ POSTS.forEach((post, i) => {
       ok(tag.gate >= heard - 1e-9, `${where} tag "${tag.display}": heard whole (${heard.toFixed(3)} s, gate ${tag.gate.toFixed(3)})`);
       ok(window - tag.gate >= LIMITS.tag.silence - 1e-9, `${where} tag: ${(window - tag.gate).toFixed(3)} s of silence before the impact`);
     }
-    ok(impact.display === cast.impact.display && impact.file === tag.file, `${where}: the impact pays off the tag`);
+    // On a couplet drop the couplet's Y word pays off its tag (both cut from one take, or her word after Synthia's pickup).
+    const paid = tag.couplet ? cast.dropTag.impact : cast.impact;
+    ok(impact.display === paid.display && (impact.file === tag.file || !!tag.couplet), `${where}: the impact pays off the tag`);
     // The Peg Board: each lady screen's words start where the measured words start.
-    const screens = buildScreens(plan, {table:LADY_TABLE}).filter(s => s.voice === 'lady');
+    const screens = buildScreens(plan, {table:SONG_TABLE}).filter(s => s.voice === 'lady');
     for (const e of plan.lady) {
       const t0 = plan.timing[Math.floor(e.at)] + (e.at - Math.floor(e.at)) * plan.step;
       const s = screens.find(x => Math.abs(x.from - t0) < 1e-6 && x.text === e.display);
       if (!s) continue;                               // a screen the next one covers
-      const inside = LADY_TABLE[e.file].words.filter(w => w.end > e.from + 1e-6 && w.start < e.to - 1e-6);
+      const inside = SONG_TABLE[e.file].words.filter(w => w.end > e.from + 1e-6 && w.start < e.to - 1e-6);
       s.words.forEach((w, k) => { ok(Math.abs(w.start - (t0 + Math.max(0, inside[k].start - e.from) / e.rate)) < 1e-6, `${where} board ${e.role} word ${k}`); boardWords++; });
     }
     // Pixel Text: the lady's cues are timed from her words, not spread.
-    const timeOf = planTimeOf(plan, 0), sources = ladyCueSources(plan.lady.filter(e => e.role !== 'ladder'), {timeOf, table:LADY_TABLE});
+    const timeOf = planTimeOf(plan, 0), sources = ladyCueSources(plan.lady.filter(e => e.role !== 'ladder'), {timeOf, table:SONG_TABLE});
     plan.lady.filter(e => e.role !== 'ladder').forEach((e, k) => {
-      const src = sources[k], inside = LADY_TABLE[e.file].words.filter(w => w.end > e.from + 1e-6 && w.start < e.to - 1e-6), t0 = timeOf(e.at);
+      const src = sources[k], inside = SONG_TABLE[e.file].words.filter(w => w.end > e.from + 1e-6 && w.start < e.to - 1e-6), t0 = timeOf(e.at);
       ok(src && src.words.length === inside.length, `${where} Pixel Text ${e.role}: one cue word per measured word`);
       src.words.forEach((w, j) => { ok(Math.abs(w.start - (t0 + (Math.max(inside[j].start, e.from) - e.from) / e.rate)) < 1e-6, `${where} Pixel Text ${e.role} word ${j}`); cueWords++; });
     });

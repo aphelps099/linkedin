@@ -2,19 +2,21 @@
 // toggle (each format re-laid out, never cropped), the transport, a scrub bar in bars
 // and beats with the song's sections, the cut list and the compile's lint.
 // The song: a track of the song book chosen by hand, or Let the post choose (casting.js
-// castSong picks the track and the lady's lines, as /allhands/ does); the sample post or a
-// pasted one. The film always opens cold (drop.js withColdOpen): the impact at frame 0, then
-// the rewind, picture and sound together.
+// castSong picks the track and the lines with the voice bank's takes, as /allhands/ does); the
+// sample post or a pasted one. Each track plays its own form (forms.js formOf): the Drop Edition
+// opens cold (drop.js withColdOpen: the impact at frame 0, then the rewind, picture and sound
+// together); Offsite plays the river, which has no impact to open on.
 // Unlisted and noindex. ?format=16:9  ?scale=.5  ?av=-20 (ms)  ?f=960 (open on a frame)  ?cut=studio (the first draft)
 // ?track=hustle (by hand; default: the post chooses)
 // Export: Download MP4 per format, rendered offline and frame-exact (render/export.js).
 import './studio.css';
 import SHOTS from './media/shots.json';
-import {FORMS} from '../allhands/forms.js';
+import {FORMS, formOf} from '../allhands/forms.js';
 import {lyricsFromPost, SAMPLE_POST} from '../allhands/lyrics.js';
 import {loadWords} from '../allhands/voice.js';
 import {prepareLady} from '../allhands/lady.js';
 import {castSong, settleCast} from '../allhands/casting.js';
+import {AVAILABLE} from '../allhands/voices/voice-table.js';
 import {TRACKS} from '../allhands/songbook/index.js';
 import {prepareColdOpen} from '../allhands/engine.js';
 import {compile, shotIndex} from './edl/compile.js';
@@ -36,7 +38,7 @@ const el = {
   layers:$('[data-layers]'), layerCount:$('[data-layer-count]'), lint:$('[data-lint]'), lintCount:$('[data-lint-count]'),
   track:$('[data-track]'), sections:$('[data-sections]'), ruler:$('[data-ruler]'), scenes:$('[data-scenes]'), cuts:$('[data-cuts]'), head:$('[data-head]'),
   mediaNote:$('[data-media-note]'),
-  title:$('[data-track-title]'), tracks:$('[data-tracks]'), songLine:$('[data-song-line]'), songMode:$('[data-song-mode]'), post:$('[data-post]'), postGo:$('[data-post-go]'), postSample:$('[data-post-sample]'), postSummary:$('[data-post-summary]'),
+  title:$('[data-track-title]'), kicker:$('[data-kicker]'), tracks:$('[data-tracks]'), songLine:$('[data-song-line]'), songMode:$('[data-song-mode]'), post:$('[data-post]'), postGo:$('[data-post-go]'), postSample:$('[data-post-sample]'), postSummary:$('[data-post-summary]'),
 };
 const ex = {formats:$('[data-export-formats]'), master:$('[data-export-master]'), progress:$('[data-export-progress]'), fill:$('[data-export-fill]'),
   phase:$('[data-export-phase]'), eta:$('[data-export-eta]'), cancel:$('[data-export-cancel]'), note:$('[data-export-note]'), files:$('[data-export-files]'), spec:$('[data-export-spec]')};
@@ -50,14 +52,18 @@ const studio = params.get('cut') === 'studio';
 const treatmentOf = p => studio ? {id:'studio', title:'First draft', fn:studioFilm, labels:STUDIO_LABELS} : treatmentFor(p?.track);
 let SCENE_LABELS = studio ? STUDIO_LABELS : treatmentFor().labels;
 const edlFor = (p, fmt) => { const t = treatmentOf(p); SCENE_LABELS = t.labels; return t.fn(p, SHOTS, {format:fmt}); };
-const form = FORMS.drop60, shots = shotIndex(SHOTS);
+const shots = shotIndex(SHOTS);
 let format = FORMATS[params.get('format')] ? params.get('format') : '9:16';
 // The song: the track by hand, or 'auto' (the post chooses its track and her lines).
 let choice = TRACKS[params.get('track')] ? params.get('track') : 'auto', post = SAMPLE_POST, lyrics = lyricsFromPost(post);
-const castingOf = () => choice === 'auto' ? castSong(post) : null;
+// Only lines the voice bank sings (voices/voice-table.js AVAILABLE): the studio casts as /allhands/ does.
+const castingOf = () => choice === 'auto' ? castSong(post, {available:AVAILABLE}) : null;
 let casting = castingOf();
 const songOf = () => ({track:casting ? casting.track : choice, cast:casting?.cast});
-const arrange = durations => settleCast(form.arrange, lyrics, durations, {...songOf(), coldOpen:true}).plan;
+// The track's own form (forms.js formOf: Offsite plays the river, every other track the Drop Edition);
+// the film opens cold only on the Drop Edition (the river has no impact to open on).
+const formNow = () => FORMS[formOf(songOf().track)] ?? FORMS.drop60;
+const arrange = durations => { const form = formNow(); return settleCast(form.arrange, lyrics, durations, {...songOf(), coldOpen:form.id === 'drop60'}).plan; };
 let plan = arrange({}), song = {buffers:new Map(), lady:undefined};
 // The band, measured: the features the export compiles with (render/export.js songFeatures),
 // for this plan. Until they land the monitor draws from the plan alone and says so.
@@ -360,7 +366,7 @@ async function loadSong() {
   status('Tuning Synergy');
   const decoder = new OfflineAudioContext(1, 1, 44100), {track} = songOf();
   try {
-    const {buffers, durations} = await loadWords(decoder, form.voiced(lyrics, {track}));
+    const {buffers, durations} = await loadWords(decoder, formNow().voiced(lyrics, {track}));
     if (stale()) return;
     const next = arrange(durations);
     const lady = await prepareLady(decoder, next).catch(() => undefined);
@@ -378,13 +384,15 @@ async function loadSong() {
   }
   if (stale()) return;
   // The cold open's sound for the live preview (the export renders its own).
-  prepareColdOpen(plan, song.buffers, song.lady).then(parts => { if (!stale() && parts) { song = {...song, coldOpen:parts}; preview.setSong(plan, song, program); } }).catch(() => {});
+  if (plan.coldOpen) prepareColdOpen(plan, song.buffers, song.lady).then(parts => { if (!stale() && parts) { song = {...song, coldOpen:parts}; preview.setSong(plan, song, program); } }).catch(() => {});
   window.__studio.ready = true;
   songReady = true; exportState();
 }
 function songUI() {
   const t = TRACKS[songOf().track];
   el.title.textContent = t?.title ?? 'Circle Back';
+  // The form the track plays: the Drop Edition, or the river (Offsite).
+  if (el.kicker) el.kicker.textContent = `${formNow().id === 'wander' ? 'The river' : 'Drop Edition 60'} · Draft cut`;
   document.title = `Video Studio · ${t?.title ?? 'Circle Back'} · LinkedIn Beats`;
   for (const b of el.tracks.children) b.setAttribute('aria-checked', String(b.dataset.track === choice));
   el.songMode.textContent = casting ? 'The post chooses' : 'By hand';

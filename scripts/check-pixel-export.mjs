@@ -207,10 +207,14 @@ for (const post of POSTS) for (const id of Object.keys(FORMS)) for (const track 
   const shown = cues.reduce((n, c) => n + c.words.length, 0);
   ok(shown >= sung.length - warnings.length, `${label}: words shown ${shown} vs sung ${sung.length}`);
   // Styles by kind.
+  // (The river has no verses or host lines: Synergy sings his hook once, the band its clear phrases.)
   const hooks = cues.filter(c => c.style === 'assembly' || c.style === 'pulse');
-  ok(hooks.length >= 2 && cues.some(c => c.style === 'assembly') && cues.some(c => c.style === 'pulse'), `${label}: hooks alternate assembly and pulse`);
-  ok(cues.filter(c => c.text === pixelText(lyrics.verses[0])).every(c => c.style === 'spotlight'), `${label}: verses spotlight`);
-  ok(cues.some(c => c.text === pixelText(HOST.open) && c.style === 'spotlight'), `${label}: host line spotlight`);
+  if (id === 'wander') ok(hooks.length >= 1 && plan.lines.length === 1, `${label}: the river's one hook`);
+  else {
+    ok(hooks.length >= 2 && cues.some(c => c.style === 'assembly') && cues.some(c => c.style === 'pulse'), `${label}: hooks alternate assembly and pulse`);
+    ok(cues.filter(c => c.text === pixelText(lyrics.verses[0])).every(c => c.style === 'spotlight'), `${label}: verses spotlight`);
+    ok(cues.some(c => c.text === pixelText(HOST.open) && c.style === 'spotlight'), `${label}: host line spotlight`);
+  }
   // The render JSON (no stammer, answers or tape) still exports verbatim and
   // times its line words identically.
   const json = asRenderJson(plan), jsonCues = planToCues(json, undefined, {lyrics});

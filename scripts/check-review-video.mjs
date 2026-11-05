@@ -9,6 +9,8 @@
 //      impact's frame, and the ignition on it (the frames come from the plan, per track and cast)
 //      1a. at least 7 black frames before the impact on every track, the sample and every fixture post
 //          with its cast (the choke's 30 ms codec tail); the rewind's board looks back (no tag "L")
+//      1d. each track on its own form (Offsite: the river) with the sample's cast from the voice bank: canon on every
+//          frame (Strategy and Synthia's band tiles included), Synergy's mouth row whenever he sings
 //      1e. no partial words: a typewriter phrase is whole on the board (a read-ahead ghost) from its first frame
 //   2. captions: one line at a time per voice
 //   3. the timing rule, every step of every track: cuts land within half a frame of the beat
@@ -27,7 +29,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {spawn, spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
-import {FORMS} from '../src/allhands/forms.js';
+import {FORMS, formOf} from '../src/allhands/forms.js';
+import {AVAILABLE} from '../src/allhands/voices/voice-table.js';
 import {lyricsFromPost, SAMPLE_POST} from '../src/allhands/lyrics.js';
 import {castSong, settleCast} from '../src/allhands/casting.js';
 import {TRACK_ORDER} from '../src/allhands/songbook/index.js';
@@ -181,6 +184,50 @@ for (const [track, tid] of PAIRS) {
       if (any) { frames++; if (!ok1) bad.push(`f${f}: only echoes of him`); }
     }
     ok(frames > 300 && !bad.length, `${nameOf(track, format, tid)}: Synergy's mouth row shows on all ${frames} frames he sings on screen (${bad.slice(0, 3).join('; ')})`);
+  }
+}
+
+// ---- 1d. the band and the river: each track on its own form with the post's cast --------------------------
+// The studio films each track on its own form (forms.js formOf: Offsite plays the river) with the post's cast
+// from the voice bank (castSong available), the sample's here: the band's tiles (Strategy and Synthia speaking)
+// on the Drop Edition, the river's cut on Offsite. Canon on every frame in every format (Pat never on video, the
+// lady never footage, no warp on Synergy, robots never mirrored, no unflagged mirror, no R0 footage backwards
+// outside a rewind the sound reverses with), Synergy's mouth row on every frame he sings on screen, and the
+// lady's tile never a picture: her waveform on a camera-off card.
+{
+  for (const track of TRACK_ORDER) {
+    const form = formOf(track), cast = castSong(SAMPLE_POST, {track, available:AVAILABLE}).cast;
+    const plan = settleCast(FORMS[form].arrange, lyrics, {}, {track, cast, coldOpen:form === 'drop60'}).plan, TR = treatmentFor(track);
+    for (const format of ['9:16', '1:1', '16:9']) {
+      const p = compile(TR.fn(plan, SHOTS, {format}), {plan, shots:SHOTS, format}), label = `${track} ${format} (${form}, the sample's cast)`;
+      const waived = new Set(p.lint.warnings.filter(w => w.rule === 'G11' && /waived/.test(w.message)).map(w => w.clipId));
+      const bad = {pat:0, lady:0, warp:0, robotMirror:0, r0:0, mirror:0, ladyFace:0, mouth:[]};
+      let band = 0, sung = 0;
+      const spans = (plan.words || []).map(w => { const t = plan.timing[w.at]; return [t, Math.min(t + (w.gate ?? plan.step * (w.steps ?? 1)), plan.timing[w.at + (w.steps ?? 1)] ?? Infinity)]; });
+      for (let f = 0; f < p.frames; f++) {
+        const fr = p.frame(f), reversedSound = fr.transport?.kind === 'rewind' && fr.transport.sound === 'reversed';
+        for (const l of fr.layers) {
+          if (/circle back|\blady\b/i.test(l.chrome?.name ?? '') && l.kind === 'video') bad.ladyFace++;
+          const s = l.shotId && idx.get(l.shotId);
+          if (!s) continue;
+          if (l.clipId.startsWith('band.') && (l.chrome?.speaking ?? 0) >= .5) band++;
+          if (is(l, /^pat$/i)) bad.pat++;
+          if (is(l, /lady|circle back/i)) bad.lady++;
+          if (is(l, /^(synergy|synthia)$/i) && (l.transform.mirror || l.fx.some(x => x.type === 'tile' && x.mirror))) bad.robotMirror++;
+          if (l.reverse && s.reverseClass === 'R0' && !reversedSound) bad.r0++;
+          const mirrored = l.transform.mirror || l.fx.some(x => FX[x.type]?.mirrors === true || (typeof FX[x.type]?.mirrors === 'function' && FX[x.type].mirrors(x)));
+          if (mirrored && ((s.action || []).includes('play') || !s.mirrorable) && !waived.has(l.clipId)) bad.mirror++;
+          if (is(l, /^synergy$/i) && l.fx.some(x => FX[x.type]?.warps)) bad.warp++;
+        }
+        // His mouth row whenever he sings with his tile on screen and nothing in a transport.
+        if (fr.transport || !spans.some(([a, b]) => fr.time >= a && fr.time < b)) continue;
+        const his = fr.layers.filter(l => is(l, /^synergy$/i) && !/original-take|applause|ensemble/.test(l.shotId) && l.opacity > .99 && !l.trail && !fr.camera);
+        for (const l of his) { const m = l.robot?.mouth; sung++; if (!(m && m.x - m.w / 2 >= l.cell.x && m.x + m.w / 2 <= l.cell.x + l.cell.w && m.y - m.h / 2 >= l.cell.y && m.y + m.h / 2 <= l.cell.y + l.cell.h)) bad.mouth.push(f); }
+      }
+      ok(p.lint.ok && !bad.pat && !bad.lady && !bad.ladyFace && !bad.warp && !bad.robotMirror && !bad.r0 && !bad.mirror,
+        `${label}: ${TR.id} compiles with 0 lint errors; on all ${p.frames} frames Pat is never on video, the lady never footage (her tile a waveform), no warp on Synergy, no robot or unflagged shot mirrored, no R0 footage backwards outside the rewind${form === 'drop60' ? `; Strategy and Synthia speaking in band tiles on ${band} frames` : ''}`);
+      ok(sung > 0 && !bad.mouth.length, `${label}: Synergy's mouth row in his tile on all ${sung} layer-frames he sings at full${bad.mouth.length ? `; out on f${bad.mouth.slice(0, 4).join(', f')}` : ''}`);
+    }
   }
 }
 

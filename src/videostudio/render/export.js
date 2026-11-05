@@ -80,9 +80,12 @@ export function planJSON(plan) {
 // ---- captions ----------------------------------------------------------------------------------------
 const vttTime = s => { const ms = Math.max(0, Math.round(s * 1000)); const h = Math.floor(ms / 3600000), m = Math.floor(ms / 60000) % 60, sec = Math.floor(ms / 1000) % 60; return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}.${String(ms % 1000).padStart(3, '0')}`; };
 const sentence = s => { const t = String(s).toLowerCase().replace(/\s+/g, ' ').trim(); return t.charAt(0).toUpperCase() + t.slice(1); };
-// Every line Synergy sings and every phrase the lady says, timed by the plan. A retriggered
-// phrase (the ladder) is one cue from its first hit to its last. from/to: the span in song s;
-// cue times are relative to `from` (the file's time zero).
+// Every line Synergy sings, every phrase the lady says and every part the band sings (plan.band: Strategy,
+// Synthia, or her recordings; the river's clear phrases), timed by the plan, each under its own voice (a
+// couplet drop's tag and impact are Synthia's or Strategy's, though they ride in plan.lady). A retriggered
+// phrase (the ladder) is one cue from its first hit to its last. from/to: the span in song s; cue times are
+// relative to `from` (the file's time zero).
+const BAND_VOICES = {strategy:'Strategy', synthia:'Synthia'};
 export function captions(plan, {from = 0, to = stepTime(plan, plan.totalSteps), host = 'Synergy', lady = 'Circle Back'} = {}) {
   const cues = [];
   for (const line of plan.lines || []) {
@@ -98,13 +101,14 @@ export function captions(plan, {from = 0, to = stepTime(plan, plan.totalSteps), 
     const a = ladyTime(plan, e), b = a + Math.max(.25, e.gate ?? Math.max(0, (e.to - e.from) / (e.rate || 1)));
     if (run && run.display === e.display && e.role === 'ladder' && run.role === 'ladder' && a - run.b < 1.05) { run.b = Math.max(run.b, b); continue; }
     if (run) cues.push(run);
-    run = {a, b, voice:lady, text:sentence(e.display), display:e.display, role:e.role};
+    run = {a, b, voice:BAND_VOICES[e.voice] ?? lady, text:sentence(e.display), display:e.display, role:e.role};
   }
   if (run) cues.push(run);
+  for (const b of plan.band || []) if (b.words?.length && b.display) cues.push({a:b.words[0].start, b:Math.max(b.words.at(-1).end, b.words[0].start + .5), voice:BAND_VOICES[b.voice] ?? lady, text:sentence(b.display)});
   cues.sort((x, y) => x.a - y.a || (x.voice === host ? -1 : 1));
   // One voice, one line at a time: a cue ends where the same voice's next cue begins
   // (the ladder's last 32nds ran into "Let's circle-", "Let that" into "Sink in").
-  for (const v of [host, lady]) { const own = cues.filter(c => c.voice === v); for (let i = 0; i + 1 < own.length; i++) own[i].b = Math.min(own[i].b, own[i + 1].a); }
+  for (const v of new Set(cues.map(c => c.voice))) { const own = cues.filter(c => c.voice === v); for (let i = 0; i + 1 < own.length; i++) own[i].b = Math.min(own[i].b, own[i + 1].a); }
   const out =['WEBVTT', '', 'NOTE LinkedIn Beats, Video Studio export. Times are the song\'s clock.', ''];
   let n = 0;
   for (const c of cues) {

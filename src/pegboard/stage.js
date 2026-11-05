@@ -8,6 +8,7 @@ import {compileFont, layoutText} from './font.js';
 import {PEG9} from './fonts/peg9.js';
 import {PEG5} from './fonts/peg5.js';
 import {buildScreens, paint, indexWords} from './choreo.js';
+import {riverTrack, riverAt, paintPsych} from './psych.js';
 import {bandLevels, fromAnalyser, createFollower, departments, scoreAccent, kickAt} from './eq.js';
 
 const FACES = {peg9:compileFont(PEG9), peg5:compileFont(PEG5)};
@@ -18,6 +19,20 @@ const MODEL = departments({bands:4});
 const GROUPS = MODEL.groups;
 const CHART_KINDS = new Set(['hook', 'repeat', 'impact', 'punct']);
 
+// The lines a screen may take: its own `lines` (1 at k 2 and up, else 3), or for a two-part band screen
+// (screen.fill: a couplet, an exchange) as many as the room holds, so both parts share one page where they fit.
+export function linesFor(screen, font, k, room) {
+  const lines = screen.lines ?? ((screen.k ?? 1) > 1 ? 1 : 3);
+  return screen.fill ? Math.max(lines, Math.floor((room - font.height * k) / (font.advance * k)) + 1) : lines;
+}
+
+// The stage's pitch: pitchFor, except that a narrow stage (a phone) keeps at least STAGE_COLS columns,
+// so a long word ("DOUBLE-BOOKED.", 100 pegs in PEG-9) still sets: at 390 px, 97 columns of 4 px pegs
+// instead of 55 of 7 (where it fit in neither face and the screen stayed dark). The film's 9:16 home
+// shows its pegs smaller than that on the same phone (150 columns across 1080 px).
+export const STAGE_COLS = 96;
+export const stagePitch = (width, height) => { const p = pitchFor(width, height); return Math.floor(width / p) >= STAGE_COLS ? p : Math.max(3, Math.min(p, Math.floor(width / STAGE_COLS))); };
+
 export function pitchFor(width, height) {
   // ~52 rows on a desktop stage, never under 7 px or over 16 px a peg.
   return Math.max(7, Math.min(16, Math.floor(Math.min(height / 44, width / 80))));
@@ -27,11 +42,16 @@ export function createStage(canvas, {plan, table, reduced = false, chart = true}
   const renderer = createRenderer(canvas, {pixelRatio:Math.min(2, window.devicePixelRatio || 1)});
   let board = null, pitch = 12, ox = 0, oy = 0, textRows = 0, chartRows = 0;
   const layouts = new Map(), screens = buildScreens(plan, {table}).map(indexWords);
+  // The river (Offsite's wander form): the board is the texture, breathing with the loop's layers; its
+  // clear phrases are the only type, and they win (paintPsych after paint).
+  const river = plan.form === 'wander' ? riverTrack(plan) : null;
+  // (Reduced motion: the light still follows the layers, the pattern holds still.)
+  const texture = t => { if (!river || !(board.exposure > 0)) return; const r = riverAt(river, t); if (reduced) r.drive.beat = 0; paintPsych(board, r.spec, reduced ? 0 : t, {drive:r.drive}); };
   const followers = new Map(), scratch = {}, bands = {}, accentOut = {levels:{}, white:{}}, SILENT = new Float32Array(4);
   let lastT = -1;
 
   function resize(width, height) {
-    pitch = pitchFor(width, height);
+    pitch = stagePitch(width, height);
     const cols = Math.floor(width / pitch), rows = Math.floor(height / pitch);
     board = createBoard(cols, rows);
     ox = Math.floor((width - cols * pitch) / 2); oy = Math.floor((height - rows * pitch) / 2);
@@ -52,7 +72,7 @@ export function createStage(canvas, {plan, table, reduced = false, chart = true}
     let out = null;
     for (const face of ['peg9', 'peg5']) {
       for (let k = screen.k; k >= 1 && !out; k--) {
-        const font = FACES[face], l = layoutText(screen.text, {font, k, maxCols:board.cols - 4, maxLines:screen.lines ?? (screen.k > 1 ? 1 : 3)});
+        const font = FACES[face], l = layoutText(screen.text, {font, k, maxCols:board.cols - 4, maxLines:linesFor(screen, font, k, roomOf(screen))});
         if (l.width <= board.cols - 4 && l.height <= roomOf(screen) && (!screen.full || l.pages.length === 1)) out = l;
       }
       if (out) break;
@@ -101,7 +121,7 @@ export function createStage(canvas, {plan, table, reduced = false, chart = true}
     };
   }
   const setPeg = (b, x, y, I, tone, white) => { if (x < 0 || y < 0 || x >= b.cols || y >= b.rows) return; const i = y * b.cols + x; if (I > b.I[i]) { b.I[i] = I; b.tone[i] = tone; b.white[i] = white; } };
-  const sectionAt = t => plan.sections.find(s => t >= plan.timing[s.from * 16] && t < plan.timing[s.to * 16])?.name || '';
+  const sectionAt = t => (plan.sections || []).find(s => t >= plan.timing[s.from * 16] && t < plan.timing[s.to * 16])?.name || '';
 
   // The flash governor's exposure track for this song and board, at 24 fps:
   // computed once, so every frame (live or exported) obeys the same limits.
@@ -109,7 +129,7 @@ export function createStage(canvas, {plan, table, reduced = false, chart = true}
   function governor() {
     if (gains || !board) return gains;
     const frames = [], fps = 24, n = Math.ceil(plan.duration * fps);
-    for (let f = 0; f < n; f++) { paint(board, screens, f / fps, {plan, layoutOf, place, reduced}); frames.push(boardLuma(board)); }
+    for (let f = 0; f < n; f++) { paint(board, screens, f / fps, {plan, layoutOf, place, reduced, pitch}); texture(f / fps); frames.push(boardLuma(board)); }
     return gains = governorTrack(frames, fps);
   }
 
@@ -124,7 +144,8 @@ export function createStage(canvas, {plan, table, reduced = false, chart = true}
     if (!board) return;
     const started = performance.now();
     const dt = lastT < 0 || t < lastT ? 1 / 60 : Math.min(.1, t - lastT); lastT = t;
-    paint(board, screens, t, {plan, layoutOf, place, eq:chart ? chartPainter(analysers, dt, levels) : null, reduced});
+    paint(board, screens, t, {plan, layoutOf, place, eq:chart ? chartPainter(analysers, dt, levels) : null, reduced, pitch});
+    texture(t);
     const g = governor(), f = Math.max(0, Math.floor(t * 24));
     if (g && f < g.length) board.exposure *= g[f];
     const kick = !reduced && /^Drop/.test(sectionAt(t)) && kickAt(plan, t) ? 1 : 0;

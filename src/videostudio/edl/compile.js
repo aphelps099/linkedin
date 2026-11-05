@@ -222,7 +222,12 @@ function cueScreens(edl, plan, songScreens, table) {
   });
   const order = (a, b) => a.from - b.from || (a.id < b.id ? -1 : 1);
   main.sort(order); cells.sort(order);
-  for (let i = 0; i < main.length - 1; i++) main[i].to = Math.min(main[i].to, main[i + 1].from);
+  // A rung under a band line (choreo's screen.under: the couplet drop's X over the build) does not end that
+  // line: it waits in the list until the line lets go (activeScreen), so the line runs to the next screen above it.
+  for (let i = 0; i < main.length - 1; i++) {
+    const next = main[i].under ? main[i + 1] : main.slice(i + 1).find(s => !s.under);
+    if (next) main[i].to = Math.min(main[i].to, next.from);
+  }
   return {main:main.filter(s => s.to > s.from), cells};
 }
 

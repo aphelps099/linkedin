@@ -29,7 +29,7 @@ import {PEG3} from '../../pegboard/fonts/peg3.js';
 import {paint, boardState} from '../../pegboard/choreo.js';
 import {paintPsych} from '../../pegboard/psych.js';
 import {boardLuma} from '../../pegboard/governor.js';
-import {pitchFor} from '../../pegboard/stage.js';
+import {pitchFor, linesFor} from '../../pegboard/stage.js';
 import {kickAt} from '../../pegboard/eq.js';
 
 const FACES = {peg9:compileFont(PEG9), peg5:compileFont(PEG5), peg3:compileFont(PEG3)};
@@ -54,7 +54,7 @@ export function boardGrid(w, h, pitch = boardPitch(w, h), safe = null) {
     let out = null;
     for (const face of ORDER[screen.font] ?? ORDER.peg9) {
       for (let k = screen.k ?? 1; k >= 1 && !out; k--) {
-        const l = layoutText(screen.text, {font:FACES[face], k, maxCols:span, maxLines:screen.lines ?? ((screen.k ?? 1) > 1 ? 1 : 3)});
+        const l = layoutText(screen.text, {font:FACES[face], k, maxCols:span, maxLines:linesFor(screen, FACES[face], k, roomOf(screen))});
         if (l.width <= span && l.height <= roomOf(screen) && (!screen.full || l.pages.length === 1)) out = l;
       }
       if (out) break;
@@ -153,7 +153,7 @@ export function createBoardLayer(gl, {plan, scale = 1, quality} = {}) {
   // Paint the board for a region at song time t. sockets: false hides the empty sockets
   // (the board laid over footage shows only its light).
   function paintGrid(grid, screens, t, {sockets = true, gain = 1, psych = null, sample = null} = {}) {
-    paint(grid.board, screens, t, {plan, layoutOf:grid.layoutOf, place:grid.place});
+    paint(grid.board, screens, t, {plan, layoutOf:grid.layoutOf, place:grid.place, pitch:grid.pitch});
     // Imagery on the dot grid, under the type: each entry carries its own time, drive and params.
     if (psych?.length) for (const p of psych) paintPsych(grid.board, p, p.time, {drive:p.drive, frame:p.look === 'footage' && sample ? sample(grid) : null});
     if (!sockets) grid.board.sockets = 0;

@@ -21,6 +21,7 @@ import {barSteps, beatSteps, stepTime, stepAtTime, ladyTime, hitFrame, hitAt, cu
 import {shotIndex, isSynergy, resolveCrop, UPSCALE, TRACKING, layerMatrix, invert, apply} from '../edl/compile.js';
 import {cellRect, layout, FORMATS} from '../layouts.js';
 import {LADY_TABLE} from '../../allhands/lady-table.js';
+import {bandSpeakers} from './shared.js';
 
 // Who plays whom. Ids are shot-index aliases.
 export const CAST = {
@@ -84,7 +85,7 @@ export const ROWS = [
   {row:'17', what:'Retrigger roll, hat roll, RGB split on the roll', status:'done', note:'The first 8th-note rung. The applause tile is gone: Synergy stammers here in Hustle and Humbled and Honored, and the applause shot would show him without a mouth row.'},
   {row:'18', what:"Board with Synergy's cell, poor connection", status:'done', note:'BOARD+STRIP, the board grown out of its home: the lady’s LET’S with LE lit (the rest a ghost), Synergy’s tile lights on his stammers. Mosaic 32 px on the side tiles only: never on Synergy (canon).'},
   {row:'19:0-7', what:'BOARD, L at k4', status:'done', note:'The 32nd-note rung: the board grows to the frame over black; the song’s own screens (LET’S, LE lit); the SPARKLE dissolve is the board’s.'},
-  {row:'19:8-11', what:'Choke: black, LET’S CIRCLE- on bare sockets', status:'done', note:'Her typewriter finishes its last letter before black.'},
+  {row:'19:8-11', what:'Choke: black, LET’S CIRCLE- on bare sockets', status:'done', note:'Her typewriter finishes its last letter before black. On a couplet drop (plan.drop.kind couplet) the tag is the couplet’s lead-in, Synthia’s “IT’S IN-”, and the impact its Y word, “DEMAND.” (or her word when she owns it): the black and the ignition stay on the plan’s frames, the board carries the words.'},
   {row:'19 silence', what:'True black from the first frame after her tag stops sounding', status:'done', note:'choreo darkens the board on the first frame that starts after plan.choke.tagEnd, plus the choke’s 30 ms codec tail (the Opus floor after a hard cut, CHOKE_TAIL) and the engine’s latency (Circle Back frame 952: nothing over -70 dBFS plays over black in the file), and holds true black to the impact’s frame.'},
   {row:'20', what:'IGNITION: peg video, then stack3; push on the room', status:'stand-in', note:'The ignition lands on the frame that holds the impact’s sound. Peg video on the-professionals-arrive (as in the cold open); half a bar later the same shot unpegged leads stack3 with the push. office-ensemble is out: Synergy is in it without his mouth row while he sings the hook. Pat’s CONNECTED flip and the kick lift on the board are not drawn.'},
   {row:'21', what:'Pads on the snare alternating with applause; whip slide and composite roll on PIVOT', status:'partial', note:'The pads and the applause (framed off Synergy on People & Culture’s whole face, with Kevin and their hands where the tile’s shape allows) alternate a beat each, every cut and punch-in on the frame that holds its drum hit. The whip slide (Synergy to Synthia) and the composite roll land on her bend where the song has it. The printer’s page eject is skipped: no printer tile in stack3.'},
@@ -95,6 +96,7 @@ export const ROWS = [
   {row:'27', what:'Tile cascade; the replay of the bar before; READ THAT AGAIN.', status:'done', note:''},
   {row:'28', what:'Leave Meeting: tiles leave on the beat, toasts', status:'done', note:'Six on the call, Kevin first, one a beat: the grid steps down G6, G4, split, L1 as they go, so the full layouts land on the bar and the half bar. In Hustle’s four-bar outro one leaves every two beats.'},
   {row:'29', what:'G1 Synergy, tape stop, black, ghost BACK. on the last two frames', status:'done', note:'The picture follows the tape-stop curve to a held frame with his eyes open and holds it while her “Full stop.” (after the tape) still sounds; FULL STOP. stays lit and fully typed, dimming and sliding down 2 pegs. True black from the first frame after her (Circle Back frame 1437). The last two frames show frame 0’s BACK. as a ghost at I .08 on its own pegs, so the loop closes on frame 0’s peg mask; where her line runs into them (Hustle), the ghost takes what is left.'},
+  {row:'Band (Nov 5)', what:'Strategy and Synthia sing the lexicon where Synergy’s other repeats were: their tiles speak', status:'done', note:'plan.band: each of their parts (the drop’s “It’s not X.” over the build, exchanges, refrains, stabs, the couplet, the sign-off) is laid over a tile of the call that holds it, from a frame before the first word to a quarter second after the last, speaking on the words (shared.js bandSpeakers): their own tile when the call shows them, else a listener’s, never Synergy’s, Pat’s, the board’s or L1. Where nothing can hold them (L1, the full board, the dub delay’s four Synergys) the board carries the words alone. The lady never has a face.'},
   {row:'Runway pickups', what:'nod wide, overhead table, drum strike, pick hand, pages, robot duet, Strategy 10 s, privacy shutter', status:'stand-in', note:'None supplied yet. Stand-ins: the canon ripple (nod), drum-pad-detail (strike), printer-outward-feed (pages), strategy-listening at 3.5 s (Strategy). The rest have no row of their own in §2.'},
 ];
 
@@ -103,7 +105,7 @@ const clone = x => JSON.parse(JSON.stringify(x));
 const norm = s => String(s).toLowerCase().replace(/[\s_\-]+/g, '');
 const r6 = x => +(+x).toFixed(6);
 
-export function drop60Draft(plan, shots, {format = '9:16', features, seed = 7} = {}) {
+export function drop60Draft(plan, shots, {format = '9:16', features, seed = 7, notes} = {}) {
   const BS = barSteps(plan), QS = beatSteps(plan), F = FORMATS[format], T = s => stepTime(plan, s), S = t => stepAtTime(plan, t);
   const index = shotIndex(shots);
   const m = (name, ctx) => MOVES[name].fn({plan, shots, features, format, seed, ...ctx});
@@ -492,11 +494,18 @@ export function drop60Draft(plan, shots, {format = '9:16', features, seed = 7} =
     board.push({id:'ghost', at:at(ghostFrom), len:span(ghostFrom, N), text:{ref:'song:impact'}, ghost:GHOST, why:'ghost BACK.: frame 0’s BACK. on the same pegs, at I .08 (plan §2 row 29)'});
   }
 
-  const edl = merge(createEDL({format, loop:true, seed, track:plan.track, board, transports, camera, boardMoves, overrides}), ...patches);
+  const cut = merge(createEDL({format, loop:true, seed, track:plan.track, board, transports, camera, boardMoves, overrides}), ...patches);
   // Clean: no undefined fields.
-  for (const x of edl.clips) {
+  for (const x of cut.clips) {
     for (const key of Object.keys(x)) if (x[key] === undefined) delete x[key];
     if (x.chrome) for (const key of Object.keys(x.chrome)) if (x.chrome[key] === undefined) delete x.chrome[key];
   }
-  return edl;
+  // ---- the band: Strategy and Synthia sing the lexicon where Synergy's other repeats were (plan.band) -------------
+  // Their tiles speak: each part's singer is laid over a tile of the call that holds it, from a frame before
+  // the first word to just after the last (the drop's "It's not X." over the build, the exchanges, the
+  // refrains, the stabs, the couplet, the sign-off). On a couplet drop the tag and the impact are the
+  // couplet's lead-in and Y word; the choke's black and the ignition stay on the plan's frames.
+  const band = bandSpeakers(cut, plan, shots, {format, seed});
+  if (Array.isArray(notes)) notes.push(...band.notes);
+  return band.clips.length ? merge(cut, {clips:band.clips}) : cut;
 }

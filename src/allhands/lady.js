@@ -5,6 +5,7 @@
 import {createVocoder} from './vocoder.js';
 import {biquad, amp, mtof, noiseBuffer} from './instruments.js';
 import {exactSession} from './exact.js';
+import {loadVoices, sing, toBuffer} from './voices/voice-table.js';
 
 const files = new Map();
 
@@ -20,8 +21,12 @@ export async function loadLady(ctx, names, {base = '/phrases/', fetcher = fetch}
 const baked = new Map();
 
 // `comb`: the resonance in Hz (A2 by default; a song book track tunes it to its chord root).
+// Each buffer baked from gets an id: two sung takes of one length are different sounds.
+const ids = new WeakMap();
+let nextId = 0;
 export async function bakeDeep(buffer, from, to, root, {rate = .5, shift = 2, comb:combHz = 110} = {}) {
-  const key = [buffer.length, from, to, root, rate, shift, combHz].join(':');
+  if (!ids.has(buffer)) ids.set(buffer, ++nextId);
+  const key = [ids.get(buffer), buffer.length, from, to, root, rate, shift, combHz].join(':');
   if (baked.has(key)) return baked.get(key);
   const sr = 44100, seconds = (to - from) / rate + .4, ctx = new OfflineAudioContext(1, Math.ceil(seconds * sr), sr), exact = exactSession(ctx);
   const src = ctx.createBufferSource(); src.buffer = buffer; src.playbackRate.value = rate;
@@ -53,15 +58,37 @@ export async function bakeDeep(buffer, from, to, root, {rate = .5, shift = 2, co
   return out;
 }
 
-// Everything a plan's lady events need: decoded files and baked deep takes.
-export async function prepareLady(ctx, plan, options) {
-  const names = [...new Set(plan.lady.map(e => e.file))];
-  if (!names.length) return {files:new Map(), deep:new Map()};
-  const loaded = await loadLady(ctx, names, options);
+// The notes a pixel event is sung on: its line, moved down by its rate so that,
+// played faster, it lands in key (band.js: a part sped up to fit its gap).
+export const sungNotes = e => (e.rate && e.rate !== 1 ? e.notes.map(n => ({...n, midi:n.midi - 12 * Math.log2(e.rate)})) : e.notes);
+const sungKey = e => `${e.file}|${e.amount ?? ''}|${JSON.stringify(sungNotes(e).map(n => [n.from, n.to, +n.midi.toFixed(4)]))}`;
+
+// Every event the plan's sampled voices play, with the id the engine indexes it
+// by: her events (and on a couplet drop its tag and impact) by their index in
+// plan.lady, the band's parts (plan.band) as 'b' + their index.
+// The river's loop sources (wander.js plan.loops) come along as 'l' + their index: the textures cut them.
+export const voiceEvents = plan => [...(plan.lady || []).map((e, i) => ({e, id:i})), ...(plan.band || []).map((e, i) => ({e, id:`b${i}`})), ...(plan.loops || []).map((e, i) => ({e, id:`l${i}`}))];
+
+// Everything a plan's voices need: her decoded files, the voice bank's takes sung
+// onto each event's notes through the pixel chain (voices/voice-table.js sing:
+// the same samples in every browser and in Node), and the baked deep takes.
+// options.voices: loadVoices options (Node passes {read}).
+export async function prepareLady(ctx, plan, options = {}) {
+  const all = voiceEvents(plan), hers = all.filter(x => !x.e.key), pixel = all.filter(x => x.e.key && x.e.notes);
+  const names = [...new Set(hers.map(x => x.e.file))];
+  const loaded = names.length ? await loadLady(ctx, names, options) : new Map();
+  const sung = new Map(), takes = pixel.length ? await loadVoices([...new Set(pixel.map(x => x.e.file))], options.voices) : new Map(), made = new Map();
+  for (const {e, id} of pixel) {
+    const take = takes.get(e.file), k = sungKey(e);
+    if (!take) continue;
+    if (!made.has(k)) made.set(k, toBuffer(ctx, sing(take, {notes:sungNotes(e), amount:e.amount}).samples, take.sampleRate));
+    sung.set(id, made.get(k));
+  }
   const deep = new Map();
-  await Promise.all(plan.lady.map(async (e, i) => {
-    if (!e.deep || !loaded.get(e.file)) return;
-    deep.set(i, await bakeDeep(loaded.get(e.file), e.from, e.to, e.root, e.comb ? {comb:e.comb} : undefined));
+  await Promise.all(all.filter(x => typeof x.id === 'number').map(async ({e, id}) => {
+    const buffer = e.key ? sung.get(id) : loaded.get(e.file);
+    if (!e.deep || !buffer) return;
+    deep.set(id, await bakeDeep(buffer, e.from, e.to, e.root, e.comb ? {comb:e.comb} : undefined));
   }));
-  return {files:loaded, deep};
+  return {files:loaded, deep, sung};
 }

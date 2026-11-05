@@ -10,6 +10,9 @@ import {LADY_TABLE, slice} from '../src/allhands/lady-table.js';
 import {FORMS, stepAt, formPlays} from '../src/allhands/forms.js';
 import {TRACKS, TRACK_ORDER, DEFAULT_TRACK, DEFAULT_CAST, LADY_ROLES, trackOf, castOf} from '../src/allhands/songbook/index.js';
 import {truePeakLimit, truePeaks} from '../src/allhands/master.js';
+import {colourSamples, renderTexture, textureHits, levelAt} from '../src/allhands/river.js';
+import {pentaStep, RIVER} from '../src/allhands/wander.js';
+import {mtof} from '../src/allhands/instruments.js';
 
 const PENTATONIC = new Set([45, 48, 50, 52, 55, 57, 60, 62, 64]);
 const POSTS = [
@@ -144,7 +147,7 @@ for (const post of POSTS) {
   const [a, b] = slice(LADY_TABLE['06.wav'], 0, 1), back = slice(LADY_TABLE['06.wav'], 2, 2);
   ok(a < .05 && b > .6 && b <= back[0] + 1e-9 && back[1] - back[0] > .2, 'lady: "Let\'s circle" then "back", whole words');
 }
-ok(Object.keys(FORMS).join() === 'drop60,soundcheck', 'two forms');
+ok(Object.keys(FORMS).join() === 'drop60,soundcheck,wander', 'three forms: the Drop Edition, Sound check 00, the river');
 
 // ---- The song book: every track performs the Drop Edition in its own key and time.
 const ORDER = ['Intro', 'Verse', 'Build', 'Drop A', 'Sink In', 'Drop B', 'Outro'];
@@ -332,6 +335,49 @@ try {
 } catch (error) {
   if (error.code !== 'ENOENT') throw error;
   console.log('espeak-ng not installed: skipped the live voice check');
+}
+
+// ---- The river (wander.js, river.js): its instruments and textures, pure and in key.
+{
+  const W = TRACKS.offsite.wander, penta = W.pentatonic, pc = m => ((Math.round(m) % 12) + 12) % 12, sr = 44100;
+  ok(TRACKS.offsite.form === 'wander' && formPlays('wander', 'offsite') && !formPlays('wander', 'circle-back'), 'the river: Offsite plays it, the Drop Edition tracks do not');
+  // The acoustic colours: deterministic, finite, under full scale, and in tune (autocorrelation over the steady part).
+  const f0Of = (y, lo = 60, hi = 1200) => {
+    const a = y.subarray(Math.round(.12 * sr), Math.round(.12 * sr) + 4096), r = k => { let x = 0; for (let i = 0; i + k < a.length; i++) x += a[i] * a[i + k]; return x; };
+    let best = 0, bk = 0; for (let k = Math.floor(sr / hi); k <= Math.ceil(sr / lo); k++) { const v = r(k); if (v > best) { best = v; bk = k; } }
+    const y0 = r(bk - 1), y1 = r(bk), y2 = r(bk + 1), d = (y0 - y2) / (2 * (y0 - 2 * y1 + y2));
+    return sr / (bk + (Number.isFinite(d) ? d : 0));
+  };
+  const cents = [];
+  for (const kind of ['pluck', 'mallet', 'felt']) for (const midi of [57, 62, 66, 69]) {
+    const a = colourSamples(sr, kind, midi, .6, 1), b = colourSamples(sr, kind, midi, .6, 1), peak = a.reduce((m, v) => Math.max(m, Math.abs(v)), 0);
+    ok(a.length === b.length && a.every((v, i) => v === b[i]) && a.every(Number.isFinite) && peak > .01 && peak < 1, `${kind} ${midi}: deterministic, finite, peak ${peak.toFixed(2)}`);
+    const c = 1200 * Math.log2(f0Of(a) / mtof(midi));
+    cents.push(Math.abs(c));
+    ok(Math.abs(c) < 25, `${kind} ${midi}: in tune (${c.toFixed(1)} cents)`);
+  }
+  console.log(`the river's colours: 12 notes within ${Math.max(...cents).toFixed(1)} cents of their pitch`);
+  // A texture: deterministic, and seamless (a hit past the loop's end wraps to its start).
+  const src = new Float32Array(sr).map((_, i) => Math.sin(2 * Math.PI * 220 * i / sr) * Math.min(1, i / 400, (sr - i) / 400));
+  const len = 2 * sr, hits = [{at:1.95, len:.2, midi:57, cut:0}], cuts = [{from:.1, to:.6, base:57}];
+  const t1 = renderTexture({src, sr, cuts, hits, length:len, amount:.6, smear:3, seed:4}), t2 = renderTexture({src, sr, cuts, hits, length:len, amount:.6, smear:3, seed:4});
+  ok(t1[0].every((v, i) => v === t2[0][i]) && t1[1].every((v, i) => v === t2[1][i]), 'a texture renders to the same samples twice');
+  ok(t1[0].subarray(0, Math.round(.1 * sr)).some(v => Math.abs(v) > 1e-3), 'a hit past the loop\'s end wraps to its start (the loop is seamless)');
+  // Every texture of the chart plays in key, on the 2-bar grid, for every cut of its source.
+  const loop = {cuts:[{from:0, to:.3, base:55.3}, {from:.3, to:.7, base:59.8}]}, plan = {step:TRACKS.offsite.step, swing:W.swing};
+  for (const id of Object.keys(W.textures)) {
+    const h = textureHits(W, {id}, loop, plan);
+    ok(h.length && h.every(x => penta.includes(pc(x.midi)) && x.at >= 0 && x.at < 32 * plan.step && x.len > 0), `texture ${id}: ${h.length} hits, every note on the pentatonic`);
+  }
+  // The colours' pitch window drifts slowly and stays in the register; every pattern note it makes is in key.
+  const win = Array.from({length:W.bars * 4}, (_, i) => W.window(i / 4));
+  ok(win.every((x, i) => !i || Math.abs(x - win[i - 1]) <= 1) && Math.min(...win) >= 60 && Math.max(...win) <= 70, `the pitch window drifts ${Math.min(...win).toFixed(1)}-${Math.max(...win).toFixed(1)}, at most a semitone a beat`);
+  ok([...W.plucks, ...W.mallet].filter(k => k !== null).every(k => win.every(c => penta.includes(pc(pentaStep(c, k, penta))))), 'every pluck and mallet note of every window is on the pentatonic');
+  // The loop plays every bar from bar 1; the layers' levels follow their curves.
+  ok(Array.from({length:W.bars - 1}, (_, b) => W.kicksOf(b + 1, W.layers(b + 1)).length).every(n => n === 4), 'the loop: four soft stomps in every bar from bar 1');
+  const lay = {gain:[[0, 0], [2, 1], [4, 1], [6, 0]]};
+  ok(levelAt(lay, 1) === .5 && levelAt(lay, 3) === 1 && levelAt(lay, 5) === .5 && levelAt(lay, 7) === 0, 'a layer\'s level between its points');
+  ok(RIVER.minRamp === 2 && RIVER.maxRamp === 8 && RIVER.phrases === 2 && RIVER.synergy === 1, 'the river\'s rules: ramps of 2 to 8 bars, two clear phrases, Synergy once');
 }
 
 console.log(`All Hands: ${checks} checks passed.`);

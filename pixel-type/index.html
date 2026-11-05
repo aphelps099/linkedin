@@ -22,6 +22,7 @@
     <a href="#phrases"><i></i>The 57</a>
     <a href="#chart"><i></i>Chart</a>
     <a href="#psych"><i></i>Psych</a>
+    <a href="#couplet"><i></i>Couplet</a>
     <a href="#rules"><i></i>Rules</a>
     <a href="#signoff"><i></i>Sign-off</a>
   </nav>
@@ -179,9 +180,26 @@
     <ol class="pt-psych-grid" data-psych-grid aria-label="Looks"></ol>
   </section>
 
-  <section id="rules" class="pt-sec">
+  <section id="couplet" class="pt-sec">
     <header class="pt-head">
       <span class="pt-num">10</span>
+      <h2>The couplet</h2>
+      <p>It's not X. It's Y. Strategy says the first line, a row of pegs strikes through X on the beat, then the answer lands under it. Every word is at full the moment it is sung, the answer stays dark until then, and the light only rises, so the moment never&nbsp;flashes.</p>
+    </header>
+    <div class="pt-toolbar">
+      <div class="pt-seg" role="group" aria-label="Board" data-couplet-board>
+        <button type="button" data-board="stage" aria-pressed="true">All Hands stage</button>
+        <button type="button" data-board="film" aria-pressed="false">9:16 film</button>
+      </div>
+      <span class="pt-meta" data-couplet-meta></span>
+    </div>
+    <div class="pt-frame pt-couplet-stage" data-live="couplet"></div>
+    <ol class="pt-couplet-list" data-couplet-list aria-label="Couplets"></ol>
+  </section>
+
+  <section id="rules" class="pt-sec">
+    <header class="pt-head">
+      <span class="pt-num">11</span>
       <h2>House rules</h2>
       <p>What every frame obeys, live or exported. The checks in <code>scripts/</code> fail the build if one&nbsp;breaks.</p>
     </header>
@@ -193,13 +211,14 @@
       <li><p><b>One accent word.</b> A hook gets one word in signal yellow. Never two.</p></li>
       <li><p><b>Never green.</b> Green is Synergy's face.</p></li>
       <li><p><b>Words win.</b> Psych imagery goes dark a peg around lit type, dims near it, and never relights a letter.</p></li>
+      <li><p><b>The answer waits.</b> In a couplet, Y stays dark until it is sung, and X is struck on the beat before it.</p></li>
       <li><p><b>Pegs leave their sockets on purpose.</b> Detune, rain and the tape stop. Nothing else moves them.</p></li>
     </ol>
   </section>
 
   <section id="signoff" class="pt-sec pt-signoff">
     <header class="pt-head">
-      <span class="pt-num">11</span>
+      <span class="pt-num">12</span>
       <h2>Sign-off</h2>
       <p>Tick each part as you approve it. Ticks stay in this browser; the signature is the one that&nbsp;counts.</p>
     </header>
@@ -213,6 +232,7 @@
       <li><label><input type="checkbox" value="phrases"/><span>The 57</span><em>Every phrase, every format</em></label></li>
       <li><label><input type="checkbox" value="chart"/><span>Chart</span><em>Output by department</em></label></li>
       <li><label><input type="checkbox" value="psych"/><span>Psych</span><em>Eight looks, words win</em></label></li>
+      <li><label><input type="checkbox" value="couplet"/><span>Couplet</span><em>Struck on the beat, the answer waits</em></label></li>
     </ul>
     <div class="pt-sign">
       <div><span class="pt-line"></span><span class="pt-meta">Aaron Phelps · Creative direction</span></div>

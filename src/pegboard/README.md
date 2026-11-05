@@ -12,7 +12,7 @@ share.
 | `font.js` | Compiles a face into masks, stroke order and kerning. Also normalizes text and wraps and fits it to a format. |
 | `renderer-gl.js`, `renderer-2d.js` | Draw a board. Same contract (see `board.js`); WebGL2 first, Canvas2D as the fallback. |
 | `eq.js` | Frequency bands, the level mapping, a deterministic follower (instant rise, timed fall, peak hold) and the offline `eqTrack`. |
-| `choreo.js` | Turns a song plan into cues; `paint(board, t)` lights the board for any moment. It is a pure function of time, so preview, scrubbing and export match. |
+| `choreo.js` | Turns a song plan into cues (Synergy's lines, the lady, the band's couplets, refrains and exchanges); `paint(board, t)` lights the board for any moment. It is a pure function of time, so preview, scrubbing and export match. |
 | `governor.js` | Flash limiting (Harding-style) on predicted frame luminance. |
 | `renderer.js` | The factory: WebGL2 first, Canvas2D when it fails, and a swap to 2D on context loss (`onSwap` hands over the new canvas). `QUALITY_STEPS` is the phone step-down order. |
 | `stage.js` | One board on a page: sizing, the song's screens, the department chart, the governor track, one draw per frame. `/allhands/` uses it; export will too. |
@@ -41,6 +41,53 @@ its sounding letters hot.
 rungs "LET'S BUILD.", "FULL STOP.", the board's own titles) shows its whole phrase from its first
 frame as a dim read-ahead ghost at `READ_AHEAD` (.1), as Synergy's lines do, and lights each letter
 as it types; it never reads "L", "LE".
+
+**The band on the board (`choreo.js bandScreens`, `bandOf`):** Synergy sings the post; the band (Strategy,
+Synthia, the lady's recordings) sings the lexicon, and `buildScreens` gives its parts screens of their own,
+so /allhands/'s stage and the films (which paint the song's screens) both show them. It reads the engine's
+events (`plan.band`: `{role, part, voice, display, words:[{text, display, start, end}], start, end}`, song
+seconds; `drop.js`, `band.js`) or the contract's lists (`plan.couplets [{x, y}]`, `plan.refrains [part]`,
+`plan.exchanges [{call, response}]`, a part being `{text, display?, voice, at, end, words:[{text, start, end}]}`
+in seconds; parts with no word times are spread over `at` to `end`).
+
+| Screen | What it shows |
+|---|---|
+| `couplet` | **The couplet moment.** "IT'S NOT X." lights word by word as Strategy sings it (the whole line up from the screen's first frame as the read-ahead ghost), then on the first beat after it (else the 8th, else the 16th) that leaves the struck X up for `STRIKE.min` (0.25 s) before Y, a row of pegs strikes through X (`fx.strike {at, words, draw, tone}`: signal, k pegs tall at the middle of the caps, a peg past each end, drawn left to right over one 16th, never through "IT'S NOT" or her template's "ABOUT"; `strikeAt`, `struckWords`, `strikeRows`), then "IT'S Y." lands under it as it is sung. Y is dark until its first word: the joke never lands early. X and Y keep lines of their own (`font.js LINE_BREAK`); they share a page wherever the board's rows hold both (`screen.fill`, `stage.js linesFor`), else the page turns to Y when Y is sung, after the strike. Synthia's pickup "IT'S" and the lady's word make one Y. Where another screen takes the board between X and Y (Synergy's next line, her punct, a rung or a stab: the engine puts Y in the next gap), the strike moves up to the latest 16th that still holds the struck X for `STRIKE.min` before the board turns, and Y gets a screen of its own when it is sung (`buildScreens`, after the merge; on the 183 Drop Edition plans of the corpus, real eSpeak durations, 28 strikes and 20 Ys were never on the board before this). |
+| `couplet` (`over`) | The couplet drop's X over the build's answer bars (`part:'dropTag'`): sung twice, it lights twice and is struck after the second; her ladder steps back under it (`screen.under`: the rung stays in the list on its own time, `activeScreen` shows it once the line lets go). Its Y is the impact: her impact screen (the engine puts the couplet's tag and impact in `plan.lady`). |
+| `exchange` | The call, then the answer under it, the same two-part screen without the strike. |
+| `refrain`, `signoff` | One phrase on one page (k 1); a refrain's repeat holds the board and keeps its words lit (`screen.relit`), re-popping them as they come round. |
+| `stab` | A verdict, k 2 where its word fits. |
+
+Every band word is fully lit (1) from its onset to the screen's end and pops in size only, never in light:
+a band screen's light only rises until it ends, so it makes no flash of its own at any size of board.
+Voices wear their tone: Strategy blue, Synthia and the lady white (`BAND_VOICES`). Where the board's pitch
+reads PEG-3 (`TAG_MIN_PITCH`, 12 px; `paint(..., {pitch})`), a part carries its role tag, STRATEGY or
+SYNTHIA (at `TAG_LIGHT` .7, over the first part's first line or under the second's last, only in the room the
+screen was centred in, on pegs nothing else lit). The lady never has one.
+
+**The build's dim and the stutters:** the build still dims the board (the sockets, the chart, psych
+imagery: `board.ambient`), but a screen that holds (`screen.hold`: her ladder, Synergy's stammer, the band)
+keeps its words at full: `paint` leaves the dim out of its exposure and gives it to the sockets and
+`board.ambient` instead (`boardState(...).build`). The fast rungs rock their letters in their sockets
+(`fx.rock`, `ROCK` .4 pitch, up, home, down) instead of moving them a whole row: the row shift carried the
+word's light across the board's middle and flashed a quarter on the stage's own boards (102 x 45, 116 x 45),
+where the governor cut the climax to a fifth. Synergy's answers in the build keep the dim.
+
+**The river (`plan.form 'wander'`, Offsite):** the board is mostly texture. `buildScreens` gives type only to
+its clear phrases: a line, an event or a band part marked `clear`, and the band parts that are not the
+stream's own (`clear:false`, role `loop`, `layer` or `stream`), two distinct phrases at most
+(`RIVER_PHRASES`). `psych.js riverTrack(plan)` / `riverAt(river, t)` give the texture: one look for the
+song (`RIVER_LOOKS`, by the track's hash), its light the loop's layers as they ramp in and out
+(`plan.layers [{from, to, rampIn, rampOut, gain}]`, seconds or steps; a ramp two bars when the plan gives
+none; `layerGain`), lifted by `plan.swells`, slowed to half speed in `plan.slow` (the beat is integrated, so
+the motion slows, never jumps). The stage paints it after the type (`paintPsych`: the words win).
+
+**Layout:** `font.js LINE_BREAK` (U+2028) is a hard break: `normalize` keeps one between two words, and no
+line of `layoutText` or `fit` crosses it (a page that ends on one is preferred). Nothing else in the site's
+text carries one. `stage.js linesFor(screen, font, k, room)` is the lines a screen may take (a two-part screen
+as many as the room holds); the video's `board-layer.js` uses it too. `stage.js stagePitch`: a narrow stage
+keeps 96 columns (a phone: 97 of 4 px), so a long word sets (at 55 columns of 7 px, "DOUBLE-BOOKED." fit in
+neither face and the screen stayed dark).
 
 **The choke's black:** the board goes true black on the first frame after her tag stops sounding plus
 `CHOKE_TAIL` (30 ms): the choke cuts her hard, and a codec's own floor outlasts a hard cut (Opus
@@ -88,7 +135,8 @@ the music moves it). The rules, all checked:
 - `npm run check:pixel-type`: faces, kerning, normalize, and every fit (lady phrases, host lines, 60 fixture posts × 3 formats at P ≥ 9).
 - `npm run check:eq`: bands, follower, live vs export correlation, score accents.
 - `npm run check:pegboard`: screens, onsets within a frame, determinism, true black, ignition, governed flashes; every fragment screen (all four tracks, both posts, every ladder the casting can give her, the Sound check's stammer) shows its whole words at full on every painted moment, nothing dim, the accented letters equal to the sounding part, peg for peg, on one page, re-popping on every retrigger, and needing no governing; every typewriter phrase of every track (her tag, her whole-phrase rungs, "FULL STOP.", the titles) whole on its first frame, the letters still to type at the read-ahead ghost; the choke dark from her tag's end plus `CHOKE_TAIL`.
+- `npm run check:pegboard` also checks the band: on the engine's plans (the sample and 15 fixtures cast by the post, and the sample on every track) and the contract's lists, at 120 x 53, the stage's 116 x 45, the phone's 97 x 135 and the 9:16 home's 150 x 48: every band part on the board; every couplet struck after X is sung, on the grid, before Y, X whole and at full under a signal strike while Y is dark, then Y at full under it; every band word fully lit from its onset; a band screen's light only rising; no band frame governed. Also `LINE_BREAK` (the 71 couplets at five widths, X and Y never on one line), the role tags (never the lady, none under pitch 12), the build's dim (every stutter and band word at full on its dimmed frames, the sockets dim, the fast rungs rocking, no stutter governed at 120 x 53, 102 x 45 and 116 x 45) and the river (its clear phrases only, the texture following its layers, slowed in `plan.slow`, no governing).
 - `npm run check:pegboard` also runs every psych look on all of Offsite at two board sizes: deterministic, palette only and never green, at most 2 flashes a second ungoverned with no governing, breathing (voices, claps, beat), dark at exposure 0; and under Offsite's words: every type peg exactly as choreo lit it, a dark moat, dimmer near the words, no added flash.
 
-**Specimen:** `/pixel-type/` (noindex) is the proof sheet for sign-off. Its Psych section (09) shows every look live with its caption, on a stage with "LET'S BUILD." over it to prove the words win; the footage look reads Kevin's poster through the grid. It runs on these modules, so what it shows is what ships. Add `?renderer=2d` to see the fallback.
+**Specimen:** `/pixel-type/` (noindex) is the proof sheet for sign-off. Its Couplet section (10) cycles three couplets (Strategy and Synthia twice, then the lady's word) on the All Hands stage or the 9:16 film's home; `window.__pixelType.couplet(i, seconds)` holds a moment for review. Its Psych section (09) shows every look live with its caption, on a stage with "LET'S BUILD." over it to prove the words win; the footage look reads Kevin's poster through the grid. It runs on these modules, so what it shows is what ships. Add `?renderer=2d` to see the fallback.
 
