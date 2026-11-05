@@ -252,8 +252,15 @@ function playLady(graph, song, e, t) {
     s.detune.setValueAtTime(0, t); s.detune.linearRampToValueAtTime(e.bend.cents, t + length * e.bend.at); s.detune.linearRampToValueAtTime(0, t + length * e.bend.back);
   }
   if (e.lift) { s.detune.setValueAtTime(0, t + length * e.lift.from); s.detune.linearRampToValueAtTime(e.lift.cents, t + length); }
-  env.gain.setValueAtTime(0, t); env.gain.linearRampToValueAtTime(1, t + .003);
-  env.gain.setValueAtTime(1, t + Math.max(.004, length - .015)); env.gain.linearRampToValueAtTime(0, t + length);
+  // A couplet's impact word (unmask.boost, dB): its first consonant up, so "v" and "d" speak over what
+  // is left of the band, then the word at its level from its vowel on.
+  const u0 = e.role === 'impact' ? e.unmask : null, lift = u0?.boost ? dB(u0.boost) : 1;
+  env.gain.setValueAtTime(0, t); env.gain.linearRampToValueAtTime(lift, t + .003);
+  if (lift !== 1) { env.gain.setValueAtTime(lift, t + u0.lead); env.gain.linearRampToValueAtTime(1, t + u0.lead + .03); }
+  // A band part's last word lifts into its release (band.js RELEASE_LIFT: the final "t" of "double-booked").
+  const rel = e.release && e.release.at < length - .04 ? e.release : null;
+  if (rel) { env.gain.setValueAtTime(1, t + rel.at); env.gain.linearRampToValueAtTime(dB(rel.gain), t + rel.at + .02); }
+  env.gain.setValueAtTime(rel ? dB(rel.gain) : 1, t + Math.max(.004, length - .015)); env.gain.linearRampToValueAtTime(0, t + length);
   s.connect(env);
   const dryLevel = gain * (1 - (e.blend || 0) * .5);
   const dryOut = I.amp(ctx, dryLevel), nodes = [s, env, dryOut];
@@ -284,7 +291,8 @@ function playLady(graph, song, e, t) {
       const g = graph.stems[name].voiced.gain;
       if (u?.hold !== undefined) { const h = t + u.lead + (u.holdFor ?? .01); g.setValueAtTime(u.hold, t); g.setValueAtTime(u.hold, h); g.linearRampToValueAtTime(depth, h + .03); }
       else { g.setValueAtTime(1, t + .015); g.linearRampToValueAtTime(depth, t + .03); }
-      g.setValueAtTime(depth, t + length); g.linearRampToValueAtTime(1, t + length + .16);
+      const back = t + length + (u?.tail ?? 0);
+      g.setValueAtTime(depth, back); g.linearRampToValueAtTime(1, back + .16);
     }
   }
   const deep = song.lady.deep.get(e.index);

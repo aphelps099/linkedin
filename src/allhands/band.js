@@ -78,9 +78,20 @@ export function partOf(part) {
   if (part.voice !== 'strategy' && part.voice !== 'synthia') return null;
   const take = TAKE_TABLE[`${part.voice}/${part.id}`];
   if (!take) return null;
-  return {voice:part.voice, file:take.file, key:take.key, from:take.start, to:take.end, onset:take.onset ?? take.start, words:take.words, gainDb:take.gainDb,
-    entry:VOICE_TABLE[take.file], amount:take.amount, text:part.text ?? take.text, display:part.display, cut:take.cut};
+  // A part that ends where its take ends plays on through the last word's release (RELEASE): the aligner
+  // ends a word at its closure, and Whisper heard "double book", "Align", "a lie" and "Stakeholder" without it.
+  const entry = VOICE_TABLE[take.file], last = !take.cut || take.cut.words[1] === entry.words.length - 1;
+  const to = last ? Math.max(take.end, Math.min(entry.duration - .005, take.end + RELEASE)) : take.end;
+  return {voice:part.voice, file:take.file, key:take.key, from:take.start, to, end:take.end, onset:take.onset ?? take.start, words:take.words, gainDb:take.gainDb,
+    entry, amount:take.amount, text:part.text ?? take.text, display:part.display, cut:take.cut};
 }
+// Seconds of a take played past its last word's measured end: the release of a final "t", "d", "th" or "s".
+// Kokoro and Flite say it softly (about 27 dB under the vowel), so from `before` seconds before that end it is
+// lifted by `gain` dB (engine.js playLady: the event's `release`).
+export const RELEASE = .2, RELEASE_LIFT = Object.freeze({before:.06, gain:8});
+// A single word (a stab, an answer, a call: "Alignment", "Aligned.", "Bandwidth?"): lighter pixels and a
+// little more level than a line, so it reads in the mix (Whisper heard "Alignment" and "Aligned." 0 of 3).
+export const SINGLE = Object.freeze({amount:.3, gain:2});
 
 // Notes for a pixel take: one per syllable nucleus (melody.js lineFor), a seeded
 // wandering line in the voice's register, in the track's pentatonic, each note
@@ -181,7 +192,9 @@ export function eventOf(src, {role, part, anchor, rate = 1, gain = 0, pan = 0, t
   const length = (src.to - src.from) / rate;
   const e = {role, part, voice:src.voice, text:src.text, display:src.display, file:src.file, from:src.from, to:src.to, at, rate, gate:length + .02, gain:src.gainDb + BAND_GAIN + (VOICE_GAIN[src.voice] ?? 0) + gain, pan};
   if (src.key) {
-    e.key = src.key; e.amount = src.amount;
+    const single = src.words.length === 1 && role !== 'impact' && role !== 'tag';
+    e.key = src.key; e.amount = single ? Math.min(src.amount ?? 1, SINGLE.amount) : src.amount;
+    if (single) e.gain += SINGLE.gain;
     e.notes = pixelLine(src, tr, {seed, end, from, last, timeAt, barOf});
     e.midi = e.notes.at(-1).midi;
   } else {
@@ -190,6 +203,8 @@ export function eventOf(src, {role, part, anchor, rate = 1, gain = 0, pan = 0, t
     if (tune.midi !== null) e.midi = tune.midi;
   }
   const r = e.rate;
+  // The last word's release, lifted (RELEASE_LIFT), where the part plays on past the word's measured end.
+  if (src.key && src.end !== undefined && src.to > src.end + 1e-6) e.release = {at:Math.max(0, (src.end - RELEASE_LIFT.before - e.from) / r), gain:RELEASE_LIFT.gain};
   e.words = src.words.map((w, i) => ({text:w.text, display:(e.display ?? '').split(' ')[i] ?? w.text.toUpperCase(), start:t + (Math.max(w.start, e.from) - e.from) / r, end:t + (Math.min(w.end, e.to) - e.from) / r, onset:t + ((w.onset ?? w.start) - e.from) / r}));
   e.start = t; e.end = t + ladyLength(e);
   return Object.assign(e, extra);

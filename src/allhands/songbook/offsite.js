@@ -572,9 +572,9 @@ const band = {
 // couplet's "It's Y." at the swell, the refrain in the pool), and Synergy sings his
 // hook once, early, washed. It ends on the fullest texture dissolving, a long fade.
 const RIVER_SECTIONS = [
-  {name:'Source', from:0, to:2},       // her syllables alone, the room waking up
-  {name:'Stream', from:2, to:10},      // the pattern repeats and thickens; his hook, once
-  {name:'Current', from:10, to:15},    // the smear, his word, "It's not X." looped in
+  {name:'Source', from:0, to:2},       // her syllables alone over a soft pulse, the room waking up
+  {name:'Stream', from:2, to:10},      // the pattern repeats and thickens (copies, the smear); the drone; his hook, once
+  {name:'Current', from:10, to:15},    // lush by bar 12: then Pat, the tambourine, the pluck, his word, "It's not X." 
   {name:'Swell', from:15, to:21},      // the fullest: the mallet, the tambourine up, "It's Y." rises
   {name:'Pool', from:21, to:24},       // the flow slows under itself; the refrain rises
   {name:'Delta', from:24, to:27},      // the fullest texture dissolving, a long fade
@@ -588,38 +588,51 @@ const ease = (keys, x) => {
   for (let i = 1; i < keys.length; i++) if (x <= keys[i][0]) { const [a, u] = keys[i - 1], [b, v] = keys[i], k = (1 - Math.cos(Math.PI * (x - a) / (b - a))) / 2; return u + (v - u) * k; }
   return keys.at(-1)[1];
 };
-const ENERGY_KEYS = [[0, .64], [2, .62], [4, .6], [10, .62], [14, .68], [16, .74], [18, .78], [21, .76], [22, .66], [23.5, .7], [25, .74], [27, 0]];
+const ENERGY_KEYS = [[0, .7], [2, .69], [4, .67], [10, .64], [14, .68], [16, .74], [18, .78], [21, .76], [22, .66], [23.5, .7], [25, .74], [27, 0]];
 const WINDOW_KEYS = [[0, 62], [8, 64], [16, 69], [22, 66], [27, 62]];   // the pitch window of the colours: D4, up to A4 at the swell, home
 // The chart's layers (bars). Every ramp is two to eight bars; nothing arrives or leaves on a bar line.
+// The bloom (Aaron, Nov 5: it opened as a groove, every layer in within six bars): her pattern first,
+// over the soft pulse of the stomps (the loop's other hands join it bar by bar, RIVER_LOOP.from); it
+// repeats and thickens (her copies from bar 3, the smear from bar 6) under the drone from bar 7, and is
+// lush around bar 12; only then do Pat, the tambourine (in the background, a little later), the pluck,
+// his word, "It's not X.", Kevin, the felt piano and the mallet ramp in, one or two a bar.
 const LAYERS = [
-  {id:'her', kind:'texture', source:'her', stem:'lady', what:'her syllables on a two-bar pattern, the first sound and the last', in:[0, 2], out:[23, 27], level:.8, open:6500, wash:[[0, .15], [14, .35], [24, .6], [27, .8]], delay:[[0, .12], [10, .2]], pans:[[0, -.15], [12, .15], [24, -.1]]},
-  {id:'loop', kind:'loop', stem:'drums', what:'the loop: soft stomps, a room clapping on two and four, floor toms after the beats, the printer, typing', in:[1, 3], out:[25, 27], level:1.4, open:16000, shut:1800, hp:70, swell:[[10, 1.05], [16, 1.15], [21, 1.15], [22, 1], [24, 1.1]]},
-  {id:'drone', kind:'drone', stem:'keys', what:'the pump organ and the wordless choir, one chord at a time', in:[1, 4], out:[24, 27], level:.75, open:4200, shut:300, filter:[[16, 5200], [21, 3200], [24, 4500]]},
-  {id:'tambourine', kind:'tambourine', stem:'drums', what:'the tambourine, in the background, up a little where the texture swells', in:[2, 5], out:[24, 27], level:2.2, open:16000, shut:3000, swell:[[15, 1], [17, 1.45], [21, 1.45], [22, 1], [24, 1.3]]},
-  {id:'bass', kind:'bass', stem:'bass', what:'Pat humming the root on the offbeats', in:[3, 6], out:[24, 27], level:.36, open:2200, shut:120},
-  {id:'plucks', kind:'colour', stem:'guitar', what:'a plucked string (Karplus-Strong), an arpeggio on the drifting pitch window', in:[4, 8], out:[22, 26], level:.28, open:7000, wash:[[4, .2], [16, .35]], delay:[[4, .25]], pans:[[4, -.2], [14, .2], [22, 0]]},
-  {id:'her-copies', kind:'texture', source:'her', stem:'lady', what:'her syllables again: copies a dotted 8th on, pitch steps, both words', in:[6, 10], out:[22, 26], level:.6, open:7000, wash:[[6, .3], [18, .5]], delay:[[6, .25]], pans:[[6, .2], [16, -.2]]},
-  {id:'his', kind:'texture', source:'his', stem:'lady', hp:170, what:"Strategy's word, low, looped", in:[12, 15], out:[21, 25], level:.75, open:4500, wash:[[12, .3]], delay:[[12, .2]], pans:[[12, -.3], [20, .1]]},
-  {id:'guitar', kind:'guitar', stem:'guitar', what:"Kevin's clean figure on the offbeats", in:[9, 12], out:[19, 22], level:.65, open:5000, delay:[[9, .3]]},
-  {id:'smear', kind:'texture', source:'her', stem:'lady', what:'the granular smear: her syllables in grains, heavily pixelated, wide', in:[8, 12], out:[24, 27], level:.7, open:9000, wash:[[8, .4], [22, .6], [27, .9]], delay:[[8, .3]], swell:[[18, 1.1], [24, 1.3]]},
-  {id:'x', kind:'texture', source:'x', stem:'lady', hp:170, what:'"It\'s not X." in pieces, looped into the texture before Y rises', in:[13, 16], out:[17, 20], level:.68, open:3500, wash:[[13, .35]], delay:[[13, .3]], pans:[[13, .25], [17, -.25]]},
-  {id:'felt', kind:'colour', stem:'keys', hp:200, what:'a felt piano on the chord, twice a bar', in:[12, 16], out:[23, 26], level:.27, open:5000, wash:[[12, .3]]},
+  {id:'her', kind:'texture', source:'her', stem:'lady', what:'her syllables on a two-bar pattern, the first sound and the last', in:[0, 2], out:[23, 27], level:.8, open:6500, wash:[[0, .3], [12, .45], [24, .6], [27, .8]], delay:[[0, .18], [10, .24]], pans:[[0, -.15], [12, .15], [24, -.1]]},
+  {id:'loop', kind:'loop', stem:'drums', what:'the loop: soft stomps from the first bar (the pulse), then the printer, a room clapping on two and four, floor toms after the beats, typing', in:[1, 4], out:[25, 27], level:1.4, open:16000, shut:1800, hp:70, swell:[[8, .9], [12, 1.05], [16, 1.15], [21, 1.15], [22, 1], [24, 1.1]]},
+  {id:'her-copies', kind:'texture', source:'her', stem:'lady', what:'her syllables again: copies a dotted 8th on, pitch steps, both words', in:[3, 7], out:[22, 26], level:.6, open:7000, wash:[[3, .4], [18, .55]], delay:[[3, .3]], pans:[[3, .2], [16, -.2]]},
+  {id:'smear', kind:'texture', source:'her', stem:'lady', what:'the granular smear: her syllables in grains, heavily pixelated, wide', in:[6, 10], out:[24, 27], level:.7, open:9000, wash:[[6, .5], [22, .65], [27, .9]], delay:[[6, .3]], swell:[[18, 1.1], [24, 1.3]]},
+  {id:'drone', kind:'drone', stem:'keys', what:'the pump organ and the wordless choir, one chord at a time', in:[7, 11], out:[24, 27], level:.75, open:4200, shut:300, filter:[[16, 5200], [21, 3200], [24, 4500]]},
+  {id:'bass', kind:'bass', stem:'bass', what:'Pat humming the root on the offbeats', in:[10, 13], out:[24, 27], level:.36, open:2200, shut:120},
+  {id:'tambourine', kind:'tambourine', stem:'drums', what:'the tambourine, in the background, a little later, up a little where the texture swells', in:[11, 14], out:[24, 27], level:2.2, open:16000, shut:3000, swell:[[15, 1], [17, 1.45], [21, 1.45], [22, 1], [24, 1.3]]},
+  {id:'plucks', kind:'colour', stem:'guitar', what:'a plucked string (Karplus-Strong), an arpeggio on the drifting pitch window', in:[12, 15], out:[22, 26], level:.28, open:7000, wash:[[12, .25], [16, .35]], delay:[[12, .25]], pans:[[12, -.2], [16, .2], [22, 0]]},
+  {id:'his', kind:'texture', source:'his', stem:'lady', hp:170, what:"Strategy's word in grains, low, looped", in:[13, 16], out:[21, 25], level:.75, open:4500, wash:[[13, .45]], delay:[[13, .25]], pans:[[13, -.3], [20, .1]]},
+  {id:'x', kind:'texture', source:'x', stem:'lady', hp:170, what:'"It\'s not X." in pieces, looped into the texture before Y rises', in:[13, 16], out:[17, 20], level:.68, open:3500, wash:[[13, .45]], delay:[[13, .3]], pans:[[13, .25], [17, -.25]]},
+  {id:'guitar', kind:'guitar', stem:'guitar', what:"Kevin's clean figure on the offbeats", in:[14, 16], out:[20, 23], level:.65, open:5000, delay:[[14, .3]]},
+  {id:'felt', kind:'colour', stem:'keys', hp:200, what:'a felt piano on the chord, twice a bar', in:[14, 17], out:[23, 26], level:.27, open:5000, wash:[[14, .3]]},
   {id:'mallet', kind:'colour', stem:'keys', what:'a kalimba-like mallet, a counter-line over the window', in:[15, 18], out:[24, 27], level:.19, open:9000, wash:[[15, .3], [24, .6]], delay:[[15, .35]]},
 ];
-// Two-bar texture patterns (16ths 0-31): `deg` pentatonic steps from the cut's own pitch.
-const RIVER_ECHO = {amount:.6, smear:2, smearSteps:[0, 2], seed:5, hits:[{at:4, deg:0}, {at:12, deg:2, pan:.3}, {at:20, deg:1, pan:-.3}, {at:28, deg:-1}]};
+// Two-bar texture patterns (16ths 0-31): `deg` pentatonic steps from the cut's own pitch; `len` 16ths
+// of the cut from `pos` of the way into it. Grains, not words: no hit plays a whole word (the old len-2
+// hits did, and Whisper heard fixture 31's "drop, drop, drop" through the stream), each half a 16th
+// (about 70 ms) from inside the word, past its onset, a pitch step from the last, a few smeared grains
+// round it, into the diffusion.
+// The words are heard only in the clear phrases.
+const RIVER_ECHO = {amount:.65, smear:3, smearSteps:[0, 2, -2], seed:5, hits:[{at:4, deg:0, len:.5, pos:.35}, {at:12, deg:2, pan:.3, len:.5, pos:.55}, {at:20, deg:1, pan:-.3, len:.5, pos:.3}, {at:28, deg:-1, len:.5, pos:.45}]};
 const TEXTURES = {
-  her:{amount:.5, seed:1, hits:[[2, 0], [6, 2], [10, 1], [14, 3], [18, 0], [22, 2], [26, 4], [30, 1]].map(([at, deg]) => ({at, deg, len:2}))},
-  'her-copies':{amount:.65, seed:2, hits:[[0, 2, 1, -.5], [3, 4, 0, .5], [8, 1, 1, -.3], [11, 3, 0, .4], [16, 2, 1, .5], [19, 5, 0, -.5], [24, 1, 1, .3], [27, 3, 0, -.4]].map(([at, deg, cut, pan]) => ({at, deg, cut, pan, len:2}))},
-  his:{amount:.6, seed:3, hits:[{at:7, deg:0, len:4}, {at:14, deg:-1, len:3}, {at:23, deg:1, len:4}, {at:30, deg:0, len:2}]},
-  smear:{amount:.85, smear:5, smearSteps:[-2, 0, 2, 4], seed:4, hits:Array.from({length:16}, (_, i) => ({at:i * 2 + 1, deg:[0, 2, 4, 1, 3, 5, 2, 0][i % 8], cut:i % 2, len:1, gain:.55, pan:i % 2 ? .6 : -.6}))},
-  x:{amount:.55, seed:6, hits:[{at:0, cut:0, len:2}, {at:2, cut:1, len:3}, {at:6, cut:9, len:6}, {at:16, cut:0, len:2, deg:1}, {at:18, cut:1, len:3, deg:1}, {at:22, cut:9, len:6, deg:-1}]},
+  her:{amount:.65, smear:2, smearSteps:[0, 2, -2], seed:1, hits:[[2, 0, .3], [6, 2, .45], [10, 1, .35], [14, 3, .55], [18, 0, .4], [22, 2, .5], [26, 4, .3], [30, 1, .6]].map(([at, deg, pos]) => ({at, deg, pos, len:.5}))},
+  'her-copies':{amount:.7, smear:2, smearSteps:[0, 2, 4], seed:2, hits:[[0, 2, 1, -.5, .35], [3, 4, 0, .5, .5], [8, 1, 1, -.3, .3], [11, 3, 0, .4, .45], [16, 2, 1, .5, .6], [19, 5, 0, -.5, .3], [24, 1, 1, .3, .5], [27, 3, 0, -.4, .4]].map(([at, deg, cut, pan, pos]) => ({at, deg, cut, pan, pos, len:.5}))},
+  his:{amount:.65, smear:2, smearSteps:[0, -2, 2], seed:3, hits:[{at:7, deg:0, len:.5, pos:.35}, {at:14, deg:-1, len:.5, pos:.55}, {at:23, deg:1, len:.5, pos:.3}, {at:30, deg:0, len:.5, pos:.6}]},
+  smear:{amount:.85, smear:5, smearSteps:[-2, 0, 2, 4], seed:4, hits:Array.from({length:16}, (_, i) => ({at:i * 2 + 1, deg:[0, 2, 4, 1, 3, 5, 2, 0][i % 8], cut:i % 2, len:.5, pos:[.35, .55, .45, .6][i % 4], gain:.55, pan:i % 2 ? .6 : -.6}))},
+  x:{amount:.6, smear:2, smearSteps:[0, 2], seed:6, hits:[{at:0, cut:0, len:.5, pos:.3}, {at:2, cut:1, len:.5, pos:.4}, {at:6, cut:9, len:.5, pos:.35}, {at:9, cut:9, len:.5, pos:.6, deg:2}, {at:16, cut:0, len:.5, pos:.3, deg:1}, {at:18, cut:1, len:.5, pos:.5, deg:1}, {at:22, cut:9, len:.5, pos:.3, deg:-1}, {at:25, cut:9, len:.5, pos:.55, deg:1}]},
   'couplet-y-echo':RIVER_ECHO,
   'refrain-echo':RIVER_ECHO,
 };
 const PLUCKS = [0, null, 2, 4, null, 3, 1, null, 2, null, 4, 5, null, 3, 2, null, 1, null, 3, 5, null, 4, 2, null, 3, null, 5, 6, null, 4, 2, null];
 const MALLET = Array.from({length:64}, (_, i) => ({3:4, 7:2, 11:3, 14:1, 19:5, 27:2, 35:4, 39:3, 46:2, 55:1, 59:0})[i] ?? null);
 const RIVER_LOOP = {
+  // The bar each part of the loop starts to ramp in from (over two bars): the stomps are the pulse from
+  // the start, the printer, the room's claps, the toms and the typing join as the texture thickens.
+  from:{stomps:1, shaker:5, claps:8, toms:10, type:12},
   stomps:[[0, .22], [4, .26], [8, .22], [12, .26]], stomp:STOMP,
   claps:[[4, .72, 0], [12, .72, 0], [2, .22, 2], [10, .2, 2]],
   toms:TOMS.map(([at, v, midi, decay]) => [at, v * .4, midi, decay * .8]),

@@ -1,0 +1,640 @@
+{
+ "version": 1,
+ "about": "Whisper small.en (int8, beam 5) on each couplet drop's impact word alone (50 ms before it to 150 ms after it ends), cut from the full mix of the drop rendered through /allhands/ (each host post's cast with only the drop recast, the bars around the impact). ok: heard exactly in every host's render. casting.js casts a couplet as the drop on a track only in a voice that is ok there.",
+ "engine": {
+  "gain": 4,
+  "amount": 0.15,
+  "boost": 6,
+  "hold": 0.03,
+  "holdFor": 0.06,
+  "dip": 0.12,
+  "tail": 0.06,
+  "all": true,
+  "dry": true,
+  "after": 0.2,
+  "echoGap": 0.15,
+  "deep": 0.42,
+  "hookAfter": 8
+ },
+ "hosts": [
+  "sample",
+  "f16"
+ ],
+ "tracks": {
+  "circle-back": {
+   "agenda-vibe": {
+    "strategy": {
+     "heard": {
+      "sample": "Bye",
+      "f16": "Bye"
+     },
+     "ok": false
+    },
+    "synthia": {
+     "heard": {
+      "sample": "Bye",
+      "f16": "Bye"
+     },
+     "ok": false
+    }
+   },
+   "avoidance-camera-off": {
+    "strategy": {
+     "heard": {
+      "sample": "Oh",
+      "f16": "Oh"
+     },
+     "ok": false
+    }
+   },
+   "burnout-bandwidth": {
+    "strategy": {
+     "heard": {
+      "sample": "BANDWIG",
+      "f16": "Band with me."
+     },
+     "ok": false
+    },
+    "synthia": {
+     "heard": {
+      "sample": "and",
+      "f16": "and"
+     },
+     "ok": false
+    }
+   },
+   "double-booked": {
+    "strategy": {
+     "heard": {
+      "sample": "The man",
+      "f16": "The man"
+     },
+     "ok": false
+    },
+    "synthia": {
+     "heard": {
+      "sample": "Amen.",
+      "f16": "Amen."
+     },
+     "ok": false
+    }
+   },
+   "mandatory-retreat": {
+    "synthia": {
+     "heard": {
+      "sample": "Marry three",
+      "f16": "Murray Street"
+     },
+     "ok": false
+    }
+   },
+   "new-title-growth": {
+    "strategy": {
+     "heard": {
+      "sample": "Grow",
+      "f16": "Grow"
+     },
+     "ok": false
+    },
+    "synthia": {
+     "heard": {
+      "sample": "No",
+      "f16": "No"
+     },
+     "ok": false
+    }
+   },
+   "no-sleep-edge": {
+    "synthia": {
+     "heard": {
+      "sample": "Yes",
+      "f16": "Yes"
+     },
+     "ok": false
+    }
+   },
+   "one-customer": {
+    "strategy": {
+     "heard": {
+      "sample": "Slaglin'",
+      "f16": "Slaglin'"
+     },
+     "ok": false
+    },
+    "synthia": {
+     "heard": {
+      "sample": "Segment",
+      "f16": "Segment"
+     },
+     "ok": true
+    }
+   },
+   "replacement": {
+    "synthia": {
+     "heard": {
+      "sample": "teammate",
+      "f16": "teammate"
+     },
+     "ok": true
+    }
+   },
+   "u-turn-pivot": {
+    "lady": {
+     "heard": {
+      "sample": "Pivot",
+      "f16": "Pivot"
+     },
+     "ok": true
+    }
+   },
+   "vanity-north-star": {
+    "strategy": {
+     "heard": {
+      "sample": "Star",
+      "f16": "Star"
+     },
+     "ok": true
+    },
+    "synthia": {
+     "heard": {
+      "sample": "Star",
+      "f16": "Star"
+     },
+     "ok": true
+    }
+   }
+  },
+  "humbled-and-honored": {
+   "agenda-vibe": {
+    "strategy": {
+     "heard": {
+      "sample": "Buh-Bye",
+      "f16": "Bye"
+     },
+     "ok": false
+    },
+    "synthia": {
+     "heard": {
+      "sample": "Bye.",
+      "f16": "Bye"
+     },
+     "ok": false
+    }
+   },
+   "avoidance-camera-off": {
+    "strategy": {
+     "heard": {
+      "sample": "off",
+      "f16": "off"
+     },
+     "ok": true
+    }
+   },
+   "burnout-bandwidth": {
+    "strategy": {
+     "heard": {
+      "sample": "Bandwith",
+      "f16": "Bandwith"
+     },
+     "ok": false
+    },
+    "synthia": {
+     "heard": {
+      "sample": "And with",
+      "f16": "bandwidth."
+     },
+     "ok": false
+    }
+   },
+   "cardboard-box": {
+    "strategy": {
+     "heard": {
+      "sample": "kid",
+      "f16": "kid"
+     },
+     "ok": false
+    }
+   },
+   "chatbot": {
+    "strategy": {
+     "heard": {
+      "sample": "calling",
+      "f16": "calling"
+     },
+     "ok": false
+    },
+    "synthia": {
+     "heard": {
+      "sample": "calling",
+      "f16": "calling"
+     },
+     "ok": false
+    }
+   },
+   "cherry-picking": {
+    "lady": {
+     "heard": {
+      "sample": "Data",
+      "f16": "Data"
+     },
+     "ok": true
+    }
+   },
+   "cold-shower": {
+    "strategy": {
+     "heard": {
+      "sample": "Plunge",
+      "f16": "Plunge"
+     },
+     "ok": true
+    },
+    "synthia": {
+     "heard": {
+      "sample": "Plunge",
+      "f16": "Plunge"
+     },
+     "ok": true
+    }
+   },
+   "complaint-gift": {
+    "lady": {
+     "heard": {
+      "sample": "gift",
+      "f16": "gift"
+     },
+     "ok": true
+    }
+   },
+   "decision-next-step": {
+    "synthia": {
+     "heard": {
+      "sample": "Step",
+      "f16": "Step"
+     },
+     "ok": true
+    }
+   },
+   "double-booked": {
+    "strategy": {
+     "heard": {
+      "sample": "The man",
+      "f16": "The man"
+     },
+     "ok": false
+    },
+    "synthia": {
+     "heard": {
+      "sample": "Amen.",
+      "f16": "Amen."
+     },
+     "ok": false
+    }
+   },
+   "down-quarter": {
+    "strategy": {
+     "heard": {
+      "sample": "Yeah",
+      "f16": "Yeah"
+     },
+     "ok": false
+    }
+   },
+   "freeze-focus": {
+    "synthia": {
+     "heard": {
+      "sample": "Season",
+      "f16": "Season"
+     },
+     "ok": true
+    }
+   },
+   "insomnia": {
+    "strategy": {
+     "heard": {
+      "sample": "Routine",
+      "f16": "Routine"
+     },
+     "ok": true
+    },
+    "synthia": {
+     "heard": {
+      "sample": "Routine.",
+      "f16": "Routine."
+     },
+     "ok": true
+    }
+   },
+   "layoff-launch": {
+    "synthia": {
+     "heard": {
+      "sample": "Launch",
+      "f16": "Lunch"
+     },
+     "ok": false
+    }
+   },
+   "mandatory-retreat": {
+    "synthia": {
+     "heard": {
+      "sample": "Murray Street",
+      "f16": "Murray Street"
+     },
+     "ok": false
+    }
+   },
+   "miss-stretch-goal": {
+    "strategy": {
+     "heard": {
+      "sample": "Goal",
+      "f16": "Goal"
+     },
+     "ok": true
+    }
+   },
+   "new-title-growth": {
+    "strategy": {
+     "heard": {
+      "sample": "GROWTH",
+      "f16": "GROWTH"
+     },
+     "ok": true
+    },
+    "synthia": {
+     "heard": {
+      "sample": "Gross",
+      "f16": "Hello"
+     },
+     "ok": false
+    }
+   },
+   "no-not-now": {
+    "strategy": {
+     "heard": {
+      "sample": "Now",
+      "f16": "Now"
+     },
+     "ok": true
+    }
+   },
+   "no-sleep-edge": {
+    "synthia": {
+     "heard": {
+      "sample": "Yes",
+      "f16": "Yes"
+     },
+     "ok": false
+    }
+   },
+   "one-customer": {
+    "strategy": {
+     "heard": {
+      "sample": "segment",
+      "f16": "segment"
+     },
+     "ok": true
+    },
+    "synthia": {
+     "heard": {
+      "sample": "Segment",
+      "f16": "Segment"
+     },
+     "ok": true
+    }
+   },
+   "replacement": {
+    "strategy": {
+     "heard": {
+      "sample": "Teammate",
+      "f16": "Teammate"
+     },
+     "ok": true
+    },
+    "synthia": {
+     "heard": {
+      "sample": "TEENATE",
+      "f16": "T-Mate"
+     },
+     "ok": false
+    }
+   },
+   "second-job": {
+    "synthia": {
+     "heard": {
+      "sample": "Hassel",
+      "f16": "Hassel"
+     },
+     "ok": false
+    }
+   },
+   "severance-care": {
+    "synthia": {
+     "heard": {
+      "sample": "Hackage",
+      "f16": "Package"
+     },
+     "ok": false
+    }
+   },
+   "u-turn-pivot": {
+    "lady": {
+     "heard": {
+      "sample": "Pivot",
+      "f16": "Pivot"
+     },
+     "ok": true
+    }
+   },
+   "vanity-north-star": {
+    "strategy": {
+     "heard": {
+      "sample": "Star",
+      "f16": "Star"
+     },
+     "ok": true
+    },
+    "synthia": {
+     "heard": {
+      "sample": "Star.",
+      "f16": "Star"
+     },
+     "ok": true
+    }
+   }
+  },
+  "hustle": {
+   "agenda-vibe": {
+    "strategy": {
+     "heard": {
+      "sample": "Goodbye.",
+      "f16": "Goodbye."
+     },
+     "ok": false
+    },
+    "synthia": {
+     "heard": {
+      "sample": "Bye",
+      "f16": "Bye"
+     },
+     "ok": false
+    }
+   },
+   "avoidance-camera-off": {
+    "strategy": {
+     "heard": {
+      "sample": "off",
+      "f16": "off"
+     },
+     "ok": true
+    }
+   },
+   "burnout-bandwidth": {
+    "strategy": {
+     "heard": {
+      "sample": "Bandwidth",
+      "f16": "BANDWIT"
+     },
+     "ok": false
+    },
+    "synthia": {
+     "heard": {
+      "sample": "And with",
+      "f16": "And with"
+     },
+     "ok": false
+    }
+   },
+   "decision-next-step": {
+    "synthia": {
+     "heard": {
+      "sample": "Step",
+      "f16": "Step"
+     },
+     "ok": true
+    }
+   },
+   "double-booked": {
+    "strategy": {
+     "heard": {
+      "sample": "The man",
+      "f16": "The man"
+     },
+     "ok": false
+    },
+    "synthia": {
+     "heard": {
+      "sample": "Amen.",
+      "f16": "Amen."
+     },
+     "ok": false
+    }
+   },
+   "insomnia": {
+    "strategy": {
+     "heard": {
+      "sample": "Routine",
+      "f16": "Routine"
+     },
+     "ok": true
+    },
+    "synthia": {
+     "heard": {
+      "sample": "and he",
+      "f16": "and he"
+     },
+     "ok": false
+    }
+   },
+   "mandatory-retreat": {
+    "synthia": {
+     "heard": {
+      "sample": "Sorry 3",
+      "f16": "Sorry 3"
+     },
+     "ok": false
+    }
+   },
+   "new-title-growth": {
+    "strategy": {
+     "heard": {
+      "sample": "GROW",
+      "f16": "GROW"
+     },
+     "ok": false
+    },
+    "synthia": {
+     "heard": {
+      "sample": "growth",
+      "f16": "growth"
+     },
+     "ok": true
+    }
+   },
+   "no-not-now": {
+    "strategy": {
+     "heard": {
+      "sample": "Now",
+      "f16": "Now"
+     },
+     "ok": true
+    }
+   },
+   "no-sleep-edge": {
+    "synthia": {
+     "heard": {
+      "sample": "Edge",
+      "f16": "Edge"
+     },
+     "ok": true
+    }
+   },
+   "one-customer": {
+    "strategy": {
+     "heard": {
+      "sample": "segment",
+      "f16": "segment"
+     },
+     "ok": true
+    },
+    "synthia": {
+     "heard": {
+      "sample": "Segment",
+      "f16": "SEGMENT"
+     },
+     "ok": true
+    }
+   },
+   "replacement": {
+    "strategy": {
+     "heard": {
+      "sample": "teammate",
+      "f16": "teammate"
+     },
+     "ok": true
+    },
+    "synthia": {
+     "heard": {
+      "sample": "teammate",
+      "f16": "teammate"
+     },
+     "ok": true
+    }
+   },
+   "vanity-north-star": {
+    "strategy": {
+     "heard": {
+      "sample": "Start",
+      "f16": "Star"
+     },
+     "ok": false
+    },
+    "synthia": {
+     "heard": {
+      "sample": "Star",
+      "f16": "Star"
+     },
+     "ok": true
+    }
+   }
+  }
+ }
+}

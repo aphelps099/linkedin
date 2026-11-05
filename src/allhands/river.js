@@ -334,14 +334,16 @@ export function riverBand(chart) {
       const lay = id => plan.layers.find(l => l.id === id), lv = id => { const l = lay(id); return l ? levelAt(l, pl) / (l.level || 1) : 0; }, bus = id => own.layers[id]?.input;
       // The loop: soft even stomps, a room clapping on two and four, toms after the beats, the printer, typing.
       const Lp = W.loop, live = lv('loop');
+      // Each part of the loop joins at its bar (Lp.from), ramping in over two bars, as every layer does.
+      const part = k => { const f = Lp.from?.[k]; return f === undefined ? 1 : Math.max(0, Math.min(1, (bar + s / 16 - f) / 2)); };
       if (bus('loop') && live > .001) {
-        const stomp = Lp.stomps.find(x => x[0] === s);
-        if (stomp) { I.stomp(ctx, bus('loop'), t, stomp[1], Lp.stomp); if (s % 8 === 0) api.duck(t, {bass:.8, keys:.88, guitar:.85}); }
-        for (const [at, v, fewer] of Lp.claps) if (at === s) I.gangClap(ctx, bus('loop'), t, v, {people:Math.max(2, 4 - fewer), width:.8});
-        for (const [at, v, midi, decay] of Lp.toms) if (at === s) I.floorTom(ctx, bus('loop'), t, midi, v, {decay, side:midi === 50 ? .3 : -.3});
-        I.shaker(ctx, bus('loop'), t, Lp.shake[s % 4]);
-        if (Lp.type[s]) I.keyClick(ctx, bus('loop'), t, .1 * Lp.type[s], bar * 16 + s * 3);
-        if (s === 12 && bar % 2) I.mug(ctx, bus('loop'), t, 81, .1, .35);
+        const stomp = Lp.stomps.find(x => x[0] === s), ps = part('stomps'), pc = part('claps'), pt = part('toms'), ph = part('shaker'), pk = part('type');
+        if (stomp && ps > 0) { I.stomp(ctx, bus('loop'), t, stomp[1] * ps, Lp.stomp); if (s % 8 === 0) api.duck(t, {bass:.8, keys:.88, guitar:.85}); }
+        if (pc > 0) for (const [at, v, fewer] of Lp.claps) if (at === s) I.gangClap(ctx, bus('loop'), t, v * pc, {people:Math.max(2, 4 - fewer), width:.8});
+        if (pt > 0) for (const [at, v, midi, decay] of Lp.toms) if (at === s) I.floorTom(ctx, bus('loop'), t, midi, v * pt, {decay, side:midi === 50 ? .3 : -.3});
+        if (ph > 0) I.shaker(ctx, bus('loop'), t, Lp.shake[s % 4] * ph);
+        if (pk > 0 && Lp.type[s]) I.keyClick(ctx, bus('loop'), t, .1 * Lp.type[s] * pk, bar * 16 + s * 3);
+        if (pk > 0 && s === 12 && bar % 2) I.mug(ctx, bus('loop'), t, 81, .1 * pk, .35);
       }
       // The tambourine, in the background: 16ths leaning on the "and", a strike on four every other bar.
       if (bus('tambourine') && lv('tambourine') > .001) {

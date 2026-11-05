@@ -10,7 +10,7 @@ import {slice, LADY_TABLE} from './lady-table.js';
 import {trackOf, castOf} from './songbook/index.js';
 import circleBack from './songbook/circle-back.js';
 import PITCH from './lady-pitch.json' with {type:'json'};
-import {bandSetlist, coupletDrop, placeBand, pixelLine, TAG_MAX_RATE, PHONE_WEIGHT, BAND_MAKEUP, VOICE_GAIN} from './band.js';
+import {bandSetlist, coupletDrop, placeBand, pixelLine, TAG_MAX_RATE, PHONE_WEIGHT, BAND_MAKEUP, VOICE_GAIN, RELEASE_LIFT} from './band.js';
 
 // Circle Back's form, still exported under its old names.
 export {DROP_BARS, DROP_SECTIONS, UNMUTE_BAR, CHOKE, IMPACT_BAR, swingOf, dropLayers, dropCutoff, dropSlots} from './songbook/circle-back.js';
@@ -171,20 +171,29 @@ function coupletTagImpact(c, tr, window) {
   // Dry, not blended into Synergy's vocoder as her BACK. is: the vocoder smears a word of two syllables
   // (Whisper heard "It's a pivot." only without it). The same dry level as the blend left (4 dB, not 5).
   const len = imp.to - imp.from, W = IMPACT_WORD, base = {from:imp.from, to:imp.to, rate:1, gate:len + .02, gain:imp.gainDb + W.gain + (imp.key ? vg(imp) : 0), pan:0, blend:0, vocoded:0, deep:W.deep,
-    deepAt:Math.max(4, Math.ceil((len + W.echoGap) / tr.step)), unmask:{dip:W.dip, all:W.all, dry:W.dry, after:W.after, hold:W.hold, lead:Math.max(0, Math.min(.15, (imp.onset ?? imp.from) - imp.from))}};
-  const impact = imp.key ? {...pixel(imp, 'impact', base), amount:Math.min(imp.amount ?? 1, W.amount)} : {role:'impact', file:imp.file, ...base, display:imp.display, couplet:c.id};
+    deepAt:Math.max(4, Math.ceil((len + W.echoGap) / tr.step)),
+    unmask:{dip:W.dip, all:W.all, dry:W.dry, after:W.after, hold:W.hold, holdFor:W.holdFor, boost:W.boost, tail:W.tail, lead:Math.max(0, Math.min(.15, (imp.onset ?? imp.from) - imp.from))}};
+  // Its last consonant lifted into its release, as every band part's is (band.js RELEASE_LIFT: "Grow", "Bandwith").
+  const release = imp.key && imp.end !== undefined && imp.to > imp.end + 1e-6 ? {release:{at:Math.max(0, imp.end - RELEASE_LIFT.before - imp.from), gain:RELEASE_LIFT.gain}} : {};
+  const impact = imp.key ? {...pixel(imp, 'impact', base), amount:Math.min(imp.amount ?? 1, W.amount), ...release} : {role:'impact', file:imp.file, ...base, display:imp.display, couplet:c.id};
   return {tag, impact};
 }
 
-// A couplet's impact word keeps the drop's downbeat to itself: Whisper heard Synthia's Y there 0 of 9
-// times under the drop kick, the crash and the band, and the same render with the band muted heard it.
-// gain: dB over the take's level; amount: the most pixel it gets (the bank verified the take higher);
-// dip: what drums, bass, keys and guitar (all) step back to under it; dry: past the stems' reverb and
-// delay, centred; after: seconds after it ends before the crash and the downlifter; the deep echo
-// comes echoGap after it, a beat later at the soonest.
-// hookAfter: Synergy's Drop A hook waits this many 16ths (half a bar) after the downbeat, not one beat.
-// hold: the band's level from the downbeat to the word's vowel, while its first consonant speaks.
-export const IMPACT_WORD = Object.freeze({gain:4, amount:.3, dip:.2, hold:.05, all:true, dry:true, after:.04, echoGap:.15, deep:.42, hookAfter:8});
+// A couplet's impact word keeps the drop's downbeat to itself. Whisper heard Synthia's Y there 0 of 9
+// times under the drop kick, the crash and the band (the same render with the band muted heard it).
+// Measured on every couplet drop of the bank (scripts/measure-impacts.mjs, vocabulary/impact-heard.json):
+//   gain     dB over the take's level (Synthia's VOICE_GAIN on top)
+//   amount   the most pixel it gets: light, the bank verified the takes at medium
+//   boost    dB on its first consonant, to its vowel (`lead`): "v" and "d" were lost ("Bye", "Amen")
+//   hold     the band (drums, bass, keys, guitar: all) from the downbeat to holdFor after its vowel starts:
+//            the drop kick's transient took the first consonant
+//   dip      the band under the rest of the word; it comes back `tail` after the word, over 0.16 s
+//   after    seconds after the word before the crash and the downlifter (the crash right after it was
+//            heard as a plural: "Stars", "Teammates")
+//   dry      past the stems' reverb and delay, centred
+//   echoGap  its deep echo starts this long after it ends, a beat later at the soonest
+//   hookAfter  Synergy's Drop A hook comes in half a bar (8 16ths) after the downbeat, not a beat
+export const IMPACT_WORD = Object.freeze({gain:4, amount:.15, boost:6, hold:.03, holdFor:.06, dip:.12, tail:.06, all:true, dry:true, after:.2, echoGap:.15, deep:.42, hookAfter:8});
 
 export function ladyEvents(words, table = LADY_TABLE, {track, cast, timing, couplet = null} = {}) {
   const tr = trackOf(track), D = tr.drop, roles = castOf(cast), STEP = tr.step, events = [], seconds = s => s / STEP;

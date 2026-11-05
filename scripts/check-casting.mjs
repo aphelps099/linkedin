@@ -453,6 +453,7 @@ for (const file of ['src/allhands/casting.js', 'src/allhands/vocabulary/takes.js
 // ---- 6. Arranged: the cast plays whole, and the board and the export read her measured words
 const models = {fake:w => .18 + .11 * syllables(w), long:w => .3 + .19 * syllables(w)};
 let placed = 0, dropped = [], boardWords = 0, cueWords = 0;
+const PICKUP_GAP = .3, pickupGaps = [];
 POSTS.forEach((post, i) => {
   const r = results[i], lyrics = lyricsFromPost(post), tr = TRACKS[r.track];
   for (const [m, f] of Object.entries(models)) {
@@ -484,6 +485,12 @@ POSTS.forEach((post, i) => {
     // On a couplet drop the couplet's Y word pays off its tag (both cut from one take, or her word after Synthia's pickup).
     const paid = tag.couplet ? cast.dropTag.impact : cast.impact;
     ok(impact.display === paid.display && (impact.file === tag.file || !!tag.couplet), `${where}: the impact pays off the tag`);
+    // Synthia's "It's" / "It's a" and the lady's word are one answer: sung together, never a bar apart (band.js fit bind).
+    for (const p of plan.band.filter(e => e.role === 'pickup')) {
+      const y = plan.band.find(e => e.role === 'couplet-y' && e.couplet === p.couplet && e.start >= p.end - 1e-6);
+      ok(y && y.start - p.end <= PICKUP_GAP, `${where}: "${p.display}" and "${y?.display}" ${y ? (y.start - p.end).toFixed(3) : '?'} s apart`);
+      pickupGaps.push(y.start - p.end);
+    }
     // The Peg Board: each lady screen's words start where the measured words start.
     const screens = buildScreens(plan, {table:SONG_TABLE}).filter(s => s.voice === 'lady');
     for (const e of plan.lady) {
@@ -504,6 +511,21 @@ POSTS.forEach((post, i) => {
 });
 console.log(`arranged: ${POSTS.length * 2} plans, ${placed} lady roles placed, ${boardWords} Peg Board words and ${cueWords} Pixel Text words on her measured boundaries`);
 console.log(`roles today's cast places but the post's cast does not: ${dropped.length}${dropped.length ? ` (${dropped.slice(0, 6).join('; ')})` : ''}`);
+// The same with the page's casts and the real eSpeak durations (fixtures 36 and 39 split "It's a" from "Pivot" by 2.9 and 1.0 s).
+{
+  const REAL = JSON.parse(readFileSync(join(ROOT, 'scripts/fixtures/allhands-durations.json'), 'utf8'));
+  POSTS.forEach((post, i) => {
+    const r = paged[i], lyrics = lyricsFromPost(post);
+    if (r.track === 'offsite') return;
+    const plan = settleCast(arrangeDrop, lyrics, REAL, {track:r.track, cast:r.cast}).plan;
+    for (const p of plan.band.filter(e => e.role === 'pickup')) {
+      const y = plan.band.find(e => e.role === 'couplet-y' && e.couplet === p.couplet && e.start >= p.end - 1e-6);
+      ok(y && y.start - p.end <= PICKUP_GAP, `${label(i)} (bank, real durations): "${p.display}" and "${y?.display}" ${y ? (y.start - p.end).toFixed(3) : '?'} s apart`);
+      pickupGaps.push(y.start - p.end);
+    }
+  });
+}
+console.log(`Synthia's pickup to her lady's word: ${pickupGaps.length} pairs, ${pickupGaps.length ? `${Math.min(...pickupGaps).toFixed(3)}-${Math.max(...pickupGaps).toFixed(3)} s` : 'none'} apart`);
 // settleCast (the page's arrangement): no change when every role is placed,
 // and today's line back when a longer recast finds no gap.
 {

@@ -29,6 +29,7 @@
 // line of copy.
 import ROLE_TABLE from './lady-roles.json' with {type:'json'};
 import LEXICON from './vocabulary/lexicon.json' with {type:'json'};
+import IMPACT_HEARD from './vocabulary/impact-heard.json' with {type:'json'};
 import {takeOf, takeKey, clearFor, exchangeTakeId} from './vocabulary/takes.js';
 import {LADY_TABLE} from './lady-table.js';
 import {tagRate} from './drop.js';
@@ -580,6 +581,7 @@ export const ROTATION = Object.freeze({
   sensitiveFamilies:['jargon', 'single', 'call', 'closer'],
 });
 export const BAND_SLOTS = ['drop', 'couplet', 'ladder', 'refrain', 'signoff', 'exchanges', 'stabs'];
+const UNIFORM = 40;
 const P = ROTATION;
 const HOME = LEXICON.casting.home, HOUSE = LEXICON.casting.house, EVERGREEN = LEXICON.casting.evergreen;
 const TOPIC_GROUPS = Object.fromEntries(Object.entries(LEXICON.topics).map(([t, d]) => [t, d.concepts]));
@@ -658,6 +660,20 @@ for (const c of COUPLETS) {
 }
 const COUPLET_BY_ID = Object.fromEntries(COUPLETS.map(c => [c.id, c]));
 
+// The couplet's drop lands as a word (Aaron, Nov 5): its impact is cast only where Whisper heard it
+// exactly in the mix (vocabulary/impact-heard.json, scripts/measure-impacts.mjs), in the voice that
+// was heard: its own (the Y's), else the other one, else it is not the drop on that track. A track
+// the table does not measure (Offsite plays the river, which has no drop) keeps every couplet.
+export function dropVoiceOf(c, track, avail = () => true) {
+  const heard = IMPACT_HEARD.tracks[track];
+  if (!heard) return c.drop.impact.voice;
+  const t = heard[c.id];
+  if (!t) return null;
+  if (c.drop.impact.voice === 'lady') return t.lady?.ok ? 'lady' : null;
+  const own = c.drop.impact.voice, order = [own, own === 'synthia' ? 'strategy' : 'synthia'];
+  return order.find(v => t[v]?.ok && avail({...c.drop.impact, voice:v}) && (!c.drop.tag.id || avail({...c.drop.tag, voice:v}))) ?? null;
+}
+
 // The bank's lines, per slot. Strategy leads the new lines; Synthia answers, so
 // her refrains and calls are his, and she keeps only short, clear words
 // (takes.js clearFor). Synergy keeps "Let's circle back", Circle Back's sign-off.
@@ -702,7 +718,10 @@ for (const x of EXCHANGES) { x.files = filesOfParts(x.parts); x.takes = takesOfP
 
 // The house rotation and the evergreen lines, per slot, as pool keys.
 const houseOf = (slot, track, pool) => {
-  if (slot === 'drop') return new Set(HOUSE[track]?.drop || []);
+  // The drop's house: the track's own rotation, and the lines at home in it (her tags of the track's
+  // families, its couplets whose impact is heard there: the pool holds only those), so a rotation
+  // couplet that is not heard on the track leaves room for the others.
+  if (slot === 'drop') return new Set([...(HOUSE[track]?.drop || []), ...pool.filter(c => c.home === track).map(c => c.key)]);
   if (slot === 'couplet') return new Set([...(HOUSE[track]?.drop || []).filter(k => k.startsWith('couplet:')), ...pool.filter(c => c.home === track).map(c => c.key)]);
   if (HOUSE[track]?.[slot]) return new Set(HOUSE[track][slot]);
   return new Set(pool.filter(c => c.home === track).map(c => c.key));
@@ -777,7 +796,7 @@ function makeState(reading, track, {seed, recent, available, hook, flags}) {
 }
 
 const levelName = {topic:'on topic', house:'the house rotation', evergreen:'an evergreen line', any:'the best that fits'};
-function pick(slot, pool, S, {salt, allow = () => true, shown = c => c.shown, also = () => 1}) {
+function pick(slot, pool, S, {salt, allow = () => true, shown = c => c.shown, also = () => 1, wide = null}) {
   let list = [];
   for (const c of pool) {
     if (!c.ok(S.track) || !allow(c) || !S.free(c)) continue;
@@ -800,12 +819,12 @@ function pick(slot, pool, S, {salt, allow = () => true, shown = c => c.shown, al
   if (!tier.length) { level = 'house'; tier = list.filter(x => house.has(x.c.key) || x.home); }
   if (!tier.length) { level = 'evergreen'; tier = list.filter(x => ever.has(x.c.key)); }
   if (!tier.length) { level = 'any'; tier = list; }
-  const best = Math.max(...tier.map(x => x.s)), near = level === 'topic' ? P.near[slot] : Infinity;
+  const best = Math.max(...tier.map(x => x.s)), near = level === 'topic' ? wide ?? P.near[slot] : Infinity;
   const close = tier.filter(x => x.s >= best - near);
   // On topic, the closer to the best the likelier (steeply for the drop, the ladder and the sign-off;
   // gently for the wide slots, so the meetings lines do not take every meeting post); in the fallbacks
   // every line is as likely, less what it repeats or a recent song sang.
-  const flat = P.flat.includes(slot);
+  const flat = !!wide || P.flat.includes(slot);
   const weights = close.map(x => Math.max(.02, level !== 'topic' ? x.fresh * (.6 + .4 * x.c.craft) * (x.repeats ? .5 : 1)
     : flat ? (.5 + .5 * (x.s - (best - near)) / near) * x.fresh : x.s - (best - near) + .05)), sum = weights.reduce((a, b) => a + b, 0);
   let r = fnv(S.text, S.salt(salt)) * sum, k = 0;
@@ -847,7 +866,12 @@ export function castSong(post, {seed = 0, track, recent, available, candidates =
   //    itself or a couplet is strongly on topic.
   const titleTag = LADY_TAGS.find(c => c.file === CIRCLE_FILE && c.isDefault);
   flags.title = id === 'circle-back' && fnv(reading.text, S.salt(P.salt.title)) < P.titleShare;
-  const dropCouplets = COUPLETS.filter(c => c.drop && c.drop.tracks.includes(id) && coupletAllowed(c)).map(c => ({...c, slot:'drop', files:filesOfParts([c.x, c.y, c.drop.tag, c.drop.impact]), takes:takesOfParts([c.x, c.y, c.drop.tag, c.drop.impact])}));
+  const dropCouplets = COUPLETS.filter(c => c.drop && c.drop.tracks.includes(id) && coupletAllowed(c)).map(c => {
+    const voice = dropVoiceOf(c, id, S.avail);
+    if (!voice) return null;
+    const drop = voice === 'lady' ? c.drop : {...c.drop, tag:{...c.drop.tag, voice}, impact:{...c.drop.impact, voice}};
+    return {...c, drop, slot:'drop', files:filesOfParts([c.x, c.y, drop.tag, drop.impact]), takes:takesOfParts([c.x, c.y, drop.tag, drop.impact])};
+  }).filter(Boolean);
   let drop;
   if (flags.title) { drop = {c:{...titleTag, title:true}, level:'title', reasons:["Circle Back's own title: one Circle Back song in four keeps it (the post's hash)"]}; }
   else {
@@ -855,7 +879,14 @@ export function castSong(post, {seed = 0, track, recent, available, candidates =
     // Where the post argues it, the drop is a couplet; on the hash's share and where a couplet is
     // strongly on topic, the couplets join her tags and the best on the post wins (the lexicon's prototype).
     const open = !flags.sensitive && dropCouplets.length > 0 && (fnv(reading.text, S.salt(P.salt.coupletDrop)) < P.coupletShare || flags.notabout || strong);
-    if (open) drop = pick('drop', flags.notabout ? dropCouplets : [...dropCouplets, ...LADY_TAGS], S, {salt:P.salt.drop});
+    // On the hash's share the drop is a couplet: among those close to the best, the post's hash decides (as
+    // the couplet slot's close calls do, P.near.couplet), so a track with few couplets heard does not drop on
+    // the same one every time. Strongly on topic, the couplets join her tags and the best wins.
+    const byHash = fnv(reading.text, S.salt(P.salt.coupletDrop)) < P.coupletShare;
+    // The hash's couplet drop is not a topic call: any couplet heard on the track, about as likely as
+    // any other (UNIFORM: the closeness to the best barely weighs). Argued or on topic, the closest wins.
+    const cpl = open ? pick('drop', dropCouplets, S, {salt:P.salt.drop, wide:byHash && !flags.notabout && !strong ? UNIFORM : P.near.couplet}) : null;
+    if (open) drop = flags.notabout || byHash ? cpl : pick('drop', [...(cpl ? [cpl.c] : []), ...LADY_TAGS], S, {salt:P.salt.drop});
     drop ??= pick('drop', LADY_TAGS, S, {salt:P.salt.drop});
     flags.coupletDrop = drop.c.kind === 'couplet';
     if (flags.coupletDrop) drop.reasons = [...drop.reasons, flags.notabout ? 'the post argues "not X, it\'s Y" itself' : strong ? 'a couplet strongly on topic' : 'a couplet drop: the post\'s hash'];
@@ -944,12 +975,11 @@ export function castSong(post, {seed = 0, track, recent, available, candidates =
     exchanges:exchanges.map(x => ({call:v(x.c.call, true), response:v(x.c.response), topics:x.c.topics})),
     signoff:signoff ? v(signoff.c.parts[0]) : null,
     stabs:stabs.map(x => v(x.c.parts[0])),
-    dropTag:drop.c.kind === 'couplet' ? {kind:'couplet', id:cp.id, x:v(cp.x), tag:v(cp.drop.tag), impact:v(cp.drop.impact), tracks:[...cp.drop.tracks]} : ladyDrop,
+    dropTag:drop.c.kind === 'couplet' ? {kind:'couplet', id:cp.id, x:v(cp.x), tag:v(drop.c.drop.tag), impact:v(drop.c.drop.impact), tracks:[...cp.drop.tracks]} : ladyDrop,
   };
   // Where the confession falls to Synthia (only she passed it), he answers: one couplet, two voices.
   if (band.couplet && band.couplet.x.voice === 'synthia' && band.couplet.y.voice === 'synthia' && band.couplet.y.id && S.avail({...band.couplet.y, voice:'strategy'})) band.couplet.y = {...band.couplet.y, voice:'strategy'};
-  // A drop cut from her Y take is his where he sings Y.
-  if (band.dropTag.kind === 'couplet' && band.couplet.y.voice === 'strategy') for (const k of ['tag', 'impact']) if (band.dropTag[k].id) band.dropTag[k] = {...band.dropTag[k], voice:'strategy'};
+  // (The drop's tag and impact are sung in the voice its impact was heard in: dropVoiceOf.)
   const keys = {...Object.fromEntries(BEAM_ROLES.map(r => [r, ladyKey(best.picks[r])])), drop:drop.c.key, couplet:cp ? cp.key : null, ladder:ladder.c.key, refrain:refrain?.c.key ?? null, signoff:signoff?.c.key ?? null,
     exchanges:exchanges.map(x => x.c.key), stabs:stabs.map(x => x.c.key)};
   const out = {...ordered, ...band};
