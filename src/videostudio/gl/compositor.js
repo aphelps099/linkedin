@@ -46,6 +46,9 @@ export const FX_SUPPORT = {
   fold:'shader: x, y, xy about the cell centre', tile:'shader: cols × rows copies, alternate mirrored', iris:'shader: soft circle mask',
   droste:'ping-pong levels of the frame in the feedback tile', pegVideo:'shader: luma^gamma in blue levels on a peg grid',
   scanline:'shader: line pairs and per-line wobble', echo:'trail copies at the transforms of earlier frames',
+  breathe:'shader: two nested block grids an octave apart, crossfaded', paletteWash:'shader: luma onto a blue, violet or warm duotone, luma kept',
+  trail:'compile: copies of the clip at its earlier source frames, laid over it (MAX for lighten)', radialFold:'shader: mirrored wedges about the centre, reflected at the edge',
+  pegBloom:'shader: pegs from the centre out behind a front of peg-wide pixel blocks', chromaDrift:'shader: red, green and blue orbit 120 degrees apart, plus a radial split',
 };
 
 // Pegs are hits (edl/anchors.js): an onset at song time t lights on floor((t + L)·24), the frame
@@ -215,7 +218,13 @@ export function createCompositor(canvas, opts = {}) {
     gl.uniform1f(u.uOpacity, opacity); gl.uniform1f(u.uTime, time); gl.uniform1ui(u.uSeed, seed >>> 0);
     // Effects, at their identity unless the layer has them.
     let tile = [1, 1, 0, 0], fold = 0, mosaic = 0, scan = [0, 0, 6], zoom = [0, .5, .5], dir = [0, 0], rgb = [0, 0], sat = 1, chroma = 0, peg = [0, 12, 6, 1.4], iris = [-1, .5, .5, 2];
+    let breathe = [0, .5, .5], wash = [0, 0], radial = [0, 0, .5, .5], bloom = [0, .5, .5, .2], reach = 0, drift = [0, 0, 0], hasPeg = false;
     for (const x of fx) switch (x.type) {
+      case 'breathe': breathe = [x.px, x.cx ?? .5, x.cy ?? .5]; break;
+      case 'paletteWash': wash = [Math.min(1, x.mix), Math.max(0, Math.min(2, x.hue ?? 0))]; break;
+      case 'radialFold': radial = [Math.max(2, Math.round(x.wedges)), (x.angle ?? 0) * DEG, x.cx ?? .5, x.cy ?? .5]; break;
+      case 'pegBloom': bloom = [Math.min(1, x.amount), x.cx ?? .5, x.cy ?? .5, Math.max(.01, x.band ?? .2)]; reach = x.reach ?? 0; if (!hasPeg) peg = [0, x.pitch ?? 12, Math.max(1, x.levels ?? 6), x.gamma ?? 1.4]; break;
+      case 'chromaDrift': drift = [x.px ?? 0, (x.angle ?? 0) * DEG, x.radial ?? 0]; break;
       case 'tile': tile = [Math.max(1, x.cols), Math.max(1, x.rows), x.mirror ?? 1, 1]; break;
       case 'fold': fold = x.axis === 'y' ? 2 : x.axis === 'xy' ? 3 : 1; break;
       case 'mosaic': mosaic = x.px; break;
@@ -225,10 +234,11 @@ export function createCompositor(canvas, opts = {}) {
       case 'rgbSplit': rgb = [x.px, (x.angle ?? 0) * DEG]; break;
       case 'saturation': sat *= x.amount; break;
       case 'chromaDrop': chroma = Math.max(chroma, Math.min(1, x.amount)); break;
-      case 'pegVideo': peg = [Math.min(1, x.mix), x.pitch ?? 12, Math.max(1, x.levels ?? 6), x.gamma ?? 1.4]; break;
+      case 'pegVideo': peg = [Math.min(1, x.mix), x.pitch ?? 12, Math.max(1, x.levels ?? 6), x.gamma ?? 1.4]; hasPeg = true; break;
       case 'iris': iris = [Math.max(0, x.r), x.cx ?? .5, x.cy ?? .5, x.feather ?? 2]; break;
-      default: break;                      // droste and echo are passes, not shader terms
+      default: break;                      // droste and echo are passes, trail is layers: not shader terms
     }
+    gl.uniform3f(u.uBreathe, ...breathe); gl.uniform2f(u.uWash, ...wash); gl.uniform4f(u.uRadialFold, ...radial); gl.uniform4f(u.uBloomPeg, ...bloom); gl.uniform1f(u.uBloomReach, reach); gl.uniform3f(u.uDrift, ...drift);
     gl.uniform4f(u.uTile, ...tile); gl.uniform1i(u.uFold, fold); gl.uniform1f(u.uMosaic, mosaic);
     gl.uniform3f(u.uScan, ...scan); gl.uniform3f(u.uRadial, ...zoom); gl.uniform2f(u.uDir, ...dir); gl.uniform2f(u.uRgb, ...rgb);
     gl.uniform1f(u.uSat, sat); gl.uniform1f(u.uChroma, chroma); gl.uniform4f(u.uPeg, ...peg); gl.uniform4f(u.uIris, ...iris);
@@ -356,6 +366,7 @@ export function createCompositor(canvas, opts = {}) {
     // The layers, each with its chrome.
     const bannerRect = frame.board?.banner ?? null;
     frame.layers.forEach((layer, i) => {
+      if (layer.trail) return;             // drawn with the layer it trails, below
       resetState(); bindTarget(T.comp);
       const look = lookOf(layer, sources, i, btime);
       resetState(); bindTarget(T.comp);
@@ -368,6 +379,15 @@ export function createCompositor(canvas, opts = {}) {
         }
       }
       drawLayerPass(layer, look, {seed, time});
+      // Its trail: the clip's own earlier frames over it, a copy only brightening (MAX) for lighten.
+      frame.layers.forEach((tap, j) => {
+        if (tap.trail?.of !== layer.clipId) return;
+        const tl = lookOf(tap, sources, j, btime);
+        resetState(); bindTarget(T.comp);
+        if (tap.trail.blend === 'lighten') gl.blendEquation(gl.MAX);
+        drawLayerPass(tap, tl, {seed, time});
+        gl.blendEquation(gl.FUNC_ADD); stats.trails = (stats.trails || 0) + 1;
+      });
       if (layer.robot && look.kind === 0) drawMouth(layer, time);
       const quads = [];
       if (layer.gen === 'camera-off' || layer.gen === 'feedback' || layer.chrome?.cameraOff) {
@@ -512,8 +532,12 @@ export function governorGains(program, {plan, shots, boards}) {
         const c = l.cell;
         if (x < c.x || x >= c.x + c.w || y < c.y || y >= c.y + c.h) continue;
         const g = l.gen || '';
-        const lv = l.kind === 'video' ? shotLuma(l.shotId, l.srcFrame) : g === 'white' ? 1 : g.startsWith('color:') ? lin(lumaHex(g.slice(6))) : g === 'board' ? boardLuma() : g === 'camera-off' || g === 'feedback' ? .012 : 0;
-        v = v * (1 - l.opacity) + lv * l.opacity;
+        let lv = l.kind === 'video' ? shotLuma(l.shotId, l.srcFrame) : g === 'white' ? 1 : g.startsWith('color:') ? lin(lumaHex(g.slice(6))) : g === 'board' ? boardLuma() : g === 'camera-off' || g === 'feedback' ? .012 : 0;
+        // Pegs blooming over footage: a peg lights about a third of its cell.
+        const pb = l.fx.find(x => x.type === 'pegBloom');
+        if (pb) lv *= 1 - .65 * Math.min(1, pb.amount);
+        if (l.trail?.blend === 'lighten') v = Math.max(v, lv * l.opacity);
+        else v = v * (1 - l.opacity) + lv * l.opacity;
       }
       // A panel laid over the picture (L1's, a moving board) covers it.
       if (inBoard && fr.board.over) { const p = fr.board.panel ?? 1; v = v * (1 - p) + boardLuma() * p; }

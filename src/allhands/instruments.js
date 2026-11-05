@@ -420,3 +420,178 @@ export function cleanGuitar(ctx, out, t, notes, v = 1, {strum = .014, ring = .9}
   notes.forEach((m, i) => { const s = ctx.createBufferSource(); s.buffer = cleanBuffer(ctx, m); s.connect(hp); s.start(t + i * strum); s.stop(t + ring + .02); first ??= s; });
   done(first, [hp, lp, g]);
 }
+
+// ---- Offsite voices ------------------------------------------------------
+// Hands, floors, the office as loop material, and voices. All synthesized:
+// no samples. (The office sounds follow the meeting room's own recipes,
+// src/audio.js office-key and office-printer, made deterministic.)
+
+// A stomp: a foot on a wooden floor. A low body falling to the key's root, the
+// floorboard's dull knock, no click: a floor, not a kick drum.
+export function stomp(ctx, out, t, v = 1, {top = 150, settle = 73.42, decay = .34, thud = .55} = {}) {
+  const o = ctx.createOscillator(), g = amp(ctx), sh = drive(ctx, 1.4);
+  o.frequency.setValueAtTime(top, t); o.frequency.exponentialRampToValueAtTime(settle * 1.18, t + .035); o.frequency.exponentialRampToValueAtTime(settle, t + .14);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .004);
+  g.gain.exponentialRampToValueAtTime(v * .32, t + .09); g.gain.exponentialRampToValueAtTime(.0008, t + decay);
+  chain(o, sh, g, out); o.start(t); o.stop(t + decay + .02); done(o, [o, sh, g]);
+  const n = noise(ctx, t, .1), lp = biquad(ctx, 'lowpass', 1100, .7), pk = biquad(ctx, 'peaking', 240, 1.3, 7), ng = amp(ctx);
+  ng.gain.setValueAtTime(0, t); ng.gain.linearRampToValueAtTime(thud * v, t + .002); ng.gain.exponentialRampToValueAtTime(.001, t + .085);
+  chain(n, lp, pk, ng, out); done(n, [n, lp, pk, ng]);
+}
+
+// A floor tom, tuned: a sine body that settles on its note, a triangle overtone and the skin.
+export function floorTom(ctx, out, t, midi, v = 1, {decay = .5, side = 0} = {}) {
+  const f = mtof(midi), o = ctx.createOscillator(), o2 = ctx.createOscillator(), g = amp(ctx), g2 = amp(ctx, .28), p = spread(ctx, side);
+  o.frequency.setValueAtTime(f * 1.45, t); o.frequency.exponentialRampToValueAtTime(f, t + .07);
+  o2.type = 'triangle'; o2.frequency.setValueAtTime(f * 2.3, t); o2.frequency.exponentialRampToValueAtTime(f * 1.58, t + .06);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .003);
+  g.gain.exponentialRampToValueAtTime(v * .38, t + .13); g.gain.exponentialRampToValueAtTime(.0008, t + decay);
+  o.connect(g); o2.connect(g2); g2.connect(g); g.connect(p); p.connect(out);
+  [o, o2].forEach(x => { x.start(t); x.stop(t + decay + .02); }); done(o, [o, o2, g, g2, p]);
+  const n = noise(ctx, t, .06), bp = biquad(ctx, 'bandpass', 1300, .9), ng = amp(ctx);
+  ng.gain.setValueAtTime(v * .22, t); ng.gain.exponentialRampToValueAtTime(.001, t + .05);
+  chain(n, bp, ng, out); done(n, [n, bp, ng]);
+}
+
+// Claps by a room of people: each a little early or late, each hand its own pitch, spread wide.
+const CLAPPERS = [[0, -.62, 1120], [.006, .5, 1460], [.013, -.18, 980], [.021, .72, 1720], [.009, .08, 1270], [.017, -.42, 1560]];
+export function gangClap(ctx, out, t, v = 1, {people = 4, width = 1} = {}) {
+  const level = v / Math.sqrt(people) * .95;
+  for (const [off, side, centre] of CLAPPERS.slice(0, people)) {
+    const a = t + off, n = noise(ctx, a, .14), hp = biquad(ctx, 'highpass', 520), bp = biquad(ctx, 'bandpass', centre, 1.15), g = amp(ctx), p = spread(ctx, side * width);
+    g.gain.setValueAtTime(0, a); g.gain.linearRampToValueAtTime(level, a + .0008); g.gain.exponentialRampToValueAtTime(level * .14, a + .007);
+    g.gain.setValueAtTime(level * .8, a + .0095); g.gain.exponentialRampToValueAtTime(.001, a + .12);
+    chain(n, hp, bp, g, p, out); done(n, [n, hp, bp, g, p]);
+  }
+}
+
+// The keyboard: a keycap's click and the low thock of it bottoming out. k varies the key.
+export function keyClick(ctx, out, t, v = .3, k = 0) {
+  const i = ((k % 5) + 5) % 5, n = noise(ctx, t, .03), bp = biquad(ctx, 'bandpass', [2600, 3400, 2900, 4100, 3150][i], 2.2), g = amp(ctx), p = spread(ctx, [-.3, .22, -.08, .36, .05][i]);
+  g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.001, t + .018);
+  chain(n, bp, g, p, out); done(n, [n, bp, g, p]);
+  const o = ctx.createOscillator(), og = amp(ctx);
+  o.frequency.setValueAtTime(180 + 25 * (i % 3), t); og.gain.setValueAtTime(v * .45, t); og.gain.exponentialRampToValueAtTime(.001, t + .024);
+  chain(o, og, p); o.start(t); o.stop(t + .03); done(o, [o, og]);
+}
+
+// A mug set down on a desk: a ceramic tink, inharmonic partials on a note of the key.
+export function mug(ctx, out, t, midi, v = .3, side = .3) {
+  const f = mtof(midi), g = amp(ctx, v), hp = biquad(ctx, 'highpass', 500), p = spread(ctx, side), oscs = [], nodes = [g, hp, p];
+  hp.connect(g); g.connect(p); p.connect(out);
+  for (const [ratio, level, decay] of [[1, 1, .42], [2.71, .45, .2], [5.33, .24, .1], [8.93, .1, .05]]) {
+    const o = ctx.createOscillator(), e = amp(ctx);
+    o.frequency.value = f * ratio; e.gain.setValueAtTime(level, t); e.gain.exponentialRampToValueAtTime(.0001, t + decay);
+    o.connect(e); e.connect(hp); o.start(t); o.stop(t + decay + .02); oscs.push(o); nodes.push(e);
+  }
+  done(oscs[0], [...oscs, ...nodes]);
+  const n = noise(ctx, t, .01), nh = biquad(ctx, 'highpass', 5200), ng = amp(ctx);
+  ng.gain.setValueAtTime(v * .35, t); ng.gain.exponentialRampToValueAtTime(.001, t + .006);
+  chain(n, nh, ng, p); done(n, [n, nh, ng]);
+}
+
+// An office chair leaned back in: stick-slip friction, a pulse train whose rate
+// rises and falls, through the resonance of the seat.
+export function creak(ctx, out, t, length, v = .12, {from = 16, to = 38, tone = 1250, side = -.4} = {}) {
+  const o = ctx.createOscillator(), hp = biquad(ctx, 'highpass', 380), bp = biquad(ctx, 'bandpass', tone, 7), bp2 = biquad(ctx, 'bandpass', tone * 1.93, 9), g2 = amp(ctx, .5), g = amp(ctx), p = spread(ctx, side);
+  o.type = 'sawtooth';
+  o.frequency.setValueAtTime(from, t); o.frequency.exponentialRampToValueAtTime(to, t + length * .65); o.frequency.exponentialRampToValueAtTime(from * 1.25, t + length);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + Math.min(.08, length * .3));
+  g.gain.setValueAtTime(v, t + length * .8); g.gain.linearRampToValueAtTime(0, t + length);
+  o.connect(hp); hp.connect(bp); bp.connect(g); hp.connect(bp2); bp2.connect(g2); g2.connect(g); g.connect(p); p.connect(out);
+  o.start(t); o.stop(t + length + .01); done(o, [o, hp, bp, bp2, g2, g, p]);
+}
+
+// The room itself: low air and the building's hum, under the muted call.
+export function roomTone(ctx, out, t, length, v = .02) {
+  const n = noise(ctx, t, length), lp = biquad(ctx, 'lowpass', 520, .5), pk = biquad(ctx, 'peaking', 118, 1.2, 8), g = amp(ctx), fade = Math.min(.4, length / 3);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + fade); g.gain.setValueAtTime(v, t + length - fade); g.gain.linearRampToValueAtTime(0, t + length);
+  chain(n, lp, pk, g, out); done(n, [n, lp, pk, g]);
+}
+
+// The printer feeding a sheet: its motor whirring up, three ticks of paper.
+export function printerFeed(ctx, out, t, v = .2) {
+  const o = ctx.createOscillator(), bp = biquad(ctx, 'bandpass', 650, 1.5), g = amp(ctx), p = spread(ctx, .45);
+  o.type = 'sawtooth'; o.frequency.setValueAtTime(105, t); o.frequency.linearRampToValueAtTime(175, t + .4);
+  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + .67);
+  o.connect(bp); bp.connect(g); g.connect(p); p.connect(out); o.start(t); o.stop(t + .7); done(o, [o, bp, g, p]);
+  for (const off of [0, .16, .32]) {
+    const n = noise(ctx, t + off, .08), hp = biquad(ctx, 'highpass', 1600), ng = amp(ctx);
+    ng.gain.setValueAtTime(.0001, t + off); ng.gain.exponentialRampToValueAtTime(v * .55, t + off + .001); ng.gain.exponentialRampToValueAtTime(.0001, t + off + .06);
+    chain(n, hp, ng, p); done(n, [n, hp, ng]);
+  }
+}
+
+// Voices without words: per note two detuned saws through a bank of vowel
+// formants, a vibrato that blooms in, and a slow tape wow on the whole chord
+// (the loop's own wobble; the master's wow stays an event). `glide` (semitones)
+// slides every voice up across the note: the build's rising choir.
+const VOWELS = {ah:[[730, 6, 1], [1090, 8, .55], [2440, 12, .22]], oo:[[320, 6, 1], [870, 8, .3], [2240, 12, .08]], eh:[[530, 6, 1], [1840, 10, .42], [2480, 12, .2]]};
+// (Vibrato and wow are mixed before they reach a detune: a param sums its own
+// value and its inputs in an order that changes from run to run, so one input
+// each keeps the render exact, as exact.js keeps every node input to two.)
+export function voicePad(ctx, out, t, notes, length, v = 1, {vowel = 'ah', attack = .35, release = .7, wow = 6, vibrato = 9, glide = 0, level = .085} = {}) {
+  const end = t + length, g = amp(ctx), vib = ctx.createOscillator(), vibAmt = amp(ctx), wo = ctx.createOscillator(), wowAmt = amp(ctx, wow), mod = amp(ctx, 1), nodes = [g, vibAmt, wowAmt, mod], oscs = [vib, wo];
+  vib.frequency.value = 5.1; vib.connect(vibAmt); wo.frequency.value = .55; wo.connect(wowAmt); vibAmt.connect(mod); wowAmt.connect(mod);
+  vibAmt.gain.setValueAtTime(0, t); vibAmt.gain.linearRampToValueAtTime(vibrato, t + Math.min(.9, length * .6));
+  const sides = [-.6, .6].map(side => {
+    const bus = amp(ctx, 1), p = spread(ctx, side); nodes.push(bus, p); p.connect(g);
+    for (const [f, q, l] of VOWELS[vowel]) { const b = biquad(ctx, 'bandpass', f, q), a = amp(ctx, l); bus.connect(b); b.connect(a); a.connect(p); nodes.push(b, a); }
+    return bus;
+  });
+  notes.forEach((m, i) => [-8, 8].forEach((cents, k) => {
+    const o = ctx.createOscillator(); o.type = 'sawtooth'; o.detune.value = cents + (i % 2 ? 3 : -3);
+    o.frequency.setValueAtTime(mtof(m), t); if (glide) o.frequency.exponentialRampToValueAtTime(mtof(m + glide), end);
+    mod.connect(o.detune); o.connect(sides[k]); oscs.push(o);
+  }));
+  const peak = v * level;
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(peak, t + Math.min(attack, length * .8));
+  g.gain.setValueAtTime(peak, Math.max(t + Math.min(attack, length * .8), end - .05)); g.gain.linearRampToValueAtTime(0, end + release);
+  g.connect(out);
+  oscs.forEach(o => { o.start(t); o.stop(end + release + .02); }); done(oscs[2], [...oscs, ...nodes]);
+}
+
+// A pump organ: reedy, slow to speak, breathing on its bellows (a tremolo stage).
+function reedWave(ctx) {
+  const s = store(ctx);
+  if (!s.reed) s.reed = ctx.createPeriodicWave(new Float32Array(12), new Float32Array([0, 1, .72, .86, .44, .58, .3, .36, .2, .22, .12, .1]));
+  return s.reed;
+}
+export function harmonium(ctx, out, t, notes, length, v = 1, {level = .045, attack = .14, release = .3, trem = 5.3, depth = .16} = {}) {
+  const end = t + length, g = amp(ctx), trm = amp(ctx, 1), lfo = ctx.createOscillator(), lfoAmt = amp(ctx, depth), lp = biquad(ctx, 'lowpass', 3400, .7), oscs = [lfo];
+  lfo.frequency.value = trem; lfo.connect(lfoAmt); lfoAmt.connect(trm.gain);
+  for (const m of notes) for (const cents of [-4, 4]) { const o = ctx.createOscillator(); o.setPeriodicWave(reedWave(ctx)); o.frequency.value = mtof(m); o.detune.value = cents; o.connect(g); oscs.push(o); }
+  const peak = v * level;
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(peak, t + Math.min(attack, length * .7));
+  g.gain.setValueAtTime(peak, Math.max(t + Math.min(attack, length * .7), end - .02)); g.gain.linearRampToValueAtTime(0, end + release);
+  g.connect(trm); trm.connect(lp); lp.connect(out);
+  oscs.forEach(o => { o.start(t); o.stop(end + release + .02); }); done(oscs[1], [...oscs, g, trm, lfoAmt, lp]);
+}
+
+// Pat, humming: a sine and a soft octave, warm and round, no attack to speak of.
+export function humBass(ctx, out, t, midi, length, v = 1) {
+  const f = mtof(midi), o = ctx.createOscillator(), o2 = ctx.createOscillator(), g2 = amp(ctx, .22), lp = biquad(ctx, 'lowpass', 700, .7), sh = drive(ctx, 1.3), g = amp(ctx), end = t + length;
+  o.frequency.value = f; o2.type = 'triangle'; o2.frequency.value = f * 2;
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .03); g.gain.exponentialRampToValueAtTime(v * .7, Math.max(t + .04, Math.min(end - .05, t + .45)));
+  g.gain.setValueAtTime(v * .7, Math.max(t + .05, end - .05)); g.gain.linearRampToValueAtTime(0, end);
+  o.connect(lp); o2.connect(g2); g2.connect(lp); lp.connect(sh); sh.connect(g); g.connect(out);
+  [o, o2].forEach(x => { x.start(t); x.stop(end + .01); }); done(o, [o, o2, g2, lp, sh, g]);
+}
+
+// A long, slowly blooming space for voices: stereo noise that swells over
+// `bloom` seconds and falls 60 dB over `seconds`, darkening as it goes.
+export function washImpulse(ctx, seconds = 5, bloom = .12, seed = 7) {
+  const s = store(ctx), key = `wash${seconds}:${bloom}:${seed}`;
+  if (s[key]) return s[key];
+  const sr = ctx.sampleRate, length = Math.round(sr * seconds), b = ctx.createBuffer(2, length, sr);
+  for (let c = 0; c < 2; c++) {
+    const d = b.getChannelData(c); let x = seed * 7919 + c * 104729, smooth = 0;
+    for (let i = 0; i < length; i++) {
+      x = (Math.imul(x, 1664525) + 1013904223) >>> 0;
+      const u = i / sr, p = i / length;
+      smooth += ((x / 2147483648 - 1) - smooth) * (.75 - p * .6);
+      d[i] = smooth * (1 - Math.exp(-u / (bloom / 3))) * Math.exp(-6.9 * u / seconds) * .5;
+    }
+  }
+  return s[key] = b;
+}

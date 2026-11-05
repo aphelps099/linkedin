@@ -261,9 +261,8 @@ for (const track of TRACK_ORDER) for (const post of [SAMPLE_POST, ...fixtures.sl
     for (const line of describe(v)) console.log(`  ${line}`);
     ok(!errors.length, `${id}: keeps the constitution (warnings aside)${errors.length ? `: ${describe(errors).join('; ')}` : ''}`);
     ok(Object.keys(TRACKS[id].references).every(k => REFERENCES[k]) && TRACKS[id].references['daft-punk'] && BAND.every(r => TRACKS[id].palette[r]) && TRACKS[id].story.synergy, `${id}: declares its references, its palette and the story`);
-    // No track has a Synthia part yet: a warning that says what is missing, never an error.
-    const syn = v.find(x => x.rule === 'story.synthia');
-    ok(TRACKS[id].story.synthia === null && syn?.level === 'warning' && /no Synthia part yet/.test(syn.reason), `${id}: no Synthia part yet, reported as a warning`);
+    // Synergy learning the synth is backstory, not a feature: a track that gives Synthia no part is not warned.
+    ok(TRACKS[id].story.synthia === null && !v.some(x => x.rule === 'story.synthia'), `${id}: no Synthia part, and no warning for it (backstory, not a feature)`);
     // Every break a track declares is a rule it really breaks.
     ok(Object.keys(TRACKS[id].breaks || {}).every(rule => v.some(x => x.rule === rule && x.declared)), `${id}: every declared break is one it takes`);
   }
@@ -277,6 +276,10 @@ for (const track of TRACK_ORDER) for (const post of [SAMPLE_POST, ...fixtures.sl
   // Major is for the haze songs: Humbled and Honored takes Washed Out; without it, E-flat major is an error.
   const hh = TRACKS['humbled-and-honored'];
   ok(!rules(hh).includes('harmony.home') && rules({...hh, references:{'daft-punk':hh.references['daft-punk'], air:hh.references.air}}).includes('harmony.home'), 'lint: E-flat major is a haze song\'s (Washed Out), not a lounge song\'s');
+  // Offsite is the Panda Bear lane: D major is allowed because it takes Panda Bear and Washed Out; without them it is an error.
+  const os = TRACKS.offsite;
+  ok(!rules(os).includes('harmony.home') && rules({...os, references:{'daft-punk':os.references['daft-punk'], kraftwerk:os.references.kraftwerk}}).includes('harmony.home'), 'lint: Offsite\'s D major is a haze song\'s (Panda Bear, Washed Out), not a machine song\'s');
+  ok(lintTrack(os).length === 0, 'lint: Offsite keeps the constitution with no warnings at all');
   ok(lintTrack({...cb, story:{...cb.story, synthia:'an arpeggio'}}).some(x => x.rule === 'story.synthia' && /no bar plays her part/.test(x.reason)), 'lint: a Synthia part declared but never played is reported');
   // Every plan of section 4's corpus keeps the plan's rules.
   const REAL = JSON.parse(readFileSync(new URL('./fixtures/allhands-durations.json', import.meta.url), 'utf8')), warned = {};

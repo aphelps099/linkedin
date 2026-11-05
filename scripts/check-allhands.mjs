@@ -151,7 +151,7 @@ const ORDER = ['Intro', 'Verse', 'Build', 'Drop A', 'Sink In', 'Drop B', 'Outro'
 const pc = m => ((Math.round(m) % 12) + 12) % 12, midiOf = hz => 69 + 12 * Math.log2(hz / 440);
 const inKey = (track, m) => track.pitchClasses.includes(pc(m)) && Math.abs(m - Math.round(m)) < 1e-6;
 const nearKey = (track, hz) => { const m = midiOf(hz); return Math.abs(m - Math.round(m)) < .02 && track.pitchClasses.includes(pc(m)); };
-ok(TRACK_ORDER.join() === 'circle-back,humbled-and-honored,hustle' && DEFAULT_TRACK === 'circle-back' && trackOf().id === 'circle-back' && trackOf('hustle').id === 'hustle', 'song book: three tracks, Circle Back by default');
+ok(TRACK_ORDER.join() === 'circle-back,humbled-and-honored,hustle,offsite' && DEFAULT_TRACK === 'circle-back' && trackOf().id === 'circle-back' && trackOf('hustle').id === 'hustle' && trackOf('offsite').id === 'offsite', 'song book: four tracks, Circle Back by default');
 assert.throws(() => trackOf('nope'), /no track called/); checks++;
 for (const id of TRACK_ORDER) {
   const track = TRACKS[id], D = track.drop, STEP_T = track.step;
@@ -229,6 +229,29 @@ for (const id of TRACK_ORDER) {
     // Deterministic: the same post arranges the same song.
     const again = arrangeDrop(lyrics, durations, {track:id}), json = x => JSON.stringify(x, (k, v) => v instanceof Float64Array ? Array.from(v) : v);
     ok(json(again) === json(plan), `${label}: deterministic`);
+  }
+}
+// Offsite: voices are the instrument. The band adds her voices to the plan's (offsite.js voicesOf): a
+// round around her ladder that tightens toward the choke, and a chant of her impact word in the drops.
+// Every one is on the pentatonic, the round is gone before the choke (nothing in the silence), the
+// chant sings only in the drops and never over her own lines, and BACK. is the track's own (a stomp
+// and a bloom of voices: no drop kick, no sub drop).
+{
+  const tr = TRACKS.offsite, penta = tr.drop.ladder.pentatonic, json = x => JSON.stringify(x, (k, v) => k === 'cut' ? `${v.role}@${v.at}` : v);
+  ok(typeof tr.band.impact === 'function' && typeof tr.band.graph === 'function' && !tr.sound.subDrop && !tr.sound.sawRiser, 'Offsite: BACK. on its own stomp and bloom, no sub drop, no saw riser');
+  for (const post of POSTS) {
+    const lyrics = lyricsFromPost(post), durations = Object.fromEntries(FORMS.drop60.voiced(lyrics, {track:'offsite'}).map(w => [w, .18 + .11 * syllables(w)]));
+    const plan = arrangeDrop(lyrics, durations, {track:'offsite'}), T = plan.timing, sp = plan.step, at = x => T[Math.floor(x)] + (x % 1) * sp, label = `offsite/${lyrics.hook}`;
+    const voices = [...tr.voicesOf(plan).values()].flat(), round = voices.filter(v => v.role === 'round'), chant = voices.filter(v => v.role === 'chant');
+    ok(round.length >= 20 && round.every(v => penta.includes(pc(v.midi)) && v.cut.role === 'ladder' && v.at >= plan.marks.build && at(v.at) + v.gate <= plan.choke.time + 1e-6),
+      `${label}: ${round.length} voices of her round, on the pentatonic, gone before the choke`);
+    // The round tightens: each bar's latest entry after its hit comes sooner (a beat, then an 8th, then with her).
+    const lag = [9, 10, 11, 12, 13, 14].map(bar => Math.max(0, ...round.filter(v => Math.floor(v.cut.at / 16) === bar).map(v => v.at - v.cut.at)));
+    ok(lag.every((x, i) => !i || x <= lag[i - 1]) && lag[0] >= 8 && lag.at(-1) === 0, `${label}: the round tightens toward the choke (latest entry ${lag.join(', ')} 16ths after her hit)`);
+    const hers = plan.lady.filter(e => !['ladder', 'tag', 'impact'].includes(e.role));
+    ok(chant.length >= 8 && chant.every(v => /^Drop/.test(plan.bars[Math.floor(v.at / 16)].section) && penta.includes(pc(v.midi)) && v.cut.role === 'impact')
+      && chant.every(v => !hers.some(e => at(v.at) < at(e.at) + ladyLength(e) && at(e.at) < at(v.at) + v.gate)), `${label}: ${chant.length} chant voices, in the drops only, on the pentatonic, never over her own lines`);
+    ok(json([...tr.voicesOf(arrangeDrop(lyrics, durations, {track:'offsite'})).values()].flat()) === json(voices), `${label}: her extra voices are deterministic`);
   }
 }
 // Sound check 00 is Circle Back's alone.

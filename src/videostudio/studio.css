@@ -190,6 +190,7 @@ kbd{display:inline-block;min-width:20px;padding:3px 5px;margin:0 2px;border-radi
 .vs-song-tracks b{font:600 13px/1.15 var(--sans);letter-spacing:-.01em}
 .vs-song-tracks small{font:500 9.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
 .vs-song-auto[aria-checked=true] small{color:var(--signal)}
+.vs-song-tracks .vs-song-auto:nth-child(odd){grid-column:1 / -1}
 .vs-post summary{display:flex;align-items:baseline;justify-content:space-between;gap:12px;cursor:pointer;list-style:none;font:600 13px/1 var(--sans);padding:4px 0}
 .vs-post summary::-webkit-details-marker{display:none}
 .vs-post summary em{font:500 10px/1.3 var(--mono);font-style:normal;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:65%}

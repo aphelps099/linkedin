@@ -14,8 +14,8 @@
 // warning with its reason. Each track also declares what the constitution asks
 // of it: `references` (which of the five, and how), `palette` (the band, role by
 // role) and `story` (the backstory: Synergy keeps it simple, Synthia is the
-// fluent one; a track with no Synthia part yet says null, and the lint warns
-// what is missing). Pure: no audio.
+// fluent one; backstory, not a feature, so a track may give Synthia no part
+// and says null; a part it names must be played). Pure: no audio.
 import {IMPACT_GAP, ladyClock, ladyLength} from '../drop.js';
 import {trackOf, DEFAULT_CAST} from './index.js';
 import {LADY_TABLE} from '../lady-table.js';
@@ -184,9 +184,9 @@ export function lintTrack(trackOrId) {
   const story = tr.story || {};
   flag('story.synergy', !!String(story.synergy || '').trim(), 'the story does not say what Synergy plays (simple, a little stiff)');
   const synthiaPlays = !!tr.band?.synthia || layers.some(L => L.synthia);
-  flag('story.synthia', !!story.synthia && synthiaPlays, () => story.synthia
-    ? `the story gives Synthia "${story.synthia}" but no bar plays her part (band.synthia, layers.synthia)`
-    : 'no Synthia part yet: the synth has one player, Synergy, keeping it simple; the fluent line (an arpeggio or an analog lead on the grid, the Kraftwerk part) is missing');
+  // Synergy learning the synth is backstory (CONSTITUTION.md): no song has to show
+  // Synthia's part, so none is asked for; a part a track names must be heard.
+  flag('story.synthia', !story.synthia || synthiaPlays, () => `the story gives Synthia "${story.synthia}" but no bar plays her part (band.synthia, layers.synthia)`);
   // Production.
   const S = tr.mix.stems;
   flag('production.pump', S.bass.duck <= R.production.maxDuck && S.keys.duck <= R.production.maxDuck, `the kick ducks bass to ${S.bass.duck} and the pads (keys stem) to ${S.keys.duck}; a pump ducks both to ${R.production.maxDuck} or below`);

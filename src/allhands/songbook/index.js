@@ -3,20 +3,23 @@
 // patterns, the bass, keys and guitar, section energy and mix, and its own
 // Drop Edition form, which keeps the signature moments in order (muted intro,
 // verses, the lady's ladder, the choke and its silence, BACK. on a tuned drop
-// kick, Drop A, Sink In, Drop B, the tape-stop on "Full stop.").
+// kick, Drop A, Sink In, Drop B, the tape-stop on "Full stop."; Offsite lands
+// it on a stomp and a bloom of voices instead).
 //
 // The cast is who the lady is in that song: which of her 57 recordings plays
 // each role. README.md documents what each role needs musically.
 import circleBack from './circle-back.js';
 import humbledAndHonored from './humbled-and-honored.js';
 import hustle from './hustle.js';
+import offsite from './offsite.js';
 
 export const TRACKS = {
   'circle-back':circleBack,
   'humbled-and-honored':humbledAndHonored,
   hustle,
+  offsite,
 };
-export const TRACK_ORDER = ['circle-back', 'humbled-and-honored', 'hustle'];
+export const TRACK_ORDER = ['circle-back', 'humbled-and-honored', 'hustle', 'offsite'];
 export const DEFAULT_TRACK = 'circle-back';
 
 export function trackOf(id) {

@@ -24,6 +24,7 @@ export const TRACKING = {...MEETING_TRACKING, ...STUDIO_TRACKING};
 export const DECODE_LIMITS = {mobile:4, desktop:8};
 export const UPSCALE = {A:1.8, B:1.5, C:1.2};      // tolerable upscale U by sharpness tier
 export const STUTTER_FRAMES = 12;                  // the stutter cache: one beat of 540p frames, <= 25 MB
+export const TRAIL_MAX = 6;                        // a trail's copies at most (fx trail)
 const EPS = 1e-9;
 const BLACKS = new Set(['black', 'color:#000000']);
 // A board move lasts at least 3 frames (never a jump); 4 by default.
@@ -355,13 +356,19 @@ export function compile(edlIn, opts = {}) {
 
   // ---- one frame ---------------------------------------------------------------------------------
   const NONE = Object.freeze([]), lead = audioLatency(plan);
-  function evalFx(list, t, toCell) {
+  function evalFx(list, t, toCell, cell) {
     if (!list.length) return NONE;
     const out = [];
     for (const x of list) {
       const v = {type:x.type};
       for (const [k, p] of x.params) v[k] = typeof p === 'function' ? p(t) : p;
       if (x.type === 'iris' && v.space === 'source' && toCell) { const [u, w] = toCell(v.cx, v.cy); v.cx = u; v.cy = w; v.space = 'cell'; }
+      // A peg bloom centred in frame units (the board home): into the cell's own units.
+      if (x.type === 'pegBloom' && v.space === 'frame') {
+        const r = cell ?? frameRect, px = v.cx * F.w, py = v.cy * F.h;
+        if (!(v.reach > 0)) v.reach = Math.hypot(Math.max(px, F.w - px), Math.max(py, F.h - py));
+        v.cx = (px - r.x) / r.w; v.cy = (py - r.y) / r.h; v.space = 'cell';
+      }
       if (!x.spec.identity(v)) out.push(v);
     }
     return out.length ? out : NONE;
@@ -402,7 +409,7 @@ export function compile(edlIn, opts = {}) {
       srcTime:src, srcFrame, reverse, proxyTime, proxyFrame, source, repeat:tm.repeat,
       cell:c.cellOut, radius:c.cell.r,
       crop:c.crop, transform:{zoom, cx, cy, rot, dx, dy, mirror, matrix:M},
-      opacity:clamp(c.opacity(v), 0, 1), fx:evalFx(c.fx, v, toCell),
+      opacity:clamp(c.opacity(v), 0, 1), fx:evalFx(c.fx, v, toCell, c.cell),
       chrome:chromeOf(c, v),
     };
     if (c.robot) {
@@ -471,8 +478,9 @@ export function compile(edlIn, opts = {}) {
       layers = [...below, ...layers.slice(i)];
       i = below.length;
     }
+    if (!layoutOnly && trailed) layers = withTrails(f, layers);
     const classes = {};
-    for (const l of layers) { const k = layoutClassOf(l.cell.id); classes[k] = (classes[k] || 0) + 1; }
+    for (const l of layers) { if (l.trail) continue; const k = layoutClassOf(l.cell.id); classes[k] = (classes[k] || 0) + 1; }
     const named = Object.keys(classes).filter(k => k !== 'full');
     const cls = named.length ? named.sort((a, b) => classes[b] - classes[a] || (a < b ? -1 : 1))[0] : layers.length ? 'full' : null;
     const L = cls && cls !== 'full' ? layout(cls, format) : null;
@@ -497,8 +505,12 @@ export function compile(edlIn, opts = {}) {
     // own clock while the picture slows to its hold. Inside a jump whose sound is copied without
     // Synergy (the cold open: the drop's impact cut from its own render, engine.js coldSourcePlan)
     // the board shows only what is heard: it holds on the frame before his first screen.
+    // Inside a rewind the board looks back, not ahead: frame f plays the song from v down to
+    // v − rate/24, so it shows the board at the middle of that span, v − rate/48 (board.time is set so
+    // the compositor's own look-ahead, + 1/24 − L for the screen, lands there). The rewind of the last
+    // second before the choke shows the ladder from its first frame, never her tag, which starts at v.
     const hold = tr?.kind === 'jump' ? jumpHold(tr) : null;
-    const bt = tr?.kind === 'tapestop' ? t : hold !== null && v > hold ? hold : v;
+    const bt = tr?.kind === 'tapestop' ? t : tr?.kind === 'rewind' ? v - tr.rate / (2 * fps) - 1 / fps + lead : hold !== null && v > hold ? hold : v;
     // The screen this frame shows, by the compositor's own rule (gl/compositor.js boardTimeOf): a
     // screen is up on the frame that holds the sound of its start, bt + 1/24 − L.
     const screen = board.screens.length ? board.screens.indexOf(activeScreen(board.screens, bt + 1 / fps - lead)) : -1;
@@ -520,6 +532,32 @@ export function compile(edlIn, opts = {}) {
     return {f, t, time:v, layout:cls, transport:tr ? {id:tr.id, kind:tr.kind, phase:(f - tr.from) / (tr.to - tr.from), rate:tr.kind === 'rewind' ? -tr.rate : tr.kind === 'jump' ? 1 : null, sound:tr.sound} : null,
       // lead: the engine's latency, so the compositor lights each peg on the frame that holds its sound.
       camera, board:{time:bt, lead, screen, rect, over, panel, move, dark, banner:L?.banner ? {...L.banner} : null, cells:cellScreens}, layers};
+  }
+
+  // Trails (fx trail): a layer's copies, the same clip as it was k·frames output frames earlier (its
+  // own earlier source frame and transform, through any transport), laid over it right after it in
+  // draw order at opacity decay^k (blend lighten: a copy only brightens). They share the clip's
+  // decode (within the stutter cache's 12 frames), carry no chrome, and never come from Synergy
+  // (a trail warps; G11 refuses it on him). clipId '<clip>~k', trail:{of, k, blend}.
+  const trailed = clips.some(c => c.fx.some(x => x.type === 'trail'));
+  function withTrails(f, layers) {
+    let out = null;
+    layers.forEach((l, i) => {
+      const tr = l.kind === 'video' && !l.canon?.synergy ? l.fx.find(x => x.type === 'trail') : null;
+      if (out) out.push(l);
+      if (!tr) return;
+      if (!out) { out = layers.slice(0, i + 1); }
+      const c = byId.get(l.clipId), n = Math.max(1, Math.round(tr.frames ?? 2)), taps = Math.min(TRAIL_MAX, Math.floor(tr.taps)), decay = clamp(tr.decay, 0, 1);
+      for (let k = 1; k <= taps; k++) {
+        const g = f - k * n, a = l.opacity * decay ** k;
+        if (g < 0 || a < .01) break;
+        const tg = transportAt(g), vg = tg ? transportTime(tg, g / fps) : g / fps, vfg = Math.floor(vg * fps + EPS);
+        if (vfg < c.F0 || vfg >= c.F1) break;
+        const {robot, canon, chrome, ...x} = layerOf(c, vg, tg);
+        out.push({...x, clipId:`${c.id}~${k}`, fx:x.fx.filter(e => e.type !== 'trail'), opacity:a, chrome:null, trail:{of:c.id, k, blend:tr.blend ?? 'lighten'}});
+      }
+    });
+    return out ?? layers;
   }
 
   // The board time a copied jump holds at (null: it never reaches one of his screens), by the
@@ -702,9 +740,9 @@ function lintProgram({edl, plan, clips, byId, frames, transports, board, flag, r
     if (s.status === 'R') flag('error', 'S4', c.id, `${c.id}: ${s.id} needs review; use it only with an override (rule S4) and a note`);
     if (isPat(s)) flag('error', 'G11', c.id, `${c.id}: Pat is never on video (camera always off); use gen:camera-off`);
     if (isLady(s)) flag('error', 'G11', c.id, `${c.id}: the lady never gets a face; she is the voice and the board`);
-    const mirrors = [c.clip.frame?.mirror, ...(c.clip.time?.repeat?.vary || []).map(v => v.mirror)].some(Boolean) || (c.clip.fx || []).some(x => x.type === 'fold' || (x.type === 'tile' && (x.mirror ?? 1)));
+    const mirrors = [c.clip.frame?.mirror, ...(c.clip.time?.repeat?.vary || []).map(v => v.mirror)].some(Boolean) || (c.clip.fx || []).some(x => FX[x.type]?.mirrors === true || (x.type === 'tile' && (x.mirror ?? 1)));
     if (mirrors && (!s.mirrorable || isRobot(s) || isInstrument(s))) flag('error', 'G11', c.id, `${c.id}: ${s.id} may not be mirrored (${isRobot(s) ? 'robots are never mirrored' : isInstrument(s) ? 'instruments are never mirrored' : 'not flagged mirrorable'})`);
-    if (c.synergy) for (const x of c.clip.fx || []) if (FX[x.type]?.warps) flag('error', 'G11', c.id, `${c.id}: "${x.type}" would warp Synergy's mouth row; Synergy takes only zoom, crop, rotation, saturation and iris`);
+    if (c.synergy) for (const x of c.clip.fx || []) if (FX[x.type]?.warps) flag('error', 'G11', c.id, `${c.id}: "${x.type}" would warp Synergy's mouth row; Synergy takes only zoom, crop, rotation, saturation, the palette wash and iris`);
     // Instruments keep their tempo: hit-warped (0.85-1.15) or frozen, never slowed or ramped.
     if (c.instrument) {
       const t0 = c.F0 / fps, t1 = c.F1 / fps, [lo, hi] = range(c.clip.time?.rate ?? 1, t0, t1, c.pctx);
@@ -742,13 +780,13 @@ function lintProgram({edl, plan, clips, byId, frames, transports, board, flag, r
     const fr = frames[f], inRewind = fr.transport?.kind === 'rewind', heard = inRewind && fr.transport.sound === 'reversed', camZoom = fr.camera?.zoom ?? 1;
     fr.layers.forEach((l, i) => {
       if (l.kind !== 'video') return;
-      const c = byId.get(l.clipId), s = c.shot;
+      const c = byId.get(l.trail?.of ?? l.clipId), s = c.shot;
       // R2: R0 footage runs backwards only inside a rewind whose sound really reverses with it
       // (a plan transport with audio:true over the same span), never under forward or silent sound.
       if (l.reverse && !heard && s.reverseClass === 'R0') per('error', 'G7', c.id, inRewind ? 'reverse-silent' : 'reverse', inRewind
         ? `${c.id}: ${s.id} is R0 and plays backwards in ${fr.transport.id}, but the plan does not reverse the sound there (plan.transports); freeze it or rewind the audio too`
         : `${c.id}: ${s.id} is R0 and plays backwards; R0 shots reverse only inside a rewind whose sound reverses too`, f);
-      const soft = l.fx.some(x => (x.type === 'mosaic' && x.px >= 8) || (x.type === 'pegVideo' && x.mix >= .5));
+      const soft = l.fx.some(x => ((x.type === 'mosaic' || x.type === 'breathe') && x.px >= 8) || (x.type === 'pegVideo' && x.mix >= .5));
       const U = UPSCALE[s.sharpTier] ?? s.maxUpscale ?? 1.5, up = l.transform.zoom * camZoom * l.cell.h / l.crop.h;
       if (!soft && up > U + 1e-6) { const w = worstZoom.get(c.id); if (!w || up > w.up) worstZoom.set(c.id, {up, f, U, maxZoom:U * l.crop.h / l.cell.h, zoom:l.transform.zoom * camZoom}); }
       if (l.robot && l.canon?.synergy) {

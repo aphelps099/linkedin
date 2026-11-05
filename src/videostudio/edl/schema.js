@@ -47,7 +47,17 @@ export const FX = {
   pegVideo:{warps:true, params:{mix:{d:1, doc:'0..1 footage to peg video'}, pitch:{d:12, doc:'output px between peg centres'}, levels:{d:6, doc:'blue levels, luma^gamma quantised'}, gamma:{d:1.4, doc:'luma exponent'}}, identity:f => f.mix <= 0},
   scanline:{warps:true, params:{amount:{d:0, doc:'0..1 line darkening'}, wobble:{d:0, doc:'horizontal displacement, output px'}, period:{d:6, doc:'output px per line pair'}}, identity:f => f.amount <= 0 && f.wobble <= 0},
   echo:{warps:true, params:{taps:{d:0, doc:'trail copies'}, frames:{d:1, doc:'frames between copies'}, decay:{d:.6, doc:'opacity of each copy relative to the one before'}}, identity:f => f.taps <= 0 || f.decay <= 0},
+  // The psychedelic pixelation (offsite-psych): mosaics that breathe with the voices, duotone washes,
+  // trails of earlier frames, kaleidoscope wedges, pegs blooming out of the board, a slow colour drift.
+  breathe:{warps:true, params:{px:{d:0, doc:'block size, output px (bind it to the voices and the claps); between octaves the two nested grids crossfade, so the blocks breathe instead of stepping'}, cx:{d:.5, doc:'0..1 in the cell: the blocks grow from here'}, cy:{d:.5, doc:'as cx'}}, identity:f => f.px <= 1},
+  paletteWash:{warps:false, params:{mix:{d:0, doc:'0..1 the original to the wash'}, hue:{d:0, doc:'the duotone: 0 Peg Board blue, 1 violet, 2 warm (coral), fractional between; never green; luma kept'}}, identity:f => f.mix <= 0},
+  trail:{warps:true, params:{taps:{d:0, doc:'copies of the clip as it was earlier: its own earlier source frames and transforms (at most 6)'}, frames:{d:2, doc:'output frames between copies'}, decay:{d:.5, doc:'0..1 each copy relative to the one before (bind it to the claps to smear on the beat)'}, blend:{d:'lighten', values:['lighten', 'over'], doc:'lighten: a copy only brightens (feedback trails); over: an echo laid over'}}, identity:f => f.taps < 1 || f.decay <= 0},
+  radialFold:{warps:true, mirrors:true, params:{wedges:{d:6, doc:'mirrored wedges about the centre: a kaleidoscope (2 or more)'}, angle:{d:0, doc:'degrees: the wedges turn with it'}, cx:{d:.5, doc:'0..1 in the cell'}, cy:{d:.5, doc:'as cx'}}, identity:f => f.wedges < 2},
+  pegBloom:{warps:true, params:{amount:{d:0, doc:'0..1: how far the footage has turned into pegs, from the centre out'}, cx:{d:.5, doc:'the centre, 0..1 of the cell (of the frame with space:frame)'}, cy:{d:.5, doc:'as cx'}, band:{d:.2, doc:'the pixel front ahead of the pegs (blocks a peg wide), fraction of the reach'}, reach:{d:0, doc:'output px amount 1 reaches; 0: the cell\'s farthest corner (space:frame sets it to the frame\'s farthest corner, so one circle grows across every tile)'}, pitch:{d:12, doc:'output px between peg centres'}, levels:{d:6, doc:'blue levels, luma^gamma quantised'}, gamma:{d:1.4, doc:'luma exponent'}, space:{d:'cell', values:['cell', 'frame'], doc:'frame: cx, cy are 0..1 of the frame (the board home), compile maps them into the cell'}}, identity:f => f.amount <= 0},
+  chromaDrift:{warps:true, params:{px:{d:0, doc:'output px: red, green and blue each orbit, 120 degrees apart (green at half)'}, angle:{d:0, doc:'degrees: drift it slowly with keys'}, radial:{d:0, doc:'output px at the cell corner: red outwards, blue inwards, from the centre'}}, identity:f => f.px <= 0 && f.radial <= 0},
 };
+// Effects compile expands into extra layers (the trail's copies); never on a camera cue.
+export const LAYER_ONLY_FX = ['trail'];
 export const FX_TYPES = Object.keys(FX);
 export const GEN = ['black', 'white', 'board', 'camera-off', 'feedback'];
 export const REVEALS = ['pop', 'typewriter', 'scanline', 'wipe', 'sparkle', 'centre', 'stroke', 'steady'];
@@ -262,6 +272,7 @@ export function validate(edl) {
       if (!(Number.isFinite(c.len) && c.len > 0)) out.push([`${p}.len`, 'len is a positive number of steps']);
       for (const k of ['zoom', 'cx', 'cy', 'rot', 'dx', 'dy']) if (c[k] !== undefined) for (const e of checkParam(c[k], `${p}.${k}`)) out.push(e);
       if (c.fx !== undefined) checkFx(c.fx, `${p}.fx`, out);
+      if (Array.isArray(c.fx)) c.fx.forEach((x, j) => { if (LAYER_ONLY_FX.includes(x?.type)) out.push([`${p}.fx[${j}].type`, `${x.type} belongs on a clip (its copies are the clip's own earlier frames), not on a camera cue`]); });
       if (c.board !== undefined && typeof c.board !== 'boolean') out.push([`${p}.board`, 'board is true when the move carries the Peg Board with the picture (default: the board holds still)']);
       if (c.clock !== undefined && !['song', 'film'].includes(c.clock)) out.push([`${p}.clock`, "clock is 'song' (default: the song time a transport shows) or 'film' (the film's own frames)"]);
     });

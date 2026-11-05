@@ -5,7 +5,7 @@
 // with WebCodecs. Writes <name>.mp4, <name>.vtt and <name>.json (the sidecar).
 //
 //   node scripts/export-videostudio.mjs [--format 9:16|1:1|16:9] [--scale 1] [--span 0-1440]
-//       [--edl draft|studio|metronome|file.json] [--track circle-back|hustle|...] [--master]
+//       [--edl track|draft|offsite-psych|studio|metronome|file.json] [--track circle-back|hustle|offsite|...] [--master]
 //       [--post FILE] [--auto] [--no-cold-open] [--no-audio] [--no-governor] [--out DIR] [--name NAME] [--url http://127.0.0.1:5351 | --port 5351]
 //
 // The film opens cold (the impact at frame 0, then the rewind), as the monitor's does. --post cuts
@@ -65,10 +65,10 @@ export async function exportPage(browser, origin, {log = () => {}} = {}) {
     X.engine = await m('/src/allhands/engine.js');
     X.casting = await m('/src/allhands/casting.js');
     X.SHOTS = await (await fetch('/src/videostudio/media/shots.json')).json();
-    X.treatments = {
-      draft:async () => (await m('/src/videostudio/treatments/drop60-draft.js')).drop60Draft,
-      studio:async () => (await m('/src/videostudio/studio-film.js')).studioFilm,
-    };
+    // Treatments: 'track' (the default) is the track's own (treatments/index.js: Offsite gets
+    // offsite-psych, every other track drop60-draft); 'draft' is drop60-draft; or a treatment id.
+    X.T = await m('/src/videostudio/treatments/index.js');
+    X.treatment = async (name, track) => name === 'studio' ? {id:'studio', fn:(await m('/src/videostudio/studio-film.js')).studioFilm} : X.T.treatmentNamed(name, track);
     // The song as the monitor plays it: the post's track and cast (auto) or a track by hand,
     // Synergy's measured words, then the lady; the cold open unless coldOpen is false.
     X.song = async ({track, voice = true, post, auto = false, coldOpen = true} = {}) => {
@@ -93,22 +93,23 @@ export async function pull(page, name) {
   return Buffer.concat(parts);
 }
 
-// Run one export in the page. spec: {edl:'draft'|'studio'|'metronome'|object, format, scale, span, master, audio:false, governor, track, post, auto, coldOpen, voice, every}
+// Run one export in the page. spec: {edl:'track'|'draft'|'offsite-psych'|'studio'|'metronome'|object, format, scale, span, master, audio:false, governor, track, post, auto, coldOpen, voice, every}
 export async function runExport(page, spec, {onProgress} = {}) {
   if (onProgress) await page.exposeFunction('__exportProgress', onProgress).catch(() => {});
   return page.evaluate(async spec => {
     const {plan, song, voiced, casting} = await X.song({track:spec.track, voice:spec.voice !== false, post:spec.post, auto:!!spec.auto, coldOpen:spec.coldOpen !== false});
     const format = spec.format ?? '9:16';
-    let edl;
+    let edl, treatment = null;
     if (spec.edl === 'metronome') edl = X.metronomeEDL(plan, {format, every:spec.every ?? 4});
     else if (typeof spec.edl === 'object') edl = spec.edl;
-    else edl = (await X.treatments[spec.edl ?? 'draft']())(plan, X.SHOTS, {format});
+    else { const t = await X.treatment(spec.edl ?? 'track', plan.track); treatment = t.id; edl = t.fn(plan, X.SHOTS, {format}); }
     let last = 0;
     const out = await X.exportFilm({edl, plan, shots:X.SHOTS, song, format, scale:spec.scale ?? 1, span:spec.span, master:!!spec.master,
       audio:spec.audio === false ? null : 'render', governor:spec.governor !== false, post:spec.post, force:!!spec.force,
       onProgress:p => { if (window.__exportProgress && (p.phase !== 'picture' || p.frame - last >= (spec.every_progress ?? 24) || p.frame === p.frames)) { last = p.frame; window.__exportProgress(p); } }});
-    X.out = {mp4:out.mp4, vtt:new TextEncoder().encode(out.vtt), json:new TextEncoder().encode(JSON.stringify(out.sidecar, null, 1))};
-    return {sidecar:{...out.sidecar, edl:undefined}, voiced, casting, name:X.exportName(plan, format), expected:spec.edl === 'metronome' ? X.expectedCuts(plan, edl) : null, cuts:out.program.cuts};
+    // The sidecar names the treatment that cut the film (null for a metronome or a given EDL).
+    X.out = {mp4:out.mp4, vtt:new TextEncoder().encode(out.vtt), json:new TextEncoder().encode(JSON.stringify({...out.sidecar, treatment}, null, 1))};
+    return {sidecar:{...out.sidecar, treatment, edl:undefined}, voiced, casting, name:X.exportName(plan, format), expected:spec.edl === 'metronome' ? X.expectedCuts(plan, edl) : null, cuts:out.program.cuts};
   }, spec);
 }
 
@@ -127,7 +128,7 @@ export async function saveExport(page, dir, name) {
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const out = path.resolve(arg('out', '.')), format = arg('format', '9:16'), scale = +arg('scale', '1');
   const span = arg('span') ? arg('span').split('-').map(Number) : undefined;
-  const edlArg = arg('edl', 'draft');
+  const edlArg = arg('edl', 'track');
   const edl = /\.json$/.test(edlArg) ? JSON.parse(fs.readFileSync(edlArg, 'utf8')) : edlArg;
   const srv = await studioServer({url:arg('url'), port:arg('port', '0')});
   const browser = await launch();

@@ -11,7 +11,7 @@
 //      the silence before the impact holds, the Peg Board and the Pixel Text
 //      export time her words from the measured boundaries.
 // With a dev server, --render --url http://localhost:5331 --out <dir> renders
-// eight fixture posts end to end through scripts/render-allhands.mjs, runs
+// nine fixture posts end to end through scripts/render-allhands.mjs, runs
 // scripts/measure-allhands.py (all gates, plus Whisper on every lady moment),
 // saves 320 kbps MP3s and an index, and checks that the page casts exactly
 // what Node casts.
@@ -154,13 +154,18 @@ POSTS.forEach((post, i) => {
 });
 times.sort((a, b) => a - b);
 const seeds = POSTS.filter(p => json(castSong(p, {seed:1})) !== json(castSong(p))).length;
-console.log(`casts: ${POSTS.length} posts valid, plus ${POSTS.length * 3} with the track forced; ${seeds} change with seed 1 (tie-breaks)`);
+console.log(`casts: ${POSTS.length} posts valid, plus ${POSTS.length * TRACK_ORDER.length} with the track forced; ${seeds} change with seed 1 (tie-breaks)`);
 raw.sort((a, b) => a - b);
 console.log(`speed (best of three per post, warm): median ${times[times.length >> 1].toFixed(2)} ms, max ${times.at(-1).toFixed(2)} ms; every run: p95 ${raw[Math.floor(raw.length * .95)].toFixed(2)} ms, worst ${raw.at(-1).toFixed(2)} ms`);
 ok(times.at(-1) < 20, `castSong under 20 ms (max ${times.at(-1).toFixed(2)})`);
 const fixtureDist = Object.fromEntries(TRACK_ORDER.map(t => [t, results.slice(1).filter(r => r.track === t).length]));
 console.log(`tracks over the 60 fixtures: ${JSON.stringify(fixtureDist)}; with the sample ${JSON.stringify(dist)}`);
 ok(TRACK_ORDER.every(t => fixtureDist[t] >= 6 && fixtureDist[t] <= 42), 'track distribution is not degenerate (each 10-70%)');
+// Offsite takes the team retreat, the work family, belonging, wellness and good vibes, for the post's own words.
+for (const [i, cue] of [[15, /“offsite”/], [47, /“not a company”/], [24, /“Morale Officer”/], [50, /“4-day work week”/], [46, /“Emotional Intelligence”/]]) {
+  const r = results[i + 1];
+  ok(r.track === 'offsite' && cue.test(r.line) && r.line.startsWith('Offsite, for '), `fixture ${i}: Offsite, ${r.line}`);
+}
 const recastTotal = Object.values(recasts).reduce((a, b) => a + b, 0), untouched = results.filter(r => !r.recast.length).length;
 console.log(`recasts: ${recastTotal} over ${POSTS.length} posts (${(recastTotal / POSTS.length).toFixed(2)} a post; ${untouched} keep today's cast): ${JSON.stringify(recasts)}`);
 ok(ROLE_ORDER.every(role => recasts[role] >= 1), 'every role is recast for some post');
@@ -267,8 +272,8 @@ ok(dropped.length === 0, "a recast never loses a role that today's cast places")
 console.log(`check-casting: ${checks} checks passed`);
 
 // ---- 4. Renders (optional): --render --url http://localhost:5331 --out <dir>
-// Eight fixture posts, chosen to cover all three songs and every recast role.
-const RENDER_FIXTURES = [1, 25, 0, 5, 13, 44, 38, 56];
+// Nine fixture posts, chosen to cover all four songs and every recast role (15: Offsite).
+const RENDER_FIXTURES = [1, 25, 0, 5, 13, 44, 38, 56, 15];
 if (process.argv.includes('--render')) await renders();
 
 async function renders() {
@@ -361,7 +366,7 @@ async function renders() {
     const verdict = failed.length ? `${failed.map(x => `${x.gate} ${x.value} FAIL`).join(', ')}; today's cast on this post fails it too (${control.map(c => c.today).join(', ')})` : `pass${warned.length ? `, ${warned.length} warning${warned.length > 1 ? 's' : ''}` : ''}`;
     index.push(`${name}.mp3 (${TRACKS[r.track].title}, ${p.duration.toFixed(1)} s; gates: ${verdict})\n  Post: ${excerpt}\n  Why: ${r.line}\n  The lady: ${['ladder', 'tag', 'bend', 'sink', 'lift', 'punct', 'stop'].map(role => role === 'tag' ? `${cast.tag.display} ${cast.impact.display}` : cast[role].display).join(' · ')}\n  Recast from today's cast: ${r.recast.join(', ') || 'none'}\n`);
   }
-  writeFileSync(join(out, 'index.txt'), `All Hands, cast by the post. Eight fixture posts, rendered through /allhands/ (Drop Edition).\nEach MP3 is 320 kbps from the 44.1 kHz render; gates in <name>.gates.txt.\n\n${index.join('\n')}`);
+  writeFileSync(join(out, 'index.txt'), `All Hands, cast by the post. Nine fixture posts, rendered through /allhands/ (Drop Edition).\nEach MP3 is 320 kbps from the 44.1 kHz render; gates in <name>.gates.txt.\n\n${index.join('\n')}`);
   writeFileSync(join(out, 'summary.json'), JSON.stringify(summary, null, 1));
   for (const s of summary) {
     console.log(`\n${s.name}: I ${s.gates.I}, TP ${s.gates.TP}, LRA ${s.gates.LRA}, Drop A ${s.gates.dropA}, Drop B ${s.gates.dropB}, silence ${s.gates.silence}, clipped ${s.gates.clipped}${s.gates.warn.length ? `; warn: ${s.gates.warn.join(', ')}` : ''}${s.gates.fail.length ? `; FAIL: ${s.gates.fail.join(', ')} (today's cast: ${s.gates.control.map(c => `${c.today} ${c.todayStatus}`).join(', ')})` : ''}`);

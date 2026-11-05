@@ -22,7 +22,7 @@ import {stepAtTime, barSteps, beatSteps} from './edl/anchors.js';
 import {FORMATS} from './layouts.js';
 import {needsProxy, mediaSource} from './media/shots.js';
 import {studioFilm, SCENE_LABELS as STUDIO_LABELS} from './studio-film.js';
-import {drop60Draft, SCENE_LABELS as DRAFT_LABELS} from './treatments/drop60-draft.js';
+import {treatmentFor} from './treatments/index.js';
 import {createPreview} from './render/preview.js';
 import {exportFilm, exportSupport, exportName, songFeatures} from './render/export.js';
 
@@ -44,10 +44,12 @@ const pad = (n, w) => String(Math.max(0, n)).padStart(w, '0');
 const clock = s => `${pad(Math.floor(s / 60), 2)}:${pad(Math.floor(s % 60), 2)}.${pad(Math.floor((s % 1) * 1000), 3)}`;
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[c]));
 
-// The draft cut (plan §2 as a treatment) unless ?cut=studio asks for the first draft.
-const treatment = params.get('cut') === 'studio' ? studioFilm : drop60Draft;
-const SCENE_LABELS = params.get('cut') === 'studio' ? STUDIO_LABELS : DRAFT_LABELS;
-const edlFor = (p, fmt) => treatment(p, SHOTS, {format:fmt});
+// The track's own treatment (treatments/index.js: Offsite is cut with offsite-psych, every other track
+// with the drop60 draft) unless ?cut=studio asks for the first draft.
+const studio = params.get('cut') === 'studio';
+const treatmentOf = p => studio ? {id:'studio', title:'First draft', fn:studioFilm, labels:STUDIO_LABELS} : treatmentFor(p?.track);
+let SCENE_LABELS = studio ? STUDIO_LABELS : treatmentFor().labels;
+const edlFor = (p, fmt) => { const t = treatmentOf(p); SCENE_LABELS = t.labels; return t.fn(p, SHOTS, {format:fmt}); };
 const form = FORMS.drop60, shots = shotIndex(SHOTS);
 let format = FORMATS[params.get('format')] ? params.get('format') : '9:16';
 // The song: the track by hand, or 'auto' (the post chooses its track and her lines).
@@ -72,7 +74,7 @@ function fit() {
   const w = Math.min(availW, h * F.w / F.h);
   el.screen.style.width = `${Math.round(w)}px`; el.screen.style.height = `${Math.round(w * F.h / F.w)}px`;
   document.documentElement.style.setProperty('--screen-w', `${Math.round(w)}px`);
-  el.spec.textContent = `${format} · ${F.w}×${F.h} · 24 fps`;
+  el.spec.textContent = `${format} · ${F.w}×${F.h} · 24 fps · ${treatmentOf(plan).title}`;
   // Render at the size it is seen (in quarter steps), never above the film's own size.
   const want = params.get('scale') ? +params.get('scale') : Math.min(1, Math.max(.25, Math.ceil(w * devicePixelRatio / F.w * 4) / 4));
   if (preview && preview.compositor.scale !== want) { preview.compositor.setScale(want); preview.redraw(); }
@@ -119,7 +121,9 @@ function timeline() {
 // keeps only its title. Short forms are written, not cut.
 const SHORT = {'Cold open':'Cold', 'Grid bloom':'Bloom', 'Screen share':'Share', 'Dub delay':'Dub', 'Freeze the call':'Freeze', 'Breakout rooms':'Rooms',
   'Cell split':'Split', 'Retrigger roll':'Roll', 'Poor connection':'Lag', 'Sink In':'Sink', 'Droste dive':'Droste', 'Read that again':'Again', 'Leave meeting':'Leave',
-  'Freeze':'Freeze', 'Intro':'Intro', 'Verse':'Verse', 'Build':'Build', 'Drop A':'Drop A', 'Drop B':'Drop B', 'Outro':'Outro'};
+  'Freeze':'Freeze', 'Intro':'Intro', 'Verse':'Verse', 'Build':'Build', 'Drop A':'Drop A', 'Drop B':'Drop B', 'Outro':'Outro',
+  'Arrivals':'Arrive', 'The call':'Call', 'The circle':'Circle', 'Choir of glass':'Choir', 'Pegs rise':'Rise', 'The board alone':'Board', 'Clap circle':'Claps',
+  'The round':'Round', 'Leave the offsite':'Leave'};
 const fits = node => node.scrollWidth <= node.clientWidth + .5;
 function fitLabels() {
   const lanes = (n, gap = 10) => { const ends = Array(n).fill(-Infinity); return (x, w) => { const i = ends.findIndex(e => e + gap <= x); if (i < 0) return -1; ends[i] = x + w; return i; }; };
@@ -404,7 +408,7 @@ function restart() {
   if (preview?.playing) preview.pause();
   plan = arrange({}); song = {buffers:new Map(), lady:undefined}; measured = null; program = build(plan, format);
   preview.setSong(plan, song, program); preview.seek(0);
-  timeline(); lint(); shownFrame = -1; mediaNote();
+  fit(); timeline(); lint(); shownFrame = -1; mediaNote();
   loadSong();
 }
 el.tracks.addEventListener('click', e => { const b = e.target.closest('[data-track]'); if (b) choose(b.dataset.track); });
