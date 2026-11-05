@@ -45,7 +45,7 @@ export const SAY = {
     [/^It's visibility\.$/, ["It's visibility.", "It's, visibility."]],  // "feasibility"
     [/^Pending\.$/, ['Pending.', 'Pen-ding.']],                          // "Bending", "Ending"
     [/^Huge shout-out\.$/, ['Huge shout-out.', 'Huge, shout-out.']],      // "You just shout out"
-    [/^DM me\.$/, ['DM me.', 'Dee em me.']],                              // "Yeah me"
+    [/^DM me\.$/, ['DM me.', 'Dee em me.', 'Dee-em me.', 'D. M. me.']],     // "Yeah me"
     [/^A testament to\.$/, ['A testament to.', 'A testament, to.']],      // "A testamenta"
     [/^Seamless\.$/, ['Seamless.', 'Seemless.']],                         // "Seamus"
     [/^Blessed\.$/, ['Blessed.', 'Blest.']],                              // sung: "Laughing"

@@ -245,7 +245,31 @@ between variants as jingles turn on their pins) and played up to 6 cents off
 again, both chosen from its time: deterministic, and no two strikes of a bar
 alike. At v 1 a shake peaks near -9 dBFS and a hit near -5 dBFS.
 
-@@TAMB@@
+Measured (`render-song-voices.mjs --steps tambourine`, `DIR/tambourine.json`;
+the prototype's `voices/tambourine.js` in brackets, same events):
+
+| | one shake (v .8) | one hit (v .8) | the groove, 4 bars |
+|---|---|---|---|
+| spectral centroid | 5.4 kHz (7.0) | 4.3 kHz (5.5) | 5.9 kHz (8.6) |
+| energy below 1k / 1-3k / 3-6k / 6-10k / 10-16k, dB of the total | -40 / **-21** / -1.5 / -7 / -10 (-38 / -35 / -2.5 / -7 / -7) | -7 / **-13** / -2.4 / -9 / -12 (-9 / -39 / -2.5 / -8 / -9) | -11 / **-11** / -3.5 / -7 / -8 (-12 / -25 / -5 / -6 / -5) |
+| attack, down 20 dB after the peak | 20 ms (the swish), 174 ms | 2.0 ms, 99 ms | |
+
+- **The body.** 1-3 kHz went from 35 to 39 dB under the total to 11 to 21 dB
+  under it: the frame's knock and the "chk" now sit where a real tambourine's
+  wood and rattle are, so alone it is no longer thin and bright (the centroid
+  came down from 8.6 to 5.9 kHz over the groove; most of the energy is still in
+  the jingles, 3 to 16 kHz).
+- **No steady lines.** Over a bar of even 16ths at one velocity, the 30
+  strongest lines of the long-term spectrum (3-16 kHz) stand 11.5 dB above
+  their +-40 Hz neighbourhood, against 21.8 dB for the prototype, where every
+  collision rang the same 84 modes. Every strike of the bar is a different
+  variant and rate (`check-song-voices.mjs`), and the twelve rendered shakes of
+  a layer all differ.
+- Deterministic: two renders of a bar are the same samples; the Web Audio voice
+  plays the same strike buffer at the same rate. A strike renders in about 15 ms
+  in Node; a song's pool (two or three velocity layers) in 0.1 to 0.4 s, once.
+- Placing it is the engine's: Aaron asked for it "in the background", so a
+  track sends it at the level of its shaker or below, panned right of centre.
 
 ## The sketch
 
