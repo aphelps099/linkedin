@@ -1018,16 +1018,20 @@ its exchanges find a gap on 23 posts. A couplet drop whose tag is too long for
 the choke window falls back to her tag (2 of 20 on Circle Back, 1 of 27 on
 Hustle).
 
-**Heard** (Whisper small.en, beam 5, on the twelve Nov 5 takes, each phrase cut
-from the mix): the refrain exact on 7 of 11, the sign-off on 7 of 9, a couplet's
-X alone on 3 of 7 and its Y alone on 3 of 7 (mean WER 0.16 and 0.29). The drop's
-Y as the impact: 1 of 5, the lady's "PIVOT." (dry since Nov 5; with the vocoder
-blend it was heard as noise). Synthia's Y on the drop's downbeat ("DEMAND.",
-"GROWTH.") is not heard in the mix, though the same render with the band muted
-is ("It's in demand."): the drop kick, the sub and the downbeat's soft clip
-(the master's clipper takes 3 to 26% of the word's samples past its knee) cover
-her two syllables. Synthia owns 57 of the 68 couplet drops of the fixtures
-(Strategy 5, the lady 6).
+**Heard** (Whisper small.en, beam 5, each phrase cut from the full mix). Nov 5,
+before: the drop's impact word alone 0 of 9. After (the sample and fixtures 11
+and 48 on the three Drop Edition tracks, cast by the page with the voice
+bank): the impact word alone 8 of 9 (PIVOT. x2, GIFT., OFF., PLUNGE., ROUTINE.,
+SEGMENT., STAR.; Strategy's GOAL. was heard "GO!"), the tag and impact
+together 9 of 9. Strategy's single words (forced into the sample's cast on the
+three tracks, and as the twelve takes cast them): "Aligned." 4 of 4 (was 0 of
+3), "Alignment" 7 of 9 (was 0 of 3; "Align" without the release), "Optimize."
+2 of 2, "Stakeholders" 2 of 2, "Offline." 2 of 3; "Ecosystem" 2 of 4 ("Ego
+system"), "Bandwidth?" 0 of 1 ("Bandwith") and "It's not double-booked." 3 of 9
+(heard on Humbled and Honored, "double book" on the other two) still fall
+short. On the twelve takes, every cast part: 88 of 128 exact; the weak ones are
+Strategy's "It's not X." over the build's ladder (5 of 13: "a Utah", "a boy")
+and her rotated sinks' deep word (4 of 9).
 
 ### The role table
 
@@ -1356,6 +1360,23 @@ only those layers, for measurements.
 | The acoustic colours (plucks, felt piano, mallet, tambourine, guitar) | 9.9% of the energy: the sound stays about 90% electronic | |
 | The loop / the textures | -22.9 / -15.1 LUFS (6.0% / 27.9% of the energy) | |
 | Gates | -10.24 LUFS, -1.50 dBTP, LRA 11.6 LU (warn), Swell +4.56 LU and Pool +5.39 LU on a phone | |
+
+**The bloom, measured** (Nov 5; the plans and renders of the sample and fixtures
+11 and 48 through the page). Layers starting by bar 6: 3 (her texture, the
+pulse, her copies), was 6. Layers sounding (over 30% of their level), bar by
+bar: 0 1 2 2 3 3 3 4 5 5 5 6 7 8 10 12 13 13 13 13 13 13 12 12 11 8 0 (was 0 1
+3 4 5 6 6 7 7 8 9 9 9 11 12 12 13 13 13 13 13 12 12 12 11 8 0): lush around bar
+12-14, the fullest at 16. Whisper on the loops alone (`tune.solo` of the
+textures, Synergy muted, one-bar windows on a half-bar hop, the clear phrases
+left out) hears a word of the loops in 0 of 42 windows (the sample), 3 of 43
+(fixture 11: "It's hot", from "Hot take"), 0 of 43 (fixture 48) and 0 of 43
+(fixture 31), against 38 of 42 and 42 of 43 ("drop, drop, drop") before; what
+it hears now is syllables ("buh, buh") and its silence hallucinations ("Thanks
+for watching!"). Gates: -10.28 to -10.44 LUFS (the river's `makeup` went from
+0.9 to 2 dB: the sparse opening had left it at -11.3), true peak -1.25 dBTP at
+most, the swell +4.4 to +5.7 LU over the stream on a phone, the pool +3.3 to
++6.8; the loudness range is 13.3 to 14.0 LU (a warning; 11.2 to 12.2 before):
+the bloom starts quieter.
 
 The LRA warning is the form: a river that starts sparse and ends in a long
 fade spans more than a drop that holds its level. The river's clear phrases skip
