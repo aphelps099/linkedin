@@ -234,21 +234,25 @@ if (probe.status !== 0) {
         continue;
       }
 
-      // Check energy and lumaTrack: ±2 per frame on 99% of frames
+      // Check energy and lumaTrack: compare raw bytes, ±2 per frame on 99% of frames
       for (const track of ['energy', 'lumaTrack']) {
         if (!diffs.includes(track)) continue;
-        const cTrack = track === 'energy' ? energyTrack(committed) : lumaTrack(committed);
-        const rTrack = track === 'energy' ? energyTrack(r) : lumaTrack(r);
-        if (cTrack.length !== rTrack.length) {
-          fail('determinism', `${r.id}.${track} length ${rTrack.length} vs committed ${cTrack.length}`);
+        const cBytes = Buffer.from(committed[track], 'base64');
+        const rBytes = Buffer.from(r[track], 'base64');
+        if (cBytes.length !== rBytes.length) {
+          fail('determinism', `${r.id}.${track} length ${rBytes.length} vs committed ${cBytes.length}`);
           continue;
         }
-        const within2 = cTrack.filter((v, i) => Math.abs(v - rTrack[i]) <= 2).length;
-        const pct = within2 / cTrack.length;
+        const byteDiffs = [];
+        for (let i = 0; i < cBytes.length; i++) {
+          byteDiffs.push(Math.abs(cBytes[i] - rBytes[i]));
+        }
+        const within2 = byteDiffs.filter(d => d <= 2).length;
+        const pct = within2 / byteDiffs.length;
+        const maxDiff = Math.max(...byteDiffs);
+        const avgDiff = byteDiffs.reduce((a, b) => a + b, 0) / byteDiffs.length;
+        console.log(`  ${r.id}.${track}: max ${maxDiff}, mean ${avgDiff.toFixed(2)}, ${(pct * 100).toFixed(1)}% within ±2`);
         if (pct < 0.99) {
-          const diffs = cTrack.map((v, i) => Math.abs(v - rTrack[i]));
-          const maxDiff = Math.max(...diffs);
-          const avgDiff = diffs.reduce((a, b) => a + b, 0) / diffs.length;
           fail('determinism', `${r.id}.${track} differs: ${(pct * 100).toFixed(1)}% within ±2 (max diff ${maxDiff}, avg ${avgDiff.toFixed(2)})`);
         }
       }
