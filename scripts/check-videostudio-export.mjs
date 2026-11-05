@@ -6,7 +6,7 @@
 //      not whole frames); ffmpeg scdet must find every cut on its target frame. The tiles are
 //      L1 (no board region): over a full-frame generated tile the compositor draws the board's
 //      sockets even when the EDL has no board cues.
-//   3. the timing rule, every step at 120, 92 and 130 BPM: cuts on round(t·24), within half a frame
+//   3. the timing rule, every step at 120, 92, 130 and 108 BPM (Offsite, swung): cuts on round(t·24), within half a frame
 //      of the beat; hits (one-frame flashes on {hit:true} anchors) on the frame that holds the click's
 //      audible onset as the engine's master bus renders it: the picture leads by 0 to under one frame,
 //      never late; the engine's latency measured on clicks and on every kick of each track's song
@@ -203,7 +203,7 @@ try {
   }
 
   // ---- 3. the timing rule, every step of every track: cuts and hits --------------------------------------------
-  // One file per track (120, 92 and 130 BPM), two tiles: the top one cuts black/white on every step
+  // One file per track (120, 92, 130 and 108 BPM), two tiles: the top one cuts black/white on every step
   // at round(t·24) (hard cuts: within half a frame of the beat); the bottom one flashes white for one
   // frame on every step at its hit frame ({anchor:'step:s', hit:true}: the frame that holds the
   // audible onset). The sound is a click on every step played through the engine's own master bus
@@ -212,7 +212,7 @@ try {
   // (every kick of the song), and must match edl/anchors.js AUDIO_LATENCY.
   if (section(3)) {
     const before = checks, page = await fresh(), dist = {};
-    for (const track of quick ? ['circle-back'] : ['circle-back', 'humbled-and-honored', 'hustle']) {
+    for (const track of quick ? ['circle-back'] : ['circle-back', 'humbled-and-honored', 'hustle', 'offsite']) {
       const res = await page.evaluate(async ({track}) => {
         const {plan} = await X.song({voice:false, track});
         const T = s => X.stepTime(plan, s), N = plan.totalSteps, clips = [{id:'bg', at:0, len:N, cell:'full', asset:'gen:color:#000000'}];
@@ -296,7 +296,7 @@ try {
     const spec = async (page, keyEvery, name) => {
       const res = await page.evaluate(async ({span, keyEvery}) => {
         const {plan} = await X.song({voice:false});
-        const edl = (await X.treatments.draft())(plan, X.SHOTS, {format:'9:16'});
+        const edl = (await X.treatment('draft')).fn(plan, X.SHOTS, {format:'9:16'});
         const n = Math.round((span[1] / 24 + 1) * 48000), L = new Float32Array(n), R = new Float32Array(n);
         for (let i = 0; i < n; i++) { L[i] = .2 * Math.sin(2 * Math.PI * 220 * i / 48000); R[i] = .2 * Math.sin(2 * Math.PI * 330 * i / 48000); }
         for (let s = 0; s < plan.totalSteps; s += 4) { const i = Math.round(X.stepTime(plan, s) * 48000); for (let k = 0; k < 48 && i + k < n; k++) { L[i + k] = .8; R[i + k] = .8; } }
@@ -362,7 +362,7 @@ try {
     // Cancel: abort mid-picture; the export throws AbortError and closes everything it opened.
     const cancel = await page.evaluate(async () => {
       const {plan} = await X.song({voice:false});
-      const edl = (await X.treatments.draft())(plan, X.SHOTS, {format:'9:16'}), ac = new AbortController(), ledger = X.frameLedger();
+      const edl = (await X.treatment('draft')).fn(plan, X.SHOTS, {format:'9:16'}), ac = new AbortController(), ledger = X.frameLedger();
       let error = null, seen = 0;
       try { await X.exportFilm({edl, plan, shots:X.SHOTS, format:'9:16', scale:.25, span:[1152, 1300], audio:null, ledger, signal:ac.signal, onProgress:p => { if (p.phase === 'picture' && (seen = p.frame) >= 6) ac.abort(); }}); } catch (e) { error = e.name; }
       return {error, seen, live:ledger.live, opened:ledger.opened};
