@@ -59,6 +59,13 @@ About 60 seconds, always in this order:
 6. A drop, Sink In (half speed, an octave down), a second drop.
 7. The tape stop under the closing phrase.
 
+### The river: the haze lane's form (Aaron, Nov 5)
+The Panda Bear and Washed Out songs do not run the Drop Edition. They run like a river of electronic sound: it has a steady flow, and sometimes the flow gently changes.
+- Repetition is the instrument. Short samples (her syllables, Strategy's words, office sounds, the tambourine, acoustic-sounding plucks and mallets) repeat in a steady rhythmic pattern until they diffuse into a pixelated, melodic stream.
+- Layer only once the texture is lush, and always ramp in: no layer arrives or leaves in less than two bars.
+- Few clear vocal phrases, one or two that rise out of the stream and sink back in. Singers never trade phrases back to back.
+- Tambourine and acoustic colours woven through a sound that stays about 90% electronic.
+
 ### Mix targets
 - −10 LUFS integrated, true peak −1 dBTP or lower.
 - Every drop at least +2.5 LU over the verse, including on a phone speaker.

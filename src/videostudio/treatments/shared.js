@@ -47,7 +47,7 @@ export function coldOpen(plan, L) {
 // never before the curve has run; the last two frames (or what is left once she stops) show frame 0's
 // BACK. as a ghost at I .08 on the ignition's peg grid. Synergy's closing clip moves its source by the
 // fewest frames that keep the slow-down and the hold two frames clear of his blinks.
-//   clips: the outro's clips (the closing Synergy clip among them; its time is moved in place)
+//   clips: the outro's clips (the closing Synergy clip among them, at a constant rate or none; its time is moved in place)
 //   pitch: the ignition's peg video pitch    index: the shot index (compile.js shotIndex)
 export function ending(plan, L, {clips, pitch = 12, index, shots, format}) {
   const {T, S, stop, stopAt, N} = L, at = f => ({anchor:'step:0', frames:f}), span = (a, b) => r6(S(b / 24) - S(a / 24));
@@ -57,8 +57,9 @@ export function ending(plan, L, {clips, pitch = 12, index, shots, format}) {
   const v0 = Math.min(T(stopAt), cutFrame(T(stopAt)) / 24), vHold = T(stopAt) + (stop?.seconds ?? .4) / 2;
   for (const x of clips) {
     const s = x.asset.startsWith('shot:') ? index.get(x.asset.slice(5)) : null, blinks = s && TRACKING[s.robot]?.blinks;
-    if (!blinks?.length || typeof x.at !== 'number' || T(x.at) > v0 || T(x.at + x.len) < vHold || x.time?.rate !== undefined || x.time?.map || x.time?.freezeAt !== undefined) continue;
-    const inS = x.time?.in ?? 0, frameAt = (v, d) => Math.floor((inS + d / 24 + v - T(x.at)) * 24 + 1e-6);
+    if (!blinks?.length || typeof x.at !== 'number' || T(x.at) > v0 || T(x.at + x.len) < vHold || (x.time?.rate !== undefined && typeof x.time.rate !== 'number') || x.time?.map || x.time?.freezeAt !== undefined) continue;
+    // (A constant rate, the slow motion of a sign-off on a slow tape, scales the source it covers.)
+    const inS = x.time?.in ?? 0, rate = x.time?.rate ?? 1, frameAt = (v, d) => Math.floor((inS + d / 24 + rate * (v - T(x.at))) * 24 + 1e-6);
     const clear = d => { const a = frameAt(v0, d), b = frameAt(vHold, d); return frameAt(T(x.at), d) >= 0 && b < s.frames - 1 && blinks.every(([p, q]) => b < p - 2 || a > q + 2); };
     const d = [0, ...Array.from({length:48}, (_, i) => [-(i + 1), i + 1]).flat()].find(clear);
     if (d) { x.time = {...(x.time || {}), in:r6(inS + d / 24)}; x.why = `${x.why ?? ''}; the tape stop holds source frame ${frameAt(vHold, d)}, eyes open (${d > 0 ? '+' : ''}${d} frames off a blink)`.replace(/^; /, ''); }

@@ -1,0 +1,1774 @@
+{
+ "version": 2,
+ "note": "The pixel-voice bank: every lexicon line Strategy and Synthia sing (src/allhands/voices/lines.js), dry, FLAC 44.1 kHz mono 16-bit, trimmed, active speech at -20 dBFS, the pitch track in the Vorbis comment PIXEL_PITCH. Times are seconds in the file. Each take was heard exactly by Whisper small.en dry and sung at `amount` in two keys. Written by scripts/render-song-voices.mjs; boundaries by src/allhands/voices/measure.py (the lady aligner).",
+ "sampleRate": 44100,
+ "base": "allhands/voices/",
+ "format": "flac",
+ "test": {
+  "keys": [
+   "D majorPenta",
+   "F minorPenta"
+  ],
+  "amounts": {
+   "strategy": [
+    0.6
+   ],
+   "synthia": [
+    0.6,
+    0.3
+   ]
+  },
+  "whisper": "faster-whisper small.en int8, beam 5, temperature 0"
+ },
+ "identity": {
+  "strategy": {
+   "provider": "local-kokoro",
+   "modelId": "onnx-community/Kokoro-82M-v1.0-ONNX",
+   "dtype": "q8",
+   "voice": "am_onyx",
+   "speed": 0.95,
+   "modelSha256": "fbae9257e1e05ffc727e951ef9b9c98418e6d79f1c9b6b13bd59f5c9028a1478",
+   "tokenizerSha256": "77a02c8e164413299b4b4c403b14f8e0e1c1b727db4d46a09d6327b861060a34",
+   "configSha256": "df34b4f930b23447cd4dc410fabfb42eb3f24e803e6c3f97d618fb359380a36f",
+   "voiceDataSha256": "da5d135b424164916d75a68ffb4c2abce3d7d5ccc82dd1ee6cf447ce286145e6",
+   "matchesVoiceBank": true
+  },
+  "synthia": {
+   "provider": "flite",
+   "voice": "slt",
+   "pitch": 1.04,
+   "engine": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+   "chain": "lavfi flite -> aresample 24000, asetrate 24960, aresample 24000, atempo 0.961538 (render-meeting-season.py)"
+  }
+ },
+ "lines": {
+  "thrilled-to-share": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "proud-and-humbled": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "proud-to-announce": {
+   "voices": [
+    "strategy"
+   ],
+   "owner": "strategy"
+  },
+  "next-chapter": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "long"
+  },
+  "join-me-in-congratulating": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "humbled-small-update": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "huge-shout-out": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "forever-grateful": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "blessed": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "couldnt-be-prouder": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "be-vulnerable": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "ill-be-honest": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "imposter-syndrome": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "stay-humble": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "learnings": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "plot-twist": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "heres-the-thing": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "ask-me-how-i-know": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "trust-the-process": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "growth-mindset": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "and-thats-okay": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "rise-and-grind": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "no-days-off": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "in-this-economy": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "north-star": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "move-the-needle": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "bandwidth": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "double-click": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "low-hanging-fruit": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "deep-dive": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "alignment": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "stakeholders": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "touch-base": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "take-this-offline": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "offline": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "per-my-last-email": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "boil-the-ocean": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "paradigm-shift": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "ecosystem": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "ownership": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "unlock-the-potential": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "optimize": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "testament": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "navigate": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "long"
+  },
+  "elevate": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "seamless": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "robust": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "ever-evolving": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "long"
+  },
+  "important-to-note": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "in-the-realm-of": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "foster": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "agentic": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "ai-first": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "human-in-the-loop": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "future-of-work": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "in-conclusion": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "great-question": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "bring-your-whole-self": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "protect-your-peace": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "hold-space": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "were-a-family": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "boundaries": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "wellness": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "repost-if-you-agree": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "follow-for-more": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "link-in-the-comments": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "lets-discuss": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "be-honest": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "this": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "dm-me": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "same-time-next-week": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "lets-go": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "heres-to-whats-next": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "its": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "its-a": {
+   "voices": [
+    "synthia"
+   ],
+   "owner": "synthia"
+  },
+  "layoff-launch-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "layoff-launch-response": {
+   "voices": [
+    "synthia",
+    "strategy"
+   ],
+   "owner": "synthia"
+  },
+  "pink-slip-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "pink-slip-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "cardboard-box-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "cardboard-box-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "reorg-remix-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "reorg-remix-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "severance-care-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "severance-care-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "attrition-alumni-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "attrition-alumni-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "freeze-focus-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "freeze-focus-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "exit-listening-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "exit-listening-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "skeleton-tiger-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "skeleton-tiger-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "merger-synergy-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "autocomplete-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "autocomplete-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "hallucination-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "hallucination-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "ghostwriter-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "ghostwriter-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "replacement-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "replacement-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "copy-paste-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "copy-paste-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "chatbot-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "chatbot-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "guess-forecast-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "guess-forecast-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "reading-delve-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "update-game-changer-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "overtime-ownership-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "overtime-ownership-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "insomnia-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "insomnia-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "saturday-hackathon-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "saturday-hackathon-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "espresso-discipline-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "espresso-discipline-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "second-job-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "second-job-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "cold-shower-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "cold-shower-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "no-sleep-edge-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "no-sleep-edge-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "unpaid-calling-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "burnout-bandwidth-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "burnout-bandwidth-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "pizza-wellness-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "pizza-wellness-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "long"
+  },
+  "raise-meditation-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "raise-meditation-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "long"
+  },
+  "sick-day-async-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "sick-day-async-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "vacation-workation-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "vacation-workation-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "lunch-and-learn-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "lunch-and-learn-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "demotion-lateral-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "demotion-lateral-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "long"
+  },
+  "more-work-stretch-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "more-work-stretch-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "pay-cut-equity-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "pay-cut-equity-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "gift-card-recognition-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "gift-card-recognition-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "bigger-desk-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "bigger-desk-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "long"
+  },
+  "new-title-growth-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "new-title-growth-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "hour-quick-sync-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "hour-quick-sync-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "reply-all-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "reply-all-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "delay-dependency-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "delay-dependency-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "no-not-now-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "no-not-now-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "mistake-learning-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "mistake-learning-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "silence-parking-lot-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "silence-parking-lot-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "pre-meeting-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "pre-meeting-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "status-visibility-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "status-visibility-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "deck-narrative-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "deck-narrative-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "recurring-ritual-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "recurring-ritual-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "agenda-vibe-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "agenda-vibe-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "decision-next-step-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "decision-next-step-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "double-booked-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "double-booked-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "avoidance-camera-off-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "avoidance-camera-off-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "u-turn-pivot-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "performance-plan-family-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "performance-plan-family-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "ping-pong-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "ping-pong-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "complaint-gift-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "mandatory-retreat-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "mandatory-retreat-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "open-plan-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "open-plan-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "hot-desk-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "hot-desk-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "cult-culture-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "lanyard-belonging-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "lanyard-belonging-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "vanity-north-star-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "vanity-north-star-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "rounding-momentum-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "miss-stretch-goal-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "miss-stretch-goal-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "loss-investment-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "loss-investment-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "churn-graduation-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "churn-graduation-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "cherry-picking-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "cherry-picking-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "one-customer-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "one-customer-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "down-quarter-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "down-quarter-response": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "loan-leverage-call": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "ex-aligned": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "ex-room-temperature": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "ex-ten-thousand-likes": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "ex-same-team-new-logo": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "ex-forty-slides": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "ex-pending": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "ex-nothing-scheduled": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "ex-year-nine": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "ex-it-stays-empty": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "ex-paragraph-two": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "ex-bandwidth": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "ex-none": {
+   "voices": [
+    "synthia",
+    "strategy"
+   ],
+   "owner": "synthia"
+  },
+  "ex-nothing-there": {
+   "voices": [],
+   "owner": "strategy"
+  },
+  "layoff-launch-tag": {
+   "voices": [
+    "synthia",
+    "strategy"
+   ],
+   "owner": "synthia"
+  },
+  "layoff-launch-impact": {
+   "voices": [
+    "synthia"
+   ],
+   "owner": "synthia"
+  },
+  "cardboard-box-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "cardboard-box-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "reorg-remix-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "reorg-remix-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "severance-care-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "severance-care-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "freeze-focus-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "freeze-focus-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "skeleton-tiger-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "skeleton-tiger-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "replacement-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "replacement-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "chatbot-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "chatbot-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "insomnia-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "insomnia-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "second-job-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "second-job-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "cold-shower-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "cold-shower-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "no-sleep-edge-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "no-sleep-edge-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "burnout-bandwidth-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "burnout-bandwidth-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "sick-day-async-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "sick-day-async-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "new-title-growth-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "new-title-growth-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "hour-quick-sync-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "hour-quick-sync-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "no-not-now-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "no-not-now-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "mistake-learning-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "mistake-learning-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "agenda-vibe-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "agenda-vibe-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "decision-next-step-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "decision-next-step-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "double-booked-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "double-booked-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "avoidance-camera-off-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "avoidance-camera-off-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "u-turn-pivot-tag": {
+   "voices": [
+    "synthia"
+   ],
+   "owner": "synthia"
+  },
+  "complaint-gift-tag": {
+   "voices": [
+    "synthia"
+   ],
+   "owner": "synthia"
+  },
+  "mandatory-retreat-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "mandatory-retreat-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "vanity-north-star-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "vanity-north-star-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "miss-stretch-goal-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "miss-stretch-goal-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "one-customer-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "one-customer-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "down-quarter-tag": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  },
+  "down-quarter-impact": {
+   "voices": [],
+   "owner": "synthia",
+   "strategyOnly": "failed"
+  }
+ },
+ "cuts": [
+  {
+   "id": "layoff-launch-tag",
+   "voice": "synthia",
+   "kind": "tag",
+   "text": "It's a-",
+   "from": "synthia/layoff-launch-response.flac",
+   "words": [
+    0,
+    1
+   ],
+   "start": 0.012,
+   "end": 0.32,
+   "onset": 0.012,
+   "ready": true
+  },
+  {
+   "id": "layoff-launch-tag",
+   "voice": "strategy",
+   "kind": "tag",
+   "text": "It's a-",
+   "from": "strategy/layoff-launch-response.flac",
+   "words": [
+    0,
+    1
+   ],
+   "start": 0.06,
+   "end": 0.32,
+   "onset": 0.06,
+   "ready": true
+  },
+  {
+   "id": "layoff-launch-impact",
+   "voice": "synthia",
+   "kind": "impact",
+   "text": "launch.",
+   "from": "synthia/layoff-launch-response.flac",
+   "words": [
+    2,
+    2
+   ],
+   "start": 0.32,
+   "end": 0.904,
+   "onset": 0.39,
+   "ready": true
+  },
+  {
+   "id": "layoff-launch-impact",
+   "voice": "strategy",
+   "kind": "impact",
+   "text": "launch.",
+   "from": "strategy/layoff-launch-response.flac",
+   "words": [
+    2,
+    2
+   ],
+   "start": 0.32,
+   "end": 1.011,
+   "onset": 0.49,
+   "ready": false
+  },
+  {
+   "id": "u-turn-pivot-tag",
+   "voice": "synthia",
+   "kind": "tag",
+   "text": "It's a-",
+   "from": "synthia/its-a.flac",
+   "words": [
+    0,
+    1
+   ],
+   "start": 0.017,
+   "end": 0.554,
+   "onset": 0.017,
+   "ready": true
+  },
+  {
+   "id": "complaint-gift-tag",
+   "voice": "synthia",
+   "kind": "tag",
+   "text": "It's a-",
+   "from": "synthia/its-a.flac",
+   "words": [
+    0,
+    1
+   ],
+   "start": 0.017,
+   "end": 0.554,
+   "onset": 0.017,
+   "ready": true
+  }
+ ],
+ "entries": [
+  {
+   "id": "proud-to-announce",
+   "voice": "strategy",
+   "kind": "expression",
+   "text": "Proud to announce.",
+   "file": "strategy/proud-to-announce.flac",
+   "ref": {
+    "bank": "proud-to-announce"
+   },
+   "samples": 66295,
+   "duration": 1.5033,
+   "voiced": [
+    0.08,
+    1.305
+   ],
+   "f0": 92.7,
+   "rmsDb": -20.93,
+   "gainDb": 6.93,
+   "amount": 0.6,
+   "words": [
+    {
+     "text": "Proud",
+     "start": 0.08,
+     "end": 0.501,
+     "onset": 0.194,
+     "syllables": [
+      [
+       0.18,
+       0.41
+      ]
+     ],
+     "f0": 108.6,
+     "check": "isolated"
+    },
+    {
+     "text": "to",
+     "start": 0.501,
+     "end": 0.67,
+     "onset": 0.556,
+     "syllables": [
+      [
+       0.56,
+       0.67
+      ]
+     ],
+     "f0": 92.3,
+     "check": "context"
+    },
+    {
+     "text": "announce.",
+     "start": 0.67,
+     "end": 1.305,
+     "onset": 0.682,
+     "syllables": [
+      [
+       0.67,
+       0.71
+      ],
+      [
+       0.8,
+       1.04
+      ]
+     ],
+     "f0": 83.2,
+     "check": "fail"
+    }
+   ],
+   "confidence": 0.26,
+   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:gap,join:V|V",
+   "heard": "Proud to announce.",
+   "bytes": 43408,
+   "sha256": "970db854a8c5794da0565090f27e6ea37dbceaa669c370bb924dfab97cf61bbc"
+  },
+  {
+   "id": "its-a",
+   "voice": "synthia",
+   "kind": "pickup",
+   "text": "It's a",
+   "file": "synthia/its-a.flac",
+   "ref": {
+    "frame": "It's a"
+   },
+   "samples": 27399,
+   "duration": 0.6213,
+   "voiced": [
+    0.017,
+    0.554
+   ],
+   "f0": 192,
+   "rmsDb": -20.95,
+   "gainDb": 6.95,
+   "amount": 0.6,
+   "words": [
+    {
+     "text": "It's",
+     "start": 0.017,
+     "end": 0.246,
+     "onset": 0.017,
+     "syllables": [
+      [
+       0.017,
+       0.08
+      ]
+     ],
+     "f0": 182.5,
+     "check": "isolated"
+    },
+    {
+     "text": "a",
+     "start": 0.246,
+     "end": 0.554,
+     "onset": 0.252,
+     "syllables": [
+      [
+       0.246,
+       0.55
+      ]
+     ],
+     "f0": 193.5,
+     "check": "fail"
+    }
+   ],
+   "confidence": 0.1,
+   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|V",
+   "heard": "It's A.",
+   "bytes": 23411,
+   "sha256": "c9e5f212eaba9f51d5e27a234bfb17055638e49b7561f35718e94d4bd46980c9"
+  },
+  {
+   "id": "layoff-launch-response",
+   "voice": "synthia",
+   "kind": "response",
+   "text": "It's a launch.",
+   "file": "synthia/layoff-launch-response.flac",
+   "ref": {
+    "couplet": "layoff-launch",
+    "part": "y"
+   },
+   "samples": 41322,
+   "duration": 0.937,
+   "voiced": [
+    0.012,
+    0.904
+   ],
+   "f0": 183.2,
+   "rmsDb": -20.86,
+   "gainDb": 6.86,
+   "amount": 0.6,
+   "words": [
+    {
+     "text": "It's",
+     "start": 0.012,
+     "end": 0.24,
+     "onset": 0.012,
+     "syllables": [
+      [
+       0.012,
+       0.08
+      ]
+     ],
+     "f0": 182.5,
+     "check": "isolated"
+    },
+    {
+     "text": "a",
+     "start": 0.24,
+     "end": 0.32,
+     "onset": 0.252,
+     "syllables": [
+      [
+       0.24,
+       0.32
+      ]
+     ],
+     "f0": 206.9,
+     "check": "fail"
+    },
+    {
+     "text": "launch.",
+     "start": 0.32,
+     "end": 0.904,
+     "onset": 0.39,
+     "syllables": [
+      [
+       0.39,
+       0.57
+      ]
+     ],
+     "f0": 181.8,
+     "check": "isolated"
+    }
+   ],
+   "confidence": 0.16,
+   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|V,join:V|A",
+   "heard": "It's a launch.",
+   "bytes": 30910,
+   "sha256": "5f248925b13b0883ea30a11c398bb2345b7f56b34a74e55b437d340813446538"
+  },
+  {
+   "id": "layoff-launch-response",
+   "voice": "strategy",
+   "kind": "response",
+   "text": "It's a launch.",
+   "file": "strategy/layoff-launch-response.flac",
+   "ref": {
+    "couplet": "layoff-launch",
+    "part": "y"
+   },
+   "samples": 46626,
+   "duration": 1.0573,
+   "voiced": [
+    0.06,
+    1.011
+   ],
+   "f0": 91.6,
+   "rmsDb": -21.1,
+   "gainDb": 7.1,
+   "amount": 0.6,
+   "words": [
+    {
+     "text": "It's",
+     "start": 0.06,
+     "end": 0.29,
+     "onset": 0.06,
+     "syllables": [
+      [
+       0.06,
+       0.17
+      ]
+     ],
+     "f0": 91.6,
+     "check": "isolated"
+    },
+    {
+     "text": "a",
+     "start": 0.29,
+     "end": 0.32,
+     "onset": 0.29,
+     "syllables": [
+      [
+       0.29,
+       0.32
+      ]
+     ],
+     "f0": 0,
+     "check": "context"
+    },
+    {
+     "text": "launch.",
+     "start": 0.32,
+     "end": 1.011,
+     "onset": 0.49,
+     "syllables": [
+      [
+       0.51,
+       0.74
+      ]
+     ],
+     "f0": 91.8,
+     "check": "context"
+    }
+   ],
+   "confidence": 0.29,
+   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:join:F|V,join:V|A",
+   "heard": "It's a launch.",
+   "bytes": 35021,
+   "sha256": "aac31a4b30e1f420c674603ebc41781889acafb97df698713185cb1e7ab6bc3e"
+  },
+  {
+   "id": "ex-none",
+   "voice": "synthia",
+   "kind": "exchange",
+   "text": "None.",
+   "file": "synthia/ex-none.flac",
+   "ref": {
+    "exchange": 13,
+    "side": "answer"
+   },
+   "samples": 22095,
+   "duration": 0.501,
+   "voiced": [
+    0.013,
+    0.466
+   ],
+   "f0": 186,
+   "rmsDb": -20.32,
+   "gainDb": 6.32,
+   "amount": 0.6,
+   "words": [
+    {
+     "text": "None.",
+     "start": 0.013,
+     "end": 0.466,
+     "onset": 0.11,
+     "syllables": [
+      [
+       0.11,
+       0.27
+      ]
+     ],
+     "f0": 186,
+     "check": "isolated"
+    }
+   ],
+   "confidence": 0.77,
+   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:single",
+   "heard": "None.",
+   "bytes": 19199,
+   "sha256": "3378e63800f910c9851d24253c806ca1bd4d91e8666f65719c05587d1e359628"
+  },
+  {
+   "id": "ex-none",
+   "voice": "strategy",
+   "kind": "exchange",
+   "text": "None.",
+   "file": "strategy/ex-none.flac",
+   "ref": {
+    "exchange": 13,
+    "side": "answer"
+   },
+   "samples": 29968,
+   "duration": 0.6795,
+   "voiced": [
+    0.057,
+    0.528
+   ],
+   "f0": 80.3,
+   "rmsDb": -19.61,
+   "gainDb": 5.61,
+   "amount": 0.6,
+   "words": [
+    {
+     "text": "None.",
+     "start": 0.057,
+     "end": 0.528,
+     "onset": 0.146,
+     "syllables": [
+      [
+       0.17,
+       0.35
+      ]
+     ],
+     "f0": 80.3,
+     "check": "isolated"
+    }
+   ],
+   "confidence": 0.74,
+   "method": "pocketsphinx-hmm+ctc-check(mms_fa,w2v2_base_960h)+snap:single",
+   "heard": "None.",
+   "bytes": 24467,
+   "sha256": "4031e484b1d3ae865d8e30b3a9517249a497f4b118dc0613e2a2afce4c43f20f"
+  }
+ ]
+}

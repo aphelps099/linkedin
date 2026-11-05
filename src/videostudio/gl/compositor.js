@@ -23,13 +23,15 @@
 //   board cues under their cell, then per layer: echo copies, the layer (uber shader:
 //   crop + matrix, tile, fold, mosaic, scanline, zoom or directional blur, RGB split,
 //   saturation, chroma drop, peg video, rounded mask, iris, opacity) and its chrome,
-//   then the board over full-frame pictures (light only, MAX blend), board cues over cells,
-//   the screen-share banner.
+//   then psych imagery in its own cells (a peg board over the tile, faded in and out with its cue), the board over
+//   full-frame pictures (light only, MAX blend) or over a psych cell that covers it, board cues
+//   over cells, the screen-share banner. Psych imagery without a cell is painted into the board's
+//   own region, under its type (pegboard/psych.js).
 //   Droste: depth levels, each a copy of the frame with the feedback tile holding the level
 //   before it, in two ping-pong framebuffers. The composite camera (cue matrix + effects).
 //   Post: bloom (bright pass, dual Kawase), the governor's gain, grain, dither.
 // Every pass is a pure function of the frame, its sources and the frame number.
-import {RECT_VS, FULL_VS, LAYER_FS, CHROME_VS, CHROME_FS, MOUTH_VS, MOUTH_FS, COPY_FS, BRIGHT_FS, DOWN_FS, UP_FS, FINAL_FS} from './shaders.js';
+import {RECT_VS, FULL_VS, LAYER_FS, CHROME_VS, CHROME_FS, MOUTH_VS, MOUTH_FS, COPY_FS, BRIGHT_FS, DOWN_FS, UP_FS, FINAL_FS, PEGS_FS} from './shaders.js';
 import {createAtlas, loadFonts, chromeQuads, tileQuads, bannerQuads, packQuads, isLadyTile, LEGIBLE} from './chrome.js';
 import {createBoardLayer, boardPitch, safeSpan} from './board-layer.js';
 import {governorTrack} from '../../pegboard/governor.js';
@@ -50,6 +52,12 @@ export const FX_SUPPORT = {
   trail:'compile: copies of the clip at its earlier source frames, laid over it (MAX for lighten)', radialFold:'shader: mirrored wedges about the centre, reflected at the edge',
   pegBloom:'shader: pegs from the centre out behind a front of peg-wide pixel blocks', chromaDrift:'shader: red, green and blue orbit 120 degrees apart, plus a radial split',
 };
+// What the compositor does with a psych board cue (edl/schema.js PSYCH: {type:'psych', look, ...}).
+export const PSYCH_SUPPORT = {
+  region:'painted into the board region (home, share, full bleed) after its screens: the type wins (board-layer.js)',
+  cell:'its own peg board, a panel over the tile at the cue\'s fade (opaque once faded in, so the picture dissolves into it), drawn after the layers; the board region is drawn over it when they overlap',
+  footage:'the composite under the region averaged to one value per peg (PEGS_FS, 4 × 4 taps) and read back',
+};
 
 // Pegs are hits (edl/anchors.js): an onset at song time t lights on floor((t + L)·24), the frame
 // that holds its audible onset (L = frame.board.lead, the engine's measured latency, 16.33 ms).
@@ -68,6 +76,7 @@ export function boardScreens(list) {
 }
 
 const hexRGB = h => [parseInt(h.slice(1, 3), 16) / 255, parseInt(h.slice(3, 5), 16) / 255, parseInt(h.slice(5, 7), 16) / 255];
+const NO_SCREENS = Object.freeze([]);
 const DEG = Math.PI / 180;
 
 export function createCompositor(canvas, opts = {}) {
@@ -95,7 +104,7 @@ export function createCompositor(canvas, opts = {}) {
     return {p, u};
   }
   const P = {layer:program(RECT_VS, LAYER_FS), chrome:program(CHROME_VS, CHROME_FS), mouth:program(MOUTH_VS, MOUTH_FS), copy:program(FULL_VS, COPY_FS),
-    bright:program(FULL_VS, BRIGHT_FS), down:program(FULL_VS, DOWN_FS), up:program(FULL_VS, UP_FS), final:program(FULL_VS, FINAL_FS)};
+    bright:program(FULL_VS, BRIGHT_FS), down:program(FULL_VS, DOWN_FS), up:program(FULL_VS, UP_FS), final:program(FULL_VS, FINAL_FS), pegs:program(FULL_VS, PEGS_FS)};
   const empty = gl.createVertexArray();
 
   // Chrome instances.
@@ -289,9 +298,29 @@ export function createCompositor(canvas, opts = {}) {
   const safeOf = rect => safeSpan(rect, SAFE[format]);
   // transient: a moving board (a board move eases its rect every frame) draws through one reused
   // instance, resized, instead of a new board for every size.
-  function drawBoardRegion(rect, screens, time, {sockets = true, blend = 'over', pitch, cell = null, radius = 0, target = null, opacity = 1, transient = false} = {}) {
+  // The picture under a board region at one value per peg, for the psych 'footage' look: the
+  // composite averaged over each peg's cell into a cols × rows target, read back top row first.
+  let pegTarget = null, pegData = null;
+  function samplePegs(rect, grid) {
+    const cols = grid.cols, rows = grid.rows;
+    if (!pegTarget || pegTarget.w !== cols || pegTarget.h !== rows) { free(pegTarget); pegTarget = target(cols, rows); }
+    gl.disable(gl.BLEND); bindTarget(pegTarget); gl.useProgram(P.pegs.p); gl.bindVertexArray(empty);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, T.comp.tex); gl.uniform1i(P.pegs.u.uSrc, 0);
+    gl.uniform4f(P.pegs.u.uRect, (rect.x + grid.ox) * scale, (rect.y + grid.oy) * scale, cols * grid.pitch * scale, rows * grid.pitch * scale);
+    gl.uniform2f(P.pegs.u.uSize, W, H); gl.uniform2f(P.pegs.u.uGrid, cols, rows);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    const n = cols * rows * 4, raw = new Uint8Array(n);
+    gl.readPixels(0, 0, cols, rows, gl.RGBA, gl.UNSIGNED_BYTE, raw);
+    if (!pegData || pegData.length !== n) pegData = new Uint8Array(n);
+    for (let y = 0; y < rows; y++) pegData.set(raw.subarray((rows - 1 - y) * cols * 4, (rows - y) * cols * 4), y * cols * 4);
+    resetState(); bindTarget(T.comp);
+    stats.pegSamples = (stats.pegSamples || 0) + 1;
+    return {cols, rows, data:pegData};
+  }
+  function drawBoardRegion(rect, screens, time, {sockets = true, blend = 'over', pitch, cell = null, radius = 0, target = null, opacity = 1, transient = false, psych = null} = {}) {
     if (!boards) return;
-    const b = boards.draw({w:rect.w, h:rect.h, screens, time, pitch, sockets, safe:safeOf(rect), transient});
+    const sample = psych?.some(p => p.look === 'footage') ? grid => samplePegs(rect, grid) : null;
+    const b = boards.draw({w:rect.w, h:rect.h, screens, time, pitch, sockets, safe:safeOf(rect), transient, psych, sample});
     stats.boards++;
     resetState(); bindTarget(target ?? T.comp);
     if (blend === 'max') gl.blendEquation(gl.MAX);
@@ -344,6 +373,10 @@ export function createCompositor(canvas, opts = {}) {
     // words out of frame.
     const rect = frame.board?.rect, screens = ctx.screens, fixed = !!(rect && frame.camera && !frame.camera.board), moving = !!frame.board?.move;
     const under = rect ? frame.layers.filter(l => overlaps(l.cell, rect)) : [];
+    // Psych imagery: in the board's region (no cell) under its type, or in its own cells over the tiles;
+    // a psych cell over the board's region puts the board over it, so the type still wins.
+    const psychAll = frame.board?.psych || [], psychMain = psychAll.filter(p => !p.rect), psychCells = psychAll.filter(p => p.rect);
+    const covered = !!rect && psychCells.some(p => overlaps(p.rect, rect));
     const pegUnder = moving ? null : under.find(l => l.fx.some(x => x.type === 'pegVideo' && x.mix >= .5));
     const videoUnder = under.some(l => l.kind === 'video');
     // panel: 1 the whole board, sockets and all (L1's panel laid over the picture, so its type
@@ -353,14 +386,14 @@ export function createCompositor(canvas, opts = {}) {
     const regionRadius = rect && (rect.w < F.w || rect.h < F.h) ? 12 : 0;
     const drawMain = (target = null) => {
       // (Over peg video the board takes its pitch, so the two grids coincide: the ignition, the loop seam's ghost.)
-      const pitch = pegUnder && !frame.board.over ? pegUnder.fx.find(x => x.type === 'pegVideo').pitch : undefined, base = {cell:rect, radius:regionRadius, target, transient:moving, pitch};
+      const pitch = pegUnder && !frame.board.over ? pegUnder.fx.find(x => x.type === 'pegVideo').pitch : undefined, base = {cell:rect, radius:regionRadius, target, transient:moving, pitch, psych:psychMain.length ? psychMain : null};
       if (panel >= 1) drawBoardRegion(rect, screens, btime, base);
       else {
         drawBoardRegion(rect, screens, btime, {...base, sockets:!videoUnder, blend:videoUnder ? 'max' : 'over'});
         if (panel > 0) drawBoardRegion(rect, screens, btime, {...base, opacity:panel});
       }
     };
-    if (rect && !under.length && !fixed) drawMain();
+    if (rect && !under.length && !fixed && !covered) drawMain();
     for (const cs of frame.board?.cells || []) if (cs.z !== 'over') drawBoardRegion(cs.rect, [ctx.cells[cs.screen]], btime, {cell:cs.rect, radius:12});
 
     // The layers, each with its chrome.
@@ -398,8 +431,11 @@ export function createCompositor(canvas, opts = {}) {
       if (quads.length) { resetState(); bindTarget(T.comp); drawChrome(quads); }
     });
 
+    // Psych cells: their own peg board, a panel over the tile (its footage sampled first), laid on at the
+    // cue's fade, so the picture dissolves into the dot grid and back instead of cutting to its panel.
+    for (const p of psychCells) drawBoardRegion(p.rect, NO_SCREENS, btime, {cell:p.rect, radius:p.cell === 'full' ? 0 : 12, psych:[p], opacity:Math.min(1, Math.max(0, p.fade ?? 1))});
     // The board over full-frame pictures: its light over footage (MAX), or the whole board over generated tiles.
-    if (rect && under.length && !fixed) drawMain();
+    if (rect && (under.length || covered) && !fixed) drawMain();
     for (const cs of frame.board?.cells || []) if (cs.z === 'over') drawBoardRegion(cs.rect, [ctx.cells[cs.screen]], btime, {cell:cs.rect, radius:12, blend:'max', sockets:false});
     if (bannerRect) {
       const text = frame.layers.find(l => l.chrome?.banner)?.chrome.banner;
@@ -496,7 +532,7 @@ export function createCompositor(canvas, opts = {}) {
     get stats() { return {...stats}; }, get gains() { return ctx.gains; },
     get textures() { return cache.size; },
     dispose() {
-      boards?.dispose(); Object.values(T).flat().forEach(free);
+      boards?.dispose(); Object.values(T).flat().forEach(free); free(pegTarget); pegTarget = null;
       for (const t of cache.values()) gl.deleteTexture(t.tex);
       cache.clear(); gl.deleteTexture(atlasTex);
       Object.values(P).forEach(p => gl.deleteProgram(p.p));
@@ -521,7 +557,11 @@ export function governorGains(program, {plan, shots, boards}) {
   for (let f = 0; f < program.frames; f++) {
     const fr = program.frame(f), q = [0, 0, 0, 0];
     let boardL = null;
-    const boardLuma = () => boardL ??= fr.board?.rect && boards ? boards.luma({w:fr.board.rect.w, h:fr.board.rect.h, screens:boardScreens(program.board.screens), time:boardTimeOf(fr), safe:safeSpan(fr.board.rect, SAFE[program.format])}, grids).whole : 0;
+    const psych = fr.board?.psych || [], psychMain = psych.filter(p => !p.rect), psychCells = psych.filter(p => p.rect), cellL = new Map();
+    const boardLuma = () => boardL ??= fr.board?.rect && boards ? boards.luma({w:fr.board.rect.w, h:fr.board.rect.h, screens:boardScreens(program.board.screens), time:boardTimeOf(fr), safe:safeSpan(fr.board.rect, SAFE[program.format]), psych:psychMain}, grids).whole : 0;
+    // A psych cell's own board (footage: predicted as the picture it takes over).
+    const cellLuma = p => { if (!cellL.has(p)) cellL.set(p, boards ? boards.luma({w:p.rect.w, h:p.rect.h, screens:[], time:boardTimeOf(fr), psych:[p]}, grids).whole : 0); return cellL.get(p); };
+    const covered = !!fr.board?.rect && psychCells.some(p => p.rect.x < fr.board.rect.x + fr.board.rect.w && fr.board.rect.x < p.rect.x + p.rect.w && p.rect.y < fr.board.rect.y + fr.board.rect.h && fr.board.rect.y < p.rect.y + p.rect.h);
     let whole = 0;
     for (let gy = 0; gy < GY; gy++) for (let gx = 0; gx < GX; gx++) {
       const x = (gx + .5) * F.w / GX, y = (gy + .5) * F.h / GY;
@@ -539,8 +579,9 @@ export function governorGains(program, {plan, shots, boards}) {
         if (l.trail?.blend === 'lighten') v = Math.max(v, lv * l.opacity);
         else v = v * (1 - l.opacity) + lv * l.opacity;
       }
-      // A panel laid over the picture (L1's, a moving board) covers it.
-      if (inBoard && fr.board.over) { const p = fr.board.panel ?? 1; v = v * (1 - p) + boardLuma() * p; }
+      for (const p of psychCells) { const c = p.rect, a = Math.min(1, Math.max(0, p.fade ?? 1)); if (x >= c.x && x < c.x + c.w && y >= c.y && y < c.y + c.h && p.look !== 'footage') v = v * (1 - a) + cellLuma(p) * a; }
+      // A panel laid over the picture (L1's, a moving board, a board over a psych cell) covers it.
+      if (inBoard && (fr.board.over || covered)) { const p = fr.board.panel ?? 1; v = v * (1 - p) + boardLuma() * p; }
       whole += v; q[(gy < GY / 2 ? 0 : 2) + (gx < GX / 2 ? 0 : 1)] += v;
     }
     frames.push({whole:whole / (GX * GY), quads:q.map(v => v / (GX * GY / 4))});

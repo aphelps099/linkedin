@@ -11,3 +11,6 @@ public/brand/afterbeat/linkedin-beats-afterbeat-kit.zip
 
 # Video Studio 540p proxies: built locally by scripts/build-videostudio-proxies.mjs
 public/videostudio/proxies/
+
+__pycache__/
+*.pyc

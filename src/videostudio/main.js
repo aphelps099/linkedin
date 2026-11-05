@@ -203,7 +203,9 @@ function readout({f, t, stats, pool}) {
     const fx = l.fx.map(x => x.type).join(' · ');
     const src = l.kind === 'video' ? `${l.shotId} · ${l.reverse ? 'rev ' : ''}f${l.proxyFrame}${l.source !== 'stream' ? ` · ${l.source}` : ''}` : l.gen;
     return `<li><code title="${esc(l.cell.id)}">${esc(l.cell.id.replace('BOARD+STRIP', 'B+S'))}</code><span><b>${esc(who)}</b><small>${esc(src)}</small></span><em>${esc(fx || (l.transform.zoom !== 1 ? `zoom ${l.transform.zoom.toFixed(2)}` : ''))}</em></li>`;
-  }).reverse().join('') + (fr.board.screen >= 0 && (fr.board.rect || fr.layers.some(l => l.gen === 'board')) ? `<li><code>board</code><span><b>${esc(program.board.screens[fr.board.screen].text)}</b><small>Peg Board · ${esc(program.board.screens[fr.board.screen].reveal)}</small></span><em></em></li>` : '');
+  }).reverse().join('') + (fr.board.screen >= 0 && (fr.board.rect || fr.layers.some(l => l.gen === 'board')) ? `<li><code>board</code><span><b>${esc(program.board.screens[fr.board.screen].text)}</b><small>Peg Board · ${esc(program.board.screens[fr.board.screen].reveal)}</small></span><em></em></li>` : '')
+    // Psych imagery on the dot grid: in the board's region, or its own tile.
+    + (fr.board.psych || []).map(p => `<li><code>${esc(p.cell ?? 'board')}</code><span><b>${esc(p.look)}</b><small>Psych · ${esc(p.cue)}</small></span><em>${p.fade < 1 ? `fade ${p.fade.toFixed(2)}` : ''}</em></li>`).join('');
 }
 
 // ---- controls -------------------------------------------------------------------------------

@@ -12,6 +12,7 @@ import {PEG3} from '../pegboard/fonts/peg3.js';
 import {activeScreen, indexWords, paint} from '../pegboard/choreo.js';
 import {boardLuma, governorTrack} from '../pegboard/governor.js';
 import {createFollower, departments, scoreAccent, LEAD} from '../pegboard/eq.js';
+import {LOOKS, PSYCH_LOOKS, paintPsych, driveTrack, driveAt} from '../pegboard/psych.js';
 import PHRASES from '../allhands/lady-phrases.json';
 
 const DPR = Math.min(2, window.devicePixelRatio || 1);
@@ -636,6 +637,105 @@ function chart() {
   });
 }
 
+// ---- 09 psych ----------------------------------------------------------------------
+
+// Each look as the specimen shows it: its params and a one-line reading of them.
+const PSYCH_DEMO = {
+  ripples:{params:{}, meta:'Spacing 6 pegs · from the centre'},
+  spiral:{params:{arms:3}, meta:'3 arms · a turn a bar'},
+  pinwheel:{params:{blades:8}, meta:'8 blades · two rings'},
+  moire:{params:{}, meta:'Two ring sets · orbit 4 bars'},
+  plasma:{params:{}, meta:'Four waves · deep to signal'},
+  mandala:{params:{fold:8}, meta:'8-fold · also 6 and 12'},
+  lissajous:{params:{curves:2}, meta:'3 : 2 · two figures'},
+  footage:{params:{}, meta:'Kevin, guitar · one sample a peg'},
+};
+const PSYCH_BPM = 108, PSYCH_LOOP = 64 * 60 / PSYCH_BPM;             // 16 bars: the demo voice and claps repeat
+const PSYCH_FOOTAGE = '/cutting-room/posters/guitar-office-performance-ba9226e7.jpg';
+
+// The footage look reads a picture at one value per peg: Kevin's poster, drifting slowly (a push and a
+// pan), drawn into a canvas the size of the board and read back.
+function footageSource() {
+  const img = new Image(), cvs = document.createElement('canvas'), ctx = cvs.getContext('2d', {willReadFrequently:true});
+  let ready = false;
+  img.onload = () => { ready = true; };
+  img.src = PSYCH_FOOTAGE;
+  return (cols, rows, t) => {
+    if (!ready) return null;
+    if (cvs.width !== cols || cvs.height !== rows) { cvs.width = cols; cvs.height = rows; }
+    const s = Math.max(cols / img.width, rows / img.height) * (1.14 + .06 * Math.sin(t * .21)), w = img.width * s, h = img.height * s;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(img, (cols - w) / 2 + .04 * cols * Math.sin(t * .13), (rows - h) / 2 + .03 * rows * Math.cos(t * .17), w, h);
+    return {cols, rows, data:ctx.getImageData(0, 0, cols, rows).data};
+  };
+}
+
+function psych() {
+  const frame = $('[data-live=psych]'), list = $('[data-psych-grid]'), seg = $('[data-psych-words]'), use = $('[data-psych-use]'), note = $('[data-psych-note]');
+  const drive = driveTrack({bpm:PSYCH_BPM, duration:PSYCH_LOOP}), footage = footageSource();
+  let cur = PSYCH_LOOKS.indexOf('mandala'), words = true, pick = null, screen = null;
+  // The drive at a moment: the demo's voice and claps loop every 16 bars, the beat runs on.
+  const driveOf = t => ({...driveAt(drive, t % PSYCH_LOOP), beat:t * PSYCH_BPM / 60});
+  const timeOf = t => REDUCED ? 7.3 : t;
+  const spec = look => ({look, seed:PSYCH_LOOKS.indexOf(look) + 1, params:PSYCH_DEMO[look].params});
+  const select = i => {
+    cur = i;
+    const look = PSYCH_LOOKS[i];
+    use.textContent = `${pad(i + 1)} · ${LOOKS[look].title} · ${PSYCH_DEMO[look].meta}`;
+    note.textContent = LOOKS[look].caption;
+    $$('button', list).forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
+  };
+  // The stage: the chosen look, with a line of type over it (it keeps every one of its pegs).
+  liveFrame(frame, {
+    pitchFor:(w, h) => clamp(Math.floor(Math.min(w / 128, h / 56)), 4, 12),
+    resize(L) { pick = chooser(L, {maxLines:2, margin:8}); screen = screenOf("LET'S BUILD.", {from:0, to:1e9, starts:[.2, .45], reveal:'pop', tone:'white', k:4, release:'cut'}); },
+    tick(L, t) {
+      const lt = timeOf(t), look = PSYCH_LOOKS[cur];
+      if (words) paint(L.board, [screen], 4, {layoutOf:pick.layoutOf, place:pick.place, reduced:true}); else clearBoard(L.board);
+      paintPsych(L.board, spec(look), lt, {drive:driveOf(lt), frame:look === 'footage' ? footage(L.board.cols, L.board.rows, lt) : null});
+    },
+  });
+  // The grid: every look live, small, through one shared renderer.
+  const tileR = createRenderer(document.createElement('canvas'), {pixelRatio:DPR, force2d:FORCE2D}), tiles = [];
+  const tileGrid = (w, h) => grid(w, h, clamp(Math.floor(Math.min(w / 64, h / 48)), 3, 8));
+  let tileSize = '';
+  const tileIO = new IntersectionObserver(entries => { for (const e of entries) e.target.__tile.visible = e.isIntersecting; }, {rootMargin:'60px 0px'});
+  PSYCH_LOOKS.forEach((look, i) => {
+    const li = el('li'), b = el('button'), f = el('div', 'pt-frame'), canvas = document.createElement('canvas');
+    b.type = 'button'; b.setAttribute('aria-pressed', 'false'); b.setAttribute('aria-label', `${LOOKS[look].title}: show on the stage`);
+    canvas.setAttribute('aria-hidden', 'true'); f.append(canvas);
+    b.append(f, el('div', 'pt-psych-cap', `<span class="n">${pad(i + 1)}</span><span class="t">${esc(LOOKS[look].title)}</span><p class="d">${esc(LOOKS[look].caption)}</p><span class="m">${esc(PSYCH_DEMO[look].meta)}</span>`));
+    b.addEventListener('click', () => select(i));
+    li.append(b); list.append(li);
+    const tile = {look, frame:f, canvas, visible:false, board:null, geo:null};
+    f.__tile = tile; tileIO.observe(f); tiles.push(tile);
+  });
+  psych.tick = t => {
+    const lt = timeOf(t);
+    for (const tile of tiles) {
+      if (!tile.visible) continue;
+      const w = tile.frame.clientWidth, h = tile.frame.clientHeight;
+      if (!w || !h) continue;
+      if (!tile.geo || tile.geo.w !== w || tile.geo.h !== h) { tile.geo = {...tileGrid(w, h), w, h}; tile.board = createBoard(tile.geo.cols, tile.geo.rows); }
+      const key = `${w}x${h}`;
+      if (key !== tileSize) { tileR.resize(w, h); tileSize = key; }
+      clearBoard(tile.board);
+      paintPsych(tile.board, spec(tile.look), lt, {drive:driveOf(lt), frame:tile.look === 'footage' ? footage(tile.board.cols, tile.board.rows, lt) : null});
+      tileR.draw(tile.board, {pitch:tile.geo.pitch, x:tile.geo.x, y:tile.geo.y, time:lt});
+      const src = tileR.canvas;
+      if (tile.canvas.width !== src.width || tile.canvas.height !== src.height) { tile.canvas.width = src.width; tile.canvas.height = src.height; }
+      tile.canvas.getContext('2d', {alpha:false}).drawImage(src, 0, 0);
+    }
+  };
+  seg.addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    words = btn.dataset.words === 'on';
+    $$('button', seg).forEach(x => x.setAttribute('aria-pressed', String(x === btn)));
+  });
+  select(cur);
+}
+
 // ---- nav, sign-off, loop -------------------------------------------------------------
 
 function nav() {
@@ -666,8 +766,9 @@ function loop(ms) {
   const t = ms / 1000;
   for (const L of lives) if (L.visible) L.tick(t);
   phrases.tick?.();
+  psych.tick?.(t);
   requestAnimationFrame(loop);
 }
 
-hero(); faces(); scale(); palette(); kerning(); theatre(); formats(); phrases(); chart(); nav(); signoff();
+hero(); faces(); scale(); palette(); kerning(); theatre(); formats(); phrases(); chart(); psych(); nav(); signoff();
 requestAnimationFrame(loop);

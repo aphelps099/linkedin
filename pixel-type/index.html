@@ -21,6 +21,7 @@
     <a href="#formats"><i></i>Formats</a>
     <a href="#phrases"><i></i>The 57</a>
     <a href="#chart"><i></i>Chart</a>
+    <a href="#psych"><i></i>Psych</a>
     <a href="#rules"><i></i>Rules</a>
     <a href="#signoff"><i></i>Sign-off</a>
   </nav>
@@ -157,9 +158,30 @@
     <div class="pt-frame pt-chart" data-live="chart"><div class="pt-chart-labels" data-chart-labels></div></div>
   </section>
 
-  <section id="rules" class="pt-sec">
+  <section id="psych" class="pt-sec">
     <header class="pt-head">
       <span class="pt-num">09</span>
+      <h2>Psych</h2>
+      <p>The board as an image. Eight looks lit on the same pegs as the type, in the same four tones. The voices carry the light, the claps swell the pegs, the beat turns every cycle. Words always&nbsp;win.</p>
+    </header>
+    <div class="pt-toolbar">
+      <div class="pt-seg" role="group" aria-label="Words" data-psych-words>
+        <button type="button" data-words="on" aria-pressed="true">With words</button>
+        <button type="button" data-words="off" aria-pressed="false">Pattern only</button>
+      </div>
+      <span class="pt-meta">Demo drive at 108 BPM: claps on 2 and 4, a voice two bars on and two off. In the film, the song drives it.</span>
+    </div>
+    <div class="pt-frame pt-psych-stage" data-live="psych"></div>
+    <div class="pt-reveal-note" aria-live="polite">
+      <span class="pt-meta" data-psych-use></span>
+      <p data-psych-note></p>
+    </div>
+    <ol class="pt-psych-grid" data-psych-grid aria-label="Looks"></ol>
+  </section>
+
+  <section id="rules" class="pt-sec">
+    <header class="pt-head">
+      <span class="pt-num">10</span>
       <h2>House rules</h2>
       <p>What every frame obeys, live or exported. The checks in <code>scripts/</code> fail the build if one&nbsp;breaks.</p>
     </header>
@@ -170,13 +192,14 @@
       <li><p><b>Three flashes a second.</b> The most allowed on the whole board or on any quarter of it. The governor tones down the fourth before it happens.</p></li>
       <li><p><b>One accent word.</b> A hook gets one word in signal yellow. Never two.</p></li>
       <li><p><b>Never green.</b> Green is Synergy's face.</p></li>
+      <li><p><b>Words win.</b> Psych imagery goes dark a peg around lit type, dims near it, and never relights a letter.</p></li>
       <li><p><b>Pegs leave their sockets on purpose.</b> Detune, rain and the tape stop. Nothing else moves them.</p></li>
     </ol>
   </section>
 
   <section id="signoff" class="pt-sec pt-signoff">
     <header class="pt-head">
-      <span class="pt-num">10</span>
+      <span class="pt-num">11</span>
       <h2>Sign-off</h2>
       <p>Tick each part as you approve it. Ticks stay in this browser; the signature is the one that&nbsp;counts.</p>
     </header>
@@ -189,6 +212,7 @@
       <li><label><input type="checkbox" value="formats"/><span>Formats</span><em>Every post, every safe area</em></label></li>
       <li><label><input type="checkbox" value="phrases"/><span>The 57</span><em>Every phrase, every format</em></label></li>
       <li><label><input type="checkbox" value="chart"/><span>Chart</span><em>Output by department</em></label></li>
+      <li><label><input type="checkbox" value="psych"/><span>Psych</span><em>Eight looks, words win</em></label></li>
     </ul>
     <div class="pt-sign">
       <div><span class="pt-line"></span><span class="pt-meta">Aaron Phelps · Creative direction</span></div>
