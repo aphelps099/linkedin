@@ -1366,20 +1366,22 @@ only those layers, for measurements.
 
 **The bloom, measured** (Nov 5; the plans and renders of the sample and fixtures
 11 and 48 through the page). Layers starting by bar 6: 3 (her texture, the
-pulse, her copies), was 6. Layers sounding (over 30% of their level), bar by
-bar: 0 1 2 2 3 3 3 4 5 5 5 6 7 8 10 12 13 13 13 13 13 13 12 12 11 8 0 (was 0 1
-3 4 5 6 6 7 7 8 9 9 9 11 12 12 13 13 13 13 13 12 12 12 11 8 0): lush around bar
-12-14, the fullest at 16. Whisper on the loops alone (`tune.solo` of the
-textures, Synergy muted, one-bar windows on a half-bar hop, the clear phrases
-left out) hears a word of the loops in 0 of 42 windows (the sample), 3 of 43
-(fixture 11: "It's hot", from "Hot take"), 0 of 43 (fixture 48) and 0 of 43
-(fixture 31), against 38 of 42 and 42 of 43 ("drop, drop, drop") before; what
-it hears now is syllables ("buh, buh") and its silence hallucinations ("Thanks
-for watching!"). Gates: -10.28 to -10.44 LUFS (the river's `makeup` went from
-0.9 to 2 dB: the sparse opening had left it at -11.3), true peak -1.25 dBTP at
-most, the swell +4.4 to +5.7 LU over the stream on a phone, the pool +3.3 to
-+6.8; the loudness range is 13.3 to 14.0 LU (a warning; 11.2 to 12.2 before):
-the bloom starts quieter.
+pulse, her copies), was 6; at most two new layers in any bar. Layers sounding
+(over 30% of their level), bar by bar: 0 1 2 2 3 3 3 4 5 5 5 6 7 10 12 12 13 13
+13 13 13 13 12 12 11 8 0 (was 0 1 3 4 5 6 6 7 7 8 9 9 9 11 12 12 13 13 13 13 13
+12 12 12 11 8 0): lush around bar 13-14, the fullest at 16. Whisper on the loops
+alone (`tune.solo` of the textures, Synergy muted, one-bar windows on a half-bar
+hop, the clear phrases left out) hears a word of the loops in 0 of 42 windows
+(the sample), 2 of 43 (fixture 11: "It's hot", from "Hot take"), 0 of 43
+(fixture 48) and 0 of 43 (fixture 31), against 38 of 42 and 42 of 43 ("drop,
+drop, drop") before; what it hears now is syllables ("bop, bop", "beep, beep")
+and its silence hallucinations ("Thanks for watching!"). The clear phrases: 8 of
+9 heard exactly (fixture 11's hook, washed, heard "Early results are
+privacy."). Gates: -10.21 to -10.38 LUFS (the river's `makeup` went from 0.9 to
+2 dB: the sparse opening had left it at -11.3), true peak -1.25 dBTP at most,
+the swell +4.4 to +5.8 LU over the stream on a phone, the pool +3.3 to +6.8; the
+loudness range is 13.3 to 14.0 LU (a warning; 11.2 to 12.2 before): the bloom
+starts quieter. Renders are byte-identical in a fresh browser.
 
 The LRA warning is the form: a river that starts sparse and ends in a long
 fade spans more than a drop that holds its level. The river's clear phrases skip

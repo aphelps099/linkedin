@@ -823,7 +823,12 @@ if (fs.existsSync(SHOTS_JSON)) section('15. the band and the river', () => {
   }
   // The couplet drop's X over the build: the film's board shows it while it is sung and when it is struck; her
   // rungs under it (choreo screen.under) wait until it lets go, as on /allhands/'s stage (compile's screen pass).
-  for (const [i, track] of [[42, 'circle-back'], [31, 'hustle']]) {
+  // The fixture: the one named if the post still casts a couplet drop on the track, else the first that does
+  // (Nov 5: a couplet is the drop only where Whisper heard its impact, vocabulary/impact-heard.json, and
+  // fixture 42's is not heard on Circle Back).
+  const dropFixture = (track, prefer) => [prefer, ...fixtures.keys()].find(i => castSong(fixtures[i], {track, available:AVAILABLE}).cast.dropTag?.kind === 'couplet');
+  const CB = dropFixture('circle-back', 42), HU = dropFixture('hustle', 31);
+  for (const [i, track] of [[CB, 'circle-back'], [HU, 'hustle']]) {
     const cast = castSong(fixtures[i], {track, available:AVAILABLE}).cast, format = '9:16';
     const plan = settleCast(FORMS.drop60.arrange, lyricsFromPost(fixtures[i]), {}, {track, cast, coldOpen:true}).plan;
     const p = compile(treatmentFor(track).fn(plan, real, {format}), {plan, shots:real, format}), at = f => p.board.screens[p.frame(f).board.screen];
@@ -837,10 +842,10 @@ if (fs.existsSync(SHOTS_JSON)) section('15. the band and the river', () => {
   // The strike reads in the film: on the frame after it is drawn, the board's own grid (the frame's rect, the
   // format's safe span, painted at the frame's board time as the compositor paints it) carries it in signal,
   // strikeWeight rows tall (2 in PEG-9 and PEG-5; 1 in PEG-3, the 16:9 home's fallback for a long X), across X:
-  // the drop's X (Circle Back fixture 42), the anthem's (Hustle fixture 31) and a pair (Circle Back fixture 12).
+  // the drop's X (a Circle Back couplet drop, above), the anthem's (Hustle fixture 31) and a pair (Circle Back fixture 12).
   {
     const seen = [], bad = [];
-    for (const [i, track] of [[42, 'circle-back'], [31, 'hustle'], [12, 'circle-back']]) {
+    for (const [i, track] of [[CB, 'circle-back'], [HU, 'hustle'], [12, 'circle-back']]) {
       const cast = castSong(fixtures[i], {track, available:AVAILABLE}).cast, plan = settleCast(FORMS.drop60.arrange, lyricsFromPost(fixtures[i]), {}, {track, cast, coldOpen:true}).plan;
       for (const format of ['9:16', '1:1', '16:9']) {
         const p = compile(treatmentFor(track).fn(plan, real, {format}), {plan, shots:real, format}), shifted = p.board.screens.map(s => ({...s, from:s.from - 1 / 48, to:s.to - 1 / 48}));

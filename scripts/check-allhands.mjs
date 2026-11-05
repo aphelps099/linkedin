@@ -304,6 +304,8 @@ ok(formPlays('soundcheck', 'circle-back') && !formPlays('soundcheck', 'hustle') 
 // The endpoint: validation, streamed-WAV repair, caching, limits.
 assert.deepEqual(normalizeWords(['Synergy', 'chat G P T', 'Synergy']), ['Synergy', 'chat G P T']); checks++;
 for (const bad of [[], ['-v'], ['a  b'], ['x'.repeat(41)], ['<script>'], Array(65).fill('a'), 'word']) assert.throws(() => normalizeWords(bad)); checks += 7;
+assert.deepEqual(normalizeWords(['1,200', '800,000']), ['1,200', '800,000']); checks++;   // a post's numbers, as lyrics.js keeps them
+for (const bad of [[','], ['1,'], ['a,b'], ['1,,2']]) assert.throws(() => normalizeWords(bad)); checks += 4;
 {
   const header = Buffer.alloc(44); header.write('RIFF', 0); header.writeUInt32LE(0x7ffff000, 4); header.write('WAVEfmt ', 8); header.writeUInt32LE(16, 16); header.write('data', 36); header.writeUInt32LE(0x7ffff000, 40);
   const fixed = fixStreamedWave(Buffer.concat([header, Buffer.alloc(100)]));
