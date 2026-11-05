@@ -222,7 +222,7 @@ def words_of(s):
 
 # Words that sound exactly alike, which Whisper may spell either way ("a quick sink"):
 # the listener hears the same thing and the board shows the lyric.
-HOMOPHONES = {'sync': ['sink'], 'async': ['a sink', 'a sync', 'asink']}
+HOMOPHONES = {'sync': ['sink'], 'async': ['a sink', 'a sync', 'asink'], 'not': ['knot'], 'loan': ['lone'], 'a loan': ['alone']}
 
 
 _word_matches = LADY.word_matches
@@ -243,7 +243,7 @@ def wer(expected, heard):
     """Word error rate, with compounds allowed to join ("game changer" == "gamechanger")."""
     a, b = words_of(expected), words_of(heard)
     for word, alike in HOMOPHONES.items():
-        if word in a:
+        if f' {word} ' in f" {' '.join(a)} ":
             joined = ' '.join(b)
             for h in alike:
                 joined = re.sub(rf'\b{h}\b', word, joined)

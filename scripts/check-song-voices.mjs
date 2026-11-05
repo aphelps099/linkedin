@@ -76,7 +76,8 @@ for (const e of M.entries) {
   const w = e.words, eps = .002;
   eq(w.map(x => x.text), tokens(e.text), `${e.file}: the words are the lyric's`);
   ok(e.voiced[0] === w[0].start && e.voiced[1] === w.at(-1).end && e.voiced[1] <= e.duration + eps, `${e.file}: voiced span is the words'`);
-  ok(w[0].start <= .25 && e.duration - w.at(-1).end <= .35, `${e.file}: trimmed to the speech (${w[0].start.toFixed(3)} s before, ${(e.duration - w.at(-1).end).toFixed(3)} s after)`);
+  ok(w[0].start <= .25 && e.duration - w.at(-1).end <= (e.trimmedFrom ? .26 : .7), `${e.file}: trimmed to the speech (${w[0].start.toFixed(3)} s before, ${(e.duration - w.at(-1).end).toFixed(3)} s after)`);
+  if (e.trimmedFrom) ok(e.trimmedFrom > e.samples && e.duration - w.at(-1).end >= .079, `${e.file}: its noise tail cut at least 80 ms after the last word`);
   w.forEach((x, i) => {
     ok(x.start < x.end && x.end - x.start >= (/^(a|an|the|to|of|in)$/i.test(x.text) ? .02 : .04), `${e.file} "${x.text}": a word of 40 ms or more (20 for an article or a preposition)`);
     ok(i === 0 || x.start >= w[i - 1].end - eps, `${e.file} "${x.text}": after the word before it`);
@@ -93,13 +94,18 @@ const has = (voice, id) => files.has(fileOf(voice, id));
 const amounts = {strategy:[VOICES.strategy.amount], synthia:[VOICES.synthia.amount, VOICES.synthia.fallbackAmount]};
 for (const e of M.entries) ok(amounts[e.voice].includes(e.amount), `${e.file}: sung at ${e.voice}'s verified amount (${e.amount})`);
 let synthiaKept = 0, synthiaCandidates = 0;
-const synthiaOnly = [];
+const synthiaOnly = [], unheard = [];
 for (const line of LINES) {
   const L = M.lines[line.id], fallback = SYNTHIA_FALLBACK.includes(line.id);
   ok(L, `${line.id}: in the line index`);
-  ok(L.voices.length >= 1, `${line.id}: a passing take in some voice`);
-  if (line.owner === 'strategy' && !fallback) ok(has('strategy', line.id), `${line.id}: Strategy sings his own line`);
-  else if (!has('strategy', line.id)) { synthiaOnly.push(line.id); ok(has('synthia', line.id), `${line.id}: Strategy did not pass it, so Synthia must`); }
+  if (line.owner === 'synthia' && line.voices.includes('synthia') && !L.voices.length) synthiaCandidates++;
+  if (!L.voices.length) {
+    // Whisper never heard it exactly, in any voice or spelling: not available, so casting cannot cast it
+    unheard.push(line.id);
+    ok(!VT.AVAILABLE.has(`strategy/${line.id}`) && !VT.AVAILABLE.has(`synthia/${line.id}`) || custom, `${line.id}: unheard, so not available`);
+    continue;
+  }
+  if (!has('strategy', line.id)) { synthiaOnly.push(line.id); ok(has('synthia', line.id), `${line.id}: Strategy did not pass it, so Synthia sings it`); }
   if (line.owner === 'synthia' && line.voices.includes('synthia')) {
     synthiaCandidates++;
     if (has('synthia', line.id)) { synthiaKept++; ok(L.voices[0] === 'synthia' && !L.strategyOnly, `${line.id}: Synthia first, her take passed`); }
@@ -116,16 +122,19 @@ for (const c of CUTS) {
     ok(ws.length && x.start === ws[0].start && x.end === ws.at(-1).end, `${c.id} (${x.voice}): its times are its words'`);
     if (c.kind === 'impact') eq(x.ready, ws.every(w => w.check === 'isolated'), `${c.id} (${x.voice}): ready exactly when Whisper hears the word alone`);
   }
-  if (c.kind === 'impact') ok(cuts.some(x => x.ready), `${c.id}: the drop's impact is heard alone in some voice`);
-  ok(VT.AVAILABLE.has(`strategy/${c.id}`) || VT.AVAILABLE.has(`synthia/${c.id}`) || custom, `${c.id}: available`);
+  const ready = cuts.filter(x => x.ready);
+  if (!ready.length) unheard.push(c.id);
+  eq(['synthia', 'strategy'].filter(v => VT.AVAILABLE.has(`${v}/${c.id}`) || custom && ready.some(x => x.voice === v)), ready.map(x => x.voice).sort((a, b) => b.localeCompare(a)),
+    `${c.id}: available exactly in the voices whose cut is ready`);
 }
 // casting's ids (vocabulary/takes.js): each one available in some voice
 let casting = null;
 try { casting = await import('../src/allhands/vocabulary/takes.js'); } catch (err) { if (err.code !== 'ERR_MODULE_NOT_FOUND') throw err; }
 if (casting && !custom) {
   const missing = [...casting.TAKES.keys()].filter(id => !VT.AVAILABLE.has(`synthia/${id}`) && !VT.AVAILABLE.has(`strategy/${id}`));
-  eq(missing, [], 'every take casting can name has a passing take in some voice');
-  for (const [id, t] of casting.TAKES) if (!VT.AVAILABLE.has(`${t.voice}/${id}`)) ok(VT.voicesFor(id).length && (t.voice !== 'synthia' || VT.strategyOnly(id)), `${id}: not in ${t.voice}'s voice, so the index says who sings it`);
+  eq(missing.sort(), unheard.filter(id => casting.TAKES.has(id)).sort(), 'every take casting can name has a passing take in some voice, but the unheard ones listed');
+  eq(unheard.filter(id => !casting.TAKES.has(id)), [], 'every line the bank holds is one casting can name');
+  for (const [id, t] of casting.TAKES) if (!VT.AVAILABLE.has(`${t.voice}/${id}`) && !unheard.includes(id)) ok(VT.voicesFor(id).length && (t.voice !== 'synthia' || VT.strategyOnly(id)), `${id}: not in ${t.voice}'s voice, so the index says who sings it`);
 }
 
 // casting with the bank's AVAILABLE: every Strategy and Synthia part of every song cast for the sample
@@ -207,4 +216,4 @@ if (!custom) {
 }
 
 const total = M.entries.reduce((s, e) => s + e.bytes, 0);
-console.log(`check-song-voices: ${checks} checks passed. ${M.entries.length} takes (${M.entries.filter(e => e.voice === 'strategy').length} Strategy, ${M.entries.filter(e => e.voice === 'synthia').length} Synthia), ${seconds.toFixed(1)} s, ${(total / 1e6).toFixed(2)} MB FLAC; ${M.cuts.length} cuts; Synthia kept on ${synthiaKept} of ${synthiaCandidates} candidate lines; ${LINES.length} lines, ${LINES.length - synthiaOnly.length} in Strategy's voice${synthiaOnly.length ? ` (not ${synthiaOnly.join(', ')}: Synthia's only)` : ''}.`);
+console.log(`check-song-voices: ${checks} checks passed. ${M.entries.length} takes (${M.entries.filter(e => e.voice === 'strategy').length} Strategy, ${M.entries.filter(e => e.voice === 'synthia').length} Synthia), ${seconds.toFixed(1)} s, ${(total / 1e6).toFixed(2)} MB FLAC; ${M.cuts.length} cuts; Synthia kept on ${synthiaKept} of ${synthiaCandidates} candidate lines; ${LINES.length} lines and ${CUTS.length} cuts: ${LINES.length + CUTS.length - unheard.length} with a passing take, ${LINES.length - synthiaOnly.length - unheard.filter(id => LINES.some(l => l.id === id)).length} in Strategy's voice${synthiaOnly.length ? ` (Synthia's only: ${synthiaOnly.join(', ')})` : ''}; unheard (not available, never cast): ${unheard.join(', ') || 'none'}.`);

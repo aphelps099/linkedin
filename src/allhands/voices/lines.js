@@ -24,8 +24,9 @@ import LEXICON from '../vocabulary/lexicon.json' with {type:'json'};
 export const SYNTHIA_MAX_SYLLABLES = 6;
 // Strategy's lines Kokoro never says so Whisper hears them, in any spelling
 // tried (render-song-voices.mjs report: "needle" is "nidal", "This." is "This
-// one."): Synthia renders them too, after him, and keeps them if she passes.
-export const SYNTHIA_FALLBACK = ['this', 'move-the-needle'];
+// one.", "Plot" is "Blot", "Agentic" is "authentic", "a miss" is "a myth"):
+// Synthia renders them too, after him, and keeps them if she passes.
+export const SYNTHIA_FALLBACK = ['this', 'move-the-needle', 'plot-twist', 'agentic', 'hot-desk-call', 'miss-stretch-goal-call', 'silence-parking-lot-call', 'loan-leverage-call'];
 export const VOICE_ORDER = ['synthia', 'strategy'];   // who sings a line both can: the owner's voice first
 
 // takes.js's slug (exchanges), and its pickup ids.
