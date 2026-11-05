@@ -45,7 +45,7 @@ const db = v => 20 * Math.log10(Math.max(v, 1e-9));
 const py = (cmd, jobs, extra = []) => {
   const tmp = join(OUT, 'work'), src = join(tmp, `${cmd}-jobs.json`), dst = join(tmp, `${cmd}-out.json`);
   writeFileSync(mk(src), JSON.stringify(jobs));
-  execFileSync('python3', ['-I', MEASURE, cmd, src, dst, ...extra], {stdio:['ignore', 'inherit', 'inherit'], maxBuffer:64 * 1024 * 1024});
+  execFileSync('python3', ['-I', '-B', MEASURE, cmd, src, dst, ...extra], {stdio:['ignore', 'inherit', 'inherit'], maxBuffer:64 * 1024 * 1024});
   return JSON.parse(readFileSync(dst, 'utf8'));
 };
 
@@ -348,7 +348,7 @@ function sketch() {
   writeWav(join(OUT, 'test', 'sketch-voices.wav'), out.stems.voices);
   writeWav(join(OUT, 'test', 'sketch-band.wav'), [0, 1].map(c => Float32Array.from(out.stems.drums[c], (v, i) =>
     .9 * v + .55 * out.stems.tambourine[i] + out.stems.pad[c][i] + .9 * out.stems.bass[i])));
-  console.log(`sketch voices at ${out.voiceGainDb} dB to sit 1 dB over the band`);
+  console.log(`sketch voices at ${out.voiceGainDb} dB over their stem level`);
   const lyric = out.cues.map(c => by(c.id).text).join(' ');
   const t = py('tamb', [{path:join(OUT, 'test', 'tambourine-shake.wav'), what:'one shake'}, {path:join(OUT, 'test', 'tambourine-hit.wav'), what:'one hit'},
     {path:join(dir, 'tambourine-groove.wav'), what:'the groove, 4 bars'}]);

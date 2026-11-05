@@ -32,7 +32,8 @@ const CUES = [
   [7, 0, 'strategy/layoff-launch-call'], [7, 8, 'synthia/layoff-launch-response'],
   [8, 0, 'synthia/agree'], [8, 6, 'strategy/thoughts'],
 ];
-const AMOUNT = {synthia:.45, strategy:.6};
+const AMOUNT = {synthia:.4, strategy:.6};
+const VOICE_OVER = 2.5;
 
 // ---------------------------------------------------------------- the room
 // An 8-line feedback delay network, Householder mixing, damped lines.
@@ -206,10 +207,21 @@ export function renderSketch({sr = 44100, entry, take, melodyFor, key = 'D', sca
     cues.push({at:+(at + e.words[0].onset).toFixed(3), id, notes:line.map(nt => nt.midi), start:at, own, end:at + e.voiced[1]});
   }
 
-  // mix: the voices sit 1 dB over the band (the constitution's verse balance,
-  // active-speech RMS against the band's), then sends to the room, then the bus
+  // mix: the voices sit VOICE_OVER dB over the band (active RMS against the
+  // band's; the constitution's verse sits +1, this dense loop needs +2.5), then
+  // sends to the room, then the bus
+  // The organ, Pat and the toms dip up to 5 dB under every sung word (10 ms in,
+  // 200 ms out), as keys and guitar dip under Synergy in the engine.
+  const att = Math.exp(-1 / (.01 * sr)), rel = Math.exp(-1 / (.2 * sr));
+  let env = 0, top = 0;
+  const venv = new Float32Array(n);
+  for (let i = 0; i < n; i++) { const v = Math.abs(voices[0][i]) + Math.abs(voices[1][i]); env = v > env ? att * env + (1 - att) * v : rel * env + (1 - rel) * v; venv[i] = env; top = Math.max(top, env); }
+  for (let i = 0; i < n; i++) {
+    const dip = 1 - (1 - 10 ** (-5 / 20)) * Math.min(1, venv[i] / (.15 * top));
+    pad[0][i] *= dip; pad[1][i] *= dip; bass[i] *= dip; drums[0][i] *= .5 + .5 * dip; drums[1][i] *= .5 + .5 * dip;
+  }
   const band = [0, 1].map(c => Float32Array.from(drums[c], (v, i) => .9 * v + .55 * tambourine[i] + pad[c][i] + .9 * bass[i]));
-  const vGain = 10 ** ((activeDb(band) + 1 - activeDb(voices)) / 20);
+  const vGain = 10 ** ((activeDb(band) + VOICE_OVER - activeDb(voices)) / 20);
   // The band bus and the voices' bus each get their own pass through the room
   // (it is linear, so the sum is the same), so a cue can be heard alone in the band.
   const bandSends = [new Float32Array(n), new Float32Array(n)], voiceSends = [new Float32Array(n), new Float32Array(n)];

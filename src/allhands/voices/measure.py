@@ -14,7 +14,7 @@
   tamb    spectral and envelope measurements of the synthesized tambourine.
 
 Each reads a JSON job list and writes a JSON result:
-  python3 -I src/allhands/voices/measure.py align jobs.json out.json [--verify]
+  python3 -I -B src/allhands/voices/measure.py align jobs.json out.json [--verify]
 """
 import importlib.util
 import json
@@ -26,6 +26,7 @@ import numpy as np
 from scipy.io import wavfile
 from scipy.signal import resample_poly, butter, sosfiltfilt
 
+sys.dont_write_bytecode = True           # importing the aligner must not leave caches in scripts/
 ROOT = Path(__file__).resolve().parents[3]
 _spec = importlib.util.spec_from_file_location('lady_align', ROOT / 'scripts' / 'align-lady-phrases.py')
 LADY = importlib.util.module_from_spec(_spec)

@@ -180,15 +180,120 @@ and chain from one phrase to the next with `from`.
 
 ## Measurements
 
-MEASUREMENTS
+Every take was rendered five ways onto a wandering line in D major
+pentatonic (Offsite's key): dry (the bank take), sung (placed on the notes, no
+pixels), light, medium, heavy; the three amounts also with the space (echo and
+chorus, mixed to mono). 48 takes, 384 Whisper runs, 192 pitch-checked
+renders (221 notes each way). Full tables: `DIR/report.md` and `DIR/report.json`.
+
+**Whisper `small.en`** (whole take, 0.3 s of silence each side, beam 5,
+temperature 0, the lady aligner's word matching; "game changer" equals
+"game-changer", "Greatful" equals "Grateful"):
+
+| Voice | Chain | dry | sung | light | medium | heavy |
+|---|---|---|---|---|---|---|
+| Strategy | no space | 0.0% (24/24 takes exact) | 1.3% (23/24) | 0.0% (24/24) | 0.0% (24/24) | 3.8% (21/24) |
+| Strategy | echo and chorus | | | 0.0% (24/24) | 1.3% (23/24) | 3.8% (21/24) |
+| Synthia | no space | 5.5% (21/24) | 4.1% (21/24) | 11.0% (18/24) | 17.8% (16/24) | 30.1% (12/24) |
+| Synthia | echo and chorus | | | 13.7% (17/24) | 16.4% (15/24) | 21.9% (14/24) |
+
+- Strategy holds every word at light and medium. At heavy he loses "Delve."
+  ("No."), "Thoughts?" ("But...") and "It's not" ("If not") in one call.
+- Synthia is the weak link, and mostly before the pixels: Flite's dry takes
+  already lose "bug" ("above"), "ownership" and "pivot" ("bevel"). Pixelated,
+  she loses "Delve." ("Done."), "Humbled tu announce" ("I'm going to
+  announce"), "Thoughts?" ("Thanks."), "bandwidth" ("been with"), "a demotion"
+  ("an emotion", every amount: the joke writes itself, but it is a miss) and
+  "pivot" ("pillow"). Flite's 16 kHz diphones carry half the bandwidth of
+  Kokoro's 24 kHz voice, so the same decimation costs her more.
+- What fixed what: the slur on one-syllable takes (Strategy's "Delve." was
+  "Dove." held flat), consonants mixed back clean and onsets and codas left
+  moving (on five hard Strategy words, medium went from 3 misses to 1), the
+  block-floating crush ("Humbled" kept its d, the last of them), the ducked
+  echo ("Grateful", "Learnings" with space), the shorter sweep (heavy at 7 kHz,
+  not 5.4).
+
+**Pitch in key** (each syllable nucleus against its note; voiced frames within
+6 dB of the nucleus' loudest; normalised autocorrelation and subharmonic
+summation, neither shares code with the JS chain):
+
+| Voice | Chain | notes | median error | 90th percentile | within 25 cents (all notes) | within 25 cents (nuclei of 60 ms or more, either estimator) |
+|---|---|---|---|---|---|---|
+| Strategy | sung | 114 | 4.8 c | 93 c | 100/114 | 83/89 |
+| Strategy | light | 114 | 5.1 c | 29 c | 101/114 | 83/89 |
+| Strategy | medium | 114 | 4.4 c | 15 c | 105/114 | 87/90 |
+| Strategy | heavy | 114 | 3.4 c | 16 c | 106/114 | 87/90 |
+| Synthia | sung | 107 | 3.4 c | 10 c | 106/107 | 90/91 |
+| Synthia | light | 107 | 2.9 c | 8 c | 107/107 | 91/91 |
+| Synthia | medium | 107 | 1.8 c | 7 c | 107/107 | 91/91 |
+| Synthia | heavy | 107 | 3.5 c | 11 c | 107/107 | 91/91 |
+
+Synthia sits on every note. Strategy's misses are short unstressed nuclei (the
+article "a", "-tion", a final "-er") where Kokoro's creak (70 Hz) survives the
+placement or an estimator locks onto a harmonic (the two disagree on most of
+them); 2 to 5 of his 114 nuclei have no voiced frame to measure.
 
 ## The tambourine
 
-TAMBOURINE
+`tambourine.js`: six jingle pairs on a frame, modal synthesis (84 damped
+resonators), seeded. Each pair is two discs 0.4 to 1.1% apart (they beat: the
+shimmer), seven inharmonic partials each from 3.3 to 18 kHz, ringing 85 to 45
+ms; a collision is a 3-sample strike, a 1 ms high click and a 4 ms dull "chk".
+A shake spreads 2 to 8 collisions per pair over 40 to 90 ms with a swish of
+5-11 kHz noise; a hit adds a membrane thump (190, 310, 95 Hz) and a rattle.
+`tambourinePattern()` plays 16ths leaning on the "and" (.32, .16, .78, .26),
+light swing, 4 ms of timing breath, a strike on beat four every other bar.
+
+Measured (`DIR/tambourine.json`):
+
+| | one shake | one hit | the groove, 4 bars |
+|---|---|---|---|
+| spectral centroid | 7.0 kHz | 5.5 kHz | 8.6 kHz |
+| energy by band, below 1k / 1-3k / 3-6k / 6-10k / 10-16k (dB of total) | -38 / -35 / -2.5 / -7 / -7 | -9 / -39 / -2.5 / -8 / -9 | -12 / -25 / -5 / -6 / -5 |
+| strongest partials (Hz) | 3393, 3638, 4273, 4903, 6075, 6702, 10936, 13464 | 3393, 3601, 3881, 4187, 4783, 6158, 9885, 13025 | |
+| attack | 42 ms (the swish) | 2.2 ms | |
+| down 20 dB after the peak | 113 ms | 119 ms | |
+| crest factor | 20 dB | 27 dB | 26 dB |
+
+How good: it reads as jingles, not as a hi-hat or noise. Its energy sits
+where a tambourine's does (3 to 16 kHz, a centroid of 7 to 8.6 kHz), the
+partials are inharmonic (ratios 1, 1.07, 1.26, 1.44, 1.79, 1.98, 3.22, 3.97)
+and beat, the decays are short, a shake swells and a hit snaps. Two tells
+remain. There is almost nothing between 1 and 3 kHz (-35 dB), where a real
+frame adds wood and the jingles' rattle, so alone it is a little thin and
+bright. And every collision rings the same 84 modes, so over a bar of 16ths
+the partials stand still as faint steady lines in the spectrum, where real
+jingles turn on their pins and never ring the same way twice. Both are cheap
+to fix (per-collision mode weights and a few cents of drift per shake; more
+"chk" below 3 kHz). In the sketch it sits where Aaron asked for it, in the
+background: -28.5 LUFS against the band's -15.6, 35% right, a hand
+instrument over the digital.
 
 ## The sketch
 
-SKETCH
+`DIR/listen/sketch-offsite-20s.wav`, rendered by `sketch.js` (9 bars of 108
+BPM, 20.0 s, D major, Dadd9 and G6/9 with the changes on the "and" of four).
+A two-bar loop tiled as a sampled loop would be: soft stomps on the beats, four
+people clapping on two and four, floor toms on the "e" and "and", the
+tambourine; a pump organ drone and Pat humming the root on the offbeats, both
+pumped by the stomps and dipped 5 dB under every sung word. Over it Synthia
+(amount .4, doubled two pentatonic steps up at -14 dB, panned left) and
+Strategy (.6) sing nine expressions in a line that keeps wandering from phrase
+to phrase in each register (bars 1 to 4), then three couplets as call and
+response, one a bar (5 to 7), then "Agree?" and "Thoughts?" (8). The dotted-8th
+echo ducks under them; an 8-line room (2.8 s) behind.
+
+Measured: -10.9 LUFS integrated, peaks at -1 dBFS; the voices' stem is 2.4 LU
+over the band's (-13.2 against -15.6 LUFS). Whisper on the voices' stem alone
+hears 28 of 35 words (20% WER: "Delve" is "down", "It's bandwidth" is "it's
+been with"); on the full mix it drops into its music habit and keeps only the
+last bars (74% WER). Each cue cut alone over the full band: 7 of 17 exact (43%
+WER); in the mix, with the neighbouring cues' tails: 6 of 17 (60%). A short
+word cut out of a dense loop is a hard test for Whisper, which fills it with
+"Bye!" and "God."; but Strategy's lines hold up better ("North star.", "It's
+not burnout.", "It's not overtime.", "Unpopular opinion." exact) than
+Synthia's, the same split as the dry tests. It is a direction sketch: the
+loop is busier than a verse should be, and nothing is mixed per word yet.
 
 ## For the build phase
 
