@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="640" viewBox="0 0 1600 640" fill="none">
+ <defs>
+  <linearGradient id="hull" x1="240" y1="560" x2="1490" y2="30" gradientUnits="userSpaceOnUse"><stop stop-color="#080b11"/><stop offset=".43" stop-color="#171d27"/><stop offset=".75" stop-color="#424d5a"/><stop offset="1" stop-color="#121922"/></linearGradient>
+  <linearGradient id="panel" x1="840" y1="100" x2="1470" y2="650" gradientUnits="userSpaceOnUse"><stop stop-color="#81909c" stop-opacity=".25"/><stop offset=".24" stop-color="#29323e"/><stop offset=".56" stop-color="#141b26"/><stop offset=".8" stop-color="#3b4550"/><stop offset="1" stop-color="#101722"/></linearGradient>
+  <linearGradient id="edge" x1="660" y1="100" x2="810" y2="630" gradientUnits="userSpaceOnUse"><stop stop-color="#8998a9" stop-opacity=".5"/><stop offset=".42" stop-color="#181f2a"/><stop offset="1" stop-color="#718395" stop-opacity=".18"/></linearGradient>
+  <linearGradient id="falloff" x1="0" y1="0" x2="930" y2="0" gradientUnits="userSpaceOnUse"><stop stop-color="#05080e"/><stop offset=".5" stop-color="#080d16" stop-opacity=".88"/><stop offset="1" stop-color="#080d16" stop-opacity="0"/></linearGradient>
+  <radialGradient id="blue" cx="0" cy="0" r="1" gradientTransform="translate(1260 595) scale(520 210)" gradientUnits="userSpaceOnUse"><stop stop-color="#1a4dff" stop-opacity=".26"/><stop offset="1" stop-color="#1748ff" stop-opacity="0"/></radialGradient>
+  <pattern id="brush" width="6" height="4" patternUnits="userSpaceOnUse"><path d="M0 0h6" stroke="#d6e1ea" stroke-opacity=".032"/><path d="M0 2h6" stroke="#000" stroke-opacity=".09"/></pattern>
+ </defs>
+ <path fill="url(#hull)" d="M0 0h1600v640H0z"/>
+ <path d="M875 0h725v640H660V220z" fill="url(#panel)"/>
+ <path d="M875 0h26L686 230v410h-26V220z" fill="url(#edge)"/>
+ <path d="M1170 0h430v86h-510z" fill="#090e17" fill-opacity=".66"/>
+ <path d="M760 563h840v77H688z" fill="#080e18" fill-opacity=".82"/>
+ <path fill="url(#brush)" d="M0 0h1600v640H0z"/>
+ <path fill="url(#blue)" d="M0 0h1600v640H0z"/>
+ <path fill="url(#falloff)" d="M0 0h1600v640H0z"/>
+ <g fill="#2550fa"><path opacity=".5" d="M810 603h130v8H810z"/><path opacity=".7" d="M950 603h130v8H950z"/><path d="M1090 603h130v8h-130z"/></g>
+</svg>

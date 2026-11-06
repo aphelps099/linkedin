@@ -1,0 +1,15 @@
+@font-face {
+  font-family: 'Synergy Arcade';
+  src: url('./SynergyArcade-Bold.woff2') format('woff2'),
+       url('./SynergyArcade-Bold.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+.synergy-arcade {
+  font-family: 'Synergy Arcade', monospace;
+  font-weight: 700;
+  font-synthesis: none;
+  letter-spacing: 0;
+  line-height: 1.2;
+}

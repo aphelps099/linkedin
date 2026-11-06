@@ -111,6 +111,7 @@ export default defineConfig({
         videostudio: fileURLToPath(new URL('./videostudio/index.html', import.meta.url)),
         sectionArchive: fileURLToPath(new URL('./archive/sections/index.html', import.meta.url)),
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
+        savedHome: fileURLToPath(new URL('./saved-home/index.html', import.meta.url)),
         identity: fileURLToPath(new URL('./brand/afterbeat/index.html', import.meta.url)),
         cuttingRoom: fileURLToPath(new URL('./cutting-room/index.html', import.meta.url)),
         // Static-host fallback for the former concept route; production redirects to /.
