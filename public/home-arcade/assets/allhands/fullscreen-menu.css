@@ -152,3 +152,21 @@ body.menu-is-open{overflow:hidden}
  .menu-universe .menu-more a{font-size:16px}
  .menu-universe .menu-bottom{padding:8px 6vw 20px}
 }
+/* Light travels through the icon and type, not through a backing rectangle. */
+#departmentMenu.menu-universe .dept-item:is(:hover,:focus-visible) strong,
+#departmentMenu.menu-universe .dept-item:is(:hover,:focus-visible) .icon{color:var(--hover-ink,#8aaaff);transition:color 130ms ease}
+#departmentMenu.menu-universe .dept-item.is-sparkling strong{background:linear-gradient(108deg,var(--hover-ink) 32%,#fffdf3 48%,var(--hover-ink) 63%);background-size:280% 100%;background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:menu-ink-shine 560ms steps(9) both}
+#departmentMenu.menu-universe .dept-item.is-sparkling .icon{animation:menu-icon-shine 560ms steps(5) both;transform:none}
+.menu-universe .menu-glint{position:absolute;width:3px;height:3px;pointer-events:none;background:#fffdf3;box-shadow:0 0 5px var(--hover-ink);opacity:0;animation:menu-small-glint 430ms steps(4) both;animation-delay:var(--glint-delay)}
+@keyframes menu-ink-shine{from{background-position:150% 0}to{background-position:-50% 0}}
+@keyframes menu-icon-shine{0%,100%{color:var(--hover-ink)}40%{color:#fffdf3}70%{color:var(--hover-ink)}}
+@keyframes menu-small-glint{0%{opacity:0;transform:translateY(2px)}25%{opacity:1}65%{opacity:.55}100%{opacity:0;transform:translateY(-3px)}}
+/* A quick grid ignition and lightly staggered arrival. Controls are usable immediately. */
+.menu-universe.is-opening:before{animation:menu-grid-arrive 380ms steps(6) both}
+.menu-universe.is-opening .menu-stage{animation:menu-content-arrive 260ms ease-out both}
+.menu-universe.is-opening .dept-item{animation:menu-content-arrive 250ms ease-out both;animation-delay:var(--entry-delay)}
+.menu-universe.is-opening .menu-more,.menu-universe.is-opening .menu-bottom{animation:menu-content-arrive 260ms ease-out 90ms both}
+.menu-universe.is-opening #menuPegTitle circle{animation-duration:240ms;animation-delay:calc(var(--peg-x)*1ms)}
+@keyframes menu-grid-arrive{from{opacity:.08}to{opacity:.46}}
+@keyframes menu-content-arrive{from{opacity:.12;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){.menu-universe.is-opening:before{animation:none}.menu-universe .menu-glint{display:none}#departmentMenu.menu-universe .dept-item.is-sparkling strong{background:none;-webkit-text-fill-color:currentColor;color:var(--hover-ink)}}

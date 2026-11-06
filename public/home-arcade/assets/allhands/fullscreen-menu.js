@@ -74,3 +74,18 @@ trigger.addEventListener('click',()=>{sizeHover();lightChoice(menu.querySelector
 menu.addEventListener('close',()=>{cancelAnimationFrame(hoverFrame);hoverFrame=0;bursts=[];brush.clearRect(0,0,innerWidth,innerHeight)});
 window.addEventListener('resize',()=>{const key=active;active='';showChoice(key);sizeHover();bursts=[];brush.clearRect(0,0,innerWidth,innerHeight)});
 menu.addEventListener('scroll',()=>{bursts=[];brush.clearRect(0,0,innerWidth,innerHeight)},{passive:true});
+
+// A single short glint on entry. No looping flashes or movement of the controls.
+const hoverInks={beats:'#91acff',optimize:'#91acff',roast:'#ffad85',learn:'#f2df82',meetings:'#82e7d4',archives:'#dfbbf4'};
+const glintTimers=new Map();let openingTimer=0;
+function sparkle(link){
+ if(quiet.matches)return;
+ clearTimeout(glintTimers.get(link));link.classList.remove('is-sparkling');link.querySelectorAll('.menu-glint').forEach(e=>e.remove());
+ const box=link.getBoundingClientRect(),icon=link.querySelector('.icon').getBoundingClientRect(),label=link.querySelector('strong').getBoundingClientRect();
+ const points=[[icon.right-2,icon.top+3],[icon.left+4,icon.bottom-3],[label.left+label.width*.3,label.top-4],[label.right+5,label.bottom-3]];
+ points.forEach(([x,y],i)=>{const dot=document.createElement('i');dot.className='menu-glint';dot.setAttribute('aria-hidden','true');dot.style.left=`${x-box.left}px`;dot.style.top=`${y-box.top}px`;dot.style.setProperty('--glint-delay',`${i*45}ms`);link.append(dot)});
+ link.classList.add('is-sparkling');glintTimers.set(link,setTimeout(()=>{link.classList.remove('is-sparkling');link.querySelectorAll('.menu-glint').forEach(e=>e.remove());glintTimers.delete(link)},620));
+}
+menu.querySelectorAll('[data-menu-view]').forEach((link,i)=>{link.style.setProperty('--hover-ink',hoverInks[link.dataset.menuView]);link.style.setProperty('--entry-delay',`${i*18}ms`);link.addEventListener('pointerenter',()=>sparkle(link));link.addEventListener('focus',()=>sparkle(link));link.addEventListener('pointerleave',()=>{if(document.activeElement!==link){clearTimeout(glintTimers.get(link));glintTimers.delete(link);link.classList.remove('is-sparkling');link.querySelectorAll('.menu-glint').forEach(e=>e.remove())}})});
+trigger.addEventListener('click',()=>{clearTimeout(openingTimer);if(!quiet.matches){menu.classList.add('is-opening');openingTimer=setTimeout(()=>menu.classList.remove('is-opening'),420)}});
+menu.addEventListener('close',()=>{clearTimeout(openingTimer);menu.classList.remove('is-opening');for(const timer of glintTimers.values())clearTimeout(timer);glintTimers.clear();menu.querySelectorAll('.is-sparkling').forEach(e=>e.classList.remove('is-sparkling'));menu.querySelectorAll('.menu-glint').forEach(e=>e.remove())});
