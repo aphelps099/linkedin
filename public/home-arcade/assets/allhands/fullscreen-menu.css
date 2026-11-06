@@ -1,0 +1,154 @@
+/* Full-screen directory. Uses the existing icons and original PEG-9 glyphs. */
+#departmentMenu.menu-universe{position:fixed;inset:0;width:100vw;max-width:none;height:100dvh;max-height:none;margin:0;border:0;padding:0;clip-path:none;color:#f6f3e9;background:#080b10;overflow:auto;overscroll-behavior:contain;isolation:isolate;font-family:Founders,monospace}
+#departmentMenu.menu-universe:not([open]){display:none}
+#departmentMenu.menu-universe[open]{display:flex;flex-direction:column}
+.menu-universe::backdrop{background:#080b10}
+.menu-universe:before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(circle,#29313f 1px,transparent 1.7px) 0 0/8px 8px;opacity:.56}
+.menu-universe .menu-top{display:flex;align-items:center;justify-content:space-between;padding:28px 4vw 20px;flex-shrink:0}
+.menu-universe .menu-top img{width:205px}
+.menu-universe .menu-close{display:flex;align-items:center;gap:15px;color:#fffdf1;background:none;font:700 18px/1 'Synergy Arcade',monospace;padding:12px 0 12px 18px}
+.menu-close svg{width:18px;height:18px;fill:currentColor}
+.menu-universe .menu-top a:focus-visible,.menu-universe button:focus-visible,.menu-universe .menu-more a:focus-visible{outline:2px solid #fff;outline-offset:6px}
+.menu-universe .menu-layout{width:92%;max-width:1600px;margin:auto;display:grid;grid-template-columns:.9fr 1.3fr;gap:6vw;align-items:center;padding:24px 0 30px;flex:1}
+.menu-universe .menu-stage{--menu-accent:#4776ff;position:relative;min-width:0;align-self:center}
+.menu-stage .menu-welcome{font:16px/1.4 Founders,monospace;color:#b3becd;margin:0 0 28px;letter-spacing:0}
+.menu-universe #menuPegTitle{margin:0;height:clamp(150px,18vw,270px);display:flex;align-items:center;max-width:580px}
+#menuPegTitle svg{display:block;width:100%;height:100%;overflow:visible}
+#menuPegTitle circle{fill:#fffdf1;animation:menu-peg-on .45s both;animation-delay:calc(var(--peg-x)*3ms)}
+.menu-universe .menu-stage-description{max-width:365px;font:19px/1.5 Founders,monospace;color:#c3c9d3;min-height:58px;margin:26px 0 24px}
+.menu-universe .menu-meter{display:flex;gap:5px;height:63px;align-items:end;overflow:hidden;opacity:.85;mask-image:linear-gradient(90deg,#000 80%,transparent)}
+.menu-meter i{display:block;flex:1;max-width:13px;height:var(--bar-height);background:radial-gradient(circle,var(--menu-accent) 1.65px,transparent 2px) left bottom/6px 6px;transform-origin:bottom;transition:background .3s}
+.menu-stage[data-view=beats] .menu-meter i{animation:menu-meter 1s ease-in-out infinite alternate;animation-delay:var(--bar-delay)}
+.menu-universe .menu-destinations{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;min-width:0}
+.menu-universe .dept-item{position:relative;display:flex;align-items:center;gap:21px;min-height:133px;margin:0;padding:25px 23px;color:#eaece9;background:#0e131ae6;clip-path:polygon(0 0,calc(100% - 12px) 0,calc(100% - 12px) 6px,100% 6px,100% calc(100% - 12px),calc(100% - 6px) calc(100% - 12px),calc(100% - 6px) calc(100% - 6px),calc(100% - 12px) calc(100% - 6px),calc(100% - 12px) 100%,0 100%);text-decoration:none;transition:background .2s,transform .2s}
+.menu-universe .dept-item .icon{width:50px;height:50px;flex-shrink:0;fill:currentColor;transition:transform .25s,color .25s}
+.menu-universe .dept-item strong{font:500 clamp(19px,1.75vw,28px)/1.2 Founders,monospace;letter-spacing:-.04em;white-space:nowrap}
+.menu-universe .dept-item small{font:13px/1.4 Founders,monospace;letter-spacing:0;margin-top:9px;color:#a5afbc;white-space:normal;max-width:none}
+.menu-universe .dept-item:after{content:'';position:absolute;left:22px;right:22px;bottom:13px;height:3px;background:radial-gradient(circle,currentColor 1px,transparent 1.6px) left/8px 3px;opacity:0;transition:opacity .2s}
+.menu-universe .dept-item.is-current,.menu-universe .dept-item:hover,.menu-universe .dept-item:focus-visible{background:var(--tile-color,#2146ee);outline:none;transform:translateY(-2px);color:#fff}
+.menu-universe .dept-item:hover .icon,.menu-universe .dept-item:focus-visible .icon{transform:translateY(-3px)}
+.menu-universe .dept-item.is-current small,.menu-universe .dept-item:hover small,.menu-universe .dept-item:focus-visible small{color:#fff}
+.menu-universe .dept-item:hover:after,.menu-universe .dept-item:focus-visible:after{opacity:.7}
+.menu-universe .menu-more{grid-column:1/-1;display:flex;gap:25px;align-items:center;flex-wrap:wrap;padding:17px 4px 0}
+.menu-more span{font-size:12px;color:#8190a3}
+.menu-universe .menu-more a{font:14px/1.4 Founders,monospace;color:#e3e8f0;text-decoration:none}
+.menu-universe .menu-more a:hover{color:#92b2ff}
+.menu-universe .menu-bottom{padding:20px 4vw 25px;display:flex;justify-content:space-between;align-items:end;gap:30px;background:#080b10b3;flex-shrink:0}
+.menu-universe .menu-fineprint{margin:0;max-width:700px;color:#8390a0;font:11px/1.65 Founders,monospace}
+.menu-fineprint strong{color:#bbc4cf;font-weight:400}
+.menu-universe .menu-signoff{display:flex;align-items:center;gap:14px;color:#bec8d5;font:12px/1.5 Founders,monospace;white-space:nowrap}
+.menu-eyes{display:flex;gap:12px;color:#547cff}
+.menu-eyes i{width:12px;height:19px;background:linear-gradient(currentColor,currentColor) 0 0/5px 5px,linear-gradient(currentColor,currentColor) 7px 0/5px 5px,linear-gradient(currentColor,currentColor) 0 7px/5px 5px,linear-gradient(currentColor,currentColor) 7px 7px/5px 5px,linear-gradient(currentColor,currentColor) 0 14px/5px 5px,linear-gradient(currentColor,currentColor) 7px 14px/5px 5px;background-repeat:no-repeat}
+body.menu-is-open{overflow:hidden}
+.menu-is-open #menuToggle{visibility:hidden}
+@keyframes menu-peg-on{from{opacity:.1}to{opacity:1}}
+@keyframes menu-meter{0%{transform:scaleY(.35)}100%{transform:scaleY(1)}}
+@media(min-width:1500px){.menu-universe .dept-item{min-height:160px}.menu-universe .dept-item .icon{width:62px;height:62px}}
+@media(max-width:1000px){.menu-universe .menu-layout{gap:4vw;grid-template-columns:.8fr 1.2fr}.menu-universe .dept-item{gap:13px;padding:20px 15px;min-height:120px}.menu-universe .dept-item .icon{width:37px;height:37px}.menu-universe .dept-item strong{font-size:19px}.menu-universe .dept-item small{font-size:12px}.menu-universe .menu-more{gap:17px}.menu-universe .menu-stage-description{font-size:16px}}
+@media(max-width:700px){.menu-universe .menu-top{padding:22px 6vw 12px}.menu-universe .menu-top img{width:155px}.menu-universe .menu-close{font-size:14px;gap:10px}.menu-universe .menu-layout{display:block;width:88%;padding:15px 0 25px}.menu-universe .menu-stage{display:grid;grid-template-columns:1fr 1fr;column-gap:20px;align-items:center;margin-bottom:24px}.menu-stage .menu-welcome{grid-column:1/-1;font-size:13px;margin:0 0 15px}.menu-universe #menuPegTitle{height:100px}.menu-universe .menu-stage-description{font-size:13px;min-height:0;margin:0}.menu-universe .menu-meter{display:none}.menu-universe .menu-destinations{gap:10px}.menu-universe .dept-item{min-height:99px;padding:18px 13px;gap:11px}.menu-universe .dept-item strong{font-size:17px}.menu-universe .dept-item small{font-size:11px;margin-top:6px}.menu-universe .dept-item .icon{width:31px;height:31px}.menu-universe .menu-more{gap:16px;padding-top:13px}.menu-more span{display:none}.menu-universe .menu-more a{font-size:12px}.menu-universe .menu-bottom{padding:18px 6vw 22px;display:block}.menu-universe .menu-fineprint{font-size:10px}.menu-universe .menu-signoff{margin-top:18px;font-size:11px}}
+@media(prefers-reduced-motion:reduce){.menu-universe *,#menuPegTitle circle{animation:none!important;transition:none!important}}
+
+#home #menuToggle:after{content:"";display:inline-block;width:18px;height:16px;margin-left:13px;background:linear-gradient(currentColor,currentColor) 0 0/18px 3px,linear-gradient(currentColor,currentColor) 0 6px/18px 3px,linear-gradient(currentColor,currentColor) 0 12px/18px 3px;background-repeat:no-repeat;vertical-align:middle}
+
+/* The original training-page Synergy, acting as the directory's guide. */
+.menu-universe .menu-guide{display:flex;align-items:center;gap:17px;margin:22px 0 20px;min-height:116px}
+.menu-universe .menu-guide img{display:block;flex:0 0 112px;width:112px;height:112px;object-fit:contain;filter:drop-shadow(0 12px 14px #0008);transform:rotate(-4deg);transition:transform .3s}
+.menu-universe .menu-guide:hover img{transform:rotate(0deg) translateY(-3px)}
+.menu-universe .menu-guide .menu-stage-description{margin:0;min-height:0;font-size:16px;line-height:1.5;max-width:280px}
+@media(min-width:1200px){.menu-universe .menu-guide img{width:130px;height:130px;flex-basis:130px}.menu-universe .menu-guide .menu-stage-description{font-size:18px}}
+@media(max-width:700px){.menu-universe .menu-stage{align-items:center}.menu-universe .menu-guide{position:relative;margin:0;gap:4px;min-height:0;display:flex;flex-direction:column;align-items:flex-start}.menu-universe .menu-guide img{width:66px;height:66px;flex:0 0 66px;margin:-9px 0 1px}.menu-universe .menu-guide .menu-stage-description{font-size:12px;line-height:1.45}.menu-universe .menu-stage{margin-bottom:21px}}
+
+/* Revision: one brighter shared board, with the readout directly above its controls. */
+#departmentMenu.menu-universe{background:#172130;--menu-accent:#4776ff}
+.menu-universe:before{background:radial-gradient(circle,#64778d 1px,transparent 1.7px) 0 0/8px 8px;opacity:.46}
+.menu-universe:after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 45% 40%,#739aff15,transparent 70%)}
+.menu-universe .menu-layout{display:flex;flex-direction:column;justify-content:center;gap:24px;max-width:1400px;padding:16px 0 25px}
+.menu-universe .menu-stage{display:grid;grid-template-columns:minmax(0,1fr) 270px;column-gap:40px;align-items:center;width:100%;align-self:auto;position:relative}
+.menu-stage .menu-welcome{grid-column:1/-1;color:#bfcddd;font-size:15px;margin:0 0 15px}
+.menu-universe #menuPegTitle{height:clamp(65px,8.5vw,130px);max-width:none;width:100%;margin:0}
+.menu-universe .menu-guide{grid-column:2;grid-row:2 / 4;gap:8px;margin:0;min-height:0;align-items:center}
+.menu-universe .menu-guide img{width:100px;height:100px;flex:0 0 100px;transform:rotate(-4deg);filter:drop-shadow(0 10px 12px #0005)}
+.menu-universe .menu-guide .menu-stage-description{font-size:14px;line-height:1.5;max-width:175px;color:#e2e8ef}
+.menu-universe .menu-meter{height:25px;margin-top:16px;gap:4px;width:100%;mask-image:linear-gradient(90deg,#000,transparent)}
+.menu-universe .menu-meter i{max-width:none;height:calc(var(--bar-height)*.4);background:radial-gradient(circle,var(--menu-accent) 1.5px,transparent 2px) left bottom/6px 6px}
+.menu-universe .menu-destinations{width:100%;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 18px;padding:12px;background:#d4e5ff08;clip-path:polygon(0 0,calc(100% - 16px) 0,calc(100% - 16px) 8px,100% 8px,100% calc(100% - 16px),calc(100% - 8px) calc(100% - 16px),calc(100% - 8px) calc(100% - 8px),calc(100% - 16px) calc(100% - 8px),calc(100% - 16px) 100%,0 100%)}
+.menu-universe .dept-item{background:transparent;min-height:116px;padding:23px 20px;gap:18px}
+.menu-universe .dept-item strong{font-size:23px}
+.menu-universe .dept-item small{font-size:13px;color:#b9c6d5}
+.menu-universe .dept-item .icon{width:47px;height:47px}
+.menu-universe .dept-item.is-current,.menu-universe .dept-item:hover,.menu-universe .dept-item:focus-visible{background:var(--tile-color,#2146ee)}
+.menu-universe .menu-more{padding:20px 20px 12px;gap:25px}
+.menu-more span{color:#a4b6cc}
+.menu-universe .menu-bottom{background:transparent;padding-top:12px}
+.menu-universe .menu-fineprint{color:#acb9ca}
+.menu-universe .menu-fineprint strong{color:#e1e7ef}
+@media(max-width:1000px){.menu-universe .menu-stage{grid-template-columns:minmax(0,1fr) 245px;gap:0 22px}.menu-universe .menu-guide img{width:88px;height:88px;flex-basis:88px}.menu-universe .menu-guide .menu-stage-description{font-size:13px}.menu-universe .dept-item{padding:20px 15px;gap:15px;min-height:111px}.menu-universe .dept-item strong{font-size:20px}.menu-universe .dept-item .icon{width:40px;height:40px}.menu-universe .dept-item small{font-size:12px}}
+@media(max-width:700px){.menu-universe .menu-layout{display:flex;width:88%;gap:18px;padding-top:15px;justify-content:flex-start}.menu-universe .menu-stage{display:grid;grid-template-columns:1fr;gap:0;margin:0}.menu-stage .menu-welcome{font-size:13px;margin-bottom:12px}.menu-universe #menuPegTitle{height:64px;grid-column:1}.menu-universe .menu-guide{grid-column:1;grid-row:auto;flex-direction:row;gap:12px;margin:10px 0 0;align-items:center}.menu-universe .menu-guide img{width:61px;height:61px;flex-basis:61px;margin:0}.menu-universe .menu-guide .menu-stage-description{font-size:12px;max-width:240px}.menu-universe .menu-meter{display:none}.menu-universe .menu-destinations{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:7px}.menu-universe .dept-item{gap:10px;padding:15px 9px;min-height:93px}.menu-universe .dept-item strong{font-size:16px}.menu-universe .dept-item small{font-size:11px}.menu-universe .dept-item .icon{width:29px;height:29px}.menu-universe .menu-more{padding:15px 6px 10px;gap:14px}.menu-universe .menu-more a{font-size:11px}.menu-universe .menu-bottom{padding-top:10px}}
+/* A simpler directory: big destinations, expressive hover, one quiet footer. */
+.menu-universe .dept-item small,.menu-universe .menu-welcome,.menu-universe .menu-more>span,.menu-universe .menu-signoff,.menu-universe .menu-stage-description{display:none}
+.menu-universe .menu-stage{grid-template-columns:minmax(0,1fr) 125px;gap:0 30px}
+.menu-universe #menuPegTitle{height:clamp(70px,8vw,120px)}
+.menu-universe .menu-guide{grid-row:1 / 3;grid-column:2;justify-content:center}
+.menu-universe .menu-guide img{width:116px;height:116px;flex-basis:116px}
+.menu-universe .menu-layout{gap:20px;padding-top:10px}
+.menu-universe .menu-destinations{gap:12px;padding:10px;background:#d4e5ff04}
+.menu-universe .dept-item{min-height:148px;gap:22px;padding:28px 22px;transform:none;transition:background .18s,color .18s}
+.menu-universe .dept-item strong{font-size:clamp(25px,2.7vw,39px);letter-spacing:-.045em;white-space:normal}
+.menu-universe .dept-item .icon{width:61px;height:61px;transition:transform .28s cubic-bezier(.2,1.6,.4,1)}
+.menu-universe .dept-item:hover,.menu-universe .dept-item:focus-visible{transform:none}
+.menu-universe .dept-item:hover .icon,.menu-universe .dept-item:focus-visible .icon{transform:translateY(-7px) rotate(-8deg) scale(1.14)}
+.menu-universe .dept-item[data-menu-view=beats]:hover .icon,.menu-universe .dept-item[data-menu-view=beats]:focus-visible .icon{animation:menu-icon-beat .55s ease-in-out infinite alternate}
+.menu-universe .dept-item:after{left:22px;right:22px;bottom:15px;height:5px;background:radial-gradient(circle,currentColor 1.8px,transparent 2.3px) left/10px 5px}
+.menu-universe .dept-item:hover:after,.menu-universe .dept-item:focus-visible:after{animation:menu-dot-drift .8s linear infinite;opacity:.9}
+.menu-universe .menu-more{justify-content:center;gap:32px;padding:20px 10px 12px}
+.menu-universe .menu-more a{font-size:17px}
+.menu-universe .menu-bottom{justify-content:center;padding:10px 4vw 22px}
+.menu-universe .menu-fineprint{font:12px/1.5 Founders,monospace;text-align:center;max-width:900px;color:#bec9d8}
+@keyframes menu-icon-beat{from{transform:translateY(-3px) rotate(-4deg) scale(1.08)}to{transform:translateY(-9px) rotate(3deg) scale(1.16)}}
+@keyframes menu-dot-drift{to{background-position:10px 0}}
+@media(max-width:1000px){.menu-universe .dept-item{min-height:142px;gap:18px;padding:23px 18px}.menu-universe .dept-item .icon{width:52px;height:52px}.menu-universe .dept-item strong{font-size:27px}}
+@media(max-width:700px){.menu-universe .menu-stage{grid-template-columns:minmax(0,1fr) 70px;gap:12px}.menu-universe #menuPegTitle{height:63px}.menu-universe .menu-guide{grid-column:2;grid-row:1;margin:0}.menu-universe .menu-guide img{width:70px;height:70px;flex-basis:70px}.menu-universe .menu-layout{gap:24px;padding-top:20px}.menu-universe .menu-destinations{gap:9px;padding:5px}.menu-universe .dept-item{min-height:138px;padding:22px 14px;gap:15px;flex-direction:column;align-items:flex-start;justify-content:center}.menu-universe .dept-item .icon{width:43px;height:43px}.menu-universe .dept-item strong{font-size:22px;line-height:1.1}.menu-universe .dept-item:after{left:14px;right:14px;bottom:10px}.menu-universe .menu-more{gap:15px;padding:18px 0 10px}.menu-universe .menu-more a{font-size:12px}.menu-universe .menu-fineprint{font-size:11px}.menu-universe .menu-bottom{padding:12px 6vw 20px}}
+/* Let the shared peg field carry hover instead of moving the menu controls. */
+.menu-universe .menu-hover-field{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.menu-universe .menu-top,.menu-universe .menu-layout,.menu-universe .menu-bottom{position:relative;z-index:1}
+.menu-universe .menu-destinations{background:transparent;clip-path:none}
+.menu-universe .dept-item,.menu-universe .dept-item.is-current,.menu-universe .dept-item:hover,.menu-universe .dept-item:focus-visible{background:transparent;clip-path:none;transform:none}
+.menu-universe .dept-item:hover .icon,.menu-universe .dept-item:focus-visible .icon,.menu-universe .dept-item[data-menu-view=beats]:hover .icon,.menu-universe .dept-item[data-menu-view=beats]:focus-visible .icon{animation:none;transform:none;color:#fff}
+.menu-universe .dept-item:after{display:none}
+.menu-universe .dept-item:focus-visible{outline:2px dotted #cad8ed;outline-offset:-3px}
+.menu-universe .menu-meter{display:none}
+@media(prefers-reduced-motion:reduce){.menu-universe .dept-item.is-current{background:#ffffff0c}}
+
+.menu-universe .menu-guide img{transform:none;image-rendering:pixelated;filter:none}
+.menu-universe .menu-guide:hover img{transform:none}
+.menu-universe .menu-more a{font-size:18px}
+@media(max-width:700px){.menu-universe .menu-more a{font-size:16px}}
+
+/* A continuous light field: no rectangular masks or backing plates behind ink. */
+.menu-universe #menuPegTitle,.menu-universe #menuPegTitle svg,.menu-universe .dept-item strong,.menu-universe .dept-item .icon{background:transparent;box-shadow:none;text-shadow:none}
+/* Synergy anchors the readout from its left edge, resting on a short peg ledge. */
+.menu-universe .menu-stage{grid-template-columns:180px minmax(0,1fr);gap:30px;align-items:center}
+.menu-universe .menu-guide{grid-column:1;grid-row:1;position:relative;justify-content:center;align-self:end;margin:0;padding-bottom:7px}
+.menu-universe .menu-guide img{width:180px;height:180px;flex:0 0 180px;filter:grayscale(1) contrast(1.08);image-rendering:pixelated;transform:none}
+.menu-universe .menu-guide:after{content:'';position:absolute;bottom:3px;left:29px;right:25px;height:8px;background:radial-gradient(circle,#b8c8da 1.7px,transparent 2px) 0 0/8px 8px;opacity:.65}
+.menu-universe #menuPegTitle{grid-column:2;grid-row:1;height:clamp(75px,9vw,136px);align-self:center}
+.menu-universe .menu-layout{gap:8px}
+.menu-universe .dept-item:focus-visible{outline:none}
+.menu-universe .dept-item:focus-visible strong{text-decoration:underline;text-underline-offset:9px;text-decoration-thickness:2px}
+@media(max-width:700px){.menu-universe .menu-stage{grid-template-columns:96px minmax(0,1fr);gap:13px}.menu-universe .menu-guide{grid-column:1;grid-row:1;padding-bottom:4px}.menu-universe .menu-guide img{width:96px;height:96px;flex-basis:96px}.menu-universe .menu-guide:after{left:15px;right:12px;height:6px;background-size:6px 6px;bottom:0}.menu-universe #menuPegTitle{grid-column:2;grid-row:1;height:70px}.menu-universe .menu-layout{gap:13px}}
+/* Phone navigation is a single slim list, not a miniature desktop board. */
+@media(max-width:700px){
+ .menu-universe .menu-top{position:sticky;top:0;z-index:3;background:#172130;padding:20px 6vw 15px}
+ .menu-universe .menu-layout{padding:10px 0 18px;gap:17px;flex:1;justify-content:center}
+ .menu-universe .menu-stage{grid-template-columns:78px minmax(0,1fr);gap:18px}
+ .menu-universe .menu-guide img{width:78px;height:78px;flex-basis:78px}
+ .menu-universe .menu-guide:after{left:12px;right:10px}
+ .menu-universe #menuPegTitle{height:58px}
+ .menu-universe .menu-destinations{grid-template-columns:minmax(0,1fr);gap:0;padding:0}
+ .menu-universe .dept-item{min-height:63px;padding:14px 10px;gap:22px;flex-direction:row;align-items:center;justify-content:flex-start}
+ .menu-universe .dept-item .icon{width:32px;height:32px;flex:0 0 32px}
+ .menu-universe .dept-item strong{font-size:23px;line-height:1.2}
+ .menu-universe .menu-more{justify-content:flex-start;padding:20px 10px 5px}
+ .menu-universe .menu-more a{font-size:16px}
+ .menu-universe .menu-bottom{padding:8px 6vw 20px}
+}
