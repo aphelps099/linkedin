@@ -139,14 +139,17 @@ const rubs = (c, penta) => { const tones = chordPcs(c); return penta.filter(p =>
 function finish(out, track, unused = false) {
   const breaks = track?.breaks || {};
   const seen = new Set(out.map(v => v.rule));
-  const res = out.map(v => v.level === 'error' && breaks[v.rule] ? {...v, level:'warning', reason:`${v.reason}. Broken on purpose: ${breaks[v.rule]}`, declared:true} : v);
+  // A hard violation (v.hard) is what a declared break still keeps (Delve.'s ten phrases stay four bars apart; its
+  // two minutes stay inside the chart's own window): it is never excused.
+  const res = out.map(v => v.level === 'error' && breaks[v.rule] && !v.hard ? {...v, level:'warning', reason:`${v.reason}. Broken on purpose: ${breaks[v.rule]}`, declared:true} : v);
   if (unused) for (const rule of Object.keys(breaks)) if (!seen.has(rule)) res.push({rule, level:'warning', reason:RULE_TEXT[rule] ? `declares a break of "${rule}" but keeps the rule` : `declares a break of "${rule}", which is no rule`});
   return res.sort((a, b) => (a.level === 'error' ? 0 : 1) - (b.level === 'error' ? 0 : 1));
 }
 const collector = () => {
   const out = [];
   const flag = (rule, ok, reason) => { if (!ok) out.push({rule, level:ADVICE.has(rule) ? 'warning' : 'error', reason:typeof reason === 'function' ? reason() : reason}); };
-  return {out, flag};
+  const hard = (rule, ok, reason) => { if (!ok) out.push({rule, level:'error', hard:true, reason:typeof reason === 'function' ? reason() : reason}); };
+  return {out, flag, hard};
 };
 
 // ---- lintTrack ------------------------------------------------------------------------
@@ -319,14 +322,16 @@ function modeOf(tr, chords) {
 
 // A river chart (track.wander): the rules every song keeps, and the river's own.
 export function lintRiver(trackOrId) {
-  const tr = trackOrId && typeof trackOrId === 'object' && trackOrId.wander ? trackOrId : trackOf(trackOrId), W = tr.wander, {out, flag} = collector(), R = RULES, V = R.river, name = tr.title;
+  const tr = trackOrId && typeof trackOrId === 'object' && trackOrId.wander ? trackOrId : trackOf(trackOrId), W = tr.wander, {out, flag, hard} = collector(), R = RULES, V = R.river, name = tr.title;
   const inKey = m => tr.pitchClasses.includes(pc(m)), bar = 16 * tr.step, layers = W.layerSpec, refs = W.references ?? tr.references ?? {};
   flag('tempo.range', tr.bpm >= R.tempo.bpm[0] && tr.bpm <= R.tempo.bpm[1], `${name} is ${tr.bpm} BPM`);
   flag('swing.light', W.swing <= R.swing.max + 1e-9, `the river swings ${W.swing} of a 16th`);
   const chords = [...new Set(Array.from({length:W.bars}, (_, b) => W.chordAt(b)))], m = modeOf(tr, chords);
   flag('harmony.home', m.ok, () => `${tr.key}: ${m.mode ?? 'no mode it may live in'}${m.home ? '' : ', no chord on the tonic'}`);
   flag('harmony.loop', chords.length >= R.harmony.loop[0] && chords.length <= R.harmony.loop[1], `the river moves through ${chords.length} chords`);
-  flag('melody.pentatonic', W.pentatonic.length === R.melody.pentatonic && W.pentatonic.every(p => tr.pitchClasses.includes(p)), 'the river sings a five-note pentatonic in key');
+  // Every pentatonic the river sings (a chart may move it by bar: W.pentatonicAt, Delve.'s Pool), each five notes in key.
+  const pentas = [...new Map((W.pentatonicAt ? Array.from({length:W.bars}, (_, b) => W.pentatonicAt(b)) : [W.pentatonic]).map(p => [p.join(), p])).values()];
+  flag('melody.pentatonic', pentas.every(pen => pen.length === R.melody.pentatonic && pen.every(p => tr.pitchClasses.includes(p))), () => `the river sings ${pentas.length > 1 ? 'pentatonics' : 'a pentatonic'} ${pentas.map(p => p.join('.')).join(' and ')}: five notes in key each`);
   const notIn = [];
   for (const c of chords) for (const x of [c.root, ...c.notes, ...(c.keys || [])]) if (!inKey(x)) notIn.push(`${c.name} ${x}`);
   flag('inKey.everyone', !notIn.length, () => `out of ${tr.key}: ${notIn.join(', ')}`);
@@ -345,6 +350,8 @@ export function lintRiver(trackOrId) {
   // The river's own rules.
   const seconds = W.bars * bar;
   flag('river.form', !W.ladder && !W.choke && !W.impact && seconds >= V.seconds[0] && seconds <= V.seconds[1], `${seconds.toFixed(1)} s${W.ladder || W.choke || W.impact ? ', with a ladder, choke or impact' : ''}`);
+  // A declared break of the length keeps the chart's own window (W.seconds), and never a ladder, choke or impact.
+  if (W.breaks?.['river.form']) hard('river.form', !W.ladder && !W.choke && !W.impact && W.seconds && seconds >= W.seconds[0] && seconds <= W.seconds[1], `${seconds.toFixed(1)} s, outside the chart's own window ${W.seconds?.join('-') ?? '(none declared)'}`);
   const short = layers.filter(l => l.in[1] - l.in[0] < V.minRamp - 1e-9 || l.out[1] - l.out[0] < V.minRamp - 1e-9 || l.in[1] - l.in[0] > V.maxRamp + 1e-9 || l.out[1] - l.out[0] > V.maxRamp + 1e-9);
   flag('river.ramps', !short.length, () => `layers ramping in or out outside ${V.minRamp}-${V.maxRamp} bars: ${short.map(l => `${l.id} ${l.in.join('-')} / ${l.out.join('-')}`).join(', ')}`);
   // The first texture sounds first and alone for lushBefore bars before its first copy; other
@@ -358,8 +365,12 @@ export function lintRiver(trackOrId) {
     () => `the first texture (${src0.id}) must sound first and alone ${V.lushBefore} bars, then thicken (${mine.length} layers of it) before other samples join: ${early.map(l => l.id).join(', ') || 'none early'}`);
   const loop = layers.find(l => l.kind === 'loop'), bars = Array.from({length:W.bars}, (_, b) => b), kicked = bars.filter(b => W.kicksOf(b, W.layers(b)).length);
   flag('river.loop', !!loop && loop.in[0] <= 3 && loop.out[0] >= W.fade[0] - 1e-9 && kicked.length >= W.bars - 1, () => `the loop plays ${kicked.length} of ${W.bars} bars${loop ? `, from bar ${loop.in[0]} to ${loop.out[1]}` : ', no loop layer'}`);
-  const at = [W.hook?.bar, W.phrases?.y, W.phrases?.refrain].filter(x => x !== undefined && x !== null).sort((a, b) => a - b);
-  flag('river.phrases', Object.keys(W.phrases || {}).length <= V.phrases && at.every((x, i) => !i || x - at[i - 1] >= V.phraseGap), `clear phrases at bars ${at.join(', ')}: at most ${V.phrases} and Synergy once, ${V.phraseGap} bars apart`);
+  // The clear phrases: the chart's own (W.phrases and his hook), or a setlist's (Delve.: her vocabulary, W.setlist).
+  const at = W.setlist ? W.setlist.map(p => p.bar + (p.step ?? 0) / 16).sort((a, b) => a - b) : [W.hook?.bar, W.phrases?.y, W.phrases?.refrain].filter(x => x !== undefined && x !== null).sort((a, b) => a - b);
+  const count = W.setlist ? W.setlist.length + (W.hook ? 1 : 0) : Object.keys(W.phrases || {}).length, spaced = at.every((x, i) => !i || x - at[i - 1] >= V.phraseGap);
+  flag('river.phrases', count <= V.phrases && spaced, `clear phrases at bars ${at.join(', ')}: at most ${V.phrases} and Synergy once, ${V.phraseGap} bars apart`);
+  // Under a declared break of the count, the spacing still holds: four bars from start to start.
+  if (W.breaks?.['river.phrases']) hard('river.phrases', spaced, () => `clear phrases at bars ${at.join(', ')}: ${V.phraseGap} bars apart even when there are many`);
   const tamb = layers.find(l => l.kind === 'tambourine'), swellMax = Math.max(1, ...(tamb?.swell || []).map(x => x[1]));
   flag('river.tambourine', !!tamb && swellMax <= 1.6, tamb ? `the tambourine comes up ${swellMax}x: a little` : 'no tambourine');
   const acoustic = layers.filter(l => (W.acoustic || []).includes(l.id) && l.kind === 'colour');
@@ -374,9 +385,11 @@ export function lintRiver(trackOrId) {
 // One arranged river (wander.js): its form, its ramps, its loop, its few clear phrases, every note in key;
 // with a render, the loudness and the swells.
 export function lintRiverPlan(plan, render) {
-  const tr = trackOf(plan.track), W = tr.wander, {out, flag} = collector(), R = RULES, V = R.river, T = plan.timing, bar = 16 * plan.step, seconds = T[plan.totalSteps];
+  const tr = trackOf(plan.track), W = tr.wander, {out, flag, hard} = collector(), R = RULES, V = R.river, T = plan.timing, bar = 16 * plan.step, seconds = T[plan.totalSteps];
   const inKey = m => tr.pitchClasses.includes(pc(m)), penta = W.pentatonic;
-  flag('form.length', seconds >= R.form.seconds[0] && seconds <= R.form.seconds[1], `${seconds.toFixed(1)} s, not about ${R.form.about}`);
+  // The river's length (as the chart lint names it, river.form); a declared break keeps the chart's own window.
+  flag('river.form', seconds >= R.form.seconds[0] && seconds <= R.form.seconds[1], `${seconds.toFixed(1)} s, not about ${R.form.about}`);
+  if (W.breaks?.['river.form']) hard('river.form', W.seconds && seconds >= W.seconds[0] && seconds <= W.seconds[1], `${seconds.toFixed(1)} s, outside the chart's own window ${W.seconds?.join('-')}`);
   flag('river.form', !plan.choke && !plan.lady.some(e => ['ladder', 'tag', 'impact'].includes(e.role)) && !(plan.tape || []).some(x => x.kind === 'sink') && plan.sections.every(s => WANDER_SECTIONS.includes(s.name)),
     'a river has no ladder, choke or impact, and its sections are its phases');
   const bad = plan.layers.filter(l => l.in[1] - l.in[0] < V.minRamp * bar - 1e-6 || l.out[1] - l.out[0] < V.minRamp * bar - 1e-6);
@@ -395,10 +408,22 @@ export function lintRiverPlan(plan, render) {
   const hooks = plan.lines.reduce((n, l) => n + 1 + l.words.some(w => w.repeat), 0);
   flag('river.phrases', groups.length <= V.phrases && hooks <= V.synergy && gaps.every(g => g >= (V.phraseGap - 1) * bar - 1e-6),
     () => `${groups.length} clear band phrases, Synergy ${hooks}x, gaps ${gaps.map(g => g.toFixed(1)).join(', ')} s`);
+  // Under a declared break of the count (a setlist), the spacing still holds: three bars of stream from one phrase's
+  // end to the next one's start, four from start to start, and never two voices back to back.
+  if (W.breaks?.['river.phrases']) {
+    const starts = all.slice(1).map((p, i) => p.start - all[i].start), trade = all.slice(1).filter((p, i) => gaps[i] < V.phraseGap * bar && [...p.voices].some(v => !all[i].voices.has(v)));
+    hard('river.phrases', hooks <= V.synergy && gaps.every(g => g >= (V.phraseGap - 1) * bar - 1e-6) && starts.every(d => d >= V.phraseGap * bar - 2 * plan.step - 1e-6) && !trade.length,
+      () => `gaps ${gaps.map(g => g.toFixed(1)).join(', ')} s, starts ${starts.map(d => d.toFixed(1)).join(', ')} s apart${trade.length ? `, voices trading at ${trade.map(p => p.start.toFixed(1)).join(', ')} s` : ''}`);
+  }
   const notIn = [];
   for (const e of plan.band) for (const n of e.notes || []) if (!inKey(n.midi)) notIn.push(`"${e.display}" ${n.midi}`);
   for (const w of plan.words) for (const n of w.notes) if (!inKey(n.midi)) notIn.push(`"${w.display}" ${n.midi}`);
   for (const l of plan.loops) for (const c of l.cuts) if (l.key && !penta.includes(pc(c.base))) notIn.push(`loop ${l.id} ${c.text} ${c.base}`);
+  // Her vocabulary (a setlist): every phrase tuned in key, every composed note of her echoes, her choir and the stars.
+  for (const e of plan.band) if (e.own && Number.isFinite(e.midi) && Math.abs(e.midi - Math.round(e.midi)) < 1e-9 && !inKey(e.midi)) notIn.push(`"${e.display}" ${e.midi}`);
+  for (const h of plan.echoes || []) for (const m of [...(h.kind === 'step' ? [h.midi] : []), ...(h.notes || []).map(n => n[2])]) if (!inKey(m)) notIn.push(`${h.phrase} ${h.kind} ${m}`);
+  for (const c of plan.choir || []) for (const m of c.midi) if (!inKey(m)) notIn.push(`choir ${c.syllable} ${m}`);
+  for (const s of plan.stars?.twinkles || []) if (!inKey(s.midi) || !(W.pentatonicAt ? W.pentatonicAt(Math.floor((s.t + 1e-6) / bar)) : penta).includes(pc(s.midi))) notIn.push(`star ${s.t.toFixed(2)} ${s.midi}`);
   flag('inKey.everyone', !notIn.length, () => `out of ${tr.key}: ${notIn.slice(0, 6).join(', ')}`);
   flag('river.tambourine', plan.layers.some(l => l.kind === 'tambourine'), 'no tambourine in the river');
   flag('river.acoustic', plan.layers.filter(l => l.kind === 'colour').length >= V.acoustic, 'the acoustic colours are missing');
@@ -410,5 +435,5 @@ export function lintRiverPlan(plan, render) {
     const missed = (render.whisper || []).filter(w => w.wer > R.mix.wer);
     flag('mix.intelligible', !missed.length, () => missed.map(w => `"${w.expected}" heard as "${w.heard}"`).join('; '));
   }
-  return finish(out, tr);
+  return finish(out, {...tr, breaks:{...(tr.breaks || {}), ...(W.breaks || {})}});
 }

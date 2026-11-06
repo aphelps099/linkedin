@@ -89,6 +89,8 @@ export function createCompositor(canvas, opts = {}) {
   if (!gl.getExtension('EXT_color_buffer_float') && !gl.getExtension('EXT_color_buffer_half_float')) throw Error('This GPU cannot render the Peg Board (no float colour buffer).');
 
   let format = opts.format ?? '9:16', scale = opts.scale ?? 1, F = FORMATS[format];
+  // The board-only fast path (drawFrame): on unless a caller turns it off to compare it with the slow one.
+  const fastBoard = opts.fastBoard !== false;
   let post = {...POST, ...(opts.post || {})};
   const ready = loadFonts(opts.fontBase ?? '');
 
@@ -394,13 +396,32 @@ export function createCompositor(canvas, opts = {}) {
     const regionRadius = rect && (rect.w < F.w || rect.h < F.h) ? 12 : 0;
     const drawMain = (target = null) => {
       // (Over peg video the board takes its pitch, so the two grids coincide: the ignition, the loop seam's ghost.)
-      const pitch = pegUnder && !frame.board.over ? pegUnder.fx.find(x => x.type === 'pegVideo').pitch : undefined, base = {cell:rect, radius:regionRadius, target, transient:moving, pitch, psych:psychMain.length ? psychMain : null};
+      // (An EDL's own board grid, edl.boardPitch, holds otherwise: Delve.'s 90 x 160 pegs at every render scale.)
+      const pitch = pegUnder && !frame.board.over ? pegUnder.fx.find(x => x.type === 'pegVideo').pitch : frame.board.pitch, base = {cell:rect, radius:regionRadius, target, transient:moving, pitch, psych:psychMain.length ? psychMain : null};
       if (panel >= 1) drawBoardRegion(rect, screens, btime, base);
       else {
         drawBoardRegion(rect, screens, btime, {...base, sockets:!videoUnder, blend:videoUnder ? 'max' : 'over'});
         if (panel > 0) drawBoardRegion(rect, screens, btime, {...base, opacity:panel});
       }
     };
+    // The board-only fast path (Delve.): a full-frame board panel over nothing but flat colour clips of the whole
+    // frame (no effects, no trails, no camera, no cells, no banner, no footage look): the board's texture is opaque
+    // over the whole frame, so the composite is that texture, copied in with one texel fetch a pixel instead of the
+    // uber shader's two passes (under SwiftShader about 2.5 s a pass at 540 x 960; on a GPU, nothing to speak of).
+    // Pixel for pixel what the slow path draws (check-videostudio-export section 9 compares them).
+    const fullRect = !!rect && rect.x === 0 && rect.y === 0 && rect.w === F.w && rect.h === F.h;
+    let fast = fastBoard && o.fast !== false && fullRect && !frame.camera && !moving && !frame.board.over && panel >= 1 && !psychCells.length && !(frame.board.cells || []).length && !frame.board.banner
+      && !psychMain.some(p => p.look === 'footage') && frame.layers.every(l => l.kind === 'generated' && /^color:/.test(l.gen || '') && l.cell.id === 'full' && !l.fx.length && !l.trail && l.opacity >= .999);
+    if (fast) {
+      const b = boards.draw({w:rect.w, h:rect.h, screens, time:btime, pitch:frame.board.pitch, sockets:true, safe:safeOf(rect), psych:psychMain.length ? psychMain : null});
+      if (b.width === W && b.height === H) {
+        stats.boards++; stats.fast = true;
+        resetState(); bindTarget(T.comp); gl.disable(gl.BLEND); gl.useProgram(P.copy.p); gl.bindVertexArray(empty);
+        gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, b.texture); gl.uniform1i(P.copy.u.uSrc, 0);
+        gl.drawArrays(gl.TRIANGLES, 0, 3); stats.passes++;
+      } else fast = false;
+    }
+    if (!fast) {
     if (rect && !under.length && !fixed && !covered) drawMain();
     for (const cs of frame.board?.cells || []) if (cs.z !== 'over') drawBoardRegion(cs.rect, [ctx.cells[cs.screen]], btime, {cell:cs.rect, radius:12});
 
@@ -448,6 +469,7 @@ export function createCompositor(canvas, opts = {}) {
     if (bannerRect) {
       const text = frame.layers.find(l => l.chrome?.banner)?.chrome.banner;
       if (text) { resetState(); bindTarget(T.comp); drawChrome(bannerQuads(text, bannerRect, atlas, {scale, legible:LEGIBLE[format]})); }
+    }
     }
 
     // Droste: each level is the frame with the feedback tile holding the level before.
@@ -566,7 +588,7 @@ export function governorGains(program, {plan, shots, boards}) {
     const fr = program.frame(f), q = [0, 0, 0, 0];
     let boardL = null;
     const psych = fr.board?.psych || [], psychMain = psych.filter(p => !p.rect), psychCells = psych.filter(p => p.rect), cellL = new Map();
-    const boardLuma = () => boardL ??= fr.board?.rect && boards ? boards.luma({w:fr.board.rect.w, h:fr.board.rect.h, screens:boardScreens(program.board.screens), time:boardTimeOf(fr), safe:safeSpan(fr.board.rect, SAFE[program.format]), psych:psychMain}, grids).whole : 0;
+    const boardLuma = () => boardL ??= fr.board?.rect && boards ? boards.luma({w:fr.board.rect.w, h:fr.board.rect.h, screens:boardScreens(program.board.screens), time:boardTimeOf(fr), pitch:fr.board.pitch, safe:safeSpan(fr.board.rect, SAFE[program.format]), psych:psychMain}, grids).whole : 0;
     // A psych cell's own board (footage: predicted as the picture it takes over).
     const cellLuma = p => { if (!cellL.has(p)) cellL.set(p, boards ? boards.luma({w:p.rect.w, h:p.rect.h, screens:[], time:boardTimeOf(fr), psych:[p]}, grids).whole : 0); return cellL.get(p); };
     const covered = !!fr.board?.rect && psychCells.some(p => p.rect.x < fr.board.rect.x + fr.board.rect.w && fr.board.rect.x < p.rect.x + p.rect.w && p.rect.y < fr.board.rect.y + fr.board.rect.h && fr.board.rect.y < p.rect.y + p.rect.h);

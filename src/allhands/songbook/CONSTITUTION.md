@@ -75,6 +75,12 @@ The Panda Bear and Washed Out songs do not run the Drop Edition. They run like a
 - The tambourine sits in the background and comes up a little where the texture swells.
 - Acoustic colours (at least two) woven through a sound that stays about 90% electronic.
 
+#### Delve., the vocabulary film: the river's other ten percent (Aaron, Nov 6)
+Delve. (`delve.js`) runs the river with two rules broken on purpose, and declares both (`breaks`):
+- **Her clear phrases are the content.** Ten of them, not two: the film is about her LinkedIn vocabulary, so her phrases are the subject, not the river's few highlights. What the rule protects still holds, and the lint keeps it as a hard rule under the break: a phrase starts at least four bars after the one before, at least three bars of stream separate one phrase's end from the next one's start, each echo chain is gone a beat before the next phrase rises, and no two voices trade lines back to back (it is her film: no Strategy, Synthia or Synergy voice).
+- **Two minutes, not one.** A concept film; the chart's own window (`seconds`, 110 to 130) replaces 55 to 65, and is kept.
+Everything else is the river: one pattern first (her "Delve" in grains, out of its own echo), the loop in every bar, every ramp two to eight bars, the tambourine in the background, acoustic colours in a sound that stays electronic. Her arc is the song: each phrase said once crisp and dry, then handed to its echo (delay, reverb, down a fifth, down an octave, the echo to fade), the treatment growing (doubled, harmonised, on a slowing tape, shadowed, a canon) until she is the choir; the bed is her too, her own syllables stretched and stacked. She surfaces clear at the end.
+
 ### Mix targets
 - −10 LUFS integrated, true peak −1 dBTP or lower.
 - Every drop at least +2.5 LU over the verse, including on a phone speaker. On the river: every swell at least +2 LU over the stream it grew from, on a phone speaker; no silence is asked for.

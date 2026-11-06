@@ -2,6 +2,8 @@
 // playback and the offline render are the same code. No Math.random: noise is
 // seeded and read from a time-derived offset, so two renders match exactly.
 
+import {decimate as pixelDecimate, crush as pixelCrush, pixelParams} from './voices/pixel.js';
+
 export const mtof = m => 440 * 2 ** ((m - 69) / 12);
 const cache = new WeakMap();
 function store(ctx) { let s = cache.get(ctx); if (!s) cache.set(ctx, s = {}); return s; }
@@ -777,4 +779,168 @@ export function tambourinePattern({bars, step, swing = 0, shakes = [.32, .16, .7
     }
   }
   return events;
+}
+
+// ---- Delve's instruments (songbook/delve.js) ----------------------------------
+// The struck ones (a hand drum, a slit drum, glass chimes) are modal synthesis
+// rendered once per context as samples, seeded: the same note, stroke and
+// variant ring the same in every render. Which variant plays is chosen by the
+// time, so no two strikes in a row ring alike. Three synths make the smooth
+// side: Synergy's whole-note pad, Pat's warm bass, Synthia's soft arpeggio.
+const STRUCK = new WeakMap();
+function struckBuffer(ctx, key, make) {
+  let s = STRUCK.get(ctx);
+  if (!s) STRUCK.set(ctx, s = new Map());
+  if (!s.has(key)) { const y = make(ctx.sampleRate), b = ctx.createBuffer(1, y.length, ctx.sampleRate); b.getChannelData(0).set(y); s.set(key, b); }
+  return s.get(key);
+}
+function playStruck(ctx, out, t, buffer, gain, side) {
+  const src = ctx.createBufferSource(), g = amp(ctx, gain), p = spread(ctx, side);
+  src.buffer = buffer;
+  chain(src, g, p, out); src.start(t); src.stop(t + buffer.duration + .005); done(src, [src, g, p]);
+}
+const variantAt = (t, midi, n = 3) => mix32(Math.round(t * 1000) * 2654435761 + midi * 7) % n;
+// Damped modes as samples: [ratio, level, decay (s)] from f0, each with its own bend (the skin
+// relaxing: `bend` of the pitch, settling over `settle` seconds).
+function modes(sr, f0, list, seconds, R, {bend = 0, settle = .03} = {}) {
+  const n = Math.round(seconds * sr), y = new Float32Array(n);
+  for (const [ratio, level, tau] of list) {
+    const f = f0 * ratio * (1 + .003 * (R() - .5));
+    if (f > sr * .45) continue;
+    let ph = R() * 6.283;
+    const dec = Math.exp(-1 / (tau * sr));
+    let e = level;
+    for (let i = 0; i < n; i++) {
+      ph += 2 * Math.PI * f * (1 + bend * Math.exp(-i / (settle * sr))) / sr;
+      y[i] += e * Math.sin(ph); e *= dec;
+    }
+  }
+  return y;
+}
+const fadeEdges = (y, sr, attack = .0008, release = .006) => {
+  const A = Math.max(1, Math.round(attack * sr)), Rl = Math.round(release * sr);
+  for (let i = 0; i < A; i++) y[i] *= i / A;
+  for (let i = 0; i < Rl && i < y.length; i++) y[y.length - 1 - i] *= i / Rl;
+  return y;
+};
+
+// The hand drum: a conga-like skin on a note, the modes of a circular membrane
+// (1, 1.59, 2.14, 2.30, 2.65, 2.92) settling a few percent as the skin relaxes,
+// and the hand: open (the skin rings), slap (brighter, shorter, a crack of the
+// fingers), bass (the palm in the centre, low and round), mute (held down: a knock).
+const SKIN = [1, 1.594, 2.136, 2.296, 2.653, 2.918];
+const STROKES = Object.freeze({
+  open:{tau:.24, bright:.8, crack:.14, bend:.05, f:1, level:1},
+  slap:{tau:.07, bright:1.15, crack:.95, bend:.08, f:1, level:.6},
+  bass:{tau:.18, bright:.2, crack:.03, bend:.14, f:.6, level:.85},
+  mute:{tau:.04, bright:.6, crack:.3, bend:.03, f:1, level:.7},
+});
+export function handDrumSamples(sr, midi, stroke = 'open', k = 0) {
+  const S = STROKES[stroke] || STROKES.open, R = lcg(mix32(midi * 977 + k * 131 + Object.keys(STROKES).indexOf(stroke) * 7919 + 5));
+  const list = SKIN.map((ratio, m) => [ratio, (m ? .55 * S.bright ** (.6 + .4 * m) : 1) * S.level, S.tau / (1 + .6 * m)]);
+  const y = modes(sr, mtof(midi) * S.f, list, S.tau * 4 + .04, R, {bend:S.bend, settle:.022});
+  // the fingers on the skin: a crack of high-passed noise, 3 to 12 ms, ringing a little in the shell (2-4 kHz)
+  const L = Math.round((.003 + .009 * S.crack) * sr), w = 2 * Math.PI * 2900 / sr, rr = .985, c1 = 2 * rr * Math.cos(w);
+  let lp = 0, b1 = 0, b2 = 0;
+  for (let i = 0; i < L + Math.round(.02 * sr) && i < y.length; i++) {
+    const x = i < L ? (R() * 2 - 1) * (1 - i / L) ** 2 : 0; lp += .3 * (x - lp);
+    const hp = x - lp, o = hp + c1 * b1 - rr * rr * b2; b2 = b1; b1 = o;
+    y[i] += S.crack * (1.4 * hp + .08 * o);
+  }
+  for (let i = 0; i < y.length; i++) y[i] *= .3;
+  return fadeEdges(y, sr);
+}
+export function handDrum(ctx, out, t, midi, v = .5, {stroke = 'open', side = 0} = {}) {
+  const k = variantAt(t, midi);
+  playStruck(ctx, out, t, struckBuffer(ctx, `hand:${midi}:${stroke}:${k}`, sr => handDrumSamples(sr, midi, stroke, k)), v, side);
+}
+
+// The log drum: a slit drum's tongue, tuned to a note of the pentatonic. Mostly
+// its fundamental, a hollow partial near 2.3x and a faint 4x, a woody knock at
+// the strike, a short ring (low notes ring longer): the grid in wood.
+export function logDrumSamples(sr, midi, k = 0) {
+  const f0 = mtof(midi), R = lcg(mix32(midi * 3301 + k * 17 + 9)), tau = .2 * Math.min(1.6, Math.max(.6, 160 / f0));
+  const y = modes(sr, f0, [[1, 1, tau], [2.31, .34, tau * .35], [3.98, .12, tau * .18], [6.2, .05, .02]], tau * 5 + .02, R, {bend:.012, settle:.012});
+  let lp = 0;
+  const L = Math.round(.005 * sr);
+  for (let i = 0; i < L; i++) { const x = R() * 2 - 1; lp += .18 * (x - lp); y[i] += .35 * lp * (1 - i / L); }
+  for (let i = 0; i < y.length; i++) y[i] *= .32;
+  return fadeEdges(y, sr);
+}
+export function logDrum(ctx, out, t, midi, v = .5, {side = 0} = {}) {
+  const k = variantAt(t, midi);
+  playStruck(ctx, out, t, struckBuffer(ctx, `log:${midi}:${k}`, sr => logDrumSamples(sr, midi, k)), v, side);
+}
+
+// A chime, the stars: a small glass bell, inharmonic (1, 2.76, 5.40, 8.93,
+// 13.3), each partial a slightly detuned pair that beats as it rings, about 3 s,
+// a glassy tick at the strike, then lightly pixelated (the hold and the crush of
+// the pixel voice, so the stars glint like the board's pegs).
+const GLASS = [[1, 1, 3.1], [2.756, .38, 1.5], [5.404, .2, .7], [8.933, .09, .35], [13.34, .04, .16]];
+export function chimeSamples(sr, midi, k = 0, {amount = .28} = {}) {
+  const f0 = mtof(midi), R = lcg(mix32(midi * 7919 + k * 101 + 3)), list = [];
+  for (const [ratio, level, tau] of GLASS) for (const d of [-1, 1]) list.push([ratio * (1 + d * .0011 * (1 + R())), level * .5, tau * (.85 + .3 * R())]);
+  let y = modes(sr, f0, list, 3.4, R);
+  const L = Math.round(.0015 * sr);
+  for (let i = 0; i < L; i++) y[i] += .25 * (R() * 2 - 1) * (1 - i / L);
+  for (let i = 0; i < y.length; i++) y[i] *= .26;
+  y = fadeEdges(y, sr, .0006, .2);
+  if (amount > 0) { const P = pixelParams(amount); y = pixelCrush(pixelDecimate(y, sr, P.rate, {antialias:P.antialias}), P.bits, {block:P.block, sr}); }
+  return y;
+}
+export function chime(ctx, out, t, midi, v = .5, {side = 0, amount = .28} = {}) {
+  const k = variantAt(t, midi, 4);
+  playStruck(ctx, out, t, struckBuffer(ctx, `chime:${midi}:${k}:${amount}`, sr => chimeSamples(sr, midi, k, {amount})), v, side);
+}
+
+// Synergy's smooth synth: per note two saws 7 cents apart, spread left and right,
+// and a triangle in the middle, through one low-pass that breathes (a slow LFO
+// on its cutoff). Whole notes, a little stiff: no glide, no vibrato.
+export function warmPad(ctx, out, t, notes, length, v = 1, {cutoff = 1400, breathe = .13, depth = .45, attack = .9, release = 1.4, level = .042} = {}) {
+  const end = t + length, g = amp(ctx), lp = biquad(ctx, 'lowpass', cutoff, .9), lfo = ctx.createOscillator(), lfoAmt = amp(ctx, cutoff * depth), oscs = [lfo], nodes = [g, lp, lfoAmt];
+  lfo.frequency.value = breathe; lfo.connect(lfoAmt); lfoAmt.connect(lp.frequency);
+  notes.forEach((m, i) => {
+    for (const [type, cents, side, l] of [['sawtooth', -7, -.6, .5], ['sawtooth', 7, .6, .5], ['triangle', 0, 0, .7]]) {
+      const o = ctx.createOscillator(), a = amp(ctx, l), p = spread(ctx, side);
+      o.type = type; o.frequency.value = mtof(m); o.detune.value = cents + (i % 2 ? 2 : -2);
+      o.connect(a); a.connect(p); p.connect(g); oscs.push(o); nodes.push(a, p);
+    }
+  });
+  const peak = v * level;
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(peak, t + Math.min(attack, length * .7));
+  g.gain.setValueAtTime(peak, Math.max(t + Math.min(attack, length * .7), end - .05)); g.gain.linearRampToValueAtTime(0, end + release);
+  g.connect(lp); lp.connect(out);
+  oscs.forEach(o => { o.start(t); o.stop(end + release + .02); }); done(oscs[1], [...oscs, ...nodes]);
+}
+
+// Pat, warm: a sine and a soft saw an octave up at -16 dB through a 500 Hz
+// low-pass and a little drive; legato: a note may glide in from `from` (MIDI).
+export function warmBass(ctx, out, t, midi, length, v = 1, {from = null, glide = .05, cutoff = 500} = {}) {
+  const f = mtof(midi), o = ctx.createOscillator(), o2 = ctx.createOscillator(), g2 = amp(ctx, .16), lp = biquad(ctx, 'lowpass', cutoff, .7), sh = drive(ctx, 1.25), g = amp(ctx), end = t + length;
+  o2.type = 'sawtooth';
+  for (const [osc, k] of [[o, 1], [o2, 2]]) {
+    if (from !== null) { osc.frequency.setValueAtTime(mtof(from) * k, t); osc.frequency.setTargetAtTime(f * k, t, glide / 3); }
+    else osc.frequency.value = f * k;
+  }
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + (from !== null ? .012 : .025));
+  g.gain.setValueAtTime(v, Math.max(t + .03, end - .04)); g.gain.linearRampToValueAtTime(0, end);
+  o.connect(lp); o2.connect(g2); g2.connect(lp); lp.connect(sh); sh.connect(g); g.connect(out);
+  [o, o2].forEach(x => { x.start(t); x.stop(end + .01); }); done(o, [o, o2, g2, lp, sh, g]);
+}
+
+// Synthia's arpeggio: soft 16ths, a sine and a quiet saw through a low-pass that
+// closes after each note, then a gentle crush (a 5-bit staircase, mixed under
+// the clean note), fluent where Synergy is stiff.
+function stairs(ctx) {
+  const s = store(ctx);
+  if (!s.stairs) { const c = new Float32Array(1024); for (let i = 0; i < c.length; i++) c[i] = Math.round((i / 511.5 - 1) * 16) / 16; s.stairs = c; }
+  const w = ctx.createWaveShaper(); w.curve = s.stairs; return w;
+}
+export function seqArp(ctx, out, t, midi, length, v = .5, {cutoff = 2600, side = 0, crushMix = .3} = {}) {
+  const f = mtof(midi), o = ctx.createOscillator(), o2 = ctx.createOscillator(), g2 = amp(ctx, .22), lp = biquad(ctx, 'lowpass', cutoff * 1.8, .9), g = amp(ctx), sh = stairs(ctx), cr = amp(ctx, crushMix), clean = amp(ctx, 1 - crushMix), p = spread(ctx, side), end = t + length;
+  o.frequency.value = f; o2.type = 'sawtooth'; o2.frequency.value = f; o2.detune.value = 4;
+  lp.frequency.setValueAtTime(cutoff * 1.8, t); lp.frequency.exponentialRampToValueAtTime(cutoff * .6, t + Math.min(.12, length));
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .004); g.gain.exponentialRampToValueAtTime(v * .35, t + Math.max(.01, length * .8)); g.gain.linearRampToValueAtTime(0, end + .06);
+  o.connect(lp); o2.connect(g2); g2.connect(lp); lp.connect(g); g.connect(clean); g.connect(sh); sh.connect(cr); clean.connect(p); cr.connect(p); p.connect(out);
+  [o, o2].forEach(x => { x.start(t); x.stop(end + .08); }); done(o, [o, o2, g2, lp, g, sh, cr, clean, p]);
 }

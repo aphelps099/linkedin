@@ -27,7 +27,7 @@ import {PEG9} from '../../pegboard/fonts/peg9.js';
 import {PEG5} from '../../pegboard/fonts/peg5.js';
 import {PEG3} from '../../pegboard/fonts/peg3.js';
 import {paint, boardState} from '../../pegboard/choreo.js';
-import {paintPsych} from '../../pegboard/psych.js';
+import {paintPsych, isFigure} from '../../pegboard/psych.js';
 import {boardLuma} from '../../pegboard/governor.js';
 import {pitchFor, linesFor} from '../../pegboard/stage.js';
 import {kickAt} from '../../pegboard/eq.js';
@@ -62,10 +62,12 @@ export function boardGrid(w, h, pitch = boardPitch(w, h), safe = null) {
     layouts.set(screen, out);
     return out;
   }
+  // zone: [top, bottom] rows a screen centres in (Delve.: the words above the mouth), else the text rows.
   const place = (screen, layout, page) => {
     const hh = page.lines.length ? Math.max(...page.lines.map(l => l.y + Math.max(...l.chars.map(c => c.y + c.h - l.y), 0))) : layout.height;
     const ww = page.lines.length ? Math.max(...page.lines.map(l => l.width)) : layout.width;
-    return {x:c0 + Math.floor((span - ww) / 2), y:Math.max(1, Math.floor((roomOf(screen) - Math.min(hh, layout.height)) / 2))};
+    const z = screen.zone ?? screen.ghostOf?.zone, top = z ? Math.max(0, z[0]) : 0, room = z ? Math.min(rows, z[1] + 1) - top : roomOf(screen);
+    return {x:c0 + Math.floor((span - ww) / 2), y:Math.max(1, top + Math.floor((room - Math.min(hh, layout.height)) / 2))};
   };
   return {board, cols, rows, pitch, ox, oy, layoutOf, place, safe};
 }
@@ -154,8 +156,9 @@ export function createBoardLayer(gl, {plan, scale = 1, quality} = {}) {
   // (the board laid over footage shows only its light).
   function paintGrid(grid, screens, t, {sockets = true, gain = 1, psych = null, sample = null} = {}) {
     paint(grid.board, screens, t, {plan, layoutOf:grid.layoutOf, place:grid.place, pitch:grid.pitch});
-    // Imagery on the dot grid, under the type: each entry carries its own time, drive and params.
-    if (psych?.length) for (const p of psych) paintPsych(grid.board, p, p.time, {drive:p.drive, frame:p.look === 'footage' && sample ? sample(grid) : null});
+    // Imagery on the dot grid, under the type: each entry carries its own time, drive and params. Figures (her
+    // lips, the stars) first, so every texture after them keeps clear of them as it does of the type.
+    if (psych?.length) for (const p of byFigure(psych)) paintPsych(grid.board, p, p.time, {drive:p.drive, frame:p.look === 'footage' && sample ? sample(grid) : null});
     if (!sockets) grid.board.sockets = 0;
     grid.board.exposure *= gain;
     return grid.board;
@@ -187,6 +190,8 @@ export function createBoardLayer(gl, {plan, scale = 1, quality} = {}) {
     dispose() { for (const it of instances.values()) it.dispose(); instances.clear(); moving?.dispose(); moving = null; },
   };
 }
+
+const byFigure = list => list.some(p => isFigure(p.look)) ? [...list.filter(p => isFigure(p.look)), ...list.filter(p => !isFigure(p.look))] : list;
 
 function sectionAt(plan, t) {
   return plan.sections.find(s => t >= plan.timing[Math.min(plan.timing.length - 1, s.from * 16)] && t < plan.timing[Math.min(plan.timing.length - 1, s.to * 16)])?.name || '';

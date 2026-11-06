@@ -19,6 +19,11 @@
 //   word:<kind>[#n]       the n-th word Synergy sings in lines of that kind (host, verse, hook, answer); word:any
 //   line:<kind>[#n]       the first word of the n-th line of that kind
 //   stutter[#n]           the n-th of Synergy's stammered syllables
+//   phrase:P<n>           the river's phrase P<n> (plan.band: Delve.'s her vocabulary): its first word's start
+//   word:P<n>[#k]         the k-th word of phrase P<n>, at its start (the frame that holds it is a hit)
+//   echo:P<n>[#k]         the k-th of the echoes of phrase P<n> (plan.echoes), at its onset
+//   star[#n]              the n-th star born (plan.stars.twinkles), at its chime
+//   mark:<name>           plan.marks[name]: seconds, or 16ths when past the song's end (the river's own marks)
 // n may be negative: #-1 is the last one.
 
 import {TAG_TAIL, CHOKE_TAIL, CODEC_FLOOR, stopEndAt} from '../../pegboard/choreo.js';
@@ -132,6 +137,12 @@ export function anchorPoint(plan, anchor) {
       return {step:e.at, time:ladyTime(plan, e), event:e};
     }
     case 'word': {
+      if (/^P\d+$/.test(name)) {
+        const e = (plan.band || []).find(b => (b.id ?? b.part) === name);
+        if (!e?.words?.length) throw Error(`this plan has no phrase "${name}"`);
+        const w = pick(e.words, n, `word "${name}"`);
+        return {step:stepAtTime(plan, w.start), time:w.start, word:w, phrase:e};
+      }
       const list = (plan.words || []).filter(w => norm(name) === 'any' || !name || w.kind === norm(name)).sort((a, b) => a.at - b.at);
       const w = pick(list, n, `word "${name}"`);
       return {step:w.at, word:w};
@@ -142,6 +153,27 @@ export function anchorPoint(plan, anchor) {
       return {step:l.words[0].at, line:l};
     }
     case 'stutter': return {step:pick(plan.stutters || [], n, 'stutter').at};
+    case 'phrase': {
+      const e = (plan.band || []).find(b => (b.id ?? b.part) === name);
+      if (!e?.words?.length) throw Error(`this plan has no phrase "${name}"`);
+      const time = e.words[0].start;
+      return {step:stepAtTime(plan, time), time, phrase:e};
+    }
+    case 'echo': {
+      const e = pick((plan.echoes || []).filter(x => x.phrase === name), n, `echo "${name}"`);
+      return {step:stepAtTime(plan, e.at), time:e.at, echo:e};
+    }
+    case 'star': {
+      const s = pick(plan.stars?.twinkles || [], n, 'star');
+      return {step:stepAtTime(plan, s.t), time:s.t, star:s};
+    }
+    case 'mark': {
+      const v = plan.marks?.[name];
+      if (!Number.isFinite(v)) throw Error(`this plan has no mark "${name}"`);
+      // (A value past the song's end is a step on plan.timing, as psych.js reads the river's marks.)
+      const time = v > (plan.duration ?? Infinity) + 1 ? stepTime(plan, v) : v;
+      return {step:stepAtTime(plan, time), time};
+    }
     default: throw Error(`unknown anchor kind "${kind}" in "${anchor}"`);
   }
 }

@@ -187,7 +187,7 @@ function cueScreens(edl, plan, songScreens, table) {
     if (cue?.type === 'psych') return;                  // imagery, not type: psychCues
     const span = resolveSpan(plan, cue.at, cue.len ?? (plan.totalSteps * 4), FPS);
     const from = span.time, to = span.end, ref = typeof cue.text === 'object' ? cue.text.ref : null;
-    const base = {id:cue.id ?? `cue${i}`, kind:'cue', voice:'board', from, to, reveal:cue.reveal ?? 'pop', tone:cue.palette ?? 'white', release:cue.release ?? 'cut', k:cue.k ?? 1, ...(cue.lines ? {lines:cue.lines} : {}), font:cue.font ?? 'peg9', accent:-1, fx:{}, cell:cue.cell ?? null, z:cue.z ?? (cue.cell ? 'over' : 'under')};
+    const base = {id:cue.id ?? `cue${i}`, kind:'cue', voice:'board', from, to, reveal:cue.reveal ?? 'pop', tone:cue.palette ?? 'white', release:cue.release ?? 'cut', k:cue.k ?? 1, ...(cue.lines ? {lines:cue.lines} : {}), font:cue.font ?? 'peg9', accent:-1, fx:{}, cell:cue.cell ?? null, z:cue.z ?? (cue.cell ? 'over' : 'under'), ...(cue.zone ? {zone:[...cue.zone]} : {})};
     let screens = [];
     // (of: the song screen a copy comes from, so a ghost of it is known for the same screen.)
     if (ref === 'song') screens = songScreens.flatMap((s, of) => s.to > from && s.from < to ? [{...s, from:Math.max(from, s.from), to:Math.min(to, s.to), cue:base.id, cell:base.cell, z:base.z, of}] : []);
@@ -206,6 +206,13 @@ function cueScreens(edl, plan, songScreens, table) {
       // A word with br:true starts a line of its own (font.js LINE_BREAK, a hard break).
       const l = anchorPoint(plan, ref).line;
       screens = [{...base, text:l.words.map((w, j) => (j ? (w.br ? LINE_BREAK : ' ') : '') + w.display).join(''), words:l.words.map(w => { const s = stepTime(plan, w.at); return {text:w.display, start:s, end:Math.min(s + (w.gate ?? Infinity), stepTime(plan, w.at + w.steps)), units:[{chars:[0, w.display.length], start:s}]}; })}];
+    } else if (ref && ref.startsWith('phrase:')) {
+      // One of the river's phrases (plan.band: Delve.'s her vocabulary), each word on the time she sings it;
+      // text.breaks: the words that start a line (font.js LINE_BREAK), text.words: [a, b) of its words only.
+      const e = anchorPoint(plan, ref).phrase, [a, b] = cue.text.words ?? [0, e.words.length], breaks = new Set(cue.text.breaks || []);
+      const ws = e.words.slice(a, b);
+      screens = [{...base, phrase:e.id ?? e.part, text:ws.map((w, j) => (j ? (breaks.has(a + j) ? LINE_BREAK : ' ') : '') + (w.display ?? w.text).toUpperCase()).join(''),
+        words:ws.map(w => ({text:(w.display ?? w.text).toUpperCase(), start:w.start, end:w.end, units:[{chars:[0, (w.display ?? w.text).length], start:w.start}]}))}];
     } else if (ref) throw Error(`board ${base.id}: cannot read ref "${ref}"`);
     else screens = [{...base, text:cue.text, words:textScreen(cue, from, to, cue.text)}];
     // ghost: the screen as a ghost (choreo paints only its letters, flat at this intensity, on true black).
@@ -244,7 +251,7 @@ function psychCues(edl, plan, features, fps) {
     const span = resolveSpan(plan, cue.at, cue.len, fps), origin = {step:span.step, shift:span.shift, frame:span.frame}, pctx = {plan, features, origin, fps};
     const fade = cue.fade ?? 4, fadeIn = stepTime(plan, span.step + fade) - stepTime(plan, span.step), fadeOut = span.end - (stepTime(plan, span.step + Math.max(0, cue.len - fade)) + span.shift);
     out.push({id:cue.id ?? `psych${i}`, look:cue.look, seed:cue.seed ?? i, cell:cue.cell ?? null, from:span.time, to:span.end, fadeIn, fadeOut,
-      params:Object.entries(cue.params || {}).map(([k, v]) => [k, paramFn(v, pctx)])});
+      params:Object.entries(cue.params || {}).map(([k, v]) => [k, paramFn(v, pctx)]), ...(cue.events ? {events:cue.events} : {})});
   });
   return out.sort((a, b) => a.from - b.from || (a.id < b.id ? -1 : 1));
 }
@@ -554,7 +561,7 @@ export function compile(edlIn, opts = {}) {
       if (p.cell && !r) continue;
       if (psych === NONE) psych = [];
       psych.push({cue:p.id, look:p.look, seed:p.seed, cell:p.cell, rect:r ? {x:r.x, y:r.y, w:r.w, h:r.h} : null, time:bt, fade,
-        params:Object.fromEntries(p.params.map(([k, fn]) => [k, fn(bt)])), drive:driveAt(drive, bt)});
+        params:Object.fromEntries(p.params.map(([k, fn]) => [k, fn(bt)])), drive:driveAt(drive, bt), ...(p.events ? {events:p.events} : {})});
     }
     // Lights out: when every tile of a layout is black, the call has gone dark and its board goes
     // with it (true black, sockets off). A full-frame black keeps the board: the choke's tag on
@@ -571,7 +578,7 @@ export function compile(edlIn, opts = {}) {
     const panel = !rect ? 0 : move ? moved.panel : panelOf(rect, over, layers);
     return {f, t, time:v, layout:cls, transport:tr ? {id:tr.id, kind:tr.kind, phase:(f - tr.from) / (tr.to - tr.from), rate:tr.kind === 'rewind' ? -tr.rate : tr.kind === 'jump' ? 1 : null, sound:tr.sound} : null,
       // lead: the engine's latency, so the compositor lights each peg on the frame that holds its sound.
-      camera, board:{time:bt, lead, screen, rect, over, panel, move, dark, banner:L?.banner ? {...L.banner} : null, cells:cellScreens, psych}, layers};
+      camera, board:{time:bt, lead, screen, rect, over, panel, move, dark, banner:L?.banner ? {...L.banner} : null, cells:cellScreens, psych, ...(edl.boardPitch ? {pitch:edl.boardPitch} : {})}, layers};
   }
 
   // Trails (fx trail): a layer's copies, the same clip as it was k·frames output frames earlier (its

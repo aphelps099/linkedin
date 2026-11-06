@@ -5,12 +5,12 @@
 // with WebCodecs. Writes <name>.mp4, <name>.vtt and <name>.json (the sidecar).
 //
 //   node scripts/export-videostudio.mjs [--format 9:16|1:1|16:9] [--scale 1] [--span 0-1440]
-//       [--edl track|draft|offsite-psych|printer-mouth|studio|metronome|file.json] [--track circle-back|hustle|offsite|printer-song|...] [--master]
+//       [--edl track|draft|offsite-psych|printer-mouth|delve-board|studio|metronome|file.json] [--track circle-back|hustle|offsite|printer-song|delve|...] [--master]
 //       [--post FILE] [--auto] [--no-cold-open] [--no-audio] [--no-governor] [--out DIR] [--name NAME] [--url http://127.0.0.1:5351 | --port 5351]
 //       [--audio FILE] [--aac 320k] [--keep-picture] [--gpu] [--headed]
 //
-// A recorded track (treatments/index.js RECORDED: --track printer-song) is a sound file, not the engine's
-// song: its plan comes with it (the clock, the gestures, the words), the page decodes its file (the repo's,
+// A recorded track (treatments/index.js RECORDED: --track printer-song, --track delve) is a sound file, not the engine's
+// song (Delve. is the engine's song rendered once, assets/delve/delve-song.flac): its plan comes with it (the clock, the gestures, the words), the page decodes its file (the repo's,
 // or --audio) and measures its features from it, draws the picture in sync with it, and ffmpeg then muxes
 // that same file under the picture as AAC (--aac, 320k by default, 48 kHz stereo, faststart): one command,
 // one finished MP4, the flash governor on. Needs ffmpeg on the PATH. --keep-picture keeps the silent
@@ -105,7 +105,8 @@ export async function exportPage(browser, origin, {log = () => {}, audio = null}
     X.recorded = async track => {
       const R = X.T.RECORDED[track], plan = R.plan(), bytes = await (await fetch('/__videostudio-audio')).arrayBuffer();
       const buf = await new OfflineAudioContext(2, 1, R.sampleRate ?? 44100).decodeAudioData(bytes);
-      const audio = {sampleRate:buf.sampleRate, channels:[buf.getChannelData(0), buf.getChannelData(Math.min(1, buf.numberOfChannels - 1))], offset:0};
+      // (offset: where film time 0 sits in the file; an engine render starts RENDER_OFFSET in: Delve.)
+      const audio = {sampleRate:buf.sampleRate, channels:[buf.getChannelData(0), buf.getChannelData(Math.min(1, buf.numberOfChannels - 1))], offset:R.offset ?? 0};
       return {plan, audio, features:await X.recordingFeatures(plan, audio)};
     };
     // The WebGL renderer this page draws with (SwiftShader, or the machine's GPU).
@@ -160,17 +161,19 @@ export async function saveExport(page, dir, name) {
 }
 
 // A recorded track's sound under its exported picture: ffmpeg cuts the file to the film's span (in samples,
-// film time 0 at sample 0), encodes AAC-LC at 48 kHz stereo and muxes it with the picture, which it copies
-// untouched; moov first (faststart). The picture keeps its timestamps, so A/V lines up to the sample
-// (ffmpeg writes the AAC encoder delay into the edit list). Returns what it did, for the sidecar.
-export function muxRecording({picture, audio, out, span, fps = 24, bitrate = '320k'}) {
+// film time 0 at sample `offset` seconds in: 0 for Printer Song, the engine's RENDER_OFFSET for Delve.),
+// pads it with silence to the picture's length where the file ends first, encodes AAC-LC at 48 kHz stereo and
+// muxes it with the picture, which it copies untouched; moov first (faststart). The picture keeps its
+// timestamps, so A/V lines up to the sample (ffmpeg writes the AAC encoder delay into the edit list).
+// Returns what it did, for the sidecar.
+export function muxRecording({picture, audio, out, span, fps = 24, bitrate = '320k', offset = 0}) {
   const {execFileSync} = require('node:child_process');
   const probe = JSON.parse(execFileSync('ffprobe', ['-v', 'error', '-select_streams', 'a:0', '-show_entries', 'stream=sample_rate,channels', '-of', 'json', audio], {encoding:'utf8'})).streams[0];
-  const sr = +probe.sample_rate, a = Math.round(span[0] / fps * sr), b = Math.round(span[1] / fps * sr);
+  const sr = +probe.sample_rate, a = Math.round((span[0] / fps + offset) * sr), b = Math.round((span[1] / fps + offset) * sr);
   execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', picture, '-i', audio, '-map', '0:v:0', '-map', '1:a:0', '-c:v', 'copy',
-    '-af', `atrim=start_sample=${a}:end_sample=${b},asetpts=PTS-STARTPTS`, '-c:a', 'aac', '-b:a', bitrate, '-ar', '48000', '-ac', '2',
+    '-af', `atrim=start_sample=${a}:end_sample=${b},asetpts=PTS-STARTPTS,apad=whole_len=${b - a}`, '-c:a', 'aac', '-b:a', bitrate, '-ar', '48000', '-ac', '2',
     '-movflags', '+faststart', '-map_metadata', '-1', out], {stdio:'inherit'});
-  return {codec:'aac', container:'mp4a.40.2', sampleRate:48000, channels:2, bitrate, source:path.relative(ROOT, audio) || audio, sourceRate:sr, samples:[a, b], muxer:'ffmpeg'};
+  return {codec:'aac', container:'mp4a.40.2', sampleRate:48000, channels:2, bitrate, source:path.relative(ROOT, audio) || audio, sourceRate:sr, offset, samples:[a, b], muxer:'ffmpeg'};
 }
 
 // ---- the command line ------------------------------------------------------------------------------
@@ -203,7 +206,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
       const picture = path.join(out, `${name}.picture.mp4`);
       files = await saveExport(page, out, `${name}.picture`);
       const final = path.join(out, `${name}.mp4`);
-      s.audio = muxRecording({picture, audio:audioFile, out:final, span:s.film.span, bitrate:arg('aac', '320k')});
+      s.audio = muxRecording({picture, audio:audioFile, out:final, span:s.film.span, bitrate:arg('aac', '320k'), offset:rec.offset ?? 0});
       const json = JSON.parse(fs.readFileSync(files.json, 'utf8')), sha = f => require('node:crypto').createHash('sha256').update(fs.readFileSync(f)).digest('hex');
       // (hashes.mp4: the finished file; hashes.picture: the silent picture it was muxed from.)
       s.hashes = {...json.hashes, picture:json.hashes.mp4, mp4:sha(final)};

@@ -12,7 +12,12 @@ import {TRACKS, TRACK_ORDER, DEFAULT_TRACK, DEFAULT_CAST, LADY_ROLES, trackOf, c
 import {truePeakLimit, truePeaks} from '../src/allhands/master.js';
 import {colourSamples, renderTexture, textureHits, levelAt} from '../src/allhands/river.js';
 import {pentaStep, RIVER} from '../src/allhands/wander.js';
-import {mtof} from '../src/allhands/instruments.js';
+import {mtof, handDrumSamples, logDrumSamples, chimeSamples} from '../src/allhands/instruments.js';
+import {readFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import {bakePhrase, freezeLoop, largestJump, tapeWarp, warpTimes} from '../src/allhands/vocab-stages.js';
+import {analysisOf, chantSinger, heldVowel, CHANT_SYLLABLES, AH} from '../src/allhands/lady-choir.js';
+import {formOf} from '../src/allhands/forms.js';
 
 const PENTATONIC = new Set([45, 48, 50, 52, 55, 57, 60, 62, 64]);
 const POSTS = [
@@ -380,6 +385,66 @@ try {
   const lay = {gain:[[0, 0], [2, 1], [4, 1], [6, 0]]};
   ok(levelAt(lay, 1) === .5 && levelAt(lay, 3) === 1 && levelAt(lay, 5) === .5 && levelAt(lay, 7) === 0, 'a layer\'s level between its points');
   ok(RIVER.minRamp === 2 && RIVER.maxRamp === 8 && RIVER.phrases === 2 && RIVER.synergy === 1, 'the river\'s rules: ramps of 2 to 8 bars, two clear phrases, Synergy once');
+}
+
+// ---- Delve. (songbook/delve.js): its instruments, her stages and her choir, pure and in tune.
+{
+  const D = TRACKS.delve, W = D.wander, sr = 44100, peakOf = y => y.reduce((m, v) => Math.max(m, Math.abs(v)), 0), same = (a, b) => a.length === b.length && a.every((v, i) => v === b[i]);
+  ok(!TRACK_ORDER.includes('delve') && trackOf('delve') === D && formOf('delve') === 'wander' && !formPlays('wander', 'delve'), 'Delve.: a track by id, the river its form, never in the pickers');
+  // The struck instruments: deterministic, finite, peaking under -1 dBFS, in tune where they have a pitch.
+  const f0Of = (y, from = .06, lo = 60, hi = 1400) => {
+    const a = y.subarray(Math.round(from * sr), Math.round(from * sr) + 4096), r = k => { let x = 0; for (let i = 0; i + k < a.length; i++) x += a[i] * a[i + k]; return x; };
+    let best = 0, bk = 0; for (let k = Math.floor(sr / hi); k <= Math.ceil(sr / lo); k++) { const v = r(k); if (v > best) { best = v; bk = k; } }
+    const y0 = r(bk - 1), y1 = r(bk), y2 = r(bk + 1), d = (y0 - y2) / (2 * (y0 - 2 * y1 + y2));
+    return sr / (bk + (Number.isFinite(d) ? d : 0));
+  };
+  const sounds = [...['open', 'slap', 'bass', 'mute'].map(k => [`hand drum ${k}`, () => handDrumSamples(sr, 59, k, 1), k === 'open' ? 59 : null]), ...[52, 59, 64].map(m => [`slit drum ${m}`, () => logDrumSamples(sr, m, 2), m]), ...[73, 81, 88].map(m => [`chime ${m}`, () => chimeSamples(sr, m, 1), null])];
+  for (const [name, make, midi] of sounds) {
+    const a = make(), b = make(), pk = peakOf(a);
+    ok(same(a, b) && a.every(Number.isFinite) && pk > .01 && 20 * Math.log10(pk) < -1, `${name}: deterministic, peak ${(20 * Math.log10(pk)).toFixed(1)} dBFS`);
+    // In tune: the strongest partial within a semitone of the note (its fundamental mode) sits on it.
+    if (midi !== null) {
+      const seg = a.subarray(Math.round(.03 * sr), Math.round(.03 * sr) + 8192), mag = f => { let re = 0, im = 0; for (let i = 0; i < seg.length; i++) { const w = .5 - .5 * Math.cos(2 * Math.PI * i / seg.length), ph = 2 * Math.PI * f * i / sr; re += seg[i] * w * Math.cos(ph); im += seg[i] * w * Math.sin(ph); } return re * re + im * im; };
+      let best = -1, bc = 0; for (let c = -100; c <= 100; c += 2) { const m = mag(mtof(midi) * 2 ** (c / 1200)); if (m > best) { best = m; bc = c; } }
+      ok(Math.abs(bc) <= 20, `${name}: in tune (${bc} cents)`);
+    }
+  }
+  // Her recordings, as the page decodes them (here: 24 kHz read and interpolated to 44.1 kHz).
+  const wav = f => {
+    const b = readFileSync(new URL(`../public/phrases/${f}`, import.meta.url)), ch = b.readUInt16LE(22), rate = b.readUInt32LE(24);
+    let o = 12; while (b.toString('ascii', o, o + 4) !== 'data') o += 8 + b.readUInt32LE(o + 4);
+    const n = b.readUInt32LE(o + 4) / 2 / ch, x = new Float32Array(n);
+    for (let i = 0; i < n; i++) { let v = 0; for (let c = 0; c < ch; c++) v += b.readInt16LE(o + 8 + (i * ch + c) * 2); x[i] = v / ch / 32768; }
+    const r = rate / sr, y = new Float32Array(Math.floor(n / r));
+    for (let i = 0; i < y.length; i++) { const p = i * r, k = Math.floor(p); y[i] = x[k] + ((x[k + 1] ?? 0) - x[k]) * (p - k); }
+    return y;
+  };
+  // Every phrase's stages bake to the same samples twice (a fresh copy of her file each time), finite, placed where the plan says.
+  const plan = FORMS.wander.arrange(lyricsFromPost(SAMPLE_POST), {}, {track:'delve'}), digest = parts => { const h = createHash('sha256'); for (const p of [parts.dry, parts.wet, parts.throw]) if (p) for (const c of p.channels) h.update(Buffer.from(c.buffer)); return h.digest('hex'); };
+  for (const e of plan.band) {
+    const x = wav(e.file), echoes = plan.echoes.filter(h => h.phrase === e.id), p1 = bakePhrase(e, echoes, x, sr), p2 = bakePhrase(e, echoes, Float32Array.from(x), sr);
+    const parts = [p1.dry, p1.wet, p1.throw].filter(Boolean);
+    ok(digest(p1) === digest(p2) && parts.every(p => p.channels.every(c => c.every(Number.isFinite))) && Math.abs(p1.dry.at - e.start) < 1e-9 && (!echoes.length || p1.wet || p1.throw), `Delve. ${e.id} (${e.stage}): ${parts.length} baked parts, the same twice, from ${e.start.toFixed(2)} s`);
+  }
+  // The frozen "of..." (P8): its loop seam jumps no more than her own grain does (no click).
+  const x32 = wav('32.wav'), f = W.setlist.find(p => p.freeze).freeze, loop = freezeLoop(x32, sr, '32.wav', {from:f.grain[0], to:f.grain[1], length:.3});
+  const own = largestJump(x32.subarray(Math.round(f.grain[0] * sr), Math.round(f.grain[1] * sr)));
+  ok(largestJump(loop) <= own + .5, `Delve.: the frozen grain loops without a click (largest step ${largestJump(loop).toFixed(1)} dB of its peak; her own grain ${own.toFixed(1)} dB)`);
+  // The tape: her words where the slowing tape puts them, in order, the warp monotonic.
+  const tape = plan.band.find(e => e.tape), {length} = tapeWarp(tape), wt = warpTimes(tape, tape.words.map(w => w.file[1]));
+  ok(tape.words.every((w, i) => w.start <= w.end && (!i || w.start >= tape.words[i - 1].start)) && tape.warp.every((p, i) => !i || (p[0] > tape.warp[i - 1][0] && p[1] > tape.warp[i - 1][1])) && Math.abs(wt.times.at(-1) - length) < .01, `Delve.: "${tape.display}" on the slowing tape, ${length.toFixed(2)} s, every word in order`);
+  // Her choir: each singer on its notes (within 15 cents), the same samples twice; the octave-down singer no brighter than the unison (no buzz).
+  const x57 = wav('57.wav'), an = analysisOf(x57, sr, '57.wav'), step = D.step, hf = y => { let e = 0, d = 0; for (let i = 1; i < y.length; i++) { e += y[i] * y[i]; d += (y[i] - y[i - 1]) ** 2; } return 10 * Math.log10(d / e); }, bright = [];
+  W.choir.singers.forEach((s, k) => {
+    const notes = W.choir.chant.map(([at, n, syl, midi]) => ({at:at * step, len:n * step, syllable:syl, midi:pentaStep(midi, s.steps, W.pentatonic)}));
+    const opts = {notes, length:32 * step, formant:s.formant, amount:0, seed:k + 1, vibrato:{from:0, to:0}, wow:{cents:0, hz:.47}}, y = chantSinger(x57, sr, an, opts);
+    const cents = notes.map(n => { const a = Math.round((n.at + n.len * .4) * sr); let c = 1200 * Math.log2(f0Of(y.subarray(a, a + 4096), 0, 50, 900) / mtof(n.midi)); return ((c + 600) % 1200 + 1200) % 1200 - 600; });
+    ok(same(y, chantSinger(x57, sr, an, opts)) && cents.every(c => Math.abs(c) < 15), `Delve.: choir singer ${k + 1} (${s.steps} steps, formants ${s.formant} st) on its notes (${cents.map(c => c.toFixed(0)).join(', ')} cents)`);
+    bright.push(hf(y));
+  });
+  ok(bright[2] <= bright[0] + .5, `Delve.: the octave-down singer is no brighter than the unison (${bright[2].toFixed(1)} vs ${bright[0].toFixed(1)} dB): no buzz`);
+  console.log(`Delve.: ${sounds.length} struck sounds in tune under -1 dBFS; ${plan.band.length} phrases baked the same twice; the frozen grain's seam ${largestJump(loop).toFixed(1)} dB (her grain ${own.toFixed(1)}); choir brightness ${bright.map(x => x.toFixed(1)).join(' / ')} dB`);
+  ok(CHANT_SYLLABLES.length === 5 && CHANT_SYLLABLES.every((c, i) => c.cut[0] < c.cut[1] && c.cut[1] < c.cut[2] && c.cut[2] < c.cut[3] && (!i || c.cut[0] >= CHANT_SYLLABLES[i - 1].cut[3] - 1e-9)) && LADY_TABLE[AH.file], 'Delve.: the five syllables of "Momentum compounds." in order, each consonant, vowel, coda');
 }
 
 console.log(`All Hands: ${checks} checks passed.`);

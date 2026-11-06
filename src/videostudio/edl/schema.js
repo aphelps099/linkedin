@@ -2,15 +2,20 @@
 //
 //   EDL {version:1, song:{form, track?, post?, seed?, loop?, steps?}, format:'9:16'|'1:1'|'16:9', fps:24,
 //        clips:VideoClip[], board:BoardCue[] | 'song', transports:Transport[], camera?:CameraCue[],
-//        boardMoves?:BoardMove[], overrides:Override[], template?:bool}
+//        boardMoves?:BoardMove[], overrides:Override[], template?:bool, boardPitch?:px}
+//   boardPitch: the board's own grid, output px a peg at frame size (Delve.: 12, a 90 x 160 board at 1080 x 1920,
+//     the same pegs at any render scale); without it the board takes the stage's pitch for its region.
 //
 //   VideoClip {id, at:At, len (steps), cell, asset:'shot:<id>'|'role:<stem>.<kind>'|'gen:<name>', z?,
 //     time?:{in (s), rate:Param, reverse, repeat?:{unit, count?, pingpong?, vary?, loop?}, freezeAt?, tape?, map?},
 //     frame?:{crop?:{[format|'all']:Rect}, zoom, cx, cy, rot, dx, dy, opacity:Param, mirror?:'x'|'y'|'xy'},
 //     fx?:[{type, ...Param}], chrome?:{name, role, mic, speaking:Param, toast, banner, cameraOff},
 //     origin?, scene?, signature?, why?}
-//   BoardCue {id?, at, len, text | {ref}, font?, k?, lines?, reveal?, release?, palette?, fx?:{detune, slow, strike, ...}, cell?, z?, ghost?}
-//          | {type:'psych', id?, at, len, look, params?, seed?, fade?, cell?}   imagery on the dot grid (PSYCH)
+//   BoardCue {id?, at, len, text | {ref}, font?, k?, lines?, reveal?, release?, palette?, fx?:{detune, slow, strike, ...}, cell?, z?, ghost?, zone?:[top, bottom]}
+//          | {type:'psych', id?, at, len, look, params?, seed?, fade?, cell?, events?}   imagery on the dot grid (PSYCH)
+//   zone: the rows a screen centres in (pegs, top and bottom inclusive). events: a look's own moments (stars:
+//   [[t0, t1, x, y, len, tone, hero, x0?, y0?, travel?], ...] in song seconds and 0..1 of the board).
+//   text.ref 'phrase:P<n>' sets one of the river's phrases (plan.band) on its own word times.
 //   Transport {id?, at, len, kind:'rewind'|'tapestop'|'jump', audio:true, rate?, from?:At, seconds?}
 //   CameraCue {id?, at, len, zoom, cx, cy, rot, dx, dy:Param, fx?:[...], board?, clock?:'song'|'film'}   the whole composite
 //   BoardMove {id?, at, frames? (3-24, default 4), ease? (default inOutSine), align?:'start'|'end', why?}
@@ -145,8 +150,8 @@ const FIELDS = {
   frame:['crop', 'zoom', 'cx', 'cy', 'rot', 'dx', 'dy', 'opacity', 'mirror'],
   chrome:['name', 'role', 'mic', 'speaking', 'toast', 'banner', 'cameraOff'],
   repeat:['unit', 'count', 'pingpong', 'vary', 'loop'],
-  cue:['id', 'at', 'len', 'text', 'font', 'k', 'lines', 'reveal', 'release', 'palette', 'fx', 'cell', 'z', 'ghost', 'why'],
-  psych:['id', 'type', 'at', 'len', 'look', 'params', 'seed', 'fade', 'cell', 'why'],
+  cue:['id', 'at', 'len', 'text', 'font', 'k', 'lines', 'reveal', 'release', 'palette', 'fx', 'cell', 'z', 'ghost', 'zone', 'why'],
+  psych:['id', 'type', 'at', 'len', 'look', 'params', 'seed', 'fade', 'cell', 'events', 'why'],
   transport:['id', 'at', 'len', 'kind', 'audio', 'rate', 'from', 'seconds', 'signature', 'why'],
   camera:['id', 'at', 'len', 'zoom', 'cx', 'cy', 'rot', 'dx', 'dy', 'fx', 'board', 'clock', 'why'],
   boardMove:['id', 'at', 'frames', 'ease', 'align', 'why'],
@@ -258,6 +263,8 @@ function checkPsych(c, path, out, format) {
   if (c.seed !== undefined && !Number.isInteger(c.seed)) out.push([`${path}.seed`, 'seed is a whole number']);
   if (c.fade !== undefined && !(Number.isFinite(c.fade) && c.fade >= 2)) out.push([`${path}.fade`, 'fade is at least 2 steps: a pattern never switches on or off in one frame']);
   if (c.cell !== undefined && format && !cellRect(format, c.cell)) out.push([`${path}.cell`, `no cell "${c.cell}" in ${format}`]);
+  if (c.events !== undefined && !(Array.isArray(c.events) && c.events.every(e => Array.isArray(e) && e.length >= 5 && e.length <= 10 && e.every(Number.isFinite) && e[1] > e[0])))
+    out.push([`${path}.events`, 'events are [[t0, t1, x, y, len, tone?, hero?, x0?, y0?, travel?], ...]: finite numbers, t1 after t0']);
 }
 
 function checkCue(c, path, out, format) {
@@ -277,6 +284,9 @@ function checkCue(c, path, out, format) {
   if (c.z !== undefined && !['over', 'under'].includes(c.z)) out.push([`${path}.z`, 'is over or under']);
   if (c.fx !== undefined && !isObj(c.fx)) out.push([`${path}.fx`, 'board fx is {detune?, slow?, rowShift?, sparkle?, outline?}']);
   if (c.ghost !== undefined && !(Number.isFinite(c.ghost) && c.ghost > 0 && c.ghost <= .5)) out.push([`${path}.ghost`, 'ghost is the intensity of a ghost screen (only its letters, flat, on true black), above 0 and at most .5']);
+  if (c.zone !== undefined && !(Array.isArray(c.zone) && c.zone.length === 2 && c.zone.every(Number.isInteger) && c.zone[0] >= 0 && c.zone[1] > c.zone[0])) out.push([`${path}.zone`, 'zone is [top, bottom]: whole rows of pegs, bottom below top']);
+  if (isObj(c.fx)) for (const k of ['echo', 'harmony']) if (c.fx[k] !== undefined && !(Array.isArray(c.fx[k]) && c.fx[k].every(x => isObj(x) && Object.values(x).every(v => typeof v === 'string' || Number.isFinite(v) || Array.isArray(v)))))
+    out.push([`${path}.fx.${k}`, `${k} is a list of {..} with numbers, tone names and curves`]);
 }
 
 // Structural problems, as [{path, message}]. References to the plan and the shot
@@ -284,7 +294,8 @@ function checkCue(c, path, out, format) {
 export function validate(edl) {
   const out = [];
   if (!isObj(edl)) return [{path:'', message:'an EDL is a JSON object'}];
-  for (const k of Object.keys(edl)) if (!['version', 'song', 'format', 'fps', 'clips', 'board', 'transports', 'camera', 'boardMoves', 'overrides', 'template'].includes(k)) out.push([k, 'is not a field of an EDL']);
+  for (const k of Object.keys(edl)) if (!['version', 'song', 'format', 'fps', 'clips', 'board', 'transports', 'camera', 'boardMoves', 'overrides', 'template', 'boardPitch'].includes(k)) out.push([k, 'is not a field of an EDL']);
+  if (edl.boardPitch !== undefined && !(Number.isInteger(edl.boardPitch) && edl.boardPitch >= 6 && edl.boardPitch <= 24)) out.push(['boardPitch', 'boardPitch is the board\'s grid in output px a peg at frame size, a whole number from 6 to 24']);
   if (edl.version !== VERSION) out.push(['version', `must be ${VERSION}`]);
   if (!isObj(edl.song) || typeof edl.song.form !== 'string') out.push(['song', 'song is {form, track?, post?, seed?, loop?, steps?}']);
   else {
@@ -397,8 +408,9 @@ export function stringify(edl) {
 export const parse = text => JSON.parse(text);
 
 // A minimal valid EDL for a song form and format.
-export function createEDL({form = 'drop60', format = '9:16', clips = [], board = 'song', transports = [], camera, boardMoves, overrides = [], ...song} = {}) {
+export function createEDL({form = 'drop60', format = '9:16', clips = [], board = 'song', transports = [], camera, boardMoves, overrides = [], boardPitch, ...song} = {}) {
   const edl = {version:VERSION, song:{form, ...song}, format, fps:FPS, clips, board, transports, overrides};
+  if (boardPitch) edl.boardPitch = boardPitch;
   if (camera) edl.camera = camera;
   if (boardMoves) edl.boardMoves = boardMoves;
   return edl;

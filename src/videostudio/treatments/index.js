@@ -12,18 +12,23 @@ import {drop60Draft, SCENE_LABELS as DROP60_LABELS} from './drop60-draft.js';
 import {offsitePsych, SCENE_LABELS as OFFSITE_LABELS} from './offsite-psych.js';
 import {printerMouth, SCENE_LABELS as PRINTER_LABELS} from './printer-mouth.js';
 import {PRINTER_SONG, printerPlan} from './printer-song.js';
+import {delveBoard, SCENE_LABELS as DELVE_LABELS, DELVE_SONG, delvePlan} from './delve-board.js';
 
 export const TREATMENTS = {
   'drop60-draft':{id:'drop60-draft', title:'Drop Edition 60', fn:drop60Draft, labels:DROP60_LABELS},
   'offsite-psych':{id:'offsite-psych', title:'Offsite, psychedelic', fn:offsitePsych, labels:OFFSITE_LABELS},
   'printer-mouth':{id:'printer-mouth', title:'Printer Song, the mouth', fn:printerMouth, labels:PRINTER_LABELS},
+  'delve-board':{id:'delve-board', title:'Delve., her vocabulary on the board', fn:delveBoard, labels:DELVE_LABELS},
 };
 export const DEFAULT = 'drop60-draft';
-export const BY_TRACK = Object.freeze({offsite:'offsite-psych', 'printer-song':'printer-mouth'});
+export const BY_TRACK = Object.freeze({offsite:'offsite-psych', 'printer-song':'printer-mouth', delve:'delve-board'});
 // Recorded tracks: songs that are a recording rather than the engine's (no voice, no stems). Each brings
 // its own plan (the clock, the gestures, the words on the board) and its sound, a file in the repo that
 // the export reads and muxes as AAC (scripts/export-videostudio.mjs --track printer-song).
-export const RECORDED = Object.freeze({'printer-song':Object.freeze({...PRINTER_SONG, plan:printerPlan})});
+// Delve. is the engine's own song, rendered once (scripts/render-allhands.mjs --track delve) and cut as a
+// recording: a span export never renders the two-minute song again, and the film's sound is the file the
+// song's gates passed on. Its file starts RENDER_OFFSET before song time 0 (offset), the engine's renders' own.
+export const RECORDED = Object.freeze({'printer-song':Object.freeze({...PRINTER_SONG, plan:printerPlan}), delve:Object.freeze({...DELVE_SONG, plan:delvePlan})});
 
 export const treatmentFor = track => TREATMENTS[BY_TRACK[track] ?? DEFAULT];
 // A treatment by id, by track ('track:<id>'), or the track's own when the name is 'track'.
