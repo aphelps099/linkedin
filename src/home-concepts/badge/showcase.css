@@ -1,0 +1,28 @@
+@font-face{font-family:'BS Display';src:url('/brand/fonts/druk-heavy.woff2') format('woff2');font-weight:800;font-display:block}
+@font-face{font-family:'BS Mono';src:url('/brand/fonts/azeret-mono-variable.woff2') format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:'BS Sans';src:url('/home-2/fonts/tt-hoves-regular.ttf') format('truetype');font-weight:400;font-display:swap}
+@font-face{font-family:'BS Sans';src:url('/home-2/fonts/tt-hoves-demibold.ttf') format('truetype');font-weight:600;font-display:swap}
+:root{color-scheme:dark}
+html,body{margin:0;background:#070708}
+.bs{min-height:100vh;background:radial-gradient(ellipse 60% 70% at 32% 50%,#141420 0,#070708 70%);color:#f2eee6;font:400 16px/1.5 'BS Sans','Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased}
+.bs *{box-sizing:border-box}
+.bs-main{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:48px;align-items:center;max-width:1240px;margin:0 auto;padding:72px 32px 96px;min-height:calc(100vh - 76px)}
+.bs-stage{display:flex;flex-direction:column;align-items:center;gap:28px}
+.bs-hint{margin:0;font:500 11px/1 'BS Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#8d929e}
+.bs-kicker{margin:0 0 16px;font:500 11px/1 'BS Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#8d929e}
+.bs-panel h1{margin:0 0 20px;font:800 clamp(56px,7vw,112px)/.9 'BS Display',Impact,sans-serif;letter-spacing:.005em;text-transform:uppercase}
+.bs-lead{margin:0 0 28px;max-width:520px;font-size:17px;color:#c3c7d0}
+.bs-field{display:block;max-width:420px;margin-bottom:18px}
+.bs-field span{display:block;margin-bottom:8px;font:500 11px/1 'BS Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#8d929e}
+.bs-field input{width:100%;min-height:48px;padding:10px 14px;border:1px solid #2a2b31;border-radius:6px;background:#0e0e11;color:#f2eee6;font:16px 'BS Sans',sans-serif}
+.bs-field input::placeholder{color:#6b7079}
+.bs-actions{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+.bs-btn{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border:1px solid #3a3b42;border-radius:999px;background:transparent;color:#f2eee6;font:600 14px 'BS Sans',sans-serif;cursor:pointer}
+.bs-btn:hover{border-color:#8d929e}
+.bs-btn-primary{background:#ffe14d;border-color:#ffe14d;color:#11110e}
+.bs-publish{margin-bottom:12px}
+.bs-status{min-height:20px;margin:0 0 20px;font:500 11px/1.4 'BS Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#8d929e}
+.bs-links{display:flex;gap:24px;margin:0;font-weight:600}
+.bs-links a{display:inline-flex;align-items:center;gap:6px;min-height:44px;color:#8fb5ff;text-decoration:none}
+.bs-links a:hover{text-decoration:underline;text-underline-offset:5px}
+@media (max-width:900px){.bs-main{grid-template-columns:1fr;gap:32px;padding:40px 16px 72px}.bs-stage .peg-badge{width:min(520px,calc(100vw - 32px))!important;height:auto!important;aspect-ratio:1}.bs-panel h1{font-size:56px}}

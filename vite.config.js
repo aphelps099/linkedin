@@ -122,6 +122,7 @@ export default defineConfig({
         homeConcepts: fileURLToPath(new URL('./home-concepts/index.html', import.meta.url)),
         homeConcepts02: fileURLToPath(new URL('./home-concepts/02/index.html', import.meta.url)),
         homeConcepts03: fileURLToPath(new URL('./home-concepts/03/index.html', import.meta.url)),
+        homeConceptsBadge: fileURLToPath(new URL('./home-concepts/badge/index.html', import.meta.url)),
         studio: fileURLToPath(new URL('./studio/index.html', import.meta.url)),
         studio2: fileURLToPath(new URL('./studio-2/index.html', import.meta.url)),
         studio3: fileURLToPath(new URL('./studio-3/index.html', import.meta.url)),
