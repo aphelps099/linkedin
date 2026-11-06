@@ -1,6 +1,6 @@
 import {g as peg9,e as normalize,J as layout} from './stage-CDrfDtUj.js';
 const menu=document.querySelector('#departmentMenu'),trigger=document.querySelector('#menuToggle');
-const title=document.querySelector('#menuPegTitle'),stage=document.querySelector('.menu-stage'),description=document.querySelector('.menu-stage-description');
+const title=document.querySelector('#menuPegTitle'),stage=document.querySelector('.menu-stage');
 const choices={
  beats:{lines:['MAKE','BEATS.'],color:'#4776ff',copy:'Turn office noise into a very good beat.'},
  optimize:{lines:['SMALL NEWS.','BIG DEAL.'],color:'#557dff',copy:'Give your perfectly ordinary day an extraordinary announcement.'},
@@ -9,11 +9,12 @@ const choices={
  meetings:{lines:['LET’S','ALIGN.'],color:'#57d9c7',copy:'This meeting could have been a musical.'},
  archives:{lines:['FOR THE','RECORD.'],color:'#d3a2ed',copy:'Films, shorts, and other evidence of productivity.'}
 };
+const defaultChoice=Object.hasOwn(choices,menu.dataset.menuDefault)?menu.dataset.menuDefault:'beats';
 let active='';
 function showChoice(key){
  if(active===key)return;active=key;const choice=choices[key];
  menu.querySelectorAll('[data-menu-view]').forEach(link=>link.classList.toggle('is-current',link.dataset.menuView===key));
- stage.dataset.view=key;menu.style.setProperty('--menu-accent',choice.color);stage.style.setProperty('--menu-accent',choice.color);description.textContent=choice.copy;
+ stage.dataset.view=key;menu.style.setProperty('--menu-accent',choice.color);stage.style.setProperty('--menu-accent',choice.color);
  const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg');
  const lines=matchMedia('(max-width:700px)').matches?choice.lines:[choice.lines.join(' ')];
  const rows=lines.map(text=>layout(text,{font:normalize(peg9),k:1,maxCols:240,maxLines:1}));
@@ -25,12 +26,30 @@ const meter=document.querySelector('.menu-meter');for(let i=0;i<27;i++){const ba
 menu.querySelectorAll('[data-menu-view]').forEach(link=>{link.addEventListener('pointerenter',()=>showChoice(link.dataset.menuView));link.addEventListener('focus',()=>showChoice(link.dataset.menuView));});
 // A native modal keeps keyboard focus inside and makes the page behind it inert.
 document.body.append(menu);
+// Anchor the overlay to the exact header geometry that opened it.
+function alignMenuHeader(){
+ const header=trigger.closest('header'),logo=header?.querySelector('a img');
+ if(!header||!logo)return;
+ const mark=logo.getBoundingClientRect(),button=trigger.getBoundingClientRect(),box=header.getBoundingClientRect();
+ const font=getComputedStyle(trigger);
+ const values={
+  'header-height':`${Math.max(64,box.bottom,button.bottom)}px`,
+  'logo-x':`${mark.left}px`,'logo-y':`${Math.max(0,mark.top)}px`,
+  'logo-width':`${mark.width}px`,'logo-height':`${mark.height}px`,
+  'control-right':`${innerWidth-button.right}px`,'control-y':`${Math.max(0,button.top)}px`,
+  'control-height':`${button.height}px`,'control-font-size':font.fontSize,
+  'control-line-height':font.lineHeight,'control-font-family':font.fontFamily,
+  'control-font-weight':font.fontWeight,'control-letter-spacing':font.letterSpacing
+ };
+ Object.entries(values).forEach(([key,value])=>menu.style.setProperty(`--anchor-${key}`,value));
+ menu.classList.add('menu-header-anchored');
+}
 function closeMenu(){menu.close()}
-trigger.addEventListener('click',()=>{showChoice('beats');menu.showModal();document.body.classList.add('menu-is-open');trigger.setAttribute('aria-expanded','true');document.querySelector('#closeFullMenu').focus()});
+trigger.addEventListener('click',()=>{alignMenuHeader();showChoice(defaultChoice);menu.showModal();document.body.classList.add('menu-is-open');trigger.setAttribute('aria-expanded','true');document.querySelector('#closeFullMenu').focus()});
 document.querySelector('#closeFullMenu').addEventListener('click',closeMenu);
 menu.addEventListener('close',()=>{document.body.classList.remove('menu-is-open');trigger.setAttribute('aria-expanded','false');trigger.focus()});
 menu.querySelectorAll('a').forEach(link=>link.addEventListener('click',closeMenu));
-showChoice('beats');
+showChoice(defaultChoice);
 
 // A shared-field ripple: expanding rings dissolve through six opacity steps.
 const hoverCanvas=document.createElement('canvas');hoverCanvas.className='menu-hover-field';hoverCanvas.setAttribute('aria-hidden','true');menu.prepend(hoverCanvas);
@@ -72,7 +91,7 @@ menu.querySelectorAll('[data-menu-view]').forEach(link=>{
 });
 trigger.addEventListener('click',()=>{sizeHover();lightChoice(menu.querySelector('.dept-item.is-current'))});
 menu.addEventListener('close',()=>{cancelAnimationFrame(hoverFrame);hoverFrame=0;bursts=[];brush.clearRect(0,0,innerWidth,innerHeight)});
-window.addEventListener('resize',()=>{const key=active;active='';showChoice(key);sizeHover();bursts=[];brush.clearRect(0,0,innerWidth,innerHeight)});
+window.addEventListener('resize',()=>{if(menu.open)alignMenuHeader();const key=active;active='';showChoice(key);sizeHover();bursts=[];brush.clearRect(0,0,innerWidth,innerHeight)});
 menu.addEventListener('scroll',()=>{bursts=[];brush.clearRect(0,0,innerWidth,innerHeight)},{passive:true});
 
 // A single short glint on entry. No looping flashes or movement of the controls.
