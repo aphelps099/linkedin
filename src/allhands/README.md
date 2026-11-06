@@ -1383,6 +1383,22 @@ the swell +4.4 to +5.8 LU over the stream on a phone, the pool +3.3 to +6.8; the
 loudness range is 13.3 to 14.0 LU (a warning; 11.2 to 12.2 before): the bloom
 starts quieter. Renders are byte-identical in a fresh browser.
 
+**Pat's hum, fixed** (Nov 6). The river's band took its `step` argument (the
+16th's index, engine.js `scheduleStep`) for a length, so each of Pat's hums
+lasted `6 × index` seconds (about 970 s at bar 10) and rang to the end of the
+render: the bass stem climbed from -34.5 to -7.7 dB RMS (pre-master) between
+bars 10 and 23, 12 dB over the drums, and the limiter rode it. A hum is now six
+16ths (`6 * plan.step`): the stem holds at -26.0 to -26.3 dB from bar 13, 6 dB
+under the drums. The pile-up had been 2.7 LU of the song (-12.97 LUFS without
+it), so the river's `makeup` went from 2 to 5.1 dB. The sample post: -10.28 LUFS
+(was -10.25), -1.25 dBTP, LRA 13.2 LU (was 14.8), the swell +5.32 LU and the
+pool +4.90 on a phone (+5.28 and +5.01). Fixtures 11 and 48: -10.25 and -10.33
+LUFS, -1.26 dBTP, swells +3.95 / +3.34 and +4.64 / +4.33. On the full mix the
+opening sits 3 dB higher against the swell (the stream -15.1 LUFS, was -18.1)
+and the fade falls further (the delta -14.1, was -11.0); the soft clipper's
+shoulder holds 3.4% of samples (was 3.7%). The measured table above predates the
+fix.
+
 The LRA warning is the form: a river that starts sparse and ends in a long
 fade spans more than a drop that holds its level. The river's clear phrases skip
 her stem (they run dry over the stream), so they read `graph.muted.lady` and mute
