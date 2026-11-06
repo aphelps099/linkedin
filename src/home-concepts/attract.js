@@ -148,7 +148,7 @@ export function paintAttract(board, t, {pitch = 12, luma, film, reduced, cache, 
   // What the board says now: a fixed line (loading, adjourned) or the cycle.
   let text, alt = null, faces, k = 1, lines = 3, age = 0, dur = 1e9, tone = WHITE;
   if (copy === false) text = null;
-  else if (copy) { text = copy.text; faces = copy.faces ?? ['peg9', 'peg5']; k = copy.k ?? 2; lines = copy.lines ?? 2; tone = copy.tone ?? WHITE; age = copy.age ?? 1; dur = copy.dur ?? 1e9; }
+  else if (copy) { text = copy.text; alt = copy.alt ?? null; faces = copy.faces ?? ['peg9', 'peg5']; k = copy.k ?? 2; lines = copy.lines ?? 2; tone = copy.tone ?? WHITE; age = copy.age ?? 1; dur = copy.dur ?? 1e9; }
   else {
     const cycleIndex = Math.floor(t / CYCLE_LENGTH);
     let u = t - cycleIndex * CYCLE_LENGTH, seg = 0;
