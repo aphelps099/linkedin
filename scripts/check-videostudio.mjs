@@ -46,7 +46,9 @@ import {LADY_TABLE} from '../src/allhands/lady-table.js';
 import {MOVES, MOVE_NAMES} from '../src/videostudio/moves/index.js';
 import {backbeatHits} from '../src/videostudio/edl/params.js';
 import {TRACK_ORDER} from '../src/allhands/songbook/index.js';
-import {TREATMENTS, BY_TRACK, treatmentFor, treatmentNamed} from '../src/videostudio/treatments/index.js';
+import {TREATMENTS, BY_TRACK, RECORDED, treatmentFor, treatmentNamed} from '../src/videostudio/treatments/index.js';
+import {FRAMES as PRINTER_FRAMES, LINES as PRINTER_LINES, INTRO as PRINTER_INTRO, GLIDES as PRINTER_GLIDES} from '../src/videostudio/treatments/printer-song.js';
+import {SHOT as PRINTER_SHOT, dreamAt as printerDream} from '../src/videostudio/treatments/printer-mouth.js';
 import {TRAIL_MAX} from '../src/videostudio/edl/compile.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -754,7 +756,7 @@ section('14. psych imagery on the dot grid', () => {
   const T = drop.timing, F24 = s => Math.floor(T[s] * 24);
   const cue = (o = {}) => ({type:'psych', id:'p', at:64, len:64, look:'mandala', params:{fold:8, level:[[0, .4], [64, .9]], breath:{bind:'voices', scale:.5, base:.5}}, seed:3, ...o});
   const edl = (cues, clips = []) => createEDL({clips, board:[{id:'song', at:0, text:{ref:'song'}}, ...cues]});
-  ok(PSYCH.looks.length === 8 && PSYCH.looks.every(l => PSYCH.describe(l)?.caption && Object.keys(PSYCH.params(l)).includes('level')) && validate(edl([cue(), cue({id:'q', look:'footage', cell:'G6.1', params:{sharpen:1.2}})])).length === 0,
+  ok(PSYCH.looks.length === 10 && PSYCH.looks.every(l => PSYCH.describe(l)?.caption && Object.keys(PSYCH.params(l)).includes('level')) && validate(edl([cue(), cue({id:'q', look:'footage', cell:'G6.1', params:{sharpen:1.2}})])).length === 0,
     `the board takes psych cues: ${PSYCH.looks.join(', ')}, each with its params and a caption`);
   const bad = validate(edl([cue({look:'lava'}), cue({params:{folds:8}}), cue({fade:1}), cue({type:'pattern'}), cue({params:{level:{bind:'choir'}}}), cue({cell:'G7.0'}), cue({text:'HI'})]));
   ok(['board[1].look', 'board[2].params.folds', 'board[3].fade', 'board[4].type', 'board[5].params.level.bind', 'board[6].cell', 'board[7].text'].every(k => bad.some(e => e.path === k)), `bad psych cues are caught with readable paths (${bad.map(e => e.path).join(', ')})`);
@@ -931,6 +933,88 @@ if (fs.existsSync(SHOTS_JSON)) section('15. the band and the river', () => {
 function cueCount(e) { return e.board.filter(c => c.type === 'psych').length; }
 
 const dump = process.argv.indexOf('--dump');
+// =================================================================================================
+// 16. Printer Song (a recorded track): its plan, the printer's film on the real shot index, the waived
+// rules and nothing else, the intro, the words on their frames, the mouth, the dream, and the sound file
+// the export muxes. Frames here are film frames (the intro is 72 frames; song frame + 72).
+if (fs.existsSync(SHOTS_JSON)) section('16. the printer\'s film', () => {
+  const real = JSON.parse(fs.readFileSync(SHOTS_JSON, 'utf8')), R = RECORDED['printer-song'], plan = R.plan(), I = PRINTER_INTRO, sf = f => f + I;
+  ok(plan.latency === 0 && audioLatency(plan) === 0 && audioLatency({track:'hustle'}) === 720 / 44100 && plan.totalSteps * 3 === PRINTER_FRAMES && stepTime(plan, plan.totalSteps) === 33.5 && I === 72,
+    `printer-song: a recording's plan, latency 0 (its own; the engine's tracks keep 16.33 ms), ${plan.totalSteps} steps of 3 frames, ${PRINTER_FRAMES} frames, 33.5 s (a 3 s intro, then the 30.5 s song)`);
+  const T = treatmentFor('printer-song'), edl = T.fn(plan, real, {format:'9:16'}), p = compile(edl, {plan, shots:real, format:'9:16'});
+  const waived = p.lint.warnings.filter(w => /^waived by override/.test(w.message)), other = p.lint.warnings.filter(w => !waived.includes(w));
+  ok(T.id === 'printer-mouth' && p.frames === PRINTER_FRAMES && p.lint.errors.length === 0 && other.every(w => w.rule === 'G9') && waived.every(w => ['G7', 'G4'].includes(w.rule))
+    && stringify(T.fn(plan, real, {format:'9:16'})) === stringify(edl) && compile(T.fn(plan, real, {format:'9:16'}), {plan, shots:real, format:'9:16'}).hash() === p.hash(),
+    `printer-mouth: ${edl.clips.length} clips, 0 lint errors, ${waived.length} waived warnings (${[...new Set(waived.map(w => w.rule))].join(', ')}: pages reversing as the mouth, scenes on glides), the same bytes and hash twice`);
+  ok(edl.overrides.every(o => o.note && !/—/.test(o.note)) && p.decode.max <= DECODE_LIMITS.mobile && edl.clips.every(c => c.asset === `shot:${PRINTER_SHOT}` || (c.id === 'boot' && c.asset === 'gen:color:#000000')),
+    `printer-mouth: one take only (${PRINTER_SHOT}: no people, no Pat, no lady; black under the loading screen), every waiver says why, peak ${p.decode.max} decodes`);
+  ok(edl.clips.every(c => !c.frame?.mirror && !(c.fx || []).some(x => x.type === 'tile' && x.mirror !== 0) && !(c.fx || []).some(x => FX[x.type]?.mirrors === true)), 'printer-mouth: no reflections (the tiles are copies, mirror 0)');
+  // The intro: the whole frame is the board (the loading bar loads, LOADING. on the frame Synergy speaks); it folds
+  // into its home over the last 8 frames and the face appears on film frame 72, the song's first, clean.
+  const full = f => sameRect(p.frame(f).board.rect, {x:0, y:0, w:1080, h:1920}), load = f => p.frame(f).board.psych.find(x => x.look === 'loading');
+  const first = p.frame(I), clean = first.layers.every(l => l.fx.every(x => ['scanline', 'breathe', 'pegVideo'].includes(x.type))) && !first.camera;
+  ok([0, 30, 64].every(full) && p.frame(68).board.move === 'intro.home' && sameRect(first.board.rect, HOME['9:16']) && first.layout === 'stack3' && clean && load(11)?.params.progress === 0 && load(63)?.params.progress === 1 && !load(I),
+    'the intro: the board takes the frame (f0-64), its bar loads from Synergy\'s word to full on f63, it folds into its home (f65-72) and the face appears on f72, clean (no dream, no camera)');
+  // The words: each lights on its frame (the board's screen up on the frame, the word reached by the frame's paint time).
+  const L = audioLatency(plan), lit = (s, w, f) => s.words[w].start <= f / 24 + 1 / 48 - L + 1 / 48 + 1e-9;
+  const bad = [];
+  PRINTER_LINES.forEach(l => l.words.forEach(([word, f], w) => {
+    const s = p.board.screens.find(x => x.id === l.name), at = p.frame(f), before = p.frame(f - 1);
+    if (p.board.screens[at.board.screen] !== s || !lit(s, w, f) || (lit(s, w, f - 1) && p.board.screens[before.board.screen] === s)) bad.push(`${word}@f${f}`);
+  }));
+  ok(!bad.length && PRINTER_LINES.every(l => p.board.screens.some(s => s.id === l.name)), `the printer's words land on their frames (${PRINTER_LINES.map(l => l.words.map(([w, f]) => `${w} ${f}`).join(' ')).join(' / ')})${bad.length ? `; late or early: ${bad.join(', ')}` : ''}`);
+  const office = p.board.screens.find(s => s.id === 'office'), still = p.board.screens.find(s => s.id === 'still'), burn = p.board.screens.find(s => s.id === 'burn');
+  ok(office.text.includes(' ') && office.k === 2 && office.fx.strike?.tone === 'signal' && Math.floor(office.fx.strike.at * 24) === sf(477) && still.k === 2 && Math.floor(still.from * 24 + 1e-9) === sf(494) && p.board.screens.every(s => s.tone !== 'signal' || s.id === 'jam')
+    && burn?.ghost === .3 && burn.text === p.board.screens.find(s => s.id === 'thrilled').text,
+    'OUT OF / OFFICE. at full size, struck in signal on f549; STILL / PRINTING. in its place on f566; THRILLED TO PRINT. burnt in as a ghost through the night; PAPER JAM. is the one signal word');
+  // The mouth: closed at rest, open on g4's peak, swallowed on the breath, its page's edge stuck on the stop; never
+  // held on the page's whole logo (source frames 86-118) for more than 12 frames.
+  const src = f => p.frame(f).layers.find(l => l.cell.id === (f >= sf(323) && f < sf(348) ? 'L1.0' : 'stack3.1') && !l.trail)?.srcFrame;
+  let run = 0, worst = 0;
+  for (let f = I; f < PRINTER_FRAMES; f++) { const s = src(f); run = s >= 86 && s <= 118 ? run + 1 : 0; worst = Math.max(worst, run); }
+  ok(src(I) === 80 && src(sf(152)) >= 124 && src(sf(93)) <= 92 && src(sf(427)) <= 81 && src(sf(714)) === 85 && src(PRINTER_FRAMES - 1) === 85 && p.frame(sf(158)).layers.some(l => l.reverse) && worst <= 12,
+    `the mouth: closed ${src(I)}, g3's nibble ${src(sf(93))}, g4's peak ${src(sf(152))}, swallowed ${src(sf(427))}, jammed ${src(sf(714))}; it reverses to swallow; the logo whole at most ${worst} frames running`);
+  // Keyed jumps land on their frames: BLEED. breaks out to the edges and tiles on g7's peaks, the night's wash, zoom and
+  // muted mic on B; on the jam the board lets go (no wash, no bloom) and everything freezes.
+  const mouth = f => p.frame(f).layers.find(l => (l.cell.id === 'stack3.1' || l.cell.id === 'L1.0') && !l.trail), fxOf = (f, t) => mouth(f).fx.find(x => x.type === t);
+  const tray = f => p.frame(f).layers.find(l => l.cell.id === 'stack3.2' && !l.trail);
+  ok(!fxOf(sf(330), 'tile') && mouth(sf(330)).transform.zoom === .55 && mouth(sf(331)).transform.zoom === 1 && fxOf(sf(331), 'tile')?.cols === 2 && fxOf(sf(336), 'tile')?.cols === 2 && fxOf(sf(337), 'tile')?.cols === 3 && !mouth(sf(331)).chrome.name
+    && !fxOf(sf(427), 'paletteWash') && fxOf(sf(428), 'paletteWash')?.mix === .7 && mouth(sf(427)).chrome.mic === 'on' && mouth(sf(428)).chrome.mic === 'muted' && mouth(sf(494)).chrome.mic === 'on' && mouth(sf(714)).chrome.mic === 'muted' && mouth(sf(428)).transform.zoom === 1
+    && fxOf(sf(713), 'contour') && !fxOf(sf(714), 'contour') && !fxOf(sf(714), 'paletteWash') && [sf(714), sf(722), PRINTER_FRAMES - 1].every(f => tray(f).srcFrame === 174 && tray(f).source === 'still'),
+    'keyed jumps on their frames: BLEED. edge to edge and 2×2 on f403, 3×3 on f409, no chrome; the wash, the zoom back and the muted mic on f500; the mic back on f566; on the jam f786 the wash and the rings let go, the mic mutes and the tray freezes');
+  // The colour arc: the whole face drains with the toner (the eyes too), slips out of register, goes blue on B; the eyes' long bar is warm again.
+  const eyes = f => p.frame(f).layers.find(l => l.cell.id === 'stack3.0' && l.clipId.startsWith('eyes')), sat = (l, d = 1) => l.fx.find(x => x.type === 'saturation')?.amount ?? d;
+  ok(sat(eyes(sf(403))) === 1 && sat(eyes(sf(414))) <= .101 && eyes(sf(414)).fx.some(x => x.type === 'rgbSplit' && x.px === 8) && eyes(sf(500)).fx.find(x => x.type === 'paletteWash')?.mix >= .7 && eyes(sf(720)).fx.every(x => x.type === 'mosaic'),
+    'the colour arc: the eyes drain with TONER LOW. (saturation .1 by f486), the plates slip 8 px, B washes the whole face blue, and the long bar on the jam keeps its amber');
+  // The dream: it never covers a gesture (every glide vertex, the bleed and the jam awake); stars only on the tiles, never on
+  // the board (in the bleed the board's panel lies over them), never green.
+  const verts = PRINTER_GLIDES.flatMap(g => g.vertices.map(([t]) => Math.floor(t * 24 + 1e-9)));
+  const asleepOnGesture = [...verts, ...Array.from({length:25}, (_, i) => 323 + i), 706, 710, 712, 714].filter(f => printerDream(f) > 0);
+  let stars = 0, starsOnBoard = 0;
+  for (let f = 0; f < PRINTER_FRAMES; f++) { const fr = p.frame(f), r = fr.board.rect; for (const l of fr.layers) if (l.fx.some(x => x.type === 'sparkle')) { stars++; const c = l.cell, over = r && c.x < r.x + r.w && r.x < c.x + c.w && c.y < r.y + r.h && r.y < c.y + c.h; if (over && !fr.board.over) starsOnBoard++; } }
+  const sparkTones = edl.clips.flatMap(c => (c.fx || []).filter(x => x.type === 'sparkle')).every(x => x.tone >= 0 && x.tone <= 1);
+  ok(!asleepOnGesture.length && stars > 1000 && !starsOnBoard && sparkTones && edl.camera.every(c => c.board === false),
+    `the dream: awake on every glide vertex, the bleed and the jam; ${stars} star layer-frames, none on the board (blue, white or signal: never green); the camera floats and lunges with the board held still`);
+  // Square edges (Aaron's note after his studio's loader): stepped rings in big blocks and pixel motion tiles. The
+  // loading screen's eye opens, flows in on the sixteenths and shuts onto the full bar before the fold; the eyes, the
+  // mouth and the body dream in rings and tiles (never on a glide vertex); FULL's letterbox is a tunnel round the
+  // boxed printer, gone on BLEED.; the copies come apart in tiles before the pegs; at night the board's rings run on
+  // into the face and let go on the jam. Every tile deal and every ring step lands on the song's grid.
+  const fxAt = (f, cell, t) => p.frame(f).layers.filter(l => l.cell.id === cell && !l.trail).flatMap(l => l.fx.filter(x => x.type === t));
+  const ringsAt = f => load(f)?.params;
+  const gridOK = edl.clips.every(c => (c.fx || []).every(x => !['contour', 'pixelTiles'].includes(x.type) || ['travel', 'tick'].every(k => !Array.isArray(x[k]?.keys ?? x[k]) || (x[k].keys ?? x[k]).every(([t, , e], i) => i === 0 || e === 'step'))));
+  const onGesture = verts.filter(f => [...fxAt(sf(f), 'stack3.0', 'contour'), ...fxAt(sf(f), 'stack3.1', 'pixelTiles'), ...fxAt(sf(f), 'stack3.2', 'contour')].length);
+  const DREAM_PEAK = 233, peakDream = sf(DREAM_PEAK);
+  ok(ringsAt(30)?.rings === 1 && ringsAt(30).open > .5 && ringsAt(64)?.open === 0 && ringsAt(2)?.rings === 0 && ringsAt(40).travel > ringsAt(30).travel
+    && fxAt(peakDream, 'stack3.0', 'contour')[0]?.twin > 0 && fxAt(peakDream, 'stack3.1', 'pixelTiles').length && fxAt(peakDream, 'stack3.2', 'contour').length && !onGesture.length
+    && fxAt(sf(325), 'L1.0', 'contour')[0]?.under === 1 && !fxAt(sf(331), 'L1.0', 'contour').length && fxAt(sf(340), 'L1.0', 'pixelTiles').length
+    && fxAt(sf(706), 'stack3.1', 'contour').length && fxAt(sf(706), 'stack3.2', 'contour').length && !fxAt(sf(714), 'stack3.2', 'contour').length && p.frame(sf(500)).board.psych.some(x => x.look === 'contour')
+    && edl.clips.flatMap(c => (c.fx || []).filter(x => x.type === 'contour')).every(x => [0, 1, 2].includes(x.tone)) && gridOK,
+    `square edges: the loading eye opens (f30), flows in and shuts by f64; rings and tiles while it dreams (song f${DREAM_PEAK}), none on a glide vertex; FULL's tunnel (f397) gone on BLEED. (f403); tiles in the copies (f412); the night's rings to the jam; every step on the grid`);
+  const asset = path.join(ROOT, R.audio);
+  if (fs.existsSync(asset)) { const b = fs.readFileSync(asset); ok(b.subarray(0, 4).toString() === 'fLaC' && !R.audio.startsWith('public/') && R.seconds === 33.5, `the sound: ${R.audio} (FLAC, ${(b.length / 1e6).toFixed(1)} MB, 33.5 s), outside public/`); }
+});
+
 if (dump > 0) {
   const dir = process.argv[dump + 1];
   fs.mkdirSync(dir, {recursive:true});

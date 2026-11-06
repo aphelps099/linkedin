@@ -36,8 +36,10 @@ export const FPS = 24;
 // (16.33 ms) after its step. Measured per track on the real render (the first sample within
 // 40 dB of each kick's peak, every kick of the song): 16.33-16.36 ms on all three tracks, and the
 // same on an impulse through the drum bus. check-videostudio-export section 3 measures it again.
+// A plan that is not the engine's (a recording: plan.latency, e.g. the printer's song) says its own
+// latency: a recorded track's sound sits at plan time exactly, so its latency is 0.
 export const AUDIO_LATENCY = Object.freeze({'circle-back':720 / 44100, 'humbled-and-honored':720 / 44100, hustle:720 / 44100});
-export const audioLatency = plan => AUDIO_LATENCY[plan?.track ?? 'circle-back'] ?? 720 / 44100;
+export const audioLatency = plan => plan?.latency ?? AUDIO_LATENCY[plan?.track ?? 'circle-back'] ?? 720 / 44100;
 export const PEG_LEAD = audioLatency();     // pegs are hits: floor((t + L)·24)
 
 export const barSteps = plan => plan.barSteps ?? 16;

@@ -45,6 +45,8 @@ uniform vec4 uTile; uniform int uFold; uniform float uMosaic; uniform vec3 uScan
 uniform vec3 uRadial; uniform vec2 uDir; uniform vec2 uRgb;
 uniform float uSat, uChroma; uniform vec4 uPeg; uniform vec4 uIris;
 uniform vec3 uBreathe; uniform vec2 uWash; uniform vec4 uRadialFold; uniform vec4 uBloomPeg; uniform float uBloomReach; uniform vec3 uDrift;
+uniform vec4 uSparkle; uniform vec4 uSparkle2;
+uniform vec4 uContour, uContour2, uContour3, uContour4; uniform vec4 uTiles, uTiles2;
 out vec4 o;
 
 const vec3 LUMA = vec3(.2126, .7152, .0722);
@@ -95,8 +97,27 @@ vec4 sampleAt(vec2 p, float h) {
   }
   return tapSplit(p, d);
 }
+// Pixel motion tiles. uTiles: amount, tile (output px), px (the coarsest block), tick; uTiles2: slide (blocks),
+// levels, seed. A tile is dealt on each whole tick: moving (hash < amount) or not; a moving one drops to px,
+// px/2 or px/4 and rolls its picture a whole number of blocks inside itself (it never reads outside its tile).
+vec4 tileOf(vec2 q) {
+  float T = max(uTiles.y, 8.); vec2 ti = floor(q / T);
+  uint s = uint(max(uTiles2.z, 0.)) * 7919u + uint(floor(uTiles.w + .01) + 65536.), ix = uint(ti.x + 4096.), iy = uint(ti.y + 4096.);
+  float r = hash3(uvec3(ix, iy, s)), lv = hash3(uvec3(ix, iy, s ^ 0x5bd1e995u));
+  return vec4(ti, r < uTiles.x ? 1. : 0., max(2., uTiles.z * exp2(-floor(lv * 3.))));
+}
+vec2 tilesWarp(vec2 q) {
+  vec4 t = tileOf(q);
+  if (t.z < .5) return q;
+  float T = max(uTiles.y, 8.), b = t.w, n = floor(max(uTiles2.x, 0.));
+  uint s = uint(max(uTiles2.z, 0.)) * 7919u + uint(floor(uTiles.w + .01) + 65536.), ix = uint(t.x + 4096.), iy = uint(t.y + 4096.);
+  vec2 sl = floor(vec2(hash3(uvec3(ix, iy, s + 1u)), hash3(uvec3(ix, iy, s + 2u))) * (2. * n + 1.)) - n;
+  vec2 o = t.xy * T, size = min(vec2(T), uCell.zw - o), l = mod(q - o + sl * b, size);
+  return o + clamp((floor(l / b) + .5) * b, vec2(.5), size - .5);
+}
 // Cell-space warps: where in the cell this pixel takes its picture from.
 vec2 warp(vec2 q) {
+  if (uTiles.x > 0.) q = tilesWarp(q);
   if (uTile.w > 0.) {
     vec2 g = q / uCell.zw * uTile.xy, i = floor(g), f = fract(g);
     if (uTile.z > .5) { if (mod(i.x, 2.) >= 1.) f.x = 1. - f.x; if (mod(i.y, 2.) >= 1.) f.y = 1. - f.y; }
@@ -144,7 +165,82 @@ vec4 pictureAt(vec2 q, float h) {
   rgb = mix(vec3(l), rgb, uSat);
   rgb = mix(rgb, vec3(l), uChroma);
   if (uWash.x > 0.) rgb = mix(rgb, washOf(rgb, uWash.y), uWash.x);
+  // A moving tile re-quantised: its light in a few flat levels, its hue kept (never a new colour, never green).
+  if (uTiles.x > 0. && uTiles2.y >= 2. && tileOf(q).z > .5) { float n = uTiles2.y - 1., L = dot(rgb, LUMA); rgb = clamp(rgb * (floor(L * n + .5) / n) / max(L, 1e-3), 0., 1.); }
   return vec4(rgb, c.a);
+}
+
+// Sparkles: little stars drawn in pegs over the picture, each turning slowly. uSparkle: amount, pitch (output
+// px between pegs), count (at most 12), seed; uSparkle2: size (arm length, pegs), spin (turns a second), tone
+// (0 blue arms, .5 white, 1 signal; the core is white-hot), time (s). A star's pegs take its colour where it is
+// brighter than the picture (so it lights the picture, never darkens it), at its alpha. Each star lives 2.4-3.6 s at a place of its own, its arms
+// growing from one peg and shrinking back (sin^2), so it twinkles by size and never blinks; between lives
+// it moves. Four long arms and four short ones, rasterised on the cell's peg grid as they turn.
+vec4 sparkleAt(vec2 q) {
+  float P = max(uSparkle.y, 3.), n = min(uSparkle.z, 12.), t = uSparkle2.w;
+  vec2 cc = (floor(q / P) + .5) * P;
+  float px = 1. / (P * uScale), dotm = smoothstep(.37 + px, .33 - px, length(q - cc) / P);
+  if (dotm <= 0.) return vec4(0.);
+  float best = 0., core = 0.;
+  uint seed = uint(uSparkle.w);
+  for (int k = 0; k < 12; k++) {
+    if (float(k) >= n) break;
+    uint ku = uint(k);
+    float per = 2.4 + 1.2 * hash3(uvec3(ku, seed, 11u)), ph = hash3(uvec3(ku, seed, 12u)) * per, life = (t + ph) / per, gen = floor(life), a = life - gen;
+    uint g = uint(gen + 4096.);
+    vec2 at = vec2(.1 + .8 * hash3(uvec3(ku, g, seed + 13u)), .12 + .76 * hash3(uvec3(ku, g, seed + 14u))) * uCell.zw;
+    at += 6. * vec2(sin(t * .7 + float(k)), cos(t * .53 + float(k) * 1.7));        // a slight float
+    float e = sin(3.14159265 * a); e *= e;
+    float L = uSparkle2.x * (.65 + .7 * hash3(uvec3(ku, g, seed + 15u))) * (.25 + .75 * e);
+    float th = 6.28318531 * (uSparkle2.y * t + hash3(uvec3(ku, seed, 16u))) * (hash3(uvec3(ku, seed, 17u)) < .5 ? 1. : -1.);
+    vec2 d = (cc - (floor(at / P) + .5) * P) / P;
+    if (dot(d, d) > (L + 2.) * (L + 2.)) continue;
+    vec2 r = vec2(cos(th) * d.x + sin(th) * d.y, -sin(th) * d.x + cos(th) * d.y), s = vec2(r.x + r.y, r.y - r.x) * .70710678;
+    float v = 0.;
+    if (abs(r.y) < .55 && abs(r.x) < L + .5) v = max(v, 1. - abs(r.x) / (L + 1.));
+    if (abs(r.x) < .55 && abs(r.y) < L + .5) v = max(v, 1. - abs(r.y) / (L + 1.));
+    if (abs(s.y) < .5 && abs(s.x) < .5 * L + .5) v = max(v, .7 * (1. - abs(s.x) / (.5 * L + 1.)));
+    v *= .35 + .65 * e;
+    if (v > best) { best = v; core = step(dot(d, d), .3) * e; }
+  }
+  if (best <= 0.) return vec4(0.);
+  // The arms' colour: blue (tone 0) to white (.5) to signal (1): it passes through white, never through green.
+  float tn = clamp(uSparkle2.z, 0., 1.);
+  vec3 arm = tn < .5 ? mix(vec3(.169, .471, 1.), vec3(.96, .97, 1.), tn * 2.) : mix(vec3(.96, .97, 1.), vec3(1., .882, .302), tn * 2. - 1.);
+  vec3 col = mix(arm, vec3(1.), clamp(core + .5 * best * best, 0., 1.));
+  return vec4(col, smoothstep(0., .45, best) * clamp(uSparkle.x, 0., 1.) * dotm);
+}
+
+// Contour bands (square-edged psychedelics). uContour: mix, px (block, output px), band (blocks), duty;
+// uContour2: travel (bands), cx, cy (0..1 of the cell), twin (0..1 of the width); uContour3: aspect, corner, luma,
+// hole; uContour4: grow, reach (output px), under, tone. The field is measured at the block's centre, so every edge
+// is a block edge: stair-stepped rings, flat colours, no anti-aliasing. It returns the block's colour, or alpha 0.
+float contourField(vec2 bc) {
+  float P = max(uContour.y, 2.), best = 1e9;
+  vec2 c = uContour2.yz * uCell.zw, h = vec2(uContour2.w * uCell.z * .5, 0.);
+  for (int k = 0; k < 2; k++) {
+    vec2 d = abs(bc - (k == 0 ? c - h : c + h)) / P; d.x /= max(uContour3.x, .2);
+    best = min(best, max(max(d.x, d.y), (d.x + d.y) * clamp(uContour3.y, .5, 1.)));
+    if (uContour2.w <= 0.) break;
+  }
+  return best;
+}
+vec4 contourAt(vec2 q, vec4 pic) {
+  float P = max(uContour.y, 2.); vec2 bi = floor(q / P), bc = (bi + .5) * P;
+  float f = contourField(bc);
+  if (f < uContour3.w) return vec4(0.);
+  float gate;
+  if (uContour4.x > .5) { vec2 c = uContour2.yz * uCell.zw; gate = f * P / max(uContour4.y > 0. ? uContour4.y : length(max(abs(c), abs(uCell.zw - c))), 1.); }
+  else gate = hash3(uvec3(uint(bi.x + 4096.), uint(bi.y + 4096.), 91u));
+  if (gate >= uContour.x) return vec4(0.);
+  float lum = 0.;
+  if (uContour3.z > 0.) { vec4 s = pictureAt(clamp(bc, vec2(.5), uCell.zw - .5), .5); lum = dot(s.rgb, LUMA) * s.a; }
+  float w = (f - uContour3.w) / max(uContour.z, .5) - uContour2.x + 2. * uContour3.z * lum, k = floor(w);
+  if (w - k >= uContour.w) return vec4(.082, .094, .122, 1.);           // the ground: an unlit socket's black
+  bool accent = mod(k, 4.) < .5;
+  const vec3 WH = vec3(.961, .973, 1.), BL = vec3(.169, .471, 1.), SG = vec3(1., .882, .302);
+  vec3 col = uContour4.w > 1.5 ? (accent ? SG : WH) : uContour4.w > .5 ? (accent ? WH : BL) : (accent ? BL : WH);
+  return vec4(col, 1.);
 }
 
 void main() {
@@ -185,6 +281,8 @@ void main() {
     vec3 pv = min(peg + sock, vec3(1.));
     c = vec4(mix(c.rgb, pv, pegMix), mix(c.a, 1., pegMix * step(.001, A)));
   }
+  if (uContour.x > 0. && (uContour4.z < .5 || c.a < .5)) { vec4 cb = contourAt(q, c); if (cb.a > 0.) c = cb; }
+  if (uSparkle.x > 0.) { vec4 sp = sparkleAt(q); c.rgb = mix(c.rgb, max(c.rgb, sp.rgb), sp.a); c.a = max(c.a, sp.a); }
   o = vec4(c.rgb * c.a, c.a) * mask;
 }`;
 

@@ -9,7 +9,7 @@
 //     frame?:{crop?:{[format|'all']:Rect}, zoom, cx, cy, rot, dx, dy, opacity:Param, mirror?:'x'|'y'|'xy'},
 //     fx?:[{type, ...Param}], chrome?:{name, role, mic, speaking:Param, toast, banner, cameraOff},
 //     origin?, scene?, signature?, why?}
-//   BoardCue {id?, at, len, text | {ref}, font?, k?, reveal?, release?, palette?, fx?:{detune, slow, ...}, cell?, z?, ghost?}
+//   BoardCue {id?, at, len, text | {ref}, font?, k?, lines?, reveal?, release?, palette?, fx?:{detune, slow, strike, ...}, cell?, z?, ghost?}
 //          | {type:'psych', id?, at, len, look, params?, seed?, fade?, cell?}   imagery on the dot grid (PSYCH)
 //   Transport {id?, at, len, kind:'rewind'|'tapestop'|'jump', audio:true, rate?, from?:At, seconds?}
 //   CameraCue {id?, at, len, zoom, cx, cy, rot, dx, dy:Param, fx?:[...], board?, clock?:'song'|'film'}   the whole composite
@@ -44,7 +44,9 @@ export const FX = {
   rgbSplit:{warps:true, params:{px:{d:0, doc:'output px: red moves +px along angle, blue -px, green stays'}, angle:{d:0, doc:'degrees'}}, identity:f => f.px <= 0},
   fold:{warps:true, mirrors:true, params:{axis:{d:'x', values:['x', 'y', 'xy'], doc:'UV fold about the cell centre: x reflects the left half onto the right'}}, identity:() => false},
   tile:{warps:true, mirrors:f => !!f.mirror, params:{cols:{d:2, doc:'tiles across the cell'}, rows:{d:2, doc:'tiles down'}, mirror:{d:1, doc:'1 mirrors alternate tiles (kaleido)'}}, identity:f => f.cols <= 1 && f.rows <= 1},
-  iris:{warps:false, params:{r:{d:1, doc:'0..1 of the cell half-diagonal; 1 open, 0 closed'}, cx:{d:.5, doc:'0..1 in the cell (source px with space:source)'}, cy:{d:.5, doc:'as cx'}, feather:{d:2, doc:'edge softness, output px'}, space:{d:'cell', values:['cell', 'source'], doc:'compile converts source px to cell units'}}, identity:f => f.r >= 1},
+  iris:{warps:false, params:{r:{d:1, doc:'0..1 of the cell half-diagonal; 1 open, 0 closed'}, cx:{d:.5, doc:'0..1 in the cell (source px with space:source)'}, cy:{d:.5, doc:'as cx'}, feather:{d:2, doc:'edge softness, output px'}, space:{d:'cell', values:['cell', 'source'], doc:'compile converts source px to cell units'}},
+    // (Open when the circle holds every corner of any cell: r of 2 × the centre's farthest reach in cell units; 1 when centred.)
+    identity:f => f.space !== 'source' && f.r >= 2 * Math.max(f.cx ?? .5, 1 - (f.cx ?? .5), f.cy ?? .5, 1 - (f.cy ?? .5))},
   droste:{warps:true, params:{depth:{d:0, doc:'0..3 levels of the previous output frame nested in the cell; fractional = partway in'}, scale:{d:1 / 3, doc:'inner frame size, fraction of the cell'}, cx:{d:.5, doc:'0..1 centre of the inner frame'}, cy:{d:.5, doc:'as cx'}}, identity:f => f.depth <= 0},
   pegVideo:{warps:true, params:{mix:{d:1, doc:'0..1 footage to peg video'}, pitch:{d:12, doc:'output px between peg centres'}, levels:{d:6, doc:'blue levels, luma^gamma quantised'}, gamma:{d:1.4, doc:'luma exponent'}}, identity:f => f.mix <= 0},
   scanline:{warps:true, params:{amount:{d:0, doc:'0..1 line darkening'}, wobble:{d:0, doc:'horizontal displacement, output px'}, period:{d:6, doc:'output px per line pair'}}, identity:f => f.amount <= 0 && f.wobble <= 0},
@@ -57,6 +59,35 @@ export const FX = {
   radialFold:{warps:true, mirrors:true, params:{wedges:{d:6, doc:'mirrored wedges about the centre: a kaleidoscope (2 or more)'}, angle:{d:0, doc:'degrees: the wedges turn with it'}, cx:{d:.5, doc:'0..1 in the cell'}, cy:{d:.5, doc:'as cx'}}, identity:f => f.wedges < 2},
   pegBloom:{warps:true, params:{amount:{d:0, doc:'0..1: how far the footage has turned into pegs, from the centre out'}, cx:{d:.5, doc:'the centre, 0..1 of the cell (of the frame with space:frame)'}, cy:{d:.5, doc:'as cx'}, band:{d:.2, doc:'the pixel front ahead of the pegs (blocks a peg wide), fraction of the reach'}, reach:{d:0, doc:'output px amount 1 reaches; 0: the cell\'s farthest corner (space:frame sets it to the frame\'s farthest corner, so one circle grows across every tile)'}, pitch:{d:12, doc:'output px between peg centres'}, levels:{d:6, doc:'blue levels, luma^gamma quantised'}, gamma:{d:1.4, doc:'luma exponent'}, space:{d:'cell', values:['cell', 'frame'], doc:'frame: cx, cy are 0..1 of the frame (the board home), compile maps them into the cell'}}, identity:f => f.amount <= 0},
   chromaDrift:{warps:true, params:{px:{d:0, doc:'output px: red, green and blue each orbit, 120 degrees apart (green at half)'}, angle:{d:0, doc:'degrees: drift it slowly with keys'}, radial:{d:0, doc:'output px at the cell corner: red outwards, blue inwards, from the centre'}}, identity:f => f.px <= 0 && f.radial <= 0},
+  // Little stars drawn in pegs over a clip, turning (the printer's dream): each lives 2.4-3.6 s in a place of
+  // its own, its arms growing from one peg and shrinking back, so it twinkles by size, never by a blink.
+  // Over the picture only (lighten), in the clip's cell: never on the Peg Board, so never over the words.
+  sparkle:{warps:false, params:{amount:{d:0, doc:'0..1: the stars\' light (key it in and out over a second or more)'}, count:{d:6, doc:'stars alive at once in the cell, 1 to 12'}, pitch:{d:12, doc:'output px between pegs'}, size:{d:3, doc:'arm length, pegs'}, spin:{d:.2, doc:'turns a second (each star turns its own way)'}, tone:{d:0, doc:'the arms: 0 blue, .5 white, 1 signal (between them through white, never green); the core is white-hot'}, seed:{d:0, doc:'which stars, a whole number'}}, identity:f => f.amount <= 0},
+  // Square-edged psychedelics: stepped contour bands of a squarish distance field (rings with stair-stepped
+  // corners, an eye when wide), in big hard-edged blocks of flat house colour, no anti-aliasing. The bands
+  // take the picture block by block (a pixel dissolve, or a front from the centre out), or fill only where the
+  // picture is not (under: a letterbox becomes a tunnel round the picture). Never green.
+  contour:{warps:false, params:{mix:{d:0, doc:'0..1: the share of blocks the bands have taken (by hash, or from the centre out with grow 1)'},
+    px:{d:24, doc:'the block, output px (a big pixel: about 37 across a 1080 frame is 29)'}, band:{d:3, doc:'blocks per band: one light stripe and its dark ground'},
+    duty:{d:1 / 3, doc:'0..1: the light stripe\'s share of each band (keep duty × band a whole number of blocks, so a stripe never changes width as it moves)'}, travel:{d:0, doc:'bands travelled outward (negative: inward); key it on the song\'s steps'},
+    cx:{d:.5, doc:'the centre, 0..1 of the cell (of the frame with space:frame)'}, cy:{d:.5, doc:'as cx'},
+    twin:{d:0, doc:'0..1 of the cell\'s width: two centres this far apart about cx (two eyes); the nearer wins'},
+    aspect:{d:1.6, doc:'how much wider than tall the rings are: 1 square, 2 an eye'}, corner:{d:.7, doc:'.5 square corners, .7 an octagon\'s stepped cut, 1 a diamond'},
+    luma:{d:0, doc:'0..2: the picture\'s own light bends the bands (contours that follow the image)'},
+    hole:{d:0, doc:'a pupil: blocks nearer the centre than this (field units, blocks) stay picture'},
+    grow:{d:0, doc:'0: blocks turn by hash (a dissolve); 1: a front from the centre out (mix 1 reaches reach)'},
+    reach:{d:0, doc:'output px the front reaches at mix 1; 0: the cell\'s farthest corner (space:frame: the frame\'s)'},
+    under:{d:0, doc:'1: the bands fill only where the picture is not (a letterbox): the picture stays whole over them'},
+    tone:{d:0, doc:'0 white stripes, every fourth blue, on socket black; 1 blue stripes, every fourth white; 2 white stripes, every fourth signal (the LEDs\' amber)'},
+    space:{d:'cell', values:['cell', 'frame'], doc:'frame: cx, cy are 0..1 of the frame (the board home), compile maps them into the cell'}}, identity:f => f.mix <= 0},
+  // Pixel motion tiles: the cell cut into square tiles; on each tick some are dealt again: each drops to a
+  // coarser block (px, px/2 or px/4), its picture rolled a whole number of blocks inside it, its light
+  // re-quantised to a few levels (its hue kept). Size and place, not light: a moving tile keeps its picture's average.
+  pixelTiles:{warps:true, params:{amount:{d:0, doc:'0..1: the share of tiles moving'}, tile:{d:96, doc:'the tile, output px'},
+    px:{d:24, doc:'the coarsest block a moving tile drops to, output px (it steps between px, px/2 and px/4)'},
+    slide:{d:1, doc:'how far a moving tile\'s picture rolls inside it, blocks (whole numbers)'},
+    levels:{d:4, doc:'a moving tile\'s light re-quantised to this many levels, its hue kept (0: not)'},
+    tick:{d:0, doc:'a whole number: each new value deals the tiles again (key it with steps on the song\'s grid)'}, seed:{d:0, doc:'which tiles'}}, identity:f => f.amount <= 0},
 };
 // Effects compile expands into extra layers (the trail's copies); never on a camera cue.
 export const LAYER_ONLY_FX = ['trail'];
@@ -114,7 +145,7 @@ const FIELDS = {
   frame:['crop', 'zoom', 'cx', 'cy', 'rot', 'dx', 'dy', 'opacity', 'mirror'],
   chrome:['name', 'role', 'mic', 'speaking', 'toast', 'banner', 'cameraOff'],
   repeat:['unit', 'count', 'pingpong', 'vary', 'loop'],
-  cue:['id', 'at', 'len', 'text', 'font', 'k', 'reveal', 'release', 'palette', 'fx', 'cell', 'z', 'ghost', 'why'],
+  cue:['id', 'at', 'len', 'text', 'font', 'k', 'lines', 'reveal', 'release', 'palette', 'fx', 'cell', 'z', 'ghost', 'why'],
   psych:['id', 'type', 'at', 'len', 'look', 'params', 'seed', 'fade', 'cell', 'why'],
   transport:['id', 'at', 'len', 'kind', 'audio', 'rate', 'from', 'seconds', 'signature', 'why'],
   camera:['id', 'at', 'len', 'zoom', 'cx', 'cy', 'rot', 'dx', 'dy', 'fx', 'board', 'clock', 'why'],
@@ -238,6 +269,7 @@ function checkCue(c, path, out, format) {
   if (typeof c.text !== 'string' && !(isObj(c.text) && typeof c.text.ref === 'string')) out.push([`${path}.text`, 'text is a string or {ref:"song" | "song:<kind>#n" | "lady:<role>#n" | "line:<kind>#n"}']);
   if (c.font !== undefined && !FONTS.includes(c.font)) out.push([`${path}.font`, `is one of ${FONTS.join(', ')}`]);
   if (c.k !== undefined && !(Number.isInteger(c.k) && c.k >= 1 && c.k <= 4)) out.push([`${path}.k`, 'k is a whole block size from 1 to 4']);
+  if (c.lines !== undefined && !(Number.isInteger(c.lines) && c.lines >= 1 && c.lines <= 4)) out.push([`${path}.lines`, 'lines is how many lines the screen may set, 1 to 4 (default: 3 at k 1, 1 above)']);
   if (c.reveal !== undefined && !REVEALS.includes(c.reveal)) out.push([`${path}.reveal`, `is one of ${REVEALS.join(', ')}`]);
   if (c.release !== undefined && !RELEASES.includes(c.release)) out.push([`${path}.release`, `is one of ${RELEASES.join(', ')}`]);
   if (c.palette !== undefined && typeof c.palette !== 'string') out.push([`${path}.palette`, `is a palette name (${PALETTES.join(', ')})`]);
@@ -332,7 +364,7 @@ export function validate(edl) {
 // cue, transport or override per line. stringify(parse(s)) === s for any s that
 // stringify produced.
 const ORDER = ['version', 'song', 'format', 'fps', 'template', 'form', 'track', 'post', 'seed', 'loop', 'steps', 'hash',
-  'id', 'type', 'kind', 'at', 'anchor', 'off', 'frames', 'len', 'cell', 'asset', 'z', 'text', 'ref', 'font', 'k', 'reveal', 'release', 'palette',
+  'id', 'type', 'kind', 'at', 'anchor', 'off', 'frames', 'len', 'cell', 'asset', 'z', 'text', 'ref', 'font', 'k', 'lines', 'reveal', 'release', 'palette',
   'time', 'in', 'rate', 'reverse', 'repeat', 'unit', 'count', 'pingpong', 'loop', 'vary', 'freezeAt', 'src', 'tape', 'map',
   'frame', 'crop', 'all', '9:16', '1:1', '16:9', 'x', 'y', 'w', 'h', 'zoom', 'cx', 'cy', 'rot', 'dx', 'dy', 'opacity', 'mirror',
   'keys', 'unit', 'bind', 'base', 'scale', 'attack', 'release', 'mul', 'add',

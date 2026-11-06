@@ -649,6 +649,8 @@ const PSYCH_DEMO = {
   plasma:{params:{}, meta:'Four waves · deep to signal'},
   mandala:{params:{fold:8}, meta:'8-fold · also 6 and 12'},
   lissajous:{params:{curves:2}, meta:'3 : 2 · two figures'},
+  loading:{params:{}, meta:'60 % loaded · a sheen a bar'},
+  contour:{params:{block:2, aspect:1.6, pupil:2}, meta:'Stepped rings · square edges, flat light'},
   footage:{params:{}, meta:'Kevin, guitar · one sample a peg'},
 };
 const PSYCH_BPM = 108, PSYCH_LOOP = 64 * 60 / PSYCH_BPM;             // 16 bars: the demo voice and claps repeat

@@ -63,6 +63,15 @@ export const LOOKS = Object.freeze({
     params:{fold:{d:8, doc:'mirror symmetry: 6, 8 or 12 (any whole number from 3)'}, petals:{d:2, doc:'petals per wedge'}}},
   lissajous:{title:'Lissajous', caption:'Flowing figures traced by a white-hot head, their trails cooling through blue to deep.',
     params:{a:{d:3, doc:'x frequency'}, b:{d:2, doc:'y frequency'}, curves:{d:2, doc:'figures, 1 to 3'}, trail:{d:10, doc:'beats of trail'}}},
+  loading:{title:'Loading', caption:'A file loading in pegs: a bar fills from the left behind a white-hot head, inside a dim frame of deep pegs; a slow sheen crosses what has loaded once a bar. Round it, with rings > 0, an eye of stepped rings in big pixel blocks opens and flows in toward the bar. The cut keys progress (the printer\'s intro: by its own sound).',
+    params:{progress:{d:.6, doc:'0..1: how much of the bar has loaded (whole pegs)'}, width:{d:.53, doc:'the bar\'s length, 0..1 of the board\'s width'}, thick:{d:3, doc:'the bar\'s height in pegs'},
+    rings:{d:1, doc:'0..1: the light of the stepped rings round the bar (0: none)'}, rx:{d:.5, doc:'the rings\' centre, 0..1 of the width'}, ry:{d:.54, doc:'as rx, of the height'}, block:{d:2, doc:'pegs per block: the rings\' big pixel'}, band:{d:3, doc:'blocks per band: one lit stripe and its dark ground'}, duty:{d:1 / 3, doc:'0..1: the lit stripe\'s share of a band (a whole number of blocks over band, so a stripe keeps its width as it moves: 1/3 of 3 is one block)'},
+    travel:{d:0, doc:'bands travelled inward (negative: outward); key it on the song\'s steps'}, aspect:{d:1.8, doc:'how much wider than tall: 1 square, 2 an eye'}, corner:{d:.7, doc:'.5 square corners, .7 a stepped octagon, 1 a diamond'},
+    pupil:{d:0, doc:'the clear middle, blocks (field units): nothing lights inside it'}, open:{d:1, doc:'0..1: how far out the rings reach, from the pupil to the board\'s edge (an eye opening)'}, every:{d:4, doc:'the accent: one stripe in this many'}, flow:{d:.25, doc:'bands a beat the rings flow in by themselves (0: only as travel is keyed)'}}},
+  contour:{title:'Contour', caption:'Stepped rings of a squarish field in big pixel blocks (an eye, a tunnel): white stripes on the dark board, every fourth blue (or signal), flowing in or out on the song\'s steps. Square edges, flat light.',
+    params:{accent:{d:0, doc:'every fourth stripe: 0 blue, 1 signal'}, tone:{d:0, doc:'the stripes: 0 white, 1 blue (accent white)'}, block:{d:2, doc:'pegs per block: the rings\' big pixel'}, band:{d:3, doc:'blocks per band: one lit stripe and its dark ground'}, duty:{d:1 / 3, doc:'0..1: the lit stripe\'s share of a band (a whole number of blocks over band, so a stripe keeps its width as it moves: 1/3 of 3 is one block)'},
+    travel:{d:0, doc:'bands travelled inward (negative: outward); key it on the song\'s steps'}, aspect:{d:1.8, doc:'how much wider than tall: 1 square, 2 an eye'}, corner:{d:.7, doc:'.5 square corners, .7 a stepped octagon, 1 a diamond'},
+    pupil:{d:0, doc:'the clear middle, blocks (field units): nothing lights inside it'}, open:{d:1, doc:'0..1: how far out the rings reach, from the pupil to the board\'s edge (an eye opening)'}, every:{d:4, doc:'the accent: one stripe in this many'}, flow:{d:.25, doc:'bands a beat the rings flow in by themselves (0: only as travel is keyed)'}}},
   footage:{title:'Footage through the grid', caption:'A video frame taken over by pegs, sharper and in colour: warm light to signal, cool to blue, shadows to deep.',
     params:{gamma:{d:1.15, doc:'luma exponent'}, sharpen:{d:.9, doc:'local contrast, 0..2'}, colour:{d:1, doc:'0..1: 0 blue levels only, 1 the full palette'}}},
 });
@@ -313,6 +322,26 @@ export function psychField(look, cols, rows, t, {drive = {beat:t * 1.8, voice:.5
         }
       }
     }
+  } else if (look === 'contour') {
+    steppedRings(cols, rows, P, cx, cy, put, P.tone >= .5 ? BLUE : WHITE, P.tone >= .5 ? WHITE : P.accent >= .5 ? SIGNAL : BLUE, 1, beat);
+  } else if (look === 'loading') {
+    if (P.rings > 0) steppedRings(cols, rows, P, P.rx * cols - .5, P.ry * rows - .5, put, WHITE, SIGNAL, P.rings, beat);
+    // Whole pegs: the bar's box, a one-peg gap, then a frame of deep pegs (its corners left out, so it reads
+    // round). The loaded part is blue, its last column the white-hot head; a sheen (a little more light,
+    // a little bigger) crosses the loaded part once a bar, so a stalled bar still lives.
+    const W = Math.max(4, Math.round(P.width * cols)), T = Math.max(1, Math.round(P.thick)), x0 = Math.round(P.cx * cols - W / 2), y0 = Math.round(P.cy * rows - T / 2);
+    const lit = Math.round(clamp(P.progress) * W), sheen = frac((beat + push) / 4) * (W + 8) - 4;
+    for (let y = y0 - 2; y <= y0 + T + 1; y++) for (let x = x0 - 2; x <= x0 + W + 1; x++) {
+      if (x < 0 || y < 0 || x >= cols || y >= rows) continue;
+      const i = y * cols + x, k = x - x0, inside = k >= 0 && k < W && y >= y0 && y < y0 + T;
+      const ringX = x === x0 - 2 || x === x0 + W + 1, ringY = y === y0 - 2 || y === y0 + T + 1;
+      if (inside) {
+        if (k >= lit) continue;
+        if (k === lit - 1 && lit < W) { put(i, 1, WHITE, .75, 1.08); continue; }
+        const glow = Math.exp(-((k - sheen) ** 2) / 18);
+        put(i, .74 + .16 * glow, BLUE, .25 * glow, .94 + .1 * glow);
+      } else if ((ringX || ringY) && !(ringX && ringY)) put(i, .32, DEEP, 0, .9);
+    }
   } else if (look === 'footage') {
     // One sample per peg; local contrast against a 5×5 box blur sharpens it; hue picks the tone.
     if (!frame?.data) return F;
@@ -342,6 +371,26 @@ export function psychField(look, cols, rows, t, {drive = {beat:t * 1.8, voice:.5
     }
   }
   return F;
+}
+
+// Stepped rings (Aaron's studio loader, in the house's pegs): a squarish distance field measured at the centre of
+// each block of `block` × `block` pegs, so every edge is a block's edge; bands of `band` blocks, the first `duty` of
+// each lit, one in `every` the accent; they flow in by `travel` (keyed) plus `flow` bands a beat; nothing inside the pupil, nothing past `open`. Flat light: a stripe is one
+// level, the ground unlit.
+function steppedRings(cols, rows, P, cx, cy, put, tone, accent, light, beat) {
+  const B = Math.max(1, Math.round(P.block)), asp = Math.max(.2, P.aspect), cut = clamp(P.corner, .5, 1), band = Math.max(.5, P.band);
+  // How far the field reaches at the board's edge (open 1), from the pupil.
+  const edge = d => Math.max(Math.max(d[0] / asp, d[1]), (d[0] / asp + d[1]) * cut);
+  const far = Math.max(edge([Math.max(cx, cols - cx) / B, Math.max(cy, rows - cy) / B]), P.pupil + 1), reach = P.pupil + clamp(P.open) * (far - P.pupil);
+  for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
+    const bx = (Math.floor(x / B) + .5) * B - .5, by = (Math.floor(y / B) + .5) * B - .5;
+    const f = edge([Math.abs(bx - cx) / B, Math.abs(by - cy) / B]);
+    if (f < P.pupil || f > reach) continue;
+    const w = (f - P.pupil) / band + P.travel + P.flow * beat, k = Math.floor(w);
+    if (w - k >= P.duty) continue;
+    const E = Math.max(1, Math.round(P.every)), acc = ((k % E) + E) % E === 0;
+    put(y * cols + x, (acc ? .9 : .62) * clamp(light), acc ? accent : tone, acc ? 0 : .15, 1.16);
+  }
 }
 
 // ---- onto a board ---------------------------------------------------------------------------------
