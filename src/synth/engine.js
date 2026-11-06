@@ -21,7 +21,7 @@ export function graph(ctx,p){
  const compressor=ctx.createDynamicsCompressor();compressor.threshold.value=-8;compressor.ratio.value=8;
  const delay=ctx.createDelay(2),wet=ctx.createGain(),feedback=ctx.createGain();delay.delayTime.value=60/p.bpm*.75;wet.gain.value=p.delay;feedback.gain.value=.27;
  filter.connect(master);filter.connect(delay);delay.connect(wet);wet.connect(master);delay.connect(feedback);feedback.connect(delay);master.connect(compressor);compressor.connect(ctx.destination);
- return {input:filter,dubInput:dubFilter,update(q){filter.frequency.setTargetAtTime(q.filter,ctx.currentTime,.02);master.gain.setTargetAtTime(q.volume*.7,ctx.currentTime,.02);wet.gain.setTargetAtTime(q.delay,ctx.currentTime,.02);delay.delayTime.setTargetAtTime(60/q.bpm*.75,ctx.currentTime,.03);},disconnect(){[filter,dubFilter,master,compressor,delay,wet,feedback].forEach(n=>n.disconnect());}};
+ return {input:filter,dubInput:dubFilter,output:compressor,update(q){filter.frequency.setTargetAtTime(q.filter,ctx.currentTime,.02);master.gain.setTargetAtTime(q.volume*.7,ctx.currentTime,.02);wet.gain.setTargetAtTime(q.delay,ctx.currentTime,.02);delay.delayTime.setTargetAtTime(60/q.bpm*.75,ctx.currentTime,.03);},disconnect(){[filter,dubFilter,master,compressor,delay,wet,feedback].forEach(n=>n.disconnect());}};
 }
 export function voice(ctx,bus,buffer,slot,when){
  const source=ctx.createBufferSource(),gain=ctx.createGain();source.buffer=buffer;source.playbackRate.value=2**(slot.pitch/12);
@@ -41,7 +41,9 @@ export class Sampler {
  else b=synthesized(this.ctx,slot.sound);this.buffers.set(key,b);return b;}
 
  buffer(slot){let b=this.buffers.get(slot.sound);if(!b||!slot.reverse)return b;if(!this.reversed.has(b)){const reverse=this.ctx.createBuffer(b.numberOfChannels,b.length,b.sampleRate);for(let c=0;c<b.numberOfChannels;c++)reverse.getChannelData(c).set(b.getChannelData(c).slice().reverse());this.reversed.set(b,reverse);}return this.reversed.get(b);}
- async prepare(p,slots=p.slots){this.project=p;await this.init();await Promise.all(slots.map(s=>this.load(s)));if(!this.bus)this.bus=graph(this.ctx,p);this.bus.update(p);}
+ async prepare(p,slots=p.slots){this.project=p;await this.init();await Promise.all(slots.map(s=>this.load(s)));if(!this.bus)this.bus=graph(this.ctx,p);this.bus.update(p);this.observe();}
+ observe(){if(!this.ctx.createAnalyser)return;if(!this.analyser){this.analyser=this.ctx.createAnalyser();this.analyser.fftSize=256;this.analyser.smoothingTimeConstant=.78;}if(this.bus&&this.observedBus!==this.bus){this.bus.output.connect(this.analyser);this.observedBus=this.bus;}}
+ async monitorMedia(element){await this.init();this.observe();if(!this.mediaSource){this.mediaSource=this.ctx.createMediaElementSource(element);this.mediaSource.connect(this.ctx.destination);this.mediaSource.connect(this.analyser);}}
  hit(slot,when=this.ctx.currentTime,project=this.project,event=this.hitCounter++){
   const buffer=this.buffer(slot);if(!buffer)return;
   const track=(source,dub=false)=>{this.sources.add(source);if(dub)this.dubSources.add(source);source.addEventListener('ended',()=>{this.sources.delete(source);this.dubSources.delete(source);});return source;};
@@ -49,7 +51,7 @@ export class Sampler {
   for(const echo of vocalEchoes(buffer.duration,slot,project,event))track(voice(this.ctx,{input:this.bus.dubInput},buffer,echo.slot,when+echo.after),true);
   return dry;
  }
- start(getProject,onStep){this.stop({keepSession:true});this.bus=graph(this.ctx,getProject());this.running=true;let step=0,time=this.ctx.currentTime+.06;
+ start(getProject,onStep){this.stop({keepSession:true});this.bus=graph(this.ctx,getProject());this.observe();this.running=true;let step=0,time=this.ctx.currentTime+.06;
  const tick=()=>{if(!this.running)return;const p=getProject();this.bus.update(p);if(time<this.ctx.currentTime-.1)time=this.ctx.currentTime+.03;
  while(time<this.ctx.currentTime+.1){const at=step%p.pattern[0].length;p.slots.forEach((s,i)=>{if(p.pattern[i][at]&&!s.mute)this.hit(s,time,p,step*8+i);});const timer=setTimeout(()=>{this.timers.delete(timer);if(this.running)onStep(at);},Math.max(0,(time-this.ctx.currentTime)*1000));this.timers.add(timer);time+=60/p.bpm/4*(at%2?1-p.swing:1+p.swing);step++;}}
  tick();this.interval=setInterval(tick,25);}
@@ -68,5 +70,5 @@ export class Sampler {
   for(const note of notes)voice(ctx,note.dub?{input:bus.dubInput}:bus,note.buffer,note.slot,note.when);
   return new Blob([wavBytes(await ctx.startRendering())],{type:'audio/wav'});
  }
- close(){this.stop();this.mobileAudio?.dispose();this.ctx?.close();}
+ close(){this.stop();this.mobileAudio?.dispose();this.mediaSource?.disconnect();this.analyser?.disconnect();this.ctx?.close();}
 }
