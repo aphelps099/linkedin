@@ -20,7 +20,7 @@ import {kickSteps} from '../src/pegboard/eq.js';
 import {lyricsFromPost, SAMPLE_POST, syllables} from '../src/allhands/lyrics.js';
 import {LADY_TABLE} from '../src/allhands/lady-table.js';
 import {clearBoard, TONES} from '../src/pegboard/board.js';
-import {paintPsych, PSYCH_LOOKS, PSYCH_TONES, PSYCH_MAX, TYPE_HALO, driveTrack, driveAt, riverTrack, riverAt, layerGain} from '../src/pegboard/psych.js';
+import {paintPsych, PSYCH_LOOKS, PSYCH_TONES, PSYCH_MAX, TYPE_HALO, isFigure, driveTrack, driveAt, riverTrack, riverAt, layerGain} from '../src/pegboard/psych.js';
 import {planFeatures} from '../src/videostudio/edl/params.js';
 
 let checks = 0;
@@ -230,6 +230,7 @@ for (const track of TRACK_ORDER.filter(t => formPlays('drop60', t))) {
   // Synthetic footage for 'footage': a slow pan across warm, green and blue bands (green must turn blue).
   const footageAt = (cols, rows, t) => { const d = new Uint8Array(cols * rows * 4); for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) { const k = (y * cols + x) * 4, u = (x / cols + t * .05) % 1, v = y / rows; d[k] = u < .33 ? 230 : 40; d[k + 1] = u >= .33 && u < .66 ? 210 : 60 + 120 * v; d[k + 2] = u >= .66 ? 240 : 50; d[k + 3] = 255; } return {cols, rows, data:d}; };
   const LIN = TONES.map(t => [1, 3, 5].map(i => parseInt(t.ring.slice(i, i + 2), 16)));
+  // Figure looks (lips, stars) draw only from their cue's data, so with no cue they may stay dark here.
   const green = (b, i) => { const c = LIN[b.tone[i]].map(v => v * (1 - b.white[i]) + 255 * b.white[i]); return c[1] > c[0] + 8 && c[1] > c[2] + 8; };
   for (const look of PSYCH_LOOKS) {
     const sizes = [[150, 48], [83, 147]];
@@ -248,8 +249,18 @@ for (const track of TRACK_ORDER.filter(t => formPlays('drop60', t))) {
       }
       const worst = Math.max(...[-1, 0, 1, 2, 3].map(k => worstWindow(flashes(frames.map(x => k < 0 ? x.whole : x.quads[k]), FPS), FPS)));
       const gains = governorTrack(frames, FPS), mean = frames.reduce((a, x) => a + x.whole, 0) / frames.length;
-      ok(same && lit > frames.length * 50 && !badTone && !greenPegs && !over, `psych ${look} ${cols}×${rows}: deterministic (same moment, same pegs, whatever was painted before), palette only (blue, white, signal, deep), never green, at most ${PSYCH_MAX} (${lit} lit peg-frames)`);
-      ok(worst <= 2 && gains.every(g => g === 1) && mean > .04, `psych ${look} ${cols}×${rows}: ${frames.length} frames (all of Offsite) need no governing: at most ${worst} flashes a second ungoverned, whole and by quarter (mean light ${mean.toFixed(2)})`);
+      ok(same && (isFigure(look) || lit > frames.length * 50) && !badTone && !greenPegs && !over, `psych ${look} ${cols}×${rows}: deterministic (same moment, same pegs, whatever was painted before), palette only (blue, white, signal, deep), never green, at most ${PSYCH_MAX} (${lit} lit peg-frames)`);
+      ok(worst <= 2 && gains.every(g => g === 1) && (isFigure(look) || mean > .04), `psych ${look} ${cols}×${rows}: ${frames.length} frames (all of Offsite) need no governing: at most ${worst} flashes a second ungoverned, whole and by quarter (mean light ${mean.toFixed(2)})`);
+    }
+    // A figure look (lips, stars) is drawn from its cue's own data, not from the voices or the clap: it must not swell with
+    // them, and nothing shows on true black.
+    if (isFigure(look)) {
+      const b = createBoard(150, 48);
+      paintPsych(b, {look}, 10, {drive:{beat:8, voice:0, clap:0}}); const still = b.I.slice();
+      clearBoard(b); paintPsych(b, {look}, 10, {drive:{beat:8, voice:1, clap:1}}); const same = b.I.every((v, i) => Math.abs(v - still[i]) < 1e-9);
+      clearBoard(b); b.exposure = 0; paintPsych(b, {look}, 10, {drive:{beat:8, voice:1, clap:1}});
+      ok(same && b.I.every(v => v === 0), `psych ${look}: a figure, drawn from its cue (the stems do not move it), nothing on true black`);
+      continue;
     }
     // It breathes: more light with the voices, a swell in size on the clap, motion with the beat; and nothing on true black.
     const b = createBoard(150, 48), sum = a => a.reduce((x, v) => x + v, 0), frame = look === 'footage' ? footageAt(150, 48, 0) : null;
@@ -288,7 +299,7 @@ for (const track of TRACK_ORDER.filter(t => formPlays('drop60', t))) {
       }
     }
     const worst = Math.max(...[-1, 0, 1, 2, 3].map(k => worstWindow(flashes(frames.map(x => k < 0 ? x.whole : x.quads[k]), FPS), FPS))), governed = governorTrack(frames, FPS).filter(g => g < 1).length;
-    ok(samples > 50 && !changed && !moat && near / nearN < .35 * far / farN, `psych ${look} under Offsite's words (${samples} moments): every type peg exactly as choreo lit it, a dark moat a peg wide, the pattern near the words at ${(100 * (near / nearN) / (far / farN)).toFixed(0)}% of its light away from them`);
+    ok(samples > 50 && !changed && !moat && (isFigure(look) || near / nearN < .35 * far / farN), `psych ${look} under Offsite's words (${samples} moments): every type peg exactly as choreo lit it, a dark moat a peg wide, the pattern near the words at ${(100 * (near / nearN) / (far / farN)).toFixed(0)}% of its light away from them`);
     ok(worst <= typeWorst && governed <= typeGoverned, `psych ${look} under Offsite's words: adds no flash (worst ${worst} a second with it, ${typeWorst} with the words alone; ${governed} frames governed, ${typeGoverned} without)`);
   }
   console.log(`  psych: ${checks - before} checks`);
