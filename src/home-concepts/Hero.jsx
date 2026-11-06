@@ -5,19 +5,16 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {ArrowDown, ArrowUpRight, LoaderCircle, Pause, Play} from 'lucide-react';
 import {Header} from '../brand/Header.jsx';
-import {SAMPLE_POST, lyricsFromPost} from '../allhands/lyrics.js';
+import {SAMPLE_POST} from '../allhands/lyrics.js';
 import {FORMS, DEFAULT_FORM, stepAt} from '../allhands/forms.js';
 import {TRACKS, TRACK_ORDER, trackOf} from '../allhands/songbook/index.js';
-import {castSong, settleCast} from '../allhands/casting.js';
-import {loadWords} from '../allhands/voice.js';
-import {prepareLady} from '../allhands/lady.js';
 import {Performance} from '../allhands/engine.js';
-import {LADY_TABLE} from '../allhands/lady-table.js';
 import {BAR_STEPS} from '../allhands/song.js';
-import {createStage, pitchFor} from '../pegboard/stage.js';
+import {pitchFor} from '../pegboard/stage.js';
 import {createRenderer} from '../pegboard/renderer.js';
 import {createBoard} from '../pegboard/board.js';
 import {claimAudio, onAudioFocus} from '../brand/audio-focus.js';
+import {useSong, useStage, reduced, clock} from './song.js';
 import {BOOT, createSampler, paintAttract, paintBoot} from './attract.js';
 import './concept.css';
 
@@ -25,9 +22,6 @@ const PLAYBACK_ID = 'jjICCaXD1dLmDApUXumm9CgiESKPGJYoEAeYb2x6wf00';
 const STREAM = `https://stream.mux.com/${PLAYBACK_ID}.m3u8`;
 const POSTER = `https://image.mux.com/${PLAYBACK_ID}/thumbnail.webp?time=0&width=1920`;
 const ADJOURNED = 4.8;                                   // seconds the board holds the sign-off
-const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const decoder = () => new OfflineAudioContext(1, 1, 44100);
-const clock = s => `${String(Math.floor(Math.max(0, s) / 60)).padStart(2, '0')}:${String(Math.floor(Math.max(0, s) % 60)).padStart(2, '0')}`;
 
 // The film under the board: the live hero's Mux stream, muted and looping, read
 // with CORS so the sampler may light pegs from it.
@@ -59,56 +53,6 @@ function useFilm(video, wanted) {
   return {ready, failed};
 }
 
-// The song for a track (null: the post chooses), prepared the All Hands way
-// and kept for the visit. Without Synergy's voice the band plays on.
-function useSong(trackId) {
-  const [song, setSong] = useState(null), cache = useRef(new Map());
-  const lyrics = useMemo(() => lyricsFromPost(SAMPLE_POST), []);
-  const casting = useMemo(() => castSong(SAMPLE_POST), []);
-  const track = trackId || casting.track, cast = trackId ? undefined : casting.cast;
-  useEffect(() => {
-    if (cache.current.has(track)) { setSong(cache.current.get(track)); return; }
-    setSong(null);
-    const control = new AbortController(), form = FORMS[DEFAULT_FORM];
-    (async () => {
-      let plan, buffers = new Map(), warning = '';
-      try {
-        const loaded = await loadWords(decoder(), form.voiced(lyrics, {track}), {signal:control.signal});
-        buffers = loaded.buffers;
-        plan = settleCast(form.arrange, lyrics, loaded.durations, {track, cast}).plan;
-      } catch (e) {
-        if (control.signal.aborted) return;
-        warning = `${e.message} The band will play; Synergy will not.`;
-        plan = form.arrange(lyrics, {}, {track, cast});
-      }
-      const lady = await prepareLady(decoder(), plan).catch(() => undefined);
-      if (control.signal.aborted) return;
-      const ready = {plan, buffers, lady, warning, track};
-      cache.current.set(track, ready);
-      setSong(ready);
-    })();
-    return () => control.abort();
-  }, [lyrics, cast, track]);
-  return {song, track};
-}
-
-// The sung words' board, the one /allhands/ draws: same pitch rule, so its pegs
-// sit on the attract board's sockets.
-function useStage(canvas, plan) {
-  const stage = useRef(null);
-  useEffect(() => {
-    const el = canvas.current;
-    if (!el || !plan) return;
-    const s = createStage(el, {plan, table:LADY_TABLE, reduced:reduced()});
-    stage.current = s;
-    const resize = () => s.resize(el.clientWidth, el.clientHeight);
-    resize();
-    const ro = new ResizeObserver(resize); ro.observe(el);
-    return () => { ro.disconnect(); s.dispose(); if (stage.current === s) stage.current = null; };
-  }, [canvas, plan]);
-  return stage;
-}
-
 export default function ConceptHero({base = '/'}) {
   const perf = useMemo(() => new Performance(), []);
   const still = useMemo(reduced, []);
@@ -117,7 +61,7 @@ export default function ConceptHero({base = '/'}) {
   const [cue, setCue] = useState({bar:0, section:'Intro', elapsed:0});
   const stageEl = useRef(null), video = useRef(null), attractCanvas = useRef(null), liveCanvas = useRef(null);
   const mode = useRef({status:'boot', at:0}), pending = useRef(false), songRef = useRef(null), barRef = useRef(-1);
-  const {song, track} = useSong(trackId);
+  const {song, track} = useSong(SAMPLE_POST, trackId);
   const stage = useStage(liveCanvas, song?.plan);
   const film = useFilm(video, !still);
   const live = status === 'live', loading = status === 'loading';
@@ -258,6 +202,7 @@ export default function ConceptHero({base = '/'}) {
         <p>Nothing here is a new container. It is the live hero, the All Hands engine and the Peg Board, on one stage, with one pitch.</p>
       </div>
       <p className="hc-links">
+        <a href={`${base}home-concepts/02/`}>Concept 02, The standing meeting <ArrowUpRight aria-hidden="true"/></a>
         <a href={`${base}allhands/`}>All Hands <ArrowUpRight aria-hidden="true"/></a>
         <a href={`${base}pixel-type/`}>The Peg Board specimen <ArrowUpRight aria-hidden="true"/></a>
         <a href={base}>The current homepage <ArrowUpRight aria-hidden="true"/></a>

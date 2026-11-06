@@ -138,10 +138,10 @@ export function paintBoot(board, t, {reduced, cache}) {
 
 // Attract mode: the film in pegs, the copy rotating over it, PRESS START blinking
 // under it. `phrases` is the day's rotation, `press` whether to show the prompt.
-export function paintAttract(board, t, {pitch = 12, luma, film, reduced, cache, press = true, hover = false, copy = null, filmGain = .6, sockets = 1, since = 0}) {
+export function paintAttract(board, t, {pitch = 12, luma, film, reduced, cache, press = true, hover = false, copy = null, filmGain = .6, sockets = 1, since = 0, marginRows = null}) {
   clearBoard(board);
   board.sockets = sockets;
-  const {cols, rows} = board, m = margins({pitch});
+  const {cols, rows} = board, m = marginRows || margins({pitch});
   const fade = reduced ? 1 : Math.min(1, since / 1.2);
   if (film && luma) paintFilm(board, luma, {gain:filmGain * fade});
 
