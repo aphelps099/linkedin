@@ -332,3 +332,41 @@
 @media(max-width:760px){#radio .printer-section{padding:8px 18px 18px;row-gap:20px}#radio .printer-theatre{zoom:1;margin-top:25px}.printer-synergy-bot{width:90px;right:14px;top:-44px}#radio .printer-copy h2{font-size:44px}}
 /* The fine pegboard continues behind the window and through the gallery. */
 #radio.linkedinifier-row,#humbled{background-color:#05080d;background-image:radial-gradient(circle at 3.4px 3px,#647084 0,#313b49 1px,#19212e 1.9px,#10151e 2.3px,transparent 2.7px);background-size:8px 8px}
+
+/* Compact solid chisel tags; original thumbnail and caption layout. */
+#humbled .film-card{--tag-color:#ffe64d}
+#humbled .film-card[data-category=short]{--tag-color:#ff61c7}
+#humbled .film-card[data-category=meeting]{--tag-color:#4de2f1}
+#humbled .film-type{top:12px;left:12px;min-width:0;padding:5px 12px 5px 8px;background:var(--tag-color);color:#101521;font:700 10px/1 Mono,monospace;letter-spacing:.04em;clip-path:polygon(4px 0,calc(100% - 10px) 0,100% 10px,calc(100% - 5px) 100%,0 100%,0 4px);z-index:2;transform:rotate(-3deg);box-shadow:none}
+#humbled .film-card:hover .film-type{transform:rotate(0deg);filter:brightness(1.12)}
+#humbled .film-type{transition:transform .18s ease,filter .18s ease}
+@media(prefers-reduced-motion:reduce){#humbled .film-type{transition:none}}
+
+/* A single coordinate space for the three sections and future peg expressions. */
+#sharedPegField{position:relative;isolation:isolate;display:flow-root;background:#05080d;--peg-pitch:8px}
+#sharedPegField>.peg-field-surface{position:absolute;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(circle at 3.4px 3px,#647084 0,#313b49 1px,#19212e 1.9px,#10151e 2.3px,transparent 2.7px);background-size:var(--peg-pitch) var(--peg-pitch);background-position:0 0}
+#sharedPegField>.c2-home,#sharedPegField>#radio,#sharedPegField>#humbled{position:relative;z-index:1;background:transparent}
+#restoredTop #sharedPegField .c2-home,#restoredTop #sharedPegField #c2-player{background:transparent}
+#restoredTop #sharedPegField #c2-player:after{background:none}
+
+/* Screening-room arrival: the field recedes while the work comes forward. */
+#sharedPegField>.peg-field-surface{opacity:1;transition:opacity 850ms ease}
+#sharedPegField.gallery-focus>.peg-field-surface{opacity:.42}
+#humbled.gallery-reveal-ready #humbledTitle .lit-dot{animation:none;fill:#353e4b;transition:fill 240ms ease;transition-delay:0ms}
+#humbled.gallery-reveal-ready.has-arrived #humbledTitle .lit-dot{fill:#fffdf4;transition-delay:var(--delay,0s)}
+#humbled.gallery-reveal-ready .film-card{opacity:.58;transform:translateY(10px);transition:opacity 650ms ease,transform 750ms cubic-bezier(.22,1,.36,1);transition-delay:0ms}
+#humbled.gallery-reveal-ready.has-arrived .film-card{opacity:1;transform:translateY(0);transition-delay:var(--card-arrival,0ms)}
+#humbled.gallery-reveal-ready .film-card:focus-within{opacity:1;transform:none;transition:none}
+@media(prefers-reduced-motion:reduce){
+ #sharedPegField>.peg-field-surface{transition:none}
+ #humbled.gallery-reveal-ready #humbledTitle .lit-dot{fill:#fffdf4;transition:none}
+ #humbled.gallery-reveal-ready .film-card{opacity:1;transform:none;transition:none}
+}
+
+/* PEG-9 becomes the equalizer, with fine dots inside the enlarged glyphs. */
+#restoredTop #c2-player .test-beats-inner{grid-template-columns:49% 51%}
+#restoredTop #c2-player .test-beats-copy{max-width:700px;padding-right:28px}
+#restoredTop #test-beats-title{max-width:680px;margin-bottom:26px}
+#restoredTop #test-beats-title .beats-eq{width:100%;height:auto;filter:none;transition:none}
+#restoredTop #c2-player .beats-eq circle{transition:none!important;animation:none}
+@media(max-width:760px){#restoredTop #c2-player .test-beats-copy{padding-right:0}#restoredTop #test-beats-title{max-width:560px}}
