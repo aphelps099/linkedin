@@ -284,9 +284,12 @@ try{
   assert.equal((html.match(/class="mr-meeting-card(?: is-current)?"/g)||[]).length,14);
   assert(html.includes('<details class="mr-agenda-disclosure" open="">'),'Agenda starts open with all meeting cards');
   assert(!html.includes('mr-racing')&&!html.includes('mr-room-head'),'No extra title or racing strip');
-  assert(/mr-windowbar[\s\S]*?<h1>/.test(html),'Title belongs in the meeting window');
+  assert(/mr-windowbar[\s\S]*?<h2>/.test(html),'Selected meeting title belongs in the player window');
+  const entry=await readFile('studio/index.html','utf8');
+  assert(entry.includes('data-menu-default="meetings"')&&entry.includes('id="menuToggle"'),'Meetings uses the shared navigation');
+  assert(!entry.includes('class="menu-guide"'),'The menu has no mascot');
   assert(/mr-meeting-actions[\s\S]*?Next meeting[\s\S]*?Leave/.test(html),'Next meeting sits beside Leave');
-  for(const text of ['The agenda','Next meeting','Play meeting','Captions','Seek meeting','Stop video','Leave','lb-header--dark','Read fine print','mr-printer-display','id="meetings"'])assert(html.includes(text),`Missing UI: ${text}`);
+  for(const text of ['The agenda','Next meeting','Join meeting','Captions','Seek meeting','Stop video','Leave','Read fine print','mr-printer-display','id="meetings"'])assert(html.includes(text),`Missing UI: ${text}`);
   assert(!/<video[^>]*\ssrc=/.test(html),'Video downloads wait for play');assert(!/autoPlay/.test(html));
   assert(!html.includes('getUserMedia'));
   const rects=[];const drawing={clearRect(){},save(){},restore(){},translate(){},rotate(){},scale(){},fillRect:(...args)=>rects.push(args)};

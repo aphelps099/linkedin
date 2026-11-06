@@ -1,7 +1,10 @@
 import React from 'react';
 import {createRoot} from 'react-dom/client';
 import MeetingRoom from './MeetingRoom.jsx';
-import '../home-2/header.css';
+import '../brand/fonts.css';
 import '../home-2/footer.css';
 import './meeting-room.css';
-createRoot(document.getElementById('root')).render(<MeetingRoom/>);
+import './meeting-pegboard.css';
+const root=import.meta.hot?.data.root??createRoot(document.getElementById('root'));
+if(import.meta.hot)import.meta.hot.data.root=root;
+root.render(<MeetingRoom/>);
