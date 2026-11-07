@@ -50,21 +50,32 @@
   function show() {
     if (panel?.isConnected) return;
     const css = document.createElement('link');
-    css.rel = 'stylesheet'; css.href = '/analytics.css?v=2';
-    if (!document.querySelector('link[href="/analytics.css?v=2"]')) document.head.appendChild(css);
+    css.rel = 'stylesheet'; css.href = '/analytics.css?v=3';
+    if (!document.querySelector('link[href="/analytics.css?v=3"]')) document.head.appendChild(css);
     panel = document.createElement('section');
     panel.className = 'lb-analytics-choice';
     panel.setAttribute('aria-label', 'Analytics preference');
+    const heading = document.createElement('h2');
+    heading.id = 'lb-analytics-title';
+    heading.textContent = privacySignal() ? 'Your privacy. Noted.' : 'Help us count the crowd.';
+    panel.setAttribute('aria-labelledby', heading.id);
+    const signal = document.createElement('div');
+    signal.className = 'lb-analytics-signal'; signal.setAttribute('aria-hidden', 'true');
+    [2,4,3,5,4,6].forEach(height => {
+      const column = document.createElement('span');
+      for (let i=0;i<6;i++) {const peg=document.createElement('i'); if(i>=6-height) peg.className='is-lit'; column.appendChild(peg);}
+      signal.appendChild(column);
+    });
     const copy = document.createElement('p');
     copy.textContent = privacySignal()
-      ? 'Your browser privacy preference is on. Google Analytics stays off.'
+      ? 'Your browser privacy setting keeps Google Analytics off.'
       : 'Optional Google Analytics. Site visits, no ads.';
     const actions = document.createElement('div');
     function button(text, action) { const b=document.createElement('button'); b.type='button'; b.textContent=text; b.onclick=action; actions.appendChild(b); }
-    if (!privacySignal()) button('Allow analytics', () => {saveChoice('granted'); window['ga-disable-' + measurementId]=false; panel.remove(); start();});
+    if (!privacySignal()) button('Allow', () => {saveChoice('granted'); window['ga-disable-' + measurementId]=false; panel.remove(); start();});
     button(privacySignal() ? 'Close' : 'No thanks', decline);
     const policy = document.createElement('a'); policy.href='/privacy/#analytics'; policy.textContent='Privacy'; actions.appendChild(policy);
-    panel.append(copy, actions); document.body.appendChild(panel);
+    panel.append(signal, heading, copy, actions); document.body.appendChild(panel);
   }
   window.linkedinBeatsAnalytics = {showPreferences:show};
   document.addEventListener('click', e => {if (e.target.closest('[data-analytics-preferences]')) show();});
