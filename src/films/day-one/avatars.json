@@ -1,0 +1,346 @@
+{
+ "about": "Day One's avatars: the default silhouette for most, then pictures people really use, no faces.",
+ "crops": {
+  "keys-hands": {
+   "kind": "footage",
+   "shot": "keys-office-performance-87b9564e",
+   "title": "Keys Office Performance",
+   "category": "Instruments",
+   "faceBox": null,
+   "noFace": true,
+   "what": "hands on a keyboard",
+   "time": 3.0,
+   "box": [
+    440,
+    352,
+    628,
+    540
+   ],
+   "proxy": "keys-office-performance-87b9564e-540-f2e8def5.mp4",
+   "files": {
+    "96": "keys-hands-96.jpg"
+   }
+  },
+  "fret-hand": {
+   "kind": "footage",
+   "shot": "blue-guitar-detail-a8838477",
+   "title": "Blue Guitar Detail",
+   "category": "Instruments",
+   "faceBox": null,
+   "noFace": true,
+   "what": "a hand on a fretboard",
+   "time": 3.0,
+   "box": [
+    646,
+    150,
+    814,
+    318
+   ],
+   "proxy": "blue-guitar-detail-a8838477-540-cdee406f.mp4",
+   "files": {
+    "96": "fret-hand-96.jpg"
+   }
+  },
+  "guitar-body": {
+   "kind": "footage",
+   "shot": "blue-guitar-detail-a8838477",
+   "title": "Blue Guitar Detail",
+   "category": "Instruments",
+   "faceBox": null,
+   "noFace": true,
+   "what": "a hand strumming a blue guitar",
+   "time": 3.0,
+   "box": [
+    118,
+    296,
+    323,
+    501
+   ],
+   "proxy": "blue-guitar-detail-a8838477-540-cdee406f.mp4",
+   "files": {
+    "96": "guitar-body-96.jpg"
+   }
+  },
+  "sticks": {
+   "kind": "footage",
+   "shot": "drummer-arrival-performance-c2bf484a",
+   "title": "Drummer Arrival Performance",
+   "category": "Instruments",
+   "faceBox": null,
+   "noFace": true,
+   "what": "a hand with drumsticks",
+   "time": 3.0,
+   "box": [
+    432,
+    300,
+    582,
+    450
+   ],
+   "proxy": "drummer-arrival-performance-c2bf484a-540-f2f534f7.mp4",
+   "files": {
+    "96": "sticks-96.jpg"
+   }
+  },
+  "clap-1": {
+   "kind": "footage",
+   "shot": "corporate-applause-closer-reaction-531fa4a4",
+   "title": "Corporate applause — closer reaction",
+   "category": "Office scenes",
+   "faceBox": null,
+   "noFace": true,
+   "what": "clapping hands",
+   "time": 3.0,
+   "box": [
+    448,
+    292,
+    572,
+    416
+   ],
+   "proxy": "corporate-applause-closer-reaction-531fa4a4-540-fa4810ee.mp4",
+   "files": {
+    "96": "clap-1-96.jpg"
+   }
+  },
+  "camera-op": {
+   "kind": "footage",
+   "shot": "corporate-applause-vhs-cameraman-a018b1c9",
+   "title": "Corporate applause — VHS cameraman",
+   "category": "Office scenes",
+   "faceBox": null,
+   "noFace": true,
+   "what": "a camera operator seen from behind",
+   "time": 5.0,
+   "box": [
+    0,
+    8,
+    196,
+    204
+   ],
+   "proxy": "corporate-applause-vhs-cameraman-a018b1c9-540-1f8de0e4.mp4",
+   "files": {
+    "96": "camera-op-96.jpg"
+   }
+  },
+  "jamie": {
+   "kind": "drawn",
+   "genre": "jamie",
+   "what": "Jamie: a portrait from behind at a sunlit window, her hair up, an oatmeal sweater (no face)",
+   "files": {
+    "96": "jamie-96.jpg",
+    "144": "jamie-144.jpg"
+   }
+  },
+  "window-man": {
+   "kind": "drawn",
+   "genre": "window-man",
+   "what": "a man from behind at an office window (no face)",
+   "files": {
+    "96": "window-man-96.jpg"
+   }
+  },
+  "office-woman": {
+   "kind": "drawn",
+   "genre": "office-woman",
+   "what": "a woman from behind at a bright window, a dark bob (no face)",
+   "files": {
+    "96": "office-woman-96.jpg"
+   }
+  },
+  "park-woman": {
+   "kind": "drawn",
+   "genre": "park-woman",
+   "what": "a woman from behind in a park, a fair ponytail (no face)",
+   "files": {
+    "96": "park-woman-96.jpg"
+   }
+  },
+  "hiker": {
+   "kind": "drawn",
+   "genre": "hiker",
+   "what": "a small figure from behind on a forest trail",
+   "files": {
+    "96": "hiker-96.jpg"
+   }
+  },
+  "summit-day": {
+   "kind": "drawn",
+   "genre": "summit-day",
+   "what": "a figure from behind on a summit, a blue sky",
+   "files": {
+    "96": "summit-day-96.jpg"
+   }
+  },
+  "summit-dawn": {
+   "kind": "drawn",
+   "genre": "summit-dawn",
+   "what": "a figure from behind on a summit at dawn",
+   "files": {
+    "96": "summit-dawn-96.jpg"
+   }
+  },
+  "sunset-sea": {
+   "kind": "drawn",
+   "genre": "sunset-sea",
+   "what": "a figure on a shore at sunset",
+   "files": {
+    "96": "sunset-sea-96.jpg"
+   }
+  },
+  "city-night": {
+   "kind": "drawn",
+   "genre": "city-night",
+   "what": "a skyline at night, out of focus",
+   "files": {
+    "96": "city-night-96.jpg"
+   }
+  },
+  "golf": {
+   "kind": "drawn",
+   "genre": "golf",
+   "what": "a green and its flag",
+   "files": {
+    "96": "golf-96.jpg"
+   }
+  },
+  "grad-caps": {
+   "kind": "drawn",
+   "genre": "grad-caps",
+   "what": "graduation caps against the sky",
+   "files": {
+    "96": "grad-caps-96.jpg"
+   }
+  },
+  "sailboat": {
+   "kind": "drawn",
+   "genre": "sailboat",
+   "what": "a sailboat",
+   "files": {
+    "96": "sailboat-96.jpg"
+   }
+  },
+  "peony": {
+   "kind": "drawn",
+   "genre": "peony",
+   "what": "a pink peony, close",
+   "files": {
+    "96": "peony-96.jpg"
+   }
+  },
+  "latte": {
+   "kind": "drawn",
+   "genre": "latte",
+   "what": "a latte from above",
+   "files": {
+    "96": "latte-96.jpg"
+   }
+  },
+  "mark-loaf": {
+   "kind": "drawn",
+   "genre": "mark-loaf",
+   "what": "a bakery's mark: a loaf (Second Rise Bakery)",
+   "files": {
+    "96": "mark-loaf-96.jpg"
+   }
+  },
+  "mark-leaf": {
+   "kind": "drawn",
+   "genre": "mark-leaf",
+   "what": "a landscaper's mark: a leaf (Dumont Landscaping)",
+   "files": {
+    "96": "mark-leaf-96.jpg"
+   }
+  },
+  "mark-ramplight": {
+   "kind": "drawn",
+   "genre": "mark-ramplight",
+   "what": "a software company's mark: a ramp and a light (Ramplight)",
+   "files": {
+    "96": "mark-ramplight-96.jpg"
+   }
+  }
+ },
+ "assign": {
+  "1": "mark-loaf",
+  "2": "jamie",
+  "3": "peony",
+  "4": "jamie",
+  "5": "latte",
+  "6": "park-woman",
+  "7": "silhouette",
+  "8": "city-night",
+  "9": "silhouette",
+  "10": "golf",
+  "11": "summit-day",
+  "12": "silhouette",
+  "13": "silhouette",
+  "14": "grad-caps",
+  "15": "window-man",
+  "16": "silhouette",
+  "17": "sunset-sea",
+  "18": "silhouette",
+  "19": "fret-hand",
+  "20": "camera-op",
+  "21": "silhouette",
+  "22": "clap-1",
+  "23": "silhouette",
+  "24": "sailboat",
+  "25": "silhouette",
+  "26": "silhouette",
+  "27": "silhouette",
+  "28": "silhouette",
+  "29": "silhouette",
+  "30": "silhouette",
+  "31": "silhouette",
+  "32": "hiker",
+  "33": "silhouette",
+  "34": "silhouette",
+  "35": "summit-dawn",
+  "36": "silhouette",
+  "37": "silhouette",
+  "38": "mark-ramplight",
+  "39": "sunset-sea",
+  "40": "silhouette",
+  "41": "silhouette",
+  "42": "park-woman",
+  "43": "golf",
+  "44": "silhouette",
+  "45": "silhouette",
+  "46": "silhouette",
+  "47": "silhouette",
+  "48": "silhouette",
+  "49": "silhouette",
+  "50": "silhouette",
+  "51": "silhouette",
+  "52": "grad-caps",
+  "53": "summit-dawn",
+  "54": "silhouette",
+  "55": "mark-leaf",
+  "56": "fret-hand",
+  "57": "silhouette",
+  "58": "silhouette",
+  "59": "silhouette",
+  "60": "hiker",
+  "61": "silhouette",
+  "62": "silhouette",
+  "63": "silhouette",
+  "64": "sticks",
+  "65": "silhouette",
+  "66": "silhouette",
+  "67": "silhouette",
+  "68": "summit-day",
+  "69": "silhouette",
+  "70": "silhouette",
+  "71": "guitar-body",
+  "72": "silhouette",
+  "73": "office-woman",
+  "74": "silhouette",
+  "75": "keys-hands",
+  "76": "silhouette",
+  "77": "camera-op",
+  "78": "silhouette",
+  "79": "peony",
+  "80": "jamie",
+  "81": "silhouette"
+ },
+ "viewer": "silhouette"
+}

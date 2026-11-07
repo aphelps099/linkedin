@@ -6,7 +6,7 @@
 //   out.mp4       Uint8Array: H.264 High 4.0 (avc1.640028), 24 fps CFR, 8 Mbps (24 Mbps with master:true),
 //                 plus AAC-LC 48 kHz 256k, or Opus 48 kHz 256k where the browser has no AAC encoder
 //   out.vtt       captions.vtt: Synergy's lines and the lady's, on the song's clock
-//   out.sidecar   {hashes:{edl, plan, program, mp4}, film, video, audio, lint, stats, edl}
+//   out.sidecar   {hashes:{edl, plan, program, mp4}, film, video, audio, lint, governor:{on, governedFrames, minGain}, stats, edl}
 //
 // 1. Audio: engine.render() with stems (master on 0-1, the six stems on 2-7), resampled to
 //    48 kHz by the browser's sinc resampler; song time 0 is sample 0 of the file.
@@ -176,6 +176,7 @@ async function encodeAudio(pcm, kind, muxer, {signal} = {}) {
 //   edl, plan, shots (shots.json or its list), song {buffers, lady} (for engine.render)
 //   format (the EDL's), scale (1: the format's size), master (24 Mbps), span [from, to) in frames
 //   audio: 'render' (default) | null (no sound) | {sampleRate, channels:[L, R, ...stems?], offset} song-time-zero at `offset` s
+//     (a recording: recordingFeatures() gives its features; the headless export muxes a recording's own file as AAC instead)
 //   features: feature tracks to compile with (default: from the render, else from the plan)
 //   governor (true), post (compositor post options), media ('proxy'), reversed (true; false decodes the forward proxy backwards), force (export despite lint errors)
 //   onProgress({phase, frame, frames, fraction, msPerFrame, eta}), signal (AbortSignal)
@@ -191,6 +192,25 @@ export async function songFeatures(plan, song = {}) {
   const buf = await renderSong(plan, song.buffers ?? new Map(), {tune:{stems:true}}, song.lady);
   if (buf.numberOfChannels < 2 + STEMS.length) return planFeatures(plan);
   return buildFeatures(plan, buf, {offset:RENDER_OFFSET - plan.timing[0]});
+}
+
+// A recording (a track that is a sound file, not the engine's song: treatments/index.js RECORDED) has no
+// stems, so its features come from the sound itself: the voice is the band its melody sits in
+// (voiceBand in Hz, the plan's own or 600-3000: Printer Song's bright stack), band-passed in an offline
+// context and followed like a stem; the eq is the master's bands; kicks and claps are the plan's own
+// lists (plan.kicks, plan.claps), none for a song without an audible downbeat. audio: {sampleRate,
+// channels:[L, R], offset} with film time 0 at `offset` seconds.
+export async function recordingFeatures(plan, audio, {voiceBand = plan.voiceBand ?? [600, 3000]} = {}) {
+  const {sampleRate, channels} = audio, n = channels[0].length;
+  const ctx = new OfflineAudioContext({numberOfChannels:1, length:n, sampleRate});
+  const buf = ctx.createBuffer(channels.length, n, sampleRate);
+  channels.forEach((x, c) => buf.copyToChannel(x, c));
+  const src = new AudioBufferSourceNode(ctx, {buffer:buf});
+  const hp = new BiquadFilterNode(ctx, {type:'highpass', frequency:voiceBand[0], Q:Math.SQRT1_2}), lp = new BiquadFilterNode(ctx, {type:'lowpass', frequency:voiceBand[1], Q:Math.SQRT1_2});
+  src.connect(hp).connect(lp).connect(ctx.destination);
+  src.start();
+  const voice = (await ctx.startRendering()).getChannelData(0);
+  return {...buildFeatures(plan, {sampleRate, channels:{voice}, master:channels.slice(0, 2)}, {offset:audio.offset ?? 0}), source:'recording'};
 }
 
 export async function exportFilm(opts) {
@@ -276,9 +296,12 @@ export async function exportFilm(opts) {
   const marks = chokeFrames(plan), cleanCuts = new Set(marks ? [marks.black, marks.impact] : []);
   for (let f = Math.max(1, from); f < to; f++) if (program.frame(f).board.dark && !program.frame(f - 1).board.dark) cleanCuts.add(f);
   const sample = f => memory.push({f, heap:performance.memory?.usedJSHeapSize ?? null, cache:decoder.stats().cacheBytes, entries:decoder.stats().entries, live:ledger.live, textures:comp.textures, queue:encoder.encodeQueueSize});
+  let govern = {on:!!governor, governedFrames:0, minGain:1};
   try {
     await comp.ready;
-    comp.prepare(program, {plan, shots, governor});
+    const {gains} = comp.prepare(program, {plan, shots, governor});
+    // The flash governor's record for the sidecar: on or off, and the frames of this span it dimmed.
+    govern = {on:!!governor, governedFrames:gains ? gains.slice(from, to).filter(g => g < 1).length : 0, minGain:gains ? +Math.min(1, ...gains.slice(from, to)).toFixed(4) : 1};
     const sources = layer => decoder.source(layer);
     for (let f = from; f < to; f++) {
       check();
@@ -331,6 +354,7 @@ export async function exportFilm(opts) {
     audio:audioInfo,
     hashes:{edl:await sha256(edlText), plan:await sha256(planJSON(plan)), program:program.hash(), mp4:await sha256(mp4), features:features.source},
     lint:{ok:program.lint.ok, errors:program.lint.errors.length, warnings:program.lint.warnings.length},
+    governor:govern,
     media:mediaReport(program, shots, media, decoder.stats().masters),
     stats:{seconds:timings, msPerFrame:{mean:sorted.reduce((s, x) => s + x, 0) / n, p50:sorted[Math.floor(n / 2)], p95:sorted[Math.floor(n * .95)], max:sorted[n - 1]},
       split:{decode:split.decode / n, draw:split.draw / n, encode:split.encode / n},

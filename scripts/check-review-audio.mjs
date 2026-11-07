@@ -23,8 +23,10 @@
 //      sample post and inside 0-2.5 dB everywhere.
 //   9. The casting line: no quote ends on a function word or repeats someone's
 //      family or health back at them; a goodbye on Humbled and Honored is a journey.
+//  10. Delve. (songbook/delve.js), the film's song, played by id: the render hook's path (settleCast, any
+//      post, no cast) arranges the same plan as the direct call, whatever the post says.
 // With --url http://localhost:PORT: every track's Drop Edition (and Circle Back
-// with the cold open) is rendered twice, each in a fresh browser, and the two
+// with the cold open, and Delve.) is rendered twice, each in a fresh browser, and the two
 // WAVs must be the same bytes (exact.js); and on every track a live tick that
 // reaches the Sink In downbeat late must schedule it without throwing.
 import assert from 'node:assert/strict';
@@ -140,6 +142,15 @@ const range = list => `${Math.min(...list).toFixed(3)}-${Math.max(...list).toFix
 console.log(`punctuation placed with real durations: ${TRACK_ORDER.map(t => `${TRACKS[t].title} ${placed[t]}/${POSTS.length * 2}`).join(', ')}`);
 console.log(`verse room (dB, today's cast): ${TRACK_ORDER.map(t => `${TRACKS[t].title} ${Math.min(...trims[t])}-${Math.max(...trims[t])}, ${trims[t].filter(x => x > 0).length} posts`).join('; ')}`);
 
+// ---- 10. Delve.: the film's song arranges the same through the render hook's path, whatever the post
+{
+  const json = x => JSON.stringify(x, (k, v) => v instanceof Float64Array ? Array.from(v) : v), direct = json(FORMS.wander.arrange(lyricsFromPost(SAMPLE_POST), {}, {track:'delve'}));
+  for (const post of [SAMPLE_POST, ...FIXTURES.slice(0, 5)]) {
+    const lyrics = lyricsFromPost(post), {plan} = settleCast(FORMS.wander.arrange, lyrics, {}, {track:'delve', cast:undefined});
+    ok(json(plan) === direct, `Delve.: the render hook's plan is the direct call's (${post.slice(0, 30)}...)`);
+  }
+}
+
 // ---- Optional: byte-identical renders
 const url = process.argv.includes('--url') ? process.argv[process.argv.indexOf('--url') + 1] : null;
 if (url) {
@@ -161,7 +172,7 @@ if (url) {
   // studio), and the band cast by the post (castSong with the voice bank): the sample's couplet drop on Circle
   // Back, fixture 1's layoff couplet on Hustle, the river with the sample's couplet and refrain.
   for (const job of [...TRACK_ORDER.map(track => ({track})), {track:'circle-back', coldOpen:true}, {track:'offsite', form:'drop60', coldOpen:true},
-    {track:'circle-back', auto:true}, {track:'hustle', auto:true, post:FIXTURES[1]}, {track:'offsite', auto:true}]) {
+    {track:'circle-back', auto:true}, {track:'hustle', auto:true, post:FIXTURES[1]}, {track:'offsite', auto:true}, {track:'delve'}]) {
     const a = await take(job), b = await take(job);
     const name = JSON.stringify({...job, ...(job.post ? {post:'fixture 1'} : {})});
     ok(a === b, `${name}: two renders in fresh browsers are the same bytes (${a.slice(0, 16)})`);

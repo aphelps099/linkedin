@@ -12,12 +12,16 @@ import circleBack from './circle-back.js';
 import humbledAndHonored from './humbled-and-honored.js';
 import hustle from './hustle.js';
 import offsite from './offsite.js';
+import delve from './delve.js';
 
 export const TRACKS = {
   'circle-back':circleBack,
   'humbled-and-honored':humbledAndHonored,
   hustle,
   offsite,
+  // A concept film's song (Delve., her vocabulary): playable by id (--track delve), never picked by a post
+  // or listed in the pickers, so it stays out of TRACK_ORDER (casting scores TRACK_ORDER only).
+  delve,
 };
 export const TRACK_ORDER = ['circle-back', 'humbled-and-honored', 'hustle', 'offsite'];
 export const DEFAULT_TRACK = 'circle-back';
@@ -26,7 +30,7 @@ export function trackOf(id) {
   if (id === undefined || id === null || id === '') return TRACKS[DEFAULT_TRACK];
   if (typeof id === 'object' && id.id && TRACKS[id.id] === id) return id;
   const track = TRACKS[id];
-  if (!track) throw Error(`There is no track called "${id}". Choose one of: ${TRACK_ORDER.join(', ')}.`);
+  if (!track) throw Error(`There is no track called "${id}". Choose one of: ${Object.keys(TRACKS).join(', ')}.`);
   return track;
 }
 

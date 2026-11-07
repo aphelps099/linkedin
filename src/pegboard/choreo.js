@@ -339,7 +339,8 @@ export function buildScreens(plan, {table} = {}) {
   }
   // The band: couplets, exchanges, refrains (bandScreens).
   const band = bandScreens(river ? {...plan, band:(plan.band || []).filter(p => !streamPart(p)), refrains:(plan.refrains || []).filter(p => !streamPart(p)), phrases:(plan.phrases || []).filter(p => !streamPart(p))} : plan);
-  const phrases = [...new Set(band.map(b => b.text))].slice(0, river ? RIVER_PHRASES : Infinity);
+  // (A river that names its own count, plan.clearMax, breaks the two-phrase rule on purpose: Delve.'s ten.)
+  const phrases = [...new Set(band.map(b => b.text))].slice(0, river ? plan.clearMax ?? RIVER_PHRASES : Infinity);
   for (const b of band) if (phrases.includes(b.text)) add(b);
   // The muted intro: YOU'RE ON MUTE, then the tease of the drop that comes later.
   // It ends on the unmute (Circle Back's 16th 32; a track's own plan.call.until).
@@ -543,17 +544,37 @@ function ignite(board, age) {
   }
 }
 
+// Paging: each page appears when its first word is heard. A river phrase's page (Delve.: screen.phrase) turns
+// on the frame that holds that word, by the pegs' own rule (pegLight: lit from half a frame before its start,
+// t being the frame's middle), so the page and its first word arrive together; elsewhere the page waits for
+// t to pass the word's start (a frame late when the word starts in the second half of its frame; kept so the
+// films already cut do not move).
+export function pageAt(screen, layout, t) {
+  const lead = screen.phrase ? FRAME * .5 + 1e-9 : .001;
+  let page = layout.pages[0];
+  for (const p of layout.pages) { const first = p.lines[0]?.chars[0]; if (first && screen.words[first.word]?.start <= t + lead) page = p; }
+  return page;
+}
+
 function drawScreen(board, screen, t, {layoutOf, place, reduced, igniting, pitch = 0}) {
   const layout = layoutOf(screen);
   if (!layout?.pages?.length) return;
-  // Paging: each page appears when its first word is heard.
-  let page = layout.pages[0];
-  for (const p of layout.pages) { const first = p.lines[0]?.chars[0]; if (first && screen.words[first.word]?.start <= t + .001) page = p; }
+  const page = pageAt(screen, layout, t);
   const origin = place(screen, layout, page);
   const releaseAge = t - screen.to, fade = releaseAge > 0 ? (screen.release === 'afterglow' ? clamp(1 - releaseAge / .3) : screen.release === 'dissolve' ? clamp(1 - releaseAge / BEAT) : 0) : 1;
   if (fade <= 0) return;
   const tone = PALETTE[screen.tone]?.id ?? 0, accentTone = PALETTE.signal.id;
   const rows = Math.max(1, ...page.lines.flatMap(l => l.chars.map(c => c.h || 9))) || 9;
+  // Her vocabulary's treatments (Delve.): the screen's light follows a curve (dim), the bloom swells (bloom),
+  // copies of the sung words in harmony (harmony), the letters wobble on the tape (wobble), grain eats them
+  // (grain), the last words sink (sink). Each is data on the screen; none moves a peg's light in one frame
+  // except as the words themselves light.
+  const fxv = screen.fx, dim = fxv.dim ? curveAt(fxv.dim, t) : 1, swell = fxv.swell ? curveAt(fxv.swell, t) : 1;
+  if (fxv.bloom) board.bloom = Math.max(board.bloom, curveAt(fxv.bloom, t));
+  const harmony = (fxv.harmony || []).filter(h => t >= (h.from ?? -Infinity) && t < (h.to ?? Infinity));
+  const wob = fxv.wobble && t >= (fxv.wobble.from ?? -Infinity) && t < (fxv.wobble.to ?? Infinity) ? fxv.wobble : null;
+  const grain = fxv.grain && t >= (fxv.grain.from ?? -Infinity) ? fxv.grain : null, grainTick = grain ? Math.floor(t * (grain.rate ?? 8)) : 0;
+  const sink = fxv.sink ?? null;
   const cx = origin.x + layout.width / 2, cy = origin.y + layout.height / 2;
   let letterIndex = 0;
   const allChars = page.lines.flatMap(l => l.chars);
@@ -602,13 +623,60 @@ function drawScreen(board, screen, t, {layoutOf, place, reduced, igniting, pitch
       if (screen.fx.tape && sung) dy = clamp((t - screen.from) / 2) * .6;
       if (screen.fx.sparkle) { if (hash2(x, y, Math.floor(t * 32)) > 1 - screen.fx.sparkle * .8) { white = 1; I = 1.5; } }
       if (screen.fx.rock && !reduced) dy += screen.fx.rock;
-      light(board, x, y, I * fade, {tone:peg, white, size, dx, dy});
+      let yy = y;
+      if (sink && ch.word >= sink.word && t >= word.start) { yy += Math.min(sink.max ?? 12, Math.floor((t - word.start) * (sink.rate ?? 1))); peg = PALETTE[sink.tone ?? 'deep']?.id ?? peg; }
+      if (wob && !reduced) dx += (wob.amount ?? .35) * Math.sin(2 * Math.PI * (t * (wob.rate ?? .9) + (y - origin.y) * .045));
+      if (grain && word.start <= t && ch.word >= (grain.word ?? 0) && hash2(x, y, grainTick + 101) < (grain.amount ?? .25)) I *= .3;
+      I *= dim;
+      // (swell: the reverb's throw, the words' pegs grow and settle: size, not light.)
+      light(board, x, yy, I * fade, {tone:peg, white, size:size * swell, dx, dy});
+      // (Harmony copies: the sung words again, offset, in their own tone, under the words: light keeps the brighter;
+      // a copy with `word` doubles only that word and the ones after it.)
+      for (const h of harmony) if ((I > READ_AHEAD + 1e-6 || frag) && ch.word >= (h.word ?? 0)) light(board, x + (h.dx ?? 0), yy + (h.dy ?? 0), Math.min(I, 1) * (h.I ?? .45) * fade, {tone:PALETTE[h.tone ?? 'blue']?.id ?? tone, dx:0, dy:0});
     }
     // Drop words wear a 1-peg outline of dark pegs, so the ignition never swallows them.
     if (screen.fx.outline || igniting) outline(board, ch, origin);
   }
   if (screen.fx.strike) drawStrike(board, screen, layout, page, origin, t, fade, reduced);
+  if (fxv.echo?.length) drawEchoes(board, screen, page, origin, t, fade * dim, {layoutOf, reduced});
   if (screen.parts && pitch >= TAG_MIN_PITCH) drawTags(board, screen, layout, page, origin, t, fade);
+}
+
+// A piecewise-linear curve [[t, v], ...] at t (the ends hold).
+export function curveAt(c, t) {
+  if (!c?.length) return 1;
+  if (t <= c[0][0]) return c[0][1];
+  for (let i = 1; i < c.length; i++) if (t <= c[i][0]) { const [a, x] = c[i - 1], [b, y] = c[i]; return b > a ? x + (y - x) * (t - a) / (b - a) : y; }
+  return c.at(-1)[1];
+}
+
+// Her echoes as ghosts of the words they repeat (Delve.: delay, reverb, pitch down, echo to fade). A ghost is
+// {word, at, end, I, dx?, dy? (rows from the word's top) | below? (rows under the word's bottom), k?, font?, tone?,
+// fall?:[[t, rows], ...]}: from its tap's onset it shows the word again (at its own size, centred on the word,
+// offset), at I, and only loses light until `end`; a fall moves it down whole rows at its taps (each later tap
+// one more row). The words themselves always win (light keeps the brighter peg). Only words on the page shown.
+const ghostLayouts = new WeakMap();
+function drawEchoes(board, screen, page, origin, t, fade, {layoutOf}) {
+  for (const e of screen.fx.echo) {
+    if (t < e.at - FRAME * .5 || t >= e.end) continue;
+    const chars = page.lines.flatMap(l => l.chars).filter(c => c.word === e.word);
+    if (!chars.length) continue;
+    const x0 = Math.min(...chars.map(c => c.x)), x1 = Math.max(...chars.map(c => c.x + c.w)), y0 = Math.min(...chars.map(c => c.y)), y1 = Math.max(...chars.map(c => c.y + (c.h || 9)));
+    let g = ghostLayouts.get(e);
+    if (!g) { g = {text:e.text ?? screen.words[e.word]?.text ?? '', font:e.font ?? screen.font ?? 'peg9', k:e.k ?? screen.k ?? 1, lines:1, ghostOf:screen}; ghostLayouts.set(e, g); }
+    const layout = layoutOf(g), gp = layout?.pages?.[0];
+    if (!gp) continue;
+    const gw = layout.width, rows = e.fall ? e.fall.filter(([ft]) => t >= ft - FRAME * .5).reduce((s, [, r]) => s + r, 0) : 0;
+    const gx = origin.x + Math.round((x0 + x1) / 2 - gw / 2) + (e.dx ?? 0);
+    const gy = origin.y + (e.below !== undefined ? y1 + e.below : y0 + (e.dy ?? 0)) + rows;
+    const life = clamp((t - e.at) / Math.max(FRAME, e.end - e.at)), I = (e.I ?? .4) * (1 - life) ** .7 * fade;
+    if (I <= .02) continue;
+    const tn = PALETTE[e.tone ?? screen.tone]?.id ?? 0;
+    // (grain: [[t, share], ...], the share of its pegs gone at t, the same pegs each frame, more as it rises: a
+    // ghost dissolving to sockets, never blinking.)
+    const gone = e.grain ? curveAt(e.grain, t) : 0;
+    for (const line of gp.lines) for (const ch of line.chars) { const p = ch.pegs; for (let i = 0; i < p.length; i += 2) { if (gone > 0 && hash2(p[i], p[i + 1], 977) < gone) continue; light(board, gx + p[i], gy + p[i + 1], I, {tone:tn}); } }
+  }
 }
 
 // A band word's light: the read-ahead ghost until it is sung, then full (1) from its onset to the screen's

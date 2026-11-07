@@ -17,6 +17,9 @@
 //   5. leaks and memory: every VideoFrame opened is closed; the heap and the frame cache
 //      stay level across a footage-heavy span
 //   6. duration and A/V sync: video and audio tracks within a frame of the film's length
+//   9. Delve. (the board-only film): the compositor's fast path (the board's texture copied in over flat
+//      black) against the slow path (the uber shader's passes), pixel for pixel on 10 frames, and its cost;
+//      in Node: the recording's file offset and the plan it is cut to
 // node scripts/check-videostudio-export.mjs [--quick] [--node] [--only 2,3,4,5] [--keep DIR] [--url http://127.0.0.1:5351] [--verbose]
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -34,6 +37,8 @@ import {demux} from '../src/videostudio/media/decoder.js';
 import {captions, planJSON, exportName, SAMPLES_PER_FRAME} from '../src/videostudio/render/export.js';
 import {drop60Draft, ROWS, SCENE_LABELS, GHOST} from '../src/videostudio/treatments/drop60-draft.js';
 import {studioServer, launch, exportPage, runExport, pull} from './export-videostudio.mjs';
+import {RECORDED, treatmentFor} from '../src/videostudio/treatments/index.js';
+import {RENDER_OFFSET} from '../src/allhands/engine.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const argv = process.argv.slice(2), quick = argv.includes('--quick'), verbose = argv.includes('--verbose');
@@ -133,6 +138,14 @@ const lyrics = lyricsFromPost(SAMPLE_POST), plan = FORMS.drop60.arrange(lyrics, 
   const statuses = ROWS.reduce((m, r) => ({...m, [r.status]:(m[r.status] ?? 0) + 1}), {});
   ok(ROWS.length >= 27 && ROWS.every(r => ['done', 'stand-in', 'partial', 'skipped'].includes(r.status) && r.what && !/—/.test(r.note + r.what)), `ROWS: plan §2 row by row: ${Object.entries(statuses).map(([k, v]) => `${v} ${k}`).join(', ')}`);
   ok(planJSON(plan) === planJSON(FORMS.drop60.arrange(lyrics, {}, {coldOpen:true})) && exportName(plan, '9:16') === 'linkedinbeats-circle-back-drop60-9x16.mp4' && SAMPLES_PER_FRAME === 2000, 'the plan hashes the same twice; file names; 2,000 samples a frame at 48 kHz');
+  // Delve.: the engine's song cut as a recording. Its file is the render (song time 0 at RENDER_OFFSET in the
+  // file), the plan is the song's own, and the film is 48 bars and the tail.
+  {
+    const R = RECORDED.delve, dp = R.plan(), edl = treatmentFor('delve').fn(dp, SHOTS, {format:'9:16'}), p = compile(edl, {plan:dp, shots:SHOTS, format:'9:16'});
+    ok(R.offset === RENDER_OFFSET && R.sampleRate === 44100 && audioLatency(dp) === 720 / 44100 && p.frames === 2895 && p.lint.errors.length === 0 && dp.form === 'wander' && dp.track === 'delve'
+      && planJSON(dp) === planJSON(R.plan()) && exportName(dp, '9:16') === 'linkedinbeats-delve-wander-9x16.mp4' && fs.existsSync(path.join(ROOT, R.audio)),
+      `delve: a recording with its file offset (${R.offset} s, the engine's render), latency ${(audioLatency(dp) * 1000).toFixed(2)} ms, ${p.frames} frames, 0 lint errors, the same plan twice, its FLAC on disk`);
+  }
   log(`1. Node: ${checks - before} checks`);
 }
 
@@ -370,6 +383,30 @@ try {
     ok(cancel.error === 'AbortError' && cancel.seen < 10 && cancel.live === 0 && cancel.opened > 0, `cancel: aborted after ${cancel.seen} frames with ${cancel.error}; ${cancel.opened} VideoFrames opened, ${cancel.live} left open`);
     await page.close();
     log(`5. leaks and memory: ${checks - before} checks`);
+  }
+  // ---- 9. Delve.: the board-only fast path against the slow path, pixel for pixel ------------------------------
+  if (section(9)) {
+    const before = checks, page = await fresh();
+    const res = await page.evaluate(async ({frames}) => {
+      const {createCompositor} = await import('/src/videostudio/gl/compositor.js');
+      const plan = X.T.RECORDED.delve.plan(), edl = X.T.treatmentNamed('track', 'delve').fn(plan, X.SHOTS, {format:'9:16'}), program = X.compile(edl, {plan, shots:X.SHOTS, format:'9:16'});
+      const make = fastBoard => { const canvas = Object.assign(document.createElement('canvas'), {width:540, height:960}); return createCompositor(canvas, {format:'9:16', scale:.5, fastBoard}); };
+      const A = make(true), B = make(false), out = [];
+      await A.ready; await B.ready;
+      A.prepare(program, {plan, shots:X.SHOTS, governor:false}); B.prepare(program, {plan, shots:X.SHOTS, governor:false});
+      for (const f of frames) {
+        let t0 = performance.now(); const sa = A.drawFrame(program.frame(f), () => null, {program}), a = A.read().data, ta = performance.now() - t0;
+        t0 = performance.now(); const sb = B.drawFrame(program.frame(f), () => null, {program}), b = B.read().data, tb = performance.now() - t0;
+        let diff = 0; for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) diff++;
+        out.push({f, fast:!!sa.fast, slow:!sb.fast, diff, ta, tb});
+      }
+      return out;
+    }, {frames:quick ? [90, 1440, 2460] : [30, 90, 240, 700, 1300, 1425, 1460, 1800, 2460, 2850]});
+    const ta = res.reduce((s, x) => s + x.ta, 0), tb = res.reduce((s, x) => s + x.tb, 0);
+    ok(res.every(x => x.fast && x.slow && x.diff === 0), `delve: the fast path draws ${res.length} frames (f${res.map(x => x.f).join(', f')}) pixel for pixel as the slow path does (the board's texture copied over flat black)`);
+    ok(ta * 5 < tb, `delve: the fast path at 540 x 960 costs ${(ta / res.length).toFixed(0)} ms a frame against ${(tb / res.length).toFixed(0)} for the slow one`);
+    await page.close();
+    log(`9. Delve., the board-only fast path: ${checks - before} checks`);
   }
   ok(pageErrors.length === 0, `no page errors (${pageErrors.slice(0, 2).join('; ')})`);
 } finally {

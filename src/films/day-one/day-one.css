@@ -1,0 +1,176 @@
+/* Day One: a LinkedIn post on a phone, drawn to LinkedIn's anatomy, hierarchy, spacing and
+   microcopy (spec 6), with our own icons. CSS px of a 360x640 page at deviceScaleFactor 3.
+   Two weights (400, 600), two sizes (12, 14). Every colour is a token below. */
+:root {
+  --font: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Fira Sans", Ubuntu, Oxygen, "Oxygen Sans", Cantarell, "Droid Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Lucida Grande", Helvetica, Arial, sans-serif;
+  --text: rgba(0, 0, 0, .9);
+  --text-2: rgba(0, 0, 0, .6);
+  --icon: rgba(0, 0, 0, .75);
+  --link: #0A66C2;
+  --hair: rgba(0, 0, 0, .08);
+  --rule: rgba(0, 0, 0, .15);
+  --feed: #F3F2F0;
+  --card: #FFFFFF;
+  --bubble: #F3F2F0;
+  --press: #EBEBEB;
+  --pill-text: #666666;
+  --bar-icon: #666666;
+  --like: #3A86DC;
+  --celebrate: #5FA046;
+  --love: #E06C4C;
+  --insightful: #F2B652;
+  --sil-ground: #E9E5DF;
+  --sil-fig: #9DB3C8;
+  --sil-shade: #788FA5;
+  --hiring: #7C4DCC;
+  --otw: #5E9E45;
+}
+html, body { margin: 0; padding: 0; background: var(--feed); }
+body {
+  width: 360px; height: 640px; overflow: hidden;
+  font-family: var(--font); font-size: 14px; line-height: 21px; font-weight: 400;
+  color: var(--text); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  font-kerning: normal; text-rendering: auto;
+}
+* { box-sizing: border-box; }
+b { font-weight: 600; }
+img { display: block; }
+
+.stage { position: fixed; left: 0; top: 0; width: 360px; height: 640px; overflow: hidden; background: var(--feed); }
+.viewport { position: absolute; left: 0; top: 0; width: 360px; height: 640px; overflow: hidden; }
+.content { position: absolute; left: 0; top: 0; width: 360px; transform-origin: 0 0; }
+.feed-gap { height: 8px; }
+.card { background: var(--card); padding-bottom: 12px; }
+/* Below the last comment the post's page stays white, as the app's post view does. */
+.card-tail { height: 1600px; background: var(--card); }
+
+/* The social context line, with a hairline under it */
+.context { position: relative; height: 40px; display: flex; align-items: center; padding: 0 48px 0 16px;
+  font-size: 12px; line-height: 16px; color: var(--text-2); white-space: nowrap; }
+.context b { color: var(--text); }
+.context::after { content: ''; position: absolute; left: 16px; right: 16px; bottom: 0; height: 1px; background: var(--hair); }
+.dots { position: absolute; right: 8px; top: 4px; width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; gap: 3px; }
+.dots i, .c-dots i { display: block; width: 3px; height: 3px; border-radius: 50%; background: var(--icon); }
+
+/* The author lockup */
+.lockup { position: relative; display: flex; padding: 12px 16px 0; }
+.lockup .av { flex: none; }
+.who { margin-left: 8px; min-width: 0; flex: 1; padding-right: 72px; }
+.name-line { font-size: 14px; line-height: 20px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.name-line .deg { font-weight: 400; color: var(--text-2); }
+.headline { font-size: 12px; line-height: 16px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.meta { font-size: 12px; line-height: 16px; color: var(--text-2); display: flex; align-items: center; }
+.globe { display: block; color: var(--text-2); }
+.follow { position: absolute; right: 16px; top: 12px; height: 20px; display: flex; align-items: center; gap: 2px;
+  font-size: 14px; line-height: 20px; font-weight: 600; color: var(--link); }
+
+/* The commentary: three lines, then "…more" on a white ground */
+.commentary { position: relative; margin: 8px 16px 0; font-size: 14px; line-height: 21px; max-height: 63px; overflow: hidden; color: var(--text); }
+.commentary.open { max-height: none; }
+.commentary .more { position: absolute; right: 0; bottom: 0; padding-left: 8px; background: var(--card);
+  font-weight: 600; color: var(--text-2); line-height: 21px; }
+.commentary.open .more { display: none; }
+/* Clamped: the words that fit three lines, then "…more" (built by main.jsx at a word boundary). */
+.commentary-clamp { display: none; }
+.commentary.clamped:not(.open) .commentary-text { display: none; }
+.commentary.clamped:not(.open) .commentary-clamp { display: block; }
+.commentary-clamp .more { position: static; }
+.commentary.open .commentary-clamp { display: none; }
+.mention { color: var(--link); font-weight: 600; }
+
+/* The counts row, the inset hairline, the action bar */
+.counts { height: 34px; padding: 8px 16px; margin-top: 4px; display: flex; align-items: center; justify-content: space-between;
+  font-size: 12px; line-height: 18px; color: var(--text-2); background: var(--card); }
+.counts-left { display: flex; align-items: center; }
+.discs { display: flex; align-items: center; }
+.disc { position: relative; flex: none; width: 16px; height: 16px; border-radius: 50%; box-shadow: 0 0 0 1px var(--card); display: block; }
+.disc svg { display: block; }
+.disc + .disc { margin-left: -4px; }
+/* The leading reaction is drawn whole: each disc sits over the one after it. */
+.discs .disc:nth-child(1), .c-reacts .disc:nth-child(1) { z-index: 3; }
+.discs .disc:nth-child(2), .c-reacts .disc:nth-child(2) { z-index: 2; }
+.discs .disc:nth-child(3) { z-index: 1; }
+.disc-like { background: var(--like); }
+.disc-celebrate { background: var(--celebrate); }
+.disc-love { background: var(--love); }
+.disc-insightful { background: var(--insightful); }
+.react-n { margin-left: 4px; }
+.divider { height: 1px; margin: 0 16px; background: var(--hair); }
+.actions { height: 56px; display: flex; padding: 0 16px; background: var(--card); }
+.act { width: 82px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  font-size: 12px; line-height: 16px; font-weight: 600; color: var(--text-2); }
+.act svg { display: block; color: var(--bar-icon); }
+
+/* The pinned counts row (the one liberty): under the top bar at scale 1, white, a hairline under it */
+.sticky { position: absolute; left: 0; top: 100px; width: 360px; height: 34px; background: var(--card);
+  box-shadow: 0 1px 0 var(--hair); display: none; z-index: 2; }
+.sticky .counts { margin-top: 0; }
+
+/* The phone's status bar and the app's top bar (a screen recording's frame; our own drawing) */
+.chrome { position: absolute; left: 0; top: 0; width: 360px; height: 640px; pointer-events: none; z-index: 3; }
+.statusbar { position: absolute; left: 0; top: 0; width: 360px; height: 44px; background: var(--card); color: var(--text);
+  display: flex; align-items: center; justify-content: space-between; padding: 2px 22px 0 34px; }
+.statusbar .clock { font-size: 15px; line-height: 20px; font-weight: 600; letter-spacing: -.1px; }
+.status-icons { display: block; color: var(--text); }
+.topbar { position: absolute; left: 0; top: 44px; width: 360px; height: 56px; background: var(--card); color: var(--icon);
+  display: flex; align-items: center; padding-left: 8px; box-shadow: 0 1px 0 var(--hair); }
+.topbar svg { display: block; }
+.home-ind { position: absolute; left: 118px; bottom: 7px; width: 124px; height: 5px; border-radius: 3px; background: var(--text); }
+
+/* The comments */
+.comments { padding: 0 16px; }
+.composer { display: flex; align-items: center; padding-top: 8px; }
+.pill { flex: 1; min-width: 0; margin-left: 8px; height: 40px; border: 1px solid var(--text-2); border-radius: 24px;
+  display: flex; align-items: center; padding: 0 12px 0 16px; font-size: 14px; line-height: 20px; color: var(--text-2); }
+.pill-tools { margin-left: auto; display: flex; gap: 12px; color: var(--bar-icon); }
+.pill-tools svg { display: block; }
+.chips { display: flex; gap: 8px; margin: 8px -16px 0 48px; overflow: hidden; white-space: nowrap; }
+.chip { flex: none; height: 32px; border: 1px solid var(--link); border-radius: 16px; padding: 0 12px;
+  display: flex; align-items: center; font-size: 14px; line-height: 20px; font-weight: 600; color: var(--link); }
+.sort { display: flex; align-items: center; gap: 2px; margin-top: 12px; height: 16px; font-size: 12px; line-height: 16px; font-weight: 600; color: var(--text-2); }
+.sort svg { display: block; }
+
+.c { display: flex; margin-top: 12px; }
+.c-av { position: relative; flex: none; display: block; }
+.av { position: relative; display: block; border-radius: 50%; overflow: hidden; flex: none; }
+.av svg, .av img { display: block; border-radius: 50%; }
+.frame { position: absolute; left: 0; top: 0; display: block; }
+.c-main { flex: 1; min-width: 0; margin-left: 4px; }
+.bubble { position: relative; background: var(--bubble); border-radius: 0 8px 8px 8px; padding: 8px 12px; }
+.c-name { display: flex; align-items: baseline; height: 21px; font-size: 14px; line-height: 21px; }
+.c-who { flex: 0 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; color: var(--text); }
+.c-who .sm { font-size: 12px; font-weight: 400; color: var(--text-2); }
+.author { flex: none; align-self: center; margin-left: 4px; padding: 0 4px; border-radius: 4px; background: var(--press);
+  color: var(--pill-text); font-size: 12px; line-height: 16px; font-weight: 600; }
+.c-time { flex: none; margin-left: auto; padding-left: 6px; font-size: 12px; line-height: 16px; color: var(--text-2); }
+/* The time sits 40 px from the bubble's right edge (the spec's 48 cut "• 3rd+" beside "41m (edited)"). */
+.c-dots { flex: none; align-self: center; width: 20px; margin-left: 8px; display: flex; justify-content: flex-end; gap: 3px; }
+.c-headline { font-size: 12px; line-height: 16px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.c-text { margin-top: 4px; font-size: 14px; line-height: 21px; color: var(--text); overflow-wrap: break-word; }
+.c-uniform .c-text { height: 21px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.c-actions { margin-top: 8px; padding-left: 12px; height: 16px; display: flex; align-items: center; white-space: nowrap;
+  font-size: 12px; line-height: 16px; font-weight: 600; color: var(--text-2); }
+.c-actions .mid { margin: 0 4px; font-weight: 400; }
+.c-actions .rule { width: 1px; height: 16px; margin: 0 8px; background: var(--rule); }
+.c-reacts { display: flex; align-items: center; }
+.c-reacts .disc + .disc { margin-left: -4px; }
+.c-rn { margin-left: 4px; font-weight: 400; }
+.c-replies { display: flex; align-items: center; font-weight: 400; }
+.c-thread .c { margin-top: 12px; }
+
+/* "Load more comments" */
+.load { margin-top: 12px; height: 32px; display: flex; align-items: center; }
+.load-btn { position: relative; height: 32px; padding: 0 8px; margin-left: -8px; border-radius: 4px; display: flex; align-items: center;
+  font-size: 14px; line-height: 20px; font-weight: 600; color: var(--text-2); }
+.load-btn .spinner { position: absolute; left: 50%; top: 6px; margin-left: -10px; display: none; }
+.load.pressed .load-btn { background: var(--press); }
+.load.loading .load-label { visibility: hidden; }
+.load.loading .spinner { display: block; }
+
+/* States written by seek() */
+.c.later, .load-end.later { display: none; }
+.c.c-jamie-end:not(.has-reply) .c-replies { display: none; }
+.c.c-last-reply:not(.shown) { display: none; }
+.load.done:not(.load-end) { display: none; }
+.commentary.clamped > .more { display: none; }

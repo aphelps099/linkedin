@@ -1389,6 +1389,62 @@ her stem (they run dry over the stream), so they read `graph.muted.lady` and mut
 with her. The sound check's bar-16 impact (a 70 Hz boom) plays only in the sound
 check: the river has no drop.
 
+### Delve. (her vocabulary on the river, Nov 6)
+
+The song of the concept film on LinkedIn vocabulary (`songbook/delve.js`,
+`--track delve`): ten things LinkedIn says, each said once by the voice from the
+meeting, crisp and dry, then handed to the echo until she is the choir. 48 bars,
+120.0 s at 96 BPM (swing .06), E Dorian: Em9 and A9sus4 two bars each, every
+change an 8th early; the Pool (bars 24-32) lifts to G6/9#11 and A6/9 on the
+pentatonic A B C# E F# (`pentatonicAt`), where the stars come out. It is in
+`TRACKS` but not `TRACK_ORDER`: playable by id, never in a picker, never cast by
+a post.
+
+- **The setlist** (`W.setlist`; wander.js `vocabulary()`): her recordings at
+  their bar and 16th (the first vowel lands on it exactly), tuned to the bar's
+  pentatonic (band.js `ladyTune`), each with its stage: P1 "Delve." on delay
+  (1:0, 1:3, 1:6), in reverb (1:8), down a fifth (2:0, PSOLA), down an octave
+  (2:8, half-speed tape), then the echo to fade (feedback .62, the low-pass
+  3.2 kHz to 350 Hz) to 4:0; P2 dry; P3 and P4 chains on "mindset." and "Y.";
+  P5 doubled, "calling" stepping down B A G E; P6 harmonised in three; P7 "Let
+  that" dry, "sink in" on a tape slowing to half speed as the river slows under
+  it; P8 doubled with an octave-down shadow, a wow and light pixels, "of..."
+  frozen on 8ths until 36:0; P9 a canon on the choir's tune, 1, 2, 4, 8 voices;
+  P10 dry, alone. Each phrase and its echoes are baked once in JS
+  (`vocab-stages.js bakePhrase`: dry, wet, throw) and played by the river
+  (`river.js scheduleVocabulary`), not by `playLady` (the event's `own`).
+- **Her choir** (`lady-choir.js`): "Momentum compounds." cut into five
+  syllables at measured energy dips, PSOLA with a time map (consonants at speed,
+  the vowel held by a wandering read position) and a formant shift, four of her
+  (unison, a fifth below, an octave below, a fourth above; formants 0, -2, -4,
+  -6 st; 4 to 9 cents apart; one shared tape wow), a two-bar chant she does not
+  say until bar 38; in the Pool four of her hold "ah" (from "calling") on the
+  chord. Within 5 cents of every note (check-allhands).
+- **New hands** (instruments.js): a hand drum (modal skin; open, slap, bass,
+  mute), a slit drum on the grid, glass chimes (one a star, `plan.stars`),
+  Synergy's whole-note pad, Pat's warm legato bass, Synthia's soft arpeggio.
+- **The plan the film reads**: `band` (plus stage, clarity, pixel, split,
+  strike, font, k, voices, the tape's `warp`), `echoes`, `clarity`, `choir`,
+  `stars {at, twinkles, density}`, `marks` (mouth 55.0, kiss 59.375, star 60.0,
+  slow 71.25, swell2 85.0, canon 95.0, delta 105.0, undraw 117.5 s), `clearMax`,
+  `bars[].pentatonic`, `fade`; the render hook passes them through.
+- **Declared breaks** (constitution): ten clear phrases and two minutes; the
+  spacing (four bars start to start, three of stream between, chains gone a beat
+  before the next phrase) and the chart's own 110-130 s window stay hard rules.
+
+Gates (scripts/measure-allhands.py, whisper-delve.py): -10.41 LUFS, true peak
+-1.26 dBTP, the swells +3.45 and +3.86 LU over bars 5-12 on a phone; Whisper
+hears P1-P5, "Let that" and P10 exactly, P6 at WER 0; the choir is never heard
+as her line before 95 s. Two renders in fresh browsers are the same bytes.
+
+The delivery master (`scripts/master-delve.py`, Nov 7): AAC and MP3 overshot the
+-1 dBTP ceiling on a few sharp transients (the posted AAC -0.5 dBTP, the MP3
+-0.9), so the shipped sound is the render with a spot gain on 17 transients only
+(0.27 s in all, at most 0.94 dB, 5 ms ramps; the same samples everywhere else):
+`assets/delve/delve-song.flac` and the MP3 decode at -1.3 dBTP; loudness, range,
+both swells and Whisper unchanged (`assets/delve/delve-master.json`). The mix is
+not touched.
+
 ## Pixel Text
 
 **Download for Pixel Text** on the page saves a `.pixel.json` for Aaron's Pixel Text editor:

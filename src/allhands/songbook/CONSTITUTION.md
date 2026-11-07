@@ -50,7 +50,7 @@ Influence means sound and approach. Never their melodies, lyrics, samples or son
 - Wobble is a spice, not the meal.
 
 ### Forms
-A song plays one form. The Drop Edition is the dance floor's: Circle Back, Humbled and Honored and Hustle. The river (`wander`) is the haze lane's: Offsite.
+A song plays one form. The Drop Edition is the dance floor's: Circle Back, Humbled and Honored and Hustle. The river (`wander`) is the haze lane's: Offsite. The roll is a film's: Day One.
 
 ### Form: the Drop Edition
 About 60 seconds, always in this order:
@@ -74,6 +74,19 @@ The Panda Bear and Washed Out songs do not run the Drop Edition. They run like a
 - No hard section boundaries: the flow changes gently (filter, density, pan, pitch window, space), never by more than a step a bar.
 - The tambourine sits in the background and comes up a little where the texture swells.
 - Acoustic colours (at least two) woven through a sound that stays about 90% electronic.
+
+#### Delve., the vocabulary film: the river's other ten percent (Aaron, Nov 6)
+Delve. (`delve.js`) runs the river with two rules broken on purpose, and declares both (`breaks`):
+- **Her clear phrases are the content.** Ten of them, not two: the film is about her LinkedIn vocabulary, so her phrases are the subject, not the river's few highlights. What the rule protects still holds, and the lint keeps it as a hard rule under the break: a phrase starts at least four bars after the one before, at least three bars of stream separate one phrase's end from the next one's start, each echo chain is gone a beat before the next phrase rises, and no two voices trade lines back to back (it is her film: no Strategy, Synthia or Synergy voice).
+- **Two minutes, not one.** A concept film; the chart's own window (`seconds`, 110 to 130) replaces 55 to 65, and is kept.
+Everything else is the river: one pattern first (her "Delve" in grains, out of its own echo), the loop in every bar, every ramp two to eight bars, the tambourine in the background, acoustic colours in a sound that stays electronic. Her arc is the song: each phrase said once crisp and dry, then handed to its echo (delay, reverb, down a fifth, down an octave, the echo to fade), the treatment growing (doubled, harmonised, on a slowing tape, shadowed, a canon) until she is the choir; the bed is her too, her own syllables stretched and stacked. She surfaces clear at the end.
+
+### Form: the roll, a film's (Day One, Nov 7)
+Day One (`src/films/day-one/score.js`, the chart `CHART`) is a short film's song, not a post's: a new hire's LinkedIn post, and two hundred people writing the same comment under it. It plays its own form, the roll, and declares three breaks (`breaks`), as Delve. does:
+- **Its own form** (`form.order`): one build to the wall, then a choke and a dry line. No verses from the post, no ladder, no impact, no Sink In, no tape stop. What the rule protects still holds, and the lint keeps it as a hard rule under the break: 55 to 65 seconds, one peak (the wall, at least +2.5 LU over bars 12 to 16, on a phone too), a choke into digital silence before the last line.
+- **One phrase is the whole vocal** (`form.vocal`): "Congrats on the new role!", said once by Strategy alone and dry, then sung by everyone, Strategy and Synthia answering each other the way the comments do, each copy on one note of the pentatonic in its singer's range, "role" one step down. The motif stays alone at both its statements, and Whisper hears it there.
+- **A silent tail** (`form.ending`): the choke to digital silence, the motif once more (the identical samples, dry), then silence to the end.
+Everything else is the constitution: the Air lane at 100 BPM, B Aeolian, Bm9 and Gmaj9, the pump from the kick, the printer on 16ths, the filter that opens the build and closes it, tape warmth with no wow, -10 LUFS.
 
 ### Mix targets
 - −10 LUFS integrated, true peak −1 dBTP or lower.

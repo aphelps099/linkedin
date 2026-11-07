@@ -13,6 +13,7 @@ import {validate, parseAsset, FX} from './schema.js';
 import {FORMATS, cellRect, layout, layoutClassOf, sameRect, HOME} from '../layouts.js';
 import {buildScreens, activeScreen, indexWords, boardState, stopDarkAt, stopEndAt, TAG_TAIL, ladderWhole} from '../../pegboard/choreo.js';
 import {LADY_TABLE} from '../../allhands/lady-table.js';
+import {LINE_BREAK} from '../../pegboard/font.js';
 import {driveTrack, driveAt, psychFade} from '../../pegboard/psych.js';
 import MEETING_TRACKING from '../../meeting-room/robot-tracking.json' with {type:'json'};
 import STUDIO_TRACKING from '../media/robot-tracks.json' with {type:'json'};
@@ -25,6 +26,7 @@ export const TRACKING = {...MEETING_TRACKING, ...STUDIO_TRACKING};
 export const DECODE_LIMITS = {mobile:4, desktop:8};
 export const UPSCALE = {A:1.8, B:1.5, C:1.2};      // tolerable upscale U by sharpness tier
 export const STUTTER_FRAMES = 12;                  // the stutter cache: one beat of 540p frames, <= 25 MB
+const PRESENT_FX = ['contour', 'pixelTiles'];
 export const TRAIL_MAX = 6;                        // a trail's copies at most (fx trail)
 const EPS = 1e-9;
 const BLACKS = new Set(['black', 'color:#000000']);
@@ -185,7 +187,7 @@ function cueScreens(edl, plan, songScreens, table) {
     if (cue?.type === 'psych') return;                  // imagery, not type: psychCues
     const span = resolveSpan(plan, cue.at, cue.len ?? (plan.totalSteps * 4), FPS);
     const from = span.time, to = span.end, ref = typeof cue.text === 'object' ? cue.text.ref : null;
-    const base = {id:cue.id ?? `cue${i}`, kind:'cue', voice:'board', from, to, reveal:cue.reveal ?? 'pop', tone:cue.palette ?? 'white', release:cue.release ?? 'cut', k:cue.k ?? 1, font:cue.font ?? 'peg9', accent:-1, fx:{}, cell:cue.cell ?? null, z:cue.z ?? (cue.cell ? 'over' : 'under')};
+    const base = {id:cue.id ?? `cue${i}`, kind:'cue', voice:'board', from, to, reveal:cue.reveal ?? 'pop', tone:cue.palette ?? 'white', release:cue.release ?? 'cut', k:cue.k ?? 1, ...(cue.lines ? {lines:cue.lines} : {}), font:cue.font ?? 'peg9', accent:-1, fx:{}, cell:cue.cell ?? null, z:cue.z ?? (cue.cell ? 'over' : 'under'), ...(cue.zone ? {zone:[...cue.zone]} : {})};
     let screens = [];
     // (of: the song screen a copy comes from, so a ghost of it is known for the same screen.)
     if (ref === 'song') screens = songScreens.flatMap((s, of) => s.to > from && s.from < to ? [{...s, from:Math.max(from, s.from), to:Math.min(to, s.to), cue:base.id, cell:base.cell, z:base.z, of}] : []);
@@ -201,8 +203,16 @@ function cueScreens(edl, plan, songScreens, table) {
       screens = [whole ? {...base, text:whole.map(w => w.text).join(' '), fragment:e.display, words:whole.map(w => ({text:w.text, lit:w.lit, start:t0, end:t0 + e.gate, units:[{chars:[0, w.lit], start:t0}]}))}
         : {...base, text:e.display, words:[{text:e.display, start:t0, end:t0 + e.gate, units:[{chars:[0, e.display.length], start:t0}]}]}];
     } else if (ref && ref.startsWith('line')) {
+      // A word with br:true starts a line of its own (font.js LINE_BREAK, a hard break).
       const l = anchorPoint(plan, ref).line;
-      screens = [{...base, text:l.words.map(w => w.display).join(' '), words:l.words.map(w => { const s = stepTime(plan, w.at); return {text:w.display, start:s, end:Math.min(s + (w.gate ?? Infinity), stepTime(plan, w.at + w.steps)), units:[{chars:[0, w.display.length], start:s}]}; })}];
+      screens = [{...base, text:l.words.map((w, j) => (j ? (w.br ? LINE_BREAK : ' ') : '') + w.display).join(''), words:l.words.map(w => { const s = stepTime(plan, w.at); return {text:w.display, start:s, end:Math.min(s + (w.gate ?? Infinity), stepTime(plan, w.at + w.steps)), units:[{chars:[0, w.display.length], start:s}]}; })}];
+    } else if (ref && ref.startsWith('phrase:')) {
+      // One of the river's phrases (plan.band: Delve.'s her vocabulary), each word on the time she sings it;
+      // text.breaks: the words that start a line (font.js LINE_BREAK), text.words: [a, b) of its words only.
+      const e = anchorPoint(plan, ref).phrase, [a, b] = cue.text.words ?? [0, e.words.length], breaks = new Set(cue.text.breaks || []);
+      const ws = e.words.slice(a, b);
+      screens = [{...base, phrase:e.id ?? e.part, text:ws.map((w, j) => (j ? (breaks.has(a + j) ? LINE_BREAK : ' ') : '') + (w.display ?? w.text).toUpperCase()).join(''),
+        words:ws.map(w => ({text:(w.display ?? w.text).toUpperCase(), start:w.start, end:w.end, units:[{chars:[0, (w.display ?? w.text).length], start:w.start}]}))}];
     } else if (ref) throw Error(`board ${base.id}: cannot read ref "${ref}"`);
     else screens = [{...base, text:cue.text, words:textScreen(cue, from, to, cue.text)}];
     // ghost: the screen as a ghost (choreo paints only its letters, flat at this intensity, on true black).
@@ -241,7 +251,7 @@ function psychCues(edl, plan, features, fps) {
     const span = resolveSpan(plan, cue.at, cue.len, fps), origin = {step:span.step, shift:span.shift, frame:span.frame}, pctx = {plan, features, origin, fps};
     const fade = cue.fade ?? 4, fadeIn = stepTime(plan, span.step + fade) - stepTime(plan, span.step), fadeOut = span.end - (stepTime(plan, span.step + Math.max(0, cue.len - fade)) + span.shift);
     out.push({id:cue.id ?? `psych${i}`, look:cue.look, seed:cue.seed ?? i, cell:cue.cell ?? null, from:span.time, to:span.end, fadeIn, fadeOut,
-      params:Object.entries(cue.params || {}).map(([k, v]) => [k, paramFn(v, pctx)])});
+      params:Object.entries(cue.params || {}).map(([k, v]) => [k, paramFn(v, pctx)]), ...(cue.events ? {events:cue.events} : {})});
   });
   return out.sort((a, b) => a.from - b.from || (a.id < b.id ? -1 : 1));
 }
@@ -388,8 +398,8 @@ export function compile(edlIn, opts = {}) {
       const v = {type:x.type};
       for (const [k, p] of x.params) v[k] = typeof p === 'function' ? p(t) : p;
       if (x.type === 'iris' && v.space === 'source' && toCell) { const [u, w] = toCell(v.cx, v.cy); v.cx = u; v.cy = w; v.space = 'cell'; }
-      // A peg bloom centred in frame units (the board home): into the cell's own units.
-      if (x.type === 'pegBloom' && v.space === 'frame') {
+      // A peg bloom or contour bands centred in frame units (the board home): into the cell's own units.
+      if ((x.type === 'pegBloom' || x.type === 'contour') && v.space === 'frame') {
         const r = cell ?? frameRect, px = v.cx * F.w, py = v.cy * F.h;
         if (!(v.reach > 0)) v.reach = Math.hypot(Math.max(px, F.w - px), Math.max(py, F.h - py));
         v.cx = (px - r.x) / r.w; v.cy = (py - r.y) / r.h; v.space = 'cell';
@@ -551,7 +561,7 @@ export function compile(edlIn, opts = {}) {
       if (p.cell && !r) continue;
       if (psych === NONE) psych = [];
       psych.push({cue:p.id, look:p.look, seed:p.seed, cell:p.cell, rect:r ? {x:r.x, y:r.y, w:r.w, h:r.h} : null, time:bt, fade,
-        params:Object.fromEntries(p.params.map(([k, fn]) => [k, fn(bt)])), drive:driveAt(drive, bt)});
+        params:Object.fromEntries(p.params.map(([k, fn]) => [k, fn(bt)])), drive:driveAt(drive, bt), ...(p.events ? {events:p.events} : {})});
     }
     // Lights out: when every tile of a layout is black, the call has gone dark and its board goes
     // with it (true black, sockets off). A full-frame black keeps the board: the choke's tag on
@@ -568,7 +578,7 @@ export function compile(edlIn, opts = {}) {
     const panel = !rect ? 0 : move ? moved.panel : panelOf(rect, over, layers);
     return {f, t, time:v, layout:cls, transport:tr ? {id:tr.id, kind:tr.kind, phase:(f - tr.from) / (tr.to - tr.from), rate:tr.kind === 'rewind' ? -tr.rate : tr.kind === 'jump' ? 1 : null, sound:tr.sound} : null,
       // lead: the engine's latency, so the compositor lights each peg on the frame that holds its sound.
-      camera, board:{time:bt, lead, screen, rect, over, panel, move, dark, banner:L?.banner ? {...L.banner} : null, cells:cellScreens, psych}, layers};
+      camera, board:{time:bt, lead, screen, rect, over, panel, move, dark, banner:L?.banner ? {...L.banner} : null, cells:cellScreens, psych, ...(edl.boardPitch ? {pitch:edl.boardPitch} : {})}, layers};
   }
 
   // Trails (fx trail): a layer's copies, the same clip as it was k·frames output frames earlier (its
@@ -591,7 +601,10 @@ export function compile(edlIn, opts = {}) {
         const tg = transportAt(g), vg = tg ? transportTime(tg, g / fps) : g / fps, vfg = Math.floor(vg * fps + EPS);
         if (vfg < c.F0 || vfg >= c.F1) break;
         const {robot, canon, chrome, ...x} = layerOf(c, vg, tg);
-        out.push({...x, clipId:`${c.id}~${k}`, fx:x.fx.filter(e => e.type !== 'trail'), opacity:a, chrome:null, trail:{of:c.id, k, blend:tr.blend ?? 'lighten'}});
+        // (Contour bands and motion tiles are the frame's present, not the clip's past: a copy draws them as the
+        // layer does now, so their flat blocks never ghost.)
+        const now = new Map(l.fx.filter(e => PRESENT_FX.includes(e.type)).map(e => [e.type, e]));
+        out.push({...x, clipId:`${c.id}~${k}`, fx:x.fx.filter(e => e.type !== 'trail').map(e => now.get(e.type) ?? e), opacity:a, chrome:null, trail:{of:c.id, k, blend:tr.blend ?? 'lighten'}});
       }
     });
     return out ?? layers;
@@ -912,7 +925,8 @@ function lintProgram({edl, plan, clips, byId, frames, transports, board, flag, r
   const allowed = s => Math.abs(s - Math.round(s / BS) * BS) < 1e-9 || ladderSteps.has(s) || s === plan.choke?.at || s === plan.choke?.until;
   for (let i = 0; i < sceneList.length; i++) {
     const s = sceneList[i];
-    if (!allowed(s.step)) report('error', 'G4', `scene ${s.id} starts at step ${s.step}, off the bar line (bar ${(s.step / BS).toFixed(2)})`, {clipId:s.first.id});
+    // (Waivable on the scene's first clip: a recording with no audible downbeat starts its scenes on its gestures.)
+    if (!allowed(s.step)) flag('error', 'G4', s.first.id, `scene ${s.id} starts at step ${s.step}, off the bar line (bar ${(s.step / BS).toFixed(2)})`);
     if (i) {
       const p = sceneList[i - 1], exit = classAt(frames, Math.max(0, Math.min(N - 1, p.to - 1)), p.id, clips), enter = classAt(frames, Math.max(0, Math.min(N - 1, s.from)), s.id, clips);
       if (exit && enter && exit === enter) report('error', 'G1', `scenes ${p.id} and ${s.id} meet in the same layout class (${enter}); adjacent scenes change layout`, {clipId:s.first.id});

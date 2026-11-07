@@ -195,8 +195,9 @@ export function prepare(plan, buffers, lady = {files:new Map(), deep:new Map(), 
   plan.words.forEach(w => { if (buffers.get(w.word) && !w.silent) push(w.at, 'words', w); w.notes.forEach(n => push(n.at, 'notes', n)); });
   plan.stutters.forEach(s => { if (buffers.get(s.word)) push(s.at, 'stutters', s); });
   (plan.lady || []).forEach((e, i) => { if (voiceBuffer(lady, e, i)) push(Math.floor(e.at), 'lady', {...e, index:i}); });
-  // The band's parts (band.js) play as her events do, on her stem.
-  (plan.band || []).forEach((e, i) => { if (voiceBuffer(lady, e, `b${i}`)) push(Math.floor(e.at), 'lady', {...e, index:`b${i}`}); });
+  // The band's parts (band.js) play as her events do, on her stem. A part the track's own band plays
+  // (e.own: Delve's phrases, baked with their echoes by river.js) is not played here.
+  (plan.band || []).forEach((e, i) => { if (!e.own && voiceBuffer(lady, e, `b${i}`)) push(Math.floor(e.at), 'lady', {...e, index:`b${i}`}); });
   const harmonyBars = new Set(plan.words.filter(w => w.harmony).map(w => Math.floor(w.at / BAR_STEPS)));
   // The couplet drop's impact word, when it asks for the downbeat to itself (drop.js unmask).
   const unmask = (plan.lady || []).find(e => e.role === 'impact' && e.unmask) ?? null;
