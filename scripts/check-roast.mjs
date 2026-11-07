@@ -3,6 +3,7 @@
 // 2. Intensity: more heat never means fewer lines.
 // 3. Clean input gets the clean verdict; determinism holds per seed.
 import { roastIt } from '../src/roast/roastEngine.js';
+import { MATERIAL } from '../src/roast/material.js';
 import { PERSONAS, LINES } from '../src/roast/personas.js';
 import { annotationRanges, cleanDraft, EDITORIAL_NOTES, verdictFor } from '../src/roast/editorial.js';
 
@@ -76,5 +77,31 @@ const cool = roastIt({ kind: 'post', text: SAMPLES.post, personaId: 'partner', i
 const hot = roastIt({ kind: 'post', text: SAMPLES.post, personaId: 'partner', intensity: 4, seed: 1 });
 if (verdictFor(cool)[0] !== verdictFor(hot)[0]) fail('heat changed the evidence-based verdict');
 
+// Fresh material has a real register change at every heat, for every voice.
+for (const [key, voices] of Object.entries(MATERIAL)) {
+  if (!EDITORIAL_NOTES[key]) fail(`missing editing advice for new material: ${key}`);
+  for (const {id} of PERSONAS) {
+    if (voices[id]?.length !== 4 || new Set(voices[id].map(line => typeof line === 'function' ? line({n:5}) : line)).size !== 4) fail(`heat levels repeat: ${key}/${id}`);
+  }
+}
+const extraSamples = [
+  ['lesson', 'Here is what missing a flight taught me about enterprise sales.'],
+  ['mindset', 'Leadership isn’t a title. It’s a mindset.'],
+  ['commentbait', 'Comment “GUIDE” below and I will send you my free PDF.'],
+];
+for (const [key, text] of extraSamples) {
+  for (const {id} of PERSONAS) {
+    const outputs = [1,2,3,4].map(intensity => roastIt({kind:'post',text,personaId:id,intensity,seed:7}));
+    if (outputs.some(r=>r.findings[0]?.key !== key || !r.lines[0] || r.clean)) fail(`missed new finding: ${key}/${id}`);
+    if (new Set(outputs.map(r=>r.lines[0])).size !== 4) fail(`engine did not apply four heat levels: ${key}/${id}`);
+    const ranges=annotationRanges(text,outputs[0].findings);
+    if (!ranges.length || ranges.some(r=>!text.slice(r.start,r.end))) fail(`missing evidence for ${key}`);
+    if (outputs.some(r=>r.useful!==text)) fail(`new detector changed factual cleanup: ${key}`);
+  }
+}
+for (const text of ['Do you agree? I would like detailed feedback.', 'We read the comment and fixed the bug.', 'We changed the leadership team on Monday.']) {
+  if (!roastIt({kind:'post',text,personaId:'recruiter',intensity:4,seed:1}).clean) fail(`false positive: ${text}`);
+}
+
 if(failures){ console.error(`\n${failures} check(s) failed`); process.exit(1); }
-console.log(`all checks passed: ${Object.keys(LINES).length} findings × ${PERSONAS.length} personas; factual cleanup, Unicode annotation offsets, editorial coverage, stable verdicts`);
+console.log(`all checks passed: ${Object.keys(LINES).length} findings × ${PERSONAS.length} personas; factual cleanup, Unicode annotation offsets, editorial coverage, stable verdicts; 10 four-level material sets and 3 new detectors`);

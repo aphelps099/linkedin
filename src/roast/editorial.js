@@ -1,6 +1,9 @@
 // The annotation and the advice share the same evidence. These are writing
 // prompts, not claims about the author's intentions or AI authorship.
 export const FINDING_PATTERNS = {
+  lesson: /\bwhat\b[^.!?\n]{3,100}\btaught me about\b/gi,
+  mindset: /\b(?:leadership|success)\b[^!?\n]{0,55}\b(?:mindset|isn['’]?t a title|is not a title)\b/gi,
+  commentbait: /\bcomment\s+["“'‘]?[a-z0-9_-]{1,25}["”'’]?\s+(?:below\s+)?(?:and|to|for|if)\b/gi,
   journey: /\bjourney\b/gi,
   humbled: /\bhumbled\b/gi,
   sink: /let that sink in|read that again/gi,
@@ -25,6 +28,9 @@ export const FINDING_PATTERNS = {
 };
 
 export const EDITORIAL_NOTES = {
+  lesson: ['Everything is a keynote.', 'Keep the story. Explain the specific connection to your work, or let the experience stand on its own.'],
+  mindset: ['A promotion for the fridge magnet.', 'Show a real decision you made and what happened. A concrete example earns the lesson.'],
+  commentbait: ['The PDF has a bouncer.', 'Share a direct link when you can. Ask for comments only when the conversation itself is useful.'],
   journey: ['Quite the commute.', 'Name the work, the change, or what you learned. Keep “journey” if you actually went somewhere.'],
   humbled: ['Humility. Now broadcasting.', 'Lead with what happened. You can share good news without announcing how humble you feel.'],
   sink: ['The insight can swim.', 'Cut the instruction. Give the reader a concrete example that makes the point for you.'],

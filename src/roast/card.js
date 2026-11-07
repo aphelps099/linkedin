@@ -1,3 +1,4 @@
+import { PEG5 } from '../pegboard/fonts/peg5.js';
 // A self-contained 1080px receipt. No submitted text is included in exports.
 const SANS = 'C2Hoves,Arial,sans-serif';
 function linesWithin(ctx, text, width, limit) {
@@ -16,33 +17,42 @@ function linesWithin(ctx, text, width, limit) {
   }
   return lines;
 }
+function peg(ctx, text, x, y, pitch) {
+  for (const ch of String(text).toUpperCase()) {
+    const glyph = PEG5.glyphs[ch];
+    if (!glyph) { x += PEG5.space * pitch; continue; }
+    glyph.bits.forEach((row, j) => [...row].forEach((bit, i) => {
+      if (bit !== '#') return;
+      ctx.beginPath(); ctx.arc(x + i*pitch, y + j*pitch, pitch*.38, 0, Math.PI*2); ctx.fill();
+    }));
+    x += (glyph.w + PEG5.tracking) * pitch;
+  }
+}
 export function drawRoastCard(canvas, { personaName, intensityName, score, lines }) {
   canvas.width = 1080; canvas.height = 1080;
   const c = canvas.getContext('2d');
   if (!c) throw new Error('Canvas unavailable');
-  c.fillStyle = '#e5effb'; c.fillRect(0, 0, 1080, 1080);
-  c.fillStyle = '#fffefa'; c.beginPath(); c.roundRect(48, 48, 984, 984, 30); c.fill();
-  c.fillStyle = '#142b3d'; c.font = `600 27px ${SANS}`; c.fillText('linkedinbeats_', 88, 108);
-  c.textAlign = 'right'; c.font = `400 19px ${SANS}`; c.fillText('FORM RM-01 / SATIRICAL REVIEW', 992, 108); c.textAlign = 'left';
-  c.fillStyle = '#0757ec'; c.fillRect(48, 144, 984, 285);
-  c.fillStyle = '#fff'; c.font = `600 148px ${SANS}`; c.fillText(String(score.index), 88, 325);
-  c.font = `400 26px ${SANS}`; c.fillText('/ 100', 88, 377);
-  c.font = `400 24px ${SANS}`; c.fillText('THOUGHT LEADERSHIP INDEX', 390, 220);
-  c.font = `600 43px ${SANS}`;
-  linesWithin(c, score.rank, 565, 2).forEach((line, i) => c.fillText(line, 390, 285 + i * 48));
-  c.font = `400 22px ${SANS}`; c.fillText('Your professional presence is under review.', 390, 383);
-  c.fillStyle = '#142b3d'; c.font = `600 36px ${SANS}`; c.fillText('The findings.', 88, 490);
-  let y = 550;
-  lines.slice(0, 2).forEach((text, i) => {
-    c.fillStyle = '#0757ec'; c.font = `600 20px ${SANS}`; c.fillText(`0${i + 1}`, 88, y);
-    c.fillStyle = '#142b3d'; c.font = `400 29px ${SANS}`;
-    const wrapped = linesWithin(c, text, 824, 3);
-    wrapped.forEach(line => { c.fillText(line, 145, y); y += 38; }); y += 26;
-  });
-  c.fillStyle = '#526b7e'; c.font = `600 24px ${SANS}`; c.fillText(personaName, 88, 876);
-  c.font = `400 19px ${SANS}`; c.fillText(`Setting: ${intensityName} · A joke about writing, not a professional assessment.`, 88, 911);
-  c.strokeStyle = '#cbd9e5'; c.beginPath(); c.moveTo(88, 943); c.lineTo(992, 943); c.stroke();
-  c.fillStyle = '#0757ec'; c.font = `600 25px ${SANS}`; c.fillText('Get your verdict → linkedinbeats.com/roast', 88, 989);
+  c.fillStyle = '#192b38'; c.fillRect(0, 0, 1080, 1080);
+  c.fillStyle = '#34505f';
+  for(let x=8;x<1080;x+=12) for(let y=8;y<1080;y+=12){c.beginPath();c.arc(x,y,1.4,0,Math.PI*2);c.fill();}
+  c.fillStyle = '#e9f0f3'; c.font = `600 27px ${SANS}`; c.fillText('linkedinbeats_', 60, 78);
+  c.fillStyle = '#ff9b85'; peg(c, 'ROASTED', 63, 125, 16);
+  c.beginPath();c.moveTo(80, 255);c.lineTo(1020,255);c.lineTo(1020,733);c.lineTo(995,758);c.lineTo(60,758);c.lineTo(60,275);c.closePath();c.fill();
+  c.fillStyle = '#263538'; c.font = `600 23px ${SANS}`; c.fillText(personaName, 94, 308);
+  c.font = `500 41px ${SANS}`;
+  const lead = linesWithin(c, lines[0], 875, 5);
+  lead.forEach((line, i) => c.fillText(line, 94, 380 + i*48));
+  if(lines[1]) {
+    c.font = `400 27px ${SANS}`;
+    const nextY = 410 + lead.length*48;
+    linesWithin(c, lines[1], 875, Math.max(1, Math.floor((727-nextY)/35))).forEach((line,i)=>c.fillText(line,94,nextY+i*35));
+  }
+  c.fillStyle = '#bfe4d7'; peg(c, String(score.index), 68, 813, 13);
+  c.font = `400 24px ${SANS}`;c.fillText('/100', 225, 861);
+  c.fillStyle = '#e9f0f3';c.font = `500 26px ${SANS}`;c.fillText('Thought Leadership Index', 350, 837);
+  c.fillStyle = '#adc1d0';c.font = `400 20px ${SANS}`;c.fillText(`${score.rank} · ${intensityName}`,350,875);
+  c.font = `400 18px ${SANS}`;c.fillText('A joke about writing. Career advancement not included.',60,947);
+  c.fillStyle = '#ff9b85';c.font = `500 26px ${SANS}`;c.fillText('Take the heat → linkedinbeats.com/roast',60,1010);
 }
 export function downloadCanvas(canvas, name = 'roast-card.png') {
   return new Promise((resolve, reject) => canvas.toBlob(blob => {

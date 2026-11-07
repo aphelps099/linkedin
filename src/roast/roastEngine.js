@@ -3,6 +3,7 @@
 // them in a persona's voice at a chosen intensity. Ends with redemption:
 // the version you should actually use. Entirely local.
 
+import { MATERIAL } from './material.js';
 import { LINES, FRAMES } from './personas.js';
 import { mulberry32 } from '../lessons/generator.js';
 import { scorePost } from '../lessons/score.js';
@@ -39,7 +40,10 @@ function findPost(t){
   if(oneliners > 3) add('oneliners', { n: oneliners }, 3 + oneliners);
   if(/it'?s not (about )?[^.!?]{2,40}it'?s (about )?/i.test(t)) add('notx', {}, 9);
   if(words > 220) add('longpost', { n: words }, 7);
-  if(/\b(agree\?|thoughts\?)/i.test(t)) add('bait', {}, 7);
+  if(/(?:^|[.!?]\s+|\n)(?:agree|thoughts)\?(?=\s|$)/i.test(t)) add('bait', {}, 7);
+  if(/\bwhat\b[^.!?\n]{3,100}\btaught me about\b/i.test(t)) add('lesson', {}, 12);
+  if(/\b(?:leadership|success)\b[^!?\n]{0,55}\b(?:mindset|isn['’]?t a title|is not a title)\b/i.test(t)) add('mindset', {}, 10);
+  if(/\bcomment\s+["“'‘]?[a-z0-9_-]{1,25}["”'’]?\s+(?:below\s+)?(?:and|to|for|if)\b/i.test(t)) add('commentbait', {}, 11);
   if(/\b(grateful|gratitude|thankful)\b/i.test(t) && /\b(proud|excited|thrilled)\b/i.test(t)) add('gratbrag', {}, 8);
   if(/\b(delve|tapestry|testament)\b/i.test(t)) add('aitells', {}, 10);
   if(/\b(5 ?a\.?m\.?|rise and grind|hustle|no days off)\b/i.test(t)) add('grindset', {}, 7);
@@ -121,8 +125,9 @@ export function roastIt({ kind, text, personaId, intensity, seed }){
   const found = allFindings.slice(0, maxLines);
 
   const render = f => {
+    const levels = MATERIAL[f.key]?.[personaId];
     const entry = (LINES[f.key] || LINES.clean)[personaId];
-    const line = entry[tierIx];
+    const line = levels ? levels[Math.max(1, Math.min(4, intensity)) - 1] : entry[tierIx];
     return typeof line === 'function' ? line(f.facts || {}) : line;
   };
 
