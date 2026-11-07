@@ -1,155 +1,14 @@
 {
- "about": "Day One's avatars: abstract crops of the project's own footage, no faces.",
+ "about": "Day One's avatars: the default silhouette for most, then pictures people really use, no faces.",
  "crops": {
-  "guitar-body": {
-   "shot": "blue-guitar-detail-a8838477",
-   "title": "Blue Guitar Detail",
-   "category": "Instruments",
-   "faceBox": null,
-   "time": 3.0,
-   "box": [
-    118,
-    296,
-    323,
-    501
-   ],
-   "proxy": "blue-guitar-detail-a8838477-540-cdee406f.mp4",
-   "grade": null,
-   "files": {
-    "96": "guitar-body-96.jpg"
-   }
-  },
-  "guitar-head": {
-   "shot": "blue-guitar-detail-a8838477",
-   "title": "Blue Guitar Detail",
-   "category": "Instruments",
-   "faceBox": null,
-   "time": 3.0,
-   "box": [
-    812,
-    108,
-    960,
-    256
-   ],
-   "proxy": "blue-guitar-detail-a8838477-540-cdee406f.mp4",
-   "grade": null,
-   "files": {
-    "96": "guitar-head-96.jpg"
-   }
-  },
-  "fret-hand": {
-   "shot": "blue-guitar-detail-a8838477",
-   "title": "Blue Guitar Detail",
-   "category": "Instruments",
-   "faceBox": null,
-   "time": 3.0,
-   "box": [
-    646,
-    150,
-    814,
-    318
-   ],
-   "proxy": "blue-guitar-detail-a8838477-540-cdee406f.mp4",
-   "grade": null,
-   "files": {
-    "96": "fret-hand-96.jpg"
-   }
-  },
-  "desk-mug": {
-   "shot": "drummer-arrival-performance-c2bf484a",
-   "title": "Drummer Arrival Performance",
-   "category": "Instruments",
-   "faceBox": null,
-   "time": 3.0,
-   "box": [
-    782,
-    272,
-    942,
-    432
-   ],
-   "proxy": "drummer-arrival-performance-c2bf484a-540-f2f534f7.mp4",
-   "grade": null,
-   "files": {
-    "96": "desk-mug-96.jpg"
-   }
-  },
-  "sticks": {
-   "shot": "drummer-arrival-performance-c2bf484a",
-   "title": "Drummer Arrival Performance",
-   "category": "Instruments",
-   "faceBox": null,
-   "time": 3.0,
-   "box": [
-    432,
-    300,
-    582,
-    450
-   ],
-   "proxy": "drummer-arrival-performance-c2bf484a-540-f2f534f7.mp4",
-   "grade": null,
-   "files": {
-    "96": "sticks-96.jpg"
-   }
-  },
-  "office-window": {
-   "shot": "drummer-arrival-performance-c2bf484a",
-   "title": "Drummer Arrival Performance",
-   "category": "Instruments",
-   "faceBox": null,
-   "time": 3.0,
-   "box": [
-    52,
-    40,
-    242,
-    230
-   ],
-   "proxy": "drummer-arrival-performance-c2bf484a-540-f2f534f7.mp4",
-   "grade": null,
-   "files": {
-    "96": "office-window-96.jpg"
-   }
-  },
-  "lamp": {
-   "shot": "keys-office-performance-87b9564e",
-   "title": "Keys Office Performance",
-   "category": "Instruments",
-   "faceBox": null,
-   "time": 3.0,
-   "box": [
-    712,
-    138,
-    882,
-    308
-   ],
-   "proxy": "keys-office-performance-87b9564e-540-f2e8def5.mp4",
-   "grade": null,
-   "files": {
-    "96": "lamp-96.jpg"
-   }
-  },
-  "grey-mug": {
-   "shot": "keys-office-performance-87b9564e",
-   "title": "Keys Office Performance",
-   "category": "Instruments",
-   "faceBox": null,
-   "time": 3.0,
-   "box": [
-    760,
-    368,
-    932,
-    540
-   ],
-   "proxy": "keys-office-performance-87b9564e-540-f2e8def5.mp4",
-   "grade": null,
-   "files": {
-    "96": "grey-mug-96.jpg"
-   }
-  },
   "keys-hands": {
+   "kind": "footage",
    "shot": "keys-office-performance-87b9564e",
    "title": "Keys Office Performance",
    "category": "Instruments",
    "faceBox": null,
+   "noFace": true,
+   "what": "hands on a keyboard",
    "time": 3.0,
    "box": [
     440,
@@ -158,124 +17,78 @@
     540
    ],
    "proxy": "keys-office-performance-87b9564e-540-f2e8def5.mp4",
-   "grade": null,
    "files": {
     "96": "keys-hands-96.jpg"
    }
   },
-  "ceiling": {
-   "shot": "keys-office-performance-87b9564e",
-   "title": "Keys Office Performance",
+  "fret-hand": {
+   "kind": "footage",
+   "shot": "blue-guitar-detail-a8838477",
+   "title": "Blue Guitar Detail",
    "category": "Instruments",
    "faceBox": null,
+   "noFace": true,
+   "what": "a hand on a fretboard",
    "time": 3.0,
    "box": [
-    540,
-    8,
-    720,
-    188
-   ],
-   "proxy": "keys-office-performance-87b9564e-540-f2e8def5.mp4",
-   "grade": null,
-   "files": {
-    "96": "ceiling-96.jpg"
-   }
-  },
-  "notebook": {
-   "shot": "office-ensemble-e03c9edb",
-   "title": "Office Ensemble",
-   "category": "Office scenes",
-   "faceBox": null,
-   "time": 3.0,
-   "box": [
-    98,
-    300,
-    236,
-    438
-   ],
-   "proxy": "office-ensemble-e03c9edb-540-51c7a1f6.mp4",
-   "grade": null,
-   "files": {
-    "96": "notebook-96.jpg"
-   }
-  },
-  "blue-guitar": {
-   "shot": "office-ensemble-e03c9edb",
-   "title": "Office Ensemble",
-   "category": "Office scenes",
-   "faceBox": null,
-   "time": 3.0,
-   "box": [
-    818,
-    178,
-    958,
+    646,
+    150,
+    814,
     318
    ],
-   "proxy": "office-ensemble-e03c9edb-540-51c7a1f6.mp4",
-   "grade": null,
+   "proxy": "blue-guitar-detail-a8838477-540-cdee406f.mp4",
    "files": {
-    "96": "blue-guitar-96.jpg"
+    "96": "fret-hand-96.jpg"
    }
   },
-  "coffee-maker": {
-   "shot": "printer-outward-feed-19442475",
-   "title": "Printer \u2014 outward feed",
-   "category": "Office scenes",
+  "guitar-body": {
+   "kind": "footage",
+   "shot": "blue-guitar-detail-a8838477",
+   "title": "Blue Guitar Detail",
+   "category": "Instruments",
    "faceBox": null,
+   "noFace": true,
+   "what": "a hand strumming a blue guitar",
    "time": 3.0,
    "box": [
-    44,
-    0,
-    258,
-    214
+    118,
+    296,
+    323,
+    501
    ],
-   "proxy": "printer-outward-feed-19442475-540-43676d1d.mp4",
-   "grade": null,
+   "proxy": "blue-guitar-detail-a8838477-540-cdee406f.mp4",
    "files": {
-    "96": "coffee-maker-96.jpg"
+    "96": "guitar-body-96.jpg"
    }
   },
-  "printer-leds": {
-   "shot": "printer-outward-feed-19442475",
-   "title": "Printer \u2014 outward feed",
-   "category": "Office scenes",
+  "sticks": {
+   "kind": "footage",
+   "shot": "drummer-arrival-performance-c2bf484a",
+   "title": "Drummer Arrival Performance",
+   "category": "Instruments",
    "faceBox": null,
+   "noFace": true,
+   "what": "a hand with drumsticks",
    "time": 3.0,
    "box": [
-    672,
-    150,
-    852,
-    330
+    432,
+    300,
+    582,
+    450
    ],
-   "proxy": "printer-outward-feed-19442475-540-43676d1d.mp4",
-   "grade": null,
+   "proxy": "drummer-arrival-performance-c2bf484a-540-f2f534f7.mp4",
    "files": {
-    "96": "printer-leds-96.jpg"
-   }
-  },
-  "woodgrain": {
-   "shot": "printer-outward-feed-19442475",
-   "title": "Printer \u2014 outward feed",
-   "category": "Office scenes",
-   "faceBox": null,
-   "time": 3.0,
-   "box": [
-    742,
-    372,
-    910,
-    540
-   ],
-   "proxy": "printer-outward-feed-19442475-540-43676d1d.mp4",
-   "grade": null,
-   "files": {
-    "96": "woodgrain-96.jpg"
+    "96": "sticks-96.jpg"
    }
   },
   "clap-1": {
+   "kind": "footage",
    "shot": "corporate-applause-closer-reaction-531fa4a4",
-   "title": "Corporate applause \u2014 closer reaction",
+   "title": "Corporate applause — closer reaction",
    "category": "Office scenes",
    "faceBox": null,
+   "noFace": true,
+   "what": "clapping hands",
    "time": 3.0,
    "box": [
     448,
@@ -284,234 +97,250 @@
     416
    ],
    "proxy": "corporate-applause-closer-reaction-531fa4a4-540-fa4810ee.mp4",
-   "grade": null,
    "files": {
     "96": "clap-1-96.jpg"
    }
   },
-  "clap-2": {
-   "shot": "corporate-applause-closer-reaction-531fa4a4",
-   "title": "Corporate applause \u2014 closer reaction",
+  "camera-op": {
+   "kind": "footage",
+   "shot": "corporate-applause-vhs-cameraman-a018b1c9",
+   "title": "Corporate applause — VHS cameraman",
    "category": "Office scenes",
    "faceBox": null,
-   "time": 3.0,
-   "box": [
-    744,
-    262,
-    872,
-    390
-   ],
-   "proxy": "corporate-applause-closer-reaction-531fa4a4-540-fa4810ee.mp4",
-   "grade": null,
-   "files": {
-    "96": "clap-2-96.jpg"
-   }
-  },
-  "drum-pads": {
-   "shot": "drum-pad-detail-98b121e8",
-   "title": "Drum Pad Detail",
-   "category": "Instruments",
-   "faceBox": null,
-   "time": 3.0,
-   "box": [
-    300,
-    290,
-    550,
-    540
-   ],
-   "proxy": "drum-pad-detail-98b121e8-540-16c87dcf.mp4",
-   "grade": null,
-   "files": {
-    "96": "drum-pads-96.jpg"
-   }
-  },
-  "shirt-pocket": {
-   "shot": "drum-pad-detail-98b121e8",
-   "title": "Drum Pad Detail",
-   "category": "Instruments",
-   "faceBox": null,
-   "time": 3.0,
-   "box": [
-    520,
-    20,
-    720,
-    220
-   ],
-   "proxy": "drum-pad-detail-98b121e8-540-16c87dcf.mp4",
-   "grade": null,
-   "files": {
-    "96": "shirt-pocket-96.jpg"
-   }
-  },
-  "keys-detail": {
-   "shot": "keys-detail-92cca3c3",
-   "title": "Keys \u2014 detail",
-   "category": "Instruments",
-   "faceBox": null,
-   "time": 3.0,
-   "box": [
-    420,
-    0,
-    676,
-    256
-   ],
-   "proxy": "keys-detail-92cca3c3-540-9903cdb6.mp4",
-   "grade": null,
-   "files": {
-    "96": "keys-detail-96.jpg"
-   }
-  },
-  "corridor": {
-   "shot": "the-professionals-arrive-32aba023",
-   "title": "The professionals arrive",
-   "category": "Office scenes",
-   "faceBox": null,
-   "time": 3.0,
+   "noFace": true,
+   "what": "a camera operator seen from behind",
+   "time": 5.0,
    "box": [
     0,
-    0,
-    230,
-    230
+    8,
+    196,
+    204
    ],
-   "proxy": "the-professionals-arrive-32aba023-540-b433824c.mp4",
-   "grade": null,
+   "proxy": "corporate-applause-vhs-cameraman-a018b1c9-540-1f8de0e4.mp4",
    "files": {
-    "96": "corridor-96.jpg"
-   }
-  },
-  "cabinet": {
-   "shot": "the-professionals-arrive-32aba023",
-   "title": "The professionals arrive",
-   "category": "Office scenes",
-   "faceBox": null,
-   "time": 3.0,
-   "box": [
-    675,
-    140,
-    865,
-    330
-   ],
-   "proxy": "the-professionals-arrive-32aba023-540-b433824c.mp4",
-   "grade": null,
-   "files": {
-    "96": "cabinet-96.jpg"
+    "96": "camera-op-96.jpg"
    }
   },
   "jamie": {
-   "shot": "printer-outward-feed-19442475",
-   "title": "Printer \u2014 outward feed",
-   "category": "Office scenes",
-   "faceBox": null,
-   "time": 3.0,
-   "box": [
-    474,
-    0,
-    592,
-    118
-   ],
-   "proxy": "printer-outward-feed-19442475-540-43676d1d.mp4",
-   "grade": "sunlit",
+   "kind": "drawn",
+   "genre": "jamie",
+   "what": "Jamie: a portrait from behind at a sunlit window, her hair up, an oatmeal sweater (no face)",
    "files": {
     "96": "jamie-96.jpg",
     "144": "jamie-144.jpg"
    }
+  },
+  "window-man": {
+   "kind": "drawn",
+   "genre": "window-man",
+   "what": "a man from behind at an office window (no face)",
+   "files": {
+    "96": "window-man-96.jpg"
+   }
+  },
+  "office-woman": {
+   "kind": "drawn",
+   "genre": "office-woman",
+   "what": "a woman from behind at a bright window, a dark bob (no face)",
+   "files": {
+    "96": "office-woman-96.jpg"
+   }
+  },
+  "park-woman": {
+   "kind": "drawn",
+   "genre": "park-woman",
+   "what": "a woman from behind in a park, a fair ponytail (no face)",
+   "files": {
+    "96": "park-woman-96.jpg"
+   }
+  },
+  "hiker": {
+   "kind": "drawn",
+   "genre": "hiker",
+   "what": "a small figure from behind on a forest trail",
+   "files": {
+    "96": "hiker-96.jpg"
+   }
+  },
+  "summit-day": {
+   "kind": "drawn",
+   "genre": "summit-day",
+   "what": "a figure from behind on a summit, a blue sky",
+   "files": {
+    "96": "summit-day-96.jpg"
+   }
+  },
+  "summit-dawn": {
+   "kind": "drawn",
+   "genre": "summit-dawn",
+   "what": "a figure from behind on a summit at dawn",
+   "files": {
+    "96": "summit-dawn-96.jpg"
+   }
+  },
+  "sunset-sea": {
+   "kind": "drawn",
+   "genre": "sunset-sea",
+   "what": "a figure on a shore at sunset",
+   "files": {
+    "96": "sunset-sea-96.jpg"
+   }
+  },
+  "city-night": {
+   "kind": "drawn",
+   "genre": "city-night",
+   "what": "a skyline at night, out of focus",
+   "files": {
+    "96": "city-night-96.jpg"
+   }
+  },
+  "golf": {
+   "kind": "drawn",
+   "genre": "golf",
+   "what": "a green and its flag",
+   "files": {
+    "96": "golf-96.jpg"
+   }
+  },
+  "grad-caps": {
+   "kind": "drawn",
+   "genre": "grad-caps",
+   "what": "graduation caps against the sky",
+   "files": {
+    "96": "grad-caps-96.jpg"
+   }
+  },
+  "sailboat": {
+   "kind": "drawn",
+   "genre": "sailboat",
+   "what": "a sailboat",
+   "files": {
+    "96": "sailboat-96.jpg"
+   }
+  },
+  "peony": {
+   "kind": "drawn",
+   "genre": "peony",
+   "what": "a pink peony, close",
+   "files": {
+    "96": "peony-96.jpg"
+   }
+  },
+  "latte": {
+   "kind": "drawn",
+   "genre": "latte",
+   "what": "a latte from above",
+   "files": {
+    "96": "latte-96.jpg"
+   }
+  },
+  "mark-loaf": {
+   "kind": "drawn",
+   "genre": "mark-loaf",
+   "what": "a bakery's mark: a loaf (Second Rise Bakery)",
+   "files": {
+    "96": "mark-loaf-96.jpg"
+   }
+  },
+  "mark-leaf": {
+   "kind": "drawn",
+   "genre": "mark-leaf",
+   "what": "a landscaper's mark: a leaf (Dumont Landscaping)",
+   "files": {
+    "96": "mark-leaf-96.jpg"
+   }
+  },
+  "mark-ramplight": {
+   "kind": "drawn",
+   "genre": "mark-ramplight",
+   "what": "a software company's mark: a ramp and a light (Ramplight)",
+   "files": {
+    "96": "mark-ramplight-96.jpg"
+   }
   }
  },
  "assign": {
-  "1": "coffee-maker",
+  "1": "mark-loaf",
   "2": "jamie",
-  "3": "silhouette",
-  "4": "silhouette",
-  "5": "jamie",
-  "6": "notebook",
-  "7": "office-window",
-  "8": "silhouette",
-  "9": "woodgrain",
-  "10": "silhouette",
-  "11": "desk-mug",
+  "3": "peony",
+  "4": "jamie",
+  "5": "latte",
+  "6": "park-woman",
+  "7": "silhouette",
+  "8": "city-night",
+  "9": "silhouette",
+  "10": "golf",
+  "11": "summit-day",
   "12": "silhouette",
   "13": "silhouette",
-  "14": "silhouette",
-  "15": "silhouette",
+  "14": "grad-caps",
+  "15": "window-man",
   "16": "silhouette",
-  "17": "clap-2",
+  "17": "sunset-sea",
   "18": "silhouette",
-  "19": "shirt-pocket",
-  "20": "guitar-body",
-  "21": "keys-hands",
-  "22": "fret-hand",
+  "19": "fret-hand",
+  "20": "camera-op",
+  "21": "silhouette",
+  "22": "clap-1",
   "23": "silhouette",
-  "24": "clap-1",
+  "24": "sailboat",
   "25": "silhouette",
   "26": "silhouette",
-  "27": "keys-detail",
-  "28": "sticks",
+  "27": "silhouette",
+  "28": "silhouette",
   "29": "silhouette",
-  "30": "lamp",
-  "31": "blue-guitar",
-  "32": "silhouette",
+  "30": "silhouette",
+  "31": "silhouette",
+  "32": "hiker",
   "33": "silhouette",
-  "34": "guitar-head",
-  "35": "silhouette",
-  "36": "printer-leds",
+  "34": "silhouette",
+  "35": "summit-dawn",
+  "36": "silhouette",
   "37": "silhouette",
-  "38": "grey-mug",
-  "39": "ceiling",
-  "40": "drum-pads",
-  "41": "cabinet",
-  "42": "silhouette",
-  "43": "silhouette",
-  "44": "corridor",
-  "45": "coffee-maker",
-  "46": "office-window",
+  "38": "mark-ramplight",
+  "39": "sunset-sea",
+  "40": "silhouette",
+  "41": "silhouette",
+  "42": "park-woman",
+  "43": "golf",
+  "44": "silhouette",
+  "45": "silhouette",
+  "46": "silhouette",
   "47": "silhouette",
-  "48": "desk-mug",
+  "48": "silhouette",
   "49": "silhouette",
-  "50": "clap-2",
+  "50": "silhouette",
   "51": "silhouette",
-  "52": "shirt-pocket",
-  "53": "guitar-body",
-  "54": "notebook",
-  "55": "silhouette",
-  "56": "silhouette",
+  "52": "grad-caps",
+  "53": "summit-dawn",
+  "54": "silhouette",
+  "55": "mark-leaf",
+  "56": "fret-hand",
   "57": "silhouette",
-  "58": "keys-hands",
-  "59": "fret-hand",
-  "60": "clap-1",
-  "61": "keys-detail",
-  "62": "woodgrain",
-  "63": "sticks",
-  "64": "lamp",
-  "65": "blue-guitar",
+  "58": "silhouette",
+  "59": "silhouette",
+  "60": "hiker",
+  "61": "silhouette",
+  "62": "silhouette",
+  "63": "silhouette",
+  "64": "sticks",
+  "65": "silhouette",
   "66": "silhouette",
-  "67": "guitar-head",
-  "68": "printer-leds",
-  "69": "grey-mug",
+  "67": "silhouette",
+  "68": "summit-day",
+  "69": "silhouette",
   "70": "silhouette",
-  "71": "ceiling",
+  "71": "guitar-body",
   "72": "silhouette",
-  "73": "drum-pads",
-  "74": "cabinet",
-  "75": "corridor",
-  "76": "coffee-maker",
-  "77": "office-window",
-  "78": "desk-mug",
-  "79": "silhouette",
-  "80": "clap-2",
-  "81": "shirt-pocket",
-  "82": "guitar-body",
-  "83": "notebook",
-  "84": "keys-hands",
-  "85": "fret-hand",
-  "86": "clap-1",
-  "87": "keys-detail",
-  "88": "silhouette",
-  "89": "woodgrain",
-  "90": "silhouette",
-  "91": "sticks",
-  "92": "silhouette",
-  "93": "jamie",
-  "94": "silhouette"
+  "73": "office-woman",
+  "74": "silhouette",
+  "75": "keys-hands",
+  "76": "silhouette",
+  "77": "camera-op",
+  "78": "silhouette",
+  "79": "peony",
+  "80": "jamie",
+  "81": "silhouette"
  },
  "viewer": "silhouette"
 }

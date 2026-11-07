@@ -12,7 +12,8 @@ Reads the WAV with ffmpeg (float32) and its marks (the JSON beside it), and repo
              and the short-term (3 s) medians for the record
   silence    digital silence: the choke (B91) to the first sample of the final line, and from 50 ms after the
              last voice to the end (every sample exactly zero)
-  sync       the motif's "grats" vowel on frames 396 and 1656 (+-1 frame)
+  sync       Voice 1's "grats" vowel on B22 (+-1 frame at 30 fps, 33 ms); the last line's first sample
+             0 to 100 ms after B92 (Doug's reply and its tick come first; the voice follows)
   release    the choir's voices sounding at each release cue (B82-B84.5: 5 down to 0)
   null       with --stem (the motif rendered alone): the final S1 against Voice 1, sample by sample (<= -120 dB)
   whisper    faster-whisper small.en on each statement of the motif in the mix (beam 5, temperature 0,
@@ -159,10 +160,14 @@ def main(argv=None):
         gate(f"digital silence {s['span']}", s['nonzero'] == 0 and s['seconds'] > 0, f"{s['seconds']:.3f} s, {s['nonzero']} non-zero samples", 'every sample 0')
 
     # The motif on its frames.
-    sync = [{'B': g['B'], 'part': g['part'], 't': g['t'], 'frame': g['t'] * 30, 'target': round(g['B'] * 18)} for g in marks['grats']]
+    sync = [{'B': g['B'], 'part': g['part'], 't': g['t'], 'start': g['start'], 'beat_t': g['B'] * 0.6} for g in marks['grats']]
     out['sync'] = sync
     for s in sync:
-        gate(f"grats B{s['B']} on frame {s['target']}", abs(s['frame'] - s['target']) <= 1, f"frame {s['frame']:.2f}", '+-1 frame')
+        if s['part'] == 'final':
+            lag = s['start'] - s['beat_t']
+            gate(f"the last line starts after B{s['B']} (Doug's reply)", 0 <= lag <= 0.1, f"{lag * 1000:.1f} ms after", '0 to 100 ms')
+        else:
+            gate(f"grats B{s['B']} on its beat", abs(s['t'] - s['beat_t']) <= 1 / 30, f"{(s['t'] - s['beat_t']) * 1000:+.1f} ms", '+-33 ms (a frame at 30 fps)')
 
     # The release: the choir's voices sounding at each release cue.
     copies = [c for c in marks['copies'] if c['part'] not in ('voice1', 'final')]

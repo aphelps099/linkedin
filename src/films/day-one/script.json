@@ -1,5 +1,5 @@
 {
- "about": "Day One's comment script: copied from the copy study (study-copy/day-one-comments.json) with the company templated as {COMPANY} (default Brightwick), the image card dropped (spec 0: text-only post), two names changed to avoid the band's cast (Linda Okafor -> Rose Okafor, Arjun Mehta-Rao -> Rohan Mehta-Rao), the robot without a degree, and Jamie's headline on her own comments. Times swap with a neighbour about 1 in 4 inside each wave at render time (rows.js), the 'Most relevant' tell.",
+ "about": "Day One's comment script: from the copy study (study-copy/day-one-comments.json), the company templated as {COMPANY} (Brightwick, Aaron's decision), the image card dropped (text-only post), renumbered after the final cut: the warm block keeps Dana, Mom, Tess and Nadia (and Jamie's two replies) so each is read at rest; wave 3 and waves 7-8 are shorter so the recruiter and the vendor dwell. Names: Rose Okafor and Rohan Mehta-Rao (not the band's Linda and Arjun); Adam Wierzbicki and Hiro Matsunaga (the study's names were real notable people); the anniversary comment is an ordinary member, Darren Whitcomb, who tapped the suggested reply. Terri's typo sits just above Jamie's thanks, so the last frame holds it. Times are 'Most relevant', not chronological: a few in each wave sit far out of sequence. A Wikipedia exact-title check of every name (with redirects) renamed six more: Eli Navarrete, Dmitri Arkhipenko, Fatima Haddadi, Ibrahim Karaca, Molly Brennick, Yuki Takabe.",
  "post": {
   "author": "Jamie Okafor",
   "pronouns": "She/Her",
@@ -81,24 +81,6 @@
   },
   {
    "kind": "warm",
-   "name": "Priya Raman",
-   "pronouns": "",
-   "degree": "3rd+",
-   "frame": "",
-   "headline": "Marketing Coordinator at Fernway | Merrow State '26",
-   "time": "1d",
-   "reactions": 9,
-   "text": "{Jamie Okafor} YES!!! 🎉 Told you. The group chat is screaming.",
-   "reply": false,
-   "author": false,
-   "n": 3,
-   "reactTypes": [
-    "like",
-    "celebrate"
-   ]
-  },
-  {
-   "kind": "warm",
    "name": "Rose Okafor",
    "pronouns": "",
    "degree": "3rd+",
@@ -109,7 +91,7 @@
    "text": "So proud of you sweetheart!!! ❤️❤️ Love, Mom",
    "reply": false,
    "author": false,
-   "n": 4,
+   "n": 3,
    "reactTypes": [
     "love",
     "like"
@@ -127,61 +109,7 @@
    "text": "Mom 😭",
    "reply": true,
    "author": true,
-   "n": 5,
-   "reactTypes": [
-    "love",
-    "like"
-   ]
-  },
-  {
-   "kind": "warm",
-   "name": "Ruth Calloway, PhD",
-   "pronouns": "",
-   "degree": "3rd+",
-   "frame": "",
-   "headline": "Associate Professor of Communication at Merrow State University",
-   "time": "1d",
-   "reactions": 5,
-   "text": "From COMM 214 to Revenue Enablement. I knew you would land somewhere wonderful.",
-   "reply": false,
-   "author": false,
-   "n": 6,
-   "reactTypes": [
-    "like",
-    "celebrate"
-   ]
-  },
-  {
-   "kind": "warm",
-   "name": "Marcus Lindqvist",
-   "pronouns": "He/Him",
-   "degree": "2nd",
-   "frame": "",
-   "headline": "Senior Manager, Revenue Enablement at {COMPANY}",
-   "time": "1d",
-   "reactions": 11,
-   "text": "Welcome to the team, Jamie! So glad you said yes. See you soon ☕",
-   "reply": false,
-   "author": false,
-   "n": 7,
-   "reactTypes": [
-    "like",
-    "celebrate"
-   ]
-  },
-  {
-   "kind": "warm",
-   "name": "Aisha Bello",
-   "pronouns": "She/Her",
-   "degree": "3rd+",
-   "frame": "",
-   "headline": "Merrow State '26 | Aspiring UX Researcher",
-   "time": "1d",
-   "reactions": 4,
-   "text": "the way I SCREAMED. so proud of you 🥹",
-   "reply": false,
-   "author": false,
-   "n": 8,
+   "n": 4,
    "reactTypes": [
     "love",
     "like"
@@ -196,27 +124,10 @@
    "headline": "Shift Lead at Second Rise Bakery",
    "time": "1d",
    "reactions": 3,
-   "text": "who is going to fix the espresso machine now 😭😭 congrats Jamie!!",
+   "text": "who is going to fix the espresso machine now 😭😭 congrats {Jamie Okafor}!!",
    "reply": false,
    "author": false,
-   "n": 9,
-   "reactTypes": [
-    "like"
-   ]
-  },
-  {
-   "kind": "warm",
-   "name": "Owen Gallagher",
-   "pronouns": "",
-   "degree": "2nd",
-   "frame": "",
-   "headline": "Sales Development Representative at Haverly Group | Merrow State '24",
-   "time": "23h",
-   "reactions": 2,
-   "text": "Huge! They're getting a good one. Remember us when you're VP 😄",
-   "reply": false,
-   "author": false,
-   "n": 10,
+   "n": 5,
    "reactTypes": [
     "like"
    ]
@@ -233,7 +144,7 @@
    "text": "Welcome aboard! 🎉 Your laptop is ready.",
    "reply": false,
    "author": false,
-   "n": 11,
+   "n": 6,
    "reactTypes": [
     "like",
     "celebrate"
@@ -260,7 +171,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 12,
+   "n": 7,
    "reactTypes": [
     "like"
    ]
@@ -277,7 +188,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 13,
+   "n": 8,
    "reactTypes": [
     "like"
    ]
@@ -294,7 +205,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 14,
+   "n": 9,
    "reactTypes": [
     "like"
    ]
@@ -311,7 +222,7 @@
    "text": "Congrats, Jordan!",
    "reply": false,
    "author": false,
-   "n": 15,
+   "n": 10,
    "counts": {
     "reactions": 118,
     "comments": 41,
@@ -333,7 +244,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 16,
+   "n": 11,
    "reactTypes": [
     "like"
    ]
@@ -345,12 +256,12 @@
    "degree": "2nd",
    "frame": "",
    "headline": "Talent Acquisition Coordinator at Northvale Health",
-   "time": "21h",
+   "time": "4h",
    "reactions": 1,
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 17,
+   "n": 12,
    "reactTypes": [
     "like"
    ]
@@ -367,7 +278,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 18,
+   "n": 13,
    "reactTypes": [
     "like"
    ]
@@ -384,7 +295,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 19,
+   "n": 14,
    "reactTypes": [
     "like"
    ]
@@ -401,7 +312,7 @@
    "text": "Love this! Open to a quick chat about a Senior role?",
    "reply": false,
    "author": false,
-   "n": 20,
+   "n": 15,
    "counts": {
     "reactions": 260,
     "comments": 96,
@@ -423,7 +334,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 21,
+   "n": 16,
    "reactTypes": [
     "like"
    ]
@@ -440,7 +351,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 22,
+   "n": 17,
    "reactTypes": [
     "like"
    ]
@@ -452,12 +363,12 @@
    "degree": "3rd+",
    "frame": "",
    "headline": "Licensed Insurance Agent | Helping Families Protect What Matters",
-   "time": "18h",
+   "time": "1h",
    "reactions": 0,
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 23,
+   "n": 18,
    "reactTypes": [
     "like"
    ]
@@ -474,41 +385,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 24,
-   "reactTypes": [
-    "like"
-   ]
-  },
-  {
-   "kind": "wave",
-   "name": "Mitchell Osei",
-   "pronouns": "",
-   "degree": "3rd+",
-   "frame": "",
-   "headline": "Operations Manager at Brookmint",
-   "time": "17h",
-   "reactions": 0,
-   "text": "Congrats on the new role!",
-   "reply": false,
-   "author": false,
-   "n": 25,
-   "reactTypes": [
-    "like"
-   ]
-  },
-  {
-   "kind": "wave",
-   "name": "Kristen Vale",
-   "pronouns": "",
-   "degree": "3rd+",
-   "frame": "",
-   "headline": "Executive Assistant to the CEO at Glenrose Capital",
-   "time": "16h",
-   "reactions": 0,
-   "text": "Congrats on the new role!",
-   "reply": false,
-   "author": false,
-   "n": 26,
+   "n": 19,
    "reactTypes": [
     "like"
    ]
@@ -525,7 +402,7 @@
    "text": "So well deserved!",
    "reply": false,
    "author": false,
-   "n": 27,
+   "n": 20,
    "counts": {
     "reactions": 488,
     "comments": 187,
@@ -547,7 +424,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 28,
+   "n": 21,
    "reactTypes": [
     "like"
    ]
@@ -564,7 +441,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 29,
+   "n": 22,
    "reactTypes": [
     "like"
    ]
@@ -576,12 +453,12 @@
    "degree": "3rd+",
    "frame": "",
    "headline": "Real Estate Agent at Pallister & Rowe",
-   "time": "14h",
+   "time": "1d",
    "reactions": 0,
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 30,
+   "n": 23,
    "reactTypes": [
     "like"
    ]
@@ -598,14 +475,14 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 31,
+   "n": 24,
    "reactTypes": [
     "like"
    ]
   },
   {
    "kind": "wave",
-   "name": "Fatima Haddad",
+   "name": "Fatima Haddadi",
    "pronouns": "She/Her",
    "degree": "2nd",
    "frame": "",
@@ -615,7 +492,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 32,
+   "n": 25,
    "reactTypes": [
     "like"
    ]
@@ -627,19 +504,19 @@
    "degree": "3rd+",
    "frame": "",
    "headline": "Retired Army | Logistics | Open to New Opportunities",
-   "time": "13h",
+   "time": "2h",
    "reactions": 0,
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 33,
+   "n": 26,
    "reactTypes": [
     "like"
    ]
   },
   {
    "kind": "wave",
-   "name": "Yuki Tanabe",
+   "name": "Yuki Takabe",
    "pronouns": "",
    "degree": "3rd+",
    "frame": "hiring",
@@ -649,7 +526,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 34,
+   "n": 27,
    "reactTypes": [
     "like"
    ]
@@ -666,7 +543,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 35,
+   "n": 28,
    "reactTypes": [
     "like"
    ]
@@ -683,7 +560,7 @@
    "text": "Let's connect!",
    "reply": false,
    "author": false,
-   "n": 36,
+   "n": 29,
    "counts": {
     "reactions": 1126,
     "comments": 340,
@@ -705,7 +582,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 37,
+   "n": 30,
    "reactTypes": [
     "like"
    ]
@@ -717,12 +594,12 @@
    "degree": "2nd",
    "frame": "",
    "headline": "Paralegal at Ashby & Finch",
-   "time": "11h",
+   "time": "3h",
    "reactions": 0,
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 38,
+   "n": 31,
    "reactTypes": [
     "like"
    ]
@@ -739,7 +616,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 39,
+   "n": 32,
    "reactTypes": [
     "like"
    ]
@@ -756,7 +633,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 40,
+   "n": 33,
    "reactTypes": [
     "like"
    ]
@@ -768,12 +645,12 @@
    "degree": "3rd+",
    "frame": "",
    "headline": "Investor Relations | CFA Level II Candidate",
-   "time": "10h",
+   "time": "17h",
    "reactions": 0,
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 41,
+   "n": 34,
    "reactTypes": [
     "like"
    ]
@@ -790,7 +667,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 42,
+   "n": 35,
    "reactTypes": [
     "like"
    ]
@@ -807,7 +684,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 43,
+   "n": 36,
    "reactTypes": [
     "like"
    ]
@@ -824,7 +701,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 44,
+   "n": 37,
    "reactTypes": [
     "like"
    ]
@@ -838,10 +715,10 @@
    "headline": "Account Executive at Ramplight | Helping Revenue Teams Ramp Reps 3x Faster",
    "time": "9h",
    "reactions": 0,
-   "text": "Congrats Jamie! As you get started in Revenue Enablement, Ramplight helps teams cut rep onboarding time by 41%. Worth a 15-minute chat next week? 🚀",
+   "text": "Congrats Jamie! Ramplight cuts rep onboarding 41%. 15 min next week? 🚀",
    "reply": false,
    "author": false,
-   "n": 45,
+   "n": 38,
    "counts": {
     "reactions": 1690,
     "comments": 512,
@@ -863,7 +740,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 46,
+   "n": 39,
    "reactTypes": [
     "like"
    ]
@@ -880,7 +757,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 47,
+   "n": 40,
    "reactTypes": [
     "like"
    ]
@@ -892,12 +769,12 @@
    "degree": "3rd+",
    "frame": "",
    "headline": "CPA | Tax Season Survivor",
-   "time": "8h",
+   "time": "1d",
    "reactions": 0,
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 48,
+   "n": 41,
    "reactTypes": [
     "like"
    ]
@@ -914,7 +791,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 49,
+   "n": 42,
    "reactTypes": [
     "like"
    ]
@@ -931,7 +808,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 50,
+   "n": 43,
    "reactTypes": [
     "like"
    ]
@@ -943,12 +820,12 @@
    "degree": "2nd",
    "frame": "",
    "headline": "Software Engineer II at Orrin Labs",
-   "time": "7h",
+   "time": "14h",
    "reactions": 0,
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 51,
+   "n": 44,
    "reactTypes": [
     "like"
    ]
@@ -965,7 +842,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 52,
+   "n": 45,
    "reactTypes": [
     "like"
    ]
@@ -982,7 +859,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 53,
+   "n": 46,
    "reactTypes": [
     "like"
    ]
@@ -994,12 +871,12 @@
    "degree": "3rd+",
    "frame": "",
    "headline": "Helping B2B SaaS Founders Scale to $10M ARR",
-   "time": "6h",
+   "time": "45m",
    "reactions": 0,
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 54,
+   "n": 47,
    "reactTypes": [
     "like"
    ]
@@ -1016,7 +893,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 55,
+   "n": 48,
    "reactTypes": [
     "like"
    ]
@@ -1033,7 +910,7 @@
    "text": "👏👏👏",
    "reply": false,
    "author": false,
-   "n": 56,
+   "n": 49,
    "counts": {
     "reactions": 2214,
     "comments": 688,
@@ -1055,41 +932,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 57,
-   "reactTypes": [
-    "like"
-   ]
-  },
-  {
-   "kind": "wave",
-   "name": "Amanda Feld",
-   "pronouns": "",
-   "degree": "3rd+",
-   "frame": "",
-   "headline": "Freelance Graphic Designer | Open to Commissions",
-   "time": "5h",
-   "reactions": 0,
-   "text": "Congrats on the new role!",
-   "reply": false,
-   "author": false,
-   "n": 58,
-   "reactTypes": [
-    "like"
-   ]
-  },
-  {
-   "kind": "wave",
-   "name": "Kwabena Asare",
-   "pronouns": "",
-   "degree": "2nd",
-   "frame": "",
-   "headline": "Customer Experience Specialist at Northvale Health",
-   "time": "5h",
-   "reactions": 0,
-   "text": "Congrats on the new role!",
-   "reply": false,
-   "author": false,
-   "n": 59,
+   "n": 50,
    "reactTypes": [
     "like"
    ]
@@ -1101,29 +944,12 @@
    "degree": "3rd+",
    "frame": "hiring",
    "headline": "Recruiting Coordinator | We're #Hiring!",
-   "time": "4h",
+   "time": "12h",
    "reactions": 0,
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 60,
-   "reactTypes": [
-    "like"
-   ]
-  },
-  {
-   "kind": "wave",
-   "name": "Nathan Rhee",
-   "pronouns": "",
-   "degree": "3rd+",
-   "frame": "",
-   "headline": "Founder & CEO at Stackwise | Building the Future of Payroll",
-   "time": "4h",
-   "reactions": 0,
-   "text": "Congrats on the new role!",
-   "reply": false,
-   "author": false,
-   "n": 61,
+   "n": 51,
    "reactTypes": [
     "like"
    ]
@@ -1140,7 +966,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 62,
+   "n": 52,
    "reactTypes": [
     "like"
    ]
@@ -1157,7 +983,7 @@
    "text": "Insightful",
    "reply": false,
    "author": false,
-   "n": 63,
+   "n": 53,
    "counts": {
     "reactions": 2560,
     "comments": 803,
@@ -1169,68 +995,17 @@
   },
   {
    "kind": "wave",
-   "name": "Tyler Hammond",
-   "pronouns": "",
-   "degree": "3rd+",
-   "frame": "",
-   "headline": "Business Development Representative",
-   "time": "3h",
-   "reactions": 0,
-   "text": "Congrats on the new role!",
-   "reply": false,
-   "author": false,
-   "n": 64,
-   "reactTypes": [
-    "like"
-   ]
-  },
-  {
-   "kind": "wave",
    "name": "Zara Siddiqui",
    "pronouns": "",
    "degree": "2nd",
    "frame": "",
    "headline": "Associate at Glenrose Capital",
-   "time": "3h",
+   "time": "19h",
    "reactions": 0,
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 65,
-   "reactTypes": [
-    "like"
-   ]
-  },
-  {
-   "kind": "wave",
-   "name": "Brian Kessler",
-   "pronouns": "",
-   "degree": "3rd+",
-   "frame": "",
-   "headline": "Regional Account Manager at Copperline",
-   "time": "3h",
-   "reactions": 0,
-   "text": "Congrats on the new role!",
-   "reply": false,
-   "author": false,
-   "n": 66,
-   "reactTypes": [
-    "like"
-   ]
-  },
-  {
-   "kind": "wave",
-   "name": "Ana Lucía Ríos",
-   "pronouns": "",
-   "degree": "3rd+",
-   "frame": "hiring",
-   "headline": "Bilingual Recruiter | #Hiring",
-   "time": "3h",
-   "reactions": 0,
-   "text": "Congrats on the new role!",
-   "reply": false,
-   "author": false,
-   "n": 67,
+   "n": 54,
    "reactTypes": [
     "like"
    ]
@@ -1247,7 +1022,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 68,
+   "n": 55,
    "reactTypes": [
     "like"
    ]
@@ -1264,24 +1039,24 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 69,
+   "n": 56,
    "reactTypes": [
     "like"
    ]
   },
   {
    "kind": "beat",
-   "name": "LinkedIn Member",
+   "name": "Darren Whitcomb",
    "pronouns": "",
-   "degree": "",
+   "degree": "3rd+",
    "frame": "",
-   "headline": "",
+   "headline": "Operations Manager at Tallis Freight",
    "time": "2h",
    "reactions": 6,
    "text": "Congrats on 5 years at {COMPANY}!",
    "reply": false,
    "author": false,
-   "n": 70,
+   "n": 57,
    "counts": {
     "reactions": 2931,
     "comments": 911,
@@ -1294,7 +1069,7 @@
   },
   {
    "kind": "wave",
-   "name": "Ibrahim Kaya",
+   "name": "Ibrahim Karaca",
    "pronouns": "",
    "degree": "3rd+",
    "frame": "",
@@ -1304,31 +1079,31 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 71,
+   "n": 58,
    "reactTypes": [
     "like"
    ]
   },
   {
    "kind": "wave",
-   "name": "Molly Brennan",
+   "name": "Molly Brennick",
    "pronouns": "",
    "degree": "3rd+",
    "frame": "",
    "headline": "Office Manager",
-   "time": "2h",
+   "time": "6h",
    "reactions": 0,
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 72,
+   "n": 59,
    "reactTypes": [
     "like"
    ]
   },
   {
    "kind": "wave",
-   "name": "Eli Navarro",
+   "name": "Eli Navarrete",
    "pronouns": "",
    "degree": "3rd+",
    "frame": "",
@@ -1338,7 +1113,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 73,
+   "n": 60,
    "reactTypes": [
     "like"
    ]
@@ -1355,14 +1130,14 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 74,
+   "n": 61,
    "reactTypes": [
     "like"
    ]
   },
   {
    "kind": "wave",
-   "name": "Adam Wójcik",
+   "name": "Adam Wierzbicki",
    "pronouns": "",
    "degree": "3rd+",
    "frame": "",
@@ -1372,7 +1147,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 75,
+   "n": 62,
    "reactTypes": [
     "like"
    ]
@@ -1389,14 +1164,14 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 76,
+   "n": 63,
    "reactTypes": [
     "like"
    ]
   },
   {
    "kind": "wave",
-   "name": "Hiro Matsuda",
+   "name": "Hiro Matsunaga",
    "pronouns": "",
    "degree": "3rd+",
    "frame": "",
@@ -1406,7 +1181,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 77,
+   "n": 64,
    "reactTypes": [
     "like"
    ]
@@ -1423,7 +1198,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 78,
+   "n": 65,
    "reactTypes": [
     "like"
    ]
@@ -1435,12 +1210,12 @@
    "degree": "3rd+",
    "frame": "",
    "headline": "Cybersecurity Analyst",
-   "time": "1h",
+   "time": "14h",
    "reactions": 0,
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 79,
+   "n": 66,
    "reactTypes": [
     "like"
    ]
@@ -1457,7 +1232,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 80,
+   "n": 67,
    "reactTypes": [
     "like"
    ]
@@ -1474,7 +1249,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 81,
+   "n": 68,
    "reactTypes": [
     "like"
    ]
@@ -1486,12 +1261,12 @@
    "degree": "3rd+",
    "frame": "",
    "headline": "Customer Support Lead at Stackwise",
-   "time": "55m",
+   "time": "9h",
    "reactions": 0,
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 82,
+   "n": 69,
    "reactTypes": [
     "like"
    ]
@@ -1508,7 +1283,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 83,
+   "n": 70,
    "reactTypes": [
     "like"
    ]
@@ -1525,7 +1300,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 84,
+   "n": 71,
    "reactTypes": [
     "like"
    ]
@@ -1542,7 +1317,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 85,
+   "n": 72,
    "reactTypes": [
     "like"
    ]
@@ -1559,97 +1334,7 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 86,
-   "reactTypes": [
-    "like"
-   ]
-  },
-  {
-   "kind": "species",
-   "name": "Terri Lynn Baxter",
-   "pronouns": "",
-   "degree": "3rd+",
-   "frame": "",
-   "headline": "Retired Realtor | Proud Grandma of 6",
-   "time": "41m (edited)",
-   "reactions": 3,
-   "text": "Congratualtions!!",
-   "reply": false,
-   "author": false,
-   "n": 87,
-   "counts": {
-    "reactions": 3604,
-    "comments": 1140,
-    "reposts": 16
-   },
-   "reactTypes": [
-    "like"
-   ]
-  },
-  {
-   "kind": "wave",
-   "name": "Dmitri Arkhipov",
-   "pronouns": "",
-   "degree": "3rd+",
-   "frame": "",
-   "headline": "QA Engineer",
-   "time": "33m",
-   "reactions": 0,
-   "text": "Congrats on the new role!",
-   "reply": false,
-   "author": false,
-   "n": 88,
-   "reactTypes": [
-    "like"
-   ]
-  },
-  {
-   "kind": "wave",
-   "name": "Whitney Cole",
-   "pronouns": "",
-   "degree": "3rd+",
-   "frame": "hiring",
-   "headline": "Executive Recruiter | #Hiring",
-   "time": "27m",
-   "reactions": 0,
-   "text": "Congrats on the new role!",
-   "reply": false,
-   "author": false,
-   "n": 89,
-   "reactTypes": [
-    "like"
-   ]
-  },
-  {
-   "kind": "wave",
-   "name": "Tariq Benali",
-   "pronouns": "",
-   "degree": "3rd+",
-   "frame": "",
-   "headline": "Financial Advisor | Helping You Retire With Confidence",
-   "time": "21m",
-   "reactions": 0,
-   "text": "Congrats on the new role!",
-   "reply": false,
-   "author": false,
-   "n": 90,
-   "reactTypes": [
-    "like"
-   ]
-  },
-  {
-   "kind": "wave",
-   "name": "Jenna Hartley",
-   "pronouns": "",
-   "degree": "3rd+",
-   "frame": "",
-   "headline": "Senior Account Executive at Ambergrid",
-   "time": "14m",
-   "reactions": 0,
-   "text": "Congrats on the new role!",
-   "reply": false,
-   "author": false,
-   "n": 91,
+   "n": 73,
    "reactTypes": [
     "like"
    ]
@@ -1666,7 +1351,97 @@
    "text": "Congrats on the new role!",
    "reply": false,
    "author": false,
-   "n": 92,
+   "n": 74,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Dmitri Arkhipenko",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "QA Engineer",
+   "time": "33m",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 75,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Whitney Cole",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "hiring",
+   "headline": "Executive Recruiter | #Hiring",
+   "time": "27m",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 76,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Tariq Benali",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Financial Advisor | Helping You Retire With Confidence",
+   "time": "21m",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 77,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Jenna Hartley",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Senior Account Executive at Ambergrid",
+   "time": "14m",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 78,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "species",
+   "name": "Terri Lynn Baxter",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Retired Realtor | Proud Grandma of 6",
+   "time": "41m (edited)",
+   "reactions": 3,
+   "text": "Congratualtions!!",
+   "reply": false,
+   "author": false,
+   "n": 79,
+   "counts": {
+    "reactions": 3604,
+    "comments": 1140,
+    "reposts": 16
+   },
    "reactTypes": [
     "like"
    ]
@@ -1683,7 +1458,7 @@
    "text": "Thank you all! 🙏 First day tomorrow.",
    "reply": false,
    "author": true,
-   "n": 93,
+   "n": 80,
    "counts": {
     "reactions": 3851,
     "comments": 1203,
@@ -1706,7 +1481,7 @@
    "text": "Congrats on the new role!",
    "reply": true,
    "author": false,
-   "n": 94,
+   "n": 81,
    "counts": {
     "reactions": 3862,
     "comments": 1204,

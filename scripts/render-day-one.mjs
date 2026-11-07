@@ -3,7 +3,7 @@
 //
 //   node scripts/render-day-one.mjs --out DIR [--company X] [--from s --to s] [--preview]
 //       [--channel chrome] [--audio FILE | --silent] [--stills] [--url http://127.0.0.1:5173]
-//       [--frames 0,396,1656]   (those frames as PNG stills only, for review)
+//       [--frames 0,792,3312]   (those frames as PNG stills only, for review)
 //       [--remux]               (keep DIR/day-one.mp4's picture; render the score again, or take --audio FILE, and mux it)
 //
 // Starts Vite on a free port (the project's config) unless --url, opens Chromium at 360x640
@@ -12,8 +12,8 @@
 // (CDP CSS.getPlatformFontsForNode: SF Pro on a Mac, Inter in the cloud container). Then:
 //   1. the audio: the page renders score.js offline (48 kHz stereo) into DIR/day-one.wav;
 //      --audio FILE uses a finished file instead; --silent (or no score yet) renders silence
-//   2. each frame: seek(f/30), a PNG screenshot, piped into ffmpeg (image2pipe)
-//   3. H.264 High, CRF 14 (preview 20), yuv420p, BT.709, 30 fps CFR; AAC 320k 48 kHz; +faststart
+//   2. each frame: seek(f/60), a PNG screenshot, piped into ffmpeg (image2pipe)
+//   3. H.264 High (level 4.2), CRF 14 (preview 20), yuv420p, BT.709, 60 fps CFR; AAC 320k 48 kHz; +faststart
 // Writes DIR/day-one.mp4, DIR/day-one.wav, DIR/timeline.json (the clock, the layout, the
 // arrivals, the ticks, every frame's hash), DIR/contact-sheet.png (a frame every 1.5 s) and,
 // with --stills, the key beats at full size in DIR/stills/.
@@ -27,6 +27,7 @@ import {createHash} from 'node:crypto';
 import {spawn, execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {createRequire} from 'node:module';
+import {FPS, FRAMES, BEAT, frameOf} from '../src/films/day-one/timeline.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const require = createRequire(import.meta.url);
@@ -37,16 +38,16 @@ const flag = name => argv.includes(`--${name}`);
 const OUT = path.resolve(arg('out', path.join(ROOT, 'out', 'day-one')));
 const PREVIEW = flag('preview');
 const DPR = PREVIEW ? 1.5 : 3;
-const FPS = 30, FRAMES = 1764;
 const from = Math.max(0, Math.round(+arg('from', 0) * FPS)), to = Math.min(FRAMES, Math.round(+arg('to', FRAMES / FPS) * FPS));
 const company = arg('company', null);
 // CDP's screenshot is in CSS px unless the clip carries the device scale.
 const SHOT = {format:'png', optimizeForSpeed:true, captureBeyondViewport:false, clip:{x:0, y:0, width:360, height:640, scale:DPR}};
 const log = (...a) => console.log(`[day-one ${new Date().toISOString().slice(11, 19)}]`, ...a);
-// The key beats, at full size (frame numbers: B x 18).
-export const STILLS = {0:'B0 thumbnail', 36:'B2 more opens', 126:'B7 burst', 180:'B10 sticks', 270:'B15 warm', 360:'B20 load more', 380:'B21 pressed', 390:'B21.7 spinner', 396:'B22 row 12', 468:'B26 Jordan', 522:'B29 wave 2',
-  612:'B34 recruiter', 684:'B38 wave 3', 738:'B41 well deserved', 864:'B48 lets connect 340', 990:'B55 vendor', 1080:'B60 pattern 1x', 1116:'B62 claps', 1179:'B65.5 insightful',
-  1260:'B70 robot', 1314:'B73 pull-back starts', 1368:'B76 wall', 1440:'B80 wall', 1476:'B82 push-in', 1494:'B83 typo', 1530:'B85 slowing', 1584:'B88 jamie', 1655:'B92 minus 1', 1656:'B92 doug 1204', 1763:'last frame'};
+// The key beats, at full size (frame = the first frame showing beat B).
+const STILL_BEATS = [[0, 'thumbnail'], [2, 'more opens'], [7, 'burst'], [10, 'sticks'], [11.5, 'warm Dana'], [16, 'warm Mom and Tess'], [20, 'load more'], [21.1, 'pressed'], [21.7, 'spinner'],
+  [22, 'wave 1'], [27, 'Jordan'], [30, 'wave 2'], [35.5, 'recruiter'], [38.5, 'wave 3'], [41.5, 'well deserved'], [48, 'lets connect 340'], [57, 'vendor'], [62, 'pattern 1x'], [65, 'claps'], [67, 'insightful'],
+  [70.5, 'anniversary'], [73, 'pull-back'], [76, 'wall'], [80, 'wall'], [82, 'push-in'], [85, 'slowing'], [88, 'jamie'], [91.9, 'B92 minus'], [92, 'doug 1204'], [(FRAMES - 1) / (FPS * BEAT), 'last frame']];
+export const STILLS = Object.fromEntries(STILL_BEATS.map(([B, what]) => { const f = Math.min(FRAMES - 1, frameOf(B)); return [f, `B${+B.toFixed(2)} ${what}`]; }));
 
 function chromiumPath() {
   const pool = process.env.PLAYWRIGHT_BROWSERS_PATH;
@@ -167,7 +168,7 @@ async function main() {
   const W = Math.round(360 * DPR), H = Math.round(640 * DPR);
   const pic = path.join(OUT, 'picture.mp4');
   const enc = ffmpeg(['-f', 'image2pipe', '-framerate', String(FPS), '-c:v', 'png', '-i', '-',
-    '-c:v', 'libx264', '-profile:v', 'high', '-preset', PREVIEW ? 'medium' : 'slow', '-crf', PREVIEW ? '20' : '14', '-tune', 'stillimage',
+    '-c:v', 'libx264', '-profile:v', 'high', '-level:v', '4.2', '-preset', PREVIEW ? 'medium' : 'slow', '-crf', PREVIEW ? '20' : '14', '-tune', 'stillimage',
     '-vf', `scale=${W}:${H}:flags=bicubic:out_color_matrix=bt709:out_range=tv,format=yuv420p`,
     '-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709', '-color_range', 'tv',
     '-r', String(FPS), '-fps_mode', 'cfr', '-movflags', '+faststart', pic]);
@@ -182,10 +183,10 @@ async function main() {
     const png = Buffer.from(data, 'base64');
     hashes.push(createHash('sha1').update(png).digest('hex').slice(0, 16));
     frames.push({f, a:+st.a.toFixed(3), k:+st.k.toFixed(4), sticky:st.sticky, comments:st.counts.comments, reactions:st.counts.reactions, reposts:st.counts.reposts});
-    if (f % 45 === 0) fs.writeFileSync(path.join(sheetDir, `${String(f).padStart(4, '0')}.png`), png);
+    if (f % Math.round(1.5 * FPS) === 0) fs.writeFileSync(path.join(sheetDir, `${String(f).padStart(4, '0')}.png`), png);
     if (flag('stills') && STILLS[f] !== undefined) fs.writeFileSync(path.join(stillsDir, `f${String(f).padStart(4, '0')}-${STILLS[f].replace(/[^a-z0-9.]+/gi, '-')}.png`), png);
     if (!enc.p.stdin.write(png)) await new Promise(r => enc.p.stdin.once('drain', r));
-    if ((f - from) % 150 === 149) log(`frame ${f + 1}/${to} (${((Date.now() - tf) / (f - from + 1)).toFixed(0)} ms a frame)`);
+    if ((f - from) % 300 === 299) log(`frame ${f + 1}/${to} (${((Date.now() - tf) / (f - from + 1)).toFixed(0)} ms a frame)`);
   }
   enc.p.stdin.end();
   await enc.done;
