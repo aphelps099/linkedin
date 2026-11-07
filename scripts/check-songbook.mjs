@@ -547,8 +547,9 @@ if (url && baseline) {
   const a = await run(), b = await run();
   ok(a.log.length > 20000 && sha(canon(a.log)) === sha(canon(b.log)) && E.exactReport(a.ctx).every(x => x.overlap <= 2), `Day One: ${a.log.length} valid Web Audio calls, the same twice, every input at most two at once`);
   const m = a.r.marks, motif = m.grats;
-  ok(motif.length === 2 && motif.every(g => Math.abs(g.t * 30 - g.B * 18) <= 1) && Math.abs((motif[1].end - motif[1].start) - (motif[0].end - motif[0].start)) < 1e-9 && m.silence[0].from === TL.tOf(91) && m.silence[0].to > m.silence[0].from,
-    `Day One: "grats" on frames ${motif.map(g => (g.t * 30).toFixed(2)).join(' and ')}; the silence from B91 to the line (${(m.silence[0].to - m.silence[0].from).toFixed(3)} s)`);
+  const lag = motif[1] && motif[1].start - TL.tOf(TL.EVENTS.doug);
+  ok(motif.length === 2 && Math.abs(motif[0].t - TL.tOf(22)) <= 1 / 30 && lag >= 0 && lag <= .1 && Math.abs((motif[1].end - motif[1].start) - (motif[0].end - motif[0].start)) < 1e-9 && m.silence[0].from === TL.tOf(91) && m.silence[0].to === Math.min(motif[1].start, TL.tOf(TL.EVENTS.doug)),
+    `Day One: Voice 1's "grats" ${((motif[0].t - TL.tOf(22)) * 1000).toFixed(1)} ms from B22; the last line starts ${(lag * 1000).toFixed(1)} ms after Doug's reply and its tick; the silence from B91 to the tick (${(m.silence[0].to - m.silence[0].from).toFixed(3)} s)`);
   ok(m.ticks.length === TL.ticks().length && m.ticks.every((k, i) => k.t === TL.ticks()[i].t), `Day One: ${m.ticks.length} ticks, one for every number that changes on screen`);
 }
 console.log(`song book: ${checks} checks passed`);

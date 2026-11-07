@@ -1,8 +1,9 @@
 // Day One's comment rows, ready to draw: the script with the company filled in, mentions
 // parsed, replies nested under their parents, wave rows made uniform (spec 3: a one-line
 // headline, one line of text, "Like | Reply", no pronouns, no reaction counts), and about one
-// time in four swapped with its neighbour inside each wave (the "Most relevant" tell). Pure.
-import {COMPANY, waveOf, JAMIE_ROW, DOUG_ROW} from './timeline.js';
+// time in four swapped with its neighbour inside each wave (the "Most relevant" tell, on top of the
+// few times script.json sets far out of sequence). Pure.
+import {COMPANY, waveOf, JAMIE_ROW, DOUG_ROW, LAST_WARM_ROW} from './timeline.js';
 
 const fill = (s, company) => String(s ?? '').split('{COMPANY}').join(company);
 
@@ -65,6 +66,6 @@ export function prepare(script, avatars, company = COMPANY) {
   }
   const jamie = top.find(r => r.n === JAMIE_ROW);
   if (!jamie || !jamie.replies.some(r => r.n === DOUG_ROW)) throw Error('Doug must reply to Jamie.');
-  const loadAfter = 11;   // "Load more comments" sits after the warm block
+  const loadAfter = LAST_WARM_ROW;   // "Load more comments" sits after the warm block
   return {post, rows:top, loadAfter, company, all};
 }

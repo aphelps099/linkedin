@@ -87,6 +87,10 @@ img { display: block; }
 .disc { position: relative; flex: none; width: 16px; height: 16px; border-radius: 50%; box-shadow: 0 0 0 1px var(--card); display: block; }
 .disc svg { display: block; }
 .disc + .disc { margin-left: -4px; }
+/* The leading reaction is drawn whole: each disc sits over the one after it. */
+.discs .disc:nth-child(1), .c-reacts .disc:nth-child(1) { z-index: 3; }
+.discs .disc:nth-child(2), .c-reacts .disc:nth-child(2) { z-index: 2; }
+.discs .disc:nth-child(3) { z-index: 1; }
 .disc-like { background: var(--like); }
 .disc-celebrate { background: var(--celebrate); }
 .disc-love { background: var(--love); }
@@ -98,10 +102,21 @@ img { display: block; }
   font-size: 12px; line-height: 16px; font-weight: 600; color: var(--text-2); }
 .act svg { display: block; color: var(--bar-icon); }
 
-/* The sticky social bar (the one liberty): white, a hairline under it once it sticks */
-.sticky { position: absolute; left: 0; top: 0; width: 360px; height: 91px; transform-origin: 0 0; background: var(--card);
-  box-shadow: 0 1px 0 var(--hair); display: none; }
+/* The pinned counts row (the one liberty): under the top bar at scale 1, white, a hairline under it */
+.sticky { position: absolute; left: 0; top: 100px; width: 360px; height: 34px; background: var(--card);
+  box-shadow: 0 1px 0 var(--hair); display: none; z-index: 2; }
 .sticky .counts { margin-top: 0; }
+
+/* The phone's status bar and the app's top bar (a screen recording's frame; our own drawing) */
+.chrome { position: absolute; left: 0; top: 0; width: 360px; height: 640px; pointer-events: none; z-index: 3; }
+.statusbar { position: absolute; left: 0; top: 0; width: 360px; height: 44px; background: var(--card); color: var(--text);
+  display: flex; align-items: center; justify-content: space-between; padding: 2px 22px 0 34px; }
+.statusbar .clock { font-size: 15px; line-height: 20px; font-weight: 600; letter-spacing: -.1px; }
+.status-icons { display: block; color: var(--text); }
+.topbar { position: absolute; left: 0; top: 44px; width: 360px; height: 56px; background: var(--card); color: var(--icon);
+  display: flex; align-items: center; padding-left: 8px; box-shadow: 0 1px 0 var(--hair); }
+.topbar svg { display: block; }
+.home-ind { position: absolute; left: 118px; bottom: 7px; width: 124px; height: 5px; border-radius: 3px; background: var(--text); }
 
 /* The comments */
 .comments { padding: 0 16px; }
@@ -154,8 +169,8 @@ img { display: block; }
 .load.loading .spinner { display: block; }
 
 /* States written by seek() */
-.c.later { display: none; }
-.c[data-row="93"]:not(.has-reply) .c-replies { display: none; }
-.c[data-row="94"]:not(.shown) { display: none; }
-.load.done { display: none; }
+.c.later, .load-end.later { display: none; }
+.c.c-jamie-end:not(.has-reply) .c-replies { display: none; }
+.c.c-last-reply:not(.shown) { display: none; }
+.load.done:not(.load-end) { display: none; }
 .commentary.clamped > .more { display: none; }

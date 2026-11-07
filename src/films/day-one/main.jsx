@@ -13,7 +13,7 @@ import SCRIPT from './script.json';
 import AVATARS from './avatars.json';
 import {prepare} from './rows.js';
 import * as T from './timeline.js';
-import {Context, Lockup, Commentary, CountsRow, ActionBar, CommentsHead} from './Post.jsx';
+import {Context, Lockup, Commentary, CountsRow, ActionBar, CommentsHead, Chrome} from './Post.jsx';
 import {Comment, LoadMore} from './Comment.jsx';
 
 const params = new URLSearchParams(location.search);
@@ -40,12 +40,14 @@ function Film() {
               <Comment row={r} crops={AVATARS.crops} />
               {r.n === loadAfter && <LoadMore />}
             </React.Fragment>)}
+            <LoadMore end />
           </section>
         </article>
         <div className="card-tail" />
       </div>
     </div>
-    <div className="sticky" id="sticky"><CountsRow /><div className="divider" /><ActionBar /></div>
+    <div className="sticky" id="sticky"><CountsRow /></div>
+    <Chrome />
   </div>;
 }
 
@@ -56,10 +58,12 @@ const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAl
 const el = {
   viewport:$('#viewport'), content:$('#content'), sticky:$('#sticky'),
   commentary:$('.commentary'), load:$('.load'), spin:$('.load .spinner g'),
-  later:$$('.comments > .c').filter(c => +c.dataset.row > data.loadAfter),
+  later:[...$$('.comments > .c').filter(c => +c.dataset.row > data.loadAfter), $('.load-end')],
   jamie:$(`.c[data-row="${T.JAMIE_ROW}"]`), doug:$(`.c[data-row="${T.DOUG_ROW}"]`),
   reactN:$$('[data-n="reactions"]'), right:$$('[data-n="right"]'), discs:$$('[data-discs]'),
 };
+
+el.jamie.classList.add('c-jamie-end'); el.doug.classList.add('c-last-reply');
 
 let last = {};
 function apply(st) {
@@ -67,10 +71,11 @@ function apply(st) {
   let ty = T.READ_Y - st.a * k;
   if (k === 1) ty = Math.round(ty * 3) / 3;              // whole device pixels while the scale is 1
   el.content.style.transform = `matrix(${k},0,0,${k},${tx},${ty})`;
-  if (st.sticky !== last.sticky || (st.sticky && k !== last.k)) {
+  // The status bar, the top bar and (once pinned) the counts row stay at scale 1: the counter is the
+  // film's clock and stays legible at the wall. Content is clipped under them.
+  if (st.sticky !== last.sticky) {
     el.sticky.style.display = st.sticky ? 'block' : 'none';
-    el.sticky.style.transform = st.sticky ? `matrix(${k},0,0,${k},${tx},0)` : '';
-    el.viewport.style.clipPath = st.sticky ? `inset(${T.BAR_H * k}px 0 0 0)` : '';
+    el.viewport.style.clipPath = `inset(${T.TOP + (st.sticky ? T.STICKY_H : 0)}px 0 0 0)`;
   }
   if (st.expanded !== last.expanded) el.commentary.classList.toggle('open', st.expanded);
   if (st.text.reactions !== last.reactions) for (const n of el.reactN) n.textContent = st.text.reactions;
@@ -137,9 +142,12 @@ function measure() {
   last = {}; apply({...probe, loadMore:'idle', loaded:false, doug:false});
   el.content.style.transform = 'none';
   const loadMore = box(el.load);
+  last = {}; apply({...probe, loaded:true, doug:true});
+  el.content.style.transform = 'none';
+  const loadEnd = box(document.querySelector('.load-end'));
   const commentaryClamped = box(el.commentary);
   last = {};
-  return {rows, counts, loadMore, card, commentaryClamped};
+  return {rows, counts, loadMore, loadEnd, card, commentaryClamped};
 }
 
 async function settleAssets() {

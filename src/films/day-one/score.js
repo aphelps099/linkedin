@@ -32,7 +32,7 @@ import {truePeakLimit} from '../../allhands/master.js';
 import {rng, hash} from '../../allhands/voices/melody.js';
 import MANIFEST from './voices.json' with {type:'json'};
 import {loadTakes, singTake, intoned, spoken, grats as gratsIn, resample, keyNotes, stepDown, RANGES, SPOKEN_AMOUNT} from './voices.js';
-import {ticks, cues, tOf, BEAT, DURATION, EVENTS} from './timeline.js';
+import {ticks, cues, tOf, BEAT, DURATION, EVENTS, FPS} from './timeline.js';
 
 export const SAMPLE_RATE = 48000;
 export const SECONDS = DURATION;                         // 58.8 s: 98 beats, 24.5 bars
@@ -129,7 +129,9 @@ export function planChoir() {
   };
   for (const c of cues()) {
     const part = c.part;
-    if (part === 'voice1' || part === 'final') { out.push({B:c.B, part, wave:part === 'voice1' ? 1 : 'final', copies:[{take:'s1', voice:'strategy', notes:'spoken', midi:null, gainDb:0, pan:0, human:0, space:{}, motif:true}]}); continue; }
+    // Voice 1 lands its "grats" on B22; the last line is placed by its first sample (cue.start: 67 ms after
+    // Doug's reply and its tick appear), since after the choke there is no groove to land on.
+    if (part === 'voice1' || part === 'final') { out.push({B:c.B, part, wave:part === 'voice1' ? 1 : 'final', start:c.start ?? null, copies:[{take:'s1', voice:'strategy', notes:'spoken', midi:null, gainDb:0, pan:0, human:0, space:{}, motif:true}]}); continue; }
     if (part === 'robot' || part === 'release') { out.push({B:c.B, part, wave:part, copies:[], sounding:c.copies}); continue; }
     if (part === 'wave2') { out.push({B:c.B, part, wave:2, copies:[copy(part, c.take === 's2' ? 47 : 62, c.copies, 0, c.take)]}); continue; }
     if (part === 'wave6') { out.push({B:c.B, part, wave:6, copies:[copy(part, CANON6[c.canon], c.copies, c.canon)]}); continue; }
@@ -314,7 +316,7 @@ export async function renderScore({read, parts = ALL, normalize = true} = {}) {
   const copies = [];
   for (const s of plan) for (const c of s.copies) {
     if (c.motif ? !on.has('motif') : !on.has('choir')) continue;
-    const at = B(s.B) + c.human, start = Math.round((at - c.sung.grats) * sr) / sr;   // on a whole sample: the same samples wherever it starts
+    const at = B(s.B) + c.human, start = Math.round((s.start != null ? s.start : at - c.sung.grats) * sr) / sr;   // on a whole sample: the same samples wherever it starts
     const src = ctx.createBufferSource(); src.buffer = c.sung.buffer;
     const g = I.amp(ctx, dB(c.gainDb));
     src.connect(g);
@@ -333,9 +335,10 @@ export async function renderScore({read, parts = ALL, normalize = true} = {}) {
   const motif = copies.filter(c => c.part === 'voice1' || c.part === 'final');
   const lastVoice = Math.max(...copies.map(c => c.end), 0);
   return {sampleRate:sr, channels, loudness, marks:{seconds:SECONDS, beats:BEATS, sections:SECTIONS.map(s => ({...s, t0:B(s.from), t1:B(s.to)})), events:EVENTS,
-    grats:motif.map(c => ({B:c.B, part:c.part, take:c.take, t:c.grats, frame:Math.round(c.grats * 30), start:c.start, end:c.end})),
+    grats:motif.map(c => ({B:c.B, part:c.part, take:c.take, t:c.grats, frame:Math.round(c.grats * FPS), start:c.start, end:c.end})),
     ticks:on.has('ticks') ? tickList.map(k => ({B:k.B, t:k.t, frame:k.frame, comments:k.comments, kind:k.kind, vel:k.vel, accent:k.accent})) : [],
-    copies, buffers:count, silence:[{from:B(R.choke.silence), to:Math.min(...motif.filter(c => c.part === 'final').map(c => c.start))}, {from:lastVoice + .05, to:SECONDS}],
+    // The silence runs from the choke to the 1,204 tick (B92, with Doug's reply), which the last line follows by 67 ms.
+    copies, buffers:count, silence:[{from:B(R.choke.silence), to:Math.min(...motif.filter(c => c.part === 'final').map(c => c.start), ...(finalTick && on.has('ticks') ? [finalTick.t] : []))}, {from:lastVoice + .05, to:SECONDS}],
     wall:R.wallSpan.map(B), ref:R.refSpan.map(B)}};
 }
 

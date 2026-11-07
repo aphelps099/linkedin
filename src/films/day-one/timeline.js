@@ -8,27 +8,34 @@
 //   buildCamera(layout) the camera's segments, built from row tops the page measures after
 //                       document.fonts.ready (never from constants, so SF Pro and Inter land on time)
 //
-// Notation: B is the beat index from 0 (100 BPM: a beat is 0.6 s, 18 frames at 30 fps; an 8th
-// is 9 frames). t = 0.6·B. A content point (x, y) draws at (180 + (x - 180)·k, 300 + (y - a)·k):
+// Notation: B is the beat index from 0 (100 BPM: a beat is 0.6 s, 36 frames at 60 fps; an 8th
+// is 18 frames, a 16th 9). t = 0.6·B. A content point (x, y) draws at (180 + (x - 180)·k, 300 + (y - a)·k):
 // a(t) is the content y on the reading line, k(t) the scale. Everything is in CSS px of the
 // 360x640 page (x3 for the 1080x1920 frame).
+//
+// The frame is a phone screen recording: the phone's status bar and the app's top bar (TOP, 100 px)
+// stay put at scale 1, and so does the counts row once it pins under them (STICKY_H). That keeps the
+// counter, the film's clock, inside the 9:16 safe band (y >= 300 frame px) and legible at the wall.
 
-export const FPS = 30;
+export const FPS = 60;                        // a screen recording's rate: the roll moves half as far a frame
 export const BPM = 100;
 export const BEAT = 60 / BPM;                 // 0.6 s
-export const FRAMES = 1764;                   // 58.8 s, 24.5 bars
+export const BEATS = 98;                      // 24.5 bars
+export const FRAMES = Math.round(BEATS * BEAT * FPS);   // 3,528 frames, 58.8 s
 export const DURATION = FRAMES / FPS;
 export const PAGE = Object.freeze({w:360, h:640, dpr:3});
+export const TOP = 100;                       // status bar 44 + the app's top bar 56 (300 frame px: the safe band's top)
+export const STICKY_H = 34;                   // the counts row, pinned under the top bar
 export const READ_Y = 300;                    // the reading line (900 frame px)
-export const BAR_H = 91;                      // the sticky social bar: counts 34 + hairline 1 + actions 56
-export const VMAX = 13 * FPS;                 // on-screen speed limit: 13 px a frame (390 px/s)
+export const END_Y = 270;                     // where Jamie's comment comes to rest (Doug's line ends above 1,380 frame px)
+export const VMAX = 390;                      // on-screen speed limit, CSS px/s (6.5 px a frame at 60 fps; 19.5 frame px)
 export const TAU = .25;                       // the settle's time constant (an iOS flick slowing down)
 export const CREEP = 6;                       // px/s while a special row dwells
 export const K_WALL = .45;                    // the pull-back's scale
 export const COMPANY = 'Brightwick';          // Aaron's decision: "Brightwell" is a real payments company
 
 export const tOf = B => B * BEAT;
-// The first frame that shows something that happens on beat B (a 16th falls between frames).
+// The first frame that shows something that happens on beat B (at 60 fps every 16th is a whole frame).
 export const frameOf = B => Math.ceil(B * BEAT * FPS - 1e-6);
 
 // The beats the picture changes on, other than the roll and the counter.
@@ -40,51 +47,52 @@ export const EVENTS = Object.freeze({
   press:21,        // pressed: #EBEBEB for 4 frames, then a spinner
   loaded:22,       // rows 12-14 appear, row 12 on the line; the comment counter starts
   flip:40,         // the reaction cluster flips to Celebrate, Like, Love
-  pullBack:[71, 76],   // sine in-out over 5 beats: the edges of the frame stay under 13 px a frame
+  pullBack:[71, 76],   // sine in-out over 5 beats: every point in view stays under the speed limit
   pushIn:[82, 85.5],
-  jamie:88,        // Jamie's comment stops on the line; the roll stops
-  doug:92,         // Doug's reply appears: 1,204
+  jamie:88,        // Jamie's comment comes to rest (END_Y); the roll stops
+  doug:92,         // Doug's reply appears: 1,204 and its one tick
 });
-export const PRESS_FRAMES = 4;
+export const PRESS_FRAMES = Math.round(4 / 30 * FPS);   // the press: #EBEBEB for 133 ms
+export const FINAL_LAG = 4 / FPS;              // the last line starts 67 ms after Doug's reply appears (picture, tick, then the voice)
+
+// The warm block: read, not rolled. Each stop puts a row's top at y on screen and holds it from
+// at[0] to at[1] (beats); the camera moves between stops with a minimum-jerk ease and comes to a
+// full stop on "Load more comments" at B20. Dana (and Jamie's reply), then Mom (and "Mom 😭") with
+// Tess under her, then Nadia above the button.
+export const WARM_STOPS = Object.freeze([
+  {row:1, y:200, at:[11, 12.5]},
+  {row:3, y:150, at:[15.5, 17]},
+]);
 
 // The special rows: arrive on the line at B (settling in), creep while they dwell, launch on
 // `launch` (one beat, eased in) so the next row arrives at `next`.
 export const SPECIALS = Object.freeze([
-  {row:15, B:26, launch:28, next:29, joke:'Congrats, Jordan!'},
-  {row:20, B:34, launch:36, next:37, joke:'the recruiter'},
-  {row:27, B:41, launch:42, next:43, joke:'So well deserved!'},
-  {row:36, B:48, launch:49, next:50, joke:"Let's connect!"},
-  {row:45, B:55, launch:56, next:57, joke:'the vendor pitch'},
-  {row:70, B:70, launch:73, next:74, joke:'the robot'},
+  {row:10, B:26, launch:28, next:29, joke:'Congrats, Jordan!'},
+  {row:15, B:34, launch:37, next:38, joke:'the recruiter'},
+  {row:20, B:41, launch:42, next:43, joke:'So well deserved!'},
+  {row:29, B:48, launch:49, next:50, joke:"Let's connect!"},
+  {row:38, B:55, launch:59, next:60, joke:'the vendor pitch'},
+  {row:57, B:70, launch:73, next:74, joke:'the anniversary'},
 ]);
 const range = (a, b) => Array.from({length:b - a + 1}, (_, i) => a + i);
-// The waves: uniform rows on a grid (a credit roll). Rows 56 (👏👏👏) and 63 ("Insightful")
-// pass inside waves 6-8 without a dwell. The wall (rows 71-86) is 16 consecutive 8ths.
+// The waves: uniform rows on a grid (a credit roll). Rows 49 (👏👏👏) and 53 ("Insightful")
+// pass inside waves 6-8 without a dwell. The wall (rows 58-73) is 16 consecutive 8ths.
 export const WAVES = Object.freeze([
-  {wave:1, rows:range(12, 14), B:22, every:1},
-  {wave:2, rows:range(16, 19), B:29, every:1},
-  {wave:3, rows:range(21, 26), B:37, every:.5},
-  {wave:4, rows:range(28, 35), B:43, every:.5},
-  {wave:5, rows:range(37, 44), B:50, every:.5},
-  {wave:6, rows:range(46, 69), B:57, every:.5},   // 6: 46-55, 👏👏👏 56, 7: 57-62, "Insightful" 63, 8: 64-69
-  {wave:9, rows:range(71, 86), B:74, every:.5, wall:true},
+  {wave:1, rows:range(7, 9), B:22, every:1},
+  {wave:2, rows:range(11, 14), B:29, every:1},
+  {wave:3, rows:range(16, 19), B:38, every:.5},
+  {wave:4, rows:range(21, 28), B:43, every:.5},
+  {wave:5, rows:range(30, 37), B:50, every:.5},
+  {wave:6, rows:range(39, 56), B:60, every:.5},   // 6: 39-48, 👏👏👏 49, 7: 50-52, "Insightful" 53, 8: 54-56
+  {wave:9, rows:range(58, 73), B:74, every:.5, wall:true},
 ]);
-export const JAMIE_ROW = 93, DOUG_ROW = 94, LAST_WARM_ROW = 11;
-export const DECEL = Object.freeze({from:82, to:88});   // wave 10 (rows 87-92) slows into Jamie's comment
+export const JAMIE_ROW = 80, DOUG_ROW = 81, LAST_WARM_ROW = 6, TYPO_ROW = 79;
+export const DECEL = Object.freeze({from:82, to:88});   // wave 10 (rows 74-78) and the typo (79) slow into Jamie's comment
 
 // The wave (the sound's sense of it) each comment row belongs to.
+const WAVE_OF = [[1, 6, 0], [7, 9, 1], [11, 14, 2], [16, 19, 3], [21, 28, 4], [30, 37, 5], [39, 48, 6], [50, 52, 7], [54, 56, 8], [58, 73, 9], [74, 78, 10]];
 export function waveOf(row) {
-  if (row <= LAST_WARM_ROW) return 0;
-  if (row <= 14) return 1;
-  if (row >= 16 && row <= 19) return 2;
-  if (row >= 21 && row <= 26) return 3;
-  if (row >= 28 && row <= 35) return 4;
-  if (row >= 37 && row <= 44) return 5;
-  if (row >= 46 && row <= 55) return 6;
-  if (row >= 57 && row <= 62) return 7;
-  if (row >= 64 && row <= 69) return 8;
-  if (row >= 71 && row <= 86) return 9;
-  if (row >= 88 && row <= 92) return 10;
+  for (const [a, b, w] of WAVE_OF) if (row >= a && row <= b) return w;
   return null;                                          // a special or species row
 }
 
@@ -94,7 +102,7 @@ export function rowBeats() {
   const out = {};
   for (const w of WAVES) w.rows.forEach((r, i) => { out[r] = w.B + i * w.every; });
   for (const s of SPECIALS) out[s.row] = s.B;
-  out[12] = EVENTS.loaded; out[87] = DECEL.from; out[JAMIE_ROW] = EVENTS.jamie;
+  out[WAVES[0].rows[0]] = EVENTS.loaded; out[TYPO_ROW - 5] = DECEL.from; out[JAMIE_ROW] = EVENTS.jamie;
   return out;
 }
 
@@ -214,19 +222,21 @@ export const clusterAt = frame => frame >= frameOf(EVENTS.flip) ? ['celebrate', 
 // (score.js) owns voicing, takes and space; this is the picture's side of the same clock.
 export function cues() {
   const out = [];
-  const add = (B, copies, part, more = {}) => out.push(Object.freeze({B, t:tOf(B), frame:Math.round(B * 18), copies, part, ...more}));
-  add(22, 1, 'voice1', {take:'s1', dry:true, row:12});
+  const add = (B, copies, part, more = {}) => out.push(Object.freeze({B, t:tOf(B), frame:Math.round(B * BEAT * FPS), copies, part, ...more}));
+  add(22, 1, 'voice1', {take:'s1', dry:true, row:WAVES[0].rows[0]});
   add(30, 2, 'wave2', {take:'s2'});
   add(32, 2, 'wave2', {take:'y1'});
   add(38, 3, 'wave3');
   add(44, 4, 'wave4'); add(46, 4, 'wave4');
   add(50, 6, 'wave5'); add(52, 6, 'wave5');
-  for (let i = 0; i < 8; i++) add(58 + i / 2, 8, 'wave6', {canon:i});
+  for (let i = 0; i < 8; i++) add(60 + i / 2, 8, 'wave6', {canon:i});   // the canon marches with the identical rows (the 1x pattern)
   add(64, 8, 'wave7'); add(66, 9, 'wave8'); add(68, 10, 'wave8');
   add(70, 0, 'robot', {choke:true});
-  for (let i = 0; i < 16; i++) add(74 + i / 2, 16, 'wall', {entry:i, row:71 + i});
+  for (let i = 0; i < 16; i++) add(74 + i / 2, 16, 'wall', {entry:i, row:WAVES.at(-1).rows[i]});
   for (let i = 0; i < 6; i++) add(82 + i / 2, 5 - i, 'release');
-  add(EVENTS.doug, 1, 'final', {take:'s1', dry:true, row:DOUG_ROW});
+  // The last line is placed by its first sample, not by "grats": after the choke there is no groove to land on,
+  // so the picture leads (Doug's reply, 1,204, its tick) and the voice follows, 67 ms later.
+  add(EVENTS.doug, 1, 'final', {take:'s1', dry:true, row:DOUG_ROW, start:tOf(EVENTS.doug) + FINAL_LAG});
   return Object.freeze(out);
 }
 
@@ -286,6 +296,7 @@ export function kAt(t) {
 
 const CAMERAS = new WeakMap();
 // layout: {rows: {[n]: {top, height}}, loadMore: {top}, counts: {top}} in content px.
+// The first wave's first row replaces "Load more comments" at its y.
 export function buildCamera(layout) {
   if (CAMERAS.has(layout)) return CAMERAS.get(layout);
   const top = r => { const row = layout.rows[r]; if (!row) throw Error(`The layout has no row ${r}.`); return row.top; };
@@ -293,27 +304,35 @@ export function buildCamera(layout) {
   const last = () => S[S.length - 1];
   const end = () => { const s = last(); return {t:s.t1, a:s.f(s.t1), v:s.df(s.t1)}; };
 
-  // 1. Still: the thumbnail, "…more", the burst.
-  S.push(hold(0, tOf(EVENTS.roll), READ_Y));
-  // 2. The warm block: ease in over two beats, read at a steady pace, settle (a full stop) on
-  //    "Load more comments" at B20.
+  // 1. Still: the thumbnail, "…more", the burst. Content y 0 sits under the top bar (screen y TOP).
+  const a0 = READ_Y - TOP;
+  S.push(hold(0, tOf(EVENTS.roll), a0));
+  // 2. The warm block, read: from rest to each stop and from it to the next with a minimum-jerk
+  //    ease (rest to rest), holding at each, then a full stop on "Load more comments" at B20. A move
+  //    that would break the speed limit leaves its stop earlier (in 16ths).
   {
-    const t0 = tOf(EVENTS.roll), tE = tOf(EVENTS.roll + 2), tS = tOf(EVENTS.loadMore), L = 2 * BEAT;
-    const D = layout.loadMore.top - READ_Y, G = tS - t0, E = tE - t0;
-    const v = D / (E / 2 + (G - E - L) + TAU * (1 - Math.exp(-L / TAU)));
-    S.push(quintic(t0, tE, READ_Y, 0, READ_Y + v * E / 2, v, 'ease-in'));
-    S.push(linear(tE, tS - L, READ_Y + v * E / 2, v));
-    const a0 = end().a, s = settle(tS - L, tS, a0, v, 0, layout.loadMore.top, tS);
-    // Land exactly on the button (the residual is under half a pixel), then stop.
-    const fix = layout.loadMore.top - s.f(tS), f0 = s.f, d0 = s.df;
-    s.f = t => f0(t) + fix * (t - (tS - L)) / L; s.df = t => d0(t) + fix / L;
-    S.push(s);
-    notes.push({warmSpeed:+v.toFixed(2)});
+    const stops = WARM_STOPS.map(w => ({a:top(w.row) + READ_Y - w.y, at:w.at.map(tOf), row:w.row}));
+    stops.push({a:layout.loadMore.top, at:[tOf(EVENTS.loadMore), tOf(EVENTS.loaded)], row:'load'});
+    let from = {a:a0, t:tOf(EVENTS.roll)};
+    for (let i = 0; i < stops.length; i++) {
+      const st = stops[i], D = st.a - from.a;
+      // Peak speed of the quintic is 1.875 D / T; start earlier (cutting the previous hold) if it must.
+      while (1.875 * D / (st.at[0] - from.t) > VMAX * .98 && i > 0 && from.t - BEAT / 4 > stops[i - 1].at[0] + BEAT) {
+        from = {...from, t:from.t - BEAT / 4};
+        S[S.length - 1].t1 = from.t;
+        notes.push({warmStop:stops[i - 1].row, leavesEarlier:+(stops[i - 1].at[1] - from.t).toFixed(3)});
+      }
+      S.push(quintic(from.t, st.at[0], from.a, 0, st.a, 0, 'warm'));
+      S.push(hold(st.at[0], st.at[1], st.a));
+      notes.push({warm:st.row, D:+D.toFixed(1), peak:+(1.875 * D / (st.at[0] - from.t)).toFixed(1)});
+      from = {a:st.a, t:st.at[1]};
+    }
+    S.pop();                                                // the Load more hold is step 3's
   }
   // 3. The press and the spinner: still. Rows 12+ replace the button at the same y.
   S.push(hold(tOf(EVENTS.loadMore), tOf(EVENTS.loaded), layout.loadMore.top));
-  const rowTop12 = top(12);
-  if (Math.abs(rowTop12 - layout.loadMore.top) > .5) notes.push({warning:`row 12 top ${rowTop12} differs from Load more ${layout.loadMore.top}`});
+  const rowTopFirst = top(WAVES[0].rows[0]);
+  if (Math.abs(rowTopFirst - layout.loadMore.top) > .5) notes.push({warning:`row ${WAVES[0].rows[0]} top ${rowTopFirst} differs from Load more ${layout.loadMore.top}`});
 
   // 4. The waves and the specials.
   const specialAfter = new Map(SPECIALS.map(s => [s.row, s]));
@@ -358,16 +377,16 @@ export function buildCamera(layout) {
       S.push(sSettle, sLaunch);
       notes.push({row:sp.row, settle:+L.toFixed(3), launch:+(tN - launchAt).toFixed(3), launchPeak:+peakSpeed(sLaunch).toFixed(1)});
     } else if (w.wall) {
-      // Wave 10: keep the wall's speed to B82 (row 87 on the grid), then slow to a full stop
-      // on Jamie's comment at B88 (a quintic: smooth at both ends).
+      // Wave 10: keep the wall's speed to B82 (row 74 on the grid), then slow to a full stop with
+      // Jamie's comment at END_Y at B88 (a quintic: smooth at both ends), Terri's typo just above it.
       const e = end(), t82 = tOf(DECEL.from);
       S.push(linear(e.t, t82, e.a, e.v));
       const e2 = end();
-      S.push(quintic(t82, tOf(DECEL.to), e2.a, e2.v, top(JAMIE_ROW), 0, 'stop'));
+      S.push(quintic(t82, tOf(DECEL.to), e2.a, e2.v, top(JAMIE_ROW) + READ_Y - END_Y, 0, 'stop'));
     }
   }
-  // 5. The end: still on Jamie's comment; Doug's reply appears under it at B92.
-  S.push(hold(tOf(DECEL.to), DURATION + 1, top(JAMIE_ROW)));
+  // 5. The end: still; Doug's reply appears under Jamie's at B92.
+  S.push(hold(tOf(DECEL.to), DURATION + 1, top(JAMIE_ROW) + READ_Y - END_Y));
 
   // Continuity (position) and monotonicity.
   for (let i = 1; i < S.length; i++) {
@@ -402,15 +421,15 @@ export function frameAt(t, layout) {
   const a = cam.a(t), k = kAt(t), counts = countsAt(frame);
   const fPress = frameOf(EVENTS.press), fLoaded = frameOf(EVENTS.loaded);
   const loadMore = frame < fPress ? 'idle' : frame < fPress + PRESS_FRAMES ? 'pressed' : frame < fLoaded ? 'loading' : 'done';
-  // The sticky social bar: once the counts row's top reaches the top of the frame.
+  // The counts row pins once its top reaches the bottom of the top bar.
   const countsY = READ_Y + (layout.counts.top - a) * k;
   return {
     t, frame, B:t / BEAT, a, k, speed:cam.v(t) * k,
     expanded:frame >= frameOf(EVENTS.more),
     counts, text:countsText(counts), cluster:clusterAt(frame),
-    loadMore, spinner:loadMore === 'loading' ? ((frame - fPress - PRESS_FRAMES) * 12) % 360 : 0,
+    loadMore, spinner:loadMore === 'loading' ? Math.round((frame - fPress - PRESS_FRAMES) / FPS * 360) % 360 : 0,   // a turn a second
     loaded:frame >= fLoaded,
     doug:frame >= frameOf(EVENTS.doug),
-    sticky:countsY <= 0,
+    sticky:countsY <= TOP,
   };
 }

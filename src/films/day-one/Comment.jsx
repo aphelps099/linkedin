@@ -61,6 +61,7 @@ export function Comment({row, crops, reply = false}) {
 }
 
 // "Load more comments": pressed (#EBEBEB, 4 frames), then a spinner for the rest of the beat.
-export const LoadMore = () => <div className="load">
-  <span className="load-btn"><span className="load-label">Load more comments</span><Spinner /></span>
+// At the end of the thread (end): the same control, still, under the last comment.
+export const LoadMore = ({end = false}) => <div className={end ? 'load load-end' : 'load'}>
+  <span className="load-btn"><span className="load-label">Load more comments</span>{!end && <Spinner />}</span>
 </div>;
