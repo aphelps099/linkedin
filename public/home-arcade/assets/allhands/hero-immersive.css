@@ -370,3 +370,6 @@
 #restoredTop #test-beats-title .beats-eq{width:100%;height:auto;filter:none;transition:none}
 #restoredTop #c2-player .beats-eq circle{transition:none!important;animation:none}
 @media(max-width:760px){#restoredTop #c2-player .test-beats-copy{padding-right:0}#restoredTop #test-beats-title{max-width:560px}}
+
+/* Tiny four-corner thumbnail bevels; the colored peg frame follows each cut. */
+#humbled .film-image img{clip-path:polygon(6px 0,calc(100% - 6px) 0,100% 6px,100% calc(100% - 6px),calc(100% - 6px) 100%,6px 100%,0 calc(100% - 6px),0 6px)}
