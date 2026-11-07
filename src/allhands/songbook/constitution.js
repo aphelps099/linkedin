@@ -358,8 +358,10 @@ export function lintRiver(trackOrId) {
     () => `the first texture (${src0.id}) must sound first and alone ${V.lushBefore} bars, then thicken (${mine.length} layers of it) before other samples join: ${early.map(l => l.id).join(', ') || 'none early'}`);
   const loop = layers.find(l => l.kind === 'loop'), bars = Array.from({length:W.bars}, (_, b) => b), kicked = bars.filter(b => W.kicksOf(b, W.layers(b)).length);
   flag('river.loop', !!loop && loop.in[0] <= 3 && loop.out[0] >= W.fade[0] - 1e-9 && kicked.length >= W.bars - 1, () => `the loop plays ${kicked.length} of ${W.bars} bars${loop ? `, from bar ${loop.in[0]} to ${loop.out[1]}` : ', no loop layer'}`);
-  const at = [W.hook?.bar, W.phrases?.y, W.phrases?.refrain].filter(x => x !== undefined && x !== null).sort((a, b) => a - b);
-  flag('river.phrases', Object.keys(W.phrases || {}).length <= V.phrases && at.every((x, i) => !i || x - at[i - 1] >= V.phraseGap), `clear phrases at bars ${at.join(', ')}: at most ${V.phrases} and Synergy once, ${V.phraseGap} bars apart`);
+  // A phrase's bar may be a list (an extended river bringing one back): every appearance counts.
+  const band = Object.values(W.phrases || {}).flatMap(x => [].concat(x ?? []));
+  const at = [W.hook?.bar, ...band].filter(x => x !== undefined && x !== null).sort((a, b) => a - b);
+  flag('river.phrases', band.length <= V.phrases && at.every((x, i) => !i || x - at[i - 1] >= V.phraseGap), `clear phrases at bars ${at.join(', ')}: at most ${V.phrases} and Synergy once, ${V.phraseGap} bars apart`);
   const tamb = layers.find(l => l.kind === 'tambourine'), swellMax = Math.max(1, ...(tamb?.swell || []).map(x => x[1]));
   flag('river.tambourine', !!tamb && swellMax <= 1.6, tamb ? `the tambourine comes up ${swellMax}x: a little` : 'no tambourine');
   const acoustic = layers.filter(l => (W.acoustic || []).includes(l.id) && l.kind === 'colour');

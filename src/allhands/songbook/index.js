@@ -12,12 +12,16 @@ import circleBack from './circle-back.js';
 import humbledAndHonored from './humbled-and-honored.js';
 import hustle from './hustle.js';
 import offsite from './offsite.js';
+import someDoors from './some-doors.js';
+import someDoorsExtended from './some-doors-extended.js';
 
 export const TRACKS = {
   'circle-back':circleBack,
   'humbled-and-honored':humbledAndHonored,
   hustle,
   offsite,
+  'some-doors':someDoors,   // unlisted: renders by id, never offered by the picker or casting
+  'some-doors-extended':someDoorsExtended,   // unlisted, four minutes
 };
 export const TRACK_ORDER = ['circle-back', 'humbled-and-honored', 'hustle', 'offsite'];
 export const DEFAULT_TRACK = 'circle-back';

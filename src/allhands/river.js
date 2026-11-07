@@ -352,8 +352,9 @@ export function riverBand(chart) {
         else if (v) I.tambourine(ctx, bus('tambourine'), t, v, {kind:'shake', side:.35});
       }
       const chord = b.chord, penta = W.pentatonic, center = W.window(bar + s / 16);
-      // Pat hums the root on the offbeats.
-      if (bus('bass') && lv('bass') > .001 && (s === 2 || s === 10)) I.humBass(ctx, bus('bass'), t, chord.root, 6 * step - .02, .6);
+      // Pat hums the root on the offbeats, six 16ths a note. (`step` here is the 16th's index, not its
+      // length: the note's seconds come from plan.step.)
+      if (bus('bass') && lv('bass') > .001 && (s === 2 || s === 10)) I.humBass(ctx, bus('bass'), t, chord.root, 6 * plan.step - .02, .6);
       // Kevin's figure, clean, on the offbeats.
       if (bus('guitar') && lv('guitar') > .001) for (const [at, i] of W.figure) if (at === s) I.cleanGuitar(ctx, bus('guitar'), t, [chord.notes[i] + 12], .34, {ring:.8});
       // The colours: the pluck's arpeggio, the felt piano's chords, the mallet's counter-line, on a pitch window that drifts.
