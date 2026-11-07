@@ -94,13 +94,20 @@ export function arrangeWander(lyrics, durations, options = {}) {
   }
   const roles = castOf(cast), rc = riverCast(roles, W), seed0 = hash(`${lyrics.hook}|${tr.id}|river`);
   // The loop sources: her syllables (her ladder's words), his word, the couplet's "It's not X."
-  const loops = [];
-  const her = roles.ladder ? loopOf('her', {voice:'lady', file:roles.ladder.file, words:roles.ladder.words, text:roles.ladder.display, display:roles.ladder.display}, tr, 'her syllables, looped') : null;
+  // A chart may name its own sources (W.sources: [{id, part, what}]): 'her' replaces her ladder's words,
+  // any other id is one more recording to cut, beside the three below.
+  const loops = [], own = (W.sources || []).find(s => s.id === 'her');
+  const herPart = own ? own.part : roles.ladder ? {voice:'lady', file:roles.ladder.file, words:roles.ladder.words, text:roles.ladder.display, display:roles.ladder.display} : null;
+  const her = herPart ? loopOf('her', herPart, tr, own?.what ?? 'her syllables, looped') : null;
   if (her) loops.push(her);
   const his = rc.his ? loopOf('his', rc.his, tr, 'his word, looped') : null;
   if (his) loops.push(his);
   const x = rc.couplet ? loopOf('x', rc.couplet.x, tr, '"It\'s not X." looped into the texture') : null;
   if (x) loops.push(x);
+  for (const s of (W.sources || []).filter(s => s.id !== 'her')) {
+    const extra = loopOf(s.id, s.part, tr, s.what ?? `"${s.part.text}" looped`);
+    if (extra) loops.push(extra);
+  }
   // The clear phrases: the couplet's Y once, the refrain once, each rising out of the stream at its bar.
   const band = [], at = W.phrases;
   const phrase = (part, role, partName, bar, {extra = {}, gain = W.phraseGain ?? 2, seed = 0} = {}) => {
