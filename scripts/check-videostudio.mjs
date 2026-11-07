@@ -42,7 +42,7 @@ import {chokeFrames, PEG_LEAD} from '../src/videostudio/edl/anchors.js';
 import {metronomeEDL, expectedCuts} from '../src/videostudio/edl/metronome.js';
 import {FORMATS, CLASSES, GUTTER, RADIUS, SAFE, HOME, FULL_BOARD, sameRect, insideSafeBand, layout, cellRect, layoutClassOf, cellIds} from '../src/videostudio/layouts.js';
 import {boardGrid, boardTypeBounds, safeSpan} from '../src/videostudio/gl/board-layer.js';
-import {buildScreens, boardState, paint, strikeRows, strikeWeight} from '../src/pegboard/choreo.js';
+import {buildScreens, boardState, paint, strikeRows, strikeWeight, pageAt} from '../src/pegboard/choreo.js';
 import {PALETTE} from '../src/pegboard/board.js';
 import {LADY_TABLE} from '../src/allhands/lady-table.js';
 import {MOVES, MOVE_NAMES} from '../src/videostudio/moves/index.js';
@@ -52,8 +52,8 @@ import {TREATMENTS, BY_TRACK, RECORDED, treatmentFor, treatmentNamed} from '../s
 import {FRAMES as PRINTER_FRAMES, LINES as PRINTER_LINES, INTRO as PRINTER_INTRO, GLIDES as PRINTER_GLIDES} from '../src/videostudio/treatments/printer-song.js';
 import {SHOT as PRINTER_SHOT, dreamAt as printerDream} from '../src/videostudio/treatments/printer-mouth.js';
 import {TRAIL_MAX} from '../src/videostudio/edl/compile.js';
-import {FRAMES as DELVE_FRAMES, BLACK_FROM as DELVE_BLACK, ZONES as DELVE_ZONES, COLS as DELVE_COLS, ROWS as DELVE_ROWS} from '../src/videostudio/treatments/delve-board.js';
-import {SHAPES as LIP_SHAPES, lightRatio, LIGHT_TOLERANCE, decode as decodeLips, HERO as LIPS_HERO, SMALL as LIPS_SMALL} from '../src/pegboard/lips.js';
+import {FRAMES as DELVE_FRAMES, BLACK_FROM as DELVE_BLACK, ZONES as DELVE_ZONES, COLS as DELVE_COLS, ROWS as DELVE_ROWS, MOUTH_ROW as DELVE_MOUTH_ROW, LIPS_CX as DELVE_LIPS_CX, RING as DELVE_RING} from '../src/videostudio/treatments/delve-board.js';
+import {SHAPES as LIP_SHAPES, lightRatio, LIGHT_TOLERANCE, LIGHT_K as LIPS_K, decode as decodeLips, HERO as LIPS_HERO, SMALL as LIPS_SMALL, MID as LIPS_MID, eventVisemes, code as lipCode, settle as settleLips, lipsSprite} from '../src/pegboard/lips.js';
 import {paintPsych, isFigure} from '../src/pegboard/psych.js';
 import {boardLuma, flashes, worstWindow} from '../src/pegboard/governor.js';
 import {boardScreens, boardTimeOf} from '../src/videostudio/gl/compositor.js';
@@ -1071,46 +1071,139 @@ section('17. Delve., her vocabulary on the board', () => {
     if (!fr.board.rect) { b.I.fill(0); b.exposure = 0; }
     return {b, type, typeI, figure};
   };
-  // Zones, every third frame: type never in the header (rows 0-25); once the mouth exists, type only in rows
-  // 26-74 and the mouth only in 76-114; nothing but faint light (I <= .25) below row 120; no lip peg on a word.
-  const zoneBad = [], lipsFrom = Math.round(plan.marks.mouth * 24);
-  let lipsSeen = 0, starsSeen = 0;
-  const lum = [];
+  // Pages: at every word's hit frame the page on the board holds that word (a couplet's second page, P8's
+  // second page, turn on the frame of their first word, with it; choreo pageAt).
+  const pageLate = [];
+  let pageN = 0;
+  for (const e of plan.band) e.words.forEach((w, k) => {
+    const f = hitFrame(w.start, plan), fr = p.frame(f), s = screens[fr.board.screen];
+    const idx = s?.phrase === e.id ? s.words.findIndex(x => Math.abs(x.start - w.start) < 1e-9) : -1;
+    if (idx < 0) { pageLate.push(`${e.id}#${k}@f${f} (no screen)`); return; }
+    pageN++;
+    if (!pageAt(s, grid.layoutOf(s), boardTimeOf(fr)).lines.some(l => l.chars.some(c => c.word === idx))) pageLate.push(`${e.id}#${k}@f${f}`);
+  });
+  ok(!pageLate.length && pageN === plan.band.reduce((n, e) => n + e.words.length, 0), `pages: on the frame each of her ${pageN} words is heard, the page shown holds it (a page turns with its first word)${pageLate.length ? `; late: ${pageLate.join(', ')}` : ''}`);
+  // Zones, every third frame: type never in the header (rows 0-25) nor under row 84, and never within a peg of
+  // her lips (a dark moat a peg wide at least: the lips never touch a word); the mouth (with its choir's stack) in
+  // rows 76-119; nothing but faint light (I <= .25) below row 120.
+  const zoneBad = [], lipsFrom = 0;
+  let lipsSeen = 0, starsSeen = 0, typeLow = 0, moat = 9;
+  const lum = [], pegL = [], LUMA4 = [.32, .95, .86, .2];
+  // (Per frame, for the picture's own gates below: each peg's light, its kind: 1 type, 2 her lips, 3 a star, 4 texture.)
+  const kindOf = [];
   for (let f = 0; f < p.frames; f++) {
     const {b, type, typeI, figure} = paintAt(f);
     lum.push(boardLuma(b));
+    const L1 = new Float32Array(b.I.length), K1 = new Uint8Array(b.I.length);
+    for (let i = 0; i < b.I.length; i++) if (b.I[i] > 0) { L1[i] = Math.min(1.6, b.I[i]) * (LUMA4[b.tone[i]] + (1 - LUMA4[b.tone[i]]) * b.white[i]) * b.exposure; K1[i] = type[i] ? 1 : figure[i] === 1 ? 2 : figure[i] === 2 ? 3 : 4; }
+    pegL.push(L1); kindOf.push(K1);
     if (f % 3) continue;
+    const lipAt = new Uint8Array(b.I.length);
+    for (let i = 0; i < b.I.length; i++) if (figure[i] === 1) lipAt[i] = 1;
     for (let y = 0; y < DELVE_ROWS; y++) for (let x = 0; x < DELVE_COLS; x++) {
       const i = y * DELVE_COLS + x;
-      if (type[i] && typeI[i] > .26 && (y <= DELVE_ZONES.header[1] || (f >= lipsFrom && y > 74) || y > DELVE_ZONES.floor)) zoneBad.push(`type f${f} r${y}`);
+      if (type[i] && typeI[i] > .26 && (y <= DELVE_ZONES.header[1] || y > DELVE_ZONES.floor)) zoneBad.push(`type f${f} r${y}`);
+      if (type[i] && y > 84) zoneBad.push(`type f${f} r${y} (under row 84)`);
+      if (type[i]) { typeLow = Math.max(typeLow, y); for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const yy = y + dy, xx = x + dx; if (yy >= 0 && yy < DELVE_ROWS && xx >= 0 && xx < DELVE_COLS && lipAt[yy * DELVE_COLS + xx]) zoneBad.push(`type touches the lips f${f} r${y} c${x}`); } }
       if (b.I[i] > .26 * 1.0001 && y > DELVE_ZONES.floor) zoneBad.push(`light f${f} r${y}`);
+      // (The 9:16 safe columns, x 64-944 at 1080: whole pegs 6-77. Her words and every ghost of them stay inside.)
+      if (type[i] && (x < 6 || x > 77)) zoneBad.push(`type f${f} c${x}`);
     }
     const lipRows = [], fr = p.frame(f), lips = fr.board.psych.find(x => x.look === 'lips');
     if (lips && f < DELVE_BLACK) { for (let i = 0; i < b.I.length; i++) if (figure[i] === 1) lipRows.push(Math.floor(i / DELVE_COLS)); if (lipRows.length) lipsSeen++; }
-    if (lipRows.some(y => y < 76 || y > 114)) zoneBad.push(`lips f${f} r${Math.min(...lipRows)}-${Math.max(...lipRows)}`);
+    if (lipRows.some(y => y < 70 || y > 119)) zoneBad.push(`lips f${f} r${Math.min(...lipRows)}-${Math.max(...lipRows)}`);
     if (fr.board.psych.some(x => x.look === 'stars')) starsSeen++;
   }
-  ok(!zoneBad.length && lipsSeen > 400 && starsSeen > 350, `zones hold on every third frame: no type in the header or (once the mouth exists) over the mouth, the mouth in rows 76-114, nothing brighter than .25 under row 120 (${lipsSeen} mouth frames, ${starsSeen} with stars)${zoneBad.length ? `; ${zoneBad.slice(0, 5).join(', ')}` : ''}`);
+  ok(!zoneBad.length && lipsSeen > 900 && starsSeen > 350, `zones hold on every third frame: no type in the header or under row 84 (lowest ${typeLow}), never within a peg of her lips, her words and their ghosts inside the safe columns 6-77, the mouth and its ring in rows 70-119, nothing brighter than .25 under row 120 (${lipsSeen} mouth frames, ${starsSeen} with stars)${zoneBad.length ? `; ${zoneBad.slice(0, 5).join(', ')}` : ''}`);
+  // No face (the lady never has a face): while her lips are lit, no radial texture (rings, mandala, ripples,
+  // moiré) has its centre within 35 rows above her mouth line unless it sits on her lips (they cover it): an eye
+  // over a mouth reads as a face.
+  const RADIAL = new Set(['contour', 'mandala', 'ripples', 'moire']), faceBad = [];
+  for (let f = 0; f < p.frames; f += 6) {
+    const ps = p.frame(f).board.psych || [];
+    if (!ps.some(x => x.look === 'lips')) continue;
+    for (const x of ps) if (RADIAL.has(x.look)) {
+      const cyRow = x.params.cy * DELVE_ROWS - .5, cxCol = x.params.cx * DELVE_COLS - .5, above = DELVE_MOUTH_ROW - cyRow;
+      const onLips = Math.abs(cyRow - DELVE_MOUTH_ROW) <= 3 && Math.abs(cxCol - (DELVE_LIPS_CX * DELVE_COLS - .5)) <= 6;
+      if (!onLips && above > 0 && above <= 35) faceBad.push(`${x.id ?? x.look} f${f} (${above.toFixed(1)} rows above)`);
+    }
+  }
+  ok(!faceBad.length, `no face: while her lips are lit every radial texture is centred on them (or more than 35 rows above them: star 1's landing ring)${faceBad.length ? `; ${faceBad.slice(0, 4).join(', ')}` : ''}`);
+  // The picture follows the song: the textures' light in the side margins (columns 0-9 and 80-89, rows 26-119) at
+  // each swell's top at least 1.5 times its stream reference (bars 5-12, the plan's reference); the brightest two
+  // seconds of the film inside the canon (98-107 s); the Pool and the slowed "sink in" at most .85 of the canon.
+  const meanSpan = (a, b, fn) => { let sum = 0, n = 0; for (let f = Math.round(a * 24); f < Math.round(b * 24); f++) { sum += fn(f); n++; } return sum / Math.max(1, n); };
+  const margin = f => { let s = 0, n = 0; const L1 = pegL[f], K1 = kindOf[f]; for (let y = 26; y < 120; y++) for (const x of [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89]) { const i = y * DELVE_COLS + x; if (K1[i] === 4) s += L1[i]; n++; } return s / n; };
+  const whole = f => { let s = 0; for (const v of pegL[f]) s += v; return s / pegL[f].length; };
+  const ref = meanSpan(12.5, 32.5, margin), sw1 = meanSpan(47.5, 55, margin), sw2 = meanSpan(97.5, 105, margin);
+  let best = 0, bestAt = 0;
+  for (let f = 3 * 24; f + 48 <= 117 * 24; f += 6) { const v = meanSpan(f / 24, f / 24 + 2, whole); if (v > best) { best = v; bestAt = f / 24; } }
+  const canonL = meanSpan(100, 106, whole), poolL = meanSpan(60, 70, whole), slowL = meanSpan(plan.slow[0].from, plan.slow[0].to, whole);
+  ok(sw1 >= 1.5 * ref && sw2 >= 1.5 * ref && bestAt >= 98 && bestAt + 2 <= 107.01 && poolL <= .85 * canonL && slowL <= .85 * canonL,
+    `the picture swells with the river: the margins' texture light ${(sw1 / ref).toFixed(2)}x and ${(sw2 / ref).toFixed(2)}x the stream's at the tops of Swell 1 and the canon (at least 1.5x); the brightest two seconds from ${bestAt.toFixed(2)} s (inside 98-107: the canon); the Pool ${(poolL / canonL).toFixed(2)} and the slowed "sink in" ${(slowL / canonL).toFixed(2)} of the canon (at most .85)`);
+  // The beat: the board's brightening frame to frame (the light that comes on) repeats a beat later (15 frames)
+  // through Swell 2 and the canon (85-107 s): its autocorrelation at one beat at least .5.
+  const brighten = [0];
+  for (let f = 1; f < p.frames; f++) { let s = 0; const A = pegL[f], Bv = pegL[f - 1]; for (let i = 0; i < A.length; i++) if (A[i] > Bv[i]) s += A[i] - Bv[i]; brighten.push(s); }
+  const corr = (a, b) => { const n = a.length, ma = a.reduce((x, y) => x + y, 0) / n, mb = b.reduce((x, y) => x + y, 0) / n; let sab = 0, saa = 0, sbb = 0; for (let i = 0; i < n; i++) { sab += (a[i] - ma) * (b[i] - mb); saa += (a[i] - ma) ** 2; sbb += (b[i] - mb) ** 2; } return sab / Math.sqrt(saa * sbb || 1); };
+  const beatAC = (a, b) => { const x = brighten.slice(Math.round(a * 24), Math.round(b * 24)); return corr(x.slice(0, -15), x.slice(15)); };
+  ok(beatAC(85, 107) >= .5 && beatAC(10, 50) >= .4, `the beat: the board's brightening repeats a beat later, autocorrelation ${beatAC(10, 50).toFixed(2)} over 10-50 s and ${beatAC(85, 107).toFixed(2)} over 85-107 s (at least .5 through Swell 2 and the canon: every look steps on the eighths)`);
+  // Her phrases weave out: once a phrase's echo is gone its words ease to a dim ghost (.3) over two bars, unless
+  // the next phrase replaces it first.
+  const weaveBad = [];
+  for (const id of ['P1', 'P2', 'P3', 'P4', 'P6', 'P7']) {
+    const sc = edl.board.find(c => c.id === id), d = sc.fx?.dim, e = plan.band.find(x => x.id === id), end = Math.max(e.end, ...plan.echoes.filter(x => x.phrase === id).map(x => x.end));
+    if (!d || d.at(-1)[1] > .45 || d.at(-1)[0] > end + 2 * 2.5 + 2.5 + 1e-6) weaveBad.push(id);
+  }
+  ok(!weaveBad.length, `her phrases weave out: P1-P4, P6 and P7 ease to a dim ghost of themselves once her echo of them is gone${weaveBad.length ? `; not: ${weaveBad.join(', ')}` : ''}`);
   // Flashes: the board as painted, ungoverned, whole and quadrants: at most 3 a second anywhere.
   const worst = [-1, 0, 1, 2, 3].map(k => worstWindow(flashes(lum.map(l => k < 0 ? l.whole : l.quads[k]), 24), 24));
   ok(Math.max(...worst) <= 3, `flashes, ungoverned, whole frame and each quadrant: at most ${Math.max(...worst)} a second (the limit is 3; the governor stays on in the export)`);
   // Her mouth: every shape holds its light within 8 % of rest; drawn on bar 22, kissing on 23:12 (f1425), the
   // first star leaving her lips there and landing on the middle (f1440); open on her words; the ring of eight.
-  const shapesOK = LIP_SHAPES.every(sh => [0, 1, 2, 3].every(o => { const r = lightRatio(sh, o, LIPS_HERO), k = Math.min(1.14, Math.max(.88, 1 / r)); return Math.abs(r * k - 1) <= LIGHT_TOLERANCE + 1e-9; }));
+  const shapesOK = [LIPS_HERO, LIPS_MID, LIPS_SMALL].every(size => LIP_SHAPES.every(sh => [0, 1, 2, 3].every(o => { const r = lightRatio(sh, o, size), k = Math.min(LIPS_K[1], Math.max(LIPS_K[0], 1 / r)); return Math.abs(r * k - 1) <= LIGHT_TOLERANCE + 1e-9; })));
   const mouthAt = f => { const x = p.frame(f).board.psych.find(q => q.look === 'lips'); return x && {...x.params, code:decodeLips(x.params.mouth)}; };
-  const star0 = edl.board.find(c => c.id === 'stars').events[0];
-  ok(shapesOK && !mouthAt(lipsFrom - 1) && mouthAt(lipsFrom + 2).draw < .05 && mouthAt(lipsFrom + 60).draw === 1 && mouthAt(1425).code.shape === 'kiss' && Math.round(star0[0] * 24) === 1425 && Math.round((star0[0] + star0[9]) * 24) === 1440 && star0[7] === .5,
-    `her mouth: ${LIP_SHAPES.length} shapes within ${LIGHT_TOLERANCE * 100} % of rest's light; drawn from f${lipsFrom}, the kiss on f1425, star 1 leaving her lips there and landing on f1440, the exact middle`);
+  const star0 = edl.board.find(c => c.id === 'stars').events[0], body = Math.round(plan.marks.mouth * 24);
+  // (The kiss: a small dark O in the middle of a round pucker, its lips meeting either side of it: no seam.)
+  const kiss = lipsSprite('kiss', 2, LIPS_HERO), kissO = [-1, 0, 1].every(y => !kiss.pegs.some(q => q.x === 0 && q.y === y)), kissSeam = kiss.pegs.filter(q => q.y === 0 && Math.abs(q.x) > 6).length;
+  ok(shapesOK && (!mouthAt(0) || mouthAt(0).draw === 0) && mouthAt(6).draw > 0 && mouthAt(6).draw < 1 && mouthAt(12).draw === 1 && mouthAt(300).fill === 0 && mouthAt(body - 1).fill === 0 && mouthAt(body + 10).trace > 0 && mouthAt(body + 10).trace < 1 && mouthAt(body + 60).fill === 1
+    && mouthAt(1425).code.shape === 'kiss' && mouthAt(1425).code.open === 2 && kissO && kissSeam > 6 && Math.round(star0[0] * 24) === 1425 && Math.round((star0[0] + star0[9]) * 24) === 1440 && star0[4] >= 7 && star0[3] * DELVE_ROWS >= 25 + star0[4] && Math.abs(star0[2] - DELVE_LIPS_CX) < 1e-3,
+    `her mouth: ${LIP_SHAPES.length} shapes at 3 sizes within ${LIGHT_TOLERANCE * 100} % of rest's light; its outline drawn f1-f11 and speaking from f12, its body from f${body} (the trace, the fill, the gloss); the kiss on f1425 a small O (lips meeting either side of it); star 1 (arms ${star0[4]}) leaving her lips there and landing on f1440 at row ${Math.round(star0[3] * DELVE_ROWS)}, inside the safe area on her axis`);
   let spoken = 0, words = 0;
-  for (const id of ['P6', 'P7', 'P8', 'P9', 'P10']) for (const w of plan.band.find(e => e.id === id).words) { words++; const f = hitFrame(w.start, plan); if ([f, f + 1, f + 2, f + 3].some(g => { const m = mouthAt(g)?.code; return m && (m.open > 0 || m.shape === 'press' || m.shape === 'fv'); })) spoken++; }
+  for (const e of plan.band) for (const w of e.words) { words++; const f = hitFrame(w.start, plan); if ([f, f + 1, f + 2, f + 3].some(g => { const m = mouthAt(g)?.code; return m && (m.open > 0 || m.shape === 'press' || m.shape === 'fv'); })) spoken++; }
   const ring = f => { const x = mouthAt(f); return x ? [0, 1, 2, 3, 4, 5, 6, 7].filter(k => x[`m${k}`] >= 0).length : 0; };
-  ok(spoken >= words - 1 && ring(Math.round(105 * 24)) === 8 && mouthAt(Math.round(105 * 24)).hero === 0 && mouthAt(Math.round(110.1 * 24)).ring === 0 && mouthAt(Math.round(110.1 * 24)).hero === 1 && mouthAt(Math.round(116.5 * 24)).code.shape === 'smile' && mouthAt(DELVE_BLACK - 2).draw < .05,
-    `the mouth speaks ${spoken} of her ${words} words in the second half within 3 frames of each; a ring of ${ring(Math.round(105 * 24))} small mouths at 105 s, closed back into one by 44:0; a smile; undrawn by f2878`);
+  // (The ring inside the safe columns: a small mouth's sprite at the ring's widest, either side of her axis.)
+  const smallW = Math.max(...LIP_SHAPES.flatMap(sh => [0, 1, 2, 3].flatMap(o => lipsSprite(sh, o, LIPS_SMALL).pegs.map(q => Math.abs(q.x))))), axis = Math.round(DELVE_LIPS_CX * DELVE_COLS - .5);
+  const at105 = mouthAt(Math.round(105 * 24));
+  ok(spoken >= words - 2 && ring(Math.round(105 * 24)) === 8 && at105.mid === 1 && at105.hero >= .55 && axis - DELVE_RING.rx - smallW >= 6 && axis + DELVE_RING.rx + smallW <= 77 && mouthAt(Math.round(110.1 * 24)).ring === 0 && mouthAt(Math.round(110.1 * 24)).hero === 1 && mouthAt(Math.round(110.1 * 24)).mid === 0 && mouthAt(Math.round(116.5 * 24)).code.shape === 'smile' && mouthAt(DELVE_BLACK - 2).draw < .05,
+    `the mouth speaks ${spoken} of her ${words} words within 3 frames of each; at 105 s a ring of ${ring(Math.round(105 * 24))} small mouths (columns ${axis - DELVE_RING.rx - smallW}-${axis + DELVE_RING.rx + smallW}) round the hero at its middle size (light ${at105.hero}), closed back into one by 44:0; a smile; undrawn by f2878`);
+  // Lip sync: on every frame the hero mouth speaks P1-P10, it shows the shape her sound has on that frame or on
+  // the next (it leads her by at most one frame, never lags; a one-frame shape may be skipped). The frozen
+  // "of…" holds its round O by design (85.0 s to 36:0).
+  const LADY_PITCH = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/allhands/lady-pitch.json'), 'utf8')), freezeAt = plan.echoes.find(e => e.phrase === 'P8' && e.kind === 'freeze').at;
+  let syncN = 0, syncSame = 0, syncLead = 0;
+  const syncBad = [];
+  for (const id of ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10']) {
+    const raw = eventVisemes(plan.band.find(e => e.id === id), LADY_PITCH, {fps:24, latency:L, settled:false}), R = new Map(raw.map(x => [x.f, lipCode(x.shape, x.open)]));
+    for (const x of raw) {
+      const m = mouthAt(x.f);
+      if (!R.has(x.f + 1) || !m || m.hero < .99 || (x.f >= hitFrame(freezeAt, plan) && x.f < hitFrame(stepTime(plan, 36 * 16), plan))) continue;
+      syncN++;
+      const c = Math.round(m.mouth);
+      if (c === R.get(x.f)) syncSame++; else if (c === R.get(x.f + 1)) syncLead++; else syncBad.push(`${id} f${x.f}`);
+    }
+  }
+  // settle: a string of one-frame shapes never pushes the mouth more than a frame ahead.
+  const zig = Array.from({length:12}, (_, f) => ({f, shape:['ah', 'ee', 'oh'][f % 3], open:1 + (f % 2)})), zs = settleLips(zig);
+  const zigOK = zs.every((x, i) => (x.shape === zig[i].shape && x.open === zig[i].open) || (zig[i + 1] && x.shape === zig[i + 1].shape && x.open === zig[i + 1].open))
+    && zs.every((x, i) => { const same = (a, b) => a && b && a.shape === b.shape && a.open === b.open; return same(x, zs[i - 1]) || same(x, zs[i + 1]); });
+  ok(!syncBad.length && syncN > 300 && zigOK, `lip sync: on ${syncN} frames of P1-P10 the mouth shows her shape of that frame (${syncSame}) or of the next (${syncLead}): it leads her by at most a frame, never lags; every shape holds 2 frames${syncBad.length ? `; off: ${syncBad.slice(0, 5).join(', ')}` : ''}`);
   // Stars: born on their chimes, never before the kiss, all gone by the loop seam; the sky near its density.
   const ev = edl.board.find(c => c.id === 'stars').events, alive = t => ev.filter(e => e[0] <= t && e[1] > t).length;
   ok(ev.every(e => e[0] >= plan.marks.kiss - 1 / 24 && e[1] <= DELVE_BLACK / 24 + 1e-9) && plan.stars.twinkles.slice(1).every(s => ev.some(e => Math.abs(e[0] - Math.floor((s.t + L) * 24 + 1e-9) / 24) < 2e-3))
-    && alive(100) >= 18 && alive(100) <= 30 && alive(65) >= 2 && alive(119.5) <= 3 && ev.every(e => e[3] * DELVE_ROWS < DELVE_ZONES.floor || e[6] < 0),
-    `stars: ${ev.length} (${plan.stars.twinkles.length} on the chimes, the first blown by the kiss, the rest silent and blue); alive ${alive(65)} at 65 s, ${alive(100)} at 100 s, ${alive(119.5)} at 119.5 s; under row 120 only faint ones; all gone by f2880`);
+    && alive(100) >= 18 && alive(100) <= 30 && alive(65) >= 2 && alive(119.5) <= 3 && ev.every(e => e[3] * DELVE_ROWS < DELVE_ZONES.floor || e[6] < 0)
+    && ev.every(e => e[5] === 0 || e[3] * DELVE_ROWS - e[4] >= DELVE_ZONES.header[1] - .5),
+    `stars: ${ev.length} (${plan.stars.twinkles.length} on the chimes, the first blown by the kiss, the rest silent and blue); alive ${alive(65)} at 65 s, ${alive(100)} at 100 s, ${alive(119.5)} at 119.5 s; the header holds only far blue ones, under row 120 only faint ones; all gone by f2880`);
   // Palette: never green; type in white, blue, deep and signal (the strikes), the ghosts and copies too.
   const tones = [...edl.board.filter(c => c.type !== 'psych').map(c => c.palette), ...edl.board.flatMap(c => [...(c.fx?.echo || []), ...(c.fx?.harmony || [])].map(x => x.tone ?? 'white')), ...edl.board.filter(c => c.fx?.sink).map(c => c.fx.sink.tone)];
   ok(tones.every(t => ['white', 'blue', 'deep', 'signal'].includes(t)) && edl.board.filter(c => c.type === 'psych').every(c => PSYCH.looks.includes(c.look)) && edl.overrides.length === 0,

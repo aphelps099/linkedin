@@ -30,20 +30,27 @@ export const SHAPE_DEFS = Object.freeze({
   oh:{w:.74, up:1.02, low:1.06, round:.6, gap:.8, lift:0},
   oo:{w:.62, up:1.06, low:1.08, round:.42, gap:.5, lift:0},
   uh:{w:.9, up:1, low:1, round:.72, gap:.5, lift:0},
-  kiss:{w:.56, up:1.1, low:1.12, round:.3, gap:.16, lift:0},
+  kiss:{w:.56, up:1.1, low:1.12, round:.28, gap:.5, lift:0, seamless:true},   // a pucker: a small dark O at the middle, no seam beside it
   smile:{w:1.02, up:.86, low:.92, round:.9, gap:0, lift:.5},
 });
 export const SHAPES = Object.freeze(Object.keys(SHAPE_DEFS));
 export const code = (shape, open = 0) => SHAPES.indexOf(shape) * 4 + Math.max(0, Math.min(3, Math.round(open)));
 export const decode = c => c < 0 || !Number.isFinite(c) ? null : {shape:SHAPES[Math.min(SHAPES.length - 1, Math.floor(Math.round(c) / 4))], open:Math.round(c) % 4};
 
-// Sizes in pegs. HERO: 61 wide, 22 tall closed, up to 34 open (the 90 x 160 board of the 9:16 film); SMALL:
-// the choir's ring, 21 x 8.
-export const HERO = Object.freeze({half:31, up:8, low:10, gap:16, seam:1, bow:1.8, name:'hero'});
-export const SMALL = Object.freeze({half:10, up:2.6, low:3.3, gap:4.2, seam:1, bow:.6, name:'small'});
-// Light: the outline burns a little brighter than the fill; the gloss is white.
-export const LIGHT = Object.freeze({outline:.82, fill:.7, gloss:.88});
+// Sizes in pegs. HERO: 61 wide, 23 tall closed, up to 35 open (the 90 x 160 board of the 9:16 film); SMALL:
+// the canon's ring, 21 x 9: a deep cupid's bow and a 2-peg dark seam, so at phone size it still reads as lips.
+export const HERO = Object.freeze({half:31, up:8, low:10, gap:16, seam:1, bow:2.6, name:'hero', dots:true});
+export const SMALL = Object.freeze({half:10, up:2.6, low:3.3, gap:4.2, seam:2, bow:1.4, name:'small'});
+// MID: the hero in the middle of its own canon (29 wide), its eight voices ringing it.
+export const MID = Object.freeze({half:14, up:3.8, low:4.7, gap:7.5, seam:1, bow:1.6, name:'mid'});
+// Light: the outline burns half again over the fill (a pop-art contour), the gloss is white; the hero's lower lip
+// carries a Ben-Day shade in its lower third (every other peg at DOT of the fill: the board's own halftone).
+export const LIGHT = Object.freeze({outline:.74, fill:.5, gloss:.88});
+export const DOT = .45;
 export const LIGHT_TOLERANCE = .08;
+// The compensation: paintMouth scales a shape's pegs by 1 / lightRatio inside these bounds (outline .74 x 1.3 stays
+// under the psych ceiling, .95), so every shape lands on rest's light.
+export const LIGHT_K = Object.freeze([.8, 1.3]);
 
 const OPENING = [0, .3, .62, 1];
 // The lips as whole pegs, relative to the mouth line's centre (x 0, y 0). kind: outline, fill or gloss;
@@ -66,6 +73,8 @@ export function lipsSprite(shape = 'rest', open = 0, size = HERO) {
     const u = x / a;
     if (Math.abs(u) >= 1) return 0;
     const y0 = line(u), g = gap(u), seam = g < size.seam ? size.seam / 2 : g / 2;
+    // (A seamless shape, the pucker: where it is not open its lips meet, the mouth line's row in the lower lip.)
+    if (S.seamless && g < size.seam) { if (y < y0 && y >= y0 - upT(u)) return 1; if (y >= y0 && y <= y0 + lowT(u)) return 2; return 0; }
     if (y < y0 - seam && y >= y0 - seam - upT(u)) return 1;                     // the upper lip
     if (y > y0 + seam && y <= y0 + seam + lowT(u)) return 2;                    // the lower lip
     return 0;
@@ -91,7 +100,9 @@ export function lipsSprite(shape = 'rest', open = 0, size = HERO) {
     const gl = (w === 2 && u > -.5 && u < -.12 && Math.abs(y - (lowTop + .38 * lt)) < .55 * (size.half / 30) + .3)
       || (w === 1 && Math.abs(u + .3) < .07 && Math.abs(y - (line(u) - Math.max(size.seam / 2, gap(u) / 2) - .62 * upT(u))) < .7);
     if (!edge && gl) kind = 'gloss';
-    pegs.push({x, y, w, kind, p:+p.toFixed(4), I:LIGHT[kind], tone:kind === 'gloss' ? WHITE : SIGNAL});
+    // (The Ben-Day shade: the lower lip's lower third, every other peg, in the fill's scan order like the rest.)
+    const dot = size.dots && kind === 'fill' && w === 2 && y > lowTop + .62 * lt && (x + y) % 2 === 0;
+    pegs.push({x, y, w, kind, p:+p.toFixed(4), I:LIGHT[kind] * (dot ? DOT : 1), tone:kind === 'gloss' ? WHITE : SIGNAL});
   }
   // Stroke order inside each kind is by p, then by position (stable).
   pegs.sort((q, r) => q.p - r.p || q.y - r.y || q.x - r.x);
@@ -107,18 +118,33 @@ export function lightRatio(shape, open, size = HERO) {
 }
 
 // Paint one mouth into a field. put(i, v, tone, white, size). opts: draw, fill, gloss (0..1: the drawing in
-// stroke order, the scanline fill, the gloss popping in), level, shadow (0..1: a blue copy one row down,
-// behind), scale (HERO or SMALL), cx, cy in pegs (the mouth line's centre).
-export function paintMouth(put, lit, cols, rows, {shape = 'rest', open = 0, size = HERO, cx, cy, draw = 1, fill = 1, gloss = 1, level = 1, shadow = 0, head = true} = {}) {
-  const s = lipsSprite(shape, open, size), k = clamp(1 / lightRatio(shape, open, size), .88, 1.14) * level;
+// stroke order, the scanline fill, the gloss popping in; fill 0 is the outline alone), trace (0..1: a white-hot
+// head runs round a drawn outline in stroke order, as it does while drawing), level, shadow (0..1: a blue copy one
+// row down, behind), stack (0..3: copies 2, 4 and 6 rows down, behind, blue then deep: her choir's voices),
+// scale (HERO or SMALL), cx, cy in pegs (the mouth line's centre).
+export function paintMouth(put, lit, cols, rows, {shape = 'rest', open = 0, size = HERO, cx, cy, draw = 1, fill = 1, gloss = 1, trace = 0, level = 1, shadow = 0, stack = 0, head = true} = {}) {
+  const s = lipsSprite(shape, open, size), k = clamp(1 / lightRatio(shape, open, size), LIGHT_K[0], LIGHT_K[1]) * level;
   const X = Math.round(cx), Y = Math.round(cy), pass = [];
   for (const q of s.pegs) {
     let on;
     if (q.kind === 'outline') on = q.p <= draw + 1e-9;
     else if (q.kind === 'gloss') on = draw >= 1 && fill >= 1 && gloss > 0 && (q.x / size.half + 1) / 2 <= gloss * 1.6;
-    else on = draw >= 1 && q.p <= fill + 1e-9;
+    else on = draw >= 1 && fill > 0 && q.p <= fill + 1e-9;
     if (!on) continue;
     pass.push(q);
+  }
+  // The stack (her choir under her voice): copies of the drawn pegs 2, 4, 6 rows down, behind everything else.
+  const deep = Math.min(3, Math.max(0, stack));
+  for (let j = Math.ceil(deep); j >= 1; j--) {
+    const a = Math.min(1, deep - j + 1) * [.5, .38, .28][j - 1] * level, tn = j === 1 ? BLUE : DEEP;
+    if (a <= .02) continue;
+    for (const q of pass) {
+      const x = X + q.x, y = Y + q.y + 2 * j;
+      if (x < 0 || y < 0 || x >= cols || y >= rows) continue;
+      const i = y * cols + x;
+      if (lit[i]) continue;
+      put(i, a, tn, 0, 1);
+    }
   }
   // The shadow mouth (her octave-down voice): blue, one row down, behind the lips.
   if (shadow > 0) for (const q of pass) {
@@ -132,8 +158,8 @@ export function paintMouth(put, lit, cols, rows, {shape = 'rest', open = 0, size
     const x = X + q.x, y = Y + q.y;
     if (x < 0 || y < 0 || x >= cols || y >= rows) continue;
     const i = y * cols + x;
-    // The drawing head: the last few outline pegs burn white-hot while it draws.
-    const hot = head && draw < 1 && q.kind === 'outline' && q.p > draw - .025 ? .7 : 0;
+    // The drawing head: the last few outline pegs burn white-hot while it draws (or while it traces).
+    const hot = head && q.kind === 'outline' && ((draw < 1 && q.p > draw - .025) || (trace > 0 && trace < 1 && Math.abs(q.p - trace) < .025)) ? .7 : 0;
     put(i, Math.min(.95, q.I * k), q.tone, hot, q.kind === 'gloss' ? 1.06 : 1);
     lit[i] = 1;
   }
@@ -146,7 +172,8 @@ export function paintMouth(put, lit, cols, rows, {shape = 'rest', open = 0, size
 // the word's vowel at that point, M, B and P pressed for 2 frames, F and V tucked. Every shape holds at
 // least 2 frames; where a change would last one frame it starts a frame early (the mouth leads her by at
 // most one frame, never lags). Frames are the film's: frame f shows the sound heard in its middle,
-// plan time (f + .5) / fps - latency.
+// plan time (f + .5) / fps - latency. settled:false returns the raw frames (a caller that merges several
+// events settles once, over all of them).
 const VOWEL = {a:'ah', e:'eh', i:'ee', o:'oh', u:'oo', y:'ee'};
 export const LEVEL_STEPS = Object.freeze([-20, -12, -6]);        // dB: open 1, 2, 3 at or above these
 export function openFromLevel(db, voiced) {
@@ -170,7 +197,7 @@ export function shapeAt(text, frac) {
 }
 // An event's sound as frames: [{f, shape, open}] for frames f0..f1 (inclusive). ev: {file, from, to, start,
 // end, rate, words:[{text, file:[a, b], ...}], warp?:[[fileTime, songTime], ...]}. pitch: lady-pitch.json.
-export function eventVisemes(ev, pitch, {fps = 24, latency = 0, f0, f1} = {}) {
+export function eventVisemes(ev, pitch, {fps = 24, latency = 0, f0, f1, settled = true} = {}) {
   const track = pitch[ev.file];
   if (!track) return [];
   const words = ev.words?.length ? ev.words : [{text:ev.text ?? 'ah', file:[ev.from, ev.to]}];
@@ -195,25 +222,27 @@ export function eventVisemes(ev, pitch, {fps = 24, latency = 0, f0, f1} = {}) {
     if (open === 0 && shape !== 'press' && shape !== 'fv') shape = 'rest';
     out.push({f, shape, open:shape === 'press' ? 0 : shape === 'fv' ? Math.min(open, 1) : open});
   }
-  return settle(out);
+  return settled ? settle(out) : out;
 }
-// Every shape holds at least `min` frames: a run shorter than that starts earlier (it leads her) and takes
-// the frames from the run before it; never later.
+// Every shape holds at least `min` frames (2), and the mouth leads her by at most min - 1 frames (1), never
+// lags. One pass over the runs, left to right: a run shorter than `min` starts that much earlier, taking the
+// frames from the run before it when that run can spare them and still hold `min`; otherwise it is too short
+// to show and its frames go to the run after it, which then starts that much early. (Borrowing again and again
+// would let a string of short runs push the mouth several frames ahead of her.)
 export function settle(frames, min = 2) {
-  const out = frames.map(x => ({...x})), same = (p, q) => p.shape === q.shape && p.open === q.open;
-  for (let pass = 0; pass < 4; pass++) {
-    let changed = false;
-    for (let i = 0; i < out.length;) {
-      let j = i; while (j < out.length && same(out[j], out[i])) j++;
-      if (j - i < min && i > 0) {
-        // (Borrow from the run before; at the very start, from the run after.)
-        const need = min - (j - i);
-        for (let k = 1; k <= need && i - k >= 0; k++) { out[i - k].shape = out[i].shape; out[i - k].open = out[i].open; changed = true; }
-      }
-      i = j;
-    }
-    if (!changed) break;
+  const same = (p, q) => p.shape === q.shape && p.open === q.open, runs = [];
+  for (const x of frames) { const r = runs.at(-1); if (r && same(r, x)) r.n++; else runs.push({shape:x.shape, open:x.open, n:1}); }
+  for (let i = 0, last = -1; i < runs.length; i++) {
+    const r = runs[i], prev = runs[last], next = runs[i + 1], need = min - r.n;
+    if (r.n >= min) { last = i; continue; }
+    if (prev && prev.n - need >= min) { prev.n -= need; r.n = min; last = i; }
+    else if (next) { next.n += r.n; r.n = 0; }
+    else if (prev) { prev.n += r.n; r.n = 0; }
+    else last = i;
   }
+  const out = [];
+  let k = 0;
+  for (const r of runs) for (let j = 0; j < r.n; j++, k++) out.push({...frames[k], shape:r.shape, open:r.open});
   return out;
 }
 // The runs of a viseme list, as [frame, code] at each change (what an EDL keys).

@@ -1437,6 +1437,14 @@ Gates (scripts/measure-allhands.py, whisper-delve.py): -10.41 LUFS, true peak
 hears P1-P5, "Let that" and P10 exactly, P6 at WER 0; the choir is never heard
 as her line before 95 s. Two renders in fresh browsers are the same bytes.
 
+The delivery master (`scripts/master-delve.py`, Nov 7): AAC and MP3 overshot the
+-1 dBTP ceiling on a few sharp transients (the posted AAC -0.5 dBTP, the MP3
+-0.9), so the shipped sound is the render with a spot gain on 17 transients only
+(0.27 s in all, at most 0.94 dB, 5 ms ramps; the same samples everywhere else):
+`assets/delve/delve-song.flac` and the MP3 decode at -1.3 dBTP; loudness, range,
+both swells and Whisper unchanged (`assets/delve/delve-master.json`). The mix is
+not touched.
+
 ## Pixel Text
 
 **Download for Pixel Text** on the page saves a `.pixel.json` for Aaron's Pixel Text editor:
