@@ -20,7 +20,8 @@ import {kickSteps} from '../src/pegboard/eq.js';
 import {lyricsFromPost, SAMPLE_POST, syllables} from '../src/allhands/lyrics.js';
 import {LADY_TABLE} from '../src/allhands/lady-table.js';
 import {clearBoard, TONES} from '../src/pegboard/board.js';
-import {paintPsych, PSYCH_LOOKS, PSYCH_TONES, PSYCH_MAX, TYPE_HALO, isFigure, driveTrack, driveAt, riverTrack, riverAt, layerGain} from '../src/pegboard/psych.js';
+import {paintPsych, PSYCH_LOOKS, PSYCH_TONES, PSYCH_MAX, TYPE_HALO, isFigure, driveTrack, driveAt, riverTrack, riverAt, layerGain, psychField, FAINT} from '../src/pegboard/psych.js';
+import {SHAPES as LIP_SHAPES, code as lipCode, lightRatio, LIGHT_TOLERANCE, HERO as LIPS_HERO, SMALL as LIPS_SMALL, lipsSprite, eventVisemes, settle} from '../src/pegboard/lips.js';
 import {planFeatures} from '../src/videostudio/edl/params.js';
 
 let checks = 0;
@@ -301,6 +302,54 @@ for (const track of TRACK_ORDER.filter(t => formPlays('drop60', t))) {
     const worst = Math.max(...[-1, 0, 1, 2, 3].map(k => worstWindow(flashes(frames.map(x => k < 0 ? x.whole : x.quads[k]), FPS), FPS))), governed = governorTrack(frames, FPS).filter(g => g < 1).length;
     ok(samples > 50 && !changed && !moat && (isFigure(look) || near / nearN < .35 * far / farN), `psych ${look} under Offsite's words (${samples} moments): every type peg exactly as choreo lit it, a dark moat a peg wide, the pattern near the words at ${(100 * (near / nearN) / (far / farN)).toFixed(0)}% of its light away from them`);
     ok(worst <= typeWorst && governed <= typeGoverned, `psych ${look} under Offsite's words: adds no flash (worst ${worst} a second with it, ${typeWorst} with the words alone; ${governed} frames governed, ${typeGoverned} without)`);
+  }
+  // ---- Delve.'s figures and peg tiles, on the 9:16 film's 90 x 160 board ----
+  // Her lips: every shape's light within LIGHT_TOLERANCE of rest (an open mouth is not a flash); signal, white
+  // gloss, a blue shadow; never green; lips only (no peg outside the lips' own rows); drawn in stroke order (the
+  // light only grows as it draws); a figure keeps every type peg as choreo lit it and a moat a peg wide, at its
+  // own light while a word is lit; nothing on true black.
+  {
+    const B = createBoard(90, 160), at = (look, params, events, t = 10) => { clearBoard(B); paintPsych(B, {look, params, events}, t, {drive:{beat:8, voice:.5, clap:0}}); return B; };
+    const sum = b => b.I.reduce((x, v) => x + v, 0), rest = sum(at('lips', {level:1, mouth:lipCode('rest', 0), cy:95.5 / 160}));
+    const totals = LIP_SHAPES.flatMap(sh => [0, 1, 2, 3].map(o => sum(at('lips', {level:1, mouth:lipCode(sh, o), cy:95.5 / 160})) / rest));
+    const lips = at('lips', {level:1, mouth:lipCode('ah', 3), cy:95.5 / 160, shadow:1}), rows = [], tones = new Set();
+    for (let i = 0; i < lips.I.length; i++) if (lips.I[i] > 0) { rows.push(Math.floor(i / 90)); tones.add(lips.tone[i]); if (lips.I[i] > PSYCH_MAX + 1e-6) tones.add(-1); }
+    const drawn = [0, .1, .3, .5, .7, .9, 1].map(d => sum(at('lips', {level:1, mouth:0, cy:95.5 / 160, draw:d, fill:0})));
+    const dark = createBoard(90, 160); dark.exposure = 0; paintPsych(dark, {look:'lips', params:{mouth:0}}, 1, {drive:{beat:0, voice:0, clap:0}});
+    ok(totals.every(r => Math.abs(r - 1) <= LIGHT_TOLERANCE + 1e-9) && Math.min(...rows) >= 78 && Math.max(...rows) <= 113 && [...tones].every(t => [PALETTE.signal.id, PALETTE.white.id, PALETTE.blue.id].includes(t)) && drawn.every((v, i) => !i || v >= drawn[i - 1]) && dark.I.every(v => v === 0)
+      && [[LIPS_HERO, 61], [LIPS_SMALL, 21]].every(([size, w]) => { const p = lipsSprite('rest', 0, size).pegs; return Math.max(...p.map(q => q.x)) - Math.min(...p.map(q => q.x)) + 1 <= w; }),
+      `psych lips 90×160: ${LIP_SHAPES.length} shapes × 4 openings within ${LIGHT_TOLERANCE * 100} % of rest's light (${Math.min(...totals).toFixed(3)}-${Math.max(...totals).toFixed(3)}); rows ${Math.min(...rows)}-${Math.max(...rows)} wide open; signal, white gloss, a blue shadow, at most ${PSYCH_MAX}; it only gains light as it draws; nothing on true black`);
+    // Type wins over a figure, which keeps its own light while a word is lit.
+    const typed = createBoard(90, 160);
+    for (let x = 20; x < 70; x++) for (let y = 80; y < 84; y++) { typed.I[y * 90 + x] = 1; typed.tone[y * 90 + x] = PALETTE.white.id; }
+    const before = typed.I.slice();
+    paintPsych(typed, {look:'lips', params:{level:1, mouth:lipCode('rest', 0), cy:95.5 / 160}}, 10, {drive:{beat:8, voice:.5, clap:0}});
+    let moat = 0, kept = true, lit = 0;
+    for (let y = 0; y < 160; y++) for (let x = 0; x < 90; x++) { const i = y * 90 + x; if (before[i] > 0) { kept &&= typed.I[i] === before[i]; continue; } if (typed.I[i] > 0) { lit += typed.I[i]; if ((y === 79 || y === 84) && x >= 20 && x < 70) moat++; } }
+    ok(kept && moat === 0 && lit > .8 * rest * .6, `psych lips: under a word every type peg stays as choreo lit it, a dark moat a peg wide, the lips at their own light round it`);
+    // The stars: each lives on its events, its arms growing from one peg and shrinking back (its light only ramps
+    // up, then down), turning a quarter turn a bar in 16 steps (geometry: its light holds as it turns), by size it twinkles.
+    const ev = [[1, 6, .5, .1, 4, 1, 0], [1, 6, .2, .5, 2, 2, 0], [2, 7, .8, .9, 1, 0, -1]];
+    const life = Array.from({length:7 * 24 + 2}, (_, f) => sum(at('stars', {level:1, spin:1, twinkle:.14}, ev, f / 24)));
+    const up = life.slice(24, 24 + 16), down = life.slice(6 * 24 - 22, 6 * 24 - 2);
+    const turning = [8, 9, 10, 11].map(b => { clearBoard(B); paintPsych(B, {look:'stars', params:{level:1}, events:[[0, 100, .5, .5, 4, 1, 0]]}, 50, {drive:{beat:b, voice:0, clap:0}}); return {sum:sum(B), pegs:B.I.reduce((n, v) => n + (v > 0), 0), at:B.I.findIndex((v, i) => v > 0 && i !== 80 * 90 + 45)}; });
+    const sizes = [10, 10.4, 10.8].map(t => { clearBoard(B); paintPsych(B, {look:'stars', params:{level:1, twinkle:.14}, events:[[0, 100, .5, .5, 4, 1, 0]]}, t, {drive:{beat:0, voice:0, clap:0}}); return {I:sum(B), size:Math.max(...B.size)}; });
+    ok(life[0] === 0 && up.every((v, i) => !i || v >= up[i - 1] - 1e-6) && down.every((v, i) => !i || v <= down[i - 1] + 1e-6) && life.at(-1) === 0
+      && turning.every(x => x.pegs === turning[0].pegs && Math.abs(x.sum - turning[0].sum) < .05 * turning[0].sum) && new Set(turning.map(x => x.at)).size > 1
+      && sizes.every(x => Math.abs(x.I - sizes[0].I) < 1e-6) && new Set(sizes.map(x => x.size.toFixed(3))).size > 1,
+      `psych stars 90×160: born on their events, the light only ramps as the arms grow and shrink, the same number of pegs at every one of the 16 angle steps as they turn (light within ${(100 * Math.max(...turning.map(x => Math.abs(x.sum / turning[0].sum - 1)))).toFixed(1)} %), twinkling by size only`);
+    // Peg tiles: a share of tiles roll their pattern inside themselves on each tick: each quadrant keeps its light
+    // within 10 % as they move, and the pattern changes only when the tick does.
+    const quads = b => { const q = [0, 0, 0, 0]; for (let y = 0; y < 160; y++) for (let x = 0; x < 90; x++) q[(y < 80 ? 0 : 2) + (x < 45 ? 0 : 1)] += b.I[y * 90 + x]; return q; };
+    const still = quads(at('mandala', {level:.7, tiles:0, tick:0}, null, 10)), moving = [3, 4, 5].map(k => quads(at('mandala', {level:.7, tiles:.3, tick:k, tile:10}, null, 10)));
+    const tA = psychField('mandala', 90, 160, 10, {params:{level:.7, tiles:.3, tick:3}, drive:{beat:8, voice:.5, clap:0}}).I.slice(), tB = psychField('mandala', 90, 160, 10, {params:{level:.7, tiles:.3, tick:3}, drive:{beat:8, voice:.5, clap:0}}).I.slice();
+    const tC = psychField('mandala', 90, 160, 10, {params:{level:.7, tiles:.3, tick:4}, drive:{beat:8, voice:.5, clap:0}}).I;
+    ok(moving.every(q => q.every((v, k) => Math.abs(v - still[k]) <= .1 * still[k])) && tA.every((v, i) => v === tB[i]) && tA.some((v, i) => v !== tC[i]),
+      `psych peg tiles 90×160: 30 % of tiles moving, each quadrant within ${Math.max(...moving.flatMap(q => q.map((v, k) => 100 * Math.abs(v - still[k]) / still[k]))).toFixed(1)} % of its light; the same tick, the same pegs`);
+    // The platform's bands: a texture with ceiling and floor is faint above and below them.
+    const banded = at('plasma', {level:.9, ceiling:26 / 160, floor:120 / 160});
+    let maxOut = 0; for (let i = 0; i < banded.I.length; i++) { const y = Math.floor(i / 90); if (y < 22 || y >= 120) maxOut = Math.max(maxOut, banded.I[i]); }
+    ok(maxOut <= PSYCH_MAX * FAINT + 1e-6, `psych ceiling and floor: above row 22 and from row 120 a texture is faint (at most ${maxOut.toFixed(2)})`);
   }
   console.log(`  psych: ${checks - before} checks`);
 }

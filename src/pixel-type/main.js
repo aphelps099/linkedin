@@ -14,6 +14,7 @@ import {linesFor, stagePitch} from '../pegboard/stage.js';
 import {boardLuma, governorTrack} from '../pegboard/governor.js';
 import {createFollower, departments, scoreAccent, LEAD} from '../pegboard/eq.js';
 import {LOOKS, PSYCH_LOOKS, paintPsych, driveTrack, driveAt} from '../pegboard/psych.js';
+import {SHAPES as LIP_SHAPES, code as lipCode} from '../pegboard/lips.js';
 import PHRASES from '../allhands/lady-phrases.json';
 
 const DPR = Math.min(2, window.devicePixelRatio || 1);
@@ -651,8 +652,21 @@ const PSYCH_DEMO = {
   lissajous:{params:{curves:2}, meta:'3 : 2 · two figures'},
   loading:{params:{}, meta:'60 % loaded · a sheen a bar'},
   contour:{params:{block:2, aspect:1.6, pupil:2}, meta:'Stepped rings · square edges, flat light'},
+  // Delve.'s figures. Her lips talk through their twelve shapes, a third of a second each, opening 0 to 3 on the
+  // eighths; the stars are born on their own moments, a loop of 24 (the film's sky: blue far ones, white near
+  // ones, one in five signal, a big signal hero now and then).
+  lips:{at:t => ({level:1, cx:.5, cy:.55, mouth:lipCode(LIP_SHAPES[Math.floor(t * 3) % LIP_SHAPES.length], [1, 3, 2, 0][Math.floor(t * 6) % 4])}), meta:'12 shapes · a third of a second each'},
+  stars:{params:{spin:1, twinkle:.14}, events:t => starLoop(t), meta:'24 a loop · born, turning, gone'},
   footage:{params:{}, meta:'Kevin, guitar · one sample a peg'},
 };
+// The stars' demo sky: 24 births over a 12 s loop, each 3 to 6 s long, at hashed places; the loop before is
+// kept so a star born near its end lives on.
+const STAR_LOOP = 12, STAR_SKY = Array.from({length:24}, (_, k) => {
+  const h = n => { const x = Math.sin(k * 127.1 + n * 311.7) * 43758.5453; return x - Math.floor(x); };
+  const hero = k % 8 === 3 ? 1 : 0, tone = hero || k % 5 === 4 ? 2 : k % 3 === 0 ? 0 : 1;
+  return [k * STAR_LOOP / 24, k * STAR_LOOP / 24 + 3 + 3 * h(1), .08 + .84 * h(2), .1 + .8 * h(3), hero ? 5 : tone === 0 ? 1 : 2 + Math.round(h(4)), tone, hero];
+});
+const starLoop = t => { const n = Math.floor(t / STAR_LOOP); return [n - 1, n].flatMap(m => STAR_SKY.map(e => [e[0] + m * STAR_LOOP, e[1] + m * STAR_LOOP, ...e.slice(2)])); };
 const PSYCH_BPM = 108, PSYCH_LOOP = 64 * 60 / PSYCH_BPM;             // 16 bars: the demo voice and claps repeat
 const PSYCH_FOOTAGE = '/cutting-room/posters/guitar-office-performance-ba9226e7.jpg';
 
@@ -680,7 +694,8 @@ function psych() {
   // The drive at a moment: the demo's voice and claps loop every 16 bars, the beat runs on.
   const driveOf = t => ({...driveAt(drive, t % PSYCH_LOOP), beat:t * PSYCH_BPM / 60});
   const timeOf = t => REDUCED ? 7.3 : t;
-  const spec = look => ({look, seed:PSYCH_LOOKS.indexOf(look) + 1, params:PSYCH_DEMO[look].params});
+  // (A figure's specimen draws from its own data: the lips' shape at the moment, the stars' events.)
+  const spec = (look, t = 0) => { const d = PSYCH_DEMO[look] ?? {params:{}}; return {look, seed:PSYCH_LOOKS.indexOf(look) + 1, params:d.at ? d.at(t) : d.params, ...(d.events ? {events:d.events(t)} : {})}; };
   const select = i => {
     cur = i;
     const look = PSYCH_LOOKS[i];
@@ -695,7 +710,7 @@ function psych() {
     tick(L, t) {
       const lt = timeOf(t), look = PSYCH_LOOKS[cur];
       if (words) paint(L.board, [screen], 4, {layoutOf:pick.layoutOf, place:pick.place, reduced:true}); else clearBoard(L.board);
-      paintPsych(L.board, spec(look), lt, {drive:driveOf(lt), frame:look === 'footage' ? footage(L.board.cols, L.board.rows, lt) : null});
+      paintPsych(L.board, spec(look, lt), lt, {drive:driveOf(lt), frame:look === 'footage' ? footage(L.board.cols, L.board.rows, lt) : null});
     },
   });
   // The grid: every look live, small, through one shared renderer.
@@ -723,7 +738,7 @@ function psych() {
       const key = `${w}x${h}`;
       if (key !== tileSize) { tileR.resize(w, h); tileSize = key; }
       clearBoard(tile.board);
-      paintPsych(tile.board, spec(tile.look), lt, {drive:driveOf(lt), frame:tile.look === 'footage' ? footage(tile.board.cols, tile.board.rows, lt) : null});
+      paintPsych(tile.board, spec(tile.look, lt), lt, {drive:driveOf(lt), frame:tile.look === 'footage' ? footage(tile.board.cols, tile.board.rows, lt) : null});
       tileR.draw(tile.board, {pitch:tile.geo.pitch, x:tile.geo.x, y:tile.geo.y, time:lt});
       const src = tileR.canvas;
       if (tile.canvas.width !== src.width || tile.canvas.height !== src.height) { tile.canvas.width = src.width; tile.canvas.height = src.height; }
