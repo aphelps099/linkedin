@@ -481,5 +481,1350 @@
       }
     ],
     "url": "/optimizer/audio/lady-10.mp3"
+  },
+  "strategy-burnout-bandwidth-call": {
+    "duration": 1.240997732426304,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.066,
+        "end": 0.265
+      },
+      {
+        "text": "not",
+        "start": 0.265,
+        "end": 0.521
+      },
+      {
+        "text": "burnout.",
+        "start": 0.521,
+        "end": 1.161
+      }
+    ],
+    "url": "/optimizer/audio/strategy-burnout-bandwidth-call.mp3"
+  },
+  "synthia-burnout-bandwidth-response": {
+    "duration": 0.761609977324263,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.012,
+        "end": 0.2
+      },
+      {
+        "text": "bandwidth.",
+        "start": 0.2,
+        "end": 0.63
+      }
+    ],
+    "url": "/optimizer/audio/synthia-burnout-bandwidth-response.mp3"
+  },
+  "lady-01": {
+    "duration": 1.7146712018140589,
+    "words": [
+      {
+        "text": "I'm",
+        "start": 0.016,
+        "end": 0.186
+      },
+      {
+        "text": "thrilled",
+        "start": 0.186,
+        "end": 0.867
+      },
+      {
+        "text": "to",
+        "start": 0.986,
+        "end": 1.14
+      },
+      {
+        "text": "announce",
+        "start": 1.14,
+        "end": 1.679
+      }
+    ],
+    "url": "/optimizer/audio/lady-01.mp3"
+  },
+  "strategy-autocomplete-call": {
+    "duration": 1.6229931972789116,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.058,
+        "end": 0.256
+      },
+      {
+        "text": "not",
+        "start": 0.256,
+        "end": 0.599
+      },
+      {
+        "text": "autocomplete.",
+        "start": 0.599,
+        "end": 1.543
+      }
+    ],
+    "url": "/optimizer/audio/strategy-autocomplete-call.mp3"
+  },
+  "synthia-autocomplete-response": {
+    "duration": 1.3028344671201815,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.016,
+        "end": 0.21
+      },
+      {
+        "text": "thought",
+        "start": 0.21,
+        "end": 0.532
+      },
+      {
+        "text": "leadership.",
+        "start": 0.532,
+        "end": 1.268
+      }
+    ],
+    "url": "/optimizer/audio/synthia-autocomplete-response.mp3"
+  },
+  "lady-12": {
+    "duration": 1.514013605442177,
+    "words": [
+      {
+        "text": "Game-changer",
+        "start": 0.006,
+        "end": 0.867
+      }
+    ],
+    "url": "/optimizer/audio/lady-12.mp3"
+  },
+  "strategy-reorg-remix-call": {
+    "duration": 1.5309977324263038,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.061,
+        "end": 0.301
+      },
+      {
+        "text": "not",
+        "start": 0.301,
+        "end": 0.62
+      },
+      {
+        "text": "a",
+        "start": 0.62,
+        "end": 0.68
+      },
+      {
+        "text": "reorg.",
+        "start": 0.68,
+        "end": 1.451
+      }
+    ],
+    "url": "/optimizer/audio/strategy-reorg-remix-call.mp3"
+  },
+  "synthia-reorg-remix-response": {
+    "duration": 0.9871201814058957,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.012,
+        "end": 0.243
+      },
+      {
+        "text": "a",
+        "start": 0.243,
+        "end": 0.39
+      },
+      {
+        "text": "remix.",
+        "start": 0.39,
+        "end": 0.959
+      }
+    ],
+    "url": "/optimizer/audio/synthia-reorg-remix-response.mp3"
+  },
+  "lady-16": {
+    "duration": 1.0101360544217688,
+    "words": [
+      {
+        "text": "Full",
+        "start": 0,
+        "end": 0.256
+      },
+      {
+        "text": "stop.",
+        "start": 0.256,
+        "end": 0.822
+      }
+    ],
+    "url": "/optimizer/audio/lady-16.mp3"
+  },
+  "strategy-reply-all-call": {
+    "duration": 1.6870068027210885,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.063,
+        "end": 0.258
+      },
+      {
+        "text": "not",
+        "start": 0.258,
+        "end": 0.544
+      },
+      {
+        "text": "a",
+        "start": 0.544,
+        "end": 0.63
+      },
+      {
+        "text": "reply-all.",
+        "start": 0.63,
+        "end": 1.607
+      }
+    ],
+    "url": "/optimizer/audio/strategy-reply-all-call.mp3"
+  },
+  "synthia-reply-all-response": {
+    "duration": 1.3719954648526078,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.012,
+        "end": 0.222
+      },
+      {
+        "text": "transparency.",
+        "start": 0.222,
+        "end": 1.292
+      }
+    ],
+    "url": "/optimizer/audio/synthia-reply-all-response.mp3"
+  },
+  "lady-18": {
+    "duration": 1.0363492063492064,
+    "words": [
+      {
+        "text": "Read",
+        "start": 0.01,
+        "end": 0.289
+      },
+      {
+        "text": "that",
+        "start": 0.289,
+        "end": 0.45
+      },
+      {
+        "text": "again.",
+        "start": 0.45,
+        "end": 0.969
+      }
+    ],
+    "url": "/optimizer/audio/lady-18.mp3"
+  },
+  "strategy-vacation-workation-call": {
+    "duration": 1.6750113378684808,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.038,
+        "end": 0.245
+      },
+      {
+        "text": "not",
+        "start": 0.245,
+        "end": 0.597
+      },
+      {
+        "text": "a",
+        "start": 0.597,
+        "end": 0.673
+      },
+      {
+        "text": "vacation.",
+        "start": 0.673,
+        "end": 1.595
+      }
+    ],
+    "url": "/optimizer/audio/strategy-vacation-workation-call.mp3"
+  },
+  "synthia-vacation-workation-response": {
+    "duration": 1.3178684807256236,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.012,
+        "end": 0.243
+      },
+      {
+        "text": "a",
+        "start": 0.243,
+        "end": 0.38
+      },
+      {
+        "text": "workation.",
+        "start": 0.38,
+        "end": 1.251
+      }
+    ],
+    "url": "/optimizer/audio/synthia-vacation-workation-response.mp3"
+  },
+  "lady-19": {
+    "duration": 1.1711791383219954,
+    "words": [
+      {
+        "text": "Here's",
+        "start": 0,
+        "end": 0.292
+      },
+      {
+        "text": "what",
+        "start": 0.292,
+        "end": 0.394
+      },
+      {
+        "text": "I",
+        "start": 0.394,
+        "end": 0.5
+      },
+      {
+        "text": "learned.",
+        "start": 0.5,
+        "end": 0.926
+      }
+    ],
+    "url": "/optimizer/audio/lady-19.mp3"
+  },
+  "strategy-hallucination-call": {
+    "duration": 1.8890022675736962,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.055,
+        "end": 0.256
+      },
+      {
+        "text": "not",
+        "start": 0.256,
+        "end": 0.638
+      },
+      {
+        "text": "a",
+        "start": 0.638,
+        "end": 0.765
+      },
+      {
+        "text": "hallucination.",
+        "start": 0.765,
+        "end": 1.809
+      }
+    ],
+    "url": "/optimizer/audio/strategy-hallucination-call.mp3"
+  },
+  "synthia-hallucination-response": {
+    "duration": 1.2326757369614512,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.012,
+        "end": 0.241
+      },
+      {
+        "text": "a",
+        "start": 0.241,
+        "end": 0.3
+      },
+      {
+        "text": "hypothesis.",
+        "start": 0.3,
+        "end": 1.195
+      }
+    ],
+    "url": "/optimizer/audio/synthia-hallucination-response.mp3"
+  },
+  "lady-26": {
+    "duration": 1.2417687074829933,
+    "words": [
+      {
+        "text": "The",
+        "start": 0.017,
+        "end": 0.09
+      },
+      {
+        "text": "rest",
+        "start": 0.09,
+        "end": 0.445
+      },
+      {
+        "text": "is",
+        "start": 0.445,
+        "end": 0.62
+      },
+      {
+        "text": "history.",
+        "start": 0.62,
+        "end": 1.201
+      }
+    ],
+    "url": "/optimizer/audio/lady-26.mp3"
+  },
+  "strategy-pre-meeting-call": {
+    "duration": 1.6309977324263039,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.06,
+        "end": 0.274
+      },
+      {
+        "text": "not",
+        "start": 0.274,
+        "end": 0.612
+      },
+      {
+        "text": "a",
+        "start": 0.612,
+        "end": 0.725
+      },
+      {
+        "text": "pre-meeting.",
+        "start": 0.772,
+        "end": 1.551
+      }
+    ],
+    "url": "/optimizer/audio/strategy-pre-meeting-call.mp3"
+  },
+  "synthia-pre-meeting-response": {
+    "duration": 0.8868934240362811,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.012,
+        "end": 0.241
+      },
+      {
+        "text": "alignment.",
+        "start": 0.241,
+        "end": 0.811
+      }
+    ],
+    "url": "/optimizer/audio/synthia-pre-meeting-response.mp3"
+  },
+  "lady-29": {
+    "duration": 2.3802267573696145,
+    "words": [
+      {
+        "text": "Onwards",
+        "start": 0.016,
+        "end": 0.68
+      },
+      {
+        "text": "and",
+        "start": 1.557,
+        "end": 1.713
+      },
+      {
+        "text": "upwards!",
+        "start": 1.713,
+        "end": 2.359
+      }
+    ],
+    "url": "/optimizer/audio/lady-29.mp3"
+  },
+  "strategy-ghostwriter-call": {
+    "duration": 1.7670068027210883,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.059,
+        "end": 0.266
+      },
+      {
+        "text": "not",
+        "start": 0.266,
+        "end": 0.618
+      },
+      {
+        "text": "a",
+        "start": 0.618,
+        "end": 0.714
+      },
+      {
+        "text": "ghostwriter.",
+        "start": 0.714,
+        "end": 1.687
+      }
+    ],
+    "url": "/optimizer/audio/strategy-ghostwriter-call.mp3"
+  },
+  "synthia-ghostwriter-response": {
+    "duration": 1.478231292517007,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.012,
+        "end": 0.187
+      },
+      {
+        "text": "my",
+        "start": 0.187,
+        "end": 0.43
+      },
+      {
+        "text": "authentic",
+        "start": 0.43,
+        "end": 0.912
+      },
+      {
+        "text": "voice.",
+        "start": 0.916,
+        "end": 1.444
+      }
+    ],
+    "url": "/optimizer/audio/synthia-ghostwriter-response.mp3"
+  },
+  "lady-36": {
+    "duration": 2.135963718820862,
+    "words": [
+      {
+        "text": "Let's",
+        "start": 0.012,
+        "end": 0.292
+      },
+      {
+        "text": "connect",
+        "start": 0.317,
+        "end": 0.754
+      },
+      {
+        "text": "and",
+        "start": 0.754,
+        "end": 0.926
+      },
+      {
+        "text": "explore",
+        "start": 0.926,
+        "end": 1.373
+      },
+      {
+        "text": "synergies.",
+        "start": 1.373,
+        "end": 2.094
+      }
+    ],
+    "url": "/optimizer/audio/lady-36.mp3"
+  },
+  "strategy-saturday-hackathon-call": {
+    "duration": 1.6539909297052153,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.055,
+        "end": 0.262
+      },
+      {
+        "text": "not",
+        "start": 0.262,
+        "end": 0.644
+      },
+      {
+        "text": "a",
+        "start": 0.644,
+        "end": 0.753
+      },
+      {
+        "text": "Saturday.",
+        "start": 0.753,
+        "end": 1.574
+      }
+    ],
+    "url": "/optimizer/audio/strategy-saturday-hackathon-call.mp3"
+  },
+  "synthia-saturday-hackathon-response": {
+    "duration": 1.147482993197279,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.012,
+        "end": 0.241
+      },
+      {
+        "text": "a",
+        "start": 0.241,
+        "end": 0.3
+      },
+      {
+        "text": "hackathon.",
+        "start": 0.3,
+        "end": 1.077
+      }
+    ],
+    "url": "/optimizer/audio/synthia-saturday-hackathon-response.mp3"
+  },
+  "lady-38": {
+    "duration": 1.019342403628118,
+    "words": [
+      {
+        "text": "Big",
+        "start": 0.017,
+        "end": 0.253
+      },
+      {
+        "text": "news.",
+        "start": 0.253,
+        "end": 0.849
+      }
+    ],
+    "url": "/optimizer/audio/lady-38.mp3"
+  },
+  "strategy-copy-paste-call": {
+    "duration": 1.61,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.028,
+        "end": 0.224
+      },
+      {
+        "text": "not",
+        "start": 0.224,
+        "end": 0.554
+      },
+      {
+        "text": "copy-paste.",
+        "start": 0.554,
+        "end": 1.53
+      }
+    ],
+    "url": "/optimizer/audio/strategy-copy-paste-call.mp3"
+  },
+  "synthia-copy-paste-response": {
+    "duration": 1.2777777777777777,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.012,
+        "end": 0.21
+      },
+      {
+        "text": "co-creation.",
+        "start": 0.23,
+        "end": 1.207
+      }
+    ],
+    "url": "/optimizer/audio/synthia-copy-paste-response.mp3"
+  },
+  "lady-39": {
+    "duration": 1.258390022675737,
+    "words": [
+      {
+        "text": "Some",
+        "start": 0.017,
+        "end": 0.237
+      },
+      {
+        "text": "personal",
+        "start": 0.246,
+        "end": 0.74
+      },
+      {
+        "text": "news.",
+        "start": 0.74,
+        "end": 1.221
+      }
+    ],
+    "url": "/optimizer/audio/lady-39.mp3"
+  },
+  "strategy-espresso-discipline-call": {
+    "duration": 1.9680045351473923,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.017,
+        "end": 0.22
+      },
+      {
+        "text": "not",
+        "start": 0.22,
+        "end": 0.511
+      },
+      {
+        "text": "a",
+        "start": 0.511,
+        "end": 0.608
+      },
+      {
+        "text": "fifth",
+        "start": 0.608,
+        "end": 1.028
+      },
+      {
+        "text": "espresso.",
+        "start": 1.08,
+        "end": 1.888
+      }
+    ],
+    "url": "/optimizer/audio/strategy-espresso-discipline-call.mp3"
+  },
+  "synthia-espresso-discipline-response": {
+    "duration": 0.8468027210884354,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.012,
+        "end": 0.196
+      },
+      {
+        "text": "discipline.",
+        "start": 0.196,
+        "end": 0.808
+      }
+    ],
+    "url": "/optimizer/audio/synthia-espresso-discipline-response.mp3"
+  },
+  "lady-40": {
+    "duration": 1.2962131519274376,
+    "words": [
+      {
+        "text": "A",
+        "start": 0.016,
+        "end": 0.117
+      },
+      {
+        "text": "quick",
+        "start": 0.161,
+        "end": 0.375
+      },
+      {
+        "text": "update.",
+        "start": 0.375,
+        "end": 0.942
+      }
+    ],
+    "url": "/optimizer/audio/lady-40.mp3"
+  },
+  "strategy-agenda-vibe-call": {
+    "duration": 1.5419954648526077,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.062,
+        "end": 0.302
+      },
+      {
+        "text": "not",
+        "start": 0.302,
+        "end": 0.654
+      },
+      {
+        "text": "an",
+        "start": 0.654,
+        "end": 0.76
+      },
+      {
+        "text": "agenda.",
+        "start": 0.76,
+        "end": 1.462
+      }
+    ],
+    "url": "/optimizer/audio/strategy-agenda-vibe-call.mp3"
+  },
+  "synthia-agenda-vibe-response": {
+    "duration": 1.0322222222222222,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.017,
+        "end": 0.248
+      },
+      {
+        "text": "a",
+        "start": 0.248,
+        "end": 0.459
+      },
+      {
+        "text": "vibe.",
+        "start": 0.459,
+        "end": 0.98
+      }
+    ],
+    "url": "/optimizer/audio/synthia-agenda-vibe-response.mp3"
+  },
+  "lady-42": {
+    "duration": 0.9443537414965987,
+    "words": [
+      {
+        "text": "Lessons",
+        "start": 0.012,
+        "end": 0.448
+      },
+      {
+        "text": "learned.",
+        "start": 0.448,
+        "end": 0.904
+      }
+    ],
+    "url": "/optimizer/audio/lady-42.mp3"
+  },
+  "strategy-deck-narrative-call": {
+    "duration": 2.0560090702947846,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.054,
+        "end": 0.242
+      },
+      {
+        "text": "not",
+        "start": 0.242,
+        "end": 0.529
+      },
+      {
+        "text": "a",
+        "start": 0.529,
+        "end": 0.6
+      },
+      {
+        "text": "forty-slide",
+        "start": 0.6,
+        "end": 1.626
+      },
+      {
+        "text": "deck.",
+        "start": 1.626,
+        "end": 1.976
+      }
+    ],
+    "url": "/optimizer/audio/strategy-deck-narrative-call.mp3"
+  },
+  "synthia-deck-narrative-response": {
+    "duration": 1.0673015873015872,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.012,
+        "end": 0.241
+      },
+      {
+        "text": "a",
+        "start": 0.241,
+        "end": 0.325
+      },
+      {
+        "text": "narrative.",
+        "start": 0.325,
+        "end": 1.001
+      }
+    ],
+    "url": "/optimizer/audio/synthia-deck-narrative-response.mp3"
+  },
+  "lady-43": {
+    "duration": 1.0774603174603175,
+    "words": [
+      {
+        "text": "Here's",
+        "start": 0.001,
+        "end": 0.293
+      },
+      {
+        "text": "the",
+        "start": 0.295,
+        "end": 0.394
+      },
+      {
+        "text": "takeaway.",
+        "start": 0.4,
+        "end": 1.028
+      }
+    ],
+    "url": "/optimizer/audio/lady-43.mp3"
+  },
+  "strategy-chatbot-call": {
+    "duration": 1.4850113378684808,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.045,
+        "end": 0.256
+      },
+      {
+        "text": "not",
+        "start": 0.256,
+        "end": 0.543
+      },
+      {
+        "text": "a",
+        "start": 0.543,
+        "end": 0.663
+      },
+      {
+        "text": "chatbot.",
+        "start": 0.668,
+        "end": 1.405
+      }
+    ],
+    "url": "/optimizer/audio/strategy-chatbot-call.mp3"
+  },
+  "synthia-chatbot-response": {
+    "duration": 1.0823356009070295,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.012,
+        "end": 0.241
+      },
+      {
+        "text": "a",
+        "start": 0.241,
+        "end": 0.341
+      },
+      {
+        "text": "colleague.",
+        "start": 0.37,
+        "end": 1.011
+      }
+    ],
+    "url": "/optimizer/audio/synthia-chatbot-response.mp3"
+  },
+  "lady-46": {
+    "duration": 0.928843537414966,
+    "words": [
+      {
+        "text": "Stay",
+        "start": 0.009,
+        "end": 0.364
+      },
+      {
+        "text": "tuned.",
+        "start": 0.374,
+        "end": 0.873
+      }
+    ],
+    "url": "/optimizer/audio/lady-46.mp3"
+  },
+  "strategy-pay-cut-equity-call": {
+    "duration": 1.44,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.043,
+        "end": 0.268
+      },
+      {
+        "text": "not",
+        "start": 0.268,
+        "end": 0.6
+      },
+      {
+        "text": "a",
+        "start": 0.6,
+        "end": 0.735
+      },
+      {
+        "text": "pay",
+        "start": 0.801,
+        "end": 1.048
+      },
+      {
+        "text": "cut.",
+        "start": 1.091,
+        "end": 1.36
+      }
+    ],
+    "url": "/optimizer/audio/strategy-pay-cut-equity-call.mp3"
+  },
+  "synthia-pay-cut-equity-response": {
+    "duration": 0.816734693877551,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.012,
+        "end": 0.243
+      },
+      {
+        "text": "equity.",
+        "start": 0.243,
+        "end": 0.737
+      }
+    ],
+    "url": "/optimizer/audio/synthia-pay-cut-equity-response.mp3"
+  },
+  "lady-48": {
+    "duration": 1.6165986394557823,
+    "words": [
+      {
+        "text": "Milestone",
+        "start": 0.006,
+        "end": 0.849
+      },
+      {
+        "text": "unlocked.",
+        "start": 0.87,
+        "end": 1.572
+      }
+    ],
+    "url": "/optimizer/audio/lady-48.mp3"
+  },
+  "strategy-recurring-ritual-call": {
+    "duration": 1.7839909297052154,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.014,
+        "end": 0.209
+      },
+      {
+        "text": "not",
+        "start": 0.209,
+        "end": 0.494
+      },
+      {
+        "text": "a",
+        "start": 0.494,
+        "end": 0.57
+      },
+      {
+        "text": "recurring",
+        "start": 0.57,
+        "end": 1.212
+      },
+      {
+        "text": "meeting.",
+        "start": 1.212,
+        "end": 1.704
+      }
+    ],
+    "url": "/optimizer/audio/strategy-recurring-ritual-call.mp3"
+  },
+  "synthia-recurring-ritual-response": {
+    "duration": 1.1374603174603175,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.012,
+        "end": 0.243
+      },
+      {
+        "text": "a",
+        "start": 0.243,
+        "end": 0.39
+      },
+      {
+        "text": "ritual.",
+        "start": 0.39,
+        "end": 1.062
+      }
+    ],
+    "url": "/optimizer/audio/synthia-recurring-ritual-response.mp3"
+  },
+  "lady-50": {
+    "duration": 0.7984353741496598,
+    "words": [
+      {
+        "text": "Let's",
+        "start": 0.013,
+        "end": 0.29
+      },
+      {
+        "text": "build.",
+        "start": 0.29,
+        "end": 0.761
+      }
+    ],
+    "url": "/optimizer/audio/lady-50.mp3"
+  },
+  "strategy-pizza-wellness-call": {
+    "duration": 1.778934240362812,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.058,
+        "end": 0.252
+      },
+      {
+        "text": "not",
+        "start": 0.252,
+        "end": 0.587
+      },
+      {
+        "text": "a",
+        "start": 0.587,
+        "end": 0.71
+      },
+      {
+        "text": "pizza",
+        "start": 0.75,
+        "end": 1.125
+      },
+      {
+        "text": "party.",
+        "start": 1.163,
+        "end": 1.695
+      }
+    ],
+    "url": "/optimizer/audio/strategy-pizza-wellness-call.mp3"
+  },
+  "strategy-pizza-wellness-response": {
+    "duration": 1.8919954648526076,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.03,
+        "end": 0.152
+      },
+      {
+        "text": "a",
+        "start": 0.152,
+        "end": 0.27
+      },
+      {
+        "text": "wellness",
+        "start": 0.27,
+        "end": 0.982
+      },
+      {
+        "text": "initiative.",
+        "start": 0.986,
+        "end": 1.812
+      }
+    ],
+    "url": "/optimizer/audio/strategy-pizza-wellness-response.mp3"
+  },
+  "lady-52": {
+    "duration": 1.369251700680272,
+    "words": [
+      {
+        "text": "The",
+        "start": 0.015,
+        "end": 0.085
+      },
+      {
+        "text": "numbers",
+        "start": 0.085,
+        "end": 0.574
+      },
+      {
+        "text": "don't",
+        "start": 0.599,
+        "end": 0.816
+      },
+      {
+        "text": "lie.",
+        "start": 0.818,
+        "end": 1.334
+      }
+    ],
+    "url": "/optimizer/audio/lady-52.mp3"
+  },
+  "strategy-raise-meditation-call": {
+    "duration": 1.4481632653061225,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.066,
+        "end": 0.269
+      },
+      {
+        "text": "not",
+        "start": 0.269,
+        "end": 0.595
+      },
+      {
+        "text": "a",
+        "start": 0.595,
+        "end": 0.65
+      },
+      {
+        "text": "raise.",
+        "start": 0.65,
+        "end": 1.219
+      }
+    ],
+    "url": "/optimizer/audio/strategy-raise-meditation-call.mp3"
+  },
+  "strategy-raise-meditation-response": {
+    "duration": 1.4539909297052154,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.046,
+        "end": 0.24
+      },
+      {
+        "text": "a",
+        "start": 0.24,
+        "end": 0.281
+      },
+      {
+        "text": "meditation",
+        "start": 0.281,
+        "end": 1.112
+      },
+      {
+        "text": "app.",
+        "start": 1.112,
+        "end": 1.374
+      }
+    ],
+    "url": "/optimizer/audio/strategy-raise-meditation-response.mp3"
+  },
+  "lady-53": {
+    "duration": 1.7456462585034014,
+    "words": [
+      {
+        "text": "Execution",
+        "start": 0.014,
+        "end": 0.823
+      },
+      {
+        "text": "beats",
+        "start": 0.825,
+        "end": 1.08
+      },
+      {
+        "text": "strategy.",
+        "start": 1.08,
+        "end": 1.709
+      }
+    ],
+    "url": "/optimizer/audio/lady-53.mp3"
+  },
+  "strategy-open-plan-call": {
+    "duration": 1.9950113378684806,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.026,
+        "end": 0.214
+      },
+      {
+        "text": "not",
+        "start": 0.214,
+        "end": 0.508
+      },
+      {
+        "text": "an",
+        "start": 0.508,
+        "end": 0.606
+      },
+      {
+        "text": "open-plan",
+        "start": 0.606,
+        "end": 1.357
+      },
+      {
+        "text": "office.",
+        "start": 1.357,
+        "end": 1.915
+      }
+    ],
+    "url": "/optimizer/audio/strategy-open-plan-call.mp3"
+  },
+  "synthia-open-plan-response": {
+    "duration": 1.2777777777777777,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.012,
+        "end": 0.214
+      },
+      {
+        "text": "collaboration.",
+        "start": 0.254,
+        "end": 1.206
+      }
+    ],
+    "url": "/optimizer/audio/synthia-open-plan-response.mp3"
+  },
+  "lady-56": {
+    "duration": 1.5929251700680271,
+    "words": [
+      {
+        "text": "Failure",
+        "start": 0,
+        "end": 0.587
+      },
+      {
+        "text": "is",
+        "start": 0.614,
+        "end": 0.787
+      },
+      {
+        "text": "just",
+        "start": 0.809,
+        "end": 1.049
+      },
+      {
+        "text": "data.",
+        "start": 1.052,
+        "end": 1.534
+      }
+    ],
+    "url": "/optimizer/audio/lady-56.mp3"
+  },
+  "strategy-layoff-launch-call": {
+    "duration": 1.4829931972789117,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.068,
+        "end": 0.272
+      },
+      {
+        "text": "not",
+        "start": 0.272,
+        "end": 0.611
+      },
+      {
+        "text": "a",
+        "start": 0.611,
+        "end": 0.65
+      },
+      {
+        "text": "layoff.",
+        "start": 0.65,
+        "end": 1.403
+      }
+    ],
+    "url": "/optimizer/audio/strategy-layoff-launch-call.mp3"
+  },
+  "synthia-layoff-launch-response": {
+    "duration": 0.9370068027210884,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.012,
+        "end": 0.24
+      },
+      {
+        "text": "a",
+        "start": 0.24,
+        "end": 0.32
+      },
+      {
+        "text": "launch.",
+        "start": 0.32,
+        "end": 0.904
+      }
+    ],
+    "url": "/optimizer/audio/synthia-layoff-launch-response.mp3"
+  },
+  "lady-57": {
+    "duration": 1.3539229024943311,
+    "words": [
+      {
+        "text": "Momentum",
+        "start": 0.015,
+        "end": 0.546
+      },
+      {
+        "text": "compounds.",
+        "start": 0.555,
+        "end": 1.293
+      }
+    ],
+    "url": "/optimizer/audio/lady-57.mp3"
   }
 }
