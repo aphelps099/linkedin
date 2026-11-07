@@ -1,0 +1,485 @@
+{
+  "strategy-hour-quick-sync-call": {
+    "duration": 1.3429931972789115,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.05,
+        "end": 0.305
+      },
+      {
+        "text": "not",
+        "start": 0.305,
+        "end": 0.596
+      },
+      {
+        "text": "an",
+        "start": 0.596,
+        "end": 0.767
+      },
+      {
+        "text": "hour.",
+        "start": 0.767,
+        "end": 1.263
+      }
+    ],
+    "url": "/optimizer/audio/strategy-hour-quick-sync-call.mp3"
+  },
+  "synthia-hour-quick-sync-response": {
+    "duration": 1.0873469387755101,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.016,
+        "end": 0.246
+      },
+      {
+        "text": "a",
+        "start": 0.246,
+        "end": 0.346
+      },
+      {
+        "text": "quick",
+        "start": 0.376,
+        "end": 0.559
+      },
+      {
+        "text": "sync.",
+        "start": 0.56,
+        "end": 1.064
+      }
+    ],
+    "url": "/optimizer/audio/synthia-hour-quick-sync-response.mp3"
+  },
+  "strategy-overtime-ownership-call": {
+    "duration": 1.4560090702947845,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.062,
+        "end": 0.269
+      },
+      {
+        "text": "not",
+        "start": 0.269,
+        "end": 0.591
+      },
+      {
+        "text": "overtime.",
+        "start": 0.597,
+        "end": 1.376
+      }
+    ],
+    "url": "/optimizer/audio/strategy-overtime-ownership-call.mp3"
+  },
+  "strategy-overtime-ownership-response": {
+    "duration": 1.1339909297052153,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.04,
+        "end": 0.252
+      },
+      {
+        "text": "ownership.",
+        "start": 0.252,
+        "end": 1.054
+      }
+    ],
+    "url": "/optimizer/audio/strategy-overtime-ownership-response.mp3"
+  },
+  "strategy-guess-forecast-call": {
+    "duration": 1.31,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.047,
+        "end": 0.293
+      },
+      {
+        "text": "not",
+        "start": 0.293,
+        "end": 0.645
+      },
+      {
+        "text": "a",
+        "start": 0.645,
+        "end": 0.708
+      },
+      {
+        "text": "guess.",
+        "start": 0.708,
+        "end": 1.23
+      }
+    ],
+    "url": "/optimizer/audio/strategy-guess-forecast-call.mp3"
+  },
+  "synthia-guess-forecast-response": {
+    "duration": 1.1775510204081632,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.012,
+        "end": 0.241
+      },
+      {
+        "text": "a",
+        "start": 0.241,
+        "end": 0.332
+      },
+      {
+        "text": "forecast.",
+        "start": 0.332,
+        "end": 1.142
+      }
+    ],
+    "url": "/optimizer/audio/synthia-guess-forecast-response.mp3"
+  },
+  "strategy-more-work-stretch-call": {
+    "duration": 1.3350113378684807,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.071,
+        "end": 0.268
+      },
+      {
+        "text": "not",
+        "start": 0.268,
+        "end": 0.555
+      },
+      {
+        "text": "more",
+        "start": 0.555,
+        "end": 0.81
+      },
+      {
+        "text": "work.",
+        "start": 0.81,
+        "end": 1.255
+      }
+    ],
+    "url": "/optimizer/audio/strategy-more-work-stretch-call.mp3"
+  },
+  "synthia-more-work-stretch-response": {
+    "duration": 1.4682086167800454,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.012,
+        "end": 0.24
+      },
+      {
+        "text": "a",
+        "start": 0.24,
+        "end": 0.297
+      },
+      {
+        "text": "stretch",
+        "start": 0.297,
+        "end": 0.759
+      },
+      {
+        "text": "assignment.",
+        "start": 0.759,
+        "end": 1.42
+      }
+    ],
+    "url": "/optimizer/audio/synthia-more-work-stretch-response.mp3"
+  },
+  "strategy-complaint-gift-call": {
+    "duration": 1.51,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.049,
+        "end": 0.258
+      },
+      {
+        "text": "not",
+        "start": 0.258,
+        "end": 0.591
+      },
+      {
+        "text": "a",
+        "start": 0.591,
+        "end": 0.717
+      },
+      {
+        "text": "complaint.",
+        "start": 0.717,
+        "end": 1.43
+      }
+    ],
+    "url": "/optimizer/audio/strategy-complaint-gift-call.mp3"
+  },
+  "strategy-double-booked-call": {
+    "duration": 1.7588662131519275,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.045,
+        "end": 0.269
+      },
+      {
+        "text": "not",
+        "start": 0.269,
+        "end": 0.638
+      },
+      {
+        "text": "double-booked.",
+        "start": 0.638,
+        "end": 1.266
+      }
+    ],
+    "url": "/optimizer/audio/strategy-double-booked-call.mp3"
+  },
+  "synthia-double-booked-response": {
+    "duration": 0.9420181405895691,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.012,
+        "end": 0.243
+      },
+      {
+        "text": "in",
+        "start": 0.243,
+        "end": 0.408
+      },
+      {
+        "text": "demand.",
+        "start": 0.408,
+        "end": 0.905
+      }
+    ],
+    "url": "/optimizer/audio/synthia-double-booked-response.mp3"
+  },
+  "strategy-guess-forecast-response": {
+    "duration": 1.1960090702947845,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.025,
+        "end": 0.256
+      },
+      {
+        "text": "a",
+        "start": 0.256,
+        "end": 0.35
+      },
+      {
+        "text": "forecast.",
+        "start": 0.35,
+        "end": 1.116
+      }
+    ],
+    "url": "/optimizer/audio/strategy-guess-forecast-response.mp3"
+  },
+  "lady-06": {
+    "duration": 1.0925850340136054,
+    "words": [
+      {
+        "text": "Let's",
+        "start": 0.015,
+        "end": 0.31
+      },
+      {
+        "text": "circle",
+        "start": 0.31,
+        "end": 0.684
+      },
+      {
+        "text": "back",
+        "start": 0.684,
+        "end": 1.051
+      }
+    ],
+    "url": "/optimizer/audio/lady-06.mp3"
+  },
+  "lady-02": {
+    "duration": 1.7670068027210883,
+    "words": [
+      {
+        "text": "Humbled",
+        "start": 0.006,
+        "end": 0.508
+      },
+      {
+        "text": "and",
+        "start": 0.581,
+        "end": 0.774
+      },
+      {
+        "text": "honored",
+        "start": 0.802,
+        "end": 1.137
+      },
+      {
+        "text": "to",
+        "start": 1.15,
+        "end": 1.257
+      },
+      {
+        "text": "share",
+        "start": 1.257,
+        "end": 1.748
+      }
+    ],
+    "url": "/optimizer/audio/lady-02.mp3"
+  },
+  "lady-13": {
+    "duration": 0.5240136054421769,
+    "words": [
+      {
+        "text": "Thoughts?",
+        "start": 0,
+        "end": 0.469
+      }
+    ],
+    "url": "/optimizer/audio/lady-13.mp3"
+  },
+  "lady-15": {
+    "duration": 2.2392290249433104,
+    "words": [
+      {
+        "text": "Let",
+        "start": 0.014,
+        "end": 0.284
+      },
+      {
+        "text": "that",
+        "start": 0.377,
+        "end": 0.888
+      },
+      {
+        "text": "sink",
+        "start": 1.086,
+        "end": 1.629
+      },
+      {
+        "text": "in",
+        "start": 1.673,
+        "end": 2.192
+      }
+    ],
+    "url": "/optimizer/audio/lady-15.mp3"
+  },
+  "lady-55": {
+    "duration": 1.3250566893424036,
+    "words": [
+      {
+        "text": "Feedback",
+        "start": 0,
+        "end": 0.498
+      },
+      {
+        "text": "is",
+        "start": 0.498,
+        "end": 0.678
+      },
+      {
+        "text": "a",
+        "start": 0.678,
+        "end": 0.737
+      },
+      {
+        "text": "gift.",
+        "start": 0.737,
+        "end": 1.287
+      }
+    ],
+    "url": "/optimizer/audio/lady-55.mp3"
+  },
+  "lady-44": {
+    "duration": 1.2768480725623583,
+    "words": [
+      {
+        "text": "We're",
+        "start": 0.011,
+        "end": 0.163
+      },
+      {
+        "text": "just",
+        "start": 0.163,
+        "end": 0.444
+      },
+      {
+        "text": "getting",
+        "start": 0.471,
+        "end": 0.714
+      },
+      {
+        "text": "started.",
+        "start": 0.714,
+        "end": 1.229
+      }
+    ],
+    "url": "/optimizer/audio/lady-44.mp3"
+  },
+  "lady-gift-response": {
+    "duration": 0.9380498866213152,
+    "words": [
+      {
+        "text": "It's",
+        "start": 0.025,
+        "end": 0.256
+      },
+      {
+        "text": "a",
+        "start": 0.256,
+        "end": 0.35
+      },
+      {
+        "text": "gift.",
+        "start": 0.35,
+        "end": 0.9
+      }
+    ],
+    "url": "/optimizer/audio/lady-gift-response.mp3"
+  },
+  "lady-05": {
+    "duration": 1.0087301587301587,
+    "words": [
+      {
+        "text": "Synergy",
+        "start": 0.014,
+        "end": 0.71
+      }
+    ],
+    "url": "/optimizer/audio/lady-05.mp3"
+  },
+  "lady-07": {
+    "duration": 1.1678004535147393,
+    "words": [
+      {
+        "text": "Leverage",
+        "start": 0.014,
+        "end": 0.651
+      }
+    ],
+    "url": "/optimizer/audio/lady-07.mp3"
+  },
+  "lady-08": {
+    "duration": 0.6795918367346939,
+    "words": [
+      {
+        "text": "Pivot",
+        "start": 0.012,
+        "end": 0.474
+      }
+    ],
+    "url": "/optimizer/audio/lady-08.mp3"
+  },
+  "lady-10": {
+    "duration": 0.8574603174603175,
+    "words": [
+      {
+        "text": "Delve",
+        "start": 0.015,
+        "end": 0.822
+      }
+    ],
+    "url": "/optimizer/audio/lady-10.mp3"
+  }
+}
