@@ -1,0 +1,517 @@
+{
+ "about": "Day One's avatars: abstract crops of the project's own footage, no faces.",
+ "crops": {
+  "guitar-body": {
+   "shot": "blue-guitar-detail-a8838477",
+   "title": "Blue Guitar Detail",
+   "category": "Instruments",
+   "faceBox": null,
+   "time": 3.0,
+   "box": [
+    118,
+    296,
+    323,
+    501
+   ],
+   "proxy": "blue-guitar-detail-a8838477-540-cdee406f.mp4",
+   "grade": null,
+   "files": {
+    "96": "guitar-body-96.jpg"
+   }
+  },
+  "guitar-head": {
+   "shot": "blue-guitar-detail-a8838477",
+   "title": "Blue Guitar Detail",
+   "category": "Instruments",
+   "faceBox": null,
+   "time": 3.0,
+   "box": [
+    812,
+    108,
+    960,
+    256
+   ],
+   "proxy": "blue-guitar-detail-a8838477-540-cdee406f.mp4",
+   "grade": null,
+   "files": {
+    "96": "guitar-head-96.jpg"
+   }
+  },
+  "fret-hand": {
+   "shot": "blue-guitar-detail-a8838477",
+   "title": "Blue Guitar Detail",
+   "category": "Instruments",
+   "faceBox": null,
+   "time": 3.0,
+   "box": [
+    646,
+    150,
+    814,
+    318
+   ],
+   "proxy": "blue-guitar-detail-a8838477-540-cdee406f.mp4",
+   "grade": null,
+   "files": {
+    "96": "fret-hand-96.jpg"
+   }
+  },
+  "desk-mug": {
+   "shot": "drummer-arrival-performance-c2bf484a",
+   "title": "Drummer Arrival Performance",
+   "category": "Instruments",
+   "faceBox": null,
+   "time": 3.0,
+   "box": [
+    782,
+    272,
+    942,
+    432
+   ],
+   "proxy": "drummer-arrival-performance-c2bf484a-540-f2f534f7.mp4",
+   "grade": null,
+   "files": {
+    "96": "desk-mug-96.jpg"
+   }
+  },
+  "sticks": {
+   "shot": "drummer-arrival-performance-c2bf484a",
+   "title": "Drummer Arrival Performance",
+   "category": "Instruments",
+   "faceBox": null,
+   "time": 3.0,
+   "box": [
+    432,
+    300,
+    582,
+    450
+   ],
+   "proxy": "drummer-arrival-performance-c2bf484a-540-f2f534f7.mp4",
+   "grade": null,
+   "files": {
+    "96": "sticks-96.jpg"
+   }
+  },
+  "office-window": {
+   "shot": "drummer-arrival-performance-c2bf484a",
+   "title": "Drummer Arrival Performance",
+   "category": "Instruments",
+   "faceBox": null,
+   "time": 3.0,
+   "box": [
+    52,
+    40,
+    242,
+    230
+   ],
+   "proxy": "drummer-arrival-performance-c2bf484a-540-f2f534f7.mp4",
+   "grade": null,
+   "files": {
+    "96": "office-window-96.jpg"
+   }
+  },
+  "lamp": {
+   "shot": "keys-office-performance-87b9564e",
+   "title": "Keys Office Performance",
+   "category": "Instruments",
+   "faceBox": null,
+   "time": 3.0,
+   "box": [
+    712,
+    138,
+    882,
+    308
+   ],
+   "proxy": "keys-office-performance-87b9564e-540-f2e8def5.mp4",
+   "grade": null,
+   "files": {
+    "96": "lamp-96.jpg"
+   }
+  },
+  "grey-mug": {
+   "shot": "keys-office-performance-87b9564e",
+   "title": "Keys Office Performance",
+   "category": "Instruments",
+   "faceBox": null,
+   "time": 3.0,
+   "box": [
+    760,
+    368,
+    932,
+    540
+   ],
+   "proxy": "keys-office-performance-87b9564e-540-f2e8def5.mp4",
+   "grade": null,
+   "files": {
+    "96": "grey-mug-96.jpg"
+   }
+  },
+  "keys-hands": {
+   "shot": "keys-office-performance-87b9564e",
+   "title": "Keys Office Performance",
+   "category": "Instruments",
+   "faceBox": null,
+   "time": 3.0,
+   "box": [
+    440,
+    352,
+    628,
+    540
+   ],
+   "proxy": "keys-office-performance-87b9564e-540-f2e8def5.mp4",
+   "grade": null,
+   "files": {
+    "96": "keys-hands-96.jpg"
+   }
+  },
+  "ceiling": {
+   "shot": "keys-office-performance-87b9564e",
+   "title": "Keys Office Performance",
+   "category": "Instruments",
+   "faceBox": null,
+   "time": 3.0,
+   "box": [
+    540,
+    8,
+    720,
+    188
+   ],
+   "proxy": "keys-office-performance-87b9564e-540-f2e8def5.mp4",
+   "grade": null,
+   "files": {
+    "96": "ceiling-96.jpg"
+   }
+  },
+  "notebook": {
+   "shot": "office-ensemble-e03c9edb",
+   "title": "Office Ensemble",
+   "category": "Office scenes",
+   "faceBox": null,
+   "time": 3.0,
+   "box": [
+    98,
+    300,
+    236,
+    438
+   ],
+   "proxy": "office-ensemble-e03c9edb-540-51c7a1f6.mp4",
+   "grade": null,
+   "files": {
+    "96": "notebook-96.jpg"
+   }
+  },
+  "blue-guitar": {
+   "shot": "office-ensemble-e03c9edb",
+   "title": "Office Ensemble",
+   "category": "Office scenes",
+   "faceBox": null,
+   "time": 3.0,
+   "box": [
+    818,
+    178,
+    958,
+    318
+   ],
+   "proxy": "office-ensemble-e03c9edb-540-51c7a1f6.mp4",
+   "grade": null,
+   "files": {
+    "96": "blue-guitar-96.jpg"
+   }
+  },
+  "coffee-maker": {
+   "shot": "printer-outward-feed-19442475",
+   "title": "Printer \u2014 outward feed",
+   "category": "Office scenes",
+   "faceBox": null,
+   "time": 3.0,
+   "box": [
+    44,
+    0,
+    258,
+    214
+   ],
+   "proxy": "printer-outward-feed-19442475-540-43676d1d.mp4",
+   "grade": null,
+   "files": {
+    "96": "coffee-maker-96.jpg"
+   }
+  },
+  "printer-leds": {
+   "shot": "printer-outward-feed-19442475",
+   "title": "Printer \u2014 outward feed",
+   "category": "Office scenes",
+   "faceBox": null,
+   "time": 3.0,
+   "box": [
+    672,
+    150,
+    852,
+    330
+   ],
+   "proxy": "printer-outward-feed-19442475-540-43676d1d.mp4",
+   "grade": null,
+   "files": {
+    "96": "printer-leds-96.jpg"
+   }
+  },
+  "woodgrain": {
+   "shot": "printer-outward-feed-19442475",
+   "title": "Printer \u2014 outward feed",
+   "category": "Office scenes",
+   "faceBox": null,
+   "time": 3.0,
+   "box": [
+    742,
+    372,
+    910,
+    540
+   ],
+   "proxy": "printer-outward-feed-19442475-540-43676d1d.mp4",
+   "grade": null,
+   "files": {
+    "96": "woodgrain-96.jpg"
+   }
+  },
+  "clap-1": {
+   "shot": "corporate-applause-closer-reaction-531fa4a4",
+   "title": "Corporate applause \u2014 closer reaction",
+   "category": "Office scenes",
+   "faceBox": null,
+   "time": 3.0,
+   "box": [
+    448,
+    292,
+    572,
+    416
+   ],
+   "proxy": "corporate-applause-closer-reaction-531fa4a4-540-fa4810ee.mp4",
+   "grade": null,
+   "files": {
+    "96": "clap-1-96.jpg"
+   }
+  },
+  "clap-2": {
+   "shot": "corporate-applause-closer-reaction-531fa4a4",
+   "title": "Corporate applause \u2014 closer reaction",
+   "category": "Office scenes",
+   "faceBox": null,
+   "time": 3.0,
+   "box": [
+    744,
+    262,
+    872,
+    390
+   ],
+   "proxy": "corporate-applause-closer-reaction-531fa4a4-540-fa4810ee.mp4",
+   "grade": null,
+   "files": {
+    "96": "clap-2-96.jpg"
+   }
+  },
+  "drum-pads": {
+   "shot": "drum-pad-detail-98b121e8",
+   "title": "Drum Pad Detail",
+   "category": "Instruments",
+   "faceBox": null,
+   "time": 3.0,
+   "box": [
+    300,
+    290,
+    550,
+    540
+   ],
+   "proxy": "drum-pad-detail-98b121e8-540-16c87dcf.mp4",
+   "grade": null,
+   "files": {
+    "96": "drum-pads-96.jpg"
+   }
+  },
+  "shirt-pocket": {
+   "shot": "drum-pad-detail-98b121e8",
+   "title": "Drum Pad Detail",
+   "category": "Instruments",
+   "faceBox": null,
+   "time": 3.0,
+   "box": [
+    520,
+    20,
+    720,
+    220
+   ],
+   "proxy": "drum-pad-detail-98b121e8-540-16c87dcf.mp4",
+   "grade": null,
+   "files": {
+    "96": "shirt-pocket-96.jpg"
+   }
+  },
+  "keys-detail": {
+   "shot": "keys-detail-92cca3c3",
+   "title": "Keys \u2014 detail",
+   "category": "Instruments",
+   "faceBox": null,
+   "time": 3.0,
+   "box": [
+    420,
+    0,
+    676,
+    256
+   ],
+   "proxy": "keys-detail-92cca3c3-540-9903cdb6.mp4",
+   "grade": null,
+   "files": {
+    "96": "keys-detail-96.jpg"
+   }
+  },
+  "corridor": {
+   "shot": "the-professionals-arrive-32aba023",
+   "title": "The professionals arrive",
+   "category": "Office scenes",
+   "faceBox": null,
+   "time": 3.0,
+   "box": [
+    0,
+    0,
+    230,
+    230
+   ],
+   "proxy": "the-professionals-arrive-32aba023-540-b433824c.mp4",
+   "grade": null,
+   "files": {
+    "96": "corridor-96.jpg"
+   }
+  },
+  "cabinet": {
+   "shot": "the-professionals-arrive-32aba023",
+   "title": "The professionals arrive",
+   "category": "Office scenes",
+   "faceBox": null,
+   "time": 3.0,
+   "box": [
+    675,
+    140,
+    865,
+    330
+   ],
+   "proxy": "the-professionals-arrive-32aba023-540-b433824c.mp4",
+   "grade": null,
+   "files": {
+    "96": "cabinet-96.jpg"
+   }
+  },
+  "jamie": {
+   "shot": "printer-outward-feed-19442475",
+   "title": "Printer \u2014 outward feed",
+   "category": "Office scenes",
+   "faceBox": null,
+   "time": 3.0,
+   "box": [
+    474,
+    0,
+    592,
+    118
+   ],
+   "proxy": "printer-outward-feed-19442475-540-43676d1d.mp4",
+   "grade": "sunlit",
+   "files": {
+    "96": "jamie-96.jpg",
+    "144": "jamie-144.jpg"
+   }
+  }
+ },
+ "assign": {
+  "1": "coffee-maker",
+  "2": "jamie",
+  "3": "silhouette",
+  "4": "silhouette",
+  "5": "jamie",
+  "6": "notebook",
+  "7": "office-window",
+  "8": "silhouette",
+  "9": "woodgrain",
+  "10": "silhouette",
+  "11": "desk-mug",
+  "12": "silhouette",
+  "13": "silhouette",
+  "14": "silhouette",
+  "15": "silhouette",
+  "16": "silhouette",
+  "17": "clap-2",
+  "18": "silhouette",
+  "19": "shirt-pocket",
+  "20": "guitar-body",
+  "21": "keys-hands",
+  "22": "fret-hand",
+  "23": "silhouette",
+  "24": "clap-1",
+  "25": "silhouette",
+  "26": "silhouette",
+  "27": "keys-detail",
+  "28": "sticks",
+  "29": "silhouette",
+  "30": "lamp",
+  "31": "blue-guitar",
+  "32": "silhouette",
+  "33": "silhouette",
+  "34": "guitar-head",
+  "35": "silhouette",
+  "36": "printer-leds",
+  "37": "silhouette",
+  "38": "grey-mug",
+  "39": "ceiling",
+  "40": "drum-pads",
+  "41": "cabinet",
+  "42": "silhouette",
+  "43": "silhouette",
+  "44": "corridor",
+  "45": "coffee-maker",
+  "46": "office-window",
+  "47": "silhouette",
+  "48": "desk-mug",
+  "49": "silhouette",
+  "50": "clap-2",
+  "51": "silhouette",
+  "52": "shirt-pocket",
+  "53": "guitar-body",
+  "54": "notebook",
+  "55": "silhouette",
+  "56": "silhouette",
+  "57": "silhouette",
+  "58": "keys-hands",
+  "59": "fret-hand",
+  "60": "clap-1",
+  "61": "keys-detail",
+  "62": "woodgrain",
+  "63": "sticks",
+  "64": "lamp",
+  "65": "blue-guitar",
+  "66": "silhouette",
+  "67": "guitar-head",
+  "68": "printer-leds",
+  "69": "grey-mug",
+  "70": "silhouette",
+  "71": "ceiling",
+  "72": "silhouette",
+  "73": "drum-pads",
+  "74": "cabinet",
+  "75": "corridor",
+  "76": "coffee-maker",
+  "77": "office-window",
+  "78": "desk-mug",
+  "79": "silhouette",
+  "80": "clap-2",
+  "81": "shirt-pocket",
+  "82": "guitar-body",
+  "83": "notebook",
+  "84": "keys-hands",
+  "85": "fret-hand",
+  "86": "clap-1",
+  "87": "keys-detail",
+  "88": "silhouette",
+  "89": "woodgrain",
+  "90": "silhouette",
+  "91": "sticks",
+  "92": "silhouette",
+  "93": "jamie",
+  "94": "silhouette"
+ },
+ "viewer": "silhouette"
+}

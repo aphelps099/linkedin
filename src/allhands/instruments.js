@@ -928,6 +928,29 @@ export function warmBass(ctx, out, t, midi, length, v = 1, {from = null, glide =
   [o, o2].forEach(x => { x.start(t); x.stop(end + .01); }); done(o, [o, o2, g2, lp, sh, g]);
 }
 
+// The counter's tick (Day One: the comment count is the song's hi-hat). A 1 ms
+// click and a D7 sine (2,349 Hz) falling 60 dB in 18 ms, band-passed around D7,
+// so it sits where a closed hat would. `accent` adds D6 under it, a little longer
+// (the 340 and the 1,204). Velocity is the caller's (Day One: .35 to .8 by the
+// log of the step). Deterministic: the click is the seeded noise at a time-derived offset.
+export function tick(ctx, out, t, v = .5, {accent = false, side = 0} = {}) {
+  const bp = biquad(ctx, 'bandpass', 2349, 1.2), g = amp(ctx, 1), p = spread(ctx, side);
+  chain(bp, g, p, out);
+  const n = noise(ctx, t, .002), ng = amp(ctx);
+  ng.gain.setValueAtTime(0, t); ng.gain.linearRampToValueAtTime(v * .3, t + .0002); ng.gain.linearRampToValueAtTime(0, t + .001);
+  chain(n, ng, bp);
+  const tones = [[98, v, .018]];
+  if (accent) tones.push([86, v * .8, .045]);
+  const oscs = [], nodes = [bp, g, p, ng];
+  for (const [m, a, decay] of tones) {
+    const o = ctx.createOscillator(), e = amp(ctx);
+    o.frequency.value = mtof(m);
+    e.gain.setValueAtTime(0, t); e.gain.linearRampToValueAtTime(a, t + .0005); e.gain.exponentialRampToValueAtTime(a * .001, t + .0005 + decay);
+    o.connect(e); e.connect(m === 98 ? bp : g); o.start(t); o.stop(t + decay + .002); oscs.push(o); nodes.push(e);
+  }
+  done(oscs[oscs.length - 1], [n, ...oscs, ...nodes]);
+}
+
 // Synthia's arpeggio: soft 16ths, a sine and a quiet saw through a low-pass that
 // closes after each note, then a gentle crush (a 5-bit staircase, mixed under
 // the clean note), fluent where Synergy is stiff.

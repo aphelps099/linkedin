@@ -1,0 +1,1720 @@
+{
+ "about": "Day One's comment script: copied from the copy study (study-copy/day-one-comments.json) with the company templated as {COMPANY} (default Brightwick), the image card dropped (spec 0: text-only post), two names changed to avoid the band's cast (Linda Okafor -> Rose Okafor, Arjun Mehta-Rao -> Rohan Mehta-Rao), the robot without a degree, and Jamie's headline on her own comments. Times swap with a neighbour about 1 in 4 inside each wave at render time (rows.js), the 'Most relevant' tell.",
+ "post": {
+  "author": "Jamie Okafor",
+  "pronouns": "She/Her",
+  "degree": "2nd",
+  "headline": "Associate Coordinator, Revenue Enablement at {COMPANY} | Merrow State '26",
+  "meta": "1d • 🌐",
+  "follow": "+ Follow",
+  "social_context": "Gregory Pham celebrates this",
+  "text": "Thrilled to share that I’m starting a new position as Associate Coordinator, Revenue Enablement at {COMPANY}! Grateful for this opportunity and excited to learn from such an incredible team. 🙏",
+  "sort_label": "Most relevant",
+  "composer_placeholder": "Add a comment…",
+  "suggested_chips": [
+   "Congrats on the new role!",
+   "Congrats, Jamie!",
+   "Well deserved!",
+   "Wishing you all the best!"
+  ]
+ },
+ "reaction_mix_final": {
+  "celebrate": 1738,
+  "like": 1429,
+  "love": 502,
+  "support": 166,
+  "insightful": 27,
+  "funny": 0
+ },
+ "reaction_mix_open": {
+  "like": 22,
+  "celebrate": 17,
+  "love": 8
+ },
+ "cluster_flip": "Celebrate overtakes Like between Kyle Henshaw and Devon Marchetti; cluster order goes Like/Celebrate/Love -> Celebrate/Like/Love",
+ "counts_strings": {
+  "left": "{reactions}",
+  "right": "{comments} comments • {reposts} reposts",
+  "singular": "1 repost; hide reposts at 0"
+ },
+ "rows": [
+  {
+   "kind": "warm",
+   "name": "Dana Whitfield",
+   "pronouns": "She/Her",
+   "degree": "2nd",
+   "frame": "",
+   "headline": "Owner at Second Rise Bakery | Bread, coffee and good people",
+   "time": "1d",
+   "reactions": 14,
+   "text": "We'll miss you on the 6am bake. {COMPANY} has no idea how lucky they are. Proud of you, kid.",
+   "reply": false,
+   "author": false,
+   "n": 1,
+   "counts": {
+    "reactions": 47,
+    "comments": 12,
+    "reposts": 0
+   },
+   "reactTypes": [
+    "like",
+    "celebrate"
+   ]
+  },
+  {
+   "kind": "warm",
+   "name": "Jamie Okafor",
+   "pronouns": "She/Her",
+   "degree": "",
+   "frame": "",
+   "headline": "Associate Coordinator, Revenue Enablement at {COMPANY} | Merrow State '26",
+   "time": "1d",
+   "reactions": 3,
+   "text": "Dana!! I'll still come in for the morning buns ❤️",
+   "reply": true,
+   "author": true,
+   "n": 2,
+   "reactTypes": [
+    "love",
+    "like"
+   ]
+  },
+  {
+   "kind": "warm",
+   "name": "Priya Raman",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Marketing Coordinator at Fernway | Merrow State '26",
+   "time": "1d",
+   "reactions": 9,
+   "text": "{Jamie Okafor} YES!!! 🎉 Told you. The group chat is screaming.",
+   "reply": false,
+   "author": false,
+   "n": 3,
+   "reactTypes": [
+    "like",
+    "celebrate"
+   ]
+  },
+  {
+   "kind": "warm",
+   "name": "Rose Okafor",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Retired School Nurse",
+   "time": "1d",
+   "reactions": 22,
+   "text": "So proud of you sweetheart!!! ❤️❤️ Love, Mom",
+   "reply": false,
+   "author": false,
+   "n": 4,
+   "reactTypes": [
+    "love",
+    "like"
+   ]
+  },
+  {
+   "kind": "warm",
+   "name": "Jamie Okafor",
+   "pronouns": "She/Her",
+   "degree": "",
+   "frame": "",
+   "headline": "Associate Coordinator, Revenue Enablement at {COMPANY} | Merrow State '26",
+   "time": "1d",
+   "reactions": 6,
+   "text": "Mom 😭",
+   "reply": true,
+   "author": true,
+   "n": 5,
+   "reactTypes": [
+    "love",
+    "like"
+   ]
+  },
+  {
+   "kind": "warm",
+   "name": "Ruth Calloway, PhD",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Associate Professor of Communication at Merrow State University",
+   "time": "1d",
+   "reactions": 5,
+   "text": "From COMM 214 to Revenue Enablement. I knew you would land somewhere wonderful.",
+   "reply": false,
+   "author": false,
+   "n": 6,
+   "reactTypes": [
+    "like",
+    "celebrate"
+   ]
+  },
+  {
+   "kind": "warm",
+   "name": "Marcus Lindqvist",
+   "pronouns": "He/Him",
+   "degree": "2nd",
+   "frame": "",
+   "headline": "Senior Manager, Revenue Enablement at {COMPANY}",
+   "time": "1d",
+   "reactions": 11,
+   "text": "Welcome to the team, Jamie! So glad you said yes. See you soon ☕",
+   "reply": false,
+   "author": false,
+   "n": 7,
+   "reactTypes": [
+    "like",
+    "celebrate"
+   ]
+  },
+  {
+   "kind": "warm",
+   "name": "Aisha Bello",
+   "pronouns": "She/Her",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Merrow State '26 | Aspiring UX Researcher",
+   "time": "1d",
+   "reactions": 4,
+   "text": "the way I SCREAMED. so proud of you 🥹",
+   "reply": false,
+   "author": false,
+   "n": 8,
+   "reactTypes": [
+    "love",
+    "like"
+   ]
+  },
+  {
+   "kind": "warm",
+   "name": "Tess Moreno",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Shift Lead at Second Rise Bakery",
+   "time": "1d",
+   "reactions": 3,
+   "text": "who is going to fix the espresso machine now 😭😭 congrats Jamie!!",
+   "reply": false,
+   "author": false,
+   "n": 9,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "warm",
+   "name": "Owen Gallagher",
+   "pronouns": "",
+   "degree": "2nd",
+   "frame": "",
+   "headline": "Sales Development Representative at Haverly Group | Merrow State '24",
+   "time": "23h",
+   "reactions": 2,
+   "text": "Huge! They're getting a good one. Remember us when you're VP 😄",
+   "reply": false,
+   "author": false,
+   "n": 10,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "warm",
+   "name": "Nadia Ferrante",
+   "pronouns": "",
+   "degree": "2nd",
+   "frame": "",
+   "headline": "People Partner at {COMPANY}",
+   "time": "23h",
+   "reactions": 7,
+   "text": "Welcome aboard! 🎉 Your laptop is ready.",
+   "reply": false,
+   "author": false,
+   "n": 11,
+   "reactTypes": [
+    "like",
+    "celebrate"
+   ]
+  },
+  {
+   "kind": "ui",
+   "text": "Load more comments",
+   "counts": [
+    52,
+    12,
+    0
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Rachel Imbert",
+   "pronouns": "",
+   "degree": "2nd",
+   "frame": "",
+   "headline": "Account Executive at Ambergrid",
+   "time": "23h",
+   "reactions": 1,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 12,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Sunil Varghese",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Senior Software Engineer at Orrin Labs",
+   "time": "22h",
+   "reactions": 1,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 13,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Megan Kostas",
+   "pronouns": "She/Her",
+   "degree": "2nd",
+   "frame": "",
+   "headline": "Customer Success Manager | Speaker | Dog Mom",
+   "time": "22h",
+   "reactions": 1,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 14,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "beat",
+   "name": "Gregory Pham",
+   "pronouns": "",
+   "degree": "1st",
+   "frame": "",
+   "headline": "Regional Sales Manager at Copperline",
+   "time": "22h",
+   "reactions": 0,
+   "text": "Congrats, Jordan!",
+   "reply": false,
+   "author": false,
+   "n": 15,
+   "counts": {
+    "reactions": 118,
+    "comments": 41,
+    "reposts": 0
+   },
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Derek Fenwick",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "2x Founder | Angel Investor | Advisor",
+   "time": "21h",
+   "reactions": 1,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 16,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Alana Brooks-Ito",
+   "pronouns": "",
+   "degree": "2nd",
+   "frame": "",
+   "headline": "Talent Acquisition Coordinator at Northvale Health",
+   "time": "21h",
+   "reactions": 1,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 17,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Emeka Nwosu",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "MBA Candidate | Ex-Consultant | Strategy & Ops",
+   "time": "20h",
+   "reactions": 1,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 18,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Lauren Pike",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Student at Merrow State University",
+   "time": "20h",
+   "reactions": 1,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 19,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "beat",
+   "name": "Kyle Henshaw",
+   "pronouns": "He/Him",
+   "degree": "3rd+",
+   "frame": "hiring",
+   "headline": "Senior Talent Partner at Kestrel Ridge Talent | Placing GTM Leaders in SaaS | #Hiring",
+   "time": "19h",
+   "reactions": 0,
+   "text": "Love this! Open to a quick chat about a Senior role?",
+   "reply": false,
+   "author": false,
+   "n": 20,
+   "counts": {
+    "reactions": 260,
+    "comments": 96,
+    "reposts": 1
+   },
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Haruto Saito",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Supply Chain Analyst at Coastline Freight",
+   "time": "19h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 21,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Bianca Ferreira",
+   "pronouns": "",
+   "degree": "2nd",
+   "frame": "",
+   "headline": "Fractional CMO | Helping Startups Find Their Story",
+   "time": "18h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 22,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Caleb Strand",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Licensed Insurance Agent | Helping Families Protect What Matters",
+   "time": "18h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 23,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Ines Duarte",
+   "pronouns": "She/Her",
+   "degree": "2nd",
+   "frame": "",
+   "headline": "Product Designer | ex-Fernway",
+   "time": "17h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 24,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Mitchell Osei",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Operations Manager at Brookmint",
+   "time": "17h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 25,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Kristen Vale",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Executive Assistant to the CEO at Glenrose Capital",
+   "time": "16h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 26,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "beat",
+   "name": "Devon Marchetti",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Keynote Speaker | Bestselling Author | Helping Founders Build Personal Brands That Convert",
+   "time": "16h",
+   "reactions": 0,
+   "text": "So well deserved!",
+   "reply": false,
+   "author": false,
+   "n": 27,
+   "counts": {
+    "reactions": 488,
+    "comments": 187,
+    "reposts": 2
+   },
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Rohan Mehta-Rao",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Data Analyst | SQL | Python | Dashboards",
+   "time": "15h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 28,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Sofia Lindgren",
+   "pronouns": "",
+   "degree": "2nd",
+   "frame": "",
+   "headline": "Head of People at Plover",
+   "time": "15h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 29,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Danielle Yoon",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Real Estate Agent at Pallister & Rowe",
+   "time": "14h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 30,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Rob Castellanos",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Regional VP, Sales at Wexley",
+   "time": "14h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 31,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Fatima Haddad",
+   "pronouns": "She/Her",
+   "degree": "2nd",
+   "frame": "",
+   "headline": "HR Generalist | People First",
+   "time": "13h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 32,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Greg Ostrowski",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Retired Army | Logistics | Open to New Opportunities",
+   "time": "13h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 33,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Yuki Tanabe",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "hiring",
+   "headline": "Senior Recruiter at Kestrel Ridge Talent | #Hiring",
+   "time": "12h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 34,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Nicole Brandvold",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Pharmaceutical Sales Representative",
+   "time": "12h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 35,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "species",
+   "name": "Shayla Kim",
+   "pronouns": "She/Her",
+   "degree": "3rd+",
+   "frame": "opentowork",
+   "headline": "Open to Work | Marketing & Communications | Merrow State '25",
+   "time": "12h",
+   "reactions": 0,
+   "text": "Let's connect!",
+   "reply": false,
+   "author": false,
+   "n": 36,
+   "counts": {
+    "reactions": 1126,
+    "comments": 340,
+    "reposts": 4
+   },
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Andre Whitaker",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Sales Leader | Coach | Podcast Host",
+   "time": "11h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 37,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Leah Goldfarb",
+   "pronouns": "",
+   "degree": "2nd",
+   "frame": "",
+   "headline": "Paralegal at Ashby & Finch",
+   "time": "11h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 38,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Samuel Adeyemi",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Growth @ Cindergate | Ex-Founder",
+   "time": "10h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 39,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Courtney Rask",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Event Planner | Weddings & Corporate",
+   "time": "10h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 40,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Vikram Iyer",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Investor Relations | CFA Level II Candidate",
+   "time": "10h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 41,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Erin McAllister",
+   "pronouns": "",
+   "degree": "2nd",
+   "frame": "",
+   "headline": "Teacher | Lifelong Learner",
+   "time": "9h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 42,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Diego Paredes",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "IT Support Specialist",
+   "time": "9h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 43,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Hannah Sobczak",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Social Media Manager | Content Creator",
+   "time": "9h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 44,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "species",
+   "name": "Brett Lorimer",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Account Executive at Ramplight | Helping Revenue Teams Ramp Reps 3x Faster",
+   "time": "9h",
+   "reactions": 0,
+   "text": "Congrats Jamie! As you get started in Revenue Enablement, Ramplight helps teams cut rep onboarding time by 41%. Worth a 15-minute chat next week? 🚀",
+   "reply": false,
+   "author": false,
+   "n": 45,
+   "counts": {
+    "reactions": 1690,
+    "comments": 512,
+    "reposts": 6
+   },
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Wade Tolliver",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Gym Owner | Father of 3 | Faith First",
+   "time": "8h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 46,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Kayla Dimitrov",
+   "pronouns": "",
+   "degree": "2nd",
+   "frame": "",
+   "headline": "Assistant Store Manager",
+   "time": "8h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 47,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Ben Achterberg",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "CPA | Tax Season Survivor",
+   "time": "8h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 48,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Rosa Quintero",
+   "pronouns": "She/Her",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Nurse Practitioner | MSN, FNP-C",
+   "time": "7h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 49,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Trevor Lindahl",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Mortgage Loan Officer | Helping Families Find Home",
+   "time": "7h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 50,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Mei-Ling Cho",
+   "pronouns": "",
+   "degree": "2nd",
+   "frame": "",
+   "headline": "Software Engineer II at Orrin Labs",
+   "time": "7h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 51,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Jason Pruitt",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Board Member | Veteran | Mentor",
+   "time": "7h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 52,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Olivia Haskins",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Marketing Intern at Saltmarsh Media",
+   "time": "6h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 53,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Rahul Bhandari",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Helping B2B SaaS Founders Scale to $10M ARR",
+   "time": "6h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 54,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Stephanie Kerr",
+   "pronouns": "",
+   "degree": "2nd",
+   "frame": "",
+   "headline": "Account Manager at {COMPANY}",
+   "time": "6h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 55,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "species",
+   "name": "Gail Ostrander",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Proud Merrow State Alum",
+   "time": "6h",
+   "reactions": 0,
+   "text": "👏👏👏",
+   "reply": false,
+   "author": false,
+   "n": 56,
+   "counts": {
+    "reactions": 2214,
+    "comments": 688,
+    "reposts": 8
+   },
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Luis Bautista",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Project Manager | PMP",
+   "time": "5h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 57,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Amanda Feld",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Freelance Graphic Designer | Open to Commissions",
+   "time": "5h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 58,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Kwabena Asare",
+   "pronouns": "",
+   "degree": "2nd",
+   "frame": "",
+   "headline": "Customer Experience Specialist at Northvale Health",
+   "time": "5h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 59,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Carly Westover",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "hiring",
+   "headline": "Recruiting Coordinator | We're #Hiring!",
+   "time": "4h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 60,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Nathan Rhee",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Founder & CEO at Stackwise | Building the Future of Payroll",
+   "time": "4h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 61,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Grace Obi",
+   "pronouns": "She/Her",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Sophomore at Merrow State | Finance & Economics",
+   "time": "4h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 62,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "species",
+   "name": "Neil Varma-Hollis",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Futurist | AI Evangelist | Web3 | Keynote Speaker",
+   "time": "4h",
+   "reactions": 2,
+   "text": "Insightful",
+   "reply": false,
+   "author": false,
+   "n": 63,
+   "counts": {
+    "reactions": 2560,
+    "comments": 803,
+    "reposts": 10
+   },
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Tyler Hammond",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Business Development Representative",
+   "time": "3h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 64,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Zara Siddiqui",
+   "pronouns": "",
+   "degree": "2nd",
+   "frame": "",
+   "headline": "Associate at Glenrose Capital",
+   "time": "3h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 65,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Brian Kessler",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Regional Account Manager at Copperline",
+   "time": "3h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 66,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Ana Lucía Ríos",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "hiring",
+   "headline": "Bilingual Recruiter | #Hiring",
+   "time": "3h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 67,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Scott Dumont",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Owner, Dumont Landscaping",
+   "time": "2h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 68,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Jessica Tran",
+   "pronouns": "",
+   "degree": "2nd",
+   "frame": "",
+   "headline": "Brand Strategist | Storyteller",
+   "time": "2h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 69,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "beat",
+   "name": "LinkedIn Member",
+   "pronouns": "",
+   "degree": "",
+   "frame": "",
+   "headline": "",
+   "time": "2h",
+   "reactions": 6,
+   "text": "Congrats on 5 years at {COMPANY}!",
+   "reply": false,
+   "author": false,
+   "n": 70,
+   "counts": {
+    "reactions": 2931,
+    "comments": 911,
+    "reposts": 12
+   },
+   "reactTypes": [
+    "like",
+    "celebrate"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Ibrahim Kaya",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Logistics Coordinator",
+   "time": "2h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 71,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Molly Brennan",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Office Manager",
+   "time": "2h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 72,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Eli Navarro",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Student at Merrow State University",
+   "time": "1h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 73,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Renee Castillo",
+   "pronouns": "",
+   "degree": "2nd",
+   "frame": "",
+   "headline": "Director of Partnerships at Lumaro",
+   "time": "1h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 74,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Adam Wójcik",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Mechanical Engineer",
+   "time": "1h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 75,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Tanya Morales",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "opentowork",
+   "headline": "Open to Work | Administrative Assistant",
+   "time": "1h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 76,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Hiro Matsuda",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "ex-Veridane | ex-Orrin Labs | Product @ Lumaro",
+   "time": "1h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 77,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Brooke Delaney",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Content Marketing | Words That Work",
+   "time": "1h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 78,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Omar Haidari",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Cybersecurity Analyst",
+   "time": "1h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 79,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Lindsey Graff",
+   "pronouns": "",
+   "degree": "2nd",
+   "frame": "hiring",
+   "headline": "Talent Acquisition at Plover | #Hiring",
+   "time": "1h",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 80,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Chris Mbatha",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Founder | Investor | Dad",
+   "time": "58m",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 81,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Paige Holloway",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Customer Support Lead at Stackwise",
+   "time": "55m",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 82,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Sanjay Kulkarni",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Senior Consultant | Transformation | Change",
+   "time": "52m",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 83,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Kelsey Ward",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Barista | Aspiring Marketer",
+   "time": "49m",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 84,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Felipe Aranda",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Civil Engineer, PE",
+   "time": "47m",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 85,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Monica Strauss",
+   "pronouns": "",
+   "degree": "2nd",
+   "frame": "",
+   "headline": "VP of Sales at Wexley",
+   "time": "44m",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 86,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "species",
+   "name": "Terri Lynn Baxter",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Retired Realtor | Proud Grandma of 6",
+   "time": "41m (edited)",
+   "reactions": 3,
+   "text": "Congratualtions!!",
+   "reply": false,
+   "author": false,
+   "n": 87,
+   "counts": {
+    "reactions": 3604,
+    "comments": 1140,
+    "reposts": 16
+   },
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Dmitri Arkhipov",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "QA Engineer",
+   "time": "33m",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 88,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Whitney Cole",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "hiring",
+   "headline": "Executive Recruiter | #Hiring",
+   "time": "27m",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 89,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Tariq Benali",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Financial Advisor | Helping You Retire With Confidence",
+   "time": "21m",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 90,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Jenna Hartley",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Senior Account Executive at Ambergrid",
+   "time": "14m",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 91,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "wave",
+   "name": "Lamar Greene",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Operations Analyst",
+   "time": "9m",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": false,
+   "author": false,
+   "n": 92,
+   "reactTypes": [
+    "like"
+   ]
+  },
+  {
+   "kind": "end",
+   "name": "Jamie Okafor",
+   "pronouns": "She/Her",
+   "degree": "",
+   "frame": "",
+   "headline": "Associate Coordinator, Revenue Enablement at {COMPANY} | Merrow State '26",
+   "time": "6m",
+   "reactions": 41,
+   "text": "Thank you all! 🙏 First day tomorrow.",
+   "reply": false,
+   "author": true,
+   "n": 93,
+   "counts": {
+    "reactions": 3851,
+    "comments": 1203,
+    "reposts": 18
+   },
+   "reactTypes": [
+    "like",
+    "celebrate"
+   ]
+  },
+  {
+   "kind": "end",
+   "name": "Doug Halvorsen",
+   "pronouns": "",
+   "degree": "3rd+",
+   "frame": "",
+   "headline": "Regional Account Manager",
+   "time": "1m",
+   "reactions": 0,
+   "text": "Congrats on the new role!",
+   "reply": true,
+   "author": false,
+   "n": 94,
+   "counts": {
+    "reactions": 3862,
+    "comments": 1204,
+    "reposts": 18
+   },
+   "reactTypes": [
+    "like"
+   ]
+  }
+ ]
+}

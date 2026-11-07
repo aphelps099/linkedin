@@ -514,4 +514,41 @@ if (url && baseline) {
   const ex = await record(plan, {mode:'sung', bars:[30, 36]});
   ok(ex.calls > 2000, `Delve.: an excerpt (bars 30-36) schedules from mid-song (${ex.calls} calls)`);
 }
+// ---- 10. Day One (src/films/day-one/score.js): a film's song, the roll
+{
+  const S = await import('../src/films/day-one/score.js'), TL = await import('../src/films/day-one/timeline.js'), C = S.CHART, R = C.roll;
+  const {readFile} = await import('node:fs/promises'), read = async file => new Uint8Array(await readFile(new URL(`../public/films/day-one/voices/${file}`, import.meta.url)));
+  const errorsOf = v => v.filter(x => x.level === 'error'), rulesOf = t => errorsOf(lintTrack(t)).map(x => x.rule);
+  // Not a song book track: never in the pickers, the forms or the casting.
+  ok(!TRACKS['day-one'] && !TRACK_ORDER.includes('day-one') && !Object.values(FORMS).some(f => (f.tracks || []).includes('day-one')), 'Day One: a film\'s chart, out of the song book\'s pickers, forms and casting');
+  // The chart: no errors, exactly its three declared breaks.
+  const v = lintTrack(C);
+  ok(!errorsOf(v).length && v.length === 3 && v.every(x => x.declared) && v.map(x => x.rule).sort().join() === 'form.ending,form.order,form.vocal', `Day One: the chart keeps the constitution, breaking three rules on purpose (${describe(v).join('; ')})`);
+  // The lint still bites under the breaks.
+  const plan = R.plan, motifAt = plan.findIndex(s => s.part === 'final');
+  const near = plan.map(s => (s.part === 'wave2' && s.B === 30 ? {...s, B:23} : s));                                  // a copy beside Voice 1
+  ok(rulesOf({...C, roll:{...R, plan:near}}).includes('form.vocal'), 'Day One: under the declared break, a copy beside the motif is still an error');
+  const high = plan.map(s => (s.part === 'wave5' ? {...s, copies:s.copies.map((c, i) => (i ? c : {...c, midi:57, role:54}))} : s));   // Strategy on A3, outside B2-F#3
+  ok(rulesOf({...C, roll:{...R, plan:high}}).includes('form.vocal'), 'Day One: a copy outside its singer\'s range is an error');
+  ok(rulesOf({...C, roll:{...R, plan:[...plan.slice(0, motifAt), {...plan[motifAt], copies:[{...plan[motifAt].copies[0], space:{wash:.3}}]}]}}).includes('form.ending'), 'Day One: a wet last line is an error');
+  ok(rulesOf({...C, roll:{...R, seconds:70}}).includes('form.order') && rulesOf({...C, roll:{...R, kicks:[...R.kicks, 30.5, 31.5]}}).includes('tempo.doubleTime'), 'Day One: 70 s, or five kicks a bar, is an error');
+  ok(rulesOf({...C, chords:{...C.chords, Bm9:{...C.chords.Bm9, arp:[...C.chords.Bm9.arp, 60]}}, chordAt:b => (b % 4 < 2 ? {...C.chords.Bm9, arp:[60]} : C.chords.Gmaj9)}).includes('melody.pentatonic'), 'Day One: an arpeggio note off the pentatonic is an error');
+  ok(rulesOf({...C, mix:{...C.mix, tape:{...C.mix.tape, wow:.2}}}).includes('production.tape') && rulesOf({...C, roll:{...R, printer:[]}}).includes('band.printer'), 'Day One: wow on the master, or no printer, is an error');
+  // The one clock: every statement is a cue of timeline.js, every tick a number that changes on screen.
+  const cues = TL.cues();
+  ok(plan.length === cues.length && plan.every((s, i) => s.B === cues[i].B && s.part === cues[i].part) && plan.filter(s => s.part === 'voice1' || s.part === 'final').map(s => s.B).join() === '22,92', `Day One: ${plan.length} statements on timeline.js's cues, the motif on B22 and B92`);
+  const copies = plan.flatMap(s => s.copies.map(c => ({s, c}))), byPart = p => plan.filter(s => s.part === p);
+  ok(byPart('wave3').every(s => s.copies.length === 3) && byPart('wave5').every(s => s.copies.length === 6) && byPart('wave6').length === 8 && byPart('wall').length === 16 && byPart('robot')[0].copies.length === 0
+    && copies.every(({s, c}) => c.motif || Math.abs(c.gainDb - (-10 * Math.log10(cues.find(q => q.B === s.B).copies) + R.copyDb[c.voice])) < 1e-3), 'Day One: the copies per wave (1, 2, 3, 4, 6, 8, 8-10, 0, 16), each at -10 log10(N) dB');
+  ok(byPart('wall').every((s, i) => s.copies[0].midi === R.wall[i] && Math.abs(s.copies[0].pan) === .8) && byPart('wave2').every(s => !s.copies[0].pan) && copies.every(({c}) => c.human >= 0 && c.human <= .025),
+    'Day One: the wall climbs the pentatonic an entry at +-0.8, waves 1 and 2 centred, every copy humanised 0-25 ms');
+  // It schedules cleanly through the validating fake context, the same twice, every input at most two at once.
+  const run = async () => { const r = await S.renderScore({read, normalize:false}); return {r, log:last.log, ctx:last}; };
+  const a = await run(), b = await run();
+  ok(a.log.length > 20000 && sha(canon(a.log)) === sha(canon(b.log)) && E.exactReport(a.ctx).every(x => x.overlap <= 2), `Day One: ${a.log.length} valid Web Audio calls, the same twice, every input at most two at once`);
+  const m = a.r.marks, motif = m.grats;
+  ok(motif.length === 2 && motif.every(g => Math.abs(g.t * 30 - g.B * 18) <= 1) && Math.abs((motif[1].end - motif[1].start) - (motif[0].end - motif[0].start)) < 1e-9 && m.silence[0].from === TL.tOf(91) && m.silence[0].to > m.silence[0].from,
+    `Day One: "grats" on frames ${motif.map(g => (g.t * 30).toFixed(2)).join(' and ')}; the silence from B91 to the line (${(m.silence[0].to - m.silence[0].from).toFixed(3)} s)`);
+  ok(m.ticks.length === TL.ticks().length && m.ticks.every((k, i) => k.t === TL.ticks()[i].t), `Day One: ${m.ticks.length} ticks, one for every number that changes on screen`);
+}
 console.log(`song book: ${checks} checks passed`);

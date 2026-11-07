@@ -447,4 +447,47 @@ try {
   ok(CHANT_SYLLABLES.length === 5 && CHANT_SYLLABLES.every((c, i) => c.cut[0] < c.cut[1] && c.cut[1] < c.cut[2] && c.cut[2] < c.cut[3] && (!i || c.cut[0] >= CHANT_SYLLABLES[i - 1].cut[3] - 1e-9)) && LADY_TABLE[AH.file], 'Delve.: the five syllables of "Momentum compounds." in order, each consonant, vowel, coda');
 }
 
+// ---- Day One (src/films/day-one): its voice takes, sung in key, and the counter's tick.
+{
+  const V = await import('../src/films/day-one/voices.js'), M = JSON.parse(readFileSync(new URL('../src/films/day-one/voices.json', import.meta.url), 'utf8'));
+  const {tick} = await import('../src/allhands/instruments.js');
+  // The published takes: the manifest's bytes, decoded in JS, every one heard (dry and sung) by Whisper; the motif is S1.
+  const sha = b => createHash('sha256').update(b).digest('hex');
+  const takes = await V.loadTakes(M, {read:async f => new Uint8Array(readFileSync(new URL(`../public/films/day-one/voices/${f}`, import.meta.url)))});
+  ok(M.takes.length >= 4 && M.takes.some(e => e.id === 's1' && e.motif) && M.takes.every(e => sha(readFileSync(new URL(`../public/films/day-one/voices/${e.file}`, import.meta.url))) === e.sha256 && takes.get(e.id).samples.length === e.samples)
+    && M.takes.every(e => e.heard.dry && Object.keys(e.heard).length >= 3 && e.words.length === 5 && e.words[0].syllables.length === 2 && Math.abs(e.grats - e.words[0].syllables[1][0]) < 1e-9),
+    `Day One: ${M.takes.length} takes (${M.takes.map(e => e.id).join(', ')}), the bytes the manifest names, "grats" the second nucleus of "Congrats"; not published: ${(M.failed || []).map(f => f.id).join(', ') || 'none'}`);
+  // Sung in key: every copy on its note, "role" one step down (each nucleus of 60 ms or more within 25 cents).
+  const sr = 44100, f0 = (y, a, b) => {
+    const s = y.subarray(Math.round(a * sr), Math.round(b * sr)), r = k => { let x = 0; for (let i = 0; i + k < s.length; i++) x += s[i] * s[i + k]; return x; };
+    let best = 0, bk = 0; for (let k = Math.floor(sr / 500); k <= Math.ceil(sr / 70); k++) { const v = r(k); if (v > best) { best = v; bk = k; } }
+    const y0 = r(bk - 1), y1 = r(bk), y2 = r(bk + 1), d = (y0 - y2) / (2 * (y0 - 2 * y1 + y2));
+    return sr / (bk + (Number.isFinite(d) ? d : 0));
+  };
+  const errs = [];
+  for (const [id, take] of takes) for (const midi of V.RANGES[take.entry.voice]) {
+    const notes = V.intoned(take.entry, midi), y = V.singTake(take, notes, take.entry.amount), y2 = V.singTake(take, notes, take.entry.amount);
+    ok(y.every((v, i) => v === y2[i]) && notes.at(-1).midi === V.stepDown(midi) && notes.slice(0, -1).every(n => n.midi === midi), `Day One: ${id} intoned on ${midi} ("role" on ${V.stepDown(midi)}), the same samples twice`);
+    for (const n of notes.filter(n => n.to - n.from >= .06)) {
+      let c = 1200 * Math.log2(f0(y, n.from + .01, n.to - .01) / mtof(n.midi)); c = ((c + 600) % 1200 + 1200) % 1200 - 600;
+      errs.push(Math.abs(c));
+    }
+  }
+  errs.sort((a, b) => a - b);
+  ok(errs.filter(c => c <= 25).length >= .9 * errs.length, `Day One: ${errs.filter(c => c <= 25).length} of ${errs.length} sung nuclei within 25 cents of their notes (median ${errs[errs.length >> 1].toFixed(1)} c)`);
+  // S1, spoken: each nucleus snapped to the key, near the speaker's own pitch.
+  const s1 = takes.get('s1'), sp = V.spoken(s1.entry, s1.track), keyPcs = [11, 2, 4, 6, 9];
+  ok(sp.every(n => keyPcs.includes(n.midi % 12)) && sp.every(n => n.midi >= 36 && n.midi <= 50), `Day One: S1 spoken on ${sp.map(n => n.midi).join(' ')} (B minor pentatonic, his own register)`);
+  // The resampler (44.1 to 48 kHz): a 1 kHz sine comes out a 1 kHz sine, 90 dB clean, the same twice.
+  const x = Float32Array.from({length:44100}, (_, i) => Math.sin(2 * Math.PI * 1000 * i / 44100) * .5), y = V.resample(x, 44100, 48000), y2 = V.resample(x, 44100, 48000);
+  let e = 0, p = 0; for (let i = 2000; i < y.length - 2000; i++) { const want = Math.sin(2 * Math.PI * 1000 * i / 48000) * .5; e += (y[i] - want) ** 2; p += want * want; }
+  ok(y.length === 48000 && y.every((v, i) => v === y2[i]) && 10 * Math.log10(e / p) < -90, `Day One: the resampler is ${(-10 * Math.log10(e / p)).toFixed(0)} dB clean and deterministic`);
+  // The tick: a valid Web Audio voice (a recorded fake context), with and without the accent.
+  const calls = [], node = () => new Proxy({}, {get:(t, k) => (k in t ? t[k] : k === 'gain' || k === 'frequency' || k === 'Q' || k === 'pan' ? new Proxy({}, {get:(_, m) => (...a) => { if (a.some(v => typeof v === 'number' && !Number.isFinite(v))) throw Error(`${m}(${a})`); calls.push(m); }, set:() => true}) : (...a) => { calls.push(k); return a[0]; }), set:(t, k, v) => { t[k] = v; return true; }});
+  const fake = {sampleRate:48000, createGain:node, createBiquadFilter:node, createOscillator:node, createBufferSource:node, createStereoPanner:node, createBuffer:(c, n, r) => ({getChannelData:() => new Float32Array(n), numberOfChannels:c, length:n, sampleRate:r})};
+  tick(fake, node(), 1, .5); tick(fake, node(), 2, .8, {accent:true});
+  console.log(`Day One: ${M.takes.length} takes; ${errs.filter(c => c <= 25).length} of ${errs.length} sung nuclei within 25 cents (median ${errs[errs.length >> 1].toFixed(1)} c, 90th ${errs[Math.floor(errs.length * .9)].toFixed(1)} c); S1 spoken on ${sp.map(n => n.midi).join(' ')}; resampler ${(-10 * Math.log10(e / p)).toFixed(0)} dB clean`);
+  ok(calls.filter(c => c === 'start').length === 5 && calls.includes('exponentialRampToValueAtTime'), `Day One: the tick schedules cleanly (${calls.length} calls; the accent adds D6)`);
+}
+
 console.log(`All Hands: ${checks} checks passed.`);
