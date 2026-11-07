@@ -121,19 +121,22 @@ export function arrangeWander(lyrics, durations, options = {}) {
     band.push(e);
     return e;
   };
-  if (rc.couplet && at.y !== undefined) {
-    const y = rc.couplet.y;
+  // A bar, or a list of bars: an extended river may bring a phrase back (and declares that break).
+  const atBars = x => [].concat(x ?? []);
+  if (rc.couplet) atBars(at.y).forEach((atY, k) => {
+    const y = rc.couplet.y, s = k * 100;
     if (y.pickup) {
-      const p = phrase(y.pickup, 'pickup', 'couplet', at.y, {extra:{couplet:rc.couplet.id}, seed:5});
-      if (p) phrase(y, 'couplet-y', 'couplet', Math.ceil(stepAfter(T, p.end + .05) / 2) * 2 / BAR_STEPS, {extra:{couplet:rc.couplet.id}, seed:6, gain:(W.phraseGain ?? 2) + (W.yLift ?? 0)});
-    } else phrase(y, 'couplet-y', 'couplet', at.y, {extra:{couplet:rc.couplet.id}, seed:5, gain:(W.phraseGain ?? 2) + (W.yLift ?? 0)});
-  }
-  if (rc.refrain && at.refrain !== undefined) phrase(rc.refrain, 'refrain', 'refrain', at.refrain, {seed:7});
+      const p = phrase(y.pickup, 'pickup', 'couplet', atY, {extra:{couplet:rc.couplet.id}, seed:5 + s});
+      if (p) phrase(y, 'couplet-y', 'couplet', Math.ceil(stepAfter(T, p.end + .05) / 2) * 2 / BAR_STEPS, {extra:{couplet:rc.couplet.id}, seed:6 + s, gain:(W.phraseGain ?? 2) + (W.yLift ?? 0)});
+    } else phrase(y, 'couplet-y', 'couplet', atY, {extra:{couplet:rc.couplet.id}, seed:5 + s, gain:(W.phraseGain ?? 2) + (W.yLift ?? 0)});
+  });
+  if (rc.refrain) atBars(at.refrain).forEach((atR, k) => phrase(rc.refrain, 'refrain', 'refrain', atR, {seed:7 + k * 100}));
   // A phrase sinks back in: its last word loops, low, in the texture after it (an echo layer).
-  const echoes = [];
+  // A phrase that returns gets its own echo: refrain-echo, refrain-echo-2, ...
+  const echoes = [], seen = {};
   for (const e of band.filter(b => b.role !== 'pickup')) {
-    const last = e.words.length - 1, src = partOf(e.role === 'refrain' ? rc.refrain : rc.couplet.y);
-    const lp = loopOf(`${e.role}-echo`, e.role === 'refrain' ? rc.refrain : rc.couplet.y, tr, `the last word of "${e.display}", sinking back in`, {words:[src.words.length - 1]});
+    const last = e.words.length - 1, src = partOf(e.role === 'refrain' ? rc.refrain : rc.couplet.y), n = seen[e.role] = (seen[e.role] || 0) + 1;
+    const lp = loopOf(`${e.role}-echo${n > 1 ? `-${n}` : ''}`, e.role === 'refrain' ? rc.refrain : rc.couplet.y, tr, `the last word of "${e.display}", sinking back in`, {words:[src.words.length - 1]});
     if (lp) echoes.push({loop:lp.id, lp, after:e, last});
   }
   // The layers (the chart's, in bars) and their curves; the echo layers ramp in after their phrase.
