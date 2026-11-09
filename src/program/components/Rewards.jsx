@@ -1,17 +1,19 @@
 import React, {useId, useRef, useState} from 'react';
-import {ArrowRight, Check, Download} from 'lucide-react';
+import {Check, Download} from 'lucide-react';
+import {DotArrow} from '../arcade/Artwork.jsx';
 import {SynergyTip} from './SynergyTip.jsx';
-import {BrandArtwork} from './BrandArtwork.jsx';
+import {BadgeArtwork} from './BadgeArtwork.jsx';
+import badgeGifs from './badge-gifs.json';
 import {certificateMarkup} from './certificate-art.js';
 import wordmark from '../../../public/home-2/brand/wordmark-horizontal.svg?raw';
 import monogram from '../../../public/home-2/brand/monogram.svg?raw';
 
 export const REWARDS = [
-  {name:'Certified Attention Seeker', lines:['CERTIFIED','ATTENTION','SEEKER'], color:'#0757ec', ink:'#fff', foot:'A STRONG OPENING.'},
-  {name:'Humbled & Promoted', lines:['HUMBLED &','PROMOTED'], color:'#fff349', ink:'#11110e', foot:'A SMALL BUT MEANINGFUL MILESTONE.'},
-  {name:'Fluent in Synergy', lines:['FLUENT IN','SYNERGY'], color:'#d9e6ff', ink:'#0757ec', foot:'WORDS WERE DEFINITELY USED.'},
-  {name:'Strategic Line Breaker', lines:['STRATEGIC','LINE BREAKER'], color:'#11110e', ink:'#fff', foot:'LEAVING ROOM FOR IMPACT.'},
-  {name:'Officially Optimized', lines:['OFFICIALLY','OPTIMIZED'], color:'#ecebea', ink:'#0757ec', foot:'CONSIDERABLE EFFORT. VERIFIED.'},
+  {name:'Certified Attention Seeker', lines:['CERTIFIED','ATTENTION','SEEKER'], color:'#a8cfff', ink:'#142337', foot:'A STRONG OPENING.'},
+  {name:'Humbled & Promoted', lines:['HUMBLED &','PROMOTED'], color:'#ffad99', ink:'#142337', foot:'A SMALL BUT MEANINGFUL MILESTONE.'},
+  {name:'Fluent in Synergy', lines:['FLUENT IN','SYNERGY'], color:'#e7c4fa', ink:'#142337', foot:'WORDS WERE DEFINITELY USED.'},
+  {name:'Strategic Line Breaker', lines:['STRATEGIC','LINE BREAKER'], color:'#c5e9bf', ink:'#142337', foot:'LEAVING ROOM FOR IMPACT.'},
+  {name:'Officially Optimized', lines:['OFFICIALLY','OPTIMIZED'], color:'#ffe18b', ink:'#142337', foot:'CONSIDERABLE EFFORT. VERIFIED.'},
 ];
 
 // Serialize the same artwork shown on screen, then render a portable, high-res PNG.
@@ -41,33 +43,27 @@ export function downloadBlob(blob, filename){
 export async function downloadArt(svg, filename){ downloadBlob(await renderArt(svg), filename); }
 
 export function Sticker({number = 1, svgRef}){
-  const reward=REWARDS[number-1];
-  const y=reward.lines.length===3 ? 112 : 132;
-  return <svg ref={svgRef} className="pg-sticker" viewBox="0 0 400 264" role="img" aria-label={reward.name}>
-    <rect x="8" y="8" width="384" height="248" rx="22" fill="white"/>
-    <rect x="16" y="16" width="368" height="232" rx="16" fill={reward.color}/>
-    <BrandArtwork x={38} y={32} width={244} height={24} color={reward.ink}/>
-    <g fill={reward.ink} fontFamily="Arial, sans-serif" textAnchor="middle">
-      <text x="361" y="49" fontSize="11" fontWeight="700" textAnchor="end">0{number} / 05</text>
-      <text x="38" y="74" fontSize="9" letterSpacing="1.5" textAnchor="start">ACADEMY · PROFESSIONAL EFFORT, VERIFIED</text>
-      {reward.lines.map((line,i)=><text key={line} x="200" y={y+i*40} fontSize="35" fontWeight="900" letterSpacing="-1">{line}</text>)}
-      <path d="M38 207H362" stroke={reward.ink} opacity=".45"/>
-      <text x="200" y="229" fontSize="9" letterSpacing="1">{reward.foot}</text>
-    </g>
-  </svg>;
+  return <BadgeArtwork number={number} reward={REWARDS[number-1]} svgRef={svgRef}/>;
+}
+
+export function BadgeDownloads({number,svgRef,compact=false}){
+  const [status,setStatus]=useState('');
+  const png=async()=>{setStatus('Preparing PNG…');try{await downloadArt(svgRef.current,`linkedin-beats-lesson-${number}.png`);setStatus('PNG downloaded.');}catch{setStatus('Could not download. Please try again.');}};
+  return <div className={`pg-badge-downloads${compact?' is-compact':''}`} style={{'--badge-accent':REWARDS[number-1].color}}>
+    <div><a className="pg-badge-gif" href={badgeGifs[number].url} download={`linkedin-beats-lesson-${number}.gif`} aria-label={`Download animated ${REWARDS[number-1].name} GIF`}><Download size={15}/>{compact?'GIF':'Animated GIF'}</a><button type="button" className="pg-text-button" onClick={png} aria-label={`Download ${REWARDS[number-1].name} PNG`}>Still PNG</button></div>
+    <span className="pg-download-status" role="status">{status}</span>
+  </div>;
 }
 
 export function LessonReward({chapter, nextTitle, final, onContinue}){
-  const art=useRef(null), [status,setStatus]=useState('');
-  const download=async()=>{setStatus('Preparing…');try{await downloadArt(art.current,`linkedin-beats-lesson-${chapter.number}.png`);setStatus('Sticker downloaded.');}catch{setStatus('Could not download. Please try again.');}};
+  const art=useRef(null);
   return <section className="pg-end" aria-label="Lesson complete">
     <div className="pg-complete-label"><Check size={15}/>Lesson {String(chapter.number).padStart(2,'0')} complete</div>
     <h2>{final ? 'Considerable effort. Officially recognized.' : 'A little more LinkedIn. A little less human.'}</h2>
     <p>You unlocked <strong>{REWARDS[chapter.number-1].name}</strong>.</p>
     <div className="pg-sticker-stage"><Sticker number={chapter.number} svgRef={art}/></div>
-    <button type="button" className="pg-text-button" onClick={download}><Download size={15}/>Download sticker</button>
-    <span className="pg-download-status" role="status">{status}</span>
-    <SynergyTip celebrate content={final ? "Five lessons. One beat. Your professional development is now **officially overdeveloped.**" : "That is another milestone for the feed. Please remain **appropriately humbled.**"}/><div className="pg-end-next"><span>{final ? 'Your five-lesson journey, in writing.' : <>Up next<br/><strong>{nextTitle}</strong></>}</span><button type="button" className="pg-btn" onClick={onContinue}>{final ? 'View my certificate' : 'Begin next lesson'}<ArrowRight size={16}/></button></div>
+    <BadgeDownloads number={chapter.number} svgRef={art}/>
+    <SynergyTip celebrate content={final ? "Five lessons. One beat. Your professional development is now **officially overdeveloped.**" : "That is another milestone for the feed. Please remain **appropriately humbled.**"}/><div className="pg-end-next"><span>{final ? 'Your five-lesson journey, in writing.' : <>Up next<br/><strong>{nextTitle}</strong></>}</span><button type="button" className="pg-btn" onClick={onContinue}>{final ? 'View my certificate' : 'Begin next lesson'}<DotArrow/></button></div>
   </section>;
 }
 

@@ -1,5 +1,5 @@
 import React, {useRef, useState} from 'react';
-import {Check, ChevronDown, Copy, Globe2, Heart, Lightbulb, MessageSquare, MoreHorizontal, Repeat2, Send, ThumbsUp} from 'lucide-react';
+import {Check, Copy, Globe2, Heart, Lightbulb, LockKeyhole, MessageSquare, MoreHorizontal, Repeat2, Send, ThumbsUp} from 'lucide-react';
 
 export function Profile({name, title, composer = false}){
   const displayName = name || 'Your Name';
@@ -7,7 +7,7 @@ export function Profile({name, title, composer = false}){
   return <div className={`pg-profile${composer ? ' pg-profile-composer' : ''}`}>
     <span className="pg-avatar" aria-hidden="true">{initials}</span>
     <div><div className="pg-author"><strong>{displayName}</strong>{!composer && <span>· You</span>}</div>
-      {composer ? <span className="pg-audience">Post to anyone <ChevronDown size={12}/></span> : <><span className="pg-profile-title">{title || 'Strategic thinker. Occasional coffee maker.'}</span><small>1h · <Globe2 size={12} aria-label="Public post preview"/></small></>}
+      {composer ? <span className="pg-audience"><LockKeyhole size={12} aria-hidden="true"/>Private practice · Only you</span> : <><span className="pg-profile-title">{title || 'Strategic thinker. Occasional coffee maker.'}</span><small>1h · <Globe2 size={12} aria-label="Public post preview"/></small></>}
     </div>
   </div>;
 }

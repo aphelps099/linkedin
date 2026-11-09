@@ -1,0 +1,125 @@
+/* Learn's working UI: calm blue-black surfaces, readable labels, decisive controls. */
+.academy-page .pg-lesson{--lesson-accent:#a8cfff;--control-bg:#101922;--control-border:#607487;--control-text:#f1f3ed;--control-muted:#b4c2cf;--panel-bg:#17232f;--panel-rule:#364755}
+.academy-page .pg-app :is(.pg-exercise,.pg-spot){background:var(--panel-bg);border:0;border-radius:0;clip-path:polygon(0 18px,9px 18px,9px 9px,18px 9px,18px 0,calc(100% - 18px) 0,calc(100% - 18px) 9px,calc(100% - 9px) 9px,calc(100% - 9px) 18px,100% 18px,100% calc(100% - 18px),calc(100% - 9px) calc(100% - 18px),calc(100% - 9px) calc(100% - 9px),calc(100% - 18px) calc(100% - 9px),calc(100% - 18px) 100%,0 100%);color:var(--control-text)}
+.academy-page .pg-app :is(.pg-exercise,.pg-spot)>.pg-card-head{padding:26px 28px 18px;display:flex;flex-direction:column;align-items:flex-start;gap:10px;background:transparent;border:0}
+.academy-page .pg-app :is(.pg-exercise,.pg-spot)>.pg-card-head>span{background:transparent;color:var(--lesson-accent);font:12px 'LB Azeret Mono',monospace;letter-spacing:.08em;text-transform:uppercase;padding:0;display:flex;gap:9px;align-items:center}
+.academy-page .pg-app :is(.pg-exercise,.pg-spot)>.pg-card-head>span:before{content:'';width:6px;height:6px;background:currentColor;box-shadow:9px 0 0 #ffffff28;margin-right:8px}
+.academy-page .pg-app :is(.pg-exercise,.pg-spot)>.pg-card-head>strong{font:600 27px/1.18 C2Hoves,Arial,sans-serif;letter-spacing:-.6px;color:#f1f3ed}
+.academy-page .pg-composer-profile{padding:0 28px 20px}
+.academy-page .pg-profile-composer{font-family:C2Hoves,Arial,sans-serif;gap:12px}
+.academy-page .pg-profile-composer .pg-avatar{background:#a8cfff;color:#152440;border-radius:0;clip-path:polygon(0 8px,8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%);width:44px;height:44px;font:600 15px 'LB Azeret Mono',monospace}
+.academy-page .pg-profile-composer .pg-author strong{font-size:17px;color:#f1f3ed}
+.academy-page .pg-profile-composer .pg-audience{color:var(--control-muted);font-size:12px;gap:6px;line-height:1.5;margin-top:2px}
+.academy-page .pg-app :is(.pg-exercise,.pg-spot)>.pg-card-body{padding:0 28px 22px}
+.academy-page .pg-app :is(.pg-exercise,.pg-spot) .pg-card-body>.pg-muted{font-size:16px;line-height:1.5;color:var(--control-muted)}
+.academy-page .pg-app .pg-fields{background:transparent;border:0;padding:5px 28px 28px;gap:22px 24px}
+.academy-page .pg-app .pg-fields label{gap:9px}
+.academy-page .pg-app :is(.pg-fields label>span,.pg-choice>span){color:#e1e8ee;font:500 15px/1.4 C2Hoves,Arial,sans-serif}
+.academy-page .pg-app .pg-fields label>span{min-height:42px;display:flex;align-items:flex-end}
+.academy-page .pg-app :is(.pg-fields input,.pg-fields textarea,.pg-name input,.pg-certificate-controls input){background:#101922;color:#f4f4e9;border:1px solid #607487;border-radius:2px;font:16px/1.5 C2Hoves,Arial,sans-serif;padding:13px 14px;min-height:50px;color-scheme:dark;caret-color:#ffe18b;box-shadow:inset 0 3px 0 #00000018}
+.academy-page .pg-app .pg-fields textarea{min-height:86px;resize:vertical}
+.academy-page .pg-app :is(.pg-fields input,.pg-fields textarea,.pg-name input,.pg-certificate-controls input)::placeholder{color:#a7b7c7;opacity:1}
+.academy-page .pg-app :is(.pg-fields input,.pg-fields textarea,.pg-name input,.pg-certificate-controls input):focus-visible{outline:2px solid #a8cfff;outline-offset:3px;border-color:#a8cfff;background:#142331}
+.academy-page .pg-app :is(.pg-fields input,.pg-fields textarea):disabled{background:#14202a;color:#b8c6d2;border-color:#495a69;opacity:.8;cursor:not-allowed}
+.academy-page .pg-app .pg-choice{gap:12px;margin-bottom:0}
+.academy-page .pg-app :is(.pg-choice>div,.pg-choices){gap:8px}
+.academy-page .pg-app .pg-choices{padding-inline:28px}
+.academy-page .pg-app :is(.pg-choice button,.pg-choices button){display:inline-flex;align-items:center;gap:9px;min-height:44px;padding:11px 14px;border:0;border-radius:0;clip-path:polygon(0 7px,7px 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%);background:#293c4e;color:#e4eaf1;font:500 14px/1.35 C2Hoves,Arial,sans-serif;text-align:left}
+.academy-page .pg-app :is(.pg-choice button,.pg-choices button):before{content:'';width:6px;height:6px;flex:none;background:#92a6b8;opacity:.75}
+.academy-page .pg-app :is(.pg-choice button,.pg-choices button):hover:not(:disabled){background:#3a5267}
+.academy-page .pg-app :is(.pg-choice button,.pg-choices button)[aria-pressed=true]{background:var(--lesson-accent,#a8cfff);color:#142337;font-weight:600}
+.academy-page .pg-app :is(.pg-choice button,.pg-choices button)[aria-pressed=true]:before{content:'✓';background:none;width:10px;height:auto;font-weight:700;opacity:1}
+.academy-page .pg-app :is(.pg-choice button,.pg-choices button):focus-visible{outline:0;box-shadow:inset 0 0 0 3px #f4f4e9}
+.academy-page .pg-app :is(.pg-choice button,.pg-choices button):disabled{opacity:.65;cursor:not-allowed}
+.academy-page .pg-app :is(.pg-exercise,.pg-spot)>.pg-card-foot{padding:20px 28px 24px;background:#121c26;border-top:0;gap:22px}
+.academy-page .pg-app .pg-card-foot .pg-muted{font:12px/1.5 C2Hoves,Arial,sans-serif;color:#b4c2cf;max-width:250px}
+.academy-page .pg-app .pg-card-foot .pg-btn{min-height:54px;background:#ffe18b;color:#152440;font:700 16px/1.3 'LB Azeret Mono',monospace;padding:14px 23px;gap:13px}
+.academy-page .pg-app .pg-card-foot .pg-btn:hover:not(:disabled){background:#ffedb4}
+.academy-page .pg-app .pg-card-foot .pg-btn:focus-visible{outline:0;box-shadow:inset 0 0 0 3px white}
+.academy-page .pg-app .pg-card-foot .pg-btn:disabled{background:#344657;color:#bac6d0;opacity:1;cursor:not-allowed}
+.academy-page .pg-card-foot .ac-dot-play{width:19px;height:23px}
+.academy-page .pg-template mark{background:#30465c;color:#d8e9ff;border:0;border-radius:0;padding:3px 5px}
+/* Shared feedback and setting controls, outside the cream practice-feed previews. */
+.academy-page .pg-app .pg-level-chart{border:0;padding:24px;background:#17232f;border-radius:0}
+.academy-page .pg-level-chart legend{float:left;width:100%;margin-bottom:8px;font-size:22px;color:#f1f3ed}
+.academy-page .pg-level-hint{clear:both;padding-top:4px;color:#b4c2cf;font-size:14px}
+.academy-page .pg-level-column{border-color:#617487}
+.academy-page .pg-level-bar{background-color:#2b4054;background-image:radial-gradient(circle,#9ac9ff55 1px,transparent 1.5px);background-size:7px 7px;border-radius:0;color:#e4eaf1}
+.academy-page .pg-level-option:hover .pg-level-bar{background-color:#3c5369}
+.academy-page .pg-level-option.is-selected .pg-level-bar{background-color:var(--lesson-accent,#a8cfff);background-image:radial-gradient(circle,#14233755 1px,transparent 1.5px);color:#142337}
+.academy-page .pg-level-option.is-selected .pg-level-choice{color:var(--lesson-accent,#a8cfff)}
+.academy-page .pg-level-name{font-size:13px;color:#e1e8ee}.academy-page .pg-level-choice{color:#b4c2cf}
+.academy-page .pg-app .pg-level-description{background:#101922;border-color:var(--lesson-accent,#a8cfff);border-radius:0;padding:14px 17px}.academy-page .pg-level-description p{font-size:14px;color:#b4c2cf}
+.academy-page .pg-app .pg-score{background:#17232f;border:0;border-radius:0;--score-color:#a8cfff}.academy-page .pg-app .pg-score.is-maximal{--score-color:#ffad99}
+.academy-page .pg-gauge-track,.academy-page .pg-metric-track{stroke:#35495c;background:#35495c}.academy-page .pg-score-label{font-size:12px}.academy-page .pg-score-caption p,.academy-page .pg-score-metric>div:first-child{font-size:13px}
+.academy-page .pg-spot-lines button{border-radius:0;padding:13px 15px}.academy-page .pg-app .pg-spot-lines button.is-trope{background:#c5e9bf;color:#183325;border-color:#c5e9bf}.academy-page .pg-app .pg-spot-lines button.is-miss{background:#ffad99;color:#3c211b;border-color:#ffad99}
+@media(max-width:650px){
+ .academy-page .pg-app .pg-fields{grid-template-columns:1fr;gap:20px;padding:5px 20px 24px}
+ .academy-page .pg-app .pg-fields label>span{min-height:0}
+ .academy-page .pg-app :is(.pg-exercise,.pg-spot)>.pg-card-head{padding:23px 20px 18px}
+ .academy-page .pg-app :is(.pg-exercise,.pg-spot)>.pg-card-head>strong{font-size:24px}
+ .academy-page .pg-composer-profile,.academy-page .pg-app :is(.pg-exercise,.pg-spot)>.pg-card-body{padding-inline:20px}
+ .academy-page .pg-app :is(.pg-exercise,.pg-spot)>.pg-card-foot{padding:20px;flex-direction:column;align-items:stretch;gap:17px}
+ .academy-page .pg-app .pg-card-foot .pg-muted{max-width:none}
+ .academy-page .pg-app .pg-card-foot .pg-btn{width:100%;align-self:stretch}
+ .academy-page .pg-app .pg-choices{padding-inline:20px}
+ .academy-page .pg-app .pg-level-chart{padding:18px 12px}.academy-page .pg-level-name{font-size:11px}.academy-page .pg-level-bars{gap:6px}
+}
+/* Every lesson uses the same hero, action hierarchy and feedback surfaces. */
+.ac-lesson-hero{display:flex;align-items:center;gap:24px;margin:0 0 28px}
+.ac-lesson-hero>div{min-width:0}.ac-lesson-hero h1{font:600 clamp(34px,4vw,48px)/1.08 C2Hoves,Arial,sans-serif;letter-spacing:-1.5px;color:#f1f3ed;margin:0 0 10px}
+.ac-lesson-hero p{font:400 19px/1.4 C2Hoves,Arial,sans-serif;margin:0;color:#b4c2cf}.ac-lesson-hero p strong{font-weight:500;color:#d6e1e9}
+.academy-page .ac-hook{--control-muted:#b4c2cf;--panel-bg:#17232f;--control-bg:#101922;--control-text:#f1f3ed}
+.ac-hook .ac-tabs{margin-top:30px;border-color:#607487}.ac-hook .ac-tabs>button[aria-selected=true]{background:var(--lesson-accent);color:#142337}
+.ac-hook .ac-fact-panel{background:#17232f;padding:28px;min-height:330px}.ac-hook .ac-fact-panel:before{display:none}
+.ac-hook .ac-fact-panel label{color:#e1e8ee;font-size:21px}
+.ac-hook .ac-fact-panel textarea,.ac-hook .ac-example-fact{background:#101922;color:#f1f3ed;border:1px solid #607487;font:17px/1.6 C2Hoves,Arial,sans-serif;padding:16px;border-radius:2px;color-scheme:dark}
+.ac-hook .ac-fact-panel textarea:focus-visible{background:#142331;border-color:#a8cfff;outline:2px solid #a8cfff;outline-offset:3px}
+.ac-hook .ac-fact-panel textarea::placeholder{color:#a7b7c7}.ac-hook .ac-input-hint{color:#b4c2cf;font:13px/1.6 C2Hoves,Arial,sans-serif}.ac-hook .ac-example-explain{color:#c4ced7}
+.academy-page .pg-app :is(.pg-lesson,.ac-hook) .pg-btn,.ac-hook .ac-primary{background:#ffe18b;color:#152440;min-height:52px;padding:14px 22px;font:600 15px/1.4 'LB Azeret Mono',monospace;gap:15px}
+.academy-page .pg-app :is(.pg-lesson,.ac-hook) .pg-btn:hover:not(:disabled),.ac-hook .ac-primary:hover{background:#ffedb4;color:#152440}
+.academy-page .pg-app :is(.pg-lesson,.ac-hook) .pg-btn:focus-visible{outline:none;box-shadow:inset 0 0 0 3px white}
+.academy-page .pg-app :is(.pg-lesson,.ac-hook) .pg-btn:disabled{background:#344657;color:#bac6d0;opacity:1}
+.pg-btn .ac-dot-arrow{width:23px;height:18px}
+.academy-page .pg-app :is(.pg-lesson,.ac-hook) .pg-pill{border:1px solid #607487;background:#253748;color:#e4eaf1;min-height:46px;border-radius:2px}
+.academy-page .pg-app :is(.pg-lesson,.ac-hook) .pg-pill:hover{background:#354c61}
+.academy-page .pg-app :is(.pg-lesson,.ac-hook) .pg-synergy-tip{background:#17232f;border-radius:0;clip-path:var(--ac-clip);padding:20px 24px;color:#f1f3ed}
+.academy-page .pg-app :is(.pg-lesson,.ac-hook) .pg-synergy-label{background:transparent;padding:0;color:var(--lesson-accent,#a8cfff);font:11px 'LB Azeret Mono',monospace;letter-spacing:.03em;margin-bottom:9px}
+.academy-page .pg-app .pg-insight{border-left:3px solid var(--lesson-accent,#a8cfff);background:transparent}
+.academy-page .pg-app .pg-insight .pg-card-head{color:var(--lesson-accent,#a8cfff)}
+.academy-page .pg-app .pg-tick{border-radius:0;clip-path:polygon(0 4px,4px 0,100% 0,100% calc(100% - 4px),calc(100% - 4px) 100%,0 100%);background:var(--lesson-accent,#a8cfff);color:#142337}
+.academy-page .pg-app .pg-spot-lines button{background:#243748;color:#e4eaf1;border:1px solid #607487;position:relative;padding-left:39px;min-height:50px}
+.academy-page .pg-app .pg-spot-lines button:before{content:'';position:absolute;left:14px;top:19px;width:8px;height:8px;border:1px solid #a7b7c7}
+.academy-page .pg-app .pg-spot-lines button[aria-pressed=true]{background:var(--lesson-accent,#a8cfff);color:#142337;border-color:var(--lesson-accent,#a8cfff)}
+.academy-page .pg-app .pg-spot-lines button[aria-pressed=true]:before{content:'✓';border:0;top:14px;font-weight:700}
+.academy-page .pg-app .pg-spot-lines button.is-trope{background:#c5e9bf;color:#183325;border-color:#c5e9bf}.academy-page .pg-app .pg-spot-lines button.is-miss{background:#ffad99;color:#3c211b;border-color:#ffad99}
+.academy-page .pg-app .pg-spot-lines button.is-trope:before{content:'✓';border:0;top:14px}.academy-page .pg-app .pg-spot-lines button.is-miss:before{content:'×';border:0;top:14px}
+.academy-page .pg-recap{border-color:#364755}.academy-page .pg-recap-screen{border-radius:0;clip-path:var(--ac-clip);background:#101922}
+.academy-page .pg-recap-play>span{border:0;border-radius:0;clip-path:var(--ac-clip);background:#ffe18b;color:#152440;font:600 14px 'LB Azeret Mono',monospace;padding:14px 20px}
+.pg-recap-play .ac-dot-play{width:23px;height:26px}.academy-page .pg-recap-notes{border-color:#364755;color:#e1e8ee}.academy-page .pg-recap-notes summary{font-size:16px;min-height:48px}
+.academy-page .pg-notice{background:#2c3a48;color:#f1f3ed;border-radius:0;border-left:3px solid #ffe18b}
+.academy-page .pg-end{border-color:#364755}.academy-page .pg-end .pg-complete-label{color:var(--lesson-accent,#a8cfff);font:13px 'LB Azeret Mono',monospace}.academy-page .pg-end .pg-text-button{min-height:44px;font-size:14px;color:#b4c2cf}.academy-page .pg-end-next{border-color:#364755}
+.academy-page .pg-continue-row>span{font-size:13px;color:#b4c2cf}.academy-page .pg-beat>.pg-eyebrow{font-size:15px;color:#ffe18b}
+@media(max-width:650px){.ac-lesson-hero{gap:17px;margin-bottom:24px}.ac-lesson-hero h1{font-size:34px;letter-spacing:-.9px}.ac-lesson-hero p{font-size:16px}.ac-hook .ac-fact-panel{padding:22px}.ac-hook .ac-tabs{margin-top:25px}.academy-page .pg-app :is(.pg-lesson,.ac-hook) .pg-synergy-tip{padding:18px}.academy-page .pg-recap-play>span{left:12px;bottom:12px;font-size:12px;padding:12px 17px}}
+@media(max-width:420px){.ac-lesson-hero{gap:14px}.ac-lesson-hero h1{font-size:30px}.ac-lesson-hero p{font-size:14px}.ac-hook .ac-lesson-hero .pg-lesson-art{width:76px;height:76px}}
+/* Selected controls retain their contrast while hovered. */
+.academy-page .pg-app :is(.pg-choice button,.pg-choices button)[aria-pressed=true]:hover:not(:disabled){background:var(--lesson-accent,#a8cfff);color:#142337;filter:brightness(1.06)}
+.academy-page .pg-app .pg-spot-lines button{font:400 16px/1.5 C2Hoves,Arial,sans-serif}
+/* Earned credentials are collectible PEG badges, with export-safe vector lettering. */
+.academy-page .pg-sticker-stage{max-width:360px;width:86%;margin:30px auto 14px;transform:rotate(-3deg);filter:drop-shadow(0 10px 0 #00000030)}
+.academy-page .pg-achievement{background:#17232f;border:0;border-radius:0;clip-path:var(--ac-clip);padding:22px}
+.academy-page .pg-achievement .pg-locked-art{opacity:.48}
+.academy-page .pg-sticker-download{border-radius:0}.academy-page .pg-sticker-download:focus-visible{outline-offset:7px}
+.academy-page .pg-sticker-download>span{font-size:12px;min-height:36px}
+@media(max-width:600px){.academy-page .pg-sticker-stage{width:94%;max-width:340px}.academy-page .pg-achievement{padding:16px}}
+/* A warm-white letter chase; the identity and illustration stay perfectly still. */
+.pg-sticker .badge-letter{animation:badge-letter-marquee 4800ms steps(1,end) infinite;animation-delay:var(--letter-delay,0ms)}
+@keyframes badge-letter-marquee{0%,9.99%{fill:var(--letter-color)}10%,22.49%{fill:#fff9e7}22.5%,100%{fill:var(--letter-color)}}
+.academy-page .pg-locked-art .badge-letter{animation:none}
+.pg-badge-downloads>div{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:12px}
+.pg-badge-gif{display:inline-flex;align-items:center;gap:9px;padding:11px 16px;min-height:44px;background:var(--badge-accent,#a8cfff);color:#142337;clip-path:var(--ac-clip);text-decoration:none;font:600 13px 'LB Azeret Mono',monospace}
+.pg-badge-gif:hover{filter:brightness(1.1)}.academy-page .pg-badge-gif:focus-visible{outline:none;box-shadow:inset 0 0 0 3px white}
+.pg-badge-downloads .pg-text-button{color:#b4c2cf;font-size:13px;min-height:44px;text-decoration:underline;text-underline-offset:4px}
+.pg-badge-downloads .pg-download-status{margin-bottom:0;text-align:center;min-height:20px}
+.pg-badge-downloads.is-compact{margin-top:14px}.pg-badge-downloads.is-compact>div{gap:8px}.pg-badge-downloads.is-compact .pg-badge-gif{padding:10px 13px}.pg-badge-downloads.is-compact .pg-text-button{font-size:12px}
+@media(prefers-reduced-motion:reduce){.pg-sticker .badge-letter{animation:none}}

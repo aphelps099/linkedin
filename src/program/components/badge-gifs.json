@@ -1,0 +1,37 @@
+{
+  "1": {
+    "url": "/learn/badges/lesson-1-marquee.gif?v=dc2852718a14",
+    "width": 630,
+    "height": 450,
+    "bytes": 39484,
+    "cycleMs": 4800
+  },
+  "2": {
+    "url": "/learn/badges/lesson-2-marquee.gif?v=940b0e5e1a63",
+    "width": 630,
+    "height": 450,
+    "bytes": 31617,
+    "cycleMs": 4800
+  },
+  "3": {
+    "url": "/learn/badges/lesson-3-marquee.gif?v=11af395e1c54",
+    "width": 630,
+    "height": 450,
+    "bytes": 28893,
+    "cycleMs": 4800
+  },
+  "4": {
+    "url": "/learn/badges/lesson-4-marquee.gif?v=f6d37eae2432",
+    "width": 630,
+    "height": 450,
+    "bytes": 37803,
+    "cycleMs": 4800
+  },
+  "5": {
+    "url": "/learn/badges/lesson-5-marquee.gif?v=d6e03eb189b6",
+    "width": 630,
+    "height": 450,
+    "bytes": 31723,
+    "cycleMs": 4800
+  }
+}

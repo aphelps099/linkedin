@@ -1,17 +1,16 @@
-import {SiteHeader} from '../brand/SiteHeader.jsx';
+import {AcademyOverview,LessonNavigation} from './arcade/Overview.jsx';
+import {HookLesson} from './arcade/HookLesson.jsx';
 import {SiteFooter} from '../brand/SiteFooter.jsx';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {ArrowLeft, ArrowRight, Award, Check, ChevronDown, Clock3, Download, LockKeyhole, Music2, Printer, X} from 'lucide-react';
+import {ArrowLeft, ArrowRight, Award, Check, Download, LockKeyhole, Music2, Printer} from 'lucide-react';
 import {CHAPTERS, chapterById} from './chapters/index.js';
 import {StepPlayer} from './engine/StepPlayer.jsx';
 import {loadProgress, saveProgress} from './engine/progress.js';
-import {CertificateArt, downloadArt, REWARDS, Sticker} from './components/Rewards.jsx';
+import {BadgeDownloads, CertificateArt, downloadArt, REWARDS, Sticker} from './components/Rewards.jsx';
 import {PostBeat} from '../post-beat/PostBeat.jsx';
-import {SynergyTip} from './components/SynergyTip.jsx';
 import {CertificateShare} from './components/CertificateShare.jsx';
 import {certificateName} from './components/certificate-art.js';
 import {GraduationConfetti} from './components/GraduationConfetti.jsx';
-import {LESSON_PRESENTATION} from './chapters/presentation.js';
 
 // Static entries at /learn/ and /program/ share hash links and saved progress.
 const route = () => window.location.hash.replace(/^#\/?/, '') || '';
@@ -35,44 +34,14 @@ export default function Program(){
 
   return <div className="pg-app">
     <a className="pg-skip" href="#program-main" onClick={e=>{e.preventDefault();mainRef.current?.focus();}}>Skip to the lesson</a>
-    <SiteHeader active="Learn" focus={chapter?{current:index+1,total:CHAPTERS.length,minutes:chapter.minutes}:undefined}/>
-    {!chapter&&<nav className="pg-course-directory" aria-label="Academy"><a href="#" aria-current={!path?'page':undefined}>All lessons</a><a href="#/achievements" aria-current={path==='achievements'||path==='certified'?'page':undefined}>Your achievements</a></nav>}
     <main id="program-main" className="pg-main" ref={mainRef} tabIndex={-1}>
-      {chapter ? <StepPlayer key={chapter.id} chapter={chapter} userName={progress.userName} title={progress.title} onName={(userName,title)=>update({userName,title})} onPost={savePost} onFinish={finish} onComplete={next}/>
+      {chapter&&<LessonNavigation chapter={chapter} completed={progress.completedChapters}/>}
+      {chapter?.id==='hook' ? <HookLesson chapter={chapter} draft={progress.lessonDrafts?.hook} userName={progress.userName} onDraft={draft=>update(p=>({lessonDrafts:{...p.lessonDrafts,hook:draft},posts:{...p.posts,...(draft.tried?{hook:draft.post}:{})}}))} onFinish={finish} onComplete={next}/> : chapter ? <StepPlayer key={chapter.id} chapter={chapter} userName={progress.userName} title={progress.title} onName={(userName,title)=>update({userName,title})} onPost={savePost} onFinish={finish} onComplete={next}/>
         : path==='achievements' ? <Achievements progress={progress} resume={resume}/>
         : path==='certified' && complete ? <Certificate progress={progress} update={update}/>
-        : <Syllabus progress={progress} resume={resume} lockedCertificate={path==='certified'}/>}
+        : <AcademyOverview progress={progress} resume={resume} lockedCertificate={path==='certified'}/>}
     </main>
     <SiteFooter base="../"/>
-  </div>;
-}
-
-function Syllabus({progress,resume,lockedCertificate}){
-  const complete=allComplete(progress), started=!!progress.userName || progress.completedChapters.length>0;
-  return <div className="pg-home">
-    {lockedCertificate && <p className="pg-notice">Your certificate is waiting. Finish all five lessons to make it official.</p>}
-    <div className="pg-academy-intro">
-      <div className="pg-masthead">
-        <h1 className="pg-display">Your career isn’t going <em>to congratulate itself.</em></h1>
-        <p className="pg-lead">On the world’s premier professional network, doing the work is only half the job. Announcing it is the other 900%.</p>
-        <p className="pg-pitch">Five short lessons. One very public personal brand. A deeply unnecessary credential.</p>
-      </div>
-      <div className="pg-instructor-note"><SynergyTip content="Doing good work is great. Announcing it is **scalable.**"/><p>Your instructor: Synergy<br/><span>Head of Professional Development Optimization</span></p></div>
-    </div>
-    <section className="pg-course-resume" aria-label="Your course progress">
-      <div className="pg-resume-info"><strong>{complete ? 'Considerable effort. Verified.' : started ? 'Your next professional milestone' : 'Your professional evolution starts here.'}</strong><div><span>{progress.completedChapters.length} of 5 lessons complete</span><span><Clock3 size={13}/>25 min · Self-paced</span></div><div className="pg-progress-track" role="progressbar" aria-label="Course completion" aria-valuenow={progress.completedChapters.length} aria-valuemin={0} aria-valuemax={5}><span style={{width:`${progress.completedChapters.length*20}%`}}/></div></div>
-      <button className="pg-btn" type="button" onClick={()=>go(complete ? 'certified' : resume.id)}>{complete ? 'View my certificate' : started ? `Continue lesson ${resume.number}` : 'Start lesson 1'}<ArrowRight size={16}/></button>
-    </section>
-    <section className="pg-course-overview" aria-labelledby="pg-course-heading">
-      <div className="pg-course-heading"><h2 id="pg-course-heading">Your curriculum</h2><span className="pg-muted">A little more LinkedIn, one lesson at a time.</span></div>
-      <div className="pg-index">{CHAPTERS.map(c=>{const done=progress.completedChapters.includes(c.id), next=!done && c.id===resume.id, presentation=LESSON_PRESENTATION[c.id];return <a className={`pg-row-item${next ? ' is-next' : ''}`} key={c.id} href={`#/${c.id}`}>
-        <img className="pg-course-art" src={presentation.image} alt="" width="84" height="84" loading="lazy"/>
-        <span className="pg-row-detail"><span className="pg-row-title">{c.title}</span><span className="pg-row-sub">{presentation.summary}</span><span className="pg-row-format"><span>{presentation.format}</span><span className="pg-course-duration"><Clock3 size={13} aria-hidden="true"/>{c.minutes} min</span></span></span>
-        <span className={`pg-row-meta${done ? ' is-done' : ''}`}><span className={`pg-course-status${done ? ' is-done' : next ? ' is-next' : ''}`}>{done ? <><Check size={13} aria-hidden="true"/>Review lesson {c.number}</> : `Start lesson ${c.number}`}</span><ArrowRight size={17}/></span>
-      </a>;})}</div>
-    </section>
-    <section className="pg-earned-teaser" aria-label="Your rewards"><div className="pg-teaser-copy"><h2>Real effort. Questionable credentials.</h2><p>Five stickers, your own beat, and a Certificate of Professional Effort.</p><a href="#/achievements">Your achievements<ArrowRight size={14}/></a></div><div className="pg-mini-collection">{CHAPTERS.map(c=><div key={c.id} className={progress.completedChapters.includes(c.id) ? 'is-earned' : 'is-locked'} title={`${REWARDS[c.number-1].name} · ${progress.completedChapters.includes(c.id) ? 'Earned' : 'Complete lesson '+c.number}`}><Sticker number={c.number}/></div>)}</div></section>
-    <p className="pg-smallprint">A satirical learning experience by LinkedIn Beats. Practice posts are never published to LinkedIn. Progress is saved in this browser.</p>
   </div>;
 }
 
@@ -104,6 +73,6 @@ function Certificate({progress,update}){
   </div>;
 }
 function StickerDownload({number}){
-  const ref=useRef(null),[status,setStatus]=useState('');
-  return <div><button className="pg-sticker-download" aria-label={`Download ${REWARDS[number-1].name} sticker`} onClick={async()=>{try{await downloadArt(ref.current,`linkedin-beats-lesson-${number}.png`);setStatus('Downloaded');}catch{setStatus('Try again');}}}><Sticker number={number} svgRef={ref}/><span><Download size={12}/>Download</span></button><small role="status">{status}</small></div>;
+  const ref=useRef(null);
+  return <div className="pg-badge-collection-item"><Sticker number={number} svgRef={ref}/><BadgeDownloads number={number} svgRef={ref} compact/></div>;
 }

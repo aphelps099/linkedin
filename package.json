@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Circle Back® — The Professional Phrase Organ. A satirical LinkedIn audio mixer.",
+  "description": "Circle Back\u00ae \u2014 The Professional Phrase Organ. A satirical LinkedIn audio mixer.",
   "scripts": {
     "dev": "vite",
     "build": "node scripts/package-afterbeat-identity.mjs && vite build",
@@ -36,7 +36,8 @@
     "check:videostudio": "node scripts/check-videostudio.mjs",
     "check:compositor": "node scripts/check-compositor.mjs",
     "check:export": "node scripts/check-videostudio-export.mjs",
-    "export:videostudio": "node scripts/export-videostudio.mjs"
+    "export:videostudio": "node scripts/export-videostudio.mjs",
+    "export:badge-gifs": "node scripts/export-badge-gifs.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1153.0",
