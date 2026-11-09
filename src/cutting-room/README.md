@@ -120,6 +120,13 @@ What it does, in order:
    back as they were. It then prints the catalog's weight: `catalog.json` is bundled into the page, so
    its budget is 64 KB gzipped (what a visitor downloads; about 35 KB with 185 records).
 
+8. **Updates the homepage.** `scripts/sync-home-gallery.mjs` rewrites the "Humbled to share" gallery
+   in `index.html`, between its `cutting-room:latest` markers, with the six newest Finished films that
+   are a Current edit (newest `added` first; undated records follow in catalog order). Cut names are
+   dropped from titles ("Welcome to the Office — V6" reads "Welcome to the Office"). The cards after
+   the end marker are hand-picked and stay. `npm run build` runs it too, so a deploy is never behind
+   the catalog; `npm run check:home-gallery` fails if it is. Commit `index.html` with the record.
+
 `--dry-run` does the work in a scratch folder and prints the record without writing anything.
 `node scripts/publish-to-cutting-room.mjs --help` lists every option.
 

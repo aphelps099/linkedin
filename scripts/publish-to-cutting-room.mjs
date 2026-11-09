@@ -58,6 +58,7 @@
 // film whose AAC overshoots and that has no master step of its own.
 import process from 'node:process';
 import fs from 'node:fs';
+import {spawnSync} from 'node:child_process';
 import {publish, refreshArt} from './lib/cutting-room.mjs';
 
 const VALUE = new Set(['title', 'category', 'made-in', 'source', 'description', 'cast', 'tags', 'transcript', 'notes', 'status', 'ref', 'related', 'alias',
@@ -119,6 +120,10 @@ try {
   if (rec.replaces) console.log(`  replaces ${rec.replaces} (now an Earlier version)`);
   for (const f of r.files) console.log(`  ${r.status === 'dry-run' ? 'would write' : 'wrote'} ${f}`);
   if (r.status === 'dry-run') console.log(JSON.stringify(rec, null, 1));
+  // The homepage gallery leads with the newest finished films, so a new one goes straight onto it.
+  else if (spawnSync(process.execPath, [new URL('./sync-home-gallery.mjs', import.meta.url).pathname], {stdio:'inherit'}).status !== 0) {
+    console.error('publish-to-cutting-room: published, but the homepage gallery was not updated; run node scripts/sync-home-gallery.mjs');
+  }
 } catch (e) {
   console.error(`publish-to-cutting-room: ${e.message}`);
   process.exit(1);
