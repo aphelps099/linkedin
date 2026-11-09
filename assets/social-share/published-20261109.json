@@ -1,0 +1,27 @@
+[
+  {
+    "id": "home",
+    "pages": [
+      "index.html"
+    ],
+    "image": "/share/home-characters-20261109-v1.jpg",
+    "alt": "Synergy and the office band pose with a cobalt guitar and blue LinkedIn banners. Album title: All business. No skips."
+  },
+  {
+    "id": "learn",
+    "pages": [
+      "learn/index.html",
+      "program/index.html"
+    ],
+    "image": "/share/learn-characters-20261109-v1.jpg",
+    "alt": "Deadpan Synergy holds a Certificate of Professional Effort. Effort. Verified."
+  },
+  {
+    "id": "roast",
+    "pages": [
+      "roast/index.html"
+    ],
+    "image": "/share/roast-characters-20261109-v1.jpg",
+    "alt": "The unimpressed office reviewer holds a post stamped Needs Work. Humbled. Honored. Roasted."
+  }
+]

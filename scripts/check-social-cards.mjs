@@ -7,15 +7,21 @@ import sharp from 'sharp';
 const root=fileURLToPath(new URL('../',import.meta.url));
 // The built site: dist/ by default; check-all.mjs points this at its own scratch build.
 const dist=(process.env.CHECK_DIST||root+'dist').replace(/\/$/,'');
+const htmlRoot=process.env.CHECK_HTML_ROOT||dist;
+const imageRoot=process.env.CHECK_IMAGE_ROOT||dist;
 const icon='/home-2/brand/favicon.svg?v=brand-20261022';
-const pages=[['index.html','synergy-team'],['optimizer/index.html','optimizer-printer'],['studio/index.html','synergy-team'],['synth/index.html','synth']];
-for(const [page,name] of pages){
-  const html=await readFile(dist+'/'+page,'utf8');
-  const image=`https://linkedinbeats.com/share/${name}-20261022-v2.jpg`;
+const cards=JSON.parse(await readFile(root+(process.env.CHECK_SOCIAL_MANIFEST||'assets/social-share/published-20261109.json'),'utf8'));
+for(const card of cards)for(const page of card.pages){
+  const html=await readFile(htmlRoot+'/'+page,'utf8');
+  const image='https://linkedinbeats.com'+card.image;
   for(const key of ['og:image','twitter:image']){
-    assert.equal(html.match(new RegExp(`<meta (?:property|name)="${key}" content="([^"]+)"`))?.[1],image);
+    const matches=[...html.matchAll(new RegExp(`<meta (?:property|name)="${key}" content="([^"]+)"`,'g'))];
+    assert.equal(matches.length,1,`${page}: one ${key} declaration`);
+    assert.equal(matches[0][1],image);
   }
-  const file=`${dist}/share/${name}-20261022-v2.jpg`;
+  const escapedAlt=card.alt.replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;');
+  for(const key of ['og:image:alt','twitter:image:alt'])assert(html.includes(`="${key}" content="${escapedAlt}"`),`${page}: current character artwork description`);
+  const file=imageRoot+card.image;
   const info=await sharp(file).metadata();
   assert.equal(info.width,1200);assert.equal(info.height,630);
   assert((await stat(file)).size<1_000_000,'crawler image stays under 1 MB');
@@ -37,5 +43,5 @@ async function checkIcons(directory){
     }
   }
 }
-await checkIcons(dist);
-console.log('Social cards passed: crawler metadata, actual image dimensions, image sizes, and one homepage brand favicon on every built HTML page.');
+if(!process.env.CHECK_HTML_ROOT)await checkIcons(dist);
+console.log('Social cards passed: published destinations, crawler metadata, actual image dimensions and image sizes. Built-site runs also verify favicons.');
