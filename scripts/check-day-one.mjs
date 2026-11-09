@@ -342,5 +342,6 @@ if (!flag('no-video') && TL) { videoChecks(); audioChecks(); }
 compareChecks();
 const fails = results.filter(r => r.ok === false);
 console.log(`\n${results.filter(r => r.ok).length} passed, ${fails.length} failed, ${results.filter(r => r.ok === null).length} notes`);
+fs.mkdirSync(DIR, {recursive:true});                    // a fresh clone has no out/day-one/ yet
 fs.writeFileSync(path.join(DIR, 'check.json'), JSON.stringify(results, null, 1));
 process.exit(fails.length ? 1 : 0);

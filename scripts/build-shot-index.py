@@ -241,6 +241,8 @@ def collect_sources():
         by_sha[a['sha256']] = {'sha': a['sha256'], 'manifest': a, 'catalog': None}
         order.append(a['sha256'])
     for x in catalog['assets']:
+        if x.get('kind', 'video') != 'video':   # songs, sounds and packs share the catalog; shots are video
+            continue
         wanted = x['status'] == 'Source take' or x['id'] in EXTRA_CATALOG
         if not wanted and x['sha256'] not in by_sha:
             continue
