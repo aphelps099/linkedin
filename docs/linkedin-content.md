@@ -4,6 +4,11 @@ The posts are not jokes about LinkedIn. They are LinkedIn posts. Each one takes 
 is already arguing about and answers it the way a sincere executive would: confident, specific,
 structured, and wrong in one place.
 
+**Who is speaking:** Aaron, from his own profile. The reveal in the first comment keeps it honest.
+
+**Where new drafts land:** every Monday a scheduled task reads the week's news and opens a draft
+pull request with three new posts in `docs/linkedin/<date>.md`. Nothing is posted to LinkedIn by it.
+
 ## The method
 
 1. **Monday: read the news.** Pick three stories the professional internet is reacting to.
