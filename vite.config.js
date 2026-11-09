@@ -124,6 +124,7 @@ export default defineConfig({
         studio2: fileURLToPath(new URL('./studio-2/index.html', import.meta.url)),
         studio3: fileURLToPath(new URL('./studio-3/index.html', import.meta.url)),
         // LinkedInifier lives at /optimizer; /lessons/ remains a bookmark redirect.
+        beat: fileURLToPath(new URL('./beat/index.html', import.meta.url)),
         optimizer: fileURLToPath(new URL('./optimizer/index.html', import.meta.url)),
         lessons: fileURLToPath(new URL('./lessons/index.html', import.meta.url)),
         // Learn is the main course entry; retain /program/ for existing bookmarks.

@@ -1,3 +1,4 @@
+import {sleevePersonalization} from '../src/post-beat/sleeve-personalization.js';
 import express from 'express';
 import {readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
@@ -53,13 +54,14 @@ export async function renderBeatCover({recipe,cover,artist=''}){
   const key=JSON.stringify([recipe.chorus,cover.id,artist]);if(previewCache.has(key))return previewCache.get(key);
   const artwork=fileURLToPath(new URL('../public'+cover.image,import.meta.url));
   // Keep the approved card intact above a compact personalized release strip.
-  const footer=Buffer.from('<svg width="1200" height="72" xmlns="http://www.w3.org/2000/svg"><rect width="1200" height="72" fill="#080e1a"/><rect width="1200" height="3" fill="#0757ec"/></svg>');
+  const personal=cover.id==='side-hustle';
+  const footer=personal?Buffer.from('<svg width="1200" height="72" xmlns="http://www.w3.org/2000/svg"><rect width="1200" height="72" fill="#f3f0e4"/>'+Array.from({length:95},(_,i)=>`<circle cx="${36+i*12}" cy="3" r="1.5" fill="#667e8b"/>`).join('')+'</svg>'):Buffer.from('<svg width="1200" height="72" xmlns="http://www.w3.org/2000/svg"><rect width="1200" height="72" fill="#080e1a"/><rect width="1200" height="3" fill="#0757ec"/></svg>');
   const text=async(value,size,color,width,height)=>sharp({text:{text:`<span foreground="${color}">${escapeHtml(value)}</span>`,font:`TT Hoves DemiBold ${size}`,fontfile:fileURLToPath(new URL('../public/home-2/fonts/tt-hoves-demibold.ttf',import.meta.url)),width,...(height?{height}:{}),rgba:true,wrap:'word-char'}}).png().toBuffer();
   const [heading,byline]=await Promise.all([
-    text(recipe.chorus,27,'#ffffff',820,42),
-    text((artist||'LinkedIn Beats').slice(0,48),20,'#fbf6e8',265,42),
+    text(recipe.chorus,27,personal?'#24394b':'#ffffff',820,42),
+    text(personal?'EFFORT, REMIXED.':(artist||'LinkedIn Beats').slice(0,48),20,personal?'#456879':'#fbf6e8',265,42),
   ]);
-  const png=await sharp(artwork).resize(1200,630).composite([{input:footer,left:0,top:558},{input:heading,left:36,top:575},{input:byline,left:900,top:575}]).png().toBuffer();
+  const png=await sharp(artwork).resize(1200,630).composite([...(cover.id==='side-hustle'?[{input:Buffer.from(sleevePersonalization(artist)),left:0,top:0}]:[]),{input:footer,left:0,top:558},{input:heading,left:36,top:575},{input:byline,left:900,top:575}]).png().toBuffer();
   // Photographic PNGs are larger than the old geometric previews.
   if(previewCache.size>=12)previewCache.delete(previewCache.keys().next().value);previewCache.set(key,png);return png;
 }
@@ -72,7 +74,7 @@ export function createBeatShareRouter({template,origin='https://linkedinbeats.co
       res.set('Cache-Control','public, max-age=86400').type('png').send(await renderBeatCover(shared));
     }catch(error){next(error);}
   });
-  router.get(['/optimizer'],async(req,res,next)=>{
+  router.get(['/optimizer','/beat','/beat/'],async(req,res,next)=>{
     if(!new URL(req.originalUrl,origin).searchParams.has('beat'))return next();
     const shared=readSharedBeat(req.originalUrl);
     if(!shared){
@@ -97,7 +99,7 @@ export function beatSharePreview(){
     server.middlewares.use(app);
   },transformIndexHtml(html,context){
     const href=context.originalUrl;
-    if(!href||!/^\/optimizer(?:\/|\?|$)/.test(href))return html;
+    if(!href||!/^\/(?:optimizer|beat)(?:\/|\?|$)/.test(href))return html;
     return renderBeatShare(html,href)||html;
   }};
 }

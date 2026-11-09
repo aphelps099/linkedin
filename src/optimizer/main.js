@@ -1,3 +1,5 @@
+// Old fragment-based singles retain their recipe on the dedicated listening page.
+if(location.hash.startsWith('#mix='))location.replace('/beat/'+location.search+location.hash);
 import {createBoard,clearBoard,light} from '../pegboard/board.js';
 import {createRenderer} from '../pegboard/renderer.js';
 import {compileFont} from '../pegboard/font.js';

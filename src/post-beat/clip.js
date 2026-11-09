@@ -1,3 +1,4 @@
+import {drawSingalong,prepareSingalong} from './singalong.js';
 import {createPostBeat,makeTimedCues} from './audio.js';
 import {createAudioEngine} from '../audio.js';
 import {supportsOfflineClip,encodeOfflineClip} from './encode.js';
@@ -6,15 +7,11 @@ import {loadCoverImage,loadCoverMotion} from './artwork.js';
 import {VIDEO_MIMES,pickMime,extFor,mp4Support,startMp4Capture} from '../exporter.js';
 
 const LENGTH=10,cache=new Map();
-export const clipKey=(recipe,cover)=>JSON.stringify(['release-v6-artwork',recipe,cover.id,cover.artist||'']);
+export const clipKey=(recipe,cover)=>JSON.stringify(['release-v10-personal-sleeve',recipe,cover.id,cover.artist||'']);
 export const cachedClip=(recipe,cover)=>cache.get(clipKey(recipe,cover));
 const aborted=()=>new DOMException('Cancelled','AbortError');
 
-function lines(ctx,text,width){
-  const result=[];let row='';
-  for(const word of text.split(/\s+/)){const next=row?`${row} ${word}`:word;if(row&&ctx.measureText(next).width>width){result.push(row);row=word;}else row=next;}
-  if(row)result.push(row);return result;
-}
+const scores=new WeakMap();
 // One vocal phrase at a time, with timing derived from the same voice buffers
 // used in the export. The waveform comes from the rendered audio, not a loop.
 export function drawShareArtwork(canvas,image,recipe,elapsed=0,spectrum=null,cover={},cues=[]){
@@ -27,20 +24,11 @@ export function drawShareArtwork(canvas,image,recipe,elapsed=0,spectrum=null,cov
     const scale=Math.min(w/iw,artHeight/ih),dw=iw*scale,dh=ih*scale;
     c.drawImage(image,(w-dw)/2,(artHeight-dh)/2,dw,dh);
   }
-  c.fillStyle='#0757ec';c.fillRect(0,artHeight,w,4);
+  c.fillStyle=accent;for(let x=56;x<w-56;x+=12){c.beginPath();c.arc(x,artHeight,2,0,Math.PI*2);c.fill();}
   c.fillStyle=accent;c.font='600 20px C2Hoves, Arial';c.fillText('YOUR WORDS. SET TO MUSIC.',56,659);
-  const time=elapsed+5,active=cues.find(cue=>time>=cue.start&&time<cue.end),phrase=active?.text||recipe.chorus;
-  let size=76,rows;
-  do{c.font=`600 ${size}px C2Hoves, Arial`;rows=lines(c,phrase,w-112);if(rows.length*size*1.08<=195&&rows.every(row=>c.measureText(row).width<=w-112))break;size-=2;}while(size>20);
-  const top=686+(195-rows.length*size*1.08)/2;let wordIndex=0;
-  rows.forEach((row,i)=>{let x=56;const y=top+size*.85+i*size*1.08;
-    for(const word of row.split(/\s+/)){
-      const width=c.measureText(word).width,timing=active?.words[wordIndex++];
-      const sung=timing&&time>=timing.start&&time<timing.end;
-      if(sung){c.fillStyle=accent;c.fillRect(x-6,y-size*.8,width+12,size*1.02);}
-      c.fillStyle=sung?base:ink;c.fillText(word,x,y);x+=width+c.measureText(' ').width;
-    }
-  });
+  let score=scores.get(cues);
+  if(!score){score=prepareSingalong(cues,recipe.chorus);if(cues.length)scores.set(cues,score);}
+  drawSingalong(c,score,elapsed+5,{x:36,y:672,w:w-72,h:235},{bpm:recipe.bpm,paper:ink,accent,grid:accent,dark:true,idle:!cues.length});
   const bins=56,gap=7,bw=(w-112-gap*(bins-1))/bins;
   for(let i=0;i<bins;i++){const energy=spectrum?.[Math.floor(i*spectrum.length*.7/bins)]||0,bh=4+Math.min(42,energy*.25);c.fillStyle=accent;c.globalAlpha=.9;c.fillRect(56+i*(bw+gap),925-bh/2,bw,bh);}c.globalAlpha=1;
   c.fillStyle=ink;c.font='600 25px C2Hoves, Arial';c.fillText(cover.artist||'LinkedIn Beats',56,990,w-112);
@@ -50,7 +38,8 @@ export function drawShareArtwork(canvas,image,recipe,elapsed=0,spectrum=null,cov
 // Start inside the original user tap so audio can unlock before any await.
 export function startShareClip({recipe,cover}){
   const job={controller:new AbortController(),progress:0,listeners:new Set()};
-  job.promise=createShareClip({recipe,cover,signal:job.controller.signal,quiet:true,onProgress:p=>{job.progress=p;job.listeners.forEach(fn=>fn(p));}});
+  let timedOut=false;const timeout=setTimeout(()=>{timedOut=true;job.controller.abort();},120000);
+  job.promise=createShareClip({recipe,cover,signal:job.controller.signal,quiet:true,onProgress:p=>{job.progress=p;job.listeners.forEach(fn=>fn(p));}}).catch(error=>{if(timedOut)throw new Error('Video preparation took too long. Try again, or share the listening link.');throw error;}).finally(()=>clearTimeout(timeout));
   job.promise.catch(()=>{});return job;
 }
 function mediaCapture(canvas,audio){

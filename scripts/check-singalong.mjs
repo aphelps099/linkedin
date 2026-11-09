@@ -1,0 +1,25 @@
+import assert from 'node:assert/strict';
+import {prepareSingalong,singalongFrame,letterLight,drawSingalong} from '../src/post-beat/singalong.js';
+const cues=[{id:0,text:'Humbled and honored',start:0,end:2,words:[{start:.2,end:.8},{start:.9,end:1.1},{start:1.2,end:1.8}]},{id:1,text:'STRATEGIC ALIGNMENT',start:2.5,end:4,words:[{start:2.6,end:3.2},{start:3.3,end:3.9}]}];
+const score=prepareSingalong(cues,'');
+assert.equal(singalongFrame(prepareSingalong([],cues[0].text),0,{idle:true}).page.start,0,'The ready screen starts on the first page');
+assert.equal(singalongFrame(score,2.49).cue.id,0,'Hold the previous phrase through the musical gap');
+assert.equal(singalongFrame(score,2.5).cue.id,1,'Arrive exactly on the next arranged cue');
+assert.equal(singalongFrame(score,2.5).arrival,0);
+assert.equal(singalongFrame(score,2.7).arrival,1);
+assert.equal(singalongFrame(score,2.51,{reduced:true}).grid,0);
+assert.equal(singalongFrame(score,2.51,{reduced:true}).arrival,1);
+assert.ok(letterLight(cues[0].words[0],0,7,.35).lit>letterLight(cues[0].words[0],6,7,.35).lit,'Light letters in vocal order');
+assert.equal(letterLight(cues[0].words[0],0,7,0).lit,0,'Future words must not light early');
+assert.equal(letterLight(cues[0].words[0],0,7,1.2).lit,0,'Settle after the vocal tail');
+assert.deepEqual(singalongFrame(score,1),singalongFrame(score,1),'Pause and replay are deterministic');
+const long=prepareSingalong([{id:0,text:Array(30).fill('transformation').join(' '),start:0,end:30,words:Array.from({length:30},(_,i)=>({start:i,end:i+.8}))}],'');
+assert.ok(long[0].pages.length>1);
+assert.ok(long[0].pages.every(p=>p.rows.length<=2));
+assert.ok(singalongFrame(long,28).page.start>0,'Long vocals advance without shrinking the whole phrase');
+// Browser and export invoke precisely this painter; compare identical-time drawing operations.
+const trace=()=>{const calls=[];const ctx=new Proxy({}, {get:(_,key)=>(...args)=>calls.push([key,...args]),set:(_,key,value)=>{calls.push([key,value]);return true;}});drawSingalong(ctx,score,.4,{x:0,y:0,w:800,h:400});return calls;};
+assert.deepEqual(trace(),trace());
+assert.doesNotThrow(()=>drawSingalong({},score,0,{x:0,y:0,w:0,h:0}),'A dialog can mount before it has visible dimensions');
+assert.ok(trace().filter(c=>c[0]==='arc').length>100);
+console.log('Singalong passed: phrase boundaries, progressive letters, musical gaps, long-phrase paging, reduced motion, and deterministic rendering.');

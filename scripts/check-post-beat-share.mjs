@@ -8,7 +8,7 @@ import {COVERS,DEFAULT_COVER,getCover,shareUrl,coverPreviewUrl,readSharedBeat,sh
 import {createOptimizerRedirects} from '../server/optimizer-routes.js';
 import {renderBeatShare,renderBeatCover,createBeatShareRouter} from '../server/beat-share.js';
 
-const template=process.env.BEAT_SHARE_TEMPLATE||fileURLToPath(new URL('../optimizer/index.html',import.meta.url));
+const template=process.env.BEAT_SHARE_TEMPLATE||fileURLToPath(new URL('../beat/index.html',import.meta.url));
 const html=await readFile(template,'utf8');
 const recipe=makeRecipe('Zoë joins the team. Welcome to the next chapter, Zoë.');
 assert.equal(DEFAULT_COVER,'paper-jam');
@@ -16,7 +16,7 @@ const urls=new Set();
 for(const cover of COVERS){
   const url=shareUrl('https://linkedinbeats.com/somewhere/?tracking=1#old',recipe,cover.id);
   const parsed=new URL(url);urls.add(url);
-  assert.equal(parsed.pathname,'/optimizer');assert.equal(parsed.hash,'');
+  assert.equal(parsed.pathname,'/beat/');assert.equal(parsed.hash,'');
   assert.equal(parsed.searchParams.has('tracking'),false);
   assert.deepEqual(readSharedBeat(url),{recipe,cover});
   const output=renderBeatShare(html,url);
@@ -39,12 +39,14 @@ for(const cover of COVERS){
   const image=await readFile(file),metadata=await sharp(image).metadata();
   assert.equal(metadata.width,cover.width);assert.equal(metadata.height,cover.height);
   const preview=await renderBeatCover({recipe,cover});
-  const crop={left:0,top:0,width:1200,height:558};
+  const crop={left:0,top:0,width:1200,height:cover.id==='side-hustle'?420:558};
   assert.deepEqual(await sharp(preview).extract(crop).removeAlpha().raw().toBuffer(),await sharp(image).extract(crop).removeAlpha().raw().toBuffer(),'shared beat previews must contain the approved artwork above the personalized footer');
   if(cover.video)assert((await stat(new URL(`../public${cover.video}`,import.meta.url))).size>10000,'office band cover must ship its performance video');
 }
+const personalCover=getCover('side-hustle');
+assert.notDeepEqual(await renderBeatCover({recipe,cover:personalCover,artist:'Aaron'}),await renderBeatCover({recipe,cover:personalCover,artist:'Jordan'}),'Artist credit must be part of the shared sleeve');
 const named=shareUrl('https://linkedinbeats.com',recipe,DEFAULT_COVER,'Jo Example');assert.equal(readSharedBeat(named).artist,'Jo Example');assert(renderBeatShare(html,named).includes('Jo Example'));
-assert.equal(urls.size,3,'different cover choices must have distinct crawler URLs');
+assert.equal(urls.size,COVERS.length,'different cover choices must have distinct crawler URLs');
 assert.equal(getCover('https://evil.example/image').id,DEFAULT_COVER);
 assert.equal(readSharedBeat('/lessons/?beat=broken'),null);
 assert.equal(readSharedBeat('/lessons/?beat='+('x'.repeat(2501))),null);
@@ -86,5 +88,5 @@ try{
   assert.equal((await fetch(origin+'/lessons/?beat=broken')).status,404);
   assert.equal((await fetch(origin+'/optimizer')).status,204,'ordinary editor route must continue to static handling');
   assert.equal((await fetch(origin+'/unrelated/?beat=broken')).status,204);
-  console.log('Beat sharing passed: three approved artwork covers, office-band video asset, exact recipe/legacy replay, safe server-rendered metadata, personalized PNG previews, artist names, platform links and invalid-link rejection.');
+  console.log('Beat sharing passed: approved artwork covers, office-band video asset, exact recipe/legacy replay, safe server-rendered metadata, personalized PNG previews, artist names, platform links and invalid-link rejection.');
 }finally{server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}

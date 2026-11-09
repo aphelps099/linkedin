@@ -3,12 +3,12 @@ import {AcademyOverview,LessonNavigation} from './arcade/Overview.jsx';
 import {HookLesson} from './arcade/HookLesson.jsx';
 import {SiteFooter} from '../brand/SiteFooter.jsx';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {ArrowLeft, ArrowRight, Award, Check, Download, LockKeyhole, Music2, Printer} from 'lucide-react';
+import {ArrowLeft, ArrowRight, Award, Check, Download, LockKeyhole, Printer} from 'lucide-react';
 import {CHAPTERS, chapterById} from './chapters/index.js';
 import {StepPlayer} from './engine/StepPlayer.jsx';
 import {loadProgress, saveProgress} from './engine/progress.js';
 import {BadgeDownloads, CertificateArt, downloadArt, REWARDS, Sticker} from './components/Rewards.jsx';
-import {PostBeat} from '../post-beat/PostBeat.jsx';
+import {GraduationSingle} from './components/GraduationSingle.jsx';
 import {CertificateShare} from './components/CertificateShare.jsx';
 import {certificateName} from './components/certificate-art.js';
 import {GraduationConfetti} from './components/GraduationConfetti.jsx';
@@ -56,7 +56,7 @@ function Achievements({progress,resume}){
   </div>;
 }
 
-function Certificate({progress,update}){
+export function Certificate({progress,update}){
   const art=useRef(null), [status,setStatus]=useState(''), [name,setName]=useState(progress.userName || 'Aspiring Thought Leader');
   const displayName=certificateName(name);
   const download=async()=>{setStatus('Preparing your certificate…');try{await downloadArt(art.current,'linkedin-beats-certificate-of-professional-effort.png');setStatus('Certificate downloaded.');}catch{setStatus('Download unavailable. Use Print / save PDF instead.');}};
@@ -69,7 +69,7 @@ function Certificate({progress,update}){
     <p className="pg-certificate-share-note" id="pg-certificate-share-note">Preview your certificate, add a caption, and publish to your LinkedIn feed.</p>
     <CertificateArt name={displayName} svgRef={art}/>
     <section className="pg-collection"><div className="pg-course-heading"><h2>The complete collection</h2><span className="pg-eyebrow">5 / 5 earned</span></div><div className="pg-sticker-collection">{REWARDS.map((r,i)=><StickerDownload key={r.name} number={i+1}/>)}</div></section>
-    <section className="pg-beat-unlock lb-pixel-divided"><PixelDivider edge/><div className="pg-row"><span className="pg-reward-icon"><Music2 size={25}/></span><div><span className="pg-eyebrow pg-eyebrow-blue">Unlocked · Your optimized beat</span><h2>Consider this your graduation single.</h2></div></div><p>Your final post, ready for a bassline. Make it a beat, remix it, or release your single.</p>{progress.posts.single ? <PostBeat post={progress.posts.single} initialArtist={displayName}/> : <a className="pg-btn" href="#/single">Make your single<ArrowRight size={16}/></a>}</section>
+    <GraduationSingle post={progress.posts.single} artist={displayName}/>
     <div className="pg-graduation-exit lb-pixel-divided"><PixelDivider edge/><div><strong>Your work here is done.</strong><p>Your audience awaits. The band is warming up.</p></div><a className="pg-btn" href="../">Explore LinkedIn Beats<ArrowRight size={16}/></a></div>
   </div>;
 }

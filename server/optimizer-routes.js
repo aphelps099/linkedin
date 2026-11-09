@@ -18,7 +18,7 @@ export function optimizerPreview(){
     app.use(createOptimizerRedirects());
     server.middlewares.use(app);
     server.middlewares.use((req,_res,next)=>{
-      if(req.url?.split('?')[0]==='/optimizer')req.url=req.url.replace('/optimizer','/optimizer/index.html');
+      if(req.url?.split('?')[0]==='/optimizer')req.url=req.url.replace('/optimizer',new URL(req.url,'http://localhost').searchParams.has('beat')?'/beat/index.html':'/optimizer/index.html');
       next();
     });
   };

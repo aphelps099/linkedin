@@ -1,3 +1,4 @@
+import {personalizeSleeve} from './sleeve-personalization.js';
 const aborted=()=>new DOMException('Cancelled','AbortError');
 
 function waitFor(element,event,{signal,timeout=20000,begin=()=>{}}={}){
@@ -13,7 +14,12 @@ function waitFor(element,event,{signal,timeout=20000,begin=()=>{}}={}){
 
 export async function loadCoverImage(cover,signal){
   const image=new Image();image.crossOrigin='anonymous';
-  return waitFor(image,'load',{signal,begin:()=>{image.src=cover.image;}});
+  let source=cover.image;
+  if(cover.id==='side-hustle'){
+    const response=await fetch(source,{signal});if(!response.ok)throw new Error('The sleeve could not load.');
+    source='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(personalizeSleeve(await response.text(),cover.artist||''));
+  }
+  return waitFor(image,'load',{signal,begin:()=>{image.src=source;}});
 }
 
 export async function loadCoverMotion(cover,signal){
