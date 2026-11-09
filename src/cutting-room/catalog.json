@@ -1,6 +1,6 @@
 {
-  "updated": "October 28, 2026",
-  "coverage": "Recovered finished edits, repo media, and recent Runway source takes. Older unreferenced generations may still require recovery.",
+  "updated": "November 9, 2026",
+  "coverage": "Everything made for the site: finished films, recovered edits and Runway source takes, the Studio\u2019s meeting rooms, the Video Studio, All Hands songs and sounds, the Claude Code films and Aaron\u2019s own tracks. Older unreferenced generations may still require recovery.",
   "cast": [
     "Arjun",
     "Banner crew",
@@ -13,9 +13,965 @@
     "Printer",
     "Strategy",
     "Synergy",
-    "Synthia"
+    "Synthia",
+    "The lady"
   ],
   "assets": [
+    {
+      "id": "day-one-0d178d01",
+      "title": "Day One.",
+      "kind": "video",
+      "duration": 58.8,
+      "width": 1080,
+      "height": 1920,
+      "fps": 60,
+      "cast": [
+        "Strategy",
+        "Synthia"
+      ],
+      "description": "Jamie starts her first job. A thousand strangers tap Congrats on the new role! One of them calls her Jordan.",
+      "notes": "Final cut, 60 fps, rendered in the cloud with Inter standing in for SF Pro; the Mac renders it in SF Pro and replaces it.",
+      "tags": [
+        "day one",
+        "screen recording",
+        "comments",
+        "congrats",
+        "vertical",
+        "typography"
+      ],
+      "transcript": "Congrats on the new role!",
+      "category": "Finished films",
+      "madeIn": [
+        "Claude Code films"
+      ],
+      "status": "Current edit",
+      "featured": true,
+      "related": [
+        "day-one-score-8a5a8f4a",
+        "day-one-voices-ca3879ad"
+      ],
+      "art": "triptych",
+      "added": "2026-11-07",
+      "sha256": "0d178d01c523ae6960397aa70ed2236f94416bccb1391c0a7a5c5def17e9e1d4",
+      "src": "/cutting-room/films/day-one-0d178d01.mp4",
+      "download": "/cutting-room/films/day-one-0d178d01.mp4",
+      "audio": true,
+      "bytes": 15298406,
+      "poster": "/cutting-room/posters/day-one-0d178d01.jpg",
+      "posterLarge": "/cutting-room/posters/day-one-0d178d01-1280.jpg",
+      "still": "/cutting-room/posters/day-one-0d178d01-still.jpg"
+    },
+    {
+      "id": "delve-22ebd3ba",
+      "title": "DELVE.",
+      "kind": "video",
+      "duration": 120.625,
+      "width": 540,
+      "height": 960,
+      "fps": 24,
+      "cast": [],
+      "description": "A mouth made of pegs says ten things LinkedIn says. The words dissolve. The vocabulary stays.",
+      "notes": "The 540x960 cloud preview of the final cut, re-encoded to fit 25 MiB; the Mac renders 1080 and replaces it (in R2).",
+      "tags": [
+        "delve",
+        "vocabulary",
+        "peg board",
+        "lips",
+        "psych",
+        "loop",
+        "vertical"
+      ],
+      "transcript": "Delve.\nIn today's fast-paced world...\nIt's not about the tools. It's about the mindset.\nIt's not about X. It's about Y.\nNot just a job, a calling.\nA rich tapestry\nLet that sink in.\nPassionate about driving impact at the intersection of...\nMomentum compounds.\nRead that again.",
+      "category": "Finished films",
+      "madeIn": [
+        "Claude Code films",
+        "Video Studio"
+      ],
+      "status": "Current edit",
+      "related": [
+        "delve-82a3290e"
+      ],
+      "art": "triptych",
+      "added": "2026-11-07",
+      "sha256": "22ebd3ba3b284e20dfa252f4c045990a09afdc4b47bda4fb0bbb94c6f74334ed",
+      "src": "/cutting-room/films/delve-22ebd3ba.mp4",
+      "download": "/cutting-room/films/delve-22ebd3ba.mp4",
+      "audio": true,
+      "bytes": 25349062,
+      "poster": "/cutting-room/posters/delve-22ebd3ba.jpg",
+      "posterLarge": "/cutting-room/posters/delve-22ebd3ba-1280.jpg",
+      "still": "/cutting-room/posters/delve-22ebd3ba-still.jpg",
+      "sourceReference": "source vocabulary-film-540.mp4 sha256:9eb94238a7f24772d2ef95aaf90d273cc66e791b0ab2885f1c0c820dc3c11a13"
+    },
+    {
+      "id": "printer-song-776d0c96",
+      "title": "Printer Song",
+      "kind": "video",
+      "duration": 33.5,
+      "width": 540,
+      "height": 960,
+      "fps": 24,
+      "cast": [
+        "Printer",
+        "Synergy"
+      ],
+      "description": "The office printer finally gets a solo. It loads, overdelivers, works nights and jams.",
+      "notes": "v2, the cloud render at 540x960. Before the 1080 master: settle the thin green tile border around the mouth and the \u201cin\u201d mark on the pages.",
+      "tags": [
+        "printer",
+        "music video",
+        "vertical",
+        "peg board",
+        "loading screen",
+        "aaron's track"
+      ],
+      "transcript": "Loading.\nLOADING. READY. THRILLED TO PRINT. PAGE 2 OF 1. FULL BLEED. TONER LOW. OUT OF OFFICE. STILL PRINTING. PAPER JAM.",
+      "category": "Finished films",
+      "madeIn": [
+        "Claude Code films",
+        "Video Studio"
+      ],
+      "status": "Needs review",
+      "related": [
+        "printer-song-original-track-5999cc1d"
+      ],
+      "art": "triptych",
+      "added": "2026-11-06",
+      "sha256": "776d0c9612297b0d6d0f35afff65a1de76f65b6aa0e36f575f43295e0deeb9ab",
+      "src": "/cutting-room/films/printer-song-776d0c96.mp4",
+      "download": "/cutting-room/films/printer-song-776d0c96.mp4",
+      "audio": true,
+      "bytes": 21294978,
+      "poster": "/cutting-room/posters/printer-song-776d0c96.jpg",
+      "posterLarge": "/cutting-room/posters/printer-song-776d0c96-1280.jpg",
+      "still": "/cutting-room/posters/printer-song-776d0c96-still.jpg",
+      "sourceReference": "source printer-half.mp4 sha256:c4fa77f0e83d14a649c02564801ef785c847b01fb70e2ddb7a801332c5d6da37"
+    },
+    {
+      "id": "office-band-share-loop-c5f22d66",
+      "title": "Office Band Share Loop",
+      "kind": "video",
+      "duration": 10.0,
+      "width": 1988,
+      "height": 1080,
+      "fps": 24,
+      "cast": [
+        "Synergy"
+      ],
+      "description": "The band plays a groove nobody can hear. The optimizer adds yours.",
+      "notes": "Silent by design: the optimizer\u2019s share card lays the user\u2019s beat under it. Runway, October 22, 2026.",
+      "tags": [
+        "office band",
+        "share card",
+        "loop",
+        "silent",
+        "runway",
+        "optimizer"
+      ],
+      "transcript": "",
+      "category": "Office scenes",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
+      "status": "Current edit",
+      "art": "frame",
+      "added": "2026-10-22",
+      "sha256": "c5f22d666fa980b9e15f697c91a71262300de9867bb59eb5577e99e19c0b3858",
+      "src": "/post-beat/covers/office-band-performance-20261022.mp4",
+      "download": "/post-beat/covers/office-band-performance-20261022.mp4",
+      "audio": false,
+      "bytes": 9239622,
+      "poster": "/cutting-room/posters/office-band-share-loop-c5f22d66.jpg",
+      "posterLarge": "/cutting-room/posters/office-band-share-loop-c5f22d66-1280.jpg",
+      "sourceReference": "assets/social-share/2026-10/office-band-video.json (Runway task 709a1224-160c-47db-9095-7c9390c36c9c)"
+    },
+    {
+      "id": "delve-82a3290e",
+      "title": "DELVE.",
+      "kind": "audio",
+      "duration": 120.633,
+      "cast": [
+        "The lady"
+      ],
+      "description": "Ten things LinkedIn says. She says each one once. The echo does the rest.",
+      "notes": "The song from the film, 320k from the delivery master.",
+      "tags": [
+        "delve",
+        "vocabulary",
+        "psych pop",
+        "river",
+        "all hands",
+        "song"
+      ],
+      "transcript": "Delve.\nIn today's fast-paced world...\nIt's not about the tools. It's about the mindset.\nIt's not about X. It's about Y.\nNot just a job, a calling.\nA rich tapestry\nLet that sink in.\nPassionate about driving impact at the intersection of...\nMomentum compounds.\nRead that again.",
+      "category": "Songs",
+      "madeIn": [
+        "All Hands"
+      ],
+      "status": "Current edit",
+      "related": [
+        "delve-22ebd3ba"
+      ],
+      "art": "type",
+      "added": "2026-11-07",
+      "sha256": "82a3290e4f484138c0c811822fe34bd15091df5fe3e4248c9a832b62eb4df8b0",
+      "src": "/cutting-room/songs/delve-82a3290e.mp3",
+      "download": "/cutting-room/songs/delve-82a3290e.mp3",
+      "audio": true,
+      "bytes": 4826402,
+      "poster": "/cutting-room/posters/delve-82a3290e.jpg",
+      "cover": "/cutting-room/covers/delve-82a3290e.jpg",
+      "sourceReference": "assets/delve/delve-master.json (the same sha256)"
+    },
+    {
+      "id": "circle-back-drop-edition-3e6a17d4",
+      "title": "Circle Back (Drop Edition)",
+      "kind": "audio",
+      "duration": 60.63,
+      "cast": [
+        "Synergy",
+        "Strategy",
+        "Synthia",
+        "The lady"
+      ],
+      "description": "French house about an onboarding checklist. It\u2019s not a U-turn. It\u2019s a pivot.",
+      "notes": "Circle Back, cast by the post. -10.38 LUFS, TP -1.10 dBTP, LRA 7.8. Rendered through /allhands/ from the sample post, round 12, November 5.",
+      "tags": [
+        "all hands",
+        "song",
+        "circle back",
+        "french house"
+      ],
+      "transcript": "Let's keep building\nI used ChatGPT to optimize our onboarding checklist\nWe combined two steps and clarified who grants access\nA small change\nbut a powerful reminder of what becomes possible",
+      "category": "Songs",
+      "madeIn": [
+        "All Hands"
+      ],
+      "status": "Current edit",
+      "art": "type",
+      "added": "2026-11-05",
+      "sha256": "3e6a17d45feb3f27aa55c9473c8a415d7cd69a058df9ccac60074a3e1646b30f",
+      "src": "/cutting-room/songs/circle-back-drop-edition-3e6a17d4.mp3",
+      "download": "/cutting-room/songs/circle-back-drop-edition-3e6a17d4.mp3",
+      "audio": true,
+      "bytes": 2426297,
+      "poster": "/cutting-room/posters/circle-back-drop-edition-3e6a17d4.jpg",
+      "cover": "/cutting-room/covers/circle-back-drop-edition-3e6a17d4.jpg"
+    },
+    {
+      "id": "humbled-and-honored-drop-edition-cd0ae3ad",
+      "title": "Humbled and Honored (Drop Edition)",
+      "kind": "audio",
+      "duration": 63.242,
+      "cast": [
+        "Synergy",
+        "Strategy",
+        "Synthia",
+        "The lady"
+      ],
+      "description": "A neo-soul slow jam about merging two onboarding steps. It\u2019s not a complaint. It\u2019s a gift.",
+      "notes": "Humbled and Honored, cast by the post. -9.98 LUFS, TP -1.25 dBTP, LRA 6.9. Rendered through /allhands/ from the sample post, round 12, November 5.",
+      "tags": [
+        "all hands",
+        "song",
+        "humbled and honored",
+        "neo-soul slow jam"
+      ],
+      "transcript": "Let's keep building\nI used ChatGPT to optimize our onboarding checklist\nWe combined two steps and clarified who grants access\nA small change\nbut a powerful reminder of what becomes possible",
+      "category": "Songs",
+      "madeIn": [
+        "All Hands"
+      ],
+      "status": "Current edit",
+      "art": "type",
+      "added": "2026-11-05",
+      "sha256": "cd0ae3adb2041174fe1ecee548e8061d449e350369755f2650e9c693c9adcc39",
+      "src": "/cutting-room/songs/humbled-and-honored-drop-edition-cd0ae3ad.mp3",
+      "download": "/cutting-room/songs/humbled-and-honored-drop-edition-cd0ae3ad.mp3",
+      "audio": true,
+      "bytes": 2530787,
+      "poster": "/cutting-room/posters/humbled-and-honored-drop-edition-cd0ae3ad.jpg",
+      "cover": "/cutting-room/covers/humbled-and-honored-drop-edition-cd0ae3ad.jpg"
+    },
+    {
+      "id": "hustle-drop-edition-65d91575",
+      "title": "Hustle (Drop Edition)",
+      "kind": "audio",
+      "duration": 59.716,
+      "cast": [
+        "Synergy",
+        "Strategy",
+        "Synthia",
+        "The lady"
+      ],
+      "description": "UK garage for a small process change. It\u2019s not avoidance. It\u2019s camera off.",
+      "notes": "Hustle, cast by the post. -9.98 LUFS, TP -1.10 dBTP, LRA 7.7. Rendered through /allhands/ from the sample post, round 12, November 5.",
+      "tags": [
+        "all hands",
+        "song",
+        "hustle",
+        "uk garage"
+      ],
+      "transcript": "Let's keep building\nI used ChatGPT to optimize our onboarding checklist\nWe combined two steps and clarified who grants access\nA small change\nbut a powerful reminder of what becomes possible",
+      "category": "Songs",
+      "madeIn": [
+        "All Hands"
+      ],
+      "status": "Current edit",
+      "art": "type",
+      "added": "2026-11-05",
+      "sha256": "65d9157544ed1c2e077d1ba4a2a158ec4db009fcf1641c5f7e7108a491635116",
+      "src": "/cutting-room/songs/hustle-drop-edition-65d91575.mp3",
+      "download": "/cutting-room/songs/hustle-drop-edition-65d91575.mp3",
+      "audio": true,
+      "bytes": 2389725,
+      "poster": "/cutting-room/posters/hustle-drop-edition-65d91575.jpg",
+      "cover": "/cutting-room/covers/hustle-drop-edition-65d91575.jpg"
+    },
+    {
+      "id": "offsite-river-dccc72e3",
+      "title": "Offsite (River)",
+      "kind": "audio",
+      "duration": 60.63,
+      "cast": [
+        "The lady",
+        "Synergy",
+        "Strategy",
+        "Synthia"
+      ],
+      "description": "The team retreat as a river. Claps, stomps, her voice in long reverb, and one line from Synergy.",
+      "notes": "Offsite, cast by the post. -10.21 LUFS, TP -1.43 dBTP, LRA 14.0. Rendered through /allhands/ from the sample post, round 12, November 5.",
+      "tags": [
+        "all hands",
+        "song",
+        "offsite",
+        "voice-loop psych pop"
+      ],
+      "transcript": "Let's keep building\nI used ChatGPT to optimize our onboarding checklist\nWe combined two steps and clarified who grants access\nA small change\nbut a powerful reminder of what becomes possible",
+      "category": "Songs",
+      "madeIn": [
+        "All Hands"
+      ],
+      "status": "Current edit",
+      "art": "type",
+      "added": "2026-11-05",
+      "sha256": "dccc72e32f16e7ffc7fb40852e535ba4242fc9555928be48a23ee773b6b071b1",
+      "src": "/cutting-room/songs/offsite-river-dccc72e3.mp3",
+      "download": "/cutting-room/songs/offsite-river-dccc72e3.mp3",
+      "audio": true,
+      "bytes": 2426297,
+      "poster": "/cutting-room/posters/offsite-river-dccc72e3.jpg",
+      "cover": "/cutting-room/covers/offsite-river-dccc72e3.jpg"
+    },
+    {
+      "id": "day-one-score-8a5a8f4a",
+      "title": "Day One. (score)",
+      "kind": "audio",
+      "duration": 58.824,
+      "cast": [
+        "Strategy",
+        "Synthia"
+      ],
+      "description": "One phrase, said once, multiplied by a thousand comments. Then said once more.",
+      "notes": "The film\u2019s score on its own: MP3 320k from the final render\u2019s 24-bit WAV (-10.1 LUFS, -1.3 dBTP measured on the WAV).",
+      "tags": [
+        "day one",
+        "score",
+        "choir",
+        "rhodes",
+        "canon"
+      ],
+      "transcript": "Congrats on the new role!",
+      "category": "Songs",
+      "madeIn": [
+        "Claude Code films",
+        "All Hands"
+      ],
+      "status": "Current edit",
+      "related": [
+        "day-one-0d178d01"
+      ],
+      "art": "type",
+      "added": "2026-11-07",
+      "sha256": "8a5a8f4ae501c66960d60eafb02499335de184013ffb49d4520624eea5999725",
+      "src": "/cutting-room/songs/day-one-score-8a5a8f4a.mp3",
+      "download": "/cutting-room/songs/day-one-score-8a5a8f4a.mp3",
+      "audio": true,
+      "bytes": 2353920,
+      "poster": "/cutting-room/posters/day-one-score-8a5a8f4a.jpg",
+      "cover": "/cutting-room/covers/day-one-score-8a5a8f4a.jpg",
+      "sourceReference": "source day-one.wav sha256:679960a5adaa2bb0ca97735bafba43f447759ed7f929d57dc149d00c49dfb8eb"
+    },
+    {
+      "id": "printer-song-original-track-5999cc1d",
+      "title": "Printer Song (original track)",
+      "kind": "audio",
+      "duration": 40.15,
+      "cast": [],
+      "description": "Aaron\u2019s original. No lyrics. The printer handles the vocals.",
+      "notes": "Aaron\u2019s upload, untouched: the WAV is the download, byte for byte; the MP3 is for playback. The film uses 0 to 14.25 s and 24.0 to 39.52 s.",
+      "tags": [
+        "printer",
+        "original",
+        "instrumental",
+        "aaron's track"
+      ],
+      "transcript": "",
+      "category": "Songs",
+      "madeIn": [
+        "Aaron's tracks"
+      ],
+      "status": "Current edit",
+      "related": [
+        "printer-song-776d0c96"
+      ],
+      "art": "type",
+      "added": "2026-11-06",
+      "sha256": "5999cc1d680e11bc1b39d81ce75cba63b3aee0450d6e9833591e2cc1aa2fc108",
+      "src": "/cutting-room/songs/printer-song-original-track-5999cc1d.mp3",
+      "download": "/cutting-room/songs/printer-song-original-track-8e07570f.wav",
+      "downloadSha256": "8e07570f76a22c71a7d476ca717e1c4ebfc3dec681b60971036d23b878da85c5",
+      "downloadBytes": 7091390,
+      "audio": true,
+      "bytes": 1607052,
+      "poster": "/cutting-room/posters/printer-song-original-track-5999cc1d.jpg",
+      "cover": "/cutting-room/covers/printer-song-original-track-5999cc1d.jpg",
+      "sourceReference": "source printer-song.wav sha256:8e07570f76a22c71a7d476ca717e1c4ebfc3dec681b60971036d23b878da85c5"
+    },
+    {
+      "id": "circle-back-70c765dd",
+      "title": "Circle Back",
+      "kind": "audio",
+      "duration": 197.904,
+      "cast": [],
+      "description": "The one that started it. Still on the home page.",
+      "notes": "Studio recording, as supplied. The home page plays it.",
+      "tags": [
+        "circle back",
+        "studio recording",
+        "home page"
+      ],
+      "transcript": "",
+      "category": "Songs",
+      "madeIn": [
+        "Aaron's tracks"
+      ],
+      "status": "Current edit",
+      "art": "type",
+      "added": "2026-10-22",
+      "sha256": "70c765ddd9b135a161bade2ce00f6b4da53fbb871e15e93471cf7df3a4efbd18",
+      "src": "/audio/releases/circle-back.mp3",
+      "download": "/audio/releases/circle-back.mp3",
+      "audio": true,
+      "bytes": 4908824,
+      "poster": "/cutting-room/posters/circle-back-70c765dd.jpg",
+      "cover": "/cutting-room/covers/circle-back-70c765dd.jpg"
+    },
+    {
+      "id": "circle-back-alternate-08271d42",
+      "title": "Circle Back (Alternate)",
+      "kind": "audio",
+      "duration": 79.848,
+      "cast": [],
+      "description": "Same agenda, different minutes.",
+      "notes": "The supplied recording is Opus in an M4A, which older Safari cannot play: this MP3 is for playback, and the original M4A is the download.",
+      "tags": [
+        "circle back",
+        "alternate",
+        "studio recording",
+        "home page"
+      ],
+      "transcript": "",
+      "category": "Songs",
+      "madeIn": [
+        "Aaron's tracks"
+      ],
+      "status": "Available edit",
+      "art": "type",
+      "added": "2026-10-22",
+      "sha256": "08271d42a06eba4e5f3e85dede516897753f0cc98dbdb0d87f7fad449493138b",
+      "src": "/cutting-room/songs/circle-back-alternate-08271d42.mp3",
+      "download": "/audio/releases/circle-back-alternate.m4a",
+      "downloadSha256": "25252731be4f318e4a36bd21311f77c0c8bf32fd8147b97fe75ec96152838ef0",
+      "downloadBytes": 1656436,
+      "audio": true,
+      "bytes": 1916928,
+      "poster": "/cutting-room/posters/circle-back-alternate-08271d42.jpg",
+      "cover": "/cutting-room/covers/circle-back-alternate-08271d42.jpg",
+      "sourceReference": "source circle-back-alternate.m4a sha256:25252731be4f318e4a36bd21311f77c0c8bf32fd8147b97fe75ec96152838ef0"
+    },
+    {
+      "id": "untitled-alignment-7d76fb00",
+      "title": "Untitled Alignment",
+      "kind": "audio",
+      "duration": 13.009,
+      "cast": [],
+      "description": "Thirteen seconds of alignment. The title is still in review.",
+      "notes": "Studio recording, as supplied. Featured on the home page.",
+      "tags": [
+        "alignment",
+        "studio recording",
+        "home page",
+        "featured"
+      ],
+      "transcript": "",
+      "category": "Songs",
+      "madeIn": [
+        "Aaron's tracks"
+      ],
+      "status": "Current edit",
+      "art": "type",
+      "added": "2026-10-22",
+      "sha256": "7d76fb00464af82835b4bf7d3af93a901095e30ac9dbeb1bef18932cc23dfb7a",
+      "src": "/audio/releases/untitled-alignment.mp3",
+      "download": "/audio/releases/untitled-alignment.mp3",
+      "audio": true,
+      "bytes": 312886,
+      "poster": "/cutting-room/posters/untitled-alignment-7d76fb00.jpg",
+      "cover": "/cutting-room/covers/untitled-alignment-7d76fb00.jpg"
+    },
+    {
+      "id": "milo-session-a-ad296842",
+      "title": "MILO Session A",
+      "kind": "audio",
+      "duration": 3.788,
+      "cast": [],
+      "description": "A four-second loop. It never ends. Like the meeting.",
+      "notes": "Studio loop, as supplied. The home page and /synth/ loop it.",
+      "tags": [
+        "milo",
+        "loop",
+        "studio loop",
+        "home page",
+        "synth"
+      ],
+      "transcript": "",
+      "category": "Sounds",
+      "madeIn": [
+        "Aaron's tracks"
+      ],
+      "status": "Available edit",
+      "art": "type",
+      "added": "2026-10-22",
+      "sha256": "ad296842d8124f1384bdc25e441b06678fad2e2dd0ee60bd83768754cd149107",
+      "src": "/audio/releases/milo-session-a.mp3",
+      "download": "/audio/releases/milo-session-a.mp3",
+      "audio": true,
+      "bytes": 91611,
+      "poster": "/cutting-room/posters/milo-session-a-ad296842.jpg",
+      "cover": "/cutting-room/covers/milo-session-a-ad296842.jpg"
+    },
+    {
+      "id": "the-lady-s-recordings-1aa1fd0b",
+      "title": "The Lady\u2019s Recordings",
+      "kind": "pack",
+      "duration": 100.495,
+      "count": 57,
+      "groups": [],
+      "groupLabel": "Voice",
+      "cast": [
+        "The lady"
+      ],
+      "description": "Fifty-seven things LinkedIn says out loud, each said once. All Hands builds its songs from them.",
+      "notes": "",
+      "tags": [
+        "the lady",
+        "voice",
+        "phrases",
+        "all hands"
+      ],
+      "transcript": "I'm thrilled to announce\nHumbled and honored to share\nI'm happy to share that I'm starting a new position\nAfter careful reflection, I've decided to pursue new opportunities\nSynergy\nLet's circle back\nLeverage\nPivot\nIt's not about the tools. It's about the mindset.\nDelve\nA rich tapestry\nGame-changer\nThoughts?\nAgree or disagree?\nLet that sink in\nFull stop.\nI'm excited to share\u2026\nRead that again.\nHere's what I learned. \ud83d\udc47\nThis changed everything for me.\nMost people won't understand this. But you will.\nIt's not about X. It's about Y.\nI'll say what nobody else will\u2026\nA small moment that taught me a big lesson.\nAnd then he said something I'll never forget.\nThe rest is history.\nGrateful for this incredible journey.\nCouldn't have done it without my amazing team.\nOnwards and upwards! \ud83d\ude80\nDelighted to have joined\u2026\nIn today's fast-paced world\u2026\nPassionate about driving impact at the intersection of\u2026\nNot just a job, a calling.\nHot take: teamwork makes a difference.\nUnpopular opinion: Fridays are great.\nLet's connect and explore synergies.\nWhat do you think? Drop a comment below. \ud83d\udc47\nBig news.\nSome personal news.\nA quick update.\nThe journey continues.\nLessons learned.\nHere's the takeaway.\nWe're just getting started.\nMore to come.\nStay tuned.\nProud of this team.\nMilestone unlocked.\nThis one's personal.\nLet's build.\nWatch this space.\nThe numbers don't lie.\nExecution beats strategy.\nCulture is everything.\nFeedback is a gift.\nFailure is just data.\nMomentum compounds.",
+      "category": "Sounds",
+      "madeIn": [
+        "All Hands"
+      ],
+      "status": "Current edit",
+      "art": "type",
+      "added": "2026-10-22",
+      "sha256": "60d14bb4bfe323b9029f91be49ef584ff6357ee391cc63775ae5311b5ca4fbab",
+      "src": "/cutting-room/packs/the-lady-s-recordings-1aa1fd0b.json",
+      "audio": true,
+      "bytes": 10176,
+      "poster": "/cutting-room/posters/the-lady-s-recordings-1aa1fd0b.jpg",
+      "cover": "/cutting-room/covers/the-lady-s-recordings-1aa1fd0b.jpg"
+    },
+    {
+      "id": "all-hands-voice-bank-314642fe",
+      "title": "All Hands Voice Bank",
+      "kind": "pack",
+      "duration": 388.269,
+      "count": 294,
+      "groups": [
+        "Strategy",
+        "Synthia"
+      ],
+      "groupLabel": "Voice",
+      "cast": [
+        "Strategy",
+        "Synthia"
+      ],
+      "description": "Every line a song can cast, recorded before anyone asked.",
+      "notes": "",
+      "tags": [
+        "voice bank",
+        "strategy",
+        "synthia",
+        "all hands"
+      ],
+      "transcript": "Thrilled to share.\nProud and humbled to announce.\nProud to announce.\nExcited for this next chapter.\nPlease join me in congratulating.\nI'm humbled and honored to share a small update.\nHuge shout-out.\nForever grateful.\nBlessed.\nCouldn't be prouder.\nLet me be vulnerable for a second.\nI'll be honest.\nImposter syndrome.\nStay humble.\nLearnings.\nHere's the thing.\nAsk me how I know.\nTrust the process.\nGrowth mindset.\nAnd that's okay.\nRise and grind.\nNo days off.\nIn this economy.\nNorth star.\nBandwidth.\nLet's double-click on that.\nLow-hanging fruit.\nDeep dive.\nAlignment.\nStakeholders.\nTouch base.\nWe'll take this offline.\nOffline.\nPer my last email.\nBoil the ocean.\nParadigm shift.\nEcosystem.\nOwnership.\nUnlock the potential.\nOptimize.\nA testament to.\nNavigate the complexities.\nElevate.\nRobust.\nIn the ever-evolving landscape.\nIt's important to note.\nIn the realm of.\nFoster a culture of.\nAI-first.\nHuman in the loop.\nThe future of work.\nIn conclusion.\nGreat question.\nBring your whole self.\nProtect your peace.\nHold space.\nWe're a family.\nBoundaries.\nWellness.\nRepost if you agree.\nFollow for more.\nLink in the comments.\nLet's discuss.\nBe honest.\nSame time next week.\nLet's go.\nHere's to what's next.\nIt's not a layoff.\nIt's a launch.\nIt's not a pink slip.\nIt's a permission slip.\nIt's not a cardboard box.\nIt's a starter kit.\nIt's not a reorg.\nIt's not a severance package.\nIt's a care package.\nIt's not attrition.\nIt's alumni.\nIt's not a hiring freeze.\nIt's a focus season.\nIt's not an exit interview.\nIt's a listening tour.\nIt's not a skeleton crew.\nIt's a tiger team.\nIt's not a merger.\nIt's not autocomplete.\nIt's thought leadership.\nIt's not a hallucination.\nIt's a hypothesis.\nIt's not a ghostwriter.\nIt's my authentic voice.\nIt's not your replacement.\nIt's your new teammate.\nIt's not copy-paste.\nIt's co-creation.\nIt's not a chatbot.\nIt's a colleague.\nIt's not a guess.\nIt's a forecast.\nIt's not reading.\nIt's not an app update.\nIt's not overtime.\nIt's ownership.\nIt's not insomnia.\nIt's a morning routine.\nIt's not a Saturday.\nIt's not a fifth espresso.\nIt's discipline.\nIt's not a second job.\nIt's a side hustle.\nIt's not a cold shower.\nIt's a cold plunge.\nIt's not sleep deprivation.\nIt's not unpaid.\nIt's not burnout.\nIt's bandwidth.\nIt's not a pizza party.\nIt's a wellness initiative.\nIt's not a raise.\nIt's a meditation app.\nIt's not a sick day.\nIt's not a vacation.\nIt's not a lunch break.\nIt's a lunch and learn.\nIt's not a demotion.\nIt's a lateral opportunity.\nIt's not more work.\nIt's a stretch assignment.\nIt's not a pay cut.\nIt's equity.\nIt's not a gift card.\nIt's recognition.\nIt's not a bigger desk.\nIt's a seat at the table.\nIt's not a new title.\nIt's growth.\nIt's not an hour.\nIt's not a reply-all.\nIt's transparency.\nIt's not a delay.\nIt's a dependency.\nIt's not a no.\nIt's a not right now.\nIt's not a mistake.\nIt's a learning.\nIt's a parking lot.\nIt's not a pre-meeting.\nIt's alignment.\nIt's not a status update.\nIt's visibility.\nIt's not a forty-slide deck.\nIt's a narrative.\nIt's not a recurring meeting.\nIt's a ritual.\nIt's not an agenda.\nIt's a vibe.\nIt's not a decision.\nIt's not double-booked.\nIt's in demand.\nIt's not avoidance.\nIt's camera off.\nIt's not a U-turn.\nIt's not a performance plan.\nIt's a family.\nIt's not a ping-pong table.\nIt's an employer brand.\nIt's not a complaint.\nIt's not mandatory.\nIt's not an open-plan office.\nIt's collaboration.\nIt's flexibility.\nIt's not a cult.\nIt's not a lanyard.\nIt's belonging.\nIt's not a vanity metric.\nIt's a north star.\nIt's not a rounding error.\nIt's a stretch goal.\nIt's not a loss.\nIt's an investment.\nIt's not churn.\nIt's graduation.\nIt's not cherry-picking.\nIt's just\nIt's not one customer.\nIt's a segment.\nIt's not a down quarter.\nIt's a reset year.\nIt's not a loan.\nAligned.\nRoom temperature.\nTen thousand likes.\nSame team. New logo.\nForty slides.\nNothing scheduled.\nYear nine.\nIt stays empty.\nParagraph two.\nBandwidth?\nNone.\nNothing there.\nThrilled to share.\nForever grateful.\nBlessed.\nImposter syndrome.\nLearnings.\nPlot twist.\nGrowth mindset.\nAnd that's okay.\nMove the needle.\nLet's double-click on that.\nTouch base.\nPer my last email.\nEcosystem.\nElevate.\nSeamless.\nRobust.\nIt's important to note.\nIn the realm of.\nFoster a culture of.\nAgentic.\nHuman in the loop.\nIn conclusion.\nGreat question.\nBring your whole self.\nProtect your peace.\nHold space.\nBoundaries.\nWellness.\nRepost if you agree.\nLink in the comments.\nThis.\nLet's go.\nHere's to what's next.\nIt's\nIt's a\nIt's a launch.\nIt's a permission slip.\nIt's a remix.\nIt's a care package.\nIt's alumni.\nIt's a focus season.\nIt's thought leadership.\nIt's a hypothesis.\nIt's my authentic voice.\nIt's your new teammate.\nIt's co-creation.\nIt's a colleague.\nIt's a forecast.\nIt's a morning routine.\nIt's a hackathon.\nIt's discipline.\nIt's a side hustle.\nIt's a cold plunge.\nIt's the edge.\nIt's bandwidth.\nIt's async.\nIt's a workation.\nIt's a lunch and learn.\nIt's a stretch assignment.\nIt's equity.\nIt's recognition.\nIt's growth.\nIt's a quick sync.\nIt's transparency.\nIt's a dependency.\nIt's not silence.\nIt's a parking lot.\nIt's alignment.\nIt's visibility.\nIt's a narrative.\nIt's a ritual.\nIt's a vibe.\nIt's a next step.\nIt's in demand.\nIt's camera off.\nIt's an employer brand.\nIt's a retreat.\nIt's collaboration.\nIt's not a hot desk.\nIt's flexibility.\nIt's belonging.\nIt's a north star.\nIt's not a miss.\nIt's a stretch goal.\nIt's an investment.\nIt's graduation.\nIt's just\nIt's a segment.\nIt's not a loan.\nTen thousand likes.\nForty slides.\nNothing scheduled.\nNone.",
+      "category": "Sounds",
+      "madeIn": [
+        "All Hands"
+      ],
+      "status": "Current edit",
+      "art": "type",
+      "added": "2026-11-05",
+      "sha256": "b24bb6d1cc1459f06106d6571f4bda7088d3085032ee55b6862baaa18a9dbb10",
+      "src": "/cutting-room/packs/all-hands-voice-bank-314642fe.json",
+      "audio": true,
+      "bytes": 65278,
+      "poster": "/cutting-room/posters/all-hands-voice-bank-314642fe.jpg",
+      "cover": "/cutting-room/covers/all-hands-voice-bank-314642fe.jpg"
+    },
+    {
+      "id": "day-one-voices-ca3879ad",
+      "title": "Day One. Voices",
+      "kind": "pack",
+      "duration": 8.337,
+      "count": 5,
+      "groups": [
+        "Strategy",
+        "Synthia"
+      ],
+      "groupLabel": "Voice",
+      "cast": [
+        "Strategy",
+        "Synthia"
+      ],
+      "description": "Five ways to say Congrats on the new role!",
+      "notes": "",
+      "tags": [
+        "day one",
+        "congrats",
+        "voice takes"
+      ],
+      "transcript": "Congrats on the new role! (S1, the one the film sings)\nCongrats on the new role! (S2)\nCongrats on the new role! (S3)\nCongrats on the new role! (Y1)\nCongrats on the new role! (Y2)",
+      "category": "Sounds",
+      "madeIn": [
+        "Claude Code films"
+      ],
+      "status": "Current edit",
+      "related": [
+        "day-one-0d178d01"
+      ],
+      "art": "type",
+      "added": "2026-11-07",
+      "sha256": "7b6b8faab1ed239a6ada377668f39eb75163bdab27a0aebde51b6094c38c98fb",
+      "src": "/cutting-room/packs/day-one-voices-ca3879ad.json",
+      "audio": true,
+      "bytes": 1184,
+      "poster": "/cutting-room/posters/day-one-voices-ca3879ad.jpg",
+      "cover": "/cutting-room/covers/day-one-voices-ca3879ad.jpg"
+    },
+    {
+      "id": "meeting-dialogue-3fa62b2e",
+      "title": "Meeting Dialogue",
+      "kind": "pack",
+      "duration": 338.976,
+      "count": 130,
+      "groups": [
+        "People & Culture",
+        "Strategy",
+        "Kevin",
+        "Keys",
+        "Operations",
+        "Arjun",
+        "Linda"
+      ],
+      "groupLabel": "Character",
+      "cast": [
+        "People & Culture",
+        "Strategy",
+        "Kevin",
+        "Keys",
+        "Operations",
+        "Arjun",
+        "Linda"
+      ],
+      "description": "130 lines from seven colleagues. It could have been an email.",
+      "notes": "",
+      "tags": [
+        "meeting",
+        "dialogue",
+        "voices",
+        "studio"
+      ],
+      "transcript": "I\u2019ve added a checklist for completing the checklist.\nOnboarding.\nWe\u2019ll take this offline.\nOffline.\nI\u2019ll add that to both checklists.\nWe\u2019re absolutely thrilled to be welcoming our new colleague.\nOnboard.\nOptimize.\nWe\u2019re so excited to have them here. Eventually.\nI\u2019m humbled and honored to share the new welcome email.\nI\u2019ll resend it with a warmer subject line.\nUnlock the potential.\nThis will unlock a new chapter of category leadership.\nBuilding.\nUnlocking.\nHumbled and honored.\nExcited to share.\nMy mother asked what we sell. I sent her the headline.\nThis will unlock a community of passionate early adopters.\nI\u2019ll post about the overwhelming response.\nShould we invite everyone from this meeting?\nI\u2019m thrilled to announce three listening sessions on fewer meetings.\nI\u2019ve sent you a calendar invitation.\nUnlock.\nI\u2019m humbled and honored to share a small update.\nI\u2019ve already called it a movement.\nWhat will they be working on?\nWhat will they be working on?\nOnboard.\nOptimize.\nWe\u2019ll take this offline.\nA third tab would give us room to scale.\nA third tab would give us room to scale.\nUnlock the potential.\nI\u2019m excited to add a document about that document.\nI\u2019m excited to share that I\u2019ve booked the follow-up.\nOffline.\nI\u2019m incredibly excited about the momentum.\nUnlock.\nI\u2019m humbled and honored to share a tremendous quarter.\nI\u2019m humbled and honored to share a small update.\nI\u2019m humbled and honored to share a small update.\nI\u2019m humbled and honored to be onboarding a new folder.\nI\u2019m still waiting for access.\nI\u2019m still waiting for access.\nOnboarding.\nWe\u2019ll take this offline.\nOffline.\nI\u2019m excited to share a new onboarding checklist.\nWhich one do we start with?\nWhen do they start?\nOnboard.\nOptimize.\nI sent it to the new hire this morning.\nI\u2019ve added a second tab to the spreadsheet.\nUnlock the potential.\nI\u2019ve opened a shared document.\nI\u2019m humbled and honored to announce our new LinkedIn headline.\nIt now says: building something exciting.\nIt now says: building something exciting.\nWe\u2019ll take that offline.\nBuilding.\nUnlocking.\nHumbled and honored.\nExcited to share.\nI\u2019m humbled and honored to share that we have a waitlist.\nThe sign-up button is absolutely beautiful.\nWe\u2019ll take the numbers offline.\nWhat is the follow-up for?\nCould we just cancel one?\nUnlock.\nI\u2019m humbled and honored to share a small update.\nI\u2019m humbled and honored to share a small update.\nThis will unlock the full potential of our shared drive.\nOnboarding.\nWe\u2019ll take this offline.\nOffline.\nThis will unlock a truly frictionless first-day experience.\nThis will unlock our next generation of onboarding capacity.\nOnboard.\nOptimize.\nA seamless first-touch experience.\nI\u2019m genuinely excited about what this unlocks.\nUnlock the potential.\nThis will unlock a whole new level of collaboration.\nThis will unlock a more intentional meeting cadence.\nThis will unlock visibility into our future visibility.\nUnlock.\nThis will unlock a more holistic view of progress.\nI\u2019m humbled and honored to share a small update.\nI\u2019m excited to share that I\u2019ve renamed the folder Final.\nOnboarding.\nWe\u2019ll take this offline.\nOffline.\nOnboard.\nOptimize.\nUnlock the potential.\nWe\u2019ve successfully onboarded the new dashboard.\nUnlock.\nWe\u2019ve aligned every onboarding metric with the new framework.\nI\u2019m humbled and honored to share a small update.\nWhat are we unlocking?\nUnlock the potential.\nOptimize.\nWhich opportunity are we discussing?\nWe\u2019ll take this offline.\nOffline.\nSame link. Same time. Same people.\nWe\u2019ll take the next steps offline.\nHave we onboarded any customers?\nOnboard.\nUnlock.\nHave the numbers changed?\nI\u2019m humbled and honored to share a small update.\nIt went to spam.\nIt went to spam.\nOnboard.\nOptimize.\nWe\u2019ll take this offline.\nUnlock the potential.\nDoes the first tab still work?\nThey\u2019re both read-only.\nI\u2019m free right now.\nOffline.\nUnlock.\nI\u2019ll carry the zero forward.\nI\u2019ll reuse last quarter\u2019s spreadsheet.\nI\u2019ll reuse last quarter\u2019s spreadsheet.\nI\u2019m humbled and honored to share a small update.\nI\u2019m humbled and honored to share a small update.",
+      "category": "Sounds",
+      "madeIn": [
+        "Studio and meeting rooms"
+      ],
+      "status": "Current edit",
+      "art": "type",
+      "added": "2026-10-22",
+      "sha256": "a30ca2ee58e623b08b3a065e6f4524ff1399fe4f0ef755a14de2fa414bbe47ff",
+      "src": "/cutting-room/packs/meeting-dialogue-3fa62b2e.json",
+      "audio": true,
+      "bytes": 35783,
+      "poster": "/cutting-room/posters/meeting-dialogue-3fa62b2e.jpg",
+      "cover": "/cutting-room/covers/meeting-dialogue-3fa62b2e.jpg"
+    },
+    {
+      "id": "casting-auditions-b769a7f4",
+      "title": "Casting Auditions",
+      "kind": "pack",
+      "duration": 79.968,
+      "count": 7,
+      "groups": [
+        "People & Culture",
+        "Strategy",
+        "Kevin",
+        "Keys",
+        "Operations",
+        "Arjun",
+        "Linda"
+      ],
+      "groupLabel": "Character",
+      "cast": [
+        "People & Culture",
+        "Strategy",
+        "Kevin",
+        "Keys",
+        "Operations",
+        "Arjun",
+        "Linda"
+      ],
+      "description": "Seven voices read for the part. Three reads each.",
+      "notes": "",
+      "tags": [
+        "casting",
+        "auditions",
+        "voices",
+        "studio"
+      ],
+      "transcript": "I\u2019m humbled and honored to share a small update. / I\u2019ve added a checklist for completing the checklist. / I\u2019ll add that to both checklists.\nI\u2019m humbled and honored to share a small update. / A third tab would give us room to scale. / What will they be working on?\nI\u2019m humbled and honored to share a small update. / I\u2019m still waiting for access. / It now says: building something exciting.\nI\u2019m humbled and honored to share a small update. / This will unlock the full potential of our shared drive. / A seamless first-touch experience.\nI\u2019m humbled and honored to share a small update. / I\u2019m excited to share that I\u2019ve renamed the folder Final. / We\u2019ve successfully onboarded the new dashboard.\nI\u2019m humbled and honored to share a small update. / Have we onboarded any customers? / Same link. Same time. Same people.\nI\u2019m humbled and honored to share a small update. / It went to spam. / I\u2019ll reuse last quarter\u2019s spreadsheet.",
+      "category": "Sounds",
+      "madeIn": [
+        "Studio and meeting rooms"
+      ],
+      "status": "Current edit",
+      "art": "type",
+      "added": "2026-10-22",
+      "sha256": "079afe60f5654f8e1ca65a49bd9ca761acbb464eba9dc604cbe71ecbbf5e04e1",
+      "src": "/cutting-room/packs/casting-auditions-b769a7f4.json",
+      "audio": true,
+      "bytes": 2389,
+      "poster": "/cutting-room/posters/casting-auditions-b769a7f4.jpg",
+      "cover": "/cutting-room/covers/casting-auditions-b769a7f4.jpg"
+    },
+    {
+      "id": "meeting-season-audio-35d5d1ce",
+      "title": "Meeting Season Audio",
+      "kind": "pack",
+      "duration": 701.484,
+      "count": 21,
+      "groups": [
+        "Standup",
+        "Onboarding",
+        "Unlock",
+        "Paperless",
+        "Founder",
+        "Offline",
+        "Quarterly"
+      ],
+      "groupLabel": "Agenda",
+      "cast": [],
+      "description": "Seven agendas, each with a bed and its voice tracks. One guitar fill, for the founder.",
+      "notes": "",
+      "tags": [
+        "meeting",
+        "season",
+        "beds",
+        "voice tracks",
+        "guitar fill",
+        "studio"
+      ],
+      "transcript": "Standup and Offline bed\nWhat\u2019s everyone working on? (the voices)\nThe weekly momentum check (the voices)\nOnboarding bed\nOptimizing the onboarding (the voices)\nA seamless first-touch experience (the voices)\nUnlock bed\nUnlocking our collective potential (the voices)\nThe next chapter of value creation (the voices)\nPaperless bed\nThe paperless transformation (the voices)\nA fully digital onboarding journey (the voices)\nFounder bed\nHumbled and honored to announce (the voices)\nBuilding something extraordinary (the voices)\nFounder guitar fill: 3 variations, F-sharp minor, 88 BPM\nWe\u2019ll take this offline (the voices)\nA more intentional meeting cadence (the voices)\nQuarterly bed\nThe Q3 alignment (the voices)\nAn exceptional quarter of alignment (the voices)",
+      "category": "Sounds",
+      "madeIn": [
+        "Studio and meeting rooms"
+      ],
+      "status": "Current edit",
+      "art": "type",
+      "added": "2026-10-22",
+      "sha256": "a287107f2a00ba9a7eb26be6c2ab865173613dc47b37add00b1f243955c29fdc",
+      "src": "/cutting-room/packs/meeting-season-audio-35d5d1ce.json",
+      "audio": true,
+      "bytes": 5155,
+      "poster": "/cutting-room/posters/meeting-season-audio-35d5d1ce.jpg",
+      "cover": "/cutting-room/covers/meeting-season-audio-35d5d1ce.jpg"
+    },
+    {
+      "id": "room-anthems-513f6755",
+      "title": "Room Anthems",
+      "kind": "pack",
+      "duration": 154.548,
+      "count": 8,
+      "groups": [
+        "Founder Mode",
+        "Mission Driven",
+        "Enterprise Alignment",
+        "The Pre-Meeting"
+      ],
+      "groupLabel": "Room",
+      "cast": [],
+      "description": "Four rooms, four themes. A music bed and a sheet of voice clips for each.",
+      "notes": "",
+      "tags": [
+        "rooms",
+        "anthems",
+        "beds",
+        "voice clips",
+        "studio"
+      ],
+      "transcript": "Founder Mode: the music bed\nFounder Mode: We're just getting started. / We haven't started yet. / A bold new vision. / The deck is nearly ready. / Pre-revenue. Post-vision. / A billion-dollar market. / A two-person team.\nMission Driven: the music bed\nMission Driven: More impact. / Another form. / Less time for the mission. / More time to report. / We measure what matters. / The number of forms. / The mission is urgent. / The portal is down.\nEnterprise Alignment: the music bed\nEnterprise Alignment: We're moving forward. / Pending approval. / The vision is clear. / The owner is not. / Agility at scale. / Submit a request. / Approved in principle.\nThe Pre-Meeting: the music bed\nThe Pre-Meeting: Let's book a meeting. / To book a meeting. / We need an agenda. / For the agenda. / A pre-alignment meeting. / Before alignment. / We value your time. / This one is mandatory.",
+      "category": "Sounds",
+      "madeIn": [
+        "Studio and meeting rooms"
+      ],
+      "status": "Current edit",
+      "art": "type",
+      "added": "2026-10-22",
+      "sha256": "b9498aaf3f395a6a7aab2ff44bac048756b422182a0e94a9a7e9f6543479410a",
+      "src": "/cutting-room/packs/room-anthems-513f6755.json",
+      "audio": true,
+      "bytes": 2622,
+      "poster": "/cutting-room/posters/room-anthems-513f6755.jpg",
+      "cover": "/cutting-room/covers/room-anthems-513f6755.jpg"
+    },
+    {
+      "id": "studio-2-song-kits-bfa05300",
+      "title": "Studio 2 Song Kits",
+      "kind": "pack",
+      "duration": 864.432,
+      "count": 13,
+      "groups": [
+        "Let's Take It Offline",
+        "Circle Back Forever",
+        "Mutual Alignment",
+        "Humbled & Honored",
+        "Synergistically Speaking",
+        "No Action Required",
+        "Vocabulary"
+      ],
+      "groupLabel": "Song",
+      "cast": [],
+      "description": "The parts, not the songs: drums, bass, keys and lift end to end, and every line read twice.",
+      "notes": "",
+      "tags": [
+        "studio 2",
+        "stems",
+        "kits",
+        "voice clips"
+      ],
+      "transcript": "Let's Take It Offline: drums, bass, keys, lift, end to end\nLet's Take It Offline: Let's take it offline. / We moved the meeting. / The work stayed here. / We moved the needle. / The needle moved back. / No action required. / Please act accordingly. / The offline is now online. / We operationalized the conversation. / The conversation remains operational. / Our bandwidth has bandwidth. / Capacity is a state of mind. / Please submit a needle movement report.\nCircle Back Forever: drums, bass, keys, lift, end to end\nCircle Back Forever: Circle back. / Circle back forever. / We're getting closer. / To where we were. / The next steps are clear. / We'll clarify them next week. / A shared direction. / A perfect loop. / Circularity is our competitive advantage. / We have achieved recursive alignment. / Please align with the previous alignment. / The feedback loop is closed. / We have opened another feedback loop. / Progress is non-linear. / Specifically, circular.\nMutual Alignment: drums, bass, keys, lift, end to end\nMutual Alignment: Is everyone aligned? / I can confirm alignment. / What are we aligned on? / The need for further alignment. / Do we have a decision? / We have a shared document. / Who owns the next step? / Ownership is a shared responsibility. / We are synergistically adjacent. / Can we action the alignment? / First, align the action items. / Who is the decision maker? / The decision-making ecosystem. / Let's take it offline. / I have scheduled an alignment pre-alignment.\nHumbled & Honored: drums, bass, keys, lift, end to end\nHumbled & Honored: I am humbled and honored to share. / Your humility has been noted. / I made a cup of coffee. / Seven lessons in leadership. / I couldn't have done it alone. / The kettle was instrumental. / Grateful for this incredible journey. / From the desk to the kitchen. / Humility metrics are at an all-time high. / I have disrupted my morning routine. / The coffee is now a platform. / An inflection point in my journey. / You pressed the elevator button. / Personal growth is exponential. / Please update your headline accordingly.\nSynergistically Speaking: drums, bass, keys, lift, end to end\nSynergistically Speaking: Let's explore synergies. / Two things. Near each other. / We need actionable insights. / Something we can actually do. / Let's leverage our ecosystem. / Ask the people we already know. / A paradigm shift. / We moved the spreadsheet. / Synergistically speaking. / Our synergies have synergies. / Optimize the onboarding metrics. / Then onboard the optimization metrics. / A frictionless omnichannel ecosystem. / The printer is still offline. / We are future-proofing the paradigm. / The paradigm expires on Friday.\nNo Action Required: drums, bass, keys, lift, end to end\nNo Action Required: No action required. / Please act accordingly. / We value your time. / This meeting is mandatory. / Your feedback matters. / The decision has been made. / Keep us in the loop. / The loop has been extended. / Inaction is a strategic deliverable. / We are proactively waiting. / Waiting has been escalated. / Please prioritize your wellbeing. / After the mandatory wellbeing meeting. / We respect your boundaries. / I have sent a calendar invitation.\nVocabulary: Let's unlock our synergies. / The key is in another meeting. / Do you have the bandwidth? / My bandwidth is on annual leave. / We need a paradigm shift. / Please drag the paradigm to the shared folder. / Let's leverage our core competencies. / Nobody has located them yet. / It's time for a strategic pivot. / We are now facing the other wall. / A holistic, frictionless ecosystem. / Have you tried turning it off and on?",
+      "category": "Sounds",
+      "madeIn": [
+        "Studio and meeting rooms"
+      ],
+      "status": "Current edit",
+      "art": "type",
+      "added": "2026-10-22",
+      "sha256": "892cc5354702e0c3c133357170c7e355ad74765fb325f2c8317f5b2fddc281a8",
+      "src": "/cutting-room/packs/studio-2-song-kits-bfa05300.json",
+      "audio": true,
+      "bytes": 6375,
+      "poster": "/cutting-room/posters/studio-2-song-kits-bfa05300.jpg",
+      "cover": "/cutting-room/covers/studio-2-song-kits-bfa05300.jpg"
+    },
+    {
+      "id": "all-hands-instruments-6f6fd26c",
+      "title": "All Hands Instruments",
+      "kind": "pack",
+      "duration": 74.4,
+      "count": 54,
+      "groups": [
+        "Drums",
+        "Percussion",
+        "Bass",
+        "Keys",
+        "Pads",
+        "Effects",
+        "Office"
+      ],
+      "groupLabel": "Family",
+      "cast": [],
+      "description": "Every drum, tambourine and bass the song engine plays. No samples. Just arithmetic.",
+      "notes": "",
+      "tags": [
+        "instruments",
+        "synthesis",
+        "drums",
+        "tambourine",
+        "bass",
+        "all hands"
+      ],
+      "transcript": "Kick. Plays in Circle Back and the Drop Edition drops.\nTuned kick, round, on B-flat. Plays in Humbled and Honored.\nTuned kick, tight, on C. Plays in Hustle.\nDrop kick. Plays in the Drop Edition drops.\nSnare. Plays in Circle Back, Humbled and Honored and Hustle.\nSnare roll hit. Plays in Circle Back, Humbled and Honored, Hustle and Offsite.\nClap. Plays in Circle Back, Humbled and Honored, Hustle and Day One.\nGang clap. Plays in Offsite, the river and Day One.\nSnap. Plays in Humbled and Honored.\nRim. Plays in Circle Back, Humbled and Honored, Hustle and Day One.\nHi-hat. Plays in Circle Back, Humbled and Honored and Hustle.\nOpen hi-hat. Plays in Circle Back, Humbled and Honored and Hustle.\nRide. Plays in Circle Back.\nCrash. Plays in the Drop Edition drops.\nStomp. Plays in Offsite and the river.\nFloor tom. Plays in Offsite and the river.\nShaker. Plays in Circle Back, Humbled and Honored, Hustle, Offsite, the river and Day One.\nTambourine hit. Plays in the river.\nTambourine shake, soft. Plays in the river.\nTambourine shake, medium. Plays in the river.\nTambourine shake, hard. Plays in the river.\nHand drum. Plays in the river.\nLog drum. Plays in the river.\nChime. Plays in the river.\nTick. Plays in the Drop Edition drops and Day One.\nBass. Plays in Circle Back, Humbled and Honored, Hustle, Offsite and the Drop Edition drops.\nSustained bass. Plays in Circle Back.\nWobble bass. Plays in Circle Back and Hustle.\n808 sub. Plays in Humbled and Honored.\nFinger bass. Plays in Humbled and Honored.\nReese bass. Plays in Hustle.\nHum bass. Plays in Offsite and the river.\nWarm bass. Plays in the river and Day One.\nSub drop. Plays in the Drop Edition drops.\nStab. Plays in Circle Back and the Drop Edition drops.\nChop. Plays in Circle Back and Hustle.\nRhodes. Plays in Humbled and Honored and Day One.\nOrgan. Plays in Hustle.\nHarmonium. Plays in Offsite and the river.\nClean guitar. Plays in Humbled and Honored, Offsite, the river and Day One.\nPad. Plays in Circle Back, Humbled and Honored, Hustle, Offsite, the Drop Edition drops and the river.\nVoice pad. Plays in Offsite and the river.\nWarm pad. Plays in the river and Day One.\nSequencer arp note. Plays in the river and Day One.\nRiser. Plays in Offsite and the Drop Edition drops.\nImpact. Plays in Offsite and the Drop Edition drops.\nDownlifter. Plays in the Drop Edition drops.\nReverse crash. Plays in the Drop Edition drops.\nSaw riser. Plays in the Drop Edition drops.\nKeyboard click. Plays in Offsite and the river.\nMug. Plays in Offsite and the river.\nChair creak. Plays in Offsite.\nRoom tone. Plays in Offsite and the river.\nPrinter feed. Plays in Offsite.",
+      "category": "Sounds",
+      "madeIn": [
+        "All Hands"
+      ],
+      "status": "Current edit",
+      "art": "type",
+      "added": "2026-11-07",
+      "sha256": "da102551557a8fa685ebb0a095a8fc81aef4ec616e2a1b67ed208e9061d35686",
+      "src": "/cutting-room/packs/all-hands-instruments-6f6fd26c.json",
+      "audio": true,
+      "bytes": 13874,
+      "poster": "/cutting-room/posters/all-hands-instruments-6f6fd26c.jpg",
+      "cover": "/cutting-room/covers/all-hands-instruments-6f6fd26c.jpg"
+    },
+    {
+      "id": "film-voice-takes-ed5846ed",
+      "title": "Film Voice Takes",
+      "kind": "pack",
+      "duration": 25.262,
+      "count": 14,
+      "groups": [
+        "Welcome to the Office",
+        "Synthia follow-up",
+        "Printer Song"
+      ],
+      "groupLabel": "Film",
+      "cast": [
+        "Synergy",
+        "Synthia",
+        "Linda"
+      ],
+      "description": "Short lines for Welcome to the Office, a Synthia follow-up, and Synergy\u2019s Loading.",
+      "notes": "",
+      "tags": [
+        "voice takes",
+        "welcome to the office",
+        "synthia",
+        "printer song"
+      ],
+      "transcript": "Welcome. You already know how to work. (Synergy)\nWe\u2019ll teach you how to describe it. (Synergy)\nWe did this last year. (Linda)\nHumbled. (Synergy)\nHonored. (Synthia)\nExcited to share. (Synergy)\nExcited to share. (Synthia)\nHumbled and honored to share. (Synergy, V2)\nOptimize the onboarding. (Synergy, V2)\nLet's circle back. (Synthia, V2)\nOptimized. (Synthia, V2)\nSound like you mean business. (Synthia, V2)\nThen we will schedule a follow-up. (Synthia)\nLoading. (Synergy)",
+      "category": "Sounds",
+      "madeIn": [
+        "Cutting Room originals",
+        "Claude Code films"
+      ],
+      "status": "Current edit",
+      "art": "type",
+      "added": "2026-11-06",
+      "sha256": "8cb21bd9cf9378b862b5e4344f49f8b0c3c27d274ede4ebde3d4ee2f4f5b95f8",
+      "src": "/cutting-room/packs/film-voice-takes-ed5846ed.json",
+      "audio": true,
+      "bytes": 3779,
+      "poster": "/cutting-room/posters/film-voice-takes-ed5846ed.jpg",
+      "cover": "/cutting-room/covers/film-voice-takes-ed5846ed.jpg"
+    },
     {
       "id": "moving-things-forward-7fdb2147",
       "title": "Moving Things Forward",
@@ -37,6 +993,9 @@
       ],
       "transcript": "Humbled to share an important delivery.\nToday, I delivered the team\u2019s printed materials.\nFrom one part of the office to another.\n\nWhat looked like a simple request\nbecame an opportunity to connect our teams.\nDifferent functions. Shared direction. One trolley.\nThere were obstacles. Mostly chairs.\nBut we kept moving.\n\nMoving things forward.\nMoving things forward.\n\nGrateful to everyone who cleared a path.\nEspecially the colleague who moved the bin.\nWe challenged how things had always been carried.\nWe took a wider view of the corridor.\n\nAt nine oh three, the paper arrived.\nExactly where the paper needed to be.\nProud of the delivery. Prouder of the journey.\nThe next chapter is already in the tray.\n\nMoving things forward.\nMoving things forward.\n\nLooking forward to taking this further.\nOnce I\u2019ve recharged.\n",
       "category": "Finished films",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "status": "Current edit",
       "sha256": "7fdb21478a59d24279f0278563255bd6e02f9b466fb04a7f57bbf8ba1165592a",
       "src": "/cutting-room/films/moving-things-forward-7fdb2147.mp4",
@@ -67,6 +1026,9 @@
       ],
       "transcript": "Optimizing. Meaningful connections. Operational excellence. Thought leadership. Increased visibility. Shared ownership. A culture of accountability. Optimizing. Personal growth. Humbled and honored. Strategic alignment. Additional capacity. Continued momentum. Let\u2019s circle back.",
       "category": "Finished films",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "status": "Current edit",
       "sha256": "bd5cea53e5feeb7c1e2c595902c2a97b3bd08a0f4a5ecde76cfda81d00432685",
       "src": "/cutting-room/films/optimizing-pocket-mix-bd5cea53.mp4",
@@ -79,6 +1041,9 @@
       "id": "learn-to-speak-linkedin-synergy-recut-e95adb5d",
       "title": "Learn to Speak LinkedIn \u2014 Synergy recut",
       "category": "Finished films",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "Approved glassy-face Synergy at his computer, a blinking close-up with a reflected loading window, typing inserts and the evolving LinkedIn post.",
       "cast": [
         "Synergy"
@@ -106,6 +1071,9 @@
       "id": "one-mind-many-perspectives-synergy-corrected-4f6769ca",
       "title": "One Mind, Many Perspectives \u2014 Synergy corrected",
       "category": "Finished films",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "The singularity-equality meeting with the approved glassy-face Synergy camera and horizontal speech display.",
       "cast": [
         "Synergy",
@@ -140,6 +1108,9 @@
       "id": "training-02-caffeinated-edition-0d1af435",
       "title": "Training 02 \u2014 Caffeinated Edition",
       "category": "Finished films",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "How to answer without answering, with overcaffeinated Synergy, fast ChatGPT typing, coffee cups and a playful jazz beat.",
       "cast": [
         "Synergy"
@@ -169,6 +1140,9 @@
       "id": "welcome-to-the-office-v6-5adc47bd",
       "title": "Welcome to the Office \u2014 V6",
       "category": "Finished films",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "The banner crew returns. Instruments, robot jargon, and a corporate round of applause.",
       "cast": [
         "Synergy",
@@ -205,6 +1179,9 @@
       "id": "let-s-circle-back-synergy-corrected-d6ecf221",
       "title": "Let\u2019s Circle Back \u2014 Synergy corrected",
       "category": "Finished films",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "The complete musical meeting with the approved Synergy camera and tracked horizontal speech display.",
       "cast": [
         "Synergy",
@@ -238,6 +1215,10 @@
       "id": "authenticity-starts-here-measuring-b7f4c9cc",
       "title": "Authenticity Starts Here \u2014 measuring",
       "category": "Office scenes",
+      "madeIn": [
+        "Cutting Room originals",
+        "Video Studio"
+      ],
       "description": "The installation crew with finished, tracked banner typography.",
       "cast": [
         "Banner crew"
@@ -265,6 +1246,10 @@
       "id": "banner-installation-blank-plates-226c59ad",
       "title": "Banner installation \u2014 blank plates",
       "category": "Office scenes",
+      "madeIn": [
+        "Cutting Room originals",
+        "Video Studio"
+      ],
       "description": "Full-body installation shot with clean blue banners for custom print.",
       "cast": [
         "Banner crew"
@@ -292,6 +1277,10 @@
       "id": "bring-your-whole-self-to-work-banner-installation-bb87ecfe",
       "title": "Bring Your Whole Self to Work \u2014 banner installation",
       "category": "Office scenes",
+      "madeIn": [
+        "Cutting Room originals",
+        "Video Studio"
+      ],
       "description": "The installation crew with finished, tracked banner typography.",
       "cast": [
         "Banner crew"
@@ -319,6 +1308,10 @@
       "id": "corporate-applause-vhs-cameraman-a018b1c9",
       "title": "Corporate applause \u2014 VHS cameraman",
       "category": "Office scenes",
+      "madeIn": [
+        "Cutting Room originals",
+        "Video Studio"
+      ],
       "description": "The office applauds Synergy while a camcorder operator documents the achievement.",
       "cast": [
         "Synergy",
@@ -345,6 +1338,10 @@
       "id": "corporate-applause-closer-reaction-531fa4a4",
       "title": "Corporate applause \u2014 closer reaction",
       "category": "Office scenes",
+      "madeIn": [
+        "Cutting Room originals",
+        "Video Studio"
+      ],
       "description": "A closer, mildly uncomfortable round of corporate celebration.",
       "cast": [
         "Synergy",
@@ -369,6 +1366,10 @@
       "id": "measuring-authenticity-blank-plates-572b5179",
       "title": "Measuring authenticity \u2014 blank plates",
       "category": "Office scenes",
+      "madeIn": [
+        "Cutting Room originals",
+        "Video Studio"
+      ],
       "description": "The crew measures the placement of the blue office banners. Includes a reverse angle.",
       "cast": [
         "Banner crew"
@@ -396,6 +1397,10 @@
       "id": "printer-outward-feed-19442475",
       "title": "Printer \u2014 outward feed",
       "category": "Office scenes",
+      "madeIn": [
+        "Cutting Room originals",
+        "Video Studio"
+      ],
       "description": "New output direction: pages move out onto the desk. Inspect full page release when choosing a cut.",
       "cast": [
         "Printer"
@@ -418,6 +1423,10 @@
       "id": "synergy-close-laptop-plate-04e83d70",
       "title": "Synergy \u2014 close laptop plate",
       "category": "Screen inserts",
+      "madeIn": [
+        "Cutting Room originals",
+        "Video Studio"
+      ],
       "description": "Close over-the-shoulder laptop angle. Blank screen; final ChatGPT and Zoom composites are in V6.",
       "cast": [
         "Synergy"
@@ -440,6 +1449,10 @@
       "id": "synthia-clean-face-plate-7e0cf1cc",
       "title": "Synthia \u2014 clean face plate",
       "category": "Character performances",
+      "madeIn": [
+        "Cutting Room originals",
+        "Video Studio"
+      ],
       "description": "Clean black face for tracked horizontal LED speech. This raw plate does not contain the finished mouth animation.",
       "cast": [
         "Synthia"
@@ -462,6 +1475,10 @@
       "id": "the-professionals-arrive-32aba023",
       "title": "The professionals arrive",
       "category": "Office scenes",
+      "madeIn": [
+        "Cutting Room originals",
+        "Video Studio"
+      ],
       "description": "The suited installer and Circle Back-shirt colleague walk through the cubicles carrying banner hardware.",
       "cast": [
         "Banner crew"
@@ -489,6 +1506,9 @@
       "id": "authenticity-rollout-90-second-version-5733dfd7",
       "title": "Authenticity Rollout \u2014 90-second version",
       "category": "Finished films",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "The conference-room authenticity training, with continual LinkedIn paperwork.",
       "cast": [
         "Synergy",
@@ -519,6 +1539,9 @@
       "id": "authenticity-rollout-synthia-close-up-48d7c275",
       "title": "Authenticity Rollout \u2014 Synthia close-up",
       "category": "Finished films",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "The conference-room authenticity training, with continual LinkedIn paperwork.",
       "cast": [
         "Synergy",
@@ -549,6 +1572,9 @@
       "id": "circle-back-collection-model-motion-fe1a5447",
       "title": "Circle Back collection \u2014 model motion",
       "category": "Experiments",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "The original apparel group in motion.",
       "cast": [],
       "status": "Earlier version",
@@ -570,6 +1596,9 @@
       "id": "going-paperless-synthia-opening-c112f03f",
       "title": "Going Paperless \u2014 Synthia opening",
       "category": "Finished films",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "Synthia introduces paperless working as the paper cart fills up.",
       "cast": [
         "Synthia",
@@ -598,6 +1627,9 @@
       "id": "good-to-disconnect-dialogue-only-56f80560",
       "title": "Good to Disconnect \u2014 dialogue only",
       "category": "Finished films",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "A bookshelf becomes a LinkedIn lesson at the break-room table. The conversation creates paperwork.",
       "cast": [
         "Kevin",
@@ -625,6 +1657,9 @@
       "id": "good-to-disconnect-full-music-mix-ffe36484",
       "title": "Good to Disconnect \u2014 full music mix",
       "category": "Finished films",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "A bookshelf becomes a LinkedIn lesson at the break-room table. The conversation creates paperwork.",
       "cast": [
         "Kevin",
@@ -652,6 +1687,9 @@
       "id": "learn-to-speak-linkedin-masterclass-5199b9c6",
       "title": "Learn to Speak LinkedIn \u2014 masterclass",
       "category": "Finished films",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "Blue-screen robot vocabulary training with a realistic post and reaction activity.",
       "cast": [
         "Synergy"
@@ -675,6 +1713,9 @@
       "id": "let-s-circle-back-complete-872b6094",
       "title": "Let\u2019s Circle Back \u2014 complete",
       "category": "Finished films",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "A musical Zoom meeting finds an entire chorus in \u201clet\u2019s circle back.\u201d",
       "cast": [
         "Synergy",
@@ -703,6 +1744,9 @@
       "id": "make-it-sound-like-me-windows-voice-724e72a6",
       "title": "Make It Sound Like Me \u2014 Windows voice",
       "category": "Finished films",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "A deadpan robot post about writing posts, plus a ChatGPT typing sequence.",
       "cast": [
         "Synergy",
@@ -727,6 +1771,9 @@
       "id": "meeting-assets-preview-67d6ef9e",
       "title": "Meeting Assets Preview",
       "category": "Experiments",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "A contact-sheet-style motion preview of the meeting cast.",
       "cast": [
         "Synergy",
@@ -758,6 +1805,9 @@
       "id": "office-copier-robot-92437d11",
       "title": "Office Copier Robot",
       "category": "Office scenes",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "Copier overflow and a passing delivery droid in the original office.",
       "cast": [
         "Printer",
@@ -782,6 +1832,9 @@
       "id": "office-droid-delivery-ede78e46",
       "title": "Office Droid Delivery",
       "category": "Office scenes",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "The paper cart returns to the drummer\u2019s desk.",
       "cast": [
         "Paper droid",
@@ -806,6 +1859,9 @@
       "id": "one-mind-many-perspectives-corrected-voice-cf16fe40",
       "title": "One Mind, Many Perspectives \u2014 corrected voice",
       "category": "Finished films",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "Corporate training on singularity equality, with the corrected closing voice.",
       "cast": [
         "Synergy",
@@ -836,6 +1892,9 @@
       "id": "printer-stack-review-with-audio-fef79d95",
       "title": "Printer Stack Review With Audio",
       "category": "Office scenes",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "Printer output and break-room paper-stack continuity review.",
       "cast": [
         "Printer",
@@ -862,6 +1921,9 @@
       "id": "synergy-synthia-quick-sync-bd20afa7",
       "title": "Synergy & Synthia \u2014 Quick Sync",
       "category": "Finished films",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "A brief office exchange between the two robots.",
       "cast": [
         "Synergy",
@@ -886,6 +1948,9 @@
       "id": "the-dropdown-closing-scene-with-audio-a7ebd54b",
       "title": "The Dropdown Closing Scene With Audio",
       "category": "Office scenes",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "A tiny onboarding change is inflated into an extraordinary professional accomplishment.",
       "cast": [
         "Synergy",
@@ -912,6 +1977,9 @@
       "id": "the-dropdown-scene-3-horizontal-mouth-12c0e24a",
       "title": "The Dropdown Scene 3 Horizontal Mouth",
       "category": "Office scenes",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "A tiny onboarding change is inflated into an extraordinary professional accomplishment.",
       "cast": [
         "Synergy",
@@ -938,6 +2006,9 @@
       "id": "the-dropdown-scene-4-monitor-chorus-2b3bd385",
       "title": "The Dropdown Scene 4 Monitor Chorus",
       "category": "Screen inserts",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "The onboarding post fills the screen while the chorus plays.",
       "cast": [
         "Synergy",
@@ -964,6 +2035,9 @@
       "id": "the-dropdown-screen-and-audio-animatic-45s-2c49b7a7",
       "title": "The Dropdown Screen and Audio Animatic 45s",
       "category": "Experiments",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "A tiny onboarding change is inflated into an extraordinary professional accomplishment.",
       "cast": [
         "Synergy",
@@ -990,6 +2064,9 @@
       "id": "the-office-band-original-hero-49106237",
       "title": "The Office Band \u2014 original hero",
       "category": "Finished films",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "The original office band: drums, cubicles, a conference room, and the paper delivery droid.",
       "cast": [
         "Kevin",
@@ -1017,6 +2094,9 @@
       "id": "training-02-how-to-answer-without-answering-266e4b7a",
       "title": "Training 02 \u2014 How to Answer Without Answering",
       "category": "Finished films",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "Blue-screen robot vocabulary training with a realistic post and reaction activity.",
       "cast": [
         "Synergy"
@@ -1040,6 +2120,9 @@
       "id": "we-added-other-2d72e5ed",
       "title": "We Added Other",
       "category": "Finished films",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "A tiny onboarding change is inflated into an extraordinary professional accomplishment.",
       "cast": [
         "Synergy",
@@ -1066,6 +2149,10 @@
       "id": "blue-guitar-detail-a8838477",
       "title": "Blue Guitar Detail",
       "category": "Instruments",
+      "madeIn": [
+        "Cutting Room originals",
+        "Video Studio"
+      ],
       "description": "Reusable office performance or cutaway from the brand film.",
       "cast": [
         "Kevin"
@@ -1088,6 +2175,10 @@
       "id": "drum-pad-detail-98b121e8",
       "title": "Drum Pad Detail",
       "category": "Instruments",
+      "madeIn": [
+        "Cutting Room originals",
+        "Video Studio"
+      ],
       "description": "Reusable office performance or cutaway from the brand film.",
       "cast": [],
       "status": "Source take",
@@ -1108,6 +2199,10 @@
       "id": "drummer-arrival-performance-c2bf484a",
       "title": "Drummer Arrival Performance",
       "category": "Instruments",
+      "madeIn": [
+        "Cutting Room originals",
+        "Video Studio"
+      ],
       "description": "Reusable office performance or cutaway from the brand film.",
       "cast": [],
       "status": "Source take",
@@ -1128,6 +2223,10 @@
       "id": "guitar-office-performance-ba9226e7",
       "title": "Guitar Office Performance",
       "category": "Instruments",
+      "madeIn": [
+        "Cutting Room originals",
+        "Video Studio"
+      ],
       "description": "Reusable office performance or cutaway from the brand film.",
       "cast": [
         "Kevin"
@@ -1150,6 +2249,10 @@
       "id": "humbled-and-honored-to-share-phrase-card-9d0db891",
       "title": "Humbled and honored to share \u2014 phrase card",
       "category": "Screen inserts",
+      "madeIn": [
+        "Cutting Room originals",
+        "Video Studio"
+      ],
       "description": "Finished typography or screen interaction from the brand film, with the original audio mix.",
       "cast": [
         "Synergy"
@@ -1172,6 +2275,10 @@
       "id": "keys-office-performance-87b9564e",
       "title": "Keys Office Performance",
       "category": "Instruments",
+      "madeIn": [
+        "Cutting Room originals",
+        "Video Studio"
+      ],
       "description": "Reusable office performance or cutaway from the brand film.",
       "cast": [
         "Keys"
@@ -1194,6 +2301,10 @@
       "id": "let-s-circle-back-phrase-card-3d8279d4",
       "title": "Let\u2019s circle back \u2014 phrase card",
       "category": "Screen inserts",
+      "madeIn": [
+        "Cutting Room originals",
+        "Video Studio"
+      ],
       "description": "Finished typography or screen interaction from the brand film, with the original audio mix.",
       "cast": [
         "Synthia"
@@ -1216,6 +2327,10 @@
       "id": "office-ensemble-e03c9edb",
       "title": "Office Ensemble",
       "category": "Office scenes",
+      "madeIn": [
+        "Cutting Room originals",
+        "Video Studio"
+      ],
       "description": "Reusable office performance or cutaway from the brand film.",
       "cast": [],
       "status": "Source take",
@@ -1236,6 +2351,10 @@
       "id": "optimize-the-onboarding-phrase-card-9156318f",
       "title": "Optimize the onboarding \u2014 phrase card",
       "category": "Screen inserts",
+      "madeIn": [
+        "Cutting Room originals",
+        "Video Studio"
+      ],
       "description": "Finished typography or screen interaction from the brand film, with the original audio mix.",
       "cast": [
         "Synergy"
@@ -1258,6 +2377,10 @@
       "id": "people-linkedin-computer-03f642ff",
       "title": "People Linkedin Computer",
       "category": "Screen inserts",
+      "madeIn": [
+        "Cutting Room originals",
+        "Video Studio"
+      ],
       "description": "Reusable office performance or cutaway from the brand film.",
       "cast": [
         "People & Culture"
@@ -1280,6 +2403,9 @@
       "id": "synergy-laptop-old-angle-03215e08",
       "title": "Synergy Laptop Old Angle",
       "category": "Screen inserts",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "Reusable office performance or cutaway from the brand film.",
       "cast": [
         "Synergy"
@@ -1302,6 +2428,10 @@
       "id": "synergy-types-into-chatgpt-finished-insert-1b3d060d",
       "title": "Synergy types into ChatGPT \u2014 finished insert",
       "category": "Screen inserts",
+      "madeIn": [
+        "Cutting Room originals",
+        "Video Studio"
+      ],
       "description": "Finished typography or screen interaction from the brand film, with the original audio mix.",
       "cast": [
         "Synergy"
@@ -1324,6 +2454,10 @@
       "id": "synthia-conference-closeup-09f66132",
       "title": "Synthia Conference Closeup",
       "category": "Office scenes",
+      "madeIn": [
+        "Cutting Room originals",
+        "Video Studio"
+      ],
       "description": "Reusable office performance or cutaway from the brand film.",
       "cast": [
         "Synthia"
@@ -1346,6 +2480,10 @@
       "id": "the-meeting-loads-finished-insert-1d2d6a77",
       "title": "The meeting loads \u2014 finished insert",
       "category": "Screen inserts",
+      "madeIn": [
+        "Cutting Room originals",
+        "Video Studio"
+      ],
       "description": "Finished typography or screen interaction from the brand film, with the original audio mix.",
       "cast": [
         "Synergy"
@@ -1368,6 +2506,10 @@
       "id": "the-post-reactions-and-comments-ea10992f",
       "title": "The post, reactions, and comments",
       "category": "Screen inserts",
+      "madeIn": [
+        "Cutting Room originals",
+        "Video Studio"
+      ],
       "description": "Finished typography or screen interaction from the brand film, with the original audio mix.",
       "cast": [
         "People & Culture"
@@ -1390,6 +2532,9 @@
       "id": "arjun-offline-v1-de032add",
       "title": "Arjun \u2014 Offline (v1)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms"
+      ],
       "description": "Scripted meeting performance. Same link. Same time. Same people.",
       "cast": [
         "Arjun"
@@ -1412,6 +2557,10 @@
       "id": "arjun-offline-v2-0f139d99",
       "title": "Arjun \u2014 Offline (v2)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Scripted meeting performance. Same link. Same time. Same people.",
       "cast": [
         "Arjun"
@@ -1434,6 +2583,10 @@
       "id": "arjun-quarterly-v1-a0b9f229",
       "title": "Arjun \u2014 Quarterly (v1)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Scripted meeting performance. Have we onboarded any customers?",
       "cast": [
         "Arjun"
@@ -1456,6 +2609,9 @@
       "id": "arjun-unlock-v1-b8ebf154",
       "title": "Arjun \u2014 Unlock (v1)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms"
+      ],
       "description": "Scripted meeting performance. What are we unlocking?",
       "cast": [
         "Arjun"
@@ -1478,6 +2634,10 @@
       "id": "arjun-unlock-v2-168eb72e",
       "title": "Arjun \u2014 Unlock (v2)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Scripted meeting performance. What are we unlocking?",
       "cast": [
         "Arjun"
@@ -1500,6 +2660,10 @@
       "id": "arjun-listening-3ffbc8f1",
       "title": "Arjun \u2014 listening",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Subtle listening motion, natural blinks and restrained office presence.",
       "cast": [
         "Arjun"
@@ -1522,6 +2686,10 @@
       "id": "arjun-speaking-290460c4",
       "title": "Arjun \u2014 speaking",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Instrument or speaking motion for the meeting studio.",
       "cast": [
         "Arjun"
@@ -1544,6 +2712,9 @@
       "id": "drums-edcfaab1",
       "title": "Drums",
       "category": "Experiments",
+      "madeIn": [
+        "Studio and meeting rooms"
+      ],
       "description": "Earlier website motion treatment retained for reference.",
       "cast": [
         "Operations"
@@ -1566,6 +2737,10 @@
       "id": "kevin-new-v1-1a035a35",
       "title": "Kevin \u2014 New (v1)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Scripted meeting performance. ",
       "cast": [
         "Kevin"
@@ -1588,6 +2763,10 @@
       "id": "kevin-offline-v1-2b94fc0f",
       "title": "Kevin \u2014 Offline (v1)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Scripted meeting performance. What is the follow-up for?",
       "cast": [
         "Kevin"
@@ -1610,6 +2789,10 @@
       "id": "kevin-onboarding-v1-ea50dd58",
       "title": "Kevin \u2014 Onboarding (v1)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Scripted meeting performance. When do they start?",
       "cast": [
         "Kevin"
@@ -1632,6 +2815,10 @@
       "id": "kevin-quarterly-v1-39a7c3c6",
       "title": "Kevin \u2014 Quarterly (v1)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Scripted meeting performance. Optimize.",
       "cast": [
         "Kevin"
@@ -1654,6 +2841,10 @@
       "id": "kevin-standup-v1-95bb3e47",
       "title": "Kevin \u2014 Standup (v1)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Scripted meeting performance. I\u2019m still waiting for access.",
       "cast": [
         "Kevin"
@@ -1676,6 +2867,9 @@
       "id": "kevin-unlock-v1-a7b3606e",
       "title": "Kevin \u2014 Unlock (v1)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms"
+      ],
       "description": "Scripted meeting performance. I\u2019ve added a second tab to the spreadsheet.",
       "cast": [
         "Kevin"
@@ -1698,6 +2892,10 @@
       "id": "kevin-unlock-v2-b3a25696",
       "title": "Kevin \u2014 Unlock (v2)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Scripted meeting performance. I\u2019ve added a second tab to the spreadsheet.",
       "cast": [
         "Kevin"
@@ -1718,8 +2916,15 @@
     },
     {
       "id": "kevin-listening-54a6ed28",
+      "aliases": [
+        "guitar-listening-54a6ed28"
+      ],
       "title": "Kevin \u2014 listening",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Subtle listening motion, natural blinks and restrained office presence.",
       "cast": [
         "Kevin"
@@ -1740,8 +2945,15 @@
     },
     {
       "id": "kevin-playing-91574056",
+      "aliases": [
+        "guitar-playing-91574056"
+      ],
       "title": "Kevin \u2014 playing",
       "category": "Instruments",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Instrument or speaking motion for the meeting studio.",
       "cast": [
         "Kevin"
@@ -1762,8 +2974,15 @@
     },
     {
       "id": "kevin-speaking-32f4ef53",
+      "aliases": [
+        "guitar-speaking-32f4ef53"
+      ],
       "title": "Kevin \u2014 speaking",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Instrument or speaking motion for the meeting studio.",
       "cast": [
         "Kevin"
@@ -1786,6 +3005,9 @@
       "id": "keys-071e60da",
       "title": "Keys",
       "category": "Experiments",
+      "madeIn": [
+        "Studio and meeting rooms"
+      ],
       "description": "Earlier website motion treatment retained for reference.",
       "cast": [
         "Keys"
@@ -1808,6 +3030,10 @@
       "id": "keys-offline-v1-fbdb4b1c",
       "title": "Keys \u2014 Offline (v1)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Scripted meeting performance. This will unlock a more intentional meeting cadence.",
       "cast": [
         "Keys"
@@ -1830,6 +3056,10 @@
       "id": "keys-onboarding-v1-04507cf7",
       "title": "Keys \u2014 Onboarding (v1)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Scripted meeting performance. This will unlock our next generation of onboarding capacity.",
       "cast": [
         "Keys"
@@ -1852,6 +3082,10 @@
       "id": "keys-quarterly-v1-2f05b241",
       "title": "Keys \u2014 Quarterly (v1)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Scripted meeting performance. This will unlock visibility into our future visibility.",
       "cast": [
         "Keys"
@@ -1874,6 +3108,10 @@
       "id": "keys-standup-v1-93cd8abb",
       "title": "Keys \u2014 Standup (v1)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Scripted meeting performance. This will unlock the full potential of our shared drive.",
       "cast": [
         "Keys"
@@ -1896,6 +3134,9 @@
       "id": "keys-unlock-v1-16c4ccd8",
       "title": "Keys \u2014 Unlock (v1)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms"
+      ],
       "description": "Scripted meeting performance. I\u2019m genuinely excited about what this unlocks.",
       "cast": [
         "Keys"
@@ -1918,6 +3159,10 @@
       "id": "keys-unlock-v2-c75caa0c",
       "title": "Keys \u2014 Unlock (v2)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Scripted meeting performance. I\u2019m genuinely excited about what this unlocks.",
       "cast": [
         "Keys"
@@ -1940,6 +3185,10 @@
       "id": "keys-detail-92cca3c3",
       "title": "Keys \u2014 detail",
       "category": "Instruments",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Instrument or speaking motion for the meeting studio.",
       "cast": [
         "Keys"
@@ -1962,6 +3211,10 @@
       "id": "keys-listening-2a87e94c",
       "title": "Keys \u2014 listening",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Subtle listening motion, natural blinks and restrained office presence.",
       "cast": [
         "Keys"
@@ -1984,6 +3237,10 @@
       "id": "keys-listening-wide-keys-9612a656",
       "title": "Keys \u2014 listening (wide keys)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Subtle listening motion, natural blinks and restrained office presence.",
       "cast": [
         "Keys"
@@ -2006,6 +3263,10 @@
       "id": "keys-playing-6a98b804",
       "title": "Keys \u2014 playing",
       "category": "Instruments",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Instrument or speaking motion for the meeting studio.",
       "cast": [
         "Keys"
@@ -2028,6 +3289,10 @@
       "id": "keys-playing-wide-keys-09fac6d5",
       "title": "Keys \u2014 playing (wide keys)",
       "category": "Instruments",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Instrument or speaking motion for the meeting studio.",
       "cast": [
         "Keys"
@@ -2050,6 +3315,10 @@
       "id": "keys-speaking-1980903f",
       "title": "Keys \u2014 speaking",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Instrument or speaking motion for the meeting studio.",
       "cast": [
         "Keys"
@@ -2072,6 +3341,10 @@
       "id": "keys-speaking-wide-keys-f9dd913f",
       "title": "Keys \u2014 speaking (wide keys)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Instrument or speaking motion for the meeting studio.",
       "cast": [
         "Keys"
@@ -2094,6 +3367,10 @@
       "id": "linda-quarterly-v1-ec78ef92",
       "title": "Linda \u2014 Quarterly (v1)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Scripted meeting performance. I\u2019ll carry the zero forward.",
       "cast": [
         "Linda"
@@ -2116,6 +3393,9 @@
       "id": "linda-unlock-v1-080026f4",
       "title": "Linda \u2014 Unlock (v1)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms"
+      ],
       "description": "Scripted meeting performance. Does the first tab still work?",
       "cast": [
         "Linda"
@@ -2138,6 +3418,10 @@
       "id": "linda-unlock-v2-c7a539f1",
       "title": "Linda \u2014 Unlock (v2)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Scripted meeting performance. Does the first tab still work?",
       "cast": [
         "Linda"
@@ -2160,6 +3444,10 @@
       "id": "linda-listening-08e42652",
       "title": "Linda \u2014 listening",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Subtle listening motion, natural blinks and restrained office presence.",
       "cast": [
         "Linda"
@@ -2182,6 +3470,10 @@
       "id": "linda-speaking-fb66915f",
       "title": "Linda \u2014 speaking",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Instrument or speaking motion for the meeting studio.",
       "cast": [
         "Linda"
@@ -2204,6 +3496,10 @@
       "id": "operations-onboarding-v1-538388b3",
       "title": "Operations \u2014 Onboarding (v1)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Scripted meeting performance. Onboard.",
       "cast": [
         "Operations"
@@ -2226,6 +3522,10 @@
       "id": "operations-quarterly-v1-794357f4",
       "title": "Operations \u2014 Quarterly (v1)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Scripted meeting performance. We\u2019ve successfully onboarded the new dashboard.",
       "cast": [
         "Operations"
@@ -2248,6 +3548,10 @@
       "id": "operations-standup-v1-dfaf8bb9",
       "title": "Operations \u2014 Standup (v1)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Scripted meeting performance. I\u2019m excited to share that I\u2019ve renamed the folder Final.",
       "cast": [
         "Operations"
@@ -2270,6 +3574,9 @@
       "id": "operations-unlock-v1-53106fa4",
       "title": "Operations \u2014 Unlock (v1)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms"
+      ],
       "description": "Scripted meeting performance. Unlock the potential.",
       "cast": [
         "Operations"
@@ -2292,6 +3599,10 @@
       "id": "operations-unlock-v2-38fb06dc",
       "title": "Operations \u2014 Unlock (v2)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Scripted meeting performance. Unlock the potential.",
       "cast": [
         "Operations"
@@ -2312,8 +3623,15 @@
     },
     {
       "id": "operations-listening-44bcfc4f",
+      "aliases": [
+        "drums-listening-44bcfc4f"
+      ],
       "title": "Operations \u2014 listening",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Subtle listening motion, natural blinks and restrained office presence.",
       "cast": [
         "Operations"
@@ -2334,8 +3652,15 @@
     },
     {
       "id": "operations-playing-4976ced8",
+      "aliases": [
+        "drums-playing-4976ced8"
+      ],
       "title": "Operations \u2014 playing",
       "category": "Instruments",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Instrument or speaking motion for the meeting studio.",
       "cast": [
         "Operations"
@@ -2356,8 +3681,15 @@
     },
     {
       "id": "operations-speaking-90225757",
+      "aliases": [
+        "drums-speaking-90225757"
+      ],
       "title": "Operations \u2014 speaking",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Instrument or speaking motion for the meeting studio.",
       "cast": [
         "Operations"
@@ -2380,6 +3712,10 @@
       "id": "people-culture-offline-v1-560ac3bb",
       "title": "People & Culture \u2014 Offline (v1)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Scripted meeting performance. Should we invite everyone from this meeting?",
       "cast": [
         "People & Culture"
@@ -2402,6 +3738,10 @@
       "id": "people-culture-onboarding-v1-213f8b9b",
       "title": "People & Culture \u2014 Onboarding (v1)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Scripted meeting performance. We\u2019re absolutely thrilled to be welcoming our new colleague.",
       "cast": [
         "People & Culture"
@@ -2424,6 +3764,10 @@
       "id": "people-culture-quarterly-v1-57216a7d",
       "title": "People & Culture \u2014 Quarterly (v1)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Scripted meeting performance. Optimize.",
       "cast": [
         "People & Culture"
@@ -2446,6 +3790,9 @@
       "id": "people-culture-unlock-v1-56cc5d2d",
       "title": "People & Culture \u2014 Unlock (v1)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms"
+      ],
       "description": "Scripted meeting performance. Unlock the potential.",
       "cast": [
         "People & Culture"
@@ -2468,6 +3815,10 @@
       "id": "people-culture-unlock-v2-6f6c1ada",
       "title": "People & Culture \u2014 Unlock (v2)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Scripted meeting performance. Unlock the potential.",
       "cast": [
         "People & Culture"
@@ -2488,8 +3839,15 @@
     },
     {
       "id": "people-culture-listening-f7308858",
+      "aliases": [
+        "people-listening-f7308858"
+      ],
       "title": "People & Culture \u2014 listening",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Subtle listening motion, natural blinks and restrained office presence.",
       "cast": [
         "People & Culture"
@@ -2510,8 +3868,15 @@
     },
     {
       "id": "people-culture-speaking-d2f4effa",
+      "aliases": [
+        "people-speaking-d2f4effa"
+      ],
       "title": "People & Culture \u2014 speaking",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Instrument or speaking motion for the meeting studio.",
       "cast": [
         "People & Culture"
@@ -2534,6 +3899,10 @@
       "id": "printer-printing-5276265e",
       "title": "Printer \u2014 printing",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Instrument or speaking motion for the meeting studio.",
       "cast": [
         "Printer"
@@ -2556,6 +3925,9 @@
       "id": "store-original-motion-hero-ca6b65b3",
       "title": "Store \u2014 original motion hero",
       "category": "Experiments",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "Earlier website motion treatment retained for reference.",
       "cast": [],
       "status": "Earlier version",
@@ -2576,6 +3948,10 @@
       "id": "strategy-offline-v1-2e751d6a",
       "title": "Strategy \u2014 Offline (v1)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Scripted meeting performance. I\u2019m excited to share that I\u2019ve booked the follow-up.",
       "cast": [
         "Strategy"
@@ -2598,6 +3974,10 @@
       "id": "strategy-onboarding-v1-a46c0a23",
       "title": "Strategy \u2014 Onboarding (v1)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Scripted meeting performance. What will they be working on?",
       "cast": [
         "Strategy"
@@ -2620,6 +4000,10 @@
       "id": "strategy-quarterly-v1-1c8b1186",
       "title": "Strategy \u2014 Quarterly (v1)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Scripted meeting performance. I\u2019m incredibly excited about the momentum.",
       "cast": [
         "Strategy"
@@ -2642,6 +4026,9 @@
       "id": "strategy-unlock-v1-b1480375",
       "title": "Strategy \u2014 Unlock (v1)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms"
+      ],
       "description": "Scripted meeting performance. A third tab would give us room to scale.",
       "cast": [
         "Strategy"
@@ -2664,6 +4051,10 @@
       "id": "strategy-unlock-v2-df2c105b",
       "title": "Strategy \u2014 Unlock (v2)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Scripted meeting performance. A third tab would give us room to scale.",
       "cast": [
         "Strategy"
@@ -2686,6 +4077,10 @@
       "id": "strategy-listening-2199c8e9",
       "title": "Strategy \u2014 listening",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Subtle listening motion, natural blinks and restrained office presence.",
       "cast": [
         "Strategy"
@@ -2708,6 +4103,10 @@
       "id": "strategy-speaking-3c6386f0",
       "title": "Strategy \u2014 speaking",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Instrument or speaking motion for the meeting studio.",
       "cast": [
         "Strategy"
@@ -2730,6 +4129,10 @@
       "id": "synergy-listening-567670ad",
       "title": "Synergy \u2014 listening",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Subtle listening motion, natural blinks and restrained office presence.",
       "cast": [
         "Synergy"
@@ -2750,8 +4153,15 @@
     },
     {
       "id": "synergy-listening-camera-v2-30052011",
+      "aliases": [
+        "synergy-camera-v2-listening-30052011"
+      ],
       "title": "Synergy \u2014 listening (camera v2)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Subtle listening motion, natural blinks and restrained office presence.",
       "cast": [
         "Synergy"
@@ -2774,6 +4184,10 @@
       "id": "synthia-listening-1aef8fa4",
       "title": "Synthia \u2014 listening",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Subtle listening motion, natural blinks and restrained office presence.",
       "cast": [
         "Synthia"
@@ -2796,6 +4210,10 @@
       "id": "synthia-listening-camera-v2-502b2afe",
       "title": "Synthia \u2014 listening (camera v2)",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Subtle listening motion, natural blinks and restrained office presence.",
       "cast": [
         "Synthia"
@@ -2818,6 +4236,9 @@
       "id": "talking-heads-profile-conversation-b9461b45",
       "title": "Talking Heads \u2014 profile conversation",
       "category": "Experiments",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "Earlier website motion treatment retained for reference.",
       "cast": [],
       "status": "Earlier version",
@@ -2838,6 +4259,9 @@
       "id": "vocals-67068abf",
       "title": "Vocals",
       "category": "Experiments",
+      "madeIn": [
+        "Studio and meeting rooms"
+      ],
       "description": "Earlier website motion treatment retained for reference.",
       "cast": [],
       "status": "Earlier version",
@@ -2858,6 +4282,10 @@
       "id": "arjun-offline-0-original-take-02697cb0",
       "title": "Arjun \u2014 offline-0 original take",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Original performance master, before the meeting-ready trim and interface treatment.",
       "cast": [
         "Arjun"
@@ -2883,6 +4311,10 @@
       "id": "arjun-offline-0-arjun-v2-original-take-d7f5ecd8",
       "title": "Arjun \u2014 offline-0-arjun-v2 original take",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Original performance master, before the meeting-ready trim and interface treatment.",
       "cast": [
         "Arjun"
@@ -2908,6 +4340,10 @@
       "id": "arjun-quarterly-0-original-take-38625db5",
       "title": "Arjun \u2014 quarterly-0 original take",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Original performance master, before the meeting-ready trim and interface treatment.",
       "cast": [
         "Arjun"
@@ -2933,6 +4369,10 @@
       "id": "arjun-unlock-0-original-take-a7a4feca",
       "title": "Arjun \u2014 unlock-0 original take",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Original performance master, before the meeting-ready trim and interface treatment.",
       "cast": [
         "Arjun"
@@ -2958,6 +4398,10 @@
       "id": "kevin-kevin-pilot-original-take-7723e459",
       "title": "Kevin \u2014 kevin-pilot original take",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Original performance master, before the meeting-ready trim and interface treatment.",
       "cast": [
         "Kevin"
@@ -2983,6 +4427,10 @@
       "id": "kevin-offline-0-original-take-14f2c6cc",
       "title": "Kevin \u2014 offline-0 original take",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Original performance master, before the meeting-ready trim and interface treatment.",
       "cast": [
         "Kevin"
@@ -3008,6 +4456,10 @@
       "id": "kevin-onboarding-0-original-take-a81a19ae",
       "title": "Kevin \u2014 onboarding-0 original take",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Original performance master, before the meeting-ready trim and interface treatment.",
       "cast": [
         "Kevin"
@@ -3033,6 +4485,10 @@
       "id": "kevin-quarterly-0-original-take-90859b9c",
       "title": "Kevin \u2014 quarterly-0 original take",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Original performance master, before the meeting-ready trim and interface treatment.",
       "cast": [
         "Kevin"
@@ -3058,6 +4514,10 @@
       "id": "kevin-standup-0-original-take-4863883c",
       "title": "Kevin \u2014 standup-0 original take",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Original performance master, before the meeting-ready trim and interface treatment.",
       "cast": [
         "Kevin"
@@ -3083,6 +4543,10 @@
       "id": "kevin-unlock-0-original-take-87ebe1a4",
       "title": "Kevin \u2014 unlock-0 original take",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Original performance master, before the meeting-ready trim and interface treatment.",
       "cast": [
         "Kevin"
@@ -3108,6 +4572,10 @@
       "id": "keys-offline-0-original-take-92be3490",
       "title": "Keys \u2014 offline-0 original take",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Original performance master, before the meeting-ready trim and interface treatment.",
       "cast": [
         "Keys"
@@ -3133,6 +4601,10 @@
       "id": "keys-onboarding-0-original-take-3f0b23fb",
       "title": "Keys \u2014 onboarding-0 original take",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Original performance master, before the meeting-ready trim and interface treatment.",
       "cast": [
         "Keys"
@@ -3158,6 +4630,10 @@
       "id": "keys-quarterly-0-original-take-dbc1d3a0",
       "title": "Keys \u2014 quarterly-0 original take",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Original performance master, before the meeting-ready trim and interface treatment.",
       "cast": [
         "Keys"
@@ -3183,6 +4659,10 @@
       "id": "keys-standup-0-original-take-71050951",
       "title": "Keys \u2014 standup-0 original take",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Original performance master, before the meeting-ready trim and interface treatment.",
       "cast": [
         "Keys"
@@ -3208,6 +4688,10 @@
       "id": "keys-unlock-0-original-take-861b573e",
       "title": "Keys \u2014 unlock-0 original take",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Original performance master, before the meeting-ready trim and interface treatment.",
       "cast": [
         "Keys"
@@ -3233,6 +4717,10 @@
       "id": "linda-quarterly-0-original-take-bf8d1135",
       "title": "Linda \u2014 quarterly-0 original take",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Original performance master, before the meeting-ready trim and interface treatment.",
       "cast": [
         "Linda"
@@ -3258,6 +4746,10 @@
       "id": "linda-unlock-0-original-take-a6aa3b4a",
       "title": "Linda \u2014 unlock-0 original take",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Original performance master, before the meeting-ready trim and interface treatment.",
       "cast": [
         "Linda"
@@ -3283,6 +4775,10 @@
       "id": "operations-onboarding-0-original-take-570234de",
       "title": "Operations \u2014 onboarding-0 original take",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Original performance master, before the meeting-ready trim and interface treatment.",
       "cast": [
         "Operations"
@@ -3308,6 +4804,10 @@
       "id": "operations-quarterly-0-original-take-00590d80",
       "title": "Operations \u2014 quarterly-0 original take",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Original performance master, before the meeting-ready trim and interface treatment.",
       "cast": [
         "Operations"
@@ -3333,6 +4833,10 @@
       "id": "operations-standup-0-original-take-cb30bfab",
       "title": "Operations \u2014 standup-0 original take",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Original performance master, before the meeting-ready trim and interface treatment.",
       "cast": [
         "Operations"
@@ -3358,6 +4862,10 @@
       "id": "operations-unlock-0-original-take-1a3b0126",
       "title": "Operations \u2014 unlock-0 original take",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Original performance master, before the meeting-ready trim and interface treatment.",
       "cast": [
         "Operations"
@@ -3383,6 +4891,10 @@
       "id": "people-culture-offline-0-original-take-3a2acfe7",
       "title": "People & Culture \u2014 offline-0 original take",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Original performance master, before the meeting-ready trim and interface treatment.",
       "cast": [
         "People & Culture"
@@ -3408,6 +4920,10 @@
       "id": "people-culture-onboarding-0-original-take-3c96dcf5",
       "title": "People & Culture \u2014 onboarding-0 original take",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Original performance master, before the meeting-ready trim and interface treatment.",
       "cast": [
         "People & Culture"
@@ -3433,6 +4949,10 @@
       "id": "people-culture-quarterly-0-original-take-3d60c2d9",
       "title": "People & Culture \u2014 quarterly-0 original take",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Original performance master, before the meeting-ready trim and interface treatment.",
       "cast": [
         "People & Culture"
@@ -3458,6 +4978,10 @@
       "id": "people-culture-unlock-0-original-take-4031a807",
       "title": "People & Culture \u2014 unlock-0 original take",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Original performance master, before the meeting-ready trim and interface treatment.",
       "cast": [
         "People & Culture"
@@ -3483,6 +5007,10 @@
       "id": "strategy-offline-0-original-take-b4d29ff8",
       "title": "Strategy \u2014 offline-0 original take",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Original performance master, before the meeting-ready trim and interface treatment.",
       "cast": [
         "Strategy"
@@ -3508,6 +5036,10 @@
       "id": "strategy-onboarding-0-original-take-9c87521d",
       "title": "Strategy \u2014 onboarding-0 original take",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Original performance master, before the meeting-ready trim and interface treatment.",
       "cast": [
         "Strategy"
@@ -3533,6 +5065,10 @@
       "id": "strategy-quarterly-0-original-take-7f100831",
       "title": "Strategy \u2014 quarterly-0 original take",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Original performance master, before the meeting-ready trim and interface treatment.",
       "cast": [
         "Strategy"
@@ -3558,6 +5094,10 @@
       "id": "strategy-unlock-0-original-take-91a400b0",
       "title": "Strategy \u2014 unlock-0 original take",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Original performance master, before the meeting-ready trim and interface treatment.",
       "cast": [
         "Strategy"
@@ -3583,6 +5123,10 @@
       "id": "synergy-synergy-v2-original-take-6b68a41b",
       "title": "Synergy \u2014 synergy-v2 original take",
       "category": "Character performances",
+      "madeIn": [
+        "Studio and meeting rooms",
+        "Video Studio"
+      ],
       "description": "Original performance master, before the meeting-ready trim and interface treatment.",
       "cast": [
         "Synergy"
@@ -3608,6 +5152,9 @@
       "id": "good-to-disconnect-opening-with-audio-c44cfa94",
       "title": "Good to Disconnect Opening With Audio",
       "category": "Office scenes",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "A bookshelf becomes a LinkedIn lesson at the break-room table. The conversation creates paperwork.",
       "cast": [
         "Kevin",
@@ -3635,6 +5182,9 @@
       "id": "good-to-disconnect-preview-dialogue-only-f666380e",
       "title": "Good to Disconnect Preview Dialogue Only",
       "category": "Office scenes",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "A bookshelf becomes a LinkedIn lesson at the break-room table. The conversation creates paperwork.",
       "cast": [
         "Kevin",
@@ -3662,6 +5212,9 @@
       "id": "good-to-disconnect-preview-with-music-0b1815d7",
       "title": "Good to Disconnect Preview With Music",
       "category": "Office scenes",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "A bookshelf becomes a LinkedIn lesson at the break-room table. The conversation creates paperwork.",
       "cast": [
         "Kevin",
@@ -3689,6 +5242,9 @@
       "id": "office-band-loop-concept-6747aa0e",
       "title": "Office Band Loop Concept",
       "category": "Office scenes",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "The original office band: drums, cubicles, a conference room, and the paper delivery droid.",
       "cast": [
         "Kevin",
@@ -3716,6 +5272,9 @@
       "id": "office-band-loop-silent-243353b4",
       "title": "Office Band Loop Silent",
       "category": "Office scenes",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "The original office band: drums, cubicles, a conference room, and the paper delivery droid.",
       "cast": [
         "Kevin",
@@ -3743,6 +5302,9 @@
       "id": "welcome-to-the-office-v5-7a0dce44",
       "title": "Welcome to the Office \u2014 V5",
       "category": "Finished films",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "Previous brand edit with the final blue end card.",
       "cast": [
         "Synergy",
@@ -3769,6 +5331,9 @@
       "id": "welcome-to-the-office-v4-e886cd75",
       "title": "Welcome to the Office \u2014 V4",
       "category": "Finished films",
+      "madeIn": [
+        "Cutting Room originals"
+      ],
       "description": "Earlier screen interaction edit, before printer and Synthia corrections.",
       "cast": [
         "Synergy",
@@ -3794,6 +5359,10 @@
       "id": "synergy-caffeinated-typing-and-celebration-2ed6a793",
       "title": "Synergy \u2014 caffeinated typing and celebration",
       "category": "Character performances",
+      "madeIn": [
+        "Cutting Room originals",
+        "Video Studio"
+      ],
       "description": "Reusable performance plate from Training 02: Caffeinated Edition.",
       "cast": [
         "Synergy"
@@ -3821,6 +5390,10 @@
       "id": "synergy-enthusiastic-training-close-up-f94b8848",
       "title": "Synergy \u2014 enthusiastic training close-up",
       "category": "Character performances",
+      "madeIn": [
+        "Cutting Room originals",
+        "Video Studio"
+      ],
       "description": "Reusable performance plate from Training 02: Caffeinated Edition.",
       "cast": [
         "Synergy"

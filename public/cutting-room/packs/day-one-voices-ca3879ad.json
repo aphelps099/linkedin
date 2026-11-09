@@ -1,0 +1,7 @@
+{"v":1,"id":"day-one-voices-ca3879ad","title":"Day One. Voices","groupLabel":"Voice","items":[
+{"n":1,"text":"Congrats on the new role! (S1, the one the film sings)","src":"/films/day-one/voices/s1.flac","duration":1.619,"group":"Strategy","bytes":50902,"sha256":"06069d559eb1eddce975e29b5d84467c6ce9f14c2a1fcaa1f9df85c92fd70590"},
+{"n":2,"text":"Congrats on the new role! (S2)","src":"/films/day-one/voices/s2.flac","duration":1.717,"group":"Strategy","bytes":52366,"sha256":"30cff5f664f6ef3878435610c4e782ca0e448f89f72dde8dcb8262b3967e646b"},
+{"n":3,"text":"Congrats on the new role! (S3)","src":"/films/day-one/voices/s3.flac","duration":1.563,"group":"Strategy","bytes":48697,"sha256":"08b0d68868a384a322d708ac2838045df2c1a3454131698f499a490b3cc0149d"},
+{"n":4,"text":"Congrats on the new role! (Y1)","src":"/films/day-one/voices/y1.flac","duration":1.724,"group":"Synthia","bytes":47906,"sha256":"2b9347b9613105f1f6115370d298e170eee2c123b87467587edb5da10afa3191"},
+{"n":5,"text":"Congrats on the new role! (Y2)","src":"/films/day-one/voices/y2.flac","duration":1.714,"group":"Synthia","bytes":46596,"sha256":"09b8e1d08757814ab92a595fbbb669ac3e791e87203ad37221e1a4425b21f64e"}
+]}

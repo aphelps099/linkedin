@@ -6,6 +6,9 @@
 //                           (the track's own: the Drop Edition, or the river for a
 //                           track whose form is 'wander'; {form:'drop60'} lints the
 //                           Drop Edition chart a river track keeps)
+//   lintTrack(chart)        a film's chart whose form is 'roll' (Day One, src/films/day-one/score.js
+//                           CHART): the rules every song keeps, and the roll's own; with
+//                           {render} (scripts/measure-day-one-sound.py --json) its mix targets
 //   lintPlan(plan, render?) one arranged song: a Drop Edition (the form and its
 //                           moments, the impact gap and its silence, every note in
 //                           key, the ending) or a river (the ramps, the lush texture
@@ -111,6 +114,11 @@ export const RULE_TEXT = Object.freeze({
   'river.acoustic':'Acoustic colours woven through a sound that stays about 90% electronic.',
   'river.flow':'No hard section boundaries: the flow changes gently.',
   'mix.swells':'Every swell at least +2 LU over the stream it grew from, on a phone speaker.',
+  // The vocal and the ending, as the forms ask them (the Drop Edition: verses sung from the post, her tag and BACK.,
+  // the tape stop under the closing phrase; the river: few clear phrases, the fullest texture dissolving). A film's
+  // form (Day One's roll) may break them, and says so.
+  'form.vocal':'Verses sung from the post; few clear phrases, singers never trading them back to back.',
+  'form.ending':'The tape stop under the closing phrase (the Drop Edition), or the fullest texture dissolving (the river).',
 });
 const ADVICE = new Set(['harmony.colour', 'harmony.texture', 'melody.everyChord', 'inKey.tag', 'production.space', 'production.wobble', 'story.synthia', 'mix.intelligible', 'river.flow']);
 
@@ -139,21 +147,25 @@ const rubs = (c, penta) => { const tones = chordPcs(c); return penta.filter(p =>
 function finish(out, track, unused = false) {
   const breaks = track?.breaks || {};
   const seen = new Set(out.map(v => v.rule));
-  const res = out.map(v => v.level === 'error' && breaks[v.rule] ? {...v, level:'warning', reason:`${v.reason}. Broken on purpose: ${breaks[v.rule]}`, declared:true} : v);
+  // A hard violation (v.hard) is what a declared break still keeps (Delve.'s ten phrases stay four bars apart; its
+  // two minutes stay inside the chart's own window): it is never excused.
+  const res = out.map(v => v.level === 'error' && breaks[v.rule] && !v.hard ? {...v, level:'warning', reason:`${v.reason}. Broken on purpose: ${breaks[v.rule]}`, declared:true} : v);
   if (unused) for (const rule of Object.keys(breaks)) if (!seen.has(rule)) res.push({rule, level:'warning', reason:RULE_TEXT[rule] ? `declares a break of "${rule}" but keeps the rule` : `declares a break of "${rule}", which is no rule`});
   return res.sort((a, b) => (a.level === 'error' ? 0 : 1) - (b.level === 'error' ? 0 : 1));
 }
 const collector = () => {
   const out = [];
   const flag = (rule, ok, reason) => { if (!ok) out.push({rule, level:ADVICE.has(rule) ? 'warning' : 'error', reason:typeof reason === 'function' ? reason() : reason}); };
-  return {out, flag};
+  const hard = (rule, ok, reason) => { if (!ok) out.push({rule, level:'error', hard:true, reason:typeof reason === 'function' ? reason() : reason}); };
+  return {out, flag, hard};
 };
 
 // ---- lintTrack ------------------------------------------------------------------------
 
 // A track (a song book entry, or a new chart not yet in the book) or its id.
-export function lintTrack(trackOrId, {form} = {}) {
-  const tr0 = trackOrId && typeof trackOrId === 'object' && (trackOrId.drop || trackOrId.wander) ? trackOrId : trackOf(trackOrId);
+export function lintTrack(trackOrId, {form, render} = {}) {
+  const tr0 = trackOrId && typeof trackOrId === 'object' && (trackOrId.drop || trackOrId.wander || trackOrId.roll) ? trackOrId : trackOf(trackOrId);
+  if ((form ?? tr0.form) === 'roll') return lintRoll(tr0, {render});
   if ((form ?? tr0.form) === 'wander') return lintRiver(tr0);
   const tr = tr0, D = tr.drop, {out, flag} = collector(), R = RULES, name = tr.title;
   const penta = D.ladder.pentatonic, inKey = m => tr.pitchClasses.includes(pc(m)), allBars = Array.from({length:D.bars}, (_, b) => b);
@@ -319,14 +331,16 @@ function modeOf(tr, chords) {
 
 // A river chart (track.wander): the rules every song keeps, and the river's own.
 export function lintRiver(trackOrId) {
-  const tr = trackOrId && typeof trackOrId === 'object' && trackOrId.wander ? trackOrId : trackOf(trackOrId), W = tr.wander, {out, flag} = collector(), R = RULES, V = R.river, name = tr.title;
+  const tr = trackOrId && typeof trackOrId === 'object' && trackOrId.wander ? trackOrId : trackOf(trackOrId), W = tr.wander, {out, flag, hard} = collector(), R = RULES, V = R.river, name = tr.title;
   const inKey = m => tr.pitchClasses.includes(pc(m)), bar = 16 * tr.step, layers = W.layerSpec, refs = W.references ?? tr.references ?? {};
   flag('tempo.range', tr.bpm >= R.tempo.bpm[0] && tr.bpm <= R.tempo.bpm[1], `${name} is ${tr.bpm} BPM`);
   flag('swing.light', W.swing <= R.swing.max + 1e-9, `the river swings ${W.swing} of a 16th`);
   const chords = [...new Set(Array.from({length:W.bars}, (_, b) => W.chordAt(b)))], m = modeOf(tr, chords);
   flag('harmony.home', m.ok, () => `${tr.key}: ${m.mode ?? 'no mode it may live in'}${m.home ? '' : ', no chord on the tonic'}`);
   flag('harmony.loop', chords.length >= R.harmony.loop[0] && chords.length <= R.harmony.loop[1], `the river moves through ${chords.length} chords`);
-  flag('melody.pentatonic', W.pentatonic.length === R.melody.pentatonic && W.pentatonic.every(p => tr.pitchClasses.includes(p)), 'the river sings a five-note pentatonic in key');
+  // Every pentatonic the river sings (a chart may move it by bar: W.pentatonicAt, Delve.'s Pool), each five notes in key.
+  const pentas = [...new Map((W.pentatonicAt ? Array.from({length:W.bars}, (_, b) => W.pentatonicAt(b)) : [W.pentatonic]).map(p => [p.join(), p])).values()];
+  flag('melody.pentatonic', pentas.every(pen => pen.length === R.melody.pentatonic && pen.every(p => tr.pitchClasses.includes(p))), () => `the river sings ${pentas.length > 1 ? 'pentatonics' : 'a pentatonic'} ${pentas.map(p => p.join('.')).join(' and ')}: five notes in key each`);
   const notIn = [];
   for (const c of chords) for (const x of [c.root, ...c.notes, ...(c.keys || [])]) if (!inKey(x)) notIn.push(`${c.name} ${x}`);
   flag('inKey.everyone', !notIn.length, () => `out of ${tr.key}: ${notIn.join(', ')}`);
@@ -345,6 +359,8 @@ export function lintRiver(trackOrId) {
   // The river's own rules.
   const seconds = W.bars * bar;
   flag('river.form', !W.ladder && !W.choke && !W.impact && seconds >= V.seconds[0] && seconds <= V.seconds[1], `${seconds.toFixed(1)} s${W.ladder || W.choke || W.impact ? ', with a ladder, choke or impact' : ''}`);
+  // A declared break of the length keeps the chart's own window (W.seconds), and never a ladder, choke or impact.
+  if (W.breaks?.['river.form']) hard('river.form', !W.ladder && !W.choke && !W.impact && W.seconds && seconds >= W.seconds[0] && seconds <= W.seconds[1], `${seconds.toFixed(1)} s, outside the chart's own window ${W.seconds?.join('-') ?? '(none declared)'}`);
   const short = layers.filter(l => l.in[1] - l.in[0] < V.minRamp - 1e-9 || l.out[1] - l.out[0] < V.minRamp - 1e-9 || l.in[1] - l.in[0] > V.maxRamp + 1e-9 || l.out[1] - l.out[0] > V.maxRamp + 1e-9);
   flag('river.ramps', !short.length, () => `layers ramping in or out outside ${V.minRamp}-${V.maxRamp} bars: ${short.map(l => `${l.id} ${l.in.join('-')} / ${l.out.join('-')}`).join(', ')}`);
   // The first texture sounds first and alone for lushBefore bars before its first copy; other
@@ -358,8 +374,12 @@ export function lintRiver(trackOrId) {
     () => `the first texture (${src0.id}) must sound first and alone ${V.lushBefore} bars, then thicken (${mine.length} layers of it) before other samples join: ${early.map(l => l.id).join(', ') || 'none early'}`);
   const loop = layers.find(l => l.kind === 'loop'), bars = Array.from({length:W.bars}, (_, b) => b), kicked = bars.filter(b => W.kicksOf(b, W.layers(b)).length);
   flag('river.loop', !!loop && loop.in[0] <= 3 && loop.out[0] >= W.fade[0] - 1e-9 && kicked.length >= W.bars - 1, () => `the loop plays ${kicked.length} of ${W.bars} bars${loop ? `, from bar ${loop.in[0]} to ${loop.out[1]}` : ', no loop layer'}`);
-  const at = [W.hook?.bar, W.phrases?.y, W.phrases?.refrain].filter(x => x !== undefined && x !== null).sort((a, b) => a - b);
-  flag('river.phrases', Object.keys(W.phrases || {}).length <= V.phrases && at.every((x, i) => !i || x - at[i - 1] >= V.phraseGap), `clear phrases at bars ${at.join(', ')}: at most ${V.phrases} and Synergy once, ${V.phraseGap} bars apart`);
+  // The clear phrases: the chart's own (W.phrases and his hook), or a setlist's (Delve.: her vocabulary, W.setlist).
+  const at = W.setlist ? W.setlist.map(p => p.bar + (p.step ?? 0) / 16).sort((a, b) => a - b) : [W.hook?.bar, W.phrases?.y, W.phrases?.refrain].filter(x => x !== undefined && x !== null).sort((a, b) => a - b);
+  const count = W.setlist ? W.setlist.length + (W.hook ? 1 : 0) : Object.keys(W.phrases || {}).length, spaced = at.every((x, i) => !i || x - at[i - 1] >= V.phraseGap);
+  flag('river.phrases', count <= V.phrases && spaced, `clear phrases at bars ${at.join(', ')}: at most ${V.phrases} and Synergy once, ${V.phraseGap} bars apart`);
+  // Under a declared break of the count, the spacing still holds: four bars from start to start.
+  if (W.breaks?.['river.phrases']) hard('river.phrases', spaced, () => `clear phrases at bars ${at.join(', ')}: ${V.phraseGap} bars apart even when there are many`);
   const tamb = layers.find(l => l.kind === 'tambourine'), swellMax = Math.max(1, ...(tamb?.swell || []).map(x => x[1]));
   flag('river.tambourine', !!tamb && swellMax <= 1.6, tamb ? `the tambourine comes up ${swellMax}x: a little` : 'no tambourine');
   const acoustic = layers.filter(l => (W.acoustic || []).includes(l.id) && l.kind === 'colour');
@@ -374,9 +394,11 @@ export function lintRiver(trackOrId) {
 // One arranged river (wander.js): its form, its ramps, its loop, its few clear phrases, every note in key;
 // with a render, the loudness and the swells.
 export function lintRiverPlan(plan, render) {
-  const tr = trackOf(plan.track), W = tr.wander, {out, flag} = collector(), R = RULES, V = R.river, T = plan.timing, bar = 16 * plan.step, seconds = T[plan.totalSteps];
+  const tr = trackOf(plan.track), W = tr.wander, {out, flag, hard} = collector(), R = RULES, V = R.river, T = plan.timing, bar = 16 * plan.step, seconds = T[plan.totalSteps];
   const inKey = m => tr.pitchClasses.includes(pc(m)), penta = W.pentatonic;
-  flag('form.length', seconds >= R.form.seconds[0] && seconds <= R.form.seconds[1], `${seconds.toFixed(1)} s, not about ${R.form.about}`);
+  // The river's length (as the chart lint names it, river.form); a declared break keeps the chart's own window.
+  flag('river.form', seconds >= R.form.seconds[0] && seconds <= R.form.seconds[1], `${seconds.toFixed(1)} s, not about ${R.form.about}`);
+  if (W.breaks?.['river.form']) hard('river.form', W.seconds && seconds >= W.seconds[0] && seconds <= W.seconds[1], `${seconds.toFixed(1)} s, outside the chart's own window ${W.seconds?.join('-')}`);
   flag('river.form', !plan.choke && !plan.lady.some(e => ['ladder', 'tag', 'impact'].includes(e.role)) && !(plan.tape || []).some(x => x.kind === 'sink') && plan.sections.every(s => WANDER_SECTIONS.includes(s.name)),
     'a river has no ladder, choke or impact, and its sections are its phases');
   const bad = plan.layers.filter(l => l.in[1] - l.in[0] < V.minRamp * bar - 1e-6 || l.out[1] - l.out[0] < V.minRamp * bar - 1e-6);
@@ -395,10 +417,22 @@ export function lintRiverPlan(plan, render) {
   const hooks = plan.lines.reduce((n, l) => n + 1 + l.words.some(w => w.repeat), 0);
   flag('river.phrases', groups.length <= V.phrases && hooks <= V.synergy && gaps.every(g => g >= (V.phraseGap - 1) * bar - 1e-6),
     () => `${groups.length} clear band phrases, Synergy ${hooks}x, gaps ${gaps.map(g => g.toFixed(1)).join(', ')} s`);
+  // Under a declared break of the count (a setlist), the spacing still holds: three bars of stream from one phrase's
+  // end to the next one's start, four from start to start, and never two voices back to back.
+  if (W.breaks?.['river.phrases']) {
+    const starts = all.slice(1).map((p, i) => p.start - all[i].start), trade = all.slice(1).filter((p, i) => gaps[i] < V.phraseGap * bar && [...p.voices].some(v => !all[i].voices.has(v)));
+    hard('river.phrases', hooks <= V.synergy && gaps.every(g => g >= (V.phraseGap - 1) * bar - 1e-6) && starts.every(d => d >= V.phraseGap * bar - 2 * plan.step - 1e-6) && !trade.length,
+      () => `gaps ${gaps.map(g => g.toFixed(1)).join(', ')} s, starts ${starts.map(d => d.toFixed(1)).join(', ')} s apart${trade.length ? `, voices trading at ${trade.map(p => p.start.toFixed(1)).join(', ')} s` : ''}`);
+  }
   const notIn = [];
   for (const e of plan.band) for (const n of e.notes || []) if (!inKey(n.midi)) notIn.push(`"${e.display}" ${n.midi}`);
   for (const w of plan.words) for (const n of w.notes) if (!inKey(n.midi)) notIn.push(`"${w.display}" ${n.midi}`);
   for (const l of plan.loops) for (const c of l.cuts) if (l.key && !penta.includes(pc(c.base))) notIn.push(`loop ${l.id} ${c.text} ${c.base}`);
+  // Her vocabulary (a setlist): every phrase tuned in key, every composed note of her echoes, her choir and the stars.
+  for (const e of plan.band) if (e.own && Number.isFinite(e.midi) && Math.abs(e.midi - Math.round(e.midi)) < 1e-9 && !inKey(e.midi)) notIn.push(`"${e.display}" ${e.midi}`);
+  for (const h of plan.echoes || []) for (const m of [...(h.kind === 'step' ? [h.midi] : []), ...(h.notes || []).map(n => n[2])]) if (!inKey(m)) notIn.push(`${h.phrase} ${h.kind} ${m}`);
+  for (const c of plan.choir || []) for (const m of c.midi) if (!inKey(m)) notIn.push(`choir ${c.syllable} ${m}`);
+  for (const s of plan.stars?.twinkles || []) if (!inKey(s.midi) || !(W.pentatonicAt ? W.pentatonicAt(Math.floor((s.t + 1e-6) / bar)) : penta).includes(pc(s.midi))) notIn.push(`star ${s.t.toFixed(2)} ${s.midi}`);
   flag('inKey.everyone', !notIn.length, () => `out of ${tr.key}: ${notIn.slice(0, 6).join(', ')}`);
   flag('river.tambourine', plan.layers.some(l => l.kind === 'tambourine'), 'no tambourine in the river');
   flag('river.acoustic', plan.layers.filter(l => l.kind === 'colour').length >= V.acoustic, 'the acoustic colours are missing');
@@ -410,5 +444,95 @@ export function lintRiverPlan(plan, render) {
     const missed = (render.whisper || []).filter(w => w.wer > R.mix.wer);
     flag('mix.intelligible', !missed.length, () => missed.map(w => `"${w.expected}" heard as "${w.heard}"`).join('; '));
   }
-  return finish(out, tr);
+  return finish(out, {...tr, breaks:{...(tr.breaks || {}), ...(W.breaks || {})}});
+}
+
+// ---- the roll: a film's form (Day One) ----------------------------------------------------------
+// One build to the wall, then a choke and a dry line (src/films/day-one/score.js CHART, CONSTITUTION.md
+// "Day One: the roll"). The rules every song keeps, read off the chart's own lists (the roll's parts are
+// beats, the choir is its plan of statements and copies), and what its declared breaks still keep:
+//   form.order   no ladder, impact, Sink In or tape stop; 55 to 65 s; the wall the one peak; a choke
+//                into digital silence before the line
+//   form.vocal   the motif alone at both statements (no other voice sounding), every copy on one note of
+//                the pentatonic in its singer's range, "role" one step down
+//   form.ending  the final statement is the motif's own take, dry, after the silence; nothing after it
+// With {render} (scripts/measure-day-one-sound.py --json): the loudness, the wall over bars 12-16 on the
+// mix and a phone speaker, the silences, and Whisper on the motif's two statements.
+export function lintRoll(tr, {render} = {}) {
+  const C = tr.roll, {out, flag, hard} = collector(), R = RULES, name = tr.title, inKey = m => tr.pitchClasses.includes(pc(m));
+  const bars = Math.ceil(C.beats / 4), allBars = Array.from({length:bars}, (_, b) => b), penta = tr.pentatonic;
+  flag('tempo.range', tr.bpm >= R.tempo.bpm[0] && tr.bpm <= R.tempo.bpm[1], `${name} is ${tr.bpm} BPM`);
+  const busy = allBars.filter(b => C.kicks.filter(k => Math.floor(k / 4 + 1e-9) === b).length > R.tempo.maxKicksPerBar);
+  flag('tempo.doubleTime', !busy.length, () => `bars ${busy.join(', ')} kick more than four to the bar`);
+  flag('swing.light', tr.swing <= R.swing.max + 1e-9, `the roll swings ${tr.swing} of a 16th`);
+  const chords = [...new Set(allBars.map(b => tr.chordAt(b)))], m = modeOf(tr, chords);
+  flag('harmony.home', m.ok, () => `${tr.key}: ${m.mode ?? 'no mode it may live in'}${m.home ? '' : ', no chord on the tonic'}`);
+  flag('harmony.colour', !m.home || !chordPcs(m.home).has((m.key.tonic + 11) % 12), () => `the home chord ${m.home.name} carries a major seventh`);
+  flag('harmony.loop', chords.length >= R.harmony.loop[0] && chords.length <= R.harmony.loop[1], `the roll moves through ${chords.length} chords`);
+  // The melody: the choir's notes (every copy and its falling "role") and Synthia's arpeggio, in the pentatonic.
+  const choirNotes = C.plan.flatMap(s => s.copies.filter(c => c.notes === 'intoned').map(c => ({c, s})));
+  const arpNotes = chords.flatMap(c => c.arp || []), sung = [...choirNotes.map(x => x.c.midi), ...choirNotes.map(x => x.c.role), ...arpNotes];
+  const off = sung.filter(x => !penta.includes(pc(x)));
+  flag('melody.pentatonic', penta.length === R.melody.pentatonic && penta.every(p => tr.pitchClasses.includes(p)) && !off.length, () => `${off.length} sung notes leave the pentatonic ${penta.map(p => NOTE[p]).join(' ')}`);
+  const rubbed = chords.map(c => ({c, notes:rubs(c, penta)})).filter(x => x.notes.length);
+  flag('melody.everyChord', !rubbed.length, () => rubbed.map(({c, notes}) => `${notes.map(p => NOTE[p]).join(', ')} rubs a semitone over ${c.name}`).join('; '));
+  const notIn = [];
+  for (const c of chords) for (const x of [c.root, ...c.notes, ...(c.keys || []), ...(c.guitar || []), ...(c.pad || []), ...(c.arp || [])]) if (!inKey(x)) notIn.push(`${c.name} ${x}`);
+  for (const [b, x] of C.bass.map(n => [n[0], n[1]])) if (!inKey(x)) notIn.push(`bass B${b} ${x}`);
+  for (const x of sung) if (!inKey(x)) notIn.push(`sung ${x}`);
+  if (C.kickHz && (Math.abs(midiOf(C.kickHz) - Math.round(midiOf(C.kickHz))) > .1 || !inKey(midiOf(C.kickHz)))) notIn.push(`kick ${C.kickHz} Hz`);
+  flag('inKey.everyone', !notIn.length, () => `out of ${tr.key}: ${notIn.slice(0, 6).join(', ')}`);
+  // The band and the story.
+  const palette = tr.palette || {}, missing = BAND.filter(r => !palette[r]);
+  const plays = {keys:C.rhodes.length > 0, drums:C.kicks.length > 0, bass:C.bass.length > 0, guitar:C.strums.length > 0, synth:C.arp.length > 0 || !!C.pad};
+  const silent = Object.entries(plays).filter(([, v]) => !v).map(([k]) => k);
+  flag('band.roles', !missing.length && !silent.length && /clap|snap/i.test(palette.drums || '') && C.claps.length > 0, () => [missing.length && `no palette for ${missing.join(', ')}`, silent.length && `${silent.join(', ')} never play`, !C.claps.length && 'no claps'].filter(Boolean).join('; '));
+  flag('band.printer', C.printer.length > 0, 'the printer (the shaker) never plays');
+  const refs = tr.references || {}, unknown = Object.keys(refs).filter(k => !REFERENCES[k]);
+  flag('references', Object.keys(refs).length && refs[SPINE] && !unknown.length, 'the roll declares its references, Daft Punk the spine');
+  flag('story.synergy', !!String(tr.story?.synergy || '').trim(), 'the story does not say what Synergy plays');
+  flag('story.synthia', !tr.story?.synthia || C.arp.length > 0, 'the story gives Synthia a part no beat plays');
+  // Production.
+  const S = tr.mix.stems, ducks = Object.entries(S).filter(([, s]) => s.duck !== undefined);
+  flag('production.pump', ducks.length && ducks.every(([, s]) => s.duck <= R.production.maxDuck) && C.kicks.some(k => k >= C.pumpFrom), 'the kick pumps the pads and Pat (ducks at .9 or below)');
+  flag('production.tape', !tr.mix.tape?.wow, 'the tape on the roll\'s master is warmth only: no wow');
+  const wet = Object.entries(S).filter(([n, s]) => (s.reverb ?? 0) > (n === 'voice' ? R.production.voiceReverb : R.production.reverb));
+  const wetCopies = choirNotes.filter(({c}) => Object.values(c.space || {}).some(v => v > R.production.reverb));
+  flag('production.space', !wet.length && !wetCopies.length, () => `wet sends: ${[...wet.map(([n, s]) => `${n} ${s.reverb}`), ...wetCopies.slice(0, 3).map(({s}) => `copy at B${s.B}`)].join(', ')}`);
+  const f = beat => { const k = C.filter, i = k.findIndex(p => p[0] >= beat); if (i <= 0) return k[Math.max(0, i)][1]; const [a, u] = k[i - 1], [b, v] = k[i]; return u * (v / u) ** ((beat - a) / (b - a)); };
+  const intro = C.sections[0], outro = C.sections.find(x => x.name === 'Thin');
+  flag('production.filters', !!outro && f(intro.from) < f(intro.to) && f(outro.from) > f(outro.to), `the filter must open across the intro (${f(intro.from)} to ${f(intro.to)} Hz) and close across the thin`);
+  // The form: the roll is its own (form.order), one phrase is the vocal (form.vocal), the tail is silent (form.ending).
+  const names = C.sections.map(x => x.name);
+  flag('form.order', names.join() === FORM.join(), `sections ${names.join(', ')}; the Drop Edition is ${FORM.join(', ')}`);
+  flag('form.length', C.seconds >= R.form.seconds[0] && C.seconds <= R.form.seconds[1], `${C.seconds.toFixed(1)} s, not about ${R.form.about}`);
+  const at = name => C.sections.findIndex(x => x.name === name);
+  hard('form.order', !C.ladder && !C.impact && !C.sink && !C.tapeStop && C.seconds >= R.form.seconds[0] && C.seconds <= R.form.seconds[1] && at('Wall') > at('Roll') && at('Silence') === at('Ring') + 1 && at('Line') === at('Silence') + 1 && at('Line') === C.sections.length - 1,
+    () => `the roll is one build to the wall, then a choke into silence and the dry line, ${R.form.seconds.join('-')} s (${names.join(', ')}, ${C.seconds} s)`);
+  const statements = C.plan.filter(x => x.copies.length), motif = statements.filter(x => x.copies.some(c => c.motif)), voices = new Set(statements.flatMap(x => x.copies.map(c => c.voice)));
+  flag('form.vocal', false, () => `one phrase is the whole vocal, sung ${statements.reduce((n, x) => n + x.copies.length, 0)} times by ${[...voices].join(' and ')}`);
+  // Under the break: the motif sounds alone at both its statements (no copy within 2 beats of it), every copy sits on one
+  // note of the pentatonic inside its singer's range with "role" one step down, and Strategy says the motif.
+  const near = motif.flatMap(m0 => statements.filter(x => x !== m0 && Math.abs(x.B - m0.B) < 4 - 1e-9 && x.copies.some(c => !c.motif)).map(x => `B${x.B} near B${m0.B}`));
+  const range = choirNotes.filter(({c}) => c.midi < C.ranges[c.voice][0] || c.midi > C.ranges[c.voice][1] || c.role >= c.midi);
+  hard('form.vocal', motif.length === 2 && motif.every(x => x.copies.length === 1 && x.copies[0].take === C.motif.take) && !near.length && !range.length,
+    () => `the motif alone and dry at B${C.motif.at.join(' and B')}: ${[...near, ...range.slice(0, 3).map(({c, s}) => `B${s.B} ${c.voice} ${c.midi}`)].join(', ') || 'missing'}`);
+  flag('form.ending', false, 'a silent tail: the choke to digital silence, the dry line alone, then silence');
+  const last = statements.at(-1), sil = C.sections[at('Silence')];
+  hard('form.ending', last && last.copies.length === 1 && last.copies[0].motif && !Object.keys(last.copies[0].space || {}).length && last.B >= sil.to && C.choke.silence === sil.from,
+    'the last statement is the motif, dry, after the choke into silence');
+  const words = Object.values(palette).join(' ').toLowerCase(), banned = R.never.filter(w => new RegExp(`\\b${w}\\b`).test(words));
+  flag('never', !banned.length, () => `the palette names ${banned.join(', ')}`);
+  // The mix, measured (scripts/measure-day-one-sound.py --json).
+  if (render) {
+    const L = render.loudness || {}, I = L.integrated_lufs, tp = L.true_peak_dbtp;
+    flag('mix.loudness', Number.isFinite(I) && I >= R.mix.integrated[0] && I <= R.mix.integrated[1] && Number.isFinite(tp) && tp <= R.mix.truePeak + 1e-9, `${I?.toFixed?.(2)} LUFS integrated, true peak ${tp?.toFixed?.(2)} dBTP`);
+    const w = render.wall || {};
+    flag('mix.drops', w.lift_lu >= R.mix.dropLift && w.phone_lift_lu >= R.mix.dropLift, `the wall is +${w.lift_lu?.toFixed?.(2)} LU over bars 12-16 (phone +${w.phone_lift_lu?.toFixed?.(2)}); it needs +${R.mix.dropLift}`);
+    const loud = (render.silence || []).filter(x => x.peak_dbfs !== null);
+    flag('mix.silence', (render.silence || []).length >= 2 && !loud.length, () => loud.length ? loud.map(x => `${x.span}: ${x.peak_dbfs} dBFS`).join(', ') : 'no silence measured');
+    const missed = (render.whisper || []).filter(x => x.wer > R.mix.wer);
+    flag('mix.intelligible', (render.whisper || []).length >= 2 && !missed.length, () => missed.map(x => `"${x.expected}" heard as "${x.heard}"`).join('; ') || 'Whisper not run');
+  }
+  return finish(out, tr, true);
 }

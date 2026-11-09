@@ -75,7 +75,8 @@ export const voiceEvents = plan => [...(plan.lady || []).map((e, i) => ({e, id:i
 // options.voices: loadVoices options (Node passes {read}).
 export async function prepareLady(ctx, plan, options = {}) {
   const all = voiceEvents(plan), hers = all.filter(x => !x.e.key), pixel = all.filter(x => x.e.key && x.e.notes);
-  const names = [...new Set(hers.map(x => x.e.file))];
+  // (A loop source may read several of her files: plan.loops[].files.)
+  const names = [...new Set(hers.flatMap(x => [x.e.file, ...(x.e.files || [])]))];
   const loaded = names.length ? await loadLady(ctx, names, options) : new Map();
   const sung = new Map(), takes = pixel.length ? await loadVoices([...new Set(pixel.map(x => x.e.file))], options.voices) : new Map(), made = new Map();
   for (const {e, id} of pixel) {

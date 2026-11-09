@@ -20,6 +20,8 @@
 // plays (exact.js: the buses are made with the graph, every voice joins one).
 import {mtof} from './instruments.js';
 import {decimate, crush, pixelParams} from './voices/pixel.js';
+import {bakePhrase} from './vocab-stages.js';
+import {analysisOf, chantSinger, heldVowel, choirTone, CHANT_FILE, AH} from './lady-choir.js';
 
 const lcg = seed => { let s = (seed >>> 0) || 1; return () => (s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 4294967296; };
 const mix32 = h => { h = Math.imul(h ^ (h >>> 16), 0x85ebca6b); h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35); return (h ^ (h >>> 16)) >>> 0; };
@@ -104,7 +106,9 @@ export function colourSamples(sampleRate, kind, midi, v = .6, k = 0) {
 }
 
 // How far each kind of layer steps back under a clear phrase (gain): the voices' textures most, the colours a little.
-export const RIVER_DUCK = Object.freeze({texture:.25, colour:.5, guitar:.6, drone:.7, tambourine:.7, loop:.85});
+// Delve's kinds (songbook/delve.js): her choir steps furthest back (-14 dB: it shares her band), the
+// pad half way, the hands and the slit drum a little, the stars and the arpeggio as the colours do.
+export const RIVER_DUCK = Object.freeze({texture:.25, colour:.5, guitar:.6, drone:.7, tambourine:.7, loop:.85, choir:.2, pad:.5, hands:.8, logdrum:.75, chime:.7, arp:.5});
 
 const stores = new WeakMap();
 const storeOf = ctx => { let s = stores.get(ctx); if (!s) stores.set(ctx, s = new Map()); return s; };
@@ -244,7 +248,8 @@ export function scheduleRiver(own, plan, at) {
   // The slow spans: the delay line grows at half the clock inside the window (half speed,
   // an octave down), faded in and out, then snaps back while silent.
   for (const w of plan.slow || []) {
-    if (w.whole) continue;
+    // (An excerpt that starts after a window's start leaves it out.)
+    if (w.whole || at(w.from) - .01 < 0) continue;
     const d = own.slowLine.delayTime, g = own.slowOut.gain, snd = own.slowSend.gain, a = at(w.from), b = at(w.to), fade = Math.min(w.fade ?? 1.2, (b - a) / 3);
     d.setValueAtTime(0, a); d.linearRampToValueAtTime(Math.min(3.9, (b - a) / 2), b); d.setValueAtTime(0, b + .02);
     snd.setValueAtTime(0, a - .01); snd.setValueAtTime(1, a); snd.setValueAtTime(0, b + .01);
@@ -273,8 +278,8 @@ export function levelAt(layer, t) {
 }
 
 // The texture of one layer: its loop source's cuts on the chart's pattern, two bars long.
-export function textureHits(chart, layer, loop, plan) {
-  const P = chart.textures[layer.id], penta = chart.pentatonic, step = plan.step, swing = plan.swing, hits = [];
+export function textureHits(chart, layer, loop, plan, penta = chart.pentatonic) {
+  const P = chart.textures[layer.id], step = plan.step, swing = plan.swing, hits = [];
   if (!P) return hits;
   const time = s => s * step + (s % 2 ? swing * step : 0);
   for (const h of P.hits) {
@@ -307,6 +312,8 @@ export function riverBand(chart) {
         for (const layer of plan.layers.filter(l => l.kind === 'texture')) {
           const bus = own.layers[layer.id], loop = plan.loops.find(l => l.id === layer.source), i = plan.loops.indexOf(loop);
           if (!bus || !loop) continue;
+          // A chart whose pentatonic moves by bar (Delve's Pool): the texture in each key, spliced on the loop's grid.
+          if (W.pentatonicAt) { textureSpans(api, W, layer, loop, at, bus, own); continue; }
           const audio = loop.key ? api.song.lady?.sung?.get(`l${i}`) : api.song.lady?.files?.get(loop.file);
           if (!audio) continue;
           const key = `${layer.id}|${loop.file}`;
@@ -326,6 +333,8 @@ export function riverBand(chart) {
           src.start(Math.max(0, startT), into); src.stop(at(plan.timing[Math.min(plan.totalSteps, last * 16)]) + .01);
           src.onended = () => src.disconnect();
         }
+        // Her vocabulary (a setlist chart): every phrase and its echoes, baked; her choir; the stars.
+        if (plan.vocab) { scheduleVocabulary(api, own, plan, at); scheduleChoir(api, W, own, plan, at); scheduleStars(api, own, plan, at); }
       }
     },
     step(api, b, bar, s, t, T, step) {
@@ -335,7 +344,8 @@ export function riverBand(chart) {
       // The loop: soft even stomps, a room clapping on two and four, toms after the beats, the printer, typing.
       const Lp = W.loop, live = lv('loop');
       // Each part of the loop joins at its bar (Lp.from), ramping in over two bars, as every layer does.
-      const part = k => { const f = Lp.from?.[k]; return f === undefined ? 1 : Math.max(0, Math.min(1, (bar + s / 16 - f) / 2)); };
+      const mix = Lp.mix ? Lp.mix(bar + s / 16) : null;
+      const part = k => { const f = Lp.from?.[k], ramp = f === undefined ? 1 : Math.max(0, Math.min(1, (bar + s / 16 - f) / 2)); return mix ? ramp * (mix[k] ?? 1) : ramp; };
       if (bus('loop') && live > .001) {
         const stomp = Lp.stomps.find(x => x[0] === s), ps = part('stomps'), pc = part('claps'), pt = part('toms'), ph = part('shaker'), pk = part('type');
         if (stomp && ps > 0) { I.stomp(ctx, bus('loop'), t, stomp[1] * ps, Lp.stomp); if (s % 8 === 0) api.duck(t, {bass:.8, keys:.88, guitar:.85}); }
@@ -351,9 +361,11 @@ export function riverBand(chart) {
         if (W.tambourine.hits.includes(s) && bar % 2) I.tambourine(ctx, bus('tambourine'), t, .7, {kind:'hit', side:.35});
         else if (v) I.tambourine(ctx, bus('tambourine'), t, v, {kind:'shake', side:.35});
       }
-      const chord = b.chord, penta = W.pentatonic, center = W.window(bar + s / 16);
-      // Pat hums the root on the offbeats.
-      if (bus('bass') && lv('bass') > .001 && (s === 2 || s === 10)) I.humBass(ctx, bus('bass'), t, chord.root, 6 * step - .02, .6);
+      const chord = b.chord, penta = W.pentatonicAt ? W.pentatonicAt(bar) : W.pentatonic, center = W.window(bar + s / 16);
+      // Pat hums the root on the offbeats (Delve's Pat plays its bassline, delveStep).
+      if (!W.bassline && bus('bass') && lv('bass') > .001 && (s === 2 || s === 10)) I.humBass(ctx, bus('bass'), t, chord.root, 6 * step - .02, .6);
+      // (the engine's last argument here is the 16th's index; delveStep takes the 16th in seconds)
+      if (W.push !== undefined) delveStep(api, W, own, b, bar, s, t, plan.step, lv, bus, penta, center);
       // Kevin's figure, clean, on the offbeats.
       if (bus('guitar') && lv('guitar') > .001) for (const [at, i] of W.figure) if (at === s) I.cleanGuitar(ctx, bus('guitar'), t, [chord.notes[i] + 12], .34, {ring:.8});
       // The colours: the pluck's arpeggio, the felt piano's chords, the mallet's counter-line, on a pitch window that drifts.
@@ -362,4 +374,192 @@ export function riverBand(chart) {
       if (bus('mallet') && lv('mallet') > .001) { const k = W.mallet[(bar % 4) * 16 + s]; if (k !== null && k !== undefined) colour(ctx, bus('mallet'), t, 'mallet', pstep(center + 12, k, penta), .6, {pan:.3}); }
     },
   };
+}
+
+// ---- Delve: her vocabulary, her choir, the stars, and the band's new hands ----------------------
+// (songbook/delve.js; wander.js vocabulary() decides every time and note, the river only plays them.)
+
+// Her decoded file as one channel (the recordings are dual mono), once per buffer.
+const MONO = new WeakMap();
+function monoOf(buffer) {
+  if (!buffer) return null;
+  if (!MONO.has(buffer)) {
+    const n = buffer.numberOfChannels, a = buffer.getChannelData(0);
+    let y = a;
+    if (n > 1) { const b = buffer.getChannelData(1); y = new Float32Array(a.length); for (let i = 0; i < a.length; i++) y[i] = .5 * (a[i] + b[i]); }
+    MONO.set(buffer, y);
+  }
+  return MONO.get(buffer);
+}
+// A loop source of one or more of her files, joined end to end (each cut shifted into the join).
+function loopSource(api, loop) {
+  const files = loop.files ?? [loop.file], parts = files.map(f => api.song.lady?.files?.get(f));
+  if (parts.some(p => !p)) { if (!parts[0]) return null; }
+  const sr = parts[0].sampleRate, offsets = new Map();
+  let n = 0;
+  files.forEach((f, i) => { if (parts[i]) { offsets.set(f, n); n += parts[i].length; } });
+  const src = new Float32Array(n);
+  files.forEach((f, i) => { if (parts[i]) src.set(monoOf(parts[i]), offsets.get(f)); });
+  const cuts = loop.cuts.filter(c => offsets.has(c.file ?? files[0])).map(c => ({...c, from:c.from + offsets.get(c.file ?? files[0]) / sr, to:c.to + offsets.get(c.file ?? files[0]) / sr}));
+  return cuts.length ? {src, sr, cuts} : null;
+}
+// A buffer of [L, R] (or one channel) played into `out` from song time `when` (plan seconds) for its whole
+// length (or until `until`), through a gain: an excerpt that starts later starts it part way in.
+function playBaked(api, at, channels, sr, when, out, gain = 1, {until = null, cache = null} = {}) {
+  const {ctx} = api, len = channels[0].length, dur = len / sr, end = until ?? when + dur;
+  if (at(end) <= 0 || !out) return;
+  let buf = cache?.get(channels);
+  if (!buf) { buf = ctx.createBuffer(channels.length, len, sr); channels.forEach((c, i) => buf.getChannelData(i).set(c)); cache?.set(channels, buf); }
+  const src = ctx.createBufferSource(), g = api.I.amp(ctx, gain), t0 = at(when), into = t0 < 0 ? -t0 : 0;
+  src.buffer = buf; src.connect(g); g.connect(out);
+  src.start(Math.max(0, t0), into, Math.max(.001, Math.min(dur, end - when) - into)); src.stop(at(end) + .01);
+  src.onended = () => { src.disconnect(); g.disconnect(); };
+}
+
+// The textures of a chart whose pentatonic moves (W.pentatonicAt): each texture rendered once per key it
+// meets, then spliced on its two-bar grid where the key changes, so a grain never sings out of the bar's key.
+function textureSpans(api, W, layer, loop, at, bus, own) {
+  const {ctx, plan} = api, source = loopSource(api, loop);
+  if (!source) return;
+  const P = W.textures[layer.id] || {}, sr = source.sr, length = Math.round(32 * plan.step * sr), T = plan.timing;
+  const first = Math.floor(layer.inBars[0] / 2) * 2, last = Math.min(plan.bars.length, Math.ceil(layer.outBars[1]));
+  let a = first;
+  while (a < last) {
+    const penta = W.pentatonicAt(a), key = `${layer.id}|${penta.join()}`;
+    let b = a + 2;
+    while (b < last && W.pentatonicAt(b).join() === penta.join()) b += 2;
+    if (!own.textures.has(key)) {
+      const [L, R] = renderTexture({src:source.src, sr, cuts:source.cuts, hits:textureHits(W, layer, {cuts:source.cuts}, plan, penta), length, amount:P.amount ?? .55, smear:P.smear ?? 0, smearSteps:P.smearSteps ?? [0], seed:P.seed ?? 1});
+      const buf = ctx.createBuffer(2, length, sr); buf.getChannelData(0).set(L); buf.getChannelData(1).set(R);
+      own.textures.set(key, buf);
+    }
+    const buf = own.textures.get(key), from = T[a * 16], to = T[Math.min(plan.totalSteps, Math.min(b, last) * 16)];
+    if (at(to) > 0) {
+      const src = ctx.createBufferSource(), startT = at(from), into = startT < 0 ? (-startT) % buf.duration : 0;
+      src.buffer = buf; src.loop = true; src.connect(bus.input);
+      src.start(Math.max(0, startT), into); src.stop(at(to) + .002);
+      src.onended = () => src.disconnect();
+    }
+    a = b;
+  }
+}
+
+// Every phrase of her setlist and its echoes, baked (vocab-stages.js bakePhrase): the phrase itself dry and
+// centred over the stream (past the band's stems, as a clear phrase of the river plays) with a little of it in
+// the diffusion; its echoes on her stem with a share in the diffusion; the throw in the diffusion alone.
+function scheduleVocabulary(api, own, plan, at) {
+  const {graph} = api, wash = own.washIn, cache = new WeakMap();
+  for (const e of plan.band.filter(x => x.own)) {
+    const buffer = api.song.lady?.files?.get(e.file), x = monoOf(buffer);
+    if (!x || graph.muted?.lady) continue;
+    const sr = buffer.sampleRate, parts = bakePhrase(e, plan.echoes.filter(h => h.phrase === e.id), x, sr);
+    if (parts.dry) { playBaked(api, at, parts.dry.channels, sr, parts.dry.at, graph.tag, 1, {cache}); playBaked(api, at, parts.dry.channels, sr, parts.dry.at, wash, e.wash ?? .1, {cache}); }
+    if (parts.wet) { playBaked(api, at, parts.wet.channels, sr, parts.wet.at, graph.stems.lady.input, 1, {cache}); playBaked(api, at, parts.wet.channels, sr, parts.wet.at, wash, .32, {cache}); }
+    if (parts.throw) playBaked(api, at, parts.throw.channels, sr, parts.throw.at, wash, 1.1, {cache});
+  }
+}
+
+// Her choir (lady-choir.js): each singer's two-bar chant baked once per pixel stage and played block by
+// block (so the Pool can take the bed), ramping in at its bar; in the Pool, four of her hold "ah" on the
+// chord from the push before it. Into the choir layer (its level, filter, duck and wash are the layer's).
+function scheduleChoir(api, W, own, plan, at) {
+  const {ctx, I} = api, bus = own.layers.choir?.input, C = W.choir, T = plan.timing, layer = plan.layers.find(l => l.kind === 'choir');
+  const chantBuf = api.song.lady?.files?.get(CHANT_FILE), ahBuf = api.song.lady?.files?.get(AH.file);
+  if (!bus || !layer || !chantBuf) return;
+  const sr = chantBuf.sampleRate, x = monoOf(chantBuf), an = analysisOf(x, sr, CHANT_FILE), step = plan.step, len = 32 * step, dB = v => 10 ** (v / 20);
+  const pixelAt = bar => { let a = C.pixels[0][1]; for (const [b, v] of C.pixels) if (bar >= b) a = v; return a; };
+  const notes = (singer) => C.chant.map(([s, n, k, midi]) => ({at:s * step, len:n * step, syllable:k, midi:pstep(midi, singer.steps, W.pentatonic)}));
+  const bakes = new Map();
+  const chant = (k, amount) => {
+    const key = `${k}|${amount}`;
+    if (!bakes.has(key)) {
+      const s = C.singers[k], y = choirTone(chantSinger(x, sr, an, {notes:notes(s), length:len, detune:s.cents, onset:s.onset, formant:s.formant, amount, seed:k + 1}), sr);
+      bakes.set(key, [y]);
+    }
+    return bakes.get(key);
+  };
+  // Each singer through its own gain: silent until its bar, then in over two bars.
+  const gains = C.singers.map((s, k) => {
+    const g = I.amp(ctx, 0), a = Math.max(layer.inBars[0], s.from), t0 = at(T[a * 16]), t1 = at(T[Math.min(plan.totalSteps, (a + 2) * 16)]), p = ctx.createStereoPanner();
+    p.pan.value = [0, -.35, .2, .4][k] ?? 0;
+    g.gain.setValueAtTime(0, Math.max(0, t0)); g.gain.linearRampToValueAtTime(dB(C.gains[k] ?? 0), Math.max(.001, t1));
+    g.connect(p); p.connect(bus);
+    return g;
+  });
+  const first = Math.floor(layer.inBars[0] / 2) * 2, last = Math.min(plan.bars.length, Math.ceil(layer.outBars[1]));
+  for (let block = first; block < last; block += 2) {
+    const pool = block >= C.pool[0] && block < C.pool[1];
+    if (pool) {
+      if (!ahBuf) continue;
+      const chord = W.chordAt(block), key = `ah|${chord.name}`, ax = monoOf(ahBuf), aan = analysisOf(ax, ahBuf.sampleRate, AH.file), push = W.push ?? 0;
+      const from = T[block * 16 - push], to = T[Math.min(plan.totalSteps, (block + 2) * 16 - (block + 2 < C.pool[1] ? push : 0))] + .35;
+      if (!bakes.has(key)) {
+        const n = Math.round((to - from + .4) * ahBuf.sampleRate), L = new Float32Array(n), R = new Float32Array(n);
+        chord.choir.forEach((midi, k) => {
+          const s = C.singers[k], y = choirTone(heldVowel(ax, ahBuf.sampleRate, aan, {from:AH.from, to:AH.to, midi, length:(n / ahBuf.sampleRate) - .02, detune:s.cents, formant:s.formant, amount:pixelAt(block), seed:11 + k, attack:.45, release:.6}), ahBuf.sampleRate);
+          const pan = [0, -.45, .2, .5][k], g = dB((C.gains[k] ?? 0) + (C.ah ?? 0)), gl = Math.cos((pan + 1) * Math.PI / 4) * Math.SQRT2 * g, gr = Math.sin((pan + 1) * Math.PI / 4) * Math.SQRT2 * g;
+          for (let i = 0; i < y.length && i < n; i++) { L[i] += gl * y[i]; R[i] += gr * y[i]; }
+        });
+        bakes.set(key, [L, R]);
+      }
+      playBaked(api, at, bakes.get(key), ahBuf.sampleRate, from, bus, 1);
+      continue;
+    }
+    const amount = pixelAt(block), from = T[block * 16], until = T[Math.min(plan.totalSteps, Math.min(block + 2, last) * 16)];
+    // The block after the Pool comes in under the last held "ah" (its release), from its downbeat.
+    C.singers.forEach((s, k) => { if (block + 2 > s.from) playBaked(api, at, chant(k, amount), sr, from, gains[k], 1, {until}); });
+  }
+}
+
+// The stars: one chime a star (plan.stars.twinkles), high on the bar's pentatonic, into the chime layer.
+function scheduleStars(api, own, plan, at) {
+  const bus = own.layers.chime?.input;
+  if (!bus || !plan.stars) return;
+  for (const s of plan.stars.twinkles) { const t = at(s.t); if (t >= 0) api.I.chime(api.ctx, bus, t, s.midi, s.v * (s.hero ? 1.15 : 1), {side:s.pan}); }
+}
+
+// The chord runs of a chart with a push (W.push 16ths early): {chord, from, to} in 16ths, once per plan.
+const RUNS = new WeakMap();
+export function runsOf(W, plan) {
+  if (RUNS.has(plan)) return RUNS.get(plan);
+  const out = [];
+  for (let bar = 0; bar < plan.bars.length; bar++) {
+    const chord = W.chordAt(bar), prev = out.at(-1);
+    if (prev && prev.chord === chord) { prev.to = (bar + 1) * 16; continue; }
+    const from = bar ? bar * 16 - W.push : 0;
+    if (prev) prev.to = from;
+    out.push({chord, from, to:(bar + 1) * 16, bar});
+  }
+  RUNS.set(plan, out);
+  return out;
+}
+
+// Delve's own hands, per 16th (`step`: the 16th in seconds): the drone and the pad on the pushed runs, Pat's
+// bassline, the hand drum, the slit drum, Synthia's arpeggio.
+function delveStep(api, W, own, b, bar, s, t, step, lv, bus, penta, center) {
+  const {ctx, I, plan} = api, T = plan.timing, at = bar * 16 + s, live = id => bus(id) && lv(id) > .001;
+  const run = runsOf(W, plan).find(r => r.from === at), sounding = runsOf(W, plan).find(r => at >= r.from && at < r.to) ?? {chord:b.chord};
+  // The room, under the Source: low air and the building's hum, before the floor arrives.
+  if (W.room && at === 0) I.roomTone(ctx, api.graph.stems.drums.input, t, T[W.room.bars * 16] - T[0], W.room.level);
+  if (run) {
+    const length = T[Math.min(plan.totalSteps, run.to)] - T[run.from];
+    if (bus('drone')) { I.harmonium(ctx, bus('drone'), t, run.chord.keys, length, .8); I.voicePad(ctx, bus('drone'), t, run.chord.notes, length, .7, {vowel:'oo', attack:1, release:1.4, wow:3}); }
+    if (bus('pad')) I.warmPad(ctx, bus('pad'), t, run.chord.notes, length, .85);
+  }
+  // Pat: the root, its fifth, and on the "and" of four the root again (the next chord's, where it is pushed),
+  // gliding from the note before, legato.
+  if (live('bass')) for (const [k, iv, n, v] of W.bassline) if (k === s) {
+    const midi = sounding.chord.root + (iv ?? 0), from = own.bassPrev ?? null;
+    I.warmBass(ctx, bus('bass'), t, midi, n * step - .012, v, {from:from !== null && from !== midi ? from : null});
+    own.bassPrev = midi;
+  }
+  if (live('hands')) for (const [k, stroke, midi, v, side] of W.hands) if (k === s) I.handDrum(ctx, bus('hands'), t, midi, v, {stroke, side});
+  if (live('logdrum')) {
+    const k = W.logdrum[(bar % 2) * 16 + s];
+    if (k !== null && k !== undefined) I.logDrum(ctx, bus('logdrum'), t, pstep(center - 5, k, penta), .42 + (s % 4 === 0 ? .14 : 0) + (s % 8 === 6 ? .06 : 0), {side:s % 4 < 2 ? -.2 : .2});
+  }
+  if (live('arp')) {
+    const notes = sounding.chord.notes, i = W.arp[s], m = i < notes.length ? notes[i] + 12 : notes[0] + 24;
+    I.seqArp(ctx, bus('arp'), t, m, step * .85, .36 + (s % 4 === 0 ? .08 : 0), {side:s % 2 ? .25 : -.25});
+  }
 }

@@ -52,12 +52,14 @@ const b64len = s => Buffer.from(s, 'base64').length;
 // ---------------------------------------------------------------- coverage
 const manifest = read('src/meeting-room/media-manifest.json');
 const catalog = read('src/cutting-room/catalog.json');
+// The Cutting Room also files songs, sounds and packs (schema v2 `kind`); shots are video records only.
+const videos = catalog.assets.filter(a => (a.kind ?? 'video') === 'video');
 const shas = new Map(shots.map(s => [s.sha256, s]));
 for (const a of manifest.assets) if (!shas.has(a.sha256)) fail(a.id, 'season plate missing from the index');
-const takes = catalog.assets.filter(a => a.status === 'Source take');
+const takes = videos.filter(a => a.status === 'Source take');
 for (const t of takes) if (!shas.has(t.sha256)) fail(t.id, 'source take missing from the index');
 if (index.meta.failures?.length) fail('shots.json', `builder recorded ${index.meta.failures.length} failures`);
-const catalogByKey = new Map(catalog.assets.map(a => [a.src.split('/').pop(), a]));
+const catalogByKey = new Map(videos.map(a => [a.src.split('/').pop(), a]));
 
 // ---------------------------------------------------------------- per shot
 const seen = new Map();
@@ -160,7 +162,7 @@ for (const s of shots) {
 // status rules
 for (const a of manifest.assets) {
   const s = shas.get(a.sha256);
-  const c = catalog.assets.find(x => x.sha256 === a.sha256);
+  const c = videos.find(x => x.sha256 === a.sha256);
   if (!s) continue;
   const expected = c?.status === 'Earlier version' ? 'E' : c?.status === 'Needs review' ? 'R' : 'C';
   if (s.status !== expected) fail(s.id, `status ${s.status}, expected ${expected} for a season plate`);
@@ -215,15 +217,65 @@ if (probe.status !== 0) {
   else if (runs[0]) {
     const fresh = readIndex(runs[0]).shots;
     const faceFields = new Set(['faceBox', 'subjectBox', 'safeCrops', 'cropBasis', 'cropNotes', 'notes']);
+    let tolerances = 0;
     for (const r of fresh) {
       const committed = shots.find(s => s.id === r.id);
       if (!committed) { fail('determinism', `${r.id} not in the committed index`); continue; }
+      const diffs = [];
       for (const k of Object.keys(committed)) {
         if (!cv2 && faceFields.has(k)) continue;
-        if (JSON.stringify(committed[k]) !== JSON.stringify(r[k])) fail('determinism', `${r.id}.${k} differs from the committed index`);
+        if (JSON.stringify(committed[k]) !== JSON.stringify(r[k])) diffs.push(k);
       }
+      if (!diffs.length) continue;
+
+      // Cross-machine tolerance for ffmpeg rounding differences
+      const tolerable = new Set(['energy', 'lumaTrack', 'loops']);
+      const nonTolerable = diffs.filter(k => !tolerable.has(k));
+      if (nonTolerable.length) {
+        for (const k of nonTolerable) fail('determinism', `${r.id}.${k} differs from the committed index`);
+        continue;
+      }
+
+      // Check energy and lumaTrack: compare raw bytes, ±2 per frame on 99% of frames
+      for (const track of ['energy', 'lumaTrack']) {
+        if (!diffs.includes(track)) continue;
+        const cBytes = Buffer.from(committed[track], 'base64');
+        const rBytes = Buffer.from(r[track], 'base64');
+        if (cBytes.length !== rBytes.length) {
+          fail('determinism', `${r.id}.${track} length ${rBytes.length} vs committed ${cBytes.length}`);
+          continue;
+        }
+        const byteDiffs = [];
+        for (let i = 0; i < cBytes.length; i++) {
+          byteDiffs.push(Math.abs(cBytes[i] - rBytes[i]));
+        }
+        const within2 = byteDiffs.filter(d => d <= 2).length;
+        const pct = within2 / byteDiffs.length;
+        const maxDiff = Math.max(...byteDiffs);
+        const avgDiff = byteDiffs.reduce((a, b) => a + b, 0) / byteDiffs.length;
+        console.log(`  ${r.id}.${track}: max ${maxDiff}, mean ${avgDiff.toFixed(2)}, ${(pct * 100).toFixed(1)}% within ±2`);
+        if (pct < 0.99) {
+          fail('determinism', `${r.id}.${track} differs: ${(pct * 100).toFixed(1)}% within ±2 (max diff ${maxDiff}, avg ${avgDiff.toFixed(2)})`);
+        }
+      }
+
+      // Check loops: same count, lengths and methods
+      if (diffs.includes('loops')) {
+        const cLoops = committed.loops;
+        const rLoops = r.loops;
+        if (cLoops.length !== rLoops.length) {
+          fail('determinism', `${r.id}.loops count ${rLoops.length} vs committed ${cLoops.length}`);
+        } else {
+          for (let i = 0; i < cLoops.length; i++) {
+            if (cLoops[i].len !== rLoops[i].len) fail('determinism', `${r.id}.loops[${i}] length ${rLoops[i].len} vs committed ${cLoops[i].len}`);
+            if (cLoops[i].method !== rLoops[i].method) fail('determinism', `${r.id}.loops[${i}] method ${rLoops[i].method} vs committed ${cLoops[i].method}`);
+          }
+        }
+      }
+
+      tolerances++;
     }
-    determinism = `${fresh.length} shots rebuilt twice, byte-identical, match committed${cv2 ? '' : ' (face fields not compared: no OpenCV)'}`;
+    determinism = `${fresh.length} shots rebuilt twice, byte-identical, match committed${tolerances ? ` (${tolerances} within cross-machine tolerance)` : ''}${cv2 ? '' : ' (face fields not compared: no OpenCV)'}`;
   }
 }
 

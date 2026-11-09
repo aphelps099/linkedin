@@ -13,6 +13,8 @@
 //  10. the real shot index (src/videostudio/media/shots.json), when present
 //  15. the band and the river: every track on its own form, the sample and three casting picks with the voice
 //      bank, three formats: 0 lint errors; Strategy and Synthia speak in their own tiles; the couplet drop; the river
+//  16. Printer Song, the printer's film; 17. Delve., her vocabulary drawn on the board (words on their frames,
+//      ghosts on their taps, the mouth on her pitch and level, the stars, zones, palette, flashes, determinism)
 //  11. with --render: feature tracks from a real engine.render stems render, in
 //      headless Chromium (about 30 s): channel mapping, the choke, the ladder
 // node scripts/check-videostudio.mjs [--verbose] [--render] [--dump DIR]   (--dump writes the film's EDL and the fixture shots)
@@ -40,14 +42,21 @@ import {chokeFrames, PEG_LEAD} from '../src/videostudio/edl/anchors.js';
 import {metronomeEDL, expectedCuts} from '../src/videostudio/edl/metronome.js';
 import {FORMATS, CLASSES, GUTTER, RADIUS, SAFE, HOME, FULL_BOARD, sameRect, insideSafeBand, layout, cellRect, layoutClassOf, cellIds} from '../src/videostudio/layouts.js';
 import {boardGrid, boardTypeBounds, safeSpan} from '../src/videostudio/gl/board-layer.js';
-import {buildScreens, boardState, paint, strikeRows, strikeWeight} from '../src/pegboard/choreo.js';
+import {buildScreens, boardState, paint, strikeRows, strikeWeight, pageAt} from '../src/pegboard/choreo.js';
 import {PALETTE} from '../src/pegboard/board.js';
 import {LADY_TABLE} from '../src/allhands/lady-table.js';
 import {MOVES, MOVE_NAMES} from '../src/videostudio/moves/index.js';
 import {backbeatHits} from '../src/videostudio/edl/params.js';
 import {TRACK_ORDER} from '../src/allhands/songbook/index.js';
-import {TREATMENTS, BY_TRACK, treatmentFor, treatmentNamed} from '../src/videostudio/treatments/index.js';
+import {TREATMENTS, BY_TRACK, RECORDED, treatmentFor, treatmentNamed} from '../src/videostudio/treatments/index.js';
+import {FRAMES as PRINTER_FRAMES, LINES as PRINTER_LINES, INTRO as PRINTER_INTRO, GLIDES as PRINTER_GLIDES} from '../src/videostudio/treatments/printer-song.js';
+import {SHOT as PRINTER_SHOT, dreamAt as printerDream} from '../src/videostudio/treatments/printer-mouth.js';
 import {TRAIL_MAX} from '../src/videostudio/edl/compile.js';
+import {FRAMES as DELVE_FRAMES, BLACK_FROM as DELVE_BLACK, ZONES as DELVE_ZONES, COLS as DELVE_COLS, ROWS as DELVE_ROWS, MOUTH_ROW as DELVE_MOUTH_ROW, LIPS_CX as DELVE_LIPS_CX, RING as DELVE_RING} from '../src/videostudio/treatments/delve-board.js';
+import {SHAPES as LIP_SHAPES, lightRatio, LIGHT_TOLERANCE, LIGHT_K as LIPS_K, decode as decodeLips, HERO as LIPS_HERO, SMALL as LIPS_SMALL, MID as LIPS_MID, eventVisemes, code as lipCode, settle as settleLips, lipsSprite} from '../src/pegboard/lips.js';
+import {paintPsych, isFigure} from '../src/pegboard/psych.js';
+import {boardLuma, flashes, worstWindow} from '../src/pegboard/governor.js';
+import {boardScreens, boardTimeOf} from '../src/videostudio/gl/compositor.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const verbose = process.argv.includes('--verbose');
@@ -754,7 +763,7 @@ section('14. psych imagery on the dot grid', () => {
   const T = drop.timing, F24 = s => Math.floor(T[s] * 24);
   const cue = (o = {}) => ({type:'psych', id:'p', at:64, len:64, look:'mandala', params:{fold:8, level:[[0, .4], [64, .9]], breath:{bind:'voices', scale:.5, base:.5}}, seed:3, ...o});
   const edl = (cues, clips = []) => createEDL({clips, board:[{id:'song', at:0, text:{ref:'song'}}, ...cues]});
-  ok(PSYCH.looks.length === 8 && PSYCH.looks.every(l => PSYCH.describe(l)?.caption && Object.keys(PSYCH.params(l)).includes('level')) && validate(edl([cue(), cue({id:'q', look:'footage', cell:'G6.1', params:{sharpen:1.2}})])).length === 0,
+  ok(PSYCH.looks.length === 12 && PSYCH.looks.every(l => PSYCH.describe(l)?.caption && Object.keys(PSYCH.params(l)).includes('level')) && validate(edl([cue(), cue({id:'q', look:'footage', cell:'G6.1', params:{sharpen:1.2}})])).length === 0,
     `the board takes psych cues: ${PSYCH.looks.join(', ')}, each with its params and a caption`);
   const bad = validate(edl([cue({look:'lava'}), cue({params:{folds:8}}), cue({fade:1}), cue({type:'pattern'}), cue({params:{level:{bind:'choir'}}}), cue({cell:'G7.0'}), cue({text:'HI'})]));
   ok(['board[1].look', 'board[2].params.folds', 'board[3].fade', 'board[4].type', 'board[5].params.level.bind', 'board[6].cell', 'board[7].text'].every(k => bad.some(e => e.path === k)), `bad psych cues are caught with readable paths (${bad.map(e => e.path).join(', ')})`);
@@ -931,6 +940,278 @@ if (fs.existsSync(SHOTS_JSON)) section('15. the band and the river', () => {
 function cueCount(e) { return e.board.filter(c => c.type === 'psych').length; }
 
 const dump = process.argv.indexOf('--dump');
+// =================================================================================================
+// 16. Printer Song (a recorded track): its plan, the printer's film on the real shot index, the waived
+// rules and nothing else, the intro, the words on their frames, the mouth, the dream, and the sound file
+// the export muxes. Frames here are film frames (the intro is 72 frames; song frame + 72).
+if (fs.existsSync(SHOTS_JSON)) section('16. the printer\'s film', () => {
+  const real = JSON.parse(fs.readFileSync(SHOTS_JSON, 'utf8')), R = RECORDED['printer-song'], plan = R.plan(), I = PRINTER_INTRO, sf = f => f + I;
+  ok(plan.latency === 0 && audioLatency(plan) === 0 && audioLatency({track:'hustle'}) === 720 / 44100 && plan.totalSteps * 3 === PRINTER_FRAMES && stepTime(plan, plan.totalSteps) === 33.5 && I === 72,
+    `printer-song: a recording's plan, latency 0 (its own; the engine's tracks keep 16.33 ms), ${plan.totalSteps} steps of 3 frames, ${PRINTER_FRAMES} frames, 33.5 s (a 3 s intro, then the 30.5 s song)`);
+  const T = treatmentFor('printer-song'), edl = T.fn(plan, real, {format:'9:16'}), p = compile(edl, {plan, shots:real, format:'9:16'});
+  const waived = p.lint.warnings.filter(w => /^waived by override/.test(w.message)), other = p.lint.warnings.filter(w => !waived.includes(w));
+  ok(T.id === 'printer-mouth' && p.frames === PRINTER_FRAMES && p.lint.errors.length === 0 && other.every(w => w.rule === 'G9') && waived.every(w => ['G7', 'G4'].includes(w.rule))
+    && stringify(T.fn(plan, real, {format:'9:16'})) === stringify(edl) && compile(T.fn(plan, real, {format:'9:16'}), {plan, shots:real, format:'9:16'}).hash() === p.hash(),
+    `printer-mouth: ${edl.clips.length} clips, 0 lint errors, ${waived.length} waived warnings (${[...new Set(waived.map(w => w.rule))].join(', ')}: pages reversing as the mouth, scenes on glides), the same bytes and hash twice`);
+  ok(edl.overrides.every(o => o.note && !/—/.test(o.note)) && p.decode.max <= DECODE_LIMITS.mobile && edl.clips.every(c => c.asset === `shot:${PRINTER_SHOT}` || (c.id === 'boot' && c.asset === 'gen:color:#000000')),
+    `printer-mouth: one take only (${PRINTER_SHOT}: no people, no Pat, no lady; black under the loading screen), every waiver says why, peak ${p.decode.max} decodes`);
+  ok(edl.clips.every(c => !c.frame?.mirror && !(c.fx || []).some(x => x.type === 'tile' && x.mirror !== 0) && !(c.fx || []).some(x => FX[x.type]?.mirrors === true)), 'printer-mouth: no reflections (the tiles are copies, mirror 0)');
+  // The intro: the whole frame is the board (the loading bar loads, LOADING. on the frame Synergy speaks); it folds
+  // into its home over the last 8 frames and the face appears on film frame 72, the song's first, clean.
+  const full = f => sameRect(p.frame(f).board.rect, {x:0, y:0, w:1080, h:1920}), load = f => p.frame(f).board.psych.find(x => x.look === 'loading');
+  const first = p.frame(I), clean = first.layers.every(l => l.fx.every(x => ['scanline', 'breathe', 'pegVideo'].includes(x.type))) && !first.camera;
+  ok([0, 30, 64].every(full) && p.frame(68).board.move === 'intro.home' && sameRect(first.board.rect, HOME['9:16']) && first.layout === 'stack3' && clean && load(11)?.params.progress === 0 && load(63)?.params.progress === 1 && !load(I),
+    'the intro: the board takes the frame (f0-64), its bar loads from Synergy\'s word to full on f63, it folds into its home (f65-72) and the face appears on f72, clean (no dream, no camera)');
+  // The words: each lights on its frame (the board's screen up on the frame, the word reached by the frame's paint time).
+  const L = audioLatency(plan), lit = (s, w, f) => s.words[w].start <= f / 24 + 1 / 48 - L + 1 / 48 + 1e-9;
+  const bad = [];
+  PRINTER_LINES.forEach(l => l.words.forEach(([word, f], w) => {
+    const s = p.board.screens.find(x => x.id === l.name), at = p.frame(f), before = p.frame(f - 1);
+    if (p.board.screens[at.board.screen] !== s || !lit(s, w, f) || (lit(s, w, f - 1) && p.board.screens[before.board.screen] === s)) bad.push(`${word}@f${f}`);
+  }));
+  ok(!bad.length && PRINTER_LINES.every(l => p.board.screens.some(s => s.id === l.name)), `the printer's words land on their frames (${PRINTER_LINES.map(l => l.words.map(([w, f]) => `${w} ${f}`).join(' ')).join(' / ')})${bad.length ? `; late or early: ${bad.join(', ')}` : ''}`);
+  const office = p.board.screens.find(s => s.id === 'office'), still = p.board.screens.find(s => s.id === 'still'), burn = p.board.screens.find(s => s.id === 'burn');
+  ok(office.text.includes(' ') && office.k === 2 && office.fx.strike?.tone === 'signal' && Math.floor(office.fx.strike.at * 24) === sf(477) && still.k === 2 && Math.floor(still.from * 24 + 1e-9) === sf(494) && p.board.screens.every(s => s.tone !== 'signal' || s.id === 'jam')
+    && burn?.ghost === .3 && burn.text === p.board.screens.find(s => s.id === 'thrilled').text,
+    'OUT OF / OFFICE. at full size, struck in signal on f549; STILL / PRINTING. in its place on f566; THRILLED TO PRINT. burnt in as a ghost through the night; PAPER JAM. is the one signal word');
+  // The mouth: closed at rest, open on g4's peak, swallowed on the breath, its page's edge stuck on the stop; never
+  // held on the page's whole logo (source frames 86-118) for more than 12 frames.
+  const src = f => p.frame(f).layers.find(l => l.cell.id === (f >= sf(323) && f < sf(348) ? 'L1.0' : 'stack3.1') && !l.trail)?.srcFrame;
+  let run = 0, worst = 0;
+  for (let f = I; f < PRINTER_FRAMES; f++) { const s = src(f); run = s >= 86 && s <= 118 ? run + 1 : 0; worst = Math.max(worst, run); }
+  ok(src(I) === 80 && src(sf(152)) >= 124 && src(sf(93)) <= 92 && src(sf(427)) <= 81 && src(sf(714)) === 85 && src(PRINTER_FRAMES - 1) === 85 && p.frame(sf(158)).layers.some(l => l.reverse) && worst <= 12,
+    `the mouth: closed ${src(I)}, g3's nibble ${src(sf(93))}, g4's peak ${src(sf(152))}, swallowed ${src(sf(427))}, jammed ${src(sf(714))}; it reverses to swallow; the logo whole at most ${worst} frames running`);
+  // Keyed jumps land on their frames: BLEED. breaks out to the edges and tiles on g7's peaks, the night's wash, zoom and
+  // muted mic on B; on the jam the board lets go (no wash, no bloom) and everything freezes.
+  const mouth = f => p.frame(f).layers.find(l => (l.cell.id === 'stack3.1' || l.cell.id === 'L1.0') && !l.trail), fxOf = (f, t) => mouth(f).fx.find(x => x.type === t);
+  const tray = f => p.frame(f).layers.find(l => l.cell.id === 'stack3.2' && !l.trail);
+  ok(!fxOf(sf(330), 'tile') && mouth(sf(330)).transform.zoom === .55 && mouth(sf(331)).transform.zoom === 1 && fxOf(sf(331), 'tile')?.cols === 2 && fxOf(sf(336), 'tile')?.cols === 2 && fxOf(sf(337), 'tile')?.cols === 3 && !mouth(sf(331)).chrome.name
+    && !fxOf(sf(427), 'paletteWash') && fxOf(sf(428), 'paletteWash')?.mix === .7 && mouth(sf(427)).chrome.mic === 'on' && mouth(sf(428)).chrome.mic === 'muted' && mouth(sf(494)).chrome.mic === 'on' && mouth(sf(714)).chrome.mic === 'muted' && mouth(sf(428)).transform.zoom === 1
+    && fxOf(sf(713), 'contour') && !fxOf(sf(714), 'contour') && !fxOf(sf(714), 'paletteWash') && [sf(714), sf(722), PRINTER_FRAMES - 1].every(f => tray(f).srcFrame === 174 && tray(f).source === 'still'),
+    'keyed jumps on their frames: BLEED. edge to edge and 2×2 on f403, 3×3 on f409, no chrome; the wash, the zoom back and the muted mic on f500; the mic back on f566; on the jam f786 the wash and the rings let go, the mic mutes and the tray freezes');
+  // The colour arc: the whole face drains with the toner (the eyes too), slips out of register, goes blue on B; the eyes' long bar is warm again.
+  const eyes = f => p.frame(f).layers.find(l => l.cell.id === 'stack3.0' && l.clipId.startsWith('eyes')), sat = (l, d = 1) => l.fx.find(x => x.type === 'saturation')?.amount ?? d;
+  ok(sat(eyes(sf(403))) === 1 && sat(eyes(sf(414))) <= .101 && eyes(sf(414)).fx.some(x => x.type === 'rgbSplit' && x.px === 8) && eyes(sf(500)).fx.find(x => x.type === 'paletteWash')?.mix >= .7 && eyes(sf(720)).fx.every(x => x.type === 'mosaic'),
+    'the colour arc: the eyes drain with TONER LOW. (saturation .1 by f486), the plates slip 8 px, B washes the whole face blue, and the long bar on the jam keeps its amber');
+  // The dream: it never covers a gesture (every glide vertex, the bleed and the jam awake); stars only on the tiles, never on
+  // the board (in the bleed the board's panel lies over them), never green.
+  const verts = PRINTER_GLIDES.flatMap(g => g.vertices.map(([t]) => Math.floor(t * 24 + 1e-9)));
+  const asleepOnGesture = [...verts, ...Array.from({length:25}, (_, i) => 323 + i), 706, 710, 712, 714].filter(f => printerDream(f) > 0);
+  let stars = 0, starsOnBoard = 0;
+  for (let f = 0; f < PRINTER_FRAMES; f++) { const fr = p.frame(f), r = fr.board.rect; for (const l of fr.layers) if (l.fx.some(x => x.type === 'sparkle')) { stars++; const c = l.cell, over = r && c.x < r.x + r.w && r.x < c.x + c.w && c.y < r.y + r.h && r.y < c.y + c.h; if (over && !fr.board.over) starsOnBoard++; } }
+  const sparkTones = edl.clips.flatMap(c => (c.fx || []).filter(x => x.type === 'sparkle')).every(x => x.tone >= 0 && x.tone <= 1);
+  ok(!asleepOnGesture.length && stars > 1000 && !starsOnBoard && sparkTones && edl.camera.every(c => c.board === false),
+    `the dream: awake on every glide vertex, the bleed and the jam; ${stars} star layer-frames, none on the board (blue, white or signal: never green); the camera floats and lunges with the board held still`);
+  // Square edges (Aaron's note after his studio's loader): stepped rings in big blocks and pixel motion tiles. The
+  // loading screen's eye opens, flows in on the sixteenths and shuts onto the full bar before the fold; the eyes, the
+  // mouth and the body dream in rings and tiles (never on a glide vertex); FULL's letterbox is a tunnel round the
+  // boxed printer, gone on BLEED.; the copies come apart in tiles before the pegs; at night the board's rings run on
+  // into the face and let go on the jam. Every tile deal and every ring step lands on the song's grid.
+  const fxAt = (f, cell, t) => p.frame(f).layers.filter(l => l.cell.id === cell && !l.trail).flatMap(l => l.fx.filter(x => x.type === t));
+  const ringsAt = f => load(f)?.params;
+  const gridOK = edl.clips.every(c => (c.fx || []).every(x => !['contour', 'pixelTiles'].includes(x.type) || ['travel', 'tick'].every(k => !Array.isArray(x[k]?.keys ?? x[k]) || (x[k].keys ?? x[k]).every(([t, , e], i) => i === 0 || e === 'step'))));
+  const onGesture = verts.filter(f => [...fxAt(sf(f), 'stack3.0', 'contour'), ...fxAt(sf(f), 'stack3.1', 'pixelTiles'), ...fxAt(sf(f), 'stack3.2', 'contour')].length);
+  const DREAM_PEAK = 233, peakDream = sf(DREAM_PEAK);
+  ok(ringsAt(30)?.rings === 1 && ringsAt(30).open > .5 && ringsAt(64)?.open === 0 && ringsAt(2)?.rings === 0 && ringsAt(40).travel > ringsAt(30).travel
+    && fxAt(peakDream, 'stack3.0', 'contour')[0]?.twin > 0 && fxAt(peakDream, 'stack3.1', 'pixelTiles').length && fxAt(peakDream, 'stack3.2', 'contour').length && !onGesture.length
+    && fxAt(sf(325), 'L1.0', 'contour')[0]?.under === 1 && !fxAt(sf(331), 'L1.0', 'contour').length && fxAt(sf(340), 'L1.0', 'pixelTiles').length
+    && fxAt(sf(706), 'stack3.1', 'contour').length && fxAt(sf(706), 'stack3.2', 'contour').length && !fxAt(sf(714), 'stack3.2', 'contour').length && p.frame(sf(500)).board.psych.some(x => x.look === 'contour')
+    && edl.clips.flatMap(c => (c.fx || []).filter(x => x.type === 'contour')).every(x => [0, 1, 2].includes(x.tone)) && gridOK,
+    `square edges: the loading eye opens (f30), flows in and shuts by f64; rings and tiles while it dreams (song f${DREAM_PEAK}), none on a glide vertex; FULL's tunnel (f397) gone on BLEED. (f403); tiles in the copies (f412); the night's rings to the jam; every step on the grid`);
+  const asset = path.join(ROOT, R.audio);
+  if (fs.existsSync(asset)) { const b = fs.readFileSync(asset); ok(b.subarray(0, 4).toString() === 'fLaC' && !R.audio.startsWith('public/') && R.seconds === 33.5, `the sound: ${R.audio} (FLAC, ${(b.length / 1e6).toFixed(1)} MB, 33.5 s), outside public/`); }
+});
+
+// =================================================================================================
+// 17. Delve. (the engine's song, cut as a recording): her ten phrases on the frames that hold her voice, their
+// echoes as ghosts on their taps, the mouth drawn on bar 22 and talking on her own recordings' level and pitch,
+// the kiss and the stars, the ring for the canon, the zones of the 9:16 board, the palette, the flashes
+// (ungoverned, whole frame and quadrants), the loop seam, and the same EDL and program every time.
+section('17. Delve., her vocabulary on the board', () => {
+  const R = RECORDED.delve, plan = R.plan(), L = audioLatency(plan), T = treatmentFor('delve'), shots = fs.existsSync(SHOTS_JSON) ? JSON.parse(fs.readFileSync(SHOTS_JSON, 'utf8')) : SHOTS;
+  const edl = T.fn(plan, shots, {format:'9:16'}), p = compile(edl, {plan, shots, format:'9:16'});
+  ok(T.id === 'delve-board' && BY_TRACK.delve === 'delve-board' && !TRACK_ORDER.includes('delve') && R.offset === .05 && L === 720 / 44100 && p.frames === DELVE_FRAMES && DELVE_FRAMES === 2895 && edl.song.steps === 772,
+    `delve: the engine's song as a recording (file offset ${R.offset} s, latency ${(L * 1000).toFixed(2)} ms), ${p.frames} frames (48 bars and the 0.6 s tail), in no picker`);
+  const warns = p.lint.warnings.map(w => `${w.rule}${w.message.match(/board (\S+)/)?.[1] ? ` ${w.message.match(/board (\S+)/)[1]}` : ''}`);
+  ok(p.lint.errors.length === 0 && p.lint.warnings.every(w => w.rule === 'G9' && /P8/.test(w.message)) && stringify(T.fn(plan, shots, {format:'9:16'})) === stringify(edl) && compile(T.fn(plan, shots, {format:'9:16'}), {plan, shots, format:'9:16'}).hash() === p.hash(),
+    `delve-board: 0 lint errors, warnings ${warns.join(', ') || 'none'} (her bio is cut off as she says it: it is not there to be read), the same bytes and hash twice`);
+  ok(edl.clips.every(c => c.asset === 'gen:color:#000000') && edl.boardPitch === 12 && boardGrid(1080, 1920, 12).cols === 90 && boardGrid(1080, 1920, 12).rows === 160 && p.frame(0).board.pitch === 12
+    && p.frame(100).board.rect.w === 1080 && p.frame(100).board.rect.h === 1920 && !p.frame(DELVE_BLACK).board.rect && !p.frame(DELVE_FRAMES - 1).board.rect && !!p.frame(DELVE_BLACK - 1).board.rect,
+    'drawn, not shot: black under a full-frame board of 90 x 160 pegs (12 px at 1080, the same grid at every scale); true black from f2880 to the end (the loop seam)');
+  // Anchors: every phrase, word, echo, star and mark lands within half a frame of its plan time.
+  const near1 = (a, t) => Math.abs(resolveAt(plan, {anchor:a}).time - t) <= .5 / 24;
+  const badAnchors = [...plan.band.flatMap(e => [[`phrase:${e.id}`, e.words[0].start], ...e.words.map((w, k) => [`word:${e.id}#${k}`, w.start])]),
+    ...plan.band.flatMap(e => plan.echoes.filter(x => x.phrase === e.id).map((x, k) => [`echo:${e.id}#${k}`, x.at])), ...plan.stars.twinkles.map((s, k) => [`star#${k}`, s.t]),
+    ...['mouth', 'kiss', 'star', 'canon', 'undraw'].map(m => [`mark:${m}`, plan.marks[m]])].filter(([a, t]) => !near1(a, t));
+  ok(!badAnchors.length, `anchors: phrase, word, echo, star and mark land within half a frame of the plan (${plan.band.length} phrases, ${plan.echoes.length} echoes, ${plan.stars.twinkles.length} stars)${badAnchors.length ? `; off: ${badAnchors.slice(0, 4).map(a => a[0]).join(', ')}` : ''}`);
+  // Her words on their frames: the phrase's screen is up and each word lights on the frame that holds its start.
+  const lit = (w, f) => w.start <= f / 24 + 1 / 48 - L + 1 / 48 + 1e-9, late = [];
+  for (const e of plan.band) e.words.forEach((w, k) => {
+    const f = hitFrame(w.start, plan), scr = s => p.board.screens[p.frame(s).board.screen];
+    const sc = scr(f), mine = sc && (sc.phrase === e.id) && sc.words.some(x => x.text === (w.display ?? w.text).toUpperCase() && Math.abs(x.start - w.start) < 1e-9);
+    if (!mine || !lit(w, f) || (lit(w, f - 1) && scr(f - 1) === sc)) late.push(`${e.id}#${k}@f${f}`);
+  });
+  ok(!late.length, `her words light on the frames that hold them (${plan.band.reduce((s, e) => s + e.words.length, 0)} words of ten phrases)${late.length ? `; late or early: ${late.slice(0, 6).join(', ')}` : ''}`);
+  // Strikes: X struck on a grid step after it is sung, a quarter second before Y; never NOT, JUST or ABOUT.
+  const strikes = p.board.screens.filter(s => s.fx.strike).map(s => ({id:s.id, st:s.fx.strike, words:s.fx.strike.words.map(i => s.words[i].text)}));
+  ok(strikes.map(s => s.id).join() === 'P3,P4,P5' && strikes.every(({st, words}) => st.tone === 'signal' && !words.some(w => /^(NOT|JUST|ABOUT)$/.test(w))) && strikes.every(({id, st}) => { const e = plan.band.find(b => b.id === id), y = e.words[e.split ?? 4].start; return st.at + .25 <= y + 1e-9 && st.at >= e.words[st.words[0]].start; })
+    && strikes.map(s => s.words.join(' ')).join(' | ') === 'THE TOOLS. | X. | A JOB.',
+    `the strikes: ${strikes.map(s => `${s.words.join(' ')} at ${s.st.at.toFixed(2)} s`).join(', ')} (signal; never NOT, JUST or ABOUT; each up a quarter second before its Y)`);
+  // The board, painted as the compositor paints it (board-layer.js: type, then the figures, then the textures).
+  const screens = boardScreens(p.board.screens), grid = boardGrid(1080, 1920, 12, safeSpan({x:0, y:0, w:1080, h:1920}, SAFE['9:16']));
+  const paintAt = f => {
+    const fr = p.frame(f), b = grid.board;
+    paint(b, screens, boardTimeOf(fr), {plan, layoutOf:grid.layoutOf, place:grid.place, pitch:12});
+    const type = Uint8Array.from(b.I, v => v > 0 ? 1 : 0), typeI = Float32Array.from(b.I);
+    const ps = fr.board.rect ? fr.board.psych : [], figs = ps.filter(x => isFigure(x.look)), tex = ps.filter(x => !isFigure(x.look));
+    // (figure: 1 for her lips' pegs, 2 for the stars')
+    const figure = new Uint8Array(b.I.length);
+    for (const x of figs) { paintPsych(b, x, x.time, {drive:x.drive}); for (let i = 0; i < b.I.length; i++) if (b.I[i] > 0 && !type[i] && !figure[i]) figure[i] = x.look === 'lips' ? 1 : 2; }
+    for (const x of tex) paintPsych(b, x, x.time, {drive:x.drive});
+    if (!fr.board.rect) { b.I.fill(0); b.exposure = 0; }
+    return {b, type, typeI, figure};
+  };
+  // Pages: at every word's hit frame the page on the board holds that word (a couplet's second page, P8's
+  // second page, turn on the frame of their first word, with it; choreo pageAt).
+  const pageLate = [];
+  let pageN = 0;
+  for (const e of plan.band) e.words.forEach((w, k) => {
+    const f = hitFrame(w.start, plan), fr = p.frame(f), s = screens[fr.board.screen];
+    const idx = s?.phrase === e.id ? s.words.findIndex(x => Math.abs(x.start - w.start) < 1e-9) : -1;
+    if (idx < 0) { pageLate.push(`${e.id}#${k}@f${f} (no screen)`); return; }
+    pageN++;
+    if (!pageAt(s, grid.layoutOf(s), boardTimeOf(fr)).lines.some(l => l.chars.some(c => c.word === idx))) pageLate.push(`${e.id}#${k}@f${f}`);
+  });
+  ok(!pageLate.length && pageN === plan.band.reduce((n, e) => n + e.words.length, 0), `pages: on the frame each of her ${pageN} words is heard, the page shown holds it (a page turns with its first word)${pageLate.length ? `; late: ${pageLate.join(', ')}` : ''}`);
+  // Zones, every third frame: type never in the header (rows 0-25) nor under row 84, and never within a peg of
+  // her lips (a dark moat a peg wide at least: the lips never touch a word); the mouth (with its choir's stack) in
+  // rows 76-119; nothing but faint light (I <= .25) below row 120.
+  const zoneBad = [], lipsFrom = 0;
+  let lipsSeen = 0, starsSeen = 0, typeLow = 0, moat = 9;
+  const lum = [], pegL = [], LUMA4 = [.32, .95, .86, .2];
+  // (Per frame, for the picture's own gates below: each peg's light, its kind: 1 type, 2 her lips, 3 a star, 4 texture.)
+  const kindOf = [];
+  for (let f = 0; f < p.frames; f++) {
+    const {b, type, typeI, figure} = paintAt(f);
+    lum.push(boardLuma(b));
+    const L1 = new Float32Array(b.I.length), K1 = new Uint8Array(b.I.length);
+    for (let i = 0; i < b.I.length; i++) if (b.I[i] > 0) { L1[i] = Math.min(1.6, b.I[i]) * (LUMA4[b.tone[i]] + (1 - LUMA4[b.tone[i]]) * b.white[i]) * b.exposure; K1[i] = type[i] ? 1 : figure[i] === 1 ? 2 : figure[i] === 2 ? 3 : 4; }
+    pegL.push(L1); kindOf.push(K1);
+    if (f % 3) continue;
+    const lipAt = new Uint8Array(b.I.length);
+    for (let i = 0; i < b.I.length; i++) if (figure[i] === 1) lipAt[i] = 1;
+    for (let y = 0; y < DELVE_ROWS; y++) for (let x = 0; x < DELVE_COLS; x++) {
+      const i = y * DELVE_COLS + x;
+      if (type[i] && typeI[i] > .26 && (y <= DELVE_ZONES.header[1] || y > DELVE_ZONES.floor)) zoneBad.push(`type f${f} r${y}`);
+      if (type[i] && y > 84) zoneBad.push(`type f${f} r${y} (under row 84)`);
+      if (type[i]) { typeLow = Math.max(typeLow, y); for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const yy = y + dy, xx = x + dx; if (yy >= 0 && yy < DELVE_ROWS && xx >= 0 && xx < DELVE_COLS && lipAt[yy * DELVE_COLS + xx]) zoneBad.push(`type touches the lips f${f} r${y} c${x}`); } }
+      if (b.I[i] > .26 * 1.0001 && y > DELVE_ZONES.floor) zoneBad.push(`light f${f} r${y}`);
+      // (The 9:16 safe columns, x 64-944 at 1080: whole pegs 6-77. Her words and every ghost of them stay inside.)
+      if (type[i] && (x < 6 || x > 77)) zoneBad.push(`type f${f} c${x}`);
+    }
+    const lipRows = [], fr = p.frame(f), lips = fr.board.psych.find(x => x.look === 'lips');
+    if (lips && f < DELVE_BLACK) { for (let i = 0; i < b.I.length; i++) if (figure[i] === 1) lipRows.push(Math.floor(i / DELVE_COLS)); if (lipRows.length) lipsSeen++; }
+    if (lipRows.some(y => y < 70 || y > 119)) zoneBad.push(`lips f${f} r${Math.min(...lipRows)}-${Math.max(...lipRows)}`);
+    if (fr.board.psych.some(x => x.look === 'stars')) starsSeen++;
+  }
+  ok(!zoneBad.length && lipsSeen > 900 && starsSeen > 350, `zones hold on every third frame: no type in the header or under row 84 (lowest ${typeLow}), never within a peg of her lips, her words and their ghosts inside the safe columns 6-77, the mouth and its ring in rows 70-119, nothing brighter than .25 under row 120 (${lipsSeen} mouth frames, ${starsSeen} with stars)${zoneBad.length ? `; ${zoneBad.slice(0, 5).join(', ')}` : ''}`);
+  // No face (the lady never has a face): while her lips are lit, no radial texture (rings, mandala, ripples,
+  // moiré) has its centre within 35 rows above her mouth line unless it sits on her lips (they cover it): an eye
+  // over a mouth reads as a face.
+  const RADIAL = new Set(['contour', 'mandala', 'ripples', 'moire']), faceBad = [];
+  for (let f = 0; f < p.frames; f += 6) {
+    const ps = p.frame(f).board.psych || [];
+    if (!ps.some(x => x.look === 'lips')) continue;
+    for (const x of ps) if (RADIAL.has(x.look)) {
+      const cyRow = x.params.cy * DELVE_ROWS - .5, cxCol = x.params.cx * DELVE_COLS - .5, above = DELVE_MOUTH_ROW - cyRow;
+      const onLips = Math.abs(cyRow - DELVE_MOUTH_ROW) <= 3 && Math.abs(cxCol - (DELVE_LIPS_CX * DELVE_COLS - .5)) <= 6;
+      if (!onLips && above > 0 && above <= 35) faceBad.push(`${x.id ?? x.look} f${f} (${above.toFixed(1)} rows above)`);
+    }
+  }
+  ok(!faceBad.length, `no face: while her lips are lit every radial texture is centred on them (or more than 35 rows above them: star 1's landing ring)${faceBad.length ? `; ${faceBad.slice(0, 4).join(', ')}` : ''}`);
+  // The picture follows the song: the textures' light in the side margins (columns 0-9 and 80-89, rows 26-119) at
+  // each swell's top at least 1.5 times its stream reference (bars 5-12, the plan's reference); the brightest two
+  // seconds of the film inside the canon (98-107 s); the Pool and the slowed "sink in" at most .85 of the canon.
+  const meanSpan = (a, b, fn) => { let sum = 0, n = 0; for (let f = Math.round(a * 24); f < Math.round(b * 24); f++) { sum += fn(f); n++; } return sum / Math.max(1, n); };
+  const margin = f => { let s = 0, n = 0; const L1 = pegL[f], K1 = kindOf[f]; for (let y = 26; y < 120; y++) for (const x of [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89]) { const i = y * DELVE_COLS + x; if (K1[i] === 4) s += L1[i]; n++; } return s / n; };
+  const whole = f => { let s = 0; for (const v of pegL[f]) s += v; return s / pegL[f].length; };
+  const ref = meanSpan(12.5, 32.5, margin), sw1 = meanSpan(47.5, 55, margin), sw2 = meanSpan(97.5, 105, margin);
+  let best = 0, bestAt = 0;
+  for (let f = 3 * 24; f + 48 <= 117 * 24; f += 6) { const v = meanSpan(f / 24, f / 24 + 2, whole); if (v > best) { best = v; bestAt = f / 24; } }
+  const canonL = meanSpan(100, 106, whole), poolL = meanSpan(60, 70, whole), slowL = meanSpan(plan.slow[0].from, plan.slow[0].to, whole);
+  ok(sw1 >= 1.5 * ref && sw2 >= 1.5 * ref && bestAt >= 98 && bestAt + 2 <= 107.01 && poolL <= .85 * canonL && slowL <= .85 * canonL,
+    `the picture swells with the river: the margins' texture light ${(sw1 / ref).toFixed(2)}x and ${(sw2 / ref).toFixed(2)}x the stream's at the tops of Swell 1 and the canon (at least 1.5x); the brightest two seconds from ${bestAt.toFixed(2)} s (inside 98-107: the canon); the Pool ${(poolL / canonL).toFixed(2)} and the slowed "sink in" ${(slowL / canonL).toFixed(2)} of the canon (at most .85)`);
+  // The beat: the board's brightening frame to frame (the light that comes on) repeats a beat later (15 frames)
+  // through Swell 2 and the canon (85-107 s): its autocorrelation at one beat at least .5.
+  const brighten = [0];
+  for (let f = 1; f < p.frames; f++) { let s = 0; const A = pegL[f], Bv = pegL[f - 1]; for (let i = 0; i < A.length; i++) if (A[i] > Bv[i]) s += A[i] - Bv[i]; brighten.push(s); }
+  const corr = (a, b) => { const n = a.length, ma = a.reduce((x, y) => x + y, 0) / n, mb = b.reduce((x, y) => x + y, 0) / n; let sab = 0, saa = 0, sbb = 0; for (let i = 0; i < n; i++) { sab += (a[i] - ma) * (b[i] - mb); saa += (a[i] - ma) ** 2; sbb += (b[i] - mb) ** 2; } return sab / Math.sqrt(saa * sbb || 1); };
+  const beatAC = (a, b) => { const x = brighten.slice(Math.round(a * 24), Math.round(b * 24)); return corr(x.slice(0, -15), x.slice(15)); };
+  ok(beatAC(85, 107) >= .5 && beatAC(10, 50) >= .4, `the beat: the board's brightening repeats a beat later, autocorrelation ${beatAC(10, 50).toFixed(2)} over 10-50 s and ${beatAC(85, 107).toFixed(2)} over 85-107 s (at least .5 through Swell 2 and the canon: every look steps on the eighths)`);
+  // Her phrases weave out: once a phrase's echo is gone its words ease to a dim ghost (.3) over two bars, unless
+  // the next phrase replaces it first.
+  const weaveBad = [];
+  for (const id of ['P1', 'P2', 'P3', 'P4', 'P6', 'P7']) {
+    const sc = edl.board.find(c => c.id === id), d = sc.fx?.dim, e = plan.band.find(x => x.id === id), end = Math.max(e.end, ...plan.echoes.filter(x => x.phrase === id).map(x => x.end));
+    if (!d || d.at(-1)[1] > .45 || d.at(-1)[0] > end + 2 * 2.5 + 2.5 + 1e-6) weaveBad.push(id);
+  }
+  ok(!weaveBad.length, `her phrases weave out: P1-P4, P6 and P7 ease to a dim ghost of themselves once her echo of them is gone${weaveBad.length ? `; not: ${weaveBad.join(', ')}` : ''}`);
+  // Flashes: the board as painted, ungoverned, whole and quadrants: at most 3 a second anywhere.
+  const worst = [-1, 0, 1, 2, 3].map(k => worstWindow(flashes(lum.map(l => k < 0 ? l.whole : l.quads[k]), 24), 24));
+  ok(Math.max(...worst) <= 3, `flashes, ungoverned, whole frame and each quadrant: at most ${Math.max(...worst)} a second (the limit is 3; the governor stays on in the export)`);
+  // Her mouth: every shape holds its light within 8 % of rest; drawn on bar 22, kissing on 23:12 (f1425), the
+  // first star leaving her lips there and landing on the middle (f1440); open on her words; the ring of eight.
+  const shapesOK = [LIPS_HERO, LIPS_MID, LIPS_SMALL].every(size => LIP_SHAPES.every(sh => [0, 1, 2, 3].every(o => { const r = lightRatio(sh, o, size), k = Math.min(LIPS_K[1], Math.max(LIPS_K[0], 1 / r)); return Math.abs(r * k - 1) <= LIGHT_TOLERANCE + 1e-9; })));
+  const mouthAt = f => { const x = p.frame(f).board.psych.find(q => q.look === 'lips'); return x && {...x.params, code:decodeLips(x.params.mouth)}; };
+  const star0 = edl.board.find(c => c.id === 'stars').events[0], body = Math.round(plan.marks.mouth * 24);
+  // (The kiss: a small dark O in the middle of a round pucker, its lips meeting either side of it: no seam.)
+  const kiss = lipsSprite('kiss', 2, LIPS_HERO), kissO = [-1, 0, 1].every(y => !kiss.pegs.some(q => q.x === 0 && q.y === y)), kissSeam = kiss.pegs.filter(q => q.y === 0 && Math.abs(q.x) > 6).length;
+  ok(shapesOK && (!mouthAt(0) || mouthAt(0).draw === 0) && mouthAt(6).draw > 0 && mouthAt(6).draw < 1 && mouthAt(12).draw === 1 && mouthAt(300).fill === 0 && mouthAt(body - 1).fill === 0 && mouthAt(body + 10).trace > 0 && mouthAt(body + 10).trace < 1 && mouthAt(body + 60).fill === 1
+    && mouthAt(1425).code.shape === 'kiss' && mouthAt(1425).code.open === 2 && kissO && kissSeam > 6 && Math.round(star0[0] * 24) === 1425 && Math.round((star0[0] + star0[9]) * 24) === 1440 && star0[4] >= 7 && star0[3] * DELVE_ROWS >= 25 + star0[4] && Math.abs(star0[2] - DELVE_LIPS_CX) < 1e-3,
+    `her mouth: ${LIP_SHAPES.length} shapes at 3 sizes within ${LIGHT_TOLERANCE * 100} % of rest's light; its outline drawn f1-f11 and speaking from f12, its body from f${body} (the trace, the fill, the gloss); the kiss on f1425 a small O (lips meeting either side of it); star 1 (arms ${star0[4]}) leaving her lips there and landing on f1440 at row ${Math.round(star0[3] * DELVE_ROWS)}, inside the safe area on her axis`);
+  let spoken = 0, words = 0;
+  for (const e of plan.band) for (const w of e.words) { words++; const f = hitFrame(w.start, plan); if ([f, f + 1, f + 2, f + 3].some(g => { const m = mouthAt(g)?.code; return m && (m.open > 0 || m.shape === 'press' || m.shape === 'fv'); })) spoken++; }
+  const ring = f => { const x = mouthAt(f); return x ? [0, 1, 2, 3, 4, 5, 6, 7].filter(k => x[`m${k}`] >= 0).length : 0; };
+  // (The ring inside the safe columns: a small mouth's sprite at the ring's widest, either side of her axis.)
+  const smallW = Math.max(...LIP_SHAPES.flatMap(sh => [0, 1, 2, 3].flatMap(o => lipsSprite(sh, o, LIPS_SMALL).pegs.map(q => Math.abs(q.x))))), axis = Math.round(DELVE_LIPS_CX * DELVE_COLS - .5);
+  const at105 = mouthAt(Math.round(105 * 24));
+  ok(spoken >= words - 2 && ring(Math.round(105 * 24)) === 8 && at105.mid === 1 && at105.hero >= .55 && axis - DELVE_RING.rx - smallW >= 6 && axis + DELVE_RING.rx + smallW <= 77 && mouthAt(Math.round(110.1 * 24)).ring === 0 && mouthAt(Math.round(110.1 * 24)).hero === 1 && mouthAt(Math.round(110.1 * 24)).mid === 0 && mouthAt(Math.round(116.5 * 24)).code.shape === 'smile' && mouthAt(DELVE_BLACK - 2).draw < .05,
+    `the mouth speaks ${spoken} of her ${words} words within 3 frames of each; at 105 s a ring of ${ring(Math.round(105 * 24))} small mouths (columns ${axis - DELVE_RING.rx - smallW}-${axis + DELVE_RING.rx + smallW}) round the hero at its middle size (light ${at105.hero}), closed back into one by 44:0; a smile; undrawn by f2878`);
+  // Lip sync: on every frame the hero mouth speaks P1-P10, it shows the shape her sound has on that frame or on
+  // the next (it leads her by at most one frame, never lags; a one-frame shape may be skipped). The frozen
+  // "of…" holds its round O by design (85.0 s to 36:0).
+  const LADY_PITCH = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/allhands/lady-pitch.json'), 'utf8')), freezeAt = plan.echoes.find(e => e.phrase === 'P8' && e.kind === 'freeze').at;
+  let syncN = 0, syncSame = 0, syncLead = 0;
+  const syncBad = [];
+  for (const id of ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10']) {
+    const raw = eventVisemes(plan.band.find(e => e.id === id), LADY_PITCH, {fps:24, latency:L, settled:false}), R = new Map(raw.map(x => [x.f, lipCode(x.shape, x.open)]));
+    for (const x of raw) {
+      const m = mouthAt(x.f);
+      if (!R.has(x.f + 1) || !m || m.hero < .99 || (x.f >= hitFrame(freezeAt, plan) && x.f < hitFrame(stepTime(plan, 36 * 16), plan))) continue;
+      syncN++;
+      const c = Math.round(m.mouth);
+      if (c === R.get(x.f)) syncSame++; else if (c === R.get(x.f + 1)) syncLead++; else syncBad.push(`${id} f${x.f}`);
+    }
+  }
+  // settle: a string of one-frame shapes never pushes the mouth more than a frame ahead.
+  const zig = Array.from({length:12}, (_, f) => ({f, shape:['ah', 'ee', 'oh'][f % 3], open:1 + (f % 2)})), zs = settleLips(zig);
+  const zigOK = zs.every((x, i) => (x.shape === zig[i].shape && x.open === zig[i].open) || (zig[i + 1] && x.shape === zig[i + 1].shape && x.open === zig[i + 1].open))
+    && zs.every((x, i) => { const same = (a, b) => a && b && a.shape === b.shape && a.open === b.open; return same(x, zs[i - 1]) || same(x, zs[i + 1]); });
+  ok(!syncBad.length && syncN > 300 && zigOK, `lip sync: on ${syncN} frames of P1-P10 the mouth shows her shape of that frame (${syncSame}) or of the next (${syncLead}): it leads her by at most a frame, never lags; every shape holds 2 frames${syncBad.length ? `; off: ${syncBad.slice(0, 5).join(', ')}` : ''}`);
+  // Stars: born on their chimes, never before the kiss, all gone by the loop seam; the sky near its density.
+  const ev = edl.board.find(c => c.id === 'stars').events, alive = t => ev.filter(e => e[0] <= t && e[1] > t).length;
+  ok(ev.every(e => e[0] >= plan.marks.kiss - 1 / 24 && e[1] <= DELVE_BLACK / 24 + 1e-9) && plan.stars.twinkles.slice(1).every(s => ev.some(e => Math.abs(e[0] - Math.floor((s.t + L) * 24 + 1e-9) / 24) < 2e-3))
+    && alive(100) >= 18 && alive(100) <= 30 && alive(65) >= 2 && alive(119.5) <= 3 && ev.every(e => e[3] * DELVE_ROWS < DELVE_ZONES.floor || e[6] < 0)
+    && ev.every(e => e[5] === 0 || e[3] * DELVE_ROWS - e[4] >= DELVE_ZONES.header[1] - .5),
+    `stars: ${ev.length} (${plan.stars.twinkles.length} on the chimes, the first blown by the kiss, the rest silent and blue); alive ${alive(65)} at 65 s, ${alive(100)} at 100 s, ${alive(119.5)} at 119.5 s; the header holds only far blue ones, under row 120 only faint ones; all gone by f2880`);
+  // Palette: never green; type in white, blue, deep and signal (the strikes), the ghosts and copies too.
+  const tones = [...edl.board.filter(c => c.type !== 'psych').map(c => c.palette), ...edl.board.flatMap(c => [...(c.fx?.echo || []), ...(c.fx?.harmony || [])].map(x => x.tone ?? 'white')), ...edl.board.filter(c => c.fx?.sink).map(c => c.fx.sink.tone)];
+  ok(tones.every(t => ['white', 'blue', 'deep', 'signal'].includes(t)) && edl.board.filter(c => c.type === 'psych').every(c => PSYCH.looks.includes(c.look)) && edl.overrides.length === 0,
+    `palette: ${[...new Set(tones)].join(', ')}: never green; ${edl.board.filter(c => c.type === 'psych').length} psych cues on the house looks; no overrides`);
+  const asset = path.join(ROOT, R.audio);
+  if (fs.existsSync(asset)) { const b = fs.readFileSync(asset); ok(b.subarray(0, 4).toString() === 'fLaC' && !R.audio.startsWith('public/') && R.sampleRate === 44100, `the sound: ${R.audio} (FLAC, ${(b.length / 1e6).toFixed(1)} MB, 44.1 kHz), outside public/, song time 0 at ${R.offset} s in`); }
+});
+
 if (dump > 0) {
   const dir = process.argv[dump + 1];
   fs.mkdirSync(dir, {recursive:true});

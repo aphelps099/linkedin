@@ -1,5 +1,5 @@
 // Every check in one command, on any machine (macOS has no `timeout`; this needs only Node):
-// each scripts/check-*.mjs in turn, then the Vite build (into a scratch folder, removed after). A log per check, one summary line each,
+// the Vite build (into a scratch folder, removed after), then each scripts/check-*.mjs in turn. A log per check, one summary line each,
 // exit 1 if anything failed. The default is the set every round runs before a commit;
 // --full adds check-compositor (WebGL, the slowest) and the full export check (real exports in Chromium).
 //
@@ -50,17 +50,22 @@ const run = (label, cmd, args) => new Promise(done => {
   }));
 });
 
+// The build comes first, into a scratch folder removed at the end, so dist/ (the deploy's) is never
+// touched; checks that read the built site (check-social-cards) are pointed at it with CHECK_DIST.
+const dist = join(out, 'dist'), building = !flag('no-build') && !only.length;
+const prebuilt = [];
+if (building) {
+  prebuilt.push(await run('vite-build', process.execPath, [join('node_modules', 'vite', 'bin', 'vite.js'), 'build', '--outDir', dist, '--emptyOutDir']));
+  process.env.CHECK_DIST = dist;
+}
+
 console.log(`${names.length} checks${only.length ? '' : full ? ' (full)' : ' (check-compositor and the full export with --full)'}, logs in ${out}\n`);
 const queue = [...names], results = [];
 await Promise.all(Array.from({length:jobs}, async () => {
   while (queue.length) { const n = queue.shift(); results.push(await run(n, process.execPath, [join('scripts', `check-${n}.mjs`), ...(ARGS[n] ?? [])])); }
 }));
-// The build goes to a scratch folder and is removed after, so dist/ (the deploy's) is never touched.
-if (!flag('no-build') && !only.length) {
-  const dist = join(out, 'dist');
-  results.push(await run('vite-build', process.execPath, [join('node_modules', 'vite', 'bin', 'vite.js'), 'build', '--outDir', dist, '--emptyOutDir']));
-  rmSync(dist, {recursive:true, force:true});
-}
+results.push(...prebuilt);
+if (building) rmSync(dist, {recursive:true, force:true});
 
 const failed = results.filter(r => !r.ok);
 writeFileSync(join(out, 'summary.txt'), results.map(r => r.line).join('\n') + '\n');

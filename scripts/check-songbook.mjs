@@ -24,6 +24,12 @@
 //   6. The composition constitution (songbook/CONSTITUTION.md as constitution.js): every track
 //      and every plan of that corpus keeps it, warnings aside (each printed); the lint bites
 //      on charts, plans and measured renders that break it.
+//   7-8. The band's parts; the river (Offsite), its plans unchanged since Delve. joined the book.
+//   9. Delve. (songbook/delve.js, her vocabulary): the chart keeps the constitution with exactly its
+//      two declared breaks, and the lint still bites under them; out of the pickers and the casting;
+//      her ten phrases land on their 16ths, four bars apart, each echo chain gone a beat before the
+//      next; the choir, the echoes and the stars in key; the plan the film reads; it schedules
+//      cleanly, the same twice, every input at most two at once.
 // Optional, with a dev server: --url http://localhost:5321 --baseline take.wav
 // renders Circle Back's Drop Edition through the page and compares it with a
 // render made by the old code: the difference must stay within the renderer's
@@ -160,7 +166,7 @@ async function record(plan, options, exact = 'on') {
   const words = [...new Set([...plan.words, ...plan.stutters].map(w => w.word))];
   const buffers = new Map(words.map((w, i) => [w, {audio:fakeBuffer(.25 + .1 * (i % 5), i), lead:.01 * (i % 3), duration:.25}]));
   // Her recordings by file; the voice bank's takes sung per event (lady.js voiceEvents: hers, the band's, the river's loops).
-  const all = voiceEvents(plan), files = new Map([...new Set(all.filter(x => !x.e.key).map(x => x.e.file))].map((f, i) => [f, fakeBuffer(2.4, 40 + i)]));
+  const all = voiceEvents(plan), files = new Map([...new Set(all.filter(x => !x.e.key).flatMap(x => [x.e.file, ...(x.e.files || [])]))].map((f, i) => [f, fakeBuffer(2.4, 40 + i)]));
   const sung = new Map(all.filter(x => x.e.key).map((x, i) => [x.id, fakeBuffer(2, 70 + i)]));
   const deep = new Map(plan.lady.map((e, i) => [e, i]).filter(([e]) => e.deep).map(([e, i]) => [i, fakeBuffer(3, i)]));
   globalThis.__exact = exact;
@@ -448,5 +454,102 @@ if (url && baseline) {
     const ex = await record(plan, {mode:'sung', bars:[12, 16]});
     ok(ex.calls > 1000, `the river: an excerpt (bars 12-16) schedules from mid-song (${ex.calls} calls)`);
   }
+}
+
+// ---- 9. Delve. (songbook/delve.js): her vocabulary on the river
+{
+  const D = TRACKS.delve, W = D.wander, errorsOf = v => v.filter(x => x.level === 'error'), rulesOf = t => errorsOf(lintTrack(t)).map(x => x.rule);
+  // The Offsite river is the plan it was before Delve. joined the book (sample + 60 fixtures, both casts, real durations).
+  const REAL = JSON.parse(readFileSync(new URL('./fixtures/allhands-durations.json', import.meta.url), 'utf8')), h = createHash('sha256');
+  for (const post of posts) for (const own of [false, true]) h.update(canon(FORMS.wander.arrange(lyricsFromPost(post), REAL, {track:'offsite', cast:own ? castSong(post, {track:'offsite', available:AVAILABLE}).cast : undefined})));
+  ok(h.digest('hex') === '49badff24a0f42c631f70cdc4932d8021e1811c92b28a8f45ccbe6efdd105289', 'Delve.: the Offsite river plans (122) are byte for byte what they were');
+  // Playable by id, never picked: out of TRACK_ORDER, the pickers and the casting.
+  ok(!TRACK_ORDER.includes('delve') && D.form === 'wander' && !FORMS.wander.tracks.includes('delve') && posts.every(post => castSong(post, {available:AVAILABLE}).track !== 'delve'), 'Delve.: playable by id, never in the pickers or cast by a post');
+  // The chart: no errors, exactly its two declared breaks (her phrases are the content; two minutes).
+  const v = lintTrack('delve');
+  ok(!errorsOf(v).length && v.length === 2 && v.every(x => x.declared) && v.map(x => x.rule).sort().join() === 'river.form,river.phrases', `Delve.: the chart keeps the constitution, breaking two rules on purpose (${v.map(x => x.rule).join(', ')})`);
+  // The lint still bites under the breaks: phrases three bars apart, a length outside the chart's window, a loud tambourine.
+  const bite = w => rulesOf({...D, wander:{...W, ...w}});
+  ok(bite({setlist:W.setlist.map(p => p.id === 'P3' ? {...p, bar:8} : p)}).includes('river.phrases'), 'Delve.: under the declared break, phrases three bars apart are still an error');
+  ok(bite({seconds:[55, 65]}).includes('river.form') && bite({breaks:{'river.phrases':W.breaks['river.phrases']}}).includes('river.form'), 'Delve.: two minutes outside its own window, or undeclared, is an error');
+  ok(bite({layerSpec:W.layerSpec.map(l => l.kind === 'tambourine' ? {...l, swell:[[19, 1.8]]} : l)}).includes('river.tambourine') && bite({pentatonicAt:b => (b === 26 ? [9, 11, 1, 4, 5] : W.pentatonicAt(b))}).includes('melody.pentatonic'), 'Delve.: a loud tambourine, or a Pool pentatonic out of key, is an error');
+  // The chart's own limits: ramps 2-8 bars, at most two entrances a bar (the loop's own hands included), steps of .12 at most, the tambourine up 1.45x at most.
+  const entering = {};
+  for (const l of W.layerSpec) entering[Math.floor(l.in[0])] = (entering[Math.floor(l.in[0])] || 0) + 1;
+  const loopIn = W.layerSpec.find(l => l.kind === 'loop').in[0];
+  for (const b of Object.values(W.loop.from)) if (b > loopIn) entering[b] = (entering[b] || 0) + 1;   // (its first hands are the loop layer's own entrance)
+  const e = Array.from({length:W.fade[0] + 1}, (_, b) => W.energy(b)), tamb = W.layerSpec.find(l => l.kind === 'tambourine');
+  ok(W.layerSpec.every(l => l.in[1] - l.in[0] >= 2 && l.in[1] - l.in[0] <= 8 && l.out[1] - l.out[0] >= 2 && l.out[1] - l.out[0] <= 8) && Object.values(entering).every(n => n <= 2)
+    && e.every((x, i) => !i || Math.abs(x - e[i - 1]) <= .12 + 1e-9) && Math.max(...tamb.swell.map(x => x[1])) <= 1.45, `Delve.: every ramp 2-8 bars, at most ${Math.max(...Object.values(entering))} entrances a bar, energy steps of ${Math.max(...e.map((x, i) => (i ? Math.abs(x - e[i - 1]) : 0))).toFixed(3)} at most`);
+  // The plan, twice: the same; 48 bars, 120.0 s and a 0.6 s tail; no errors, the two declared breaks.
+  const lyrics = lyricsFromPost(SAMPLE_POST), plan = FORMS.wander.arrange(lyrics, {}, {track:'delve'}), T = plan.timing, step = plan.step, bar = 16 * step;
+  ok(json(plan) === json(FORMS.wander.arrange(lyrics, {}, {track:'delve'})) && json(plan) === json(FORMS.wander.arrange(lyricsFromPost(posts[7]), REAL, {track:'delve'})), 'Delve.: the plan is the same on every run, whatever the post');
+  const pv = lintPlan(plan);
+  ok(!errorsOf(pv).length && pv.every(x => x.declared) && Math.abs(T[plan.totalSteps] - 120) < 1e-9 && Math.abs(plan.duration - 120.6) < 1e-9 && Math.round(plan.duration * 24) === 2894, `Delve.: the plan keeps the constitution (${pv.map(x => x.rule).join(', ')} declared), 120.0 s + 0.6 s`);
+  // Her phrases: each first vowel on its 16th; starts four bars apart, three bars of stream between, never two voices.
+  const band = plan.band;
+  ok(band.length === 10 && band.every((x, i) => x.own && x.voice === 'lady' && Math.abs(x.words[0].onset - T[W.setlist[i].bar * 16 + (W.setlist[i].step ?? 0)]) < 1e-3), 'Delve.: her ten phrases, each first vowel on its 16th (within a millisecond: the slowing tape\'s warp is integrated at 1 ms)');
+  ok(band.every((x, i) => !i || (x.start - band[i - 1].start >= 4 * bar - 2 * step && x.start - band[i - 1].end >= 3 * bar)), `Delve.: phrases four bars apart, three bars of stream between (gaps ${band.slice(1).map((x, i) => (x.start - band[i].end).toFixed(1)).join(', ')} s)`);
+  // Her echoes: after their phrase, and gone a beat before the next rises (the echo to fade at its line's end).
+  const ends = band.map(x => Math.max(x.end, ...plan.echoes.filter(h => h.phrase === x.id).map(h => (h.lineSpec ? h.lineSpec.to : h.end))));
+  // (the frozen grain takes over "of..." as it ends: it may start up to 30 ms before the word's last sample)
+  ok(plan.echoes.every(h => h.at >= band.find(x => x.id === h.phrase).end - .03) && band.every((x, i) => !i || ends[i - 1] <= x.start - 4 * step + 1e-6), `Delve.: every echo after its phrase, every chain gone a beat before the next phrase (${band.slice(1).map((x, i) => (x.start - ends[i]).toFixed(2)).join(', ')} s)`);
+  const kinds = new Set(plan.echoes.map(h => h.kind));
+  ok(['delay', 'reverb', 'fifth', 'octave', 'fade', 'step', 'freeze', 'canon'].every(k => kinds.has(k)) && plan.echoes.filter(h => h.phrase === 'P1').map(h => h.kind).join() === 'delay,delay,delay,reverb,fifth,octave,fade,fade,fade', 'Delve.: "Delve." on delay, in reverb, down a fifth, down an octave, then the echo to fade; every stage of hers present');
+  const canonVoices = [...new Set(plan.echoes.filter(h => h.kind === 'canon').map(h => h.voice))], at = t => plan.echoes.filter(h => h.kind === 'canon' && h.at <= t + 1e-6).length;
+  ok(canonVoices.length === 8 && new Set(plan.echoes.filter(h => h.kind === 'canon' && h.at < T[41 * 16 + 15]).map(h => h.voice)).size === 8 && plan.echoes.filter(h => h.kind === 'canon').every(h => h.end <= T[44 * 16] + 1e-6), 'Delve.: the canon compounds to eight voices by bar 41 and closes by bar 44');
+  ok(plan.clarity.every((p, i) => !i || p[0] >= plan.clarity[i - 1][0]) && plan.clarity.at(-1)[1] === 1 && plan.clarity.some(p => p[1] === 0), 'Delve.: her clarity goes from crisp to the choir and comes back clear');
+  // In key: the setlist's tuned phrases, the composed notes of her echoes, the choir, the stars (each on its bar's pentatonic).
+  const inKey = m => D.pitchClasses.includes(((Math.round(m) % 12) + 12) % 12);
+  ok(band.every(x => Number.isInteger(x.midi) && inKey(x.midi)) && plan.choir.every(c => c.midi.length === 4 && c.midi.every(inKey)) && plan.echoes.filter(h => h.notes).every(h => h.notes.every(n => inKey(n[2]))), 'Delve.: her phrases, her choir and her canon in E Dorian');
+  ok(plan.stars.twinkles.every(s => W.pentatonicAt(Math.floor(s.t / bar + 1e-9)).includes(((s.midi % 12) + 12) % 12)) && plan.stars.twinkles.slice(0, 3).every((s, i) => Math.abs(s.t - band[5].words[i].onset) < 1e-3) && Math.abs(plan.stars.at - 60) < 1e-9,
+    `Delve.: ${plan.stars.twinkles.length} stars on their bars' pentatonic, the first three born on "A rich tapestry"`);
+  // The fields the film reads.
+  const m = plan.marks;
+  ok(m.mouth === 55 && m.kiss === 59.375 && m.star === 60 && m.slow === 71.25 && m.swell2 === 85 && m.canon === 95 && m.delta === 105 && m.undraw === 117.5 && plan.clearMax === 10 && plan.swells.length === 2 && plan.swells.every(w => w.refBars.join() === '5,12')
+    && band.every(x => x.words.every(w => w.file && w.start <= w.end) && ['stage', 'clarity', 'index', 'split', 'font', 'k'].every(k => k in x)) && plan.bars.every(b => b.pentatonic?.length === 5), 'Delve.: the marks, swells, phrases, words and bars the film reads');
+  // It schedules cleanly through the validating fake context, the same twice, every input at most two at once; an excerpt from mid-song too.
+  const a = await record(plan, {mode:'sung'}), b = await record(FORMS.wander.arrange(lyrics, {}, {track:'delve'}), {mode:'sung'});
+  ok(a.calls > 20000 && a.sha === b.sha && E.exactReport(a.ctx).every(x => x.overlap <= 2), `Delve.: ${a.calls} valid Web Audio calls, the same twice, every input at most two at once`);
+  const ex = await record(plan, {mode:'sung', bars:[30, 36]});
+  ok(ex.calls > 2000, `Delve.: an excerpt (bars 30-36) schedules from mid-song (${ex.calls} calls)`);
+}
+// ---- 10. Day One (src/films/day-one/score.js): a film's song, the roll
+{
+  const S = await import('../src/films/day-one/score.js'), TL = await import('../src/films/day-one/timeline.js'), C = S.CHART, R = C.roll;
+  const {readFile} = await import('node:fs/promises'), read = async file => new Uint8Array(await readFile(new URL(`../public/films/day-one/voices/${file}`, import.meta.url)));
+  const errorsOf = v => v.filter(x => x.level === 'error'), rulesOf = t => errorsOf(lintTrack(t)).map(x => x.rule);
+  // Not a song book track: never in the pickers, the forms or the casting.
+  ok(!TRACKS['day-one'] && !TRACK_ORDER.includes('day-one') && !Object.values(FORMS).some(f => (f.tracks || []).includes('day-one')), 'Day One: a film\'s chart, out of the song book\'s pickers, forms and casting');
+  // The chart: no errors, exactly its three declared breaks.
+  const v = lintTrack(C);
+  ok(!errorsOf(v).length && v.length === 3 && v.every(x => x.declared) && v.map(x => x.rule).sort().join() === 'form.ending,form.order,form.vocal', `Day One: the chart keeps the constitution, breaking three rules on purpose (${describe(v).join('; ')})`);
+  // The lint still bites under the breaks.
+  const plan = R.plan, motifAt = plan.findIndex(s => s.part === 'final');
+  const near = plan.map(s => (s.part === 'wave2' && s.B === 30 ? {...s, B:23} : s));                                  // a copy beside Voice 1
+  ok(rulesOf({...C, roll:{...R, plan:near}}).includes('form.vocal'), 'Day One: under the declared break, a copy beside the motif is still an error');
+  const high = plan.map(s => (s.part === 'wave5' ? {...s, copies:s.copies.map((c, i) => (i ? c : {...c, midi:57, role:54}))} : s));   // Strategy on A3, outside B2-F#3
+  ok(rulesOf({...C, roll:{...R, plan:high}}).includes('form.vocal'), 'Day One: a copy outside its singer\'s range is an error');
+  ok(rulesOf({...C, roll:{...R, plan:[...plan.slice(0, motifAt), {...plan[motifAt], copies:[{...plan[motifAt].copies[0], space:{wash:.3}}]}]}}).includes('form.ending'), 'Day One: a wet last line is an error');
+  ok(rulesOf({...C, roll:{...R, seconds:70}}).includes('form.order') && rulesOf({...C, roll:{...R, kicks:[...R.kicks, 30.5, 31.5]}}).includes('tempo.doubleTime'), 'Day One: 70 s, or five kicks a bar, is an error');
+  ok(rulesOf({...C, chords:{...C.chords, Bm9:{...C.chords.Bm9, arp:[...C.chords.Bm9.arp, 60]}}, chordAt:b => (b % 4 < 2 ? {...C.chords.Bm9, arp:[60]} : C.chords.Gmaj9)}).includes('melody.pentatonic'), 'Day One: an arpeggio note off the pentatonic is an error');
+  ok(rulesOf({...C, mix:{...C.mix, tape:{...C.mix.tape, wow:.2}}}).includes('production.tape') && rulesOf({...C, roll:{...R, printer:[]}}).includes('band.printer'), 'Day One: wow on the master, or no printer, is an error');
+  // The one clock: every statement is a cue of timeline.js, every tick a number that changes on screen.
+  const cues = TL.cues();
+  ok(plan.length === cues.length && plan.every((s, i) => s.B === cues[i].B && s.part === cues[i].part) && plan.filter(s => s.part === 'voice1' || s.part === 'final').map(s => s.B).join() === '22,92', `Day One: ${plan.length} statements on timeline.js's cues, the motif on B22 and B92`);
+  const copies = plan.flatMap(s => s.copies.map(c => ({s, c}))), byPart = p => plan.filter(s => s.part === p);
+  ok(byPart('wave3').every(s => s.copies.length === 3) && byPart('wave5').every(s => s.copies.length === 6) && byPart('wave6').length === 8 && byPart('wall').length === 16 && byPart('robot')[0].copies.length === 0
+    && copies.every(({s, c}) => c.motif || Math.abs(c.gainDb - (-10 * Math.log10(cues.find(q => q.B === s.B).copies) + R.copyDb[c.voice])) < 1e-3), 'Day One: the copies per wave (1, 2, 3, 4, 6, 8, 8-10, 0, 16), each at -10 log10(N) dB');
+  ok(byPart('wall').every((s, i) => s.copies[0].midi === R.wall[i] && Math.abs(s.copies[0].pan) === .8) && byPart('wave2').every(s => !s.copies[0].pan) && copies.every(({c}) => c.human >= 0 && c.human <= .025),
+    'Day One: the wall climbs the pentatonic an entry at +-0.8, waves 1 and 2 centred, every copy humanised 0-25 ms');
+  // It schedules cleanly through the validating fake context, the same twice, every input at most two at once.
+  const run = async () => { const r = await S.renderScore({read, normalize:false}); return {r, log:last.log, ctx:last}; };
+  const a = await run(), b = await run();
+  ok(a.log.length > 20000 && sha(canon(a.log)) === sha(canon(b.log)) && E.exactReport(a.ctx).every(x => x.overlap <= 2), `Day One: ${a.log.length} valid Web Audio calls, the same twice, every input at most two at once`);
+  const m = a.r.marks, motif = m.grats;
+  const lag = motif[1] && motif[1].start - TL.tOf(TL.EVENTS.doug);
+  ok(motif.length === 2 && Math.abs(motif[0].t - TL.tOf(22)) <= 1 / 30 && lag >= 0 && lag <= .1 && Math.abs((motif[1].end - motif[1].start) - (motif[0].end - motif[0].start)) < 1e-9 && m.silence[0].from === TL.tOf(91) && m.silence[0].to === Math.min(motif[1].start, TL.tOf(TL.EVENTS.doug)),
+    `Day One: Voice 1's "grats" ${((motif[0].t - TL.tOf(22)) * 1000).toFixed(1)} ms from B22; the last line starts ${(lag * 1000).toFixed(1)} ms after Doug's reply and its tick; the silence from B91 to the tick (${(m.silence[0].to - m.silence[0].from).toFixed(3)} s)`);
+  ok(m.ticks.length === TL.ticks().length && m.ticks.every((k, i) => k.t === TL.ticks()[i].t), `Day One: ${m.ticks.length} ticks, one for every number that changes on screen`);
 }
 console.log(`song book: ${checks} checks passed`);

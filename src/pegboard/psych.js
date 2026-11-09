@@ -19,6 +19,7 @@
 //     passes the flash governor ungoverned on long runs (scripts/check-pegboard.mjs).
 //   - True black stays black: nothing is painted on a board whose exposure is 0 (the choke).
 import {PALETTE} from './board.js';
+import {paintMouth, decode as decodeMouth, HERO, SMALL, MID} from './lips.js';
 
 const TAU = Math.PI * 2;
 const BLUE = PALETTE.blue.id, WHITE = PALETTE.white.id, SIGNAL = PALETTE.signal.id, DEEP = PALETTE.deep.id;
@@ -47,7 +48,29 @@ const COMMON = {
   cx:{d:.5, doc:'the centre, 0..1 of the board\'s width'},
   cy:{d:.5, doc:'the centre, 0..1 of the board\'s height'},
   breath:{d:1, doc:'0..1: how much the voices and the claps move it'},
+  // Peg tiles (pegTiles): the field cut into square tiles of pegs; on each tick a share of them roll their
+  // pattern a peg or two inside themselves. Place, not light: a tile keeps its light as it moves, and the
+  // type is never part of the field, so a tile under a word never moves it.
+  tiles:{d:0, doc:'0..1: the share of peg tiles moving (0: none)'},
+  tile:{d:10, doc:'the tile, pegs'},
+  tick:{d:0, doc:'a whole number: each new value deals the tiles again (key it with steps on the song\'s grid)'},
+  tpx:{d:1, doc:'pixel tiles: a dealt tile drops to blocks of this many pegs (1: it only rolls; 2-5: it pixelates, the Printer\'s motion tiles in pegs)'},
+  tlevels:{d:0, doc:'pixel tiles: a dealt tile\'s light re-quantised to this many levels (0: as it is)'},
+  // Stepped motion: the look's clock moves only on the song's grid (quant steps a beat: 2 is the eighths), so it
+  // jumps in place on the beat instead of gliding (square edges in time as well as in space).
+  quant:{d:0, doc:'steps a beat the motion jumps on (0: it glides; 2: the eighths)'},
+  // Light without flicker: whiten mixes every lit peg toward white (more light, the tone held; key it slowly), and
+  // under sets how much of its light a texture keeps while type is lit (TYPE_DIM by default; the moat and the halo
+  // round the type stay, so the words still win).
+  whiten:{d:0, doc:'0..1: every lit peg mixed this far toward white (key it slowly: it is light)'},
+  under:{d:-1, doc:'0..1: the light a texture keeps while type is lit (-1: TYPE_DIM)'},
+  halo:{d:1, doc:'0 or 1: dim toward the type within TYPE_HALO pegs (0: keep only the dark moat a peg wide, as a figure does)'},
+  // The platform's bands: above `ceiling` and below `floor` (0..1 of the board's height) the pattern fades over
+  // a few rows to FAINT, so a 9:16 film keeps its header and its caption band calm (Delve.: 26 and 120 of 160).
+  ceiling:{d:0, doc:'0..1 of the height: above it the pattern fades to faint light (0: off)'},
+  floor:{d:1, doc:'0..1 of the height: below it the pattern fades to faint light (1: off)'},
 };
+export const FAINT = .26;
 export const LOOKS = Object.freeze({
   ripples:{title:'Ripples', caption:'Rings born on every beat, travelling out from the centre or from one peg. A signal ring leaves on each bar.',
     params:{spacing:{d:6, doc:'pegs between rings'}, px:{d:-1, doc:'a peg column to ripple from (-1: cx)'}, py:{d:-1, doc:'a peg row to ripple from (-1: cy)'}}},
@@ -57,16 +80,42 @@ export const LOOKS = Object.freeze({
     params:{blades:{d:8, doc:'blades in each ring'}}},
   moire:{title:'Moiré', caption:'Two sets of rings from centres that orbit each other; the fringes are their interference.',
     params:{spacing:{d:5, doc:'pegs between rings of each set'}, spread:{d:.55, doc:'how far apart the two centres orbit, 0..1 of the short side'}}},
-  plasma:{title:'Plasma', caption:'A slow colour field of summed waves, cycling deep, blue, white and signal.',
-    params:{}},
-  mandala:{title:'Mandala', caption:'A kaleidoscope with 6, 8 or 12-fold mirror symmetry: petals and bands that breathe with the voices.',
-    params:{fold:{d:8, doc:'mirror symmetry: 6, 8 or 12 (any whole number from 3)'}, petals:{d:2, doc:'petals per wedge'}}},
+  plasma:{title:'Plasma', caption:'A slow colour field of summed waves, cycling deep, blue, white and signal. With block and levels, in big pixels of flat light.',
+    params:{block:{d:1, doc:'pegs per block: the field read once per block (a big pixel)'}, levels:{d:0, doc:'flat levels of light (0: graded)'}}},
+  mandala:{title:'Mandala', caption:'A kaleidoscope with 6, 8 or 12-fold mirror symmetry: petals and bands that breathe with the voices. With block and levels, in big pixels of flat light; with dip, a dark lane round an ellipse (a figure\'s path).',
+    params:{fold:{d:8, doc:'mirror symmetry: 6, 8 or 12 (any whole number from 3)'}, petals:{d:2, doc:'petals per wedge'}, block:{d:1, doc:'pegs per block: the field read once per block (a big pixel)'}, levels:{d:0, doc:'flat levels of light per band (0: graded)'},
+      dip:{d:0, doc:'0..1: how dark the lane round the ellipse dipRx x dipRy about the centre goes'}, dipRx:{d:30, doc:'the lane\'s half width, pegs'}, dipRy:{d:14, doc:'the lane\'s half height, pegs'}, dipW:{d:6, doc:'the lane\'s width, pegs'}}},
   lissajous:{title:'Lissajous', caption:'Flowing figures traced by a white-hot head, their trails cooling through blue to deep.',
     params:{a:{d:3, doc:'x frequency'}, b:{d:2, doc:'y frequency'}, curves:{d:2, doc:'figures, 1 to 3'}, trail:{d:10, doc:'beats of trail'}}},
+  loading:{title:'Loading', caption:'A file loading in pegs: a bar fills from the left behind a white-hot head, inside a dim frame of deep pegs; a slow sheen crosses what has loaded once a bar. Round it, with rings > 0, an eye of stepped rings in big pixel blocks opens and flows in toward the bar. The cut keys progress (the printer\'s intro: by its own sound).',
+    params:{progress:{d:.6, doc:'0..1: how much of the bar has loaded (whole pegs)'}, width:{d:.53, doc:'the bar\'s length, 0..1 of the board\'s width'}, thick:{d:3, doc:'the bar\'s height in pegs'},
+    rings:{d:1, doc:'0..1: the light of the stepped rings round the bar (0: none)'}, rx:{d:.5, doc:'the rings\' centre, 0..1 of the width'}, ry:{d:.54, doc:'as rx, of the height'}, block:{d:2, doc:'pegs per block: the rings\' big pixel'}, band:{d:3, doc:'blocks per band: one lit stripe and its dark ground'}, duty:{d:1 / 3, doc:'0..1: the lit stripe\'s share of a band (a whole number of blocks over band, so a stripe keeps its width as it moves: 1/3 of 3 is one block)'},
+    travel:{d:0, doc:'bands travelled inward (negative: outward); key it on the song\'s steps'}, aspect:{d:1.8, doc:'how much wider than tall: 1 square, 2 an eye'}, corner:{d:.7, doc:'.5 square corners, .7 a stepped octagon, 1 a diamond'},
+    pupil:{d:0, doc:'the clear middle, blocks (field units): nothing lights inside it'}, open:{d:1, doc:'0..1: how far out the rings reach, from the pupil to the board\'s edge (an eye opening)'}, every:{d:4, doc:'the accent: one stripe in this many'}, flow:{d:.25, doc:'bands a beat the rings flow in by themselves (0: only as travel is keyed)'}}},
+  contour:{title:'Contour', caption:'Stepped rings of a squarish field in big pixel blocks (an eye, a tunnel): white stripes on the dark board, every fourth blue (or signal), flowing in or out on the song\'s steps. Square edges, flat light.',
+    params:{accent:{d:0, doc:'every fourth stripe: 0 blue, 1 signal'}, tone:{d:0, doc:'the stripes: 0 white, 1 blue (accent white), 2 deep (accent blue)'}, block:{d:2, doc:'pegs per block: the rings\' big pixel'}, band:{d:3, doc:'blocks per band: one lit stripe and its dark ground'}, duty:{d:1 / 3, doc:'0..1: the lit stripe\'s share of a band (a whole number of blocks over band, so a stripe keeps its width as it moves: 1/3 of 3 is one block)'},
+    travel:{d:0, doc:'bands travelled inward (negative: outward); key it on the song\'s steps'}, aspect:{d:1.8, doc:'how much wider than tall: 1 square, 2 an eye'}, corner:{d:.7, doc:'.5 square corners, .7 a stepped octagon, 1 a diamond'},
+    pupil:{d:0, doc:'the clear middle, blocks (field units): nothing lights inside it'}, open:{d:1, doc:'0..1: how far out the rings reach, from the pupil to the board\'s edge (an eye opening)'}, every:{d:4, doc:'the accent: one stripe in this many'}, flow:{d:.25, doc:'bands a beat the rings flow in by themselves (0: only as travel is keyed)'},
+    twin:{d:0, doc:'0..1 of the width: a second field this far right of the first (the first as far left), lit where exactly one of them is: a moiré in square edges'},
+    twinY:{d:0, doc:'0..1 of the height: the second field also this far down (the first as far up): a diagonal pair'}}},
+  // Figures (figure:true): drawn things, not textures. They paint before any texture (board-layer.js
+  // paintGrid), at their own light (never dimmed while a word is lit), keep a one-peg moat round the type,
+  // and every texture after them treats their pegs as type.
+  lips:{title:'Lips', figure:true, caption:'Her mouth: pop-art lips in pegs (signal, a brighter outline, white gloss), drawn in stroke order, filled by scanline, talking in twelve shapes; a blue shadow mouth behind; a turning ring of small mouths for a canon. Lips only: no tongue, no teeth, no face.',
+    params:{mouth:{d:0, doc:'the hero mouth: lips.js code (shape x 4 + open 0..3); -1 none'}, draw:{d:1, doc:'0..1: the outline drawn in stroke order'}, fill:{d:1, doc:'0..1: the fill, a scanline from the top (after the outline)'},
+      gloss:{d:1, doc:'0..1: the gloss pops in, left to right'}, shadow:{d:0, doc:'0..1: a blue shadow mouth one row down, behind'}, hero:{d:1, doc:'0..1: the hero mouth\'s light (it gives way to the ring)'},
+      trace:{d:0, doc:'0..1: a white-hot head runs round the drawn outline in stroke order'}, stack:{d:0, doc:'0..3: copies of the mouth 2, 4 and 6 rows down, behind (her choir\'s voices)'},
+      mid:{d:0, doc:'0 or 1: the hero at its middle size (29 pegs wide: the centre of its own ring)'},
+      ring:{d:0, doc:'0..1: the ring of small mouths, from the hero\'s place out to its full size'}, turn:{d:0, doc:'degrees: the ring turns'}, rx:{d:33, doc:'the ring\'s half width, pegs'}, ry:{d:14, doc:'the ring\'s half height, pegs'},
+      m0:{d:-1, doc:'small mouth 0 (lips.js code; -1 none); slots fill opposite first: 0, 180, 90, 270, 45, 225, 135, 315 degrees'}, m1:{d:-1, doc:'small mouth 1'}, m2:{d:-1, doc:'small mouth 2'}, m3:{d:-1, doc:'small mouth 3'},
+      m4:{d:-1, doc:'small mouth 4'}, m5:{d:-1, doc:'small mouth 5'}, m6:{d:-1, doc:'small mouth 6'}, m7:{d:-1, doc:'small mouth 7'}}},
+  stars:{title:'Stars', figure:true, caption:'Stars in pegs, each born at its own moment and place (the cue\'s events), its eight arms growing from one peg and shrinking back over its life, turning a quarter turn a bar in sixteen angle steps; they twinkle by size, never by a blink. White near stars (one in five signal), blue far ones.',
+    params:{spin:{d:1, doc:'quarter turns a bar'}, twinkle:{d:.14, doc:'0..1: how much a star\'s pegs swell and shrink (size, not light)'}}},
   footage:{title:'Footage through the grid', caption:'A video frame taken over by pegs, sharper and in colour: warm light to signal, cool to blue, shadows to deep.',
     params:{gamma:{d:1.15, doc:'luma exponent'}, sharpen:{d:.9, doc:'local contrast, 0..2'}, colour:{d:1, doc:'0..1: 0 blue levels only, 1 the full palette'}}},
 });
 export const PSYCH_LOOKS = Object.freeze(Object.keys(LOOKS));
+export const isFigure = look => !!LOOKS[look]?.figure;
 export const lookParams = look => ({...COMMON, ...(LOOKS[look]?.params || {})});
 // The params of a look with defaults filled in (unknown keys dropped).
 export function resolveParams(look, params = {}) {
@@ -216,14 +265,15 @@ function buffers(n) {
   return s;
 }
 
-export function psychField(look, cols, rows, t, {drive = {beat:t * 1.8, voice:.5, clap:0}, seed = 0, params = {}, frame = null} = {}) {
+export function psychField(look, cols, rows, t, {drive = {beat:t * 1.8, voice:.5, clap:0}, seed = 0, params = {}, frame = null, events = null, lit = null} = {}) {
   if (!LOOKS[look]) throw Error(`unknown psych look "${look}" (${PSYCH_LOOKS.join(', ')})`);
   const n = cols * rows, F = buffers(n), P = resolveParams(look, params);
   F.I.fill(0); F.tone.fill(BLUE); F.white.fill(0); F.size.fill(1);
   const br = clamp(P.breath), voice = clamp(drive.voice ?? 0), clap = clamp(drive.clap ?? 0);
-  const beat = (drive.beat ?? 0) * P.speed + hash(seed, 1) * 16;
-  // The light the voices carry: .62 to 1 (slow), and the clap's swell in size (no light).
-  const lift = (1 - br) * .8 + br * (.62 + .38 * voice), swell = 1 + .14 * br * clap, push = .18 * br * clap;
+  const q = P.quant > 0 ? P.quant : 0, b0 = (drive.beat ?? 0) * P.speed, beat = (q ? Math.floor(b0 * q + 1e-6) / q : b0) + hash(seed, 1) * 16;
+  // The light the voices carry: .62 to 1 (slow), and the clap's swell in size (no light; none when the motion is
+  // stepped: it moves only on the grid).
+  const lift = (1 - br) * .8 + br * (.62 + .38 * voice), swell = 1 + .14 * br * clap * (q ? 0 : 1), push = q ? 0 : .18 * br * clap;
   const R = Math.max(1, Math.min(cols, rows) / 2), scale = Math.max(.2, P.scale);
   const cx = P.cx * cols - .5, cy = P.cy * rows - .5, level = clamp(P.level) * PSYCH_MAX * lift;
   const rot = hash(seed, 2) * TAU;
@@ -268,31 +318,40 @@ export function psychField(look, cols, rows, t, {drive = {beat:t * 1.8, voice:.5
       put(i, (.05 + .95 * v) * vignette(Math.hypot(x - cx, y - cy) / R), BLUE, .55 * smooth(.7, 1, fringe) * v, .85 + .3 * v);
     }
   } else if (look === 'plasma') {
-    const s = 1 / (R * .55 * scale), p = beat / 8 + push * .5;
+    const s = 1 / (R * .55 * scale), p = beat / 8 + push * .5, Bk = Math.max(1, Math.round(P.block)), lv = Math.round(P.levels);
     for (let y = 0, i = 0; y < rows; y++) for (let x = 0; x < cols; x++, i++) {
-      const u = (x - cx) * s, v = (y - cy) * s;
+      const u = ((Bk > 1 ? (Math.floor(x / Bk) + .5) * Bk - .5 : x) - cx) * s, v = ((Bk > 1 ? (Math.floor(y / Bk) + .5) * Bk - .5 : y) - cy) * s;
       const f = Math.sin(u * 1.7 + TAU * p * .5) + Math.sin(v * 2.1 - TAU * p * .37 + rot) + Math.sin((u + v) * 1.3 + TAU * p * .23)
         + Math.sin(Math.hypot(u + 1.8 * Math.sin(TAU * p * .11), v + 1.4 * Math.cos(TAU * p * .13)) * 2.4);
       // Hue cycles deep, blue, white, signal, blue, deep around the field; light peaks between them.
       const h = frac(f * .18 + p * .25 + hash(seed, 3)), band = h * 5, k = Math.floor(band), m = band - k;
       const tone = [DEEP, BLUE, WHITE, SIGNAL, BLUE][k], crest = .5 + .5 * Math.cos(TAU * (m - .5));
-      put(i, (.18 + .82 * crest) * (.75 + .25 * Math.sin(f * 1.1)), tone, tone === WHITE ? .2 * crest : 0, .9 + .18 * crest);
+      let val = (.18 + .82 * crest) * (.75 + .25 * Math.sin(f * 1.1));
+      if (lv > 0) val = Math.round(val * lv) / lv;
+      put(i, val, tone, tone === WHITE && !lv ? .2 * crest : 0, lv ? 1.1 : .9 + .18 * crest);
     }
   } else if (look === 'mandala') {
     // Rings that travel out with the beat, each cut into petals by the folded angle; alternate rings
     // set their petals half a petal over, so the rings weave. A ring keeps its tone as it travels and
     // changes it only at the dark between rings: white at the heart, then blue, deep, blue, signal.
     const fold = Math.max(3, Math.round(P.fold)), wedge = TAU / fold, petals = Math.max(1, P.petals);
-    const spin = TAU * (beat / (fold * 4)) + rot, travel = (beat + push) / 4, rings = 3.2 / scale;
+    const spin = TAU * (beat / (fold * 4)) + rot, travel = (beat + push) / 4, rings = 3.2 / scale, Bk = Math.max(1, Math.round(P.block)), lv = Math.round(P.levels);
     for (let y = 0, i = 0; y < rows; y++) for (let x = 0; x < cols; x++, i++) {
-      const dx = (x - cx) / R, dy = (y - cy) / R, r = Math.hypot(dx, dy);
+      // (In blocks: the field read at each block's centre, so every edge is a block's edge.)
+      const X = Bk > 1 ? (Math.floor(x / Bk) + .5) * Bk - .5 : x, Y = Bk > 1 ? (Math.floor(y / Bk) + .5) * Bk - .5 : y;
+      const dx = (X - cx) / R, dy = (Y - cy) / R, r = Math.hypot(dx, dy);
       let a = (Math.atan2(dy, dx) + spin) % wedge; if (a < 0) a += wedge;
       a = Math.min(a, wedge - a) / (wedge / 2);                  // 0 on a mirror line, 1 mid-wedge
       const w = r * rings - travel, k = Math.round(w), u = w - k, ring = Math.cos(Math.PI * u) ** 2;
       const lobe = Math.cos(Math.PI * (petals * a + (k % 2 ? .5 : 0))) ** 2;
-      const v = ring ** 1.3 * (.22 + .78 * lobe) * smooth(.0, .06, r);
+      let v = ring ** 1.3 * (.22 + .78 * lobe) * smooth(.0, .06, r);
       const id = ((k % 4) + 4) % 4, tone = r * rings < .5 + .02 ? WHITE : [BLUE, DEEP, BLUE, SIGNAL][id];
-      put(i, (.04 + .96 * v) * vignette(r), tone, .3 * lobe * ring * (tone === BLUE ? 1 : 0), .85 + .3 * v);
+      // Flat light: one level per band and petal (no gradient inside a block), no white mix.
+      if (lv > 0) { v = Math.round(v * lv) / lv; if (v <= 0) continue; }
+      // The dip: a dark lane round the ellipse (the canon's ring of mouths travels it, on dark ground).
+      const off = P.dip > 0 ? (Math.hypot((X - cx) / Math.max(1, P.dipRx), (Y - cy) / Math.max(1, P.dipRy)) - 1) * Math.min(P.dipRx, P.dipRy) / Math.max(1, P.dipW / 2) : 0;
+      const lane = P.dip > 0 ? P.dip * Math.exp(-(off * off)) : 0;
+      put(i, (lv ? v : .04 + .96 * v) * vignette(r) * (1 - lane), tone, lv ? 0 : .3 * lobe * ring * (tone === BLUE ? 1 : 0), lv ? 1.1 : .85 + .3 * v);
     }
   } else if (look === 'lissajous') {
     // Figures traced through time: a head at the newest point and a trail of older points, each a soft
@@ -312,6 +371,44 @@ export function psychField(look, cols, rows, t, {drive = {beat:t * 1.8, voice:.5
           put(i, v, age > .6 ? DEEP : tone, .8 * smooth(.75, 1, heat), .9 + .3 * heat);
         }
       }
+    }
+  } else if (look === 'contour') {
+    const deep = P.tone >= 1.5;
+    steppedRings(cols, rows, P, cx, cy, put, deep ? DEEP : P.tone >= .5 ? BLUE : WHITE, deep ? BLUE : P.tone >= .5 ? WHITE : P.accent >= .5 ? SIGNAL : BLUE, 1, beat);
+  } else if (look === 'lips') {
+    // (Figures paint at their own light: level, not the voices' lift.)
+    const figure = (i, v, tone, white = 0, size = 1) => { if (v * clamp(P.level) <= F.I[i]) return; F.I[i] = clamp(v) * clamp(P.level); F.tone[i] = tone; F.white[i] = white; F.size[i] = size; };
+    const own = lit ?? new Uint8Array(n), mx = P.cx * cols - .5, my = P.cy * rows - .5;
+    const hero = decodeMouth(P.mouth);
+    if (hero && P.hero > 0) paintMouth(figure, own, cols, rows, {...hero, size:P.mid >= .5 ? MID : HERO, cx:mx, cy:my, draw:clamp(P.draw), fill:clamp(P.fill), gloss:clamp(P.gloss), trace:clamp(P.trace), level:clamp(P.hero), shadow:clamp(P.shadow), stack:clamp(P.stack, 0, 3)});
+    if (P.ring > 0) {
+      const SLOTS = [0, 180, 90, 270, 45, 225, 135, 315], r = clamp(P.ring);
+      for (let k = 0; k < 8; k++) {
+        const m = decodeMouth(P[`m${k}`]);
+        if (!m) continue;
+        const a = (SLOTS[k] + P.turn) * Math.PI / 180;
+        paintMouth(figure, own, cols, rows, {...m, size:SMALL, cx:mx + r * P.rx * Math.cos(a), cy:my + r * P.ry * Math.sin(a), level:Math.min(1, .35 + .65 * r), shadow:clamp(P.shadow)});
+      }
+    }
+  } else if (look === 'stars') {
+    paintStars(F, cols, rows, t, P, events || [], drive.beat ?? 0);
+  } else if (look === 'loading') {
+    if (P.rings > 0) steppedRings(cols, rows, P, P.rx * cols - .5, P.ry * rows - .5, put, WHITE, SIGNAL, P.rings, beat);
+    // Whole pegs: the bar's box, a one-peg gap, then a frame of deep pegs (its corners left out, so it reads
+    // round). The loaded part is blue, its last column the white-hot head; a sheen (a little more light,
+    // a little bigger) crosses the loaded part once a bar, so a stalled bar still lives.
+    const W = Math.max(4, Math.round(P.width * cols)), T = Math.max(1, Math.round(P.thick)), x0 = Math.round(P.cx * cols - W / 2), y0 = Math.round(P.cy * rows - T / 2);
+    const lit = Math.round(clamp(P.progress) * W), sheen = frac((beat + push) / 4) * (W + 8) - 4;
+    for (let y = y0 - 2; y <= y0 + T + 1; y++) for (let x = x0 - 2; x <= x0 + W + 1; x++) {
+      if (x < 0 || y < 0 || x >= cols || y >= rows) continue;
+      const i = y * cols + x, k = x - x0, inside = k >= 0 && k < W && y >= y0 && y < y0 + T;
+      const ringX = x === x0 - 2 || x === x0 + W + 1, ringY = y === y0 - 2 || y === y0 + T + 1;
+      if (inside) {
+        if (k >= lit) continue;
+        if (k === lit - 1 && lit < W) { put(i, 1, WHITE, .75, 1.08); continue; }
+        const glow = Math.exp(-((k - sheen) ** 2) / 18);
+        put(i, .74 + .16 * glow, BLUE, .25 * glow, .94 + .1 * glow);
+      } else if ((ringX || ringY) && !(ringX && ringY)) put(i, .32, DEEP, 0, .9);
     }
   } else if (look === 'footage') {
     // One sample per peg; local contrast against a 5×5 box blur sharpens it; hue picks the tone.
@@ -341,7 +438,120 @@ export function psychField(look, cols, rows, t, {drive = {beat:t * 1.8, voice:.5
       put(i, .06 + .94 * v, tone, l > .86 ? .5 * (l - .86) / .14 : 0, .82 + .32 * v);
     }
   }
+  if (P.tiles > 0) pegTiles(F, cols, rows, P, seed);
+  if (P.whiten > 0) { const w = clamp(P.whiten); for (let i = 0; i < n; i++) if (F.I[i] > 0 && F.white[i] < w) F.white[i] = w; }
+  if (P.ceiling > 0 || P.floor < 1) {
+    const top = P.ceiling * rows, bottom = P.floor * rows, ramp = 4;
+    for (let y = 0; y < rows; y++) {
+      const k = Math.min(1, FAINT + (1 - FAINT) * Math.min(smooth(top - ramp, top, y + .5), 1 - smooth(bottom - ramp, bottom, y + .5)));
+      if (k < 1) for (let x = 0, i = y * cols; x < cols; x++, i++) F.I[i] *= k;
+    }
+  }
   return F;
+}
+
+// Peg tiles: a share of square tiles (tile pegs a side) roll their pattern 1 or 2 pegs, across or down, inside
+// themselves on each tick. Every tile keeps its own light (a cyclic roll), so the quadrants' light holds. With tpx > 1
+// they are the Printer Song's motion tiles in pegs: a dealt tile drops to big pixels (blocks of 2 to tpx pegs, each
+// its mean light, re-quantised to tlevels) and rolls a block, so it keeps its light as it pixelates.
+function pegTiles(F, cols, rows, P, seed) {
+  const T = Math.max(2, Math.round(P.tile)), tick = Math.floor(P.tick), share = clamp(P.tiles), keys = ['I', 'tone', 'white', 'size'], PX = Math.round(P.tpx ?? 1), LV = Math.round(P.tlevels ?? 0);
+  const tmp = {I:new Float32Array(T * T), tone:new Uint8Array(T * T), white:new Float32Array(T * T), size:new Float32Array(T * T)};
+  for (let ty = 0; ty * T < rows; ty++) for (let tx = 0; tx * T < cols; tx++) {
+    const id = ty * 977 + tx;
+    if (hash(id, tick * 131 + seed * 7 + 5) >= share) continue;
+    const w = Math.min(T, cols - tx * T), h = Math.min(T, rows - ty * T), down = hash(id, tick * 131 + 11) < .5, sgn = hash(id, tick * 131 + 23) < .5 ? -1 : 1;
+    // (Pixel tiles, tpx > 1: the tile drops to blocks of 2 to tpx pegs, by the deal, and rolls a block.)
+    const px = PX > 1 ? 2 + Math.floor(hash(id, tick * 131 + 29) * (PX - 1)) : 1, d = px > 1 ? px : 1 + Math.floor(hash(id, tick * 131 + 17) * 2);
+    for (const k of keys) {
+      const A = F[k], B = tmp[k];
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) B[y * T + x] = A[(ty * T + y) * cols + tx * T + x];
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        const sx = down ? x : ((x - sgn * d) % w + w) % w, sy = down ? ((y - sgn * d) % h + h) % h : y;
+        A[(ty * T + y) * cols + tx * T + x] = B[sy * T + sx];
+      }
+    }
+    if (px < 2) continue;
+    // Each block takes its pegs' mean light (so the tile keeps its light), the tone of its brightest peg, flat.
+    for (let by = 0; by < h; by += px) for (let bx = 0; bx < w; bx += px) {
+      let sum = 0, m = 0, top = -1, tone = 0;
+      for (let y = by; y < Math.min(h, by + px); y++) for (let x = bx; x < Math.min(w, bx + px); x++) { const i = (ty * T + y) * cols + tx * T + x; sum += F.I[i]; m++; if (F.I[i] > top) { top = F.I[i]; tone = F.tone[i]; } }
+      let v = sum / m;
+      if (LV > 0) v = Math.round(v / PSYCH_MAX * LV) / LV * PSYCH_MAX;
+      for (let y = by; y < Math.min(h, by + px); y++) for (let x = bx; x < Math.min(w, bx + px); x++) { const i = (ty * T + y) * cols + tx * T + x; F.I[i] = v; F.tone[i] = tone; F.white[i] = 0; F.size[i] = 1.1; }
+    }
+  }
+}
+
+// Stars (the 'stars' look): events [[t0, t1, x, y, len, tone, hero, x0?, y0?, travel?], ...] in song seconds and
+// 0..1 of the board (x0, y0: where a star rises from, over travel seconds: the kiss). Each star's arms grow from
+// one peg over .6 s and shrink back over its last .9 s, so its light only ramps; it turns a quarter turn a bar in
+// 16 angle steps; it twinkles by size. Tones: 0 blue, 1 white, 2 signal.
+const STAR_TONES = [BLUE, WHITE, SIGNAL];
+function paintStars(F, cols, rows, t, P, events, beat) {
+  const put = (i, v, tone, white, size) => { if (v <= F.I[i]) return; F.I[i] = v; F.tone[i] = tone; F.white[i] = white; F.size[i] = size; };
+  const level = clamp(P.level);
+  for (let s = 0; s < events.length; s++) {
+    const [t0, t1, x, y, len, tone = 1, hero = 0, x0, y0, travel = 0] = events[s];
+    if (t < t0 || t >= t1) continue;
+    // (A blown star, one with a travel, is born whole in .1 s: it leaves her lips a star, not a speck.)
+    const flies = travel > 0 && Number.isFinite(x0), age = t - t0, grow = smooth(0, flies ? .1 : .6, age), shrink = smooth(0, .9, t1 - t), L = len * Math.min(grow, shrink);
+    const at = a => { if (!flies || a >= travel) return [x, y]; const u = smooth(0, travel, Math.max(0, a)); return [x0 + (x - x0) * u, y0 + (y - y0) * u]; };
+    const [px, py] = at(age);
+    const cx = Math.round(px * cols - .5), cy = Math.round(py * rows - .5);
+    // A quarter turn a bar, in 16 steps (22.5 degrees), from the star's own angle; a blown star from none, so it
+    // lands square (its arms on the board's axes on the downbeat it lands on); a small one (len 2 or less) never
+    // turns (rotated, its few pegs would blur into a blob).
+    // (hero 1: a hero star, big and signal; -1: a faint one, the far sky under the platform's captions.)
+    const q = len <= 2 ? 0 : Math.floor((flies ? 0 : hash(s, 41) * 16) + P.spin * beat + 1e-9) % 16, base = (hero > 0 ? .95 : hero < 0 ? .22 : tone === 0 ? .5 : .82) * level;
+    // Its flight leaves three ghosts along its path, a tenth of a second apart, dimmer each (the film's echo).
+    if (flies && age < travel + .3) for (let g = 1; g <= 3; g++) {
+      const [gx, gy] = at(age - .1 * g), X0 = Math.round(gx * cols - .5), Y0 = Math.round(gy * rows - .5), v = base * [.42, .28, .16][g - 1] * (1 - smooth(travel, travel + .3, age - .1 * g));
+      if (v <= .02 || (X0 === cx && Y0 === cy)) continue;
+      for (const [ax, ay] of [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]]) { const X = X0 + ax, Y = Y0 + ay; if (X >= 0 && Y >= 0 && X < cols && Y < rows) put(Y * cols + X, v * (ax || ay ? .6 : 1), STAR_TONES[Math.max(0, Math.min(2, tone | 0))], 0, 1); }
+    }
+    const tw = 1 + P.twinkle * Math.sin(TAU * (age * (.35 + .3 * hash(s, 43)) + hash(s, 47)));
+    const tn = STAR_TONES[Math.max(0, Math.min(2, tone | 0))];
+    const core = cy * cols + cx;
+    if (cx >= 0 && cy >= 0 && cx < cols && cy < rows) put(core, base * Math.max(.35, Math.min(1, L + .35)), tn, hero > 0 ? .9 : hero < 0 ? 0 : .6, (hero > 0 ? 1.12 : 1) * tw);
+    for (let j = 0; j < 8; j++) {
+      const a = (q * 22.5 + j * 45) * Math.PI / 180, arm = j % 2 ? .6 * L : L;
+      for (let r = 1; r <= Math.ceil(arm); r++) {
+        const u = clamp(arm - r + 1), X = Math.round(cx + r * Math.cos(a)), Y = Math.round(cy + r * Math.sin(a));
+        if (X < 0 || Y < 0 || X >= cols || Y >= rows) continue;
+        put(Y * cols + X, base * u * (1 - .4 * (r - 1) / Math.max(1, len)), tn, hero > 0 && r === 1 ? .4 : 0, tw);
+      }
+    }
+  }
+}
+
+// Stepped rings (Aaron's studio loader, in the house's pegs): a squarish distance field measured at the centre of
+// each block of `block` × `block` pegs, so every edge is a block's edge; bands of `band` blocks, the first `duty` of
+// each lit, one in `every` the accent; they flow in by `travel` (keyed) plus `flow` bands a beat; nothing inside the pupil, nothing past `open`. Flat light: a stripe is one
+// level, the ground unlit.
+function steppedRings(cols, rows, P, cx, cy, put, tone, accent, light, beat) {
+  const B = Math.max(1, Math.round(P.block)), asp = Math.max(.2, P.aspect), cut = clamp(P.corner, .5, 1), band = Math.max(.5, P.band);
+  // How far the field reaches at the board's edge (open 1), from the pupil.
+  const edge = d => Math.max(Math.max(d[0] / asp, d[1]), (d[0] / asp + d[1]) * cut);
+  // (twin > 0: two fields, centred twin x cols / 2 left and right of cx; a block lights where exactly one does.)
+  const tw = (P.twin ?? 0) > 0 ? P.twin * cols / 2 : 0, ty = tw ? (P.twinY ?? 0) * rows / 2 : 0, centres = tw ? [[cx - tw, cy - ty], [cx + tw, cy + ty]] : [[cx, cy]];
+  const far = Math.max(...centres.map(([c, d]) => edge([Math.max(c, cols - c) / B, Math.max(d, rows - d) / B])), P.pupil + 1), reach = P.pupil + clamp(P.open) * (far - P.pupil);
+  const E = Math.max(1, Math.round(P.every));
+  // A field at a block: -1 dark, else its stripe's band index.
+  const band1 = (bx, by, [c, d]) => {
+    const f = edge([Math.abs(bx - c) / B, Math.abs(by - d) / B]);
+    if (f < P.pupil || f > reach) return null;
+    const w = (f - P.pupil) / band + P.travel + P.flow * beat, k = Math.floor(w);
+    return w - k < P.duty ? k : null;
+  };
+  for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
+    const bx = (Math.floor(x / B) + .5) * B - .5, by = (Math.floor(y / B) + .5) * B - .5;
+    let k = band1(bx, by, centres[0]);
+    if (tw) { const k2 = band1(bx, by, centres[1]); if ((k === null) === (k2 === null)) continue; k ??= k2; }
+    if (k === null) continue;
+    const acc = ((k % E) + E) % E === 0;
+    put(y * cols + x, (acc ? .9 : .62) * clamp(light), acc ? accent : tone, acc ? 0 : .15, 1.16);
+  }
 }
 
 // ---- onto a board ---------------------------------------------------------------------------------
@@ -352,7 +562,8 @@ export function paintPsych(board, spec, t, {drive, frame} = {}) {
   if (!spec || !(board.exposure > 0)) return board;
   const fade = clamp(spec.fade ?? 1);
   if (fade <= 0) return board;
-  const {cols, rows} = board, n = cols * rows, F = psychField(spec.look, cols, rows, t, {drive, seed:spec.seed ?? 0, params:spec.params, frame});
+  const {cols, rows} = board, n = cols * rows, F = psychField(spec.look, cols, rows, t, {drive, seed:spec.seed ?? 0, params:spec.params, frame, events:spec.events});
+  const figure = !!LOOKS[spec.look]?.figure;
   // The type mask and its distance field (chamfer 3-4, in pegs), capped at the halo.
   const mask = F.mask, dist = F.dist, cap = TYPE_HALO + 1;
   let words = 0;
@@ -373,10 +584,12 @@ export function paintPsych(board, spec, t, {drive, frame} = {}) {
   }
   // (board.ambient: the share of the board's exposure that light which is not type takes; under a screen
   // that holds full through the build's dim, choreo.paint sets it to that dim.)
-  const global = (words ? TYPE_DIM : 1) * fade * (board.ambient ?? 1);
+  // (A figure keeps its own light and a one-peg moat; a texture dims while a word is lit and near the type.)
+  const under = spec.params?.under, dimUnder = Number.isFinite(under) && under >= 0 ? clamp(under) : TYPE_DIM, noHalo = spec.params?.halo === 0;
+  const global = (words && !figure ? dimUnder : 1) * fade * (board.ambient ?? 1);
   for (let i = 0; i < n; i++) {
     if (mask[i]) continue;
-    const near = words ? smooth(1.2, TYPE_HALO, dist[i]) : 1, I = F.I[i] * near * global;
+    const near = !words ? 1 : figure || noHalo ? (dist[i] >= 1.9 ? 1 : 0) : smooth(1.2, TYPE_HALO, dist[i]), I = F.I[i] * near * global;
     if (I <= .02) continue;
     board.I[i] = I; board.tone[i] = F.tone[i]; board.white[i] = F.white[i]; board.size[i] = F.size[i]; board.dx[i] = 0; board.dy[i] = 0;
   }

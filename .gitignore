@@ -1,4 +1,4 @@
-node_modules/
+node_modules
 dist/
 *.local
 .DS_Store
@@ -10,7 +10,7 @@ public/brand/afterbeat/linkedin-beats-afterbeat-kit.zip
 .cache/
 
 # Video Studio 540p proxies: built locally by scripts/build-videostudio-proxies.mjs
-public/videostudio/proxies/
+public/videostudio/proxies
 
 __pycache__/
 *.pyc

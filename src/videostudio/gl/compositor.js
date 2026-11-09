@@ -51,6 +51,9 @@ export const FX_SUPPORT = {
   breathe:'shader: two nested block grids an octave apart, crossfaded', paletteWash:'shader: luma onto a blue, violet or warm duotone, luma kept',
   trail:'compile: copies of the clip at its earlier source frames, laid over it (MAX for lighten)', radialFold:'shader: mirrored wedges about the centre, reflected at the edge',
   pegBloom:'shader: pegs from the centre out behind a front of peg-wide pixel blocks', chromaDrift:'shader: red, green and blue orbit 120 degrees apart, plus a radial split',
+  sparkle:'shader: stars in pegs over the picture (lighten), turning, each growing and shrinking over its own life',
+  contour:'shader: stepped contour bands of a squarish field in flat blocks, taking the picture block by block (or under it)',
+  pixelTiles:'shader: tiles dealt per tick, each dropping to a coarser block, rolled inside itself and re-quantised',
 };
 // What the compositor does with a psych board cue (edl/schema.js PSYCH: {type:'psych', look, ...}).
 export const PSYCH_SUPPORT = {
@@ -86,6 +89,8 @@ export function createCompositor(canvas, opts = {}) {
   if (!gl.getExtension('EXT_color_buffer_float') && !gl.getExtension('EXT_color_buffer_half_float')) throw Error('This GPU cannot render the Peg Board (no float colour buffer).');
 
   let format = opts.format ?? '9:16', scale = opts.scale ?? 1, F = FORMATS[format];
+  // The board-only fast path (drawFrame): on unless a caller turns it off to compare it with the slow one.
+  const fastBoard = opts.fastBoard !== false;
   let post = {...POST, ...(opts.post || {})};
   const ready = loadFonts(opts.fontBase ?? '');
 
@@ -227,13 +232,17 @@ export function createCompositor(canvas, opts = {}) {
     gl.uniform1f(u.uOpacity, opacity); gl.uniform1f(u.uTime, time); gl.uniform1ui(u.uSeed, seed >>> 0);
     // Effects, at their identity unless the layer has them.
     let tile = [1, 1, 0, 0], fold = 0, mosaic = 0, scan = [0, 0, 6], zoom = [0, .5, .5], dir = [0, 0], rgb = [0, 0], sat = 1, chroma = 0, peg = [0, 12, 6, 1.4], iris = [-1, .5, .5, 2];
-    let breathe = [0, .5, .5], wash = [0, 0], radial = [0, 0, .5, .5], bloom = [0, .5, .5, .2], reach = 0, drift = [0, 0, 0], hasPeg = false;
+    let breathe = [0, .5, .5], wash = [0, 0], radial = [0, 0, .5, .5], bloom = [0, .5, .5, .2], reach = 0, drift = [0, 0, 0], hasPeg = false, spark = [0, 12, 6, 0], spark2 = [3, .2, 0, 0];
+    let con = [0, 24, 3, 1 / 3], con2 = [0, .5, .5, 0], con3 = [1.6, .7, 0, 0], con4 = [0, 0, 0, 0], tiles = [0, 96, 24, 0], tiles2 = [1, 4, 0, 0];
     for (const x of fx) switch (x.type) {
       case 'breathe': breathe = [x.px, x.cx ?? .5, x.cy ?? .5]; break;
       case 'paletteWash': wash = [Math.min(1, x.mix), Math.max(0, Math.min(2, x.hue ?? 0))]; break;
       case 'radialFold': radial = [Math.max(2, Math.round(x.wedges)), (x.angle ?? 0) * DEG, x.cx ?? .5, x.cy ?? .5]; break;
       case 'pegBloom': bloom = [Math.min(1, x.amount), x.cx ?? .5, x.cy ?? .5, Math.max(.01, x.band ?? .2)]; reach = x.reach ?? 0; if (!hasPeg) peg = [0, x.pitch ?? 12, Math.max(1, x.levels ?? 6), x.gamma ?? 1.4]; break;
       case 'chromaDrift': drift = [x.px ?? 0, (x.angle ?? 0) * DEG, x.radial ?? 0]; break;
+      case 'sparkle': spark = [Math.min(1, x.amount), x.pitch ?? 12, Math.max(1, Math.min(12, Math.round(x.count ?? 6))), Math.round(x.seed ?? 0)]; spark2 = [x.size ?? 3, x.spin ?? .2, x.tone ?? 0, time]; break;
+      case 'contour': con = [Math.min(1, x.mix), x.px ?? 24, x.band ?? 3, x.duty ?? 1 / 3]; con2 = [x.travel ?? 0, x.cx ?? .5, x.cy ?? .5, x.twin ?? 0]; con3 = [x.aspect ?? 1.6, x.corner ?? .7, x.luma ?? 0, x.hole ?? 0]; con4 = [x.grow ?? 0, x.reach ?? 0, x.under ?? 0, x.tone ?? 0]; break;
+      case 'pixelTiles': tiles = [Math.min(1, x.amount), x.tile ?? 96, x.px ?? 24, x.tick ?? 0]; tiles2 = [x.slide ?? 1, x.levels ?? 4, x.seed ?? 0, 0]; break;
       case 'tile': tile = [Math.max(1, x.cols), Math.max(1, x.rows), x.mirror ?? 1, 1]; break;
       case 'fold': fold = x.axis === 'y' ? 2 : x.axis === 'xy' ? 3 : 1; break;
       case 'mosaic': mosaic = x.px; break;
@@ -247,7 +256,8 @@ export function createCompositor(canvas, opts = {}) {
       case 'iris': iris = [Math.max(0, x.r), x.cx ?? .5, x.cy ?? .5, x.feather ?? 2]; break;
       default: break;                      // droste and echo are passes, trail is layers: not shader terms
     }
-    gl.uniform3f(u.uBreathe, ...breathe); gl.uniform2f(u.uWash, ...wash); gl.uniform4f(u.uRadialFold, ...radial); gl.uniform4f(u.uBloomPeg, ...bloom); gl.uniform1f(u.uBloomReach, reach); gl.uniform3f(u.uDrift, ...drift);
+    gl.uniform3f(u.uBreathe, ...breathe); gl.uniform2f(u.uWash, ...wash); gl.uniform4f(u.uRadialFold, ...radial); gl.uniform4f(u.uBloomPeg, ...bloom); gl.uniform1f(u.uBloomReach, reach); gl.uniform3f(u.uDrift, ...drift); gl.uniform4f(u.uSparkle, ...spark); gl.uniform4f(u.uSparkle2, ...spark2);
+    gl.uniform4f(u.uContour, ...con); gl.uniform4f(u.uContour2, ...con2); gl.uniform4f(u.uContour3, ...con3); gl.uniform4f(u.uContour4, ...con4); gl.uniform4f(u.uTiles, ...tiles); gl.uniform4f(u.uTiles2, ...tiles2);
     gl.uniform4f(u.uTile, ...tile); gl.uniform1i(u.uFold, fold); gl.uniform1f(u.uMosaic, mosaic);
     gl.uniform3f(u.uScan, ...scan); gl.uniform3f(u.uRadial, ...zoom); gl.uniform2f(u.uDir, ...dir); gl.uniform2f(u.uRgb, ...rgb);
     gl.uniform1f(u.uSat, sat); gl.uniform1f(u.uChroma, chroma); gl.uniform4f(u.uPeg, ...peg); gl.uniform4f(u.uIris, ...iris);
@@ -386,13 +396,32 @@ export function createCompositor(canvas, opts = {}) {
     const regionRadius = rect && (rect.w < F.w || rect.h < F.h) ? 12 : 0;
     const drawMain = (target = null) => {
       // (Over peg video the board takes its pitch, so the two grids coincide: the ignition, the loop seam's ghost.)
-      const pitch = pegUnder && !frame.board.over ? pegUnder.fx.find(x => x.type === 'pegVideo').pitch : undefined, base = {cell:rect, radius:regionRadius, target, transient:moving, pitch, psych:psychMain.length ? psychMain : null};
+      // (An EDL's own board grid, edl.boardPitch, holds otherwise: Delve.'s 90 x 160 pegs at every render scale.)
+      const pitch = pegUnder && !frame.board.over ? pegUnder.fx.find(x => x.type === 'pegVideo').pitch : frame.board.pitch, base = {cell:rect, radius:regionRadius, target, transient:moving, pitch, psych:psychMain.length ? psychMain : null};
       if (panel >= 1) drawBoardRegion(rect, screens, btime, base);
       else {
         drawBoardRegion(rect, screens, btime, {...base, sockets:!videoUnder, blend:videoUnder ? 'max' : 'over'});
         if (panel > 0) drawBoardRegion(rect, screens, btime, {...base, opacity:panel});
       }
     };
+    // The board-only fast path (Delve.): a full-frame board panel over nothing but flat colour clips of the whole
+    // frame (no effects, no trails, no camera, no cells, no banner, no footage look): the board's texture is opaque
+    // over the whole frame, so the composite is that texture, copied in with one texel fetch a pixel instead of the
+    // uber shader's two passes (under SwiftShader about 2.5 s a pass at 540 x 960; on a GPU, nothing to speak of).
+    // Pixel for pixel what the slow path draws (check-videostudio-export section 9 compares them).
+    const fullRect = !!rect && rect.x === 0 && rect.y === 0 && rect.w === F.w && rect.h === F.h;
+    let fast = fastBoard && o.fast !== false && fullRect && !frame.camera && !moving && !frame.board.over && panel >= 1 && !psychCells.length && !(frame.board.cells || []).length && !frame.board.banner
+      && !psychMain.some(p => p.look === 'footage') && frame.layers.every(l => l.kind === 'generated' && /^color:/.test(l.gen || '') && l.cell.id === 'full' && !l.fx.length && !l.trail && l.opacity >= .999);
+    if (fast) {
+      const b = boards.draw({w:rect.w, h:rect.h, screens, time:btime, pitch:frame.board.pitch, sockets:true, safe:safeOf(rect), psych:psychMain.length ? psychMain : null});
+      if (b.width === W && b.height === H) {
+        stats.boards++; stats.fast = true;
+        resetState(); bindTarget(T.comp); gl.disable(gl.BLEND); gl.useProgram(P.copy.p); gl.bindVertexArray(empty);
+        gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, b.texture); gl.uniform1i(P.copy.u.uSrc, 0);
+        gl.drawArrays(gl.TRIANGLES, 0, 3); stats.passes++;
+      } else fast = false;
+    }
+    if (!fast) {
     if (rect && !under.length && !fixed && !covered) drawMain();
     for (const cs of frame.board?.cells || []) if (cs.z !== 'over') drawBoardRegion(cs.rect, [ctx.cells[cs.screen]], btime, {cell:cs.rect, radius:12});
 
@@ -440,6 +469,7 @@ export function createCompositor(canvas, opts = {}) {
     if (bannerRect) {
       const text = frame.layers.find(l => l.chrome?.banner)?.chrome.banner;
       if (text) { resetState(); bindTarget(T.comp); drawChrome(bannerQuads(text, bannerRect, atlas, {scale, legible:LEGIBLE[format]})); }
+    }
     }
 
     // Droste: each level is the frame with the feedback tile holding the level before.
@@ -558,7 +588,7 @@ export function governorGains(program, {plan, shots, boards}) {
     const fr = program.frame(f), q = [0, 0, 0, 0];
     let boardL = null;
     const psych = fr.board?.psych || [], psychMain = psych.filter(p => !p.rect), psychCells = psych.filter(p => p.rect), cellL = new Map();
-    const boardLuma = () => boardL ??= fr.board?.rect && boards ? boards.luma({w:fr.board.rect.w, h:fr.board.rect.h, screens:boardScreens(program.board.screens), time:boardTimeOf(fr), safe:safeSpan(fr.board.rect, SAFE[program.format]), psych:psychMain}, grids).whole : 0;
+    const boardLuma = () => boardL ??= fr.board?.rect && boards ? boards.luma({w:fr.board.rect.w, h:fr.board.rect.h, screens:boardScreens(program.board.screens), time:boardTimeOf(fr), pitch:fr.board.pitch, safe:safeSpan(fr.board.rect, SAFE[program.format]), psych:psychMain}, grids).whole : 0;
     // A psych cell's own board (footage: predicted as the picture it takes over).
     const cellLuma = p => { if (!cellL.has(p)) cellL.set(p, boards ? boards.luma({w:p.rect.w, h:p.rect.h, screens:[], time:boardTimeOf(fr), psych:[p]}, grids).whole : 0); return cellL.get(p); };
     const covered = !!fr.board?.rect && psychCells.some(p => p.rect.x < fr.board.rect.x + fr.board.rect.w && fr.board.rect.x < p.rect.x + p.rect.w && p.rect.y < fr.board.rect.y + fr.board.rect.h && fr.board.rect.y < p.rect.y + p.rect.h);

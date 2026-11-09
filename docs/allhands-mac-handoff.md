@@ -100,6 +100,45 @@ node scripts/measure-impacts.mjs --work ~/Desktop/impacts
 
 Each script's header comment lists every flag.
 
+## Publishing to the Cutting Room
+
+Everything finished goes into the library at `/cutting-room/` with one command (the contract is
+`src/cutting-room/README.md`, Publishing). It needs ffmpeg and `npm install`. The cloud versions of the
+three Claude Code films are in the catalog now; each Mac master replaces its cloud version, which stays
+on as an Earlier version. Render and review each film as its own brief says first.
+
+- **Printer Song** (`docs/printer-song-video.md`; the render writes `~/Desktop/printer-song-9x16.mp4`). Settle the record's two notes first (the thin green tile border around the mouth, the "in" mark on the pages). Over 25 MiB it gets a two-pass encode at 1080; if the print raster smears, add `--r2`.
+  `node scripts/publish-to-cutting-room.mjs ~/Desktop/printer-song-9x16.mp4 --replaces printer-song-776d0c96 --status "Current edit" --notes "The 1080 master, rendered on the Mac." --poster-frames 230,500,790`
+- **DELVE.** (`docs/vocabulary-film.md`; the render writes `~/Desktop/delve-9x16.mp4`). Two minutes at 1080 will not fit 25 MiB at better than 720, so it goes to R2 (a video key: the deployed server already takes it). `CATALOG_UPLOAD_TOKEN` comes from Render's environment into the shell, never into a file or the chat.
+  `node scripts/publish-to-cutting-room.mjs ~/Desktop/delve-9x16.mp4 --replaces delve-22ebd3ba --r2 --notes "The 1080 master, rendered on the Mac." --poster-frames 14,2100,2472`
+- **Day One.** (`docs/day-one-film.md`; the render writes `out/day-one/day-one.mp4`). In SF Pro, it replaces the cloud render that used Inter; a web-ready file under 25 MiB is kept exactly as rendered.
+  `node scripts/publish-to-cutting-room.mjs out/day-one/day-one.mp4 --replaces day-one-0d178d01 --notes "Final cut, 60 fps, rendered on the Mac in SF Pro." --poster-frames 0,2880,3527`
+
+Each film's sound is measured as it ships: AAC is copied untouched, and the command stops before
+writing or uploading anything if the true peak is over the film's ceiling (-1 dBTP; Printer Song,
+scored with Aaron's track, -0.1). If it stops, fix the master as the film's brief says; for a song film
+whose AAC overshoots, `--limit-sound` puts the sound through the limiter and keeps the picture as it is.
+
+**The four All Hands song films.** No MP4 of them survives in the cloud (only sidecars), so they are
+not in the library yet. Export each at 1080 (each brief's own gates first), then publish it beside its
+song take, which it links to:
+
+```bash
+for t in circle-back humbled-and-honored hustle offsite; do
+  node scripts/export-videostudio.mjs --track $t --format 9:16 --master --gpu --out ~/Desktop/films --name $t-9x16
+done
+node scripts/publish-to-cutting-room.mjs ~/Desktop/films/circle-back-9x16.mp4 --title "Circle Back (Drop Edition)" --category "Finished films" --made-in "Video Studio" --made-in "All Hands" --related circle-back-drop-edition-3e6a17d4 --description "French house about an onboarding checklist, cut on the beat. It's not a U-turn. It's a pivot."
+node scripts/publish-to-cutting-room.mjs ~/Desktop/films/humbled-and-honored-9x16.mp4 --title "Humbled and Honored (Drop Edition)" --category "Finished films" --made-in "Video Studio" --made-in "All Hands" --related humbled-and-honored-drop-edition-cd0ae3ad --description "A neo-soul slow jam about merging two onboarding steps, on screen. It's not a complaint. It's a gift."
+node scripts/publish-to-cutting-room.mjs ~/Desktop/films/hustle-9x16.mp4 --title "Hustle (Drop Edition)" --category "Finished films" --made-in "Video Studio" --made-in "All Hands" --related hustle-drop-edition-65d91575 --description "UK garage for a small process change, on screen. It's not avoidance. It's camera off."
+node scripts/publish-to-cutting-room.mjs ~/Desktop/films/offsite-9x16.mp4 --title "Offsite (River)" --category "Finished films" --made-in "Video Studio" --made-in "All Hands" --related offsite-river-dccc72e3 --description "The team retreat as a river, on screen. Claps, stomps, her voice in long reverb, and one line from Synergy."
+```
+
+A film over 25 MiB gets the two-pass encode (it may step down to 720); add `--r2` to keep it at 1080.
+
+Then `git add public/cutting-room src/cutting-room/catalog.json` and commit. Anything new (a song
+take, a film) goes in the same way: `node scripts/publish-to-cutting-room.mjs --help`. Audio to R2
+(`--r2` on an MP3) waits until the `server/cutting-room.js` that accepts mp3 and m4a is deployed.
+
 ## What "done" means
 
 - **Mix**: −10 ±1 LUFS, true peak −1 dBTP or lower.

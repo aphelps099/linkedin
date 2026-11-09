@@ -329,7 +329,9 @@ window.__allhands = {
         start:plan.timing[Math.floor(e.at)] + (e.at - Math.floor(e.at)) * plan.step, length:+Math.min(e.gate, (e.to - e.from) / e.rate).toFixed(3)})),
       // The band's parts (band.js) and, on the river (wander.js), its layers, loops, swells and slow spans.
       band:plan.band ?? [], bandLeft:plan.bandLeft ?? [], drop:plan.drop ?? null,
-      ...(plan.form === 'wander' ? {layers:plan.layers, loops:plan.loops, swells:plan.swells, slow:plan.slow, phrases:plan.phrases} : {})}};
+      ...(plan.form === 'wander' ? {layers:plan.layers, loops:plan.loops, swells:plan.swells, slow:plan.slow, phrases:plan.phrases} : {}),
+      // Her vocabulary (a setlist river: Delve.): the echoes, her clarity, the choir's syllables, the stars, the board's cap.
+      ...(plan.vocab ? {vocab:plan.vocab, echoes:plan.echoes, clarity:plan.clarity, choir:plan.choir, stars:plan.stars, clearMax:plan.clearMax, fade:plan.fade, bars:plan.bars.map(b => ({index:b.index, section:b.section, chord:b.chord.name, pentatonic:b.pentatonic, energy:+b.energy.toFixed(3)}))} : {})}};
   },
 };
 
