@@ -1,3 +1,4 @@
+import {PixelDivider} from '../brand/PixelDivider.jsx';
 import {AcademyOverview,LessonNavigation} from './arcade/Overview.jsx';
 import {HookLesson} from './arcade/HookLesson.jsx';
 import {SiteFooter} from '../brand/SiteFooter.jsx';
@@ -68,8 +69,8 @@ function Certificate({progress,update}){
     <p className="pg-certificate-share-note" id="pg-certificate-share-note">Preview your certificate, add a caption, and publish to your LinkedIn feed.</p>
     <CertificateArt name={displayName} svgRef={art}/>
     <section className="pg-collection"><div className="pg-course-heading"><h2>The complete collection</h2><span className="pg-eyebrow">5 / 5 earned</span></div><div className="pg-sticker-collection">{REWARDS.map((r,i)=><StickerDownload key={r.name} number={i+1}/>)}</div></section>
-    <section className="pg-beat-unlock"><div className="pg-row"><span className="pg-reward-icon"><Music2 size={25}/></span><div><span className="pg-eyebrow pg-eyebrow-blue">Unlocked · Your optimized beat</span><h2>Consider this your graduation single.</h2></div></div><p>Your final post, ready for a bassline. Make it a beat, remix it, or release your single.</p>{progress.posts.single ? <PostBeat post={progress.posts.single} initialArtist={displayName}/> : <a className="pg-btn" href="#/single">Make your single<ArrowRight size={16}/></a>}</section>
-    <div className="pg-graduation-exit"><div><strong>Your work here is done.</strong><p>Your audience awaits. The band is warming up.</p></div><a className="pg-btn" href="../">Explore LinkedIn Beats<ArrowRight size={16}/></a></div>
+    <section className="pg-beat-unlock lb-pixel-divided"><PixelDivider edge/><div className="pg-row"><span className="pg-reward-icon"><Music2 size={25}/></span><div><span className="pg-eyebrow pg-eyebrow-blue">Unlocked · Your optimized beat</span><h2>Consider this your graduation single.</h2></div></div><p>Your final post, ready for a bassline. Make it a beat, remix it, or release your single.</p>{progress.posts.single ? <PostBeat post={progress.posts.single} initialArtist={displayName}/> : <a className="pg-btn" href="#/single">Make your single<ArrowRight size={16}/></a>}</section>
+    <div className="pg-graduation-exit lb-pixel-divided"><PixelDivider edge/><div><strong>Your work here is done.</strong><p>Your audience awaits. The band is warming up.</p></div><a className="pg-btn" href="../">Explore LinkedIn Beats<ArrowRight size={16}/></a></div>
   </div>;
 }
 function StickerDownload({number}){

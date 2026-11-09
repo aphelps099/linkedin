@@ -1,3 +1,4 @@
+import {PixelDivider} from '../../brand/PixelDivider.jsx';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Check, Copy, RotateCcw} from 'lucide-react';
 import {byId} from '../../lessons/categories.js';
@@ -13,7 +14,7 @@ import {SynergyTip} from '../components/SynergyTip.jsx';
 import {LevelChart} from '../components/LevelChart.jsx';
 import {PostScore} from '../components/PostScore.jsx';
 import {LESSON_PRESENTATION} from '../chapters/presentation.js';
-import {DotPlay,DotArrow} from '../arcade/Artwork.jsx';
+import {DotPlay,DotArrow,PegText} from '../arcade/Artwork.jsx';
 import {LessonHero} from '../arcade/LessonHero.jsx';
 
 // The step player. One chapter in, revealed one step at a time. Passive steps
@@ -208,7 +209,7 @@ export function StepPlayer({chapter, userName, title, onName, onComplete, onFini
         const parts = step.template.split(/(\{\{\w+\}\})/g);
         return <div className="pg-indent">
           <div className="pg-card pg-exercise">
-            <div className="pg-card-head"><span>Try this</span><strong>{step.title}</strong></div><div className="pg-composer-profile"><Profile name={userName} title={title} composer/></div>
+            <div className="pg-card-head"><span><PegText text="TRY THIS" face="peg3" label="Try this"/></span><strong>{step.title}</strong></div><div className="pg-composer-profile"><Profile name={userName} title={title} composer/></div>
             <div className="pg-card-body">{step.description && <p className="pg-muted">{step.description}</p>}
               <pre className="pg-template">{parts.map((p, i) => { const m = p.match(/^\{\{(\w+)\}\}$/); if(!m) return <span key={i}>{p}</span>; const b = step.blanks.find(x => x.id === m[1]); return <mark key={i}>{(vals[`${step.id}.${m[1]}`] ?? b?.defaultValue ?? '') || b?.placeholder}</mark>; })}</pre>
             </div>
@@ -229,7 +230,7 @@ export function StepPlayer({chapter, userName, title, onName, onComplete, onFini
         const set = (key, value) => setAnswers(x => ({...x, [step.id]: {...(x[step.id] || {}), [key]: value}}));
         return <div className="pg-indent">
           <div className="pg-card pg-exercise">
-            <div className="pg-card-head"><span>Try this</span><strong>{step.title}</strong></div><div className="pg-composer-profile"><Profile name={userName} title={title} composer/></div>
+            <div className="pg-card-head"><span><PegText text="TRY THIS" face="peg3" label="Try this"/></span><strong>{step.title}</strong></div><div className="pg-composer-profile"><Profile name={userName} title={title} composer/></div>
             {step.choose && <div className="pg-choices">{Object.entries(CATEGORY_NAMES).map(([id, name]) => <button type="button" key={id} disabled={!isLast || !!performing} aria-pressed={id === category} onClick={() => { setCategories(c => ({...c, [step.id]: id})); setAnswers(x => ({...x, [step.id]: {}})); }}>{name}</button>)}</div>}
             <div className="pg-card-body">{step.description && <p className="pg-muted">{step.description}</p>}</div>
             <div className="pg-fields">{fields.map(f => f.type === 'choice'
@@ -269,7 +270,7 @@ export function StepPlayer({chapter, userName, title, onName, onComplete, onFini
         const hits = [...picked].filter(i => correct.has(i)).length;
         return <div className="pg-indent">
           <div className="pg-card pg-spot">
-            <div className="pg-card-head"><span>Try this</span><strong>{step.title}</strong></div><div className="pg-composer-profile"><Profile name={userName} title={title} composer/></div>
+            <div className="pg-card-head"><span><PegText text="TRY THIS" face="peg3" label="Try this"/></span><strong>{step.title}</strong></div><div className="pg-composer-profile"><Profile name={userName} title={title} composer/></div>
             <div className="pg-card-body"><p className="pg-muted">{step.description || 'Click every line that is doing LinkedIn things.'}</p>
               <div className="pg-spot-lines">{lines.map((l, i) => <button type="button" key={i} disabled={checked || !isLast} aria-pressed={picked.has(i)} className={checked ? (correct.has(i) ? 'is-trope' : picked.has(i) ? 'is-miss' : '') : ''} onClick={() => toggle(i)}>{l}</button>)}</div>
             </div>
@@ -303,7 +304,7 @@ export function StepPlayer({chapter, userName, title, onName, onComplete, onFini
         return <div className="pg-indent"><LessonReward chapter={chapter} final={step.isFinal} nextTitle={step.nextChapterTitle} onContinue={onComplete}/></div>;
 
       case 'divider':
-        return <div className="pg-indent"><hr className="pg-hair"/></div>;
+        return <div className="pg-indent"><PixelDivider/></div>;
 
       default:
         return null;

@@ -1,3 +1,4 @@
+import {PixelDivider} from '../../brand/PixelDivider.jsx';
 import React, {useId, useRef, useState} from 'react';
 import {Check, Download} from 'lucide-react';
 import {DotArrow} from '../arcade/Artwork.jsx';
@@ -57,13 +58,14 @@ export function BadgeDownloads({number,svgRef,compact=false}){
 
 export function LessonReward({chapter, nextTitle, final, onContinue}){
   const art=useRef(null);
-  return <section className="pg-end" aria-label="Lesson complete">
+  return <section className="pg-end lb-pixel-divided" aria-label="Lesson complete">
+    <PixelDivider edge/>
     <div className="pg-complete-label"><Check size={15}/>Lesson {String(chapter.number).padStart(2,'0')} complete</div>
     <h2>{final ? 'Considerable effort. Officially recognized.' : 'A little more LinkedIn. A little less human.'}</h2>
     <p>You unlocked <strong>{REWARDS[chapter.number-1].name}</strong>.</p>
     <div className="pg-sticker-stage"><Sticker number={chapter.number} svgRef={art}/></div>
     <BadgeDownloads number={chapter.number} svgRef={art}/>
-    <SynergyTip celebrate content={final ? "Five lessons. One beat. Your professional development is now **officially overdeveloped.**" : "That is another milestone for the feed. Please remain **appropriately humbled.**"}/><div className="pg-end-next"><span>{final ? 'Your five-lesson journey, in writing.' : <>Up next<br/><strong>{nextTitle}</strong></>}</span><button type="button" className="pg-btn" onClick={onContinue}>{final ? 'View my certificate' : 'Begin next lesson'}<DotArrow/></button></div>
+    <SynergyTip celebrate content={final ? "Five lessons. One beat. Your professional development is now **officially overdeveloped.**" : "That is another milestone for the feed. Please remain **appropriately humbled.**"}/><div className="pg-end-next lb-pixel-divided"><PixelDivider edge/><span>{final ? 'Your five-lesson journey, in writing.' : <>Up next<br/><strong>{nextTitle}</strong></>}</span><button type="button" className="pg-btn" onClick={onContinue}>{final ? 'View my certificate' : 'Begin next lesson'}<DotArrow/></button></div>
   </section>;
 }
 

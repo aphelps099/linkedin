@@ -16,11 +16,11 @@
 .academy-page .pg-app .pg-fields label{gap:9px}
 .academy-page .pg-app :is(.pg-fields label>span,.pg-choice>span){color:#e1e8ee;font:500 15px/1.4 C2Hoves,Arial,sans-serif}
 .academy-page .pg-app .pg-fields label>span{min-height:42px;display:flex;align-items:flex-end}
-.academy-page .pg-app :is(.pg-fields input,.pg-fields textarea,.pg-name input,.pg-certificate-controls input){background:#101922;color:#f4f4e9;border:1px solid #607487;border-radius:2px;font:16px/1.5 C2Hoves,Arial,sans-serif;padding:13px 14px;min-height:50px;color-scheme:dark;caret-color:#ffe18b;box-shadow:inset 0 3px 0 #00000018}
+.academy-page .pg-app :is(.pg-fields input,.pg-fields textarea,.pg-name input,.pg-certificate-controls input){background:#dce5e5;color:#20313d;border:1px solid #b9cbce;border-radius:2px;font:16px/1.5 C2Hoves,Arial,sans-serif;padding:13px 14px;min-height:50px;color-scheme:light;caret-color:#20313d;box-shadow:inset 0 2px 0 #ffffff50}
 .academy-page .pg-app .pg-fields textarea{min-height:86px;resize:vertical}
-.academy-page .pg-app :is(.pg-fields input,.pg-fields textarea,.pg-name input,.pg-certificate-controls input)::placeholder{color:#a7b7c7;opacity:1}
-.academy-page .pg-app :is(.pg-fields input,.pg-fields textarea,.pg-name input,.pg-certificate-controls input):focus-visible{outline:2px solid #a8cfff;outline-offset:3px;border-color:#a8cfff;background:#142331}
-.academy-page .pg-app :is(.pg-fields input,.pg-fields textarea):disabled{background:#14202a;color:#b8c6d2;border-color:#495a69;opacity:.8;cursor:not-allowed}
+.academy-page .pg-app :is(.pg-fields input,.pg-fields textarea,.pg-name input,.pg-certificate-controls input)::placeholder{color:#526575;opacity:1}
+.academy-page .pg-app :is(.pg-fields input,.pg-fields textarea,.pg-name input,.pg-certificate-controls input):focus-visible{outline:2px solid #a8cfff;outline-offset:3px;border-color:#a8cfff;background:#f0f3ed}
+.academy-page .pg-app :is(.pg-fields input,.pg-fields textarea):disabled{background:#b8c6cb;color:#465966;border-color:#9aafb8;opacity:.8;cursor:not-allowed}
 .academy-page .pg-app .pg-choice{gap:12px;margin-bottom:0}
 .academy-page .pg-app :is(.pg-choice>div,.pg-choices){gap:8px}
 .academy-page .pg-app .pg-choices{padding-inline:28px}
@@ -73,9 +73,9 @@
 .ac-hook .ac-tabs{margin-top:30px;border-color:#607487}.ac-hook .ac-tabs>button[aria-selected=true]{background:var(--lesson-accent);color:#142337}
 .ac-hook .ac-fact-panel{background:#17232f;padding:28px;min-height:330px}.ac-hook .ac-fact-panel:before{display:none}
 .ac-hook .ac-fact-panel label{color:#e1e8ee;font-size:21px}
-.ac-hook .ac-fact-panel textarea,.ac-hook .ac-example-fact{background:#101922;color:#f1f3ed;border:1px solid #607487;font:17px/1.6 C2Hoves,Arial,sans-serif;padding:16px;border-radius:2px;color-scheme:dark}
-.ac-hook .ac-fact-panel textarea:focus-visible{background:#142331;border-color:#a8cfff;outline:2px solid #a8cfff;outline-offset:3px}
-.ac-hook .ac-fact-panel textarea::placeholder{color:#a7b7c7}.ac-hook .ac-input-hint{color:#b4c2cf;font:13px/1.6 C2Hoves,Arial,sans-serif}.ac-hook .ac-example-explain{color:#c4ced7}
+.ac-hook .ac-fact-panel textarea,.ac-hook .ac-example-fact{background:#dce5e5;color:#20313d;border:1px solid #b9cbce;font:17px/1.6 C2Hoves,Arial,sans-serif;padding:16px;border-radius:2px;color-scheme:light}
+.ac-hook .ac-fact-panel textarea:focus-visible{background:#f0f3ed;border-color:#a8cfff;outline:2px solid #a8cfff;outline-offset:3px}
+.ac-hook .ac-fact-panel textarea::placeholder{color:#526575;opacity:1}.ac-hook .ac-input-hint{color:#b4c2cf;font:13px/1.6 C2Hoves,Arial,sans-serif}.ac-hook .ac-example-explain{color:#c4ced7}
 .academy-page .pg-app :is(.pg-lesson,.ac-hook) .pg-btn,.ac-hook .ac-primary{background:#ffe18b;color:#152440;min-height:52px;padding:14px 22px;font:600 15px/1.4 'LB Azeret Mono',monospace;gap:15px}
 .academy-page .pg-app :is(.pg-lesson,.ac-hook) .pg-btn:hover:not(:disabled),.ac-hook .ac-primary:hover{background:#ffedb4;color:#152440}
 .academy-page .pg-app :is(.pg-lesson,.ac-hook) .pg-btn:focus-visible{outline:none;box-shadow:inset 0 0 0 3px white}
@@ -83,8 +83,8 @@
 .pg-btn .ac-dot-arrow{width:23px;height:18px}
 .academy-page .pg-app :is(.pg-lesson,.ac-hook) .pg-pill{border:1px solid #607487;background:#253748;color:#e4eaf1;min-height:46px;border-radius:2px}
 .academy-page .pg-app :is(.pg-lesson,.ac-hook) .pg-pill:hover{background:#354c61}
-.academy-page .pg-app :is(.pg-lesson,.ac-hook) .pg-synergy-tip{background:#17232f;border-radius:0;clip-path:var(--ac-clip);padding:20px 24px;color:#f1f3ed}
-.academy-page .pg-app :is(.pg-lesson,.ac-hook) .pg-synergy-label{background:transparent;padding:0;color:var(--lesson-accent,#a8cfff);font:11px 'LB Azeret Mono',monospace;letter-spacing:.03em;margin-bottom:9px}
+.academy-page .pg-app .pg-synergy-tip{background:#e8e5db;border-radius:0;clip-path:var(--ac-clip);padding:20px 24px;color:#26302f}
+.academy-page .pg-app .pg-synergy-label{background:transparent;padding:0;color:#715647;font:11px 'LB Azeret Mono',monospace;letter-spacing:.03em;margin-bottom:9px}
 .academy-page .pg-app .pg-insight{border-left:3px solid var(--lesson-accent,#a8cfff);background:transparent}
 .academy-page .pg-app .pg-insight .pg-card-head{color:var(--lesson-accent,#a8cfff)}
 .academy-page .pg-app .pg-tick{border-radius:0;clip-path:polygon(0 4px,4px 0,100% 0,100% calc(100% - 4px),calc(100% - 4px) 100%,0 100%);background:var(--lesson-accent,#a8cfff);color:#142337}
@@ -123,3 +123,33 @@
 .pg-badge-downloads .pg-download-status{margin-bottom:0;text-align:center;min-height:20px}
 .pg-badge-downloads.is-compact{margin-top:14px}.pg-badge-downloads.is-compact>div{gap:8px}.pg-badge-downloads.is-compact .pg-badge-gif{padding:10px 13px}.pg-badge-downloads.is-compact .pg-text-button{font-size:12px}
 @media(prefers-reduced-motion:reduce){.pg-sticker .badge-letter{animation:none}}
+/* Section breaks share the brand dust divider; form and control borders stay intact. */
+.academy-page .lb-pixel-divided{position:relative;border-top:0}
+/* Whitespace is the default separator. Remove the legacy hairline rules. */
+.academy-page .pg-app :is(.pg-continue-row,.pg-prompt,.pg-compare>.pg-card,.pg-score-details,.pg-score-details dl>div,.pg-takeaways,.pg-recap-notes,.pg-certificate-unlock,.pg-feed-actions,.ac-post-reactions,.ac-tabs){border-top:0;border-bottom:0}
+.academy-page .pg-app :is(.pg-exercise,.pg-spot)>.pg-card-head{border-bottom:0}
+.academy-page .pg-hair{border:0}
+/* Bright practice cabinets: chalk-blue body, cream writing surfaces, candy controls. */
+.academy-page .pg-app :is(.pg-exercise,.pg-spot){--panel-bg:#cbdde7;--control-text:#20334a;--control-muted:#465b6e;--pg-ink:#20334a;--pg-muted:#465b6e;background:var(--panel-bg);color:var(--control-text)}
+.academy-page .pg-app :is(.pg-exercise,.pg-spot)>.pg-card-head{padding-bottom:22px}
+.academy-page .pg-app :is(.pg-exercise,.pg-spot)>.pg-card-head>strong{color:#20334a}
+.academy-page .pg-app :is(.pg-exercise,.pg-spot)>.pg-card-head>span{color:#284b7a;gap:12px}
+.academy-page .pg-app :is(.pg-exercise,.pg-spot)>.pg-card-head>span .ac-peg-type{height:18px;width:auto;max-width:180px}
+.academy-page .pg-app :is(.pg-exercise,.pg-spot)>.pg-card-head>span:before{width:5px;height:5px;border-radius:50%;background:#fff2ae;box-shadow:9px 0 0 #f18e7b,18px 0 0 #5489b8;margin-right:18px}
+.academy-page .pg-app :is(.pg-exercise,.pg-spot) .pg-author strong{color:#20334a}
+.academy-page .pg-app :is(.pg-exercise,.pg-spot) .pg-avatar{background:#294c79;color:#f5f0df}
+.academy-page .pg-app :is(.pg-exercise,.pg-spot) :is(.pg-fields label>span,.pg-choice>span){color:#30495e}
+.academy-page .pg-app :is(.pg-exercise,.pg-spot) :is(.pg-fields input,.pg-fields textarea){background:#f4f2e9;border-color:#b0c3ca;box-shadow:inset 0 2px 0 #fff9}
+.academy-page .pg-app :is(.pg-exercise,.pg-spot) :is(.pg-fields input,.pg-fields textarea):focus-visible{background:#fffdf5;border-color:#355f9b;outline-color:#355f9b}
+.academy-page .pg-app :is(.pg-exercise,.pg-spot) :is(.pg-fields input,.pg-fields textarea):disabled{background:#d7e0e0;color:#596c77;border-color:#becdd2;opacity:1}
+.academy-page .pg-app :is(.pg-exercise,.pg-spot) :is(.pg-choice button,.pg-choices button):not([aria-pressed=true]){background:#b2c9db;color:#243e56}
+.academy-page .pg-app :is(.pg-exercise,.pg-spot) :is(.pg-choice button,.pg-choices button):not([aria-pressed=true]):hover:not(:disabled){background:#9bbbd4}
+.academy-page .pg-app :is(.pg-exercise,.pg-spot) :is(.pg-choice button,.pg-choices button):focus-visible{box-shadow:inset 0 0 0 3px #294c79}
+.academy-page .pg-app :is(.pg-exercise,.pg-spot)>.pg-card-foot{background:#b6cfdf}
+.academy-page .pg-app :is(.pg-exercise,.pg-spot)>.pg-card-foot .pg-muted{color:#3c546a}
+.academy-page .pg-app :is(.pg-exercise,.pg-spot)>.pg-card-foot .pg-btn{box-shadow:inset 0 -4px 0 #b88a3f38}
+.academy-page .pg-app :is(.pg-exercise,.pg-spot)>.pg-card-foot .pg-btn:focus-visible{box-shadow:inset 0 0 0 3px #294c79}
+.academy-page .pg-app :is(.pg-exercise,.pg-spot) .pg-template mark{background:#ffe5a2;color:#243e56}
+.academy-page .pg-app .pg-spot .pg-spot-lines button:not(.is-trope):not(.is-miss){background:#f4f2e9;color:#20334a;border-color:#a1b9c6}
+.academy-page .pg-app .pg-spot .pg-spot-lines button[aria-pressed=true]:not(.is-trope):not(.is-miss){background:#a8cfff;border-color:#315e94;box-shadow:inset 3px 0 0 #315e94}
+.academy-page .pg-app .pg-spot .pg-spot-lines button:focus-visible{outline:2px solid #315e94;outline-offset:2px}

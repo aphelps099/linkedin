@@ -1,0 +1,8 @@
+/* Brand section rules: quiet pixel dust on a 12px PEG rhythm.
+   Keep functional borders (fields, tabs, controls) separate from this treatment. */
+.lb-pixel-divided{position:relative;border-top:0}
+.lb-pixel-divider{position:relative;width:100%;height:14px;display:flex;align-items:center;gap:10px;overflow:hidden;pointer-events:none;mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);color:var(--pixel-divider-color,#e9f2ec)}
+.lb-pixel-divider.is-edge{position:absolute;inset:-6px 0 auto}
+.lb-pixel-divider>i{display:block;flex:0 0 2px;height:2px;background:currentColor;opacity:var(--dust-rest);transform:translateY(var(--dust-y));animation:lb-dust-twinkle var(--dust-cycle) ease-in-out var(--dust-delay) infinite}
+@keyframes lb-dust-twinkle{0%,78%,100%{opacity:var(--dust-rest);box-shadow:0 0 0 transparent}86%{opacity:.95;box-shadow:0 0 5px #d8eaff80}92%{opacity:.5;box-shadow:0 0 2px #d8eaff40}}
+@media(prefers-reduced-motion:reduce){.lb-pixel-divider>i{animation:none}}

@@ -1,3 +1,4 @@
+import {PixelDivider} from '../../brand/PixelDivider.jsx';
 import React,{useState} from 'react';
 import {ThumbsUp} from 'lucide-react';
 import {DotArrow,PegIcon} from './Artwork.jsx';
@@ -22,6 +23,6 @@ export function HookLesson({draft,onDraft,onFinish,onComplete,userName,chapter})
  </div>}
  </div>
  <div className="ac-feedback" role="status"><PegIcon/><p>{feedback||(state.stage==='example'?'A tiny event. An extremely professional entrance.':state.stage==='takeaway'?'Curiosity earned. Now give them the payoff.':'Your next big announcement can start very small.')}</p></div>
- <div className="ac-lesson-bottom"><span>Progress stays in this browser</span><button className="ac-text-button" onClick={()=>state.stage==='example'?change({stage:'practice'}):state.stage==='practice'?(state.tried&&state.post.trim()?change({stage:'takeaway'}):setFeedback('Try your hook and keep a little text in the preview first.')):finish()}>{state.stage==='takeaway'?'Complete lesson':'Continue'}<DotArrow/></button></div>
+ <div className="ac-lesson-bottom lb-pixel-divided"><PixelDivider edge/><span>Progress stays in this browser</span><button className="ac-text-button" onClick={()=>state.stage==='example'?change({stage:'practice'}):state.stage==='practice'?(state.tried&&state.post.trim()?change({stage:'takeaway'}):setFeedback('Try your hook and keep a little text in the preview first.')):finish()}>{state.stage==='takeaway'?'Complete lesson':'Continue'}<DotArrow/></button></div>
  </article>;
 }
