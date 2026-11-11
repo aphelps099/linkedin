@@ -33,8 +33,11 @@ function run(f, x, y, recipe, goals) {
   let bounced = false;
   for (let frame = 0; frame < 600; frame++) {
     if (step(p, inputAt(recipe, frame), f) & EV.BOUNCE) bounced = true;
-    for (const g of goals) if ((!g.grounded || p.ground) && overlaps(p, g)) touched.add(g.id);
-    if (frame >= n && p.ground && Math.abs(p.vx) < .5) return { cx:Math.floor(p.x / T), cy:Math.round(p.y / T), touched, frames:frame + 1, bounced };
+    for (const g of goals) if (!g.rest && (!g.grounded || p.ground) && overlaps(p, g)) touched.add(g.id);
+    if (frame >= n && p.ground && Math.abs(p.vx) < .5) {
+      for (const g of goals) if (g.rest && overlaps(p, g)) touched.add(g.id);          // a rest goal counts only where he stops
+      return { cx:Math.floor(p.x / T), cy:Math.round(p.y / T), touched, frames:frame + 1, bounced };
+    }
   }
   return { cx:-1, cy:-1, touched, frames:600, bounced };
 }
@@ -44,7 +47,7 @@ export function goalsOf(f) {
   const g = [];
   f.words.forEach(w => g.push({ id:'word:' + w.word, x0:w.x - 5, x1:w.x + 5, y0:w.y - 5, y1:w.y + 6 }));
   f.mugs.forEach((m, i) => g.push({ id:'mug:' + i, x0:m.x - 3, x1:m.x + 3, y0:m.y - 7, y1:m.y }));
-  if (f.desk) g.push({ id:'desk', x0:f.desk.x + 4, x1:f.desk.x + f.desk.w - 4, y0:f.desk.y - 12, y1:f.desk.y + 1, grounded:true });
+  if (f.desk) g.push({ id:'desk', x0:f.desk.x + 6, x1:f.desk.x + f.desk.w - 6, y0:f.desk.y - 12, y1:f.desk.y + 1, rest:true });   // he has to stop at the desk to post
   if (f.lift) g.push({ id:'lift', x0:f.lift.x + 3, x1:f.lift.x + f.lift.w - 3, y0:f.lift.y - 12, y1:f.lift.y + 1, grounded:true });
   if (f.printer) g.push({ id:'printer', x0:f.printer.x - 2, x1:f.printer.x + 12, y0:f.printer.y - 12, y1:f.printer.y });
   return g;
