@@ -1,0 +1,142 @@
+{
+  "durationSeconds": 90,
+  "resolution": "1280x720",
+  "frameRate": 24,
+  "fullDecode": "pass",
+  "aacBitstreamIdenticalToV1": true,
+  "audioHashes": {
+    "original": "a90d3c8bb5894e70133bace1924197d2d08739a3f1d4cf6167ce2425574cf20c",
+    "v4": "a90d3c8bb5894e70133bace1924197d2d08739a3f1d4cf6167ce2425574cf20c"
+  },
+  "checkedStills": [
+    0.7,
+    1.5,
+    2.52,
+    7.8,
+    24.3,
+    35.8,
+    39.5,
+    40.8,
+    71,
+    83,
+    85.2,
+    88
+  ],
+  "uniqueUserCoffeeClips": 6,
+  "newVoiceAuditions": [
+    "Brodie with light 72Hz amplitude modulation",
+    "Xylar"
+  ],
+  "episodeVoice": "Original unchanged",
+  "publication": "Local review only",
+  "browser": {
+    "errors": [],
+    "media": [
+      {
+        "src": "output/chatgpt-meeting-photo-v4.mp4",
+        "duration": 90,
+        "readyState": 4,
+        "error": null
+      },
+      {
+        "src": "assets/voice-brodie.wav",
+        "duration": 8.637833,
+        "readyState": 4,
+        "error": null
+      },
+      {
+        "src": "assets/voice-xylar.wav",
+        "duration": 15.836021,
+        "readyState": 4,
+        "error": null
+      },
+      {
+        "src": "assets/voice-current-levelled.wav",
+        "duration": 9.399792,
+        "readyState": 4,
+        "error": null
+      },
+      {
+        "src": "assets/people-listening.mp4",
+        "duration": 9.5,
+        "readyState": 4,
+        "error": null
+      },
+      {
+        "src": "assets/drums-listening.mp4",
+        "duration": 9.5,
+        "readyState": 4,
+        "error": null
+      },
+      {
+        "src": "assets/guitar-listening.mp4",
+        "duration": 9.5,
+        "readyState": 4,
+        "error": null
+      },
+      {
+        "src": "assets/keys-full-listening.mp4",
+        "duration": 9.5,
+        "readyState": 4,
+        "error": null
+      },
+      {
+        "src": "assets/strategy-listening.mp4",
+        "duration": 3.5,
+        "readyState": 4,
+        "error": null
+      },
+      {
+        "src": "assets/arjun-listening.mp4",
+        "duration": 9.5,
+        "readyState": 4,
+        "error": null
+      },
+      {
+        "src": "assets/linda-listening.mp4",
+        "duration": 7.5,
+        "readyState": 4,
+        "error": null
+      },
+      {
+        "src": "assets/coffee-0.mp4",
+        "duration": 5.208333,
+        "readyState": 4,
+        "error": null
+      },
+      {
+        "src": "assets/coffee-1.mp4",
+        "duration": 5.208333,
+        "readyState": 4,
+        "error": null
+      },
+      {
+        "src": "assets/coffee-2.mp4",
+        "duration": 5.208333,
+        "readyState": 4,
+        "error": null
+      },
+      {
+        "src": "assets/coffee-3.mp4",
+        "duration": 9.041667,
+        "readyState": 4,
+        "error": null
+      },
+      {
+        "src": "assets/coffee-5.mp4",
+        "duration": 9.041667,
+        "readyState": 4,
+        "error": null
+      },
+      {
+        "src": "assets/coffee-6.mp4",
+        "duration": 9.041667,
+        "readyState": 4,
+        "error": null
+      }
+    ],
+    "instrumentSwitcher": "pass",
+    "mobileOverflow": false,
+    "playbackSeek": 39.5
+  }
+}

@@ -1,5 +1,8 @@
 # Circle Back® product roadmap
 
+The [LinkedIn Beats delivery plan](docs/project/delivery-plan.md) now coordinates characters, music, thumbnail art, office drama, certificates and personalized meetings. This earlier feature roadmap remains as implementation history.
+
+
 Form CB-RM · Rev. 2026-08 · Plans subject to mandatory alignment
 
 The product loop is:

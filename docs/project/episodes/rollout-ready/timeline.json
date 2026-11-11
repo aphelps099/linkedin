@@ -1,0 +1,184 @@
+{
+  "id": "rollout-ready",
+  "title": "Ready to roll out.",
+  "titleLines": [
+    "Ready to",
+    "roll out."
+  ],
+  "episode": "09",
+  "status": "production-draft-1",
+  "format": "short-meeting",
+  "minSeconds": 30,
+  "maxSeconds": 40,
+  "endingSeconds": 3,
+  "outroSeconds": 3,
+  "cast": [
+    "strategy",
+    "linda",
+    "synthia",
+    "printer"
+  ],
+  "topic": "Corporate visit · AI rollout",
+  "corporateVisit": true,
+  "lines": [
+    {
+      "who": "synthia",
+      "text": "We’ve brought the AI adoption playbook.",
+      "shot": "synthia",
+      "gap": 0.36
+    },
+    {
+      "who": "linda",
+      "text": "Is this the one we’re adopting?",
+      "shot": "linda",
+      "gap": 0.36
+    },
+    {
+      "who": "synthia",
+      "text": "This explains how to adopt the playbook.",
+      "shot": "synthia",
+      "gap": 0.36
+    },
+    {
+      "who": "strategy",
+      "text": "What does the first step require?",
+      "shot": "strategy",
+      "gap": 0.36
+    },
+    {
+      "who": "synthia",
+      "text": "A short alignment session with the owners.",
+      "shot": "synthia",
+      "gap": 0.36
+    },
+    {
+      "who": "linda",
+      "text": "We’re all here.",
+      "shot": "linda",
+      "gap": 0.36
+    },
+    {
+      "who": "strategy",
+      "text": "We should schedule something.",
+      "shot": "strategy",
+      "gap": 0.36
+    },
+    {
+      "who": "linda",
+      "text": "Could this be it?",
+      "shot": "linda",
+      "gap": 0.36
+    },
+    {
+      "who": "synthia",
+      "text": "I’ll update the rollout plan.",
+      "shot": "synthia",
+      "gap": 0.8
+    }
+  ],
+  "ending": {
+    "kind": "prop",
+    "heading": "Ready to roll out.",
+    "prop": "playbook",
+    "lines": [
+      "AI ADOPTION",
+      "PLAYBOOK"
+    ],
+    "resolution": "Alignment session: complete"
+  },
+  "hashtags": [
+    "AdoptionAtScale",
+    "ChangeManagement"
+  ],
+  "establishingSeconds": 2,
+  "events": [
+    {
+      "who": "synthia",
+      "text": "We’ve brought the AI adoption playbook.",
+      "shot": "synthia",
+      "gap": 0.36,
+      "index": 0,
+      "start": 5.1,
+      "end": 7.2207
+    },
+    {
+      "who": "linda",
+      "text": "Is this the one we’re adopting?",
+      "shot": "linda",
+      "gap": 0.36,
+      "index": 1,
+      "start": 7.5808,
+      "end": 9.858
+    },
+    {
+      "who": "synthia",
+      "text": "This explains how to adopt the playbook.",
+      "shot": "synthia",
+      "gap": 0.36,
+      "index": 2,
+      "start": 10.218,
+      "end": 12.3849
+    },
+    {
+      "who": "strategy",
+      "text": "What does the first step require?",
+      "shot": "strategy",
+      "gap": 0.36,
+      "index": 3,
+      "start": 12.7449,
+      "end": 15.236
+    },
+    {
+      "who": "synthia",
+      "text": "A short alignment session with the owners.",
+      "shot": "synthia",
+      "gap": 0.36,
+      "index": 4,
+      "start": 15.596,
+      "end": 18.0016
+    },
+    {
+      "who": "linda",
+      "text": "We’re all here.",
+      "shot": "linda",
+      "gap": 0.36,
+      "index": 5,
+      "start": 18.3616,
+      "end": 19.501
+    },
+    {
+      "who": "strategy",
+      "text": "We should schedule something.",
+      "shot": "strategy",
+      "gap": 0.36,
+      "index": 6,
+      "start": 19.861,
+      "end": 22.0251
+    },
+    {
+      "who": "linda",
+      "text": "Could this be it?",
+      "shot": "linda",
+      "gap": 0.36,
+      "index": 7,
+      "start": 22.3851,
+      "end": 23.6352
+    },
+    {
+      "who": "synthia",
+      "text": "I’ll update the rollout plan.",
+      "shot": "synthia",
+      "gap": 0.8,
+      "index": 8,
+      "start": 23.9952,
+      "end": 25.7413
+    }
+  ],
+  "duration": 32.875,
+  "meetingEnd": 26.875,
+  "outroStart": 29.875,
+  "voiceEngine": "1.52.0",
+  "musicBpm": 96,
+  "scoreSha256": "f33d4f1240b54ad393653b3d1b93c75df379008d830d94a8d6c8abdbd7f2c627",
+  "reviewStatus": "first production cut; awaiting listening and creative review"
+}

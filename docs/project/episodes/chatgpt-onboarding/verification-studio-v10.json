@@ -1,0 +1,21 @@
+{
+  "duration": 96,
+  "size": [
+    1920,
+    1080
+  ],
+  "fps": 24,
+  "full_decode": "passed",
+  "audio_bit_identical_to_v9": true,
+  "aac_sha256": "06f49cac765f706bca9d7641d45ff24fd79236fe8b10ef614ceca09057cbb1ce",
+  "printer_camera": "Centered 4:3, equal left/right borders; source composite cropped together without distortion",
+  "gallery_border_pixels": 84.75,
+  "sidebar_border_pixels": 51,
+  "visual_inspection": "Gallery and sidebar reviewed; black side-border pixels checked in both",
+  "runway_credits": 0,
+  "browser": {
+    "playback": "passed",
+    "meeting_chapter_seek": "passed",
+    "page_errors": []
+  }
+}

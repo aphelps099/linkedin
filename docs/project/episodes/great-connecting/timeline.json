@@ -1,0 +1,370 @@
+{
+  "id": "great-connecting",
+  "title": "Great connecting.",
+  "episode": "02",
+  "status": "production-draft-1",
+  "cast": [
+    "synergy",
+    "guitar",
+    "people",
+    "printer"
+  ],
+  "topic": "Conference follow-up",
+  "lines": [
+    {
+      "who": "guitar",
+      "text": "Did anyone get back to Miriam about Friday?",
+      "shot": "grid",
+      "gap": 0.65
+    },
+    {
+      "who": "synergy",
+      "text": "I personalized all the conference follow-ups.",
+      "shot": "synergy",
+      "gap": 0.65
+    },
+    {
+      "who": "people",
+      "text": "What did you and Miriam talk about?",
+      "shot": "people",
+      "gap": 1.05
+    },
+    {
+      "who": "synergy",
+      "text": "Staying connected. And the value of being in the room.",
+      "shot": "synergy",
+      "gap": 0.65
+    },
+    {
+      "who": "guitar",
+      "text": "She needs a keyboard player for the Friday session.",
+      "shot": "grid",
+      "gap": 0.65
+    },
+    {
+      "who": "synergy",
+      "text": "Her message is in the relationship tracker.",
+      "shot": "synergy",
+      "gap": 0.65
+    },
+    {
+      "who": "people",
+      "text": "What does it say?",
+      "shot": "people",
+      "gap": 0.65
+    },
+    {
+      "who": "synergy",
+      "text": "Great to meet you. Is your keyboard player available on Friday?",
+      "shot": "synergy",
+      "gap": 1.05
+    },
+    {
+      "who": "guitar",
+      "text": "Keys said she might be. I wrote it on the programme.",
+      "shot": "grid",
+      "gap": 0.65
+    },
+    {
+      "who": "synergy",
+      "text": "I can add that to the tracker.",
+      "shot": "synergy",
+      "gap": 0.65
+    },
+    {
+      "who": "people",
+      "text": "Could we ask her first?",
+      "shot": "people",
+      "gap": 0.65
+    },
+    {
+      "who": "guitar",
+      "text": "I have. She can do it after two. She said I can pass her email on.",
+      "shot": "guitar",
+      "gap": 0.65
+    },
+    {
+      "who": "synergy",
+      "text": "The current draft says we look forward to exploring opportunities for collaboration.",
+      "shot": "grid",
+      "gap": 0.65
+    },
+    {
+      "who": "people",
+      "text": "We could say after two.",
+      "shot": "people",
+      "gap": 0.65
+    },
+    {
+      "who": "synergy",
+      "text": "After two. And her email address.",
+      "shot": "synergy",
+      "gap": 0.65
+    },
+    {
+      "who": "guitar",
+      "text": "That should do it.",
+      "shot": "guitar",
+      "gap": 1.05
+    },
+    {
+      "who": "synergy",
+      "text": "Would you like me to include a summary of our capabilities?",
+      "shot": "grid",
+      "gap": 0.65
+    },
+    {
+      "who": "guitar",
+      "text": "She heard us play.",
+      "shot": "guitar",
+      "gap": 0.65
+    },
+    {
+      "who": "synergy",
+      "text": "Of course.",
+      "shot": "synergy",
+      "gap": 0.65
+    },
+    {
+      "who": "people",
+      "text": "Thank you for following up.",
+      "shot": "people",
+      "gap": 0.65
+    },
+    {
+      "who": "synergy",
+      "text": "I nearly sent the other version.",
+      "shot": "grid",
+      "gap": 1.05
+    },
+    {
+      "who": "guitar",
+      "text": "This one gives her something to book.",
+      "shot": "guitar",
+      "gap": 0.65
+    }
+  ],
+  "ending": {
+    "kind": "email",
+    "heading": "Re: Friday session",
+    "lines": [
+      "Hi Miriam,",
+      "Keys is available after 2 pm.",
+      "She’s happy for me to share her email.",
+      "I’ll introduce you both."
+    ],
+    "detail": "A specific reply replaces the follow-up template."
+  },
+  "hashtags": [
+    "MeaningfulConnections",
+    "FollowingUp"
+  ],
+  "performance": "Sincere, restrained; preserve original cast voices. New takes require listening review.",
+  "events": [
+    {
+      "who": "guitar",
+      "text": "Did anyone get back to Miriam about Friday?",
+      "shot": "grid",
+      "gap": 0.65,
+      "index": 0,
+      "start": 3.1,
+      "end": 5.3092
+    },
+    {
+      "who": "synergy",
+      "text": "I personalized all the conference follow-ups.",
+      "shot": "synergy",
+      "gap": 0.65,
+      "index": 1,
+      "start": 5.9592,
+      "end": 8.6384
+    },
+    {
+      "who": "people",
+      "text": "What did you and Miriam talk about?",
+      "shot": "people",
+      "gap": 1.05,
+      "index": 2,
+      "start": 9.2884,
+      "end": 11.1742
+    },
+    {
+      "who": "synergy",
+      "text": "Staying connected. And the value of being in the room.",
+      "shot": "synergy",
+      "gap": 0.65,
+      "index": 3,
+      "start": 12.2242,
+      "end": 15.5708
+    },
+    {
+      "who": "guitar",
+      "text": "She needs a keyboard player for the Friday session.",
+      "shot": "grid",
+      "gap": 0.65,
+      "index": 4,
+      "start": 16.2208,
+      "end": 18.4911
+    },
+    {
+      "who": "synergy",
+      "text": "Her message is in the relationship tracker.",
+      "shot": "synergy",
+      "gap": 0.65,
+      "index": 5,
+      "start": 19.1411,
+      "end": 21.4891
+    },
+    {
+      "who": "people",
+      "text": "What does it say?",
+      "shot": "people",
+      "gap": 0.65,
+      "index": 6,
+      "start": 22.1391,
+      "end": 23.0467
+    },
+    {
+      "who": "synergy",
+      "text": "Great to meet you. Is your keyboard player available on Friday?",
+      "shot": "synergy",
+      "gap": 1.05,
+      "index": 7,
+      "start": 23.6967,
+      "end": 27.5285
+    },
+    {
+      "who": "guitar",
+      "text": "Keys said she might be. I wrote it on the programme.",
+      "shot": "grid",
+      "gap": 0.65,
+      "index": 8,
+      "start": 28.5785,
+      "end": 31.1454
+    },
+    {
+      "who": "synergy",
+      "text": "I can add that to the tracker.",
+      "shot": "synergy",
+      "gap": 0.65,
+      "index": 9,
+      "start": 31.7954,
+      "end": 33.4783
+    },
+    {
+      "who": "people",
+      "text": "Could we ask her first?",
+      "shot": "people",
+      "gap": 0.65,
+      "index": 10,
+      "start": 34.1283,
+      "end": 35.3185
+    },
+    {
+      "who": "guitar",
+      "text": "I have. She can do it after two. She said I can pass her email on.",
+      "shot": "guitar",
+      "gap": 0.65,
+      "index": 11,
+      "start": 35.9685,
+      "end": 39.6274
+    },
+    {
+      "who": "synergy",
+      "text": "The current draft says we look forward to exploring opportunities for collaboration.",
+      "shot": "grid",
+      "gap": 0.65,
+      "index": 12,
+      "start": 40.2774,
+      "end": 45.1889
+    },
+    {
+      "who": "people",
+      "text": "We could say after two.",
+      "shot": "people",
+      "gap": 0.65,
+      "index": 13,
+      "start": 45.8389,
+      "end": 47.2284
+    },
+    {
+      "who": "synergy",
+      "text": "After two. And her email address.",
+      "shot": "synergy",
+      "gap": 0.65,
+      "index": 14,
+      "start": 47.8784,
+      "end": 50.1721
+    },
+    {
+      "who": "guitar",
+      "text": "That should do it.",
+      "shot": "guitar",
+      "gap": 1.05,
+      "index": 15,
+      "start": 50.8221,
+      "end": 51.7091
+    },
+    {
+      "who": "synergy",
+      "text": "Would you like me to include a summary of our capabilities?",
+      "shot": "grid",
+      "gap": 0.65,
+      "index": 16,
+      "start": 52.7591,
+      "end": 55.8932
+    },
+    {
+      "who": "guitar",
+      "text": "She heard us play.",
+      "shot": "guitar",
+      "gap": 0.65,
+      "index": 17,
+      "start": 56.5432,
+      "end": 57.5238
+    },
+    {
+      "who": "synergy",
+      "text": "Of course.",
+      "shot": "synergy",
+      "gap": 0.65,
+      "index": 18,
+      "start": 58.1738,
+      "end": 58.8219
+    },
+    {
+      "who": "people",
+      "text": "Thank you for following up.",
+      "shot": "people",
+      "gap": 0.65,
+      "index": 19,
+      "start": 59.4719,
+      "end": 60.8967
+    },
+    {
+      "who": "synergy",
+      "text": "I nearly sent the other version.",
+      "shot": "grid",
+      "gap": 1.05,
+      "index": 20,
+      "start": 61.5467,
+      "end": 63.2963
+    },
+    {
+      "who": "guitar",
+      "text": "This one gives her something to book.",
+      "shot": "guitar",
+      "gap": 0.65,
+      "index": 21,
+      "start": 64.3463,
+      "end": 66.032
+    }
+  ],
+  "duration": 90.0,
+  "meetingEnd": 67.54166666666667,
+  "outroStart": 84.5,
+  "voiceEngine": "1.52.0",
+  "musicBpm": 96,
+  "scoreSha256": "f33d4f1240b54ad393653b3d1b93c75df379008d830d94a8d6c8abdbd7f2c627",
+  "reviewStatus": "first production cut; awaiting listening and creative review"
+}

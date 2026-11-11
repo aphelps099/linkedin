@@ -1,0 +1,154 @@
+{
+  "id": "new-direction",
+  "title": "A new direction.",
+  "titleLines": [
+    "A new",
+    "direction."
+  ],
+  "episode": "05",
+  "status": "production-draft-1",
+  "format": "short-meeting",
+  "minSeconds": 30,
+  "maxSeconds": 40,
+  "endingSeconds": 3,
+  "outroSeconds": 3,
+  "cast": [
+    "strategy",
+    "linda",
+    "synthia",
+    "printer"
+  ],
+  "topic": "Corporate visit · New banner",
+  "corporateVisit": true,
+  "lines": [
+    {
+      "who": "synthia",
+      "text": "Corporate has brought a new banner.",
+      "shot": "synthia",
+      "gap": 0.36
+    },
+    {
+      "who": "strategy",
+      "text": "Does this replace the previous direction?",
+      "shot": "strategy",
+      "gap": 0.36
+    },
+    {
+      "who": "synthia",
+      "text": "It makes the direction more visible.",
+      "shot": "synthia",
+      "gap": 0.36
+    },
+    {
+      "who": "linda",
+      "text": "The old one was in front of the fire exit.",
+      "shot": "linda",
+      "gap": 0.36
+    },
+    {
+      "who": "strategy",
+      "text": "This one says, move forward.",
+      "shot": "strategy",
+      "gap": 0.36
+    },
+    {
+      "who": "linda",
+      "text": "Then we should move it.",
+      "shot": "linda",
+      "gap": 0.36
+    },
+    {
+      "who": "strategy",
+      "text": "I’ll capture that as an action item.",
+      "shot": "strategy",
+      "gap": 0.8
+    }
+  ],
+  "ending": {
+    "kind": "prop",
+    "heading": "A new direction.",
+    "prop": "banner",
+    "lines": [
+      "MOVE",
+      "FORWARD."
+    ],
+    "resolution": "Clear the exit."
+  },
+  "hashtags": [
+    "MovingForward",
+    "CultureInAction"
+  ],
+  "establishingSeconds": 2,
+  "events": [
+    {
+      "who": "synthia",
+      "text": "Corporate has brought a new banner.",
+      "shot": "synthia",
+      "gap": 0.36,
+      "index": 0,
+      "start": 5.1,
+      "end": 7.0734
+    },
+    {
+      "who": "strategy",
+      "text": "Does this replace the previous direction?",
+      "shot": "strategy",
+      "gap": 0.36,
+      "index": 1,
+      "start": 7.4334,
+      "end": 10.293
+    },
+    {
+      "who": "synthia",
+      "text": "It makes the direction more visible.",
+      "shot": "synthia",
+      "gap": 0.36,
+      "index": 2,
+      "start": 10.653,
+      "end": 12.6705
+    },
+    {
+      "who": "linda",
+      "text": "The old one was in front of the fire exit.",
+      "shot": "linda",
+      "gap": 0.36,
+      "index": 3,
+      "start": 13.0305,
+      "end": 16.4723
+    },
+    {
+      "who": "strategy",
+      "text": "This one says, move forward.",
+      "shot": "strategy",
+      "gap": 0.36,
+      "index": 4,
+      "start": 16.8323,
+      "end": 19.2458
+    },
+    {
+      "who": "linda",
+      "text": "Then we should move it.",
+      "shot": "linda",
+      "gap": 0.36,
+      "index": 5,
+      "start": 19.6058,
+      "end": 21.0929
+    },
+    {
+      "who": "strategy",
+      "text": "I’ll capture that as an action item.",
+      "shot": "strategy",
+      "gap": 0.8,
+      "index": 6,
+      "start": 21.4529,
+      "end": 23.7001
+    }
+  ],
+  "duration": 30.833333333333332,
+  "meetingEnd": 24.833333333333332,
+  "outroStart": 27.833333333333332,
+  "voiceEngine": "1.52.0",
+  "musicBpm": 96,
+  "scoreSha256": "f33d4f1240b54ad393653b3d1b93c75df379008d830d94a8d6c8abdbd7f2c627",
+  "reviewStatus": "first production cut; awaiting listening and creative review"
+}

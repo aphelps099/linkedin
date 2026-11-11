@@ -1,0 +1,26 @@
+"""Build local episode review pages and update the production slate after rendering."""
+from pathlib import Path
+from html import escape
+import json,shutil
+REPO=Path(__file__).resolve().parents[4]
+ROOT=REPO.parent/'optimizing/series'
+queue_path=REPO/'docs/project/episodes/production-queue.json'
+queue=json.loads(queue_path.read_text());cards=[]
+style='''*{box-sizing:border-box}body{margin:0;background:#101114;color:#f5f6f8;font:18px/1.55 Arial,sans-serif}main{max-width:1440px;margin:auto;padding:36px 28px 70px}h1{font-size:clamp(32px,4.5vw,60px);line-height:1.05;letter-spacing:-.04em}h2{line-height:1.2}p{color:#bdc4d0;max-width:900px}a{color:#adcaff;text-underline-offset:4px}video{display:block;width:100%;aspect-ratio:16/9;border-radius:14px;background:#17181c}.actions{display:flex;gap:18px;flex-wrap:wrap;margin:24px 0}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}article{background:#1b1e25;border-radius:18px;overflow:hidden}article img{width:100%;display:block}.body{padding:24px}article p{font-size:16px}button{padding:12px 18px;background:#2a3448;color:#f5f6f8;border:1px solid #63738f;border-radius:8px;font:inherit;cursor:pointer}a:focus-visible,button:focus-visible{outline:3px solid #a8c6ff;outline-offset:4px}li{margin-bottom:16px}footer{margin-top:50px;padding-top:24px;border-top:1px solid #353b47;color:#bdc4d0}@media(max-width:900px){.grid{grid-template-columns:1fr}}@media(max-width:600px){main{padding:24px 14px}h1{font-size:36px}}'''
+def page(title,body,script=''):
+ return f'<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{escape(title)} · LinkedIn Beats</title><style>{style}</style><main>{body}<footer>linkedinbeats.com<br>Not affiliated with LinkedIn.<br>A project by Aaron Phelps at Look-Serious.com</footer></main>{script}</html>'
+for item in queue['episodes']:
+ slug=item['id'];folder=ROOT/slug;out=folder/'output';movie=out/f'{slug}-v1.mp4'
+ if not movie.exists():raise SystemExit(f'Render is missing: {movie}')
+ t=json.loads((out/'timeline.json').read_text());briefpath=queue_path.parent/item['brief'];brief=json.loads(briefpath.read_text())
+ scriptpath=queue_path.parent/slug/'script.json';shutil.copy2(scriptpath,folder/'script.json')
+ item.update(status='review-cut-ready',review_url=f'http://127.0.0.1:8852/series/{slug}/',duration_seconds=t['duration'],version=1)
+ brief.update(status='review-cut-ready',next_step='Review the first picture and dialogue cut; refine performances and pacing before publication')
+ briefpath.write_text(json.dumps(brief,indent=2,ensure_ascii=False)+'\n')
+ body=f'''<a href="../">← All three meetings</a> · <a href="/youtube/">YouTube channel kit</a><p>Episode {escape(item['episode'])} · First production review · 1:30</p><h1>{escape(t['title'])}</h1><p>{escape(brief['premise'])}</p><video controls playsinline preload="metadata" poster="output/frames/review-2.25.png" src="output/{slug}-v1.mp4"><track kind="captions" srclang="en" label="English" src="output/captions.vtt"></video><div class="actions"><button data-time="0">Intro</button><button data-time="3.1">Meeting</button><button data-time="{t['meetingEnd']}">After the meeting</button><button data-time="{t['outroStart']}">Closing</button></div><div class="actions"><a href="output/{slug}-v1.mp4" download>Download 1080p MP4 ↓</a><a href="output/captions.vtt" download>Captions ↓</a><a href="output/audio-review.mp3" download>Audio review ↓</a><a href="script.json" download>Script ↓</a></div><p>Original cast voice settings and 96 BPM score. Existing photographic plates with restrained camera changes, simple amplitude-driven human mouth movement, the fixed Synergy EQ and 4:3 printer. This is a review cut; human animation is not phonetic lip sync.</p><details><summary>Read the dialogue</summary><ol>{''.join('<li><strong>'+escape(e['who'])+'</strong> — '+escape(e['text'])+'</li>' for e in t['events'])}</ol></details>'''
+ (folder/'index.html').write_text(page(t['title'],body,'''<script>const v=document.querySelector('video');document.querySelectorAll('[data-time]').forEach(b=>b.onclick=()=>{v.currentTime=Number(b.dataset.time);v.play().catch(()=>{})});</script>'''))
+ cards.append(f'''<article><a href="{slug}/"><img src="{slug}/output/frames/review-2.25.png" alt="{escape(t['title'])}"></a><div class="body"><p>Episode {escape(item['episode'])} · 1:30 · First cut</p><h2>{escape(t['title'])}</h2><p>{escape(brief['premise'])}</p><a href="{slug}/">Watch and review ↗</a></div></article>''')
+queue.update(status='review-cuts-ready',background_jobs_started=False,completed_render_jobs=3,publishing_dates_assigned=False)
+queue_path.write_text(json.dumps(queue,indent=2,ensure_ascii=False)+'\n')
+(ROOT/'index.html').write_text(page('Three new meetings','''<a href="/paper-meeting-chatgpt/studio/">← Pilot studio</a> · <a href="/youtube/">YouTube launch kit</a><p>LinkedIn Beats · Episodes 02–04</p><h1>Three meetings.<br>Some actual progress.</h1><p>Three 90-second first production cuts, ready for story, voice and pacing review. Same cast, score and collage identity as the pilot. No publishing dates assigned.</p><div class="grid">'''+''.join(cards)+'</div>'))
+print('Three episode review pages and production slate updated.')

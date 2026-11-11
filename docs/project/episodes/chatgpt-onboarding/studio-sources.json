@@ -1,0 +1,28 @@
+{
+  "enhancement": "Runway video upscale; no generated replacement identity",
+  "sources": {
+    "people": {
+      "taskId": "d89cd253-3a2c-4e17-bb2d-65859f3ed702",
+      "originalUrl": "https://linkedinbeats.com/studio/season/clips/people-listening.mp4",
+      "sha256": "3edbd05ad225a14bce36a571134a2ed3c2866927de08f16d009287b9c677d66e"
+    },
+    "operations": {
+      "taskId": "975bb8a5-766d-4a32-9aed-25986f913c02",
+      "originalUrl": "https://linkedinbeats.com/studio/season/clips/drums-listening.mp4",
+      "sha256": "90638bb4b1f53f3965cd6029d5d128fd1b693b264dc4a5c624420a6df0da7d0f"
+    },
+    "synergy": {
+      "taskId": "ee935f34-94c1-4b16-9a65-d41c82100fcb",
+      "originalUrl": "https://linkedinbeats.com/studio/season/clips/synergy-camera-v2-listening.mp4",
+      "sha256": "c5156d85b488ba919eb8c473203c3e7583243c28536e22f824a56046b2cb03db"
+    }
+  },
+  "laptop": {
+    "url": "https://linkedinbeats.com/api/cutting-room/media/synergy-close-laptop-plate-04e83d70.mp4",
+    "sha256": "04e83d7072621a101a5da7347678889afabf2387daa13c79fa01cc47d5130690"
+  },
+  "voice": "Original eSpeak profile and recorded takes; no ElevenLabs",
+  "masterResolution": "1920x1080",
+  "enhancedSourceResolution": "4096x2304",
+  "sourceFrameStorage": "2560x1440"
+}

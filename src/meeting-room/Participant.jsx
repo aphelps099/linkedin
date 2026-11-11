@@ -2,6 +2,7 @@ import React,{memo,useEffect,useRef,useState} from 'react';
 import {Mic,MicOff,VideoOff,Pin,Music2} from 'lucide-react';
 import {cast,isSpeaker,cueLevel} from './catalog.js';
 import tracking from './robot-tracking.json';
+import {drawSynergyEQ} from './synergy-display.js';
 import {PrinterFeed} from './PrinterFeed.jsx';
 import {SpeechPerformance} from './SpeechPerformance.jsx';
 import {KeyboardDetail} from './KeyboardDetail.jsx';
@@ -29,6 +30,7 @@ export function drawRobotMouth(ctx,id,videoTime,audioTime,level){
   ctx.clearRect(0,0,1280,720);
   const [x,y,angle,scale]=robotFrame(id,videoTime);
   ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.scale(scale,scale);
+  if(id==='synergy'){drawSynergyEQ(ctx,level);ctx.restore();return;}
   // Both approved camera plates are clean: no opaque patch can float on the glass.
   const height=6;
   ctx.shadowColor='#4aff70';ctx.shadowBlur=2;

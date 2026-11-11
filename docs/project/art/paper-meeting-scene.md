@@ -1,0 +1,17 @@
+# Paper meeting concept v1
+
+Generated October 29, 2026 with built-in imagegen. Output: `paper-meeting-grid-v1.png`. Concept still, awaiting review; not a layered rig or animation.
+
+References: `cast-office-paper-v1.png` and `public/studio/season/posters/printer-neutral.jpg` (repository-relative).
+
+## Exact generation prompt
+
+Use case: illustration-story. Asset: concept frame for a LinkedIn Beats office-paper miniseries, specifically its recurring video-conference set.
+Reference 1 locks the paper-collage medium and the identities of People & Culture, Synergy and Operations. Reference 2 locks the ordinary beige laser printer's shape. Transform the printer into the same hand-cut paper style.
+A beautifully art-directed 2-by-2 VIDEO MEETING made of four physical paper portrait cards laid on cobalt/blue-grey textured office memo paper. The video windows are rounded-corner white card mounts with exactly even white borders on all edges. A few understated backing-paper edges peek from beneath two cards, implying cards can be shuffled into position. Very slight individual angular offsets, carefully aligned enough to read as a conference grid. All four windows equal in size; no overlapping faces. This is an office call, not a moodboard or scrapbook. Single quiet dark blue paper strip along the bottom with three very simple white cut-paper symbols: microphone, camera and phone. No small text, no names, no watermark, no Zoom logo.
+TOP LEFT: Synergy at his desk, cream faceted triangular robot head, black face screen with TWO green pixel eyes and ONE straight thin green mouth, black headset and mic, cream triangular armor, lanyard. Holding a small plain coffee cup close to the bottom of his head, a composed coffee break. Do not put a human mouth or lips on the robot.
+TOP RIGHT: People & Culture, adult Black woman, high braided bun, cream blouse, gold hoops, headset. Calmly listening with hands together. Preserve reference face and adult proportions.
+BOTTOM LEFT: Operations, balding middle-aged man, pale blue shirt, black headset, two sticks resting over his small black electronic drum pad. Listening with restrained patience.
+BOTTOM RIGHT: the beige office laser printer from reference 2, built from ivory/manila paper rectangles and ink-dark slot. It is an equally important participant. A modest stack of normal-size printed sheets next to it, one normal-size page partway out of its supported front output tray, one small amber status light. A faintly worn case and slightly curling paper suggest a long working day. No cartoon eyes or face, no limbs, no sagging/melting housing. No oversized or stretching paper. Small cobalt blocks on pages may suggest printed material, no detailed logos needed.
+All portraits share minimal pale cubicle backgrounds. Material fidelity: hand-cut cream/manila and blue memo-paper shapes, carbon-black traced contours, soft xerox toner grain, spare graphite facial features, little shallow paper-layer shadows, occasional tiny nonverbal ink impressions. Warm brown skin, paper cream, powder blue, navy, cobalt; green only on Synergy's face. Dry serious performances. No happy grins, comic faces, reaction stickers, exclamation marks, decorative office-supply scattering, fake depth-of-field or CGI.
+Landscape 16:9 frame, legible four-part composition with comfortable edge margins, feels like the recurring stage of an expertly made paper-cut animated office drama. Screen text will be added separately later, so render NO lettering.

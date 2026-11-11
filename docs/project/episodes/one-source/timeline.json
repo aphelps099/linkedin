@@ -1,0 +1,198 @@
+{
+  "id": "one-source",
+  "title": "One source of truth.",
+  "titleLines": [
+    "One source",
+    "of truth."
+  ],
+  "episode": "07",
+  "status": "production-draft-1",
+  "format": "short-meeting",
+  "minSeconds": 30,
+  "maxSeconds": 40,
+  "endingSeconds": 3,
+  "outroSeconds": 3,
+  "cast": [
+    "strategy",
+    "linda",
+    "synergy",
+    "printer"
+  ],
+  "topic": "Shared drive · Access request",
+  "corporateVisit": false,
+  "lines": [
+    {
+      "who": "strategy",
+      "text": "We need one source of truth.",
+      "shot": "strategy",
+      "gap": 0.36
+    },
+    {
+      "who": "linda",
+      "text": "It’s in the shared drive.",
+      "shot": "linda",
+      "gap": 0.36
+    },
+    {
+      "who": "strategy",
+      "text": "I mean a single, unified source.",
+      "shot": "strategy",
+      "gap": 0.36
+    },
+    {
+      "who": "linda",
+      "text": "There is one file.",
+      "shot": "linda",
+      "gap": 0.36
+    },
+    {
+      "who": "synergy",
+      "text": "I have requested access.",
+      "shot": "synergy",
+      "gap": 0.36
+    },
+    {
+      "who": "strategy",
+      "text": "We should appoint an information owner.",
+      "shot": "strategy",
+      "gap": 0.36
+    },
+    {
+      "who": "linda",
+      "text": "It’s me. I’ve approved it.",
+      "shot": "linda",
+      "gap": 0.36
+    },
+    {
+      "who": "synergy",
+      "text": "I’m in.",
+      "shot": "synergy",
+      "gap": 0.36
+    },
+    {
+      "who": "strategy",
+      "text": "Good. Now we can start consolidating.",
+      "shot": "strategy",
+      "gap": 0.36
+    },
+    {
+      "who": "linda",
+      "text": "Please don’t make another copy.",
+      "shot": "linda",
+      "gap": 0.8
+    }
+  ],
+  "ending": {
+    "kind": "prop",
+    "heading": "One source of truth.",
+    "prop": "drive",
+    "lines": [
+      "Shared drive",
+      "One file"
+    ],
+    "resolution": "Access granted"
+  },
+  "hashtags": [
+    "SingleSourceOfTruth",
+    "Alignment"
+  ],
+  "events": [
+    {
+      "who": "strategy",
+      "text": "We need one source of truth.",
+      "shot": "strategy",
+      "gap": 0.36,
+      "index": 0,
+      "start": 3.1,
+      "end": 5.4891
+    },
+    {
+      "who": "linda",
+      "text": "It’s in the shared drive.",
+      "shot": "linda",
+      "gap": 0.36,
+      "index": 1,
+      "start": 5.8491,
+      "end": 7.54
+    },
+    {
+      "who": "strategy",
+      "text": "I mean a single, unified source.",
+      "shot": "strategy",
+      "gap": 0.36,
+      "index": 2,
+      "start": 7.9,
+      "end": 10.4574
+    },
+    {
+      "who": "linda",
+      "text": "There is one file.",
+      "shot": "linda",
+      "gap": 0.36,
+      "index": 3,
+      "start": 10.8174,
+      "end": 12.1871
+    },
+    {
+      "who": "synergy",
+      "text": "I have requested access.",
+      "shot": "synergy",
+      "gap": 0.36,
+      "index": 4,
+      "start": 12.5471,
+      "end": 14.1094
+    },
+    {
+      "who": "strategy",
+      "text": "We should appoint an information owner.",
+      "shot": "strategy",
+      "gap": 0.36,
+      "index": 5,
+      "start": 14.4694,
+      "end": 16.8923
+    },
+    {
+      "who": "linda",
+      "text": "It’s me. I’ve approved it.",
+      "shot": "linda",
+      "gap": 0.36,
+      "index": 6,
+      "start": 17.2523,
+      "end": 19.2842
+    },
+    {
+      "who": "synergy",
+      "text": "I’m in.",
+      "shot": "synergy",
+      "gap": 0.36,
+      "index": 7,
+      "start": 19.6442,
+      "end": 20.166
+    },
+    {
+      "who": "strategy",
+      "text": "Good. Now we can start consolidating.",
+      "shot": "strategy",
+      "gap": 0.36,
+      "index": 8,
+      "start": 20.526,
+      "end": 23.3908
+    },
+    {
+      "who": "linda",
+      "text": "Please don’t make another copy.",
+      "shot": "linda",
+      "gap": 0.8,
+      "index": 9,
+      "start": 23.7508,
+      "end": 26.4336
+    }
+  ],
+  "duration": 33.583333333333336,
+  "meetingEnd": 27.541666666666668,
+  "outroStart": 30.583333333333336,
+  "voiceEngine": "1.52.0",
+  "musicBpm": 96,
+  "scoreSha256": "f33d4f1240b54ad393653b3d1b93c75df379008d830d94a8d6c8abdbd7f2c627",
+  "reviewStatus": "first production cut; awaiting listening and creative review"
+}

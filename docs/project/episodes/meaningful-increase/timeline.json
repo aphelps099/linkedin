@@ -1,0 +1,370 @@
+{
+  "id": "meaningful-increase",
+  "title": "A meaningful increase.",
+  "episode": "03",
+  "status": "production-draft-1",
+  "cast": [
+    "synergy",
+    "people",
+    "accountant",
+    "printer"
+  ],
+  "topic": "Social media impressions",
+  "lines": [
+    {
+      "who": "synergy",
+      "text": "The intern’s post has received ninety-three impressions.",
+      "shot": "grid",
+      "gap": 0.65
+    },
+    {
+      "who": "people",
+      "text": "She spent most of yesterday getting the example right.",
+      "shot": "people",
+      "gap": 0.65
+    },
+    {
+      "who": "accountant",
+      "text": "What happened after the impression?",
+      "shot": "accountant",
+      "gap": 1.05
+    },
+    {
+      "who": "synergy",
+      "text": "The platform describes it as discovery.",
+      "shot": "synergy",
+      "gap": 0.65
+    },
+    {
+      "who": "accountant",
+      "text": "Did anyone ask us anything?",
+      "shot": "grid",
+      "gap": 0.65
+    },
+    {
+      "who": "people",
+      "text": "Yes. Someone wants the onboarding checklist in the post.",
+      "shot": "people",
+      "gap": 0.65
+    },
+    {
+      "who": "synergy",
+      "text": "I have included community engagement in the summary.",
+      "shot": "synergy",
+      "gap": 0.65
+    },
+    {
+      "who": "people",
+      "text": "We haven’t answered them yet.",
+      "shot": "people",
+      "gap": 1.05
+    },
+    {
+      "who": "accountant",
+      "text": "Is the checklist something we can share?",
+      "shot": "grid",
+      "gap": 0.65
+    },
+    {
+      "who": "people",
+      "text": "The blank one is. I’ll check the link.",
+      "shot": "people",
+      "gap": 0.65
+    },
+    {
+      "who": "synergy",
+      "text": "I wanted her to see that the work had made an impact.",
+      "shot": "synergy",
+      "gap": 0.65
+    },
+    {
+      "who": "people",
+      "text": "Then we should tell her what was useful.",
+      "shot": "people",
+      "gap": 0.65
+    },
+    {
+      "who": "accountant",
+      "text": "Someone wants to use the example she made.",
+      "shot": "grid",
+      "gap": 0.65
+    },
+    {
+      "who": "synergy",
+      "text": "That is more specific than increased visibility.",
+      "shot": "synergy",
+      "gap": 0.65
+    },
+    {
+      "who": "people",
+      "text": "The link works. I’ll send it to her so she can reply.",
+      "shot": "people",
+      "gap": 0.65
+    },
+    {
+      "who": "accountant",
+      "text": "Does she need another report?",
+      "shot": "accountant",
+      "gap": 1.05
+    },
+    {
+      "who": "people",
+      "text": "She needs to know what to make next.",
+      "shot": "grid",
+      "gap": 0.65
+    },
+    {
+      "who": "synergy",
+      "text": "I had suggested a post about our approach to meaningful engagement.",
+      "shot": "synergy",
+      "gap": 0.65
+    },
+    {
+      "who": "people",
+      "text": "She suggested showing how to use the checklist.",
+      "shot": "people",
+      "gap": 0.65
+    },
+    {
+      "who": "synergy",
+      "text": "Let’s do that.",
+      "shot": "synergy",
+      "gap": 0.65
+    },
+    {
+      "who": "accountant",
+      "text": "Are we keeping the ninety-three?",
+      "shot": "grid",
+      "gap": 1.05
+    },
+    {
+      "who": "synergy",
+      "text": "Yes. It is what happened.",
+      "shot": "synergy",
+      "gap": 0.65
+    }
+  ],
+  "ending": {
+    "kind": "post",
+    "heading": "Draft · Synergy",
+    "lines": [
+      "93 impressions.",
+      "One person asked for the checklist.",
+      "We sent them the blank version.",
+      "Next: show how to use it."
+    ],
+    "detail": "A smaller claim. A useful next step."
+  },
+  "hashtags": [
+    "CommunityBuilding",
+    "ContinuousImprovement"
+  ],
+  "performance": "Sincere, restrained; preserve original cast voices. New takes require listening review.",
+  "events": [
+    {
+      "who": "synergy",
+      "text": "The intern’s post has received ninety-three impressions.",
+      "shot": "grid",
+      "gap": 0.65,
+      "index": 0,
+      "start": 3.1,
+      "end": 6.2793
+    },
+    {
+      "who": "people",
+      "text": "She spent most of yesterday getting the example right.",
+      "shot": "people",
+      "gap": 0.65,
+      "index": 1,
+      "start": 6.9293,
+      "end": 9.8028
+    },
+    {
+      "who": "accountant",
+      "text": "What happened after the impression?",
+      "shot": "accountant",
+      "gap": 1.05,
+      "index": 2,
+      "start": 10.4528,
+      "end": 12.7218
+    },
+    {
+      "who": "synergy",
+      "text": "The platform describes it as discovery.",
+      "shot": "synergy",
+      "gap": 0.65,
+      "index": 3,
+      "start": 13.7718,
+      "end": 16.1695
+    },
+    {
+      "who": "accountant",
+      "text": "Did anyone ask us anything?",
+      "shot": "grid",
+      "gap": 0.65,
+      "index": 4,
+      "start": 16.8195,
+      "end": 19.0637
+    },
+    {
+      "who": "people",
+      "text": "Yes. Someone wants the onboarding checklist in the post.",
+      "shot": "people",
+      "gap": 0.65,
+      "index": 5,
+      "start": 19.7137,
+      "end": 22.7984
+    },
+    {
+      "who": "synergy",
+      "text": "I have included community engagement in the summary.",
+      "shot": "synergy",
+      "gap": 0.65,
+      "index": 6,
+      "start": 23.4484,
+      "end": 26.3875
+    },
+    {
+      "who": "people",
+      "text": "We haven’t answered them yet.",
+      "shot": "people",
+      "gap": 1.05,
+      "index": 7,
+      "start": 27.0375,
+      "end": 28.483
+    },
+    {
+      "who": "accountant",
+      "text": "Is the checklist something we can share?",
+      "shot": "grid",
+      "gap": 0.65,
+      "index": 8,
+      "start": 29.533,
+      "end": 32.2002
+    },
+    {
+      "who": "people",
+      "text": "The blank one is. I’ll check the link.",
+      "shot": "people",
+      "gap": 0.65,
+      "index": 9,
+      "start": 32.8502,
+      "end": 34.8906
+    },
+    {
+      "who": "synergy",
+      "text": "I wanted her to see that the work had made an impact.",
+      "shot": "synergy",
+      "gap": 0.65,
+      "index": 10,
+      "start": 35.5406,
+      "end": 38.5465
+    },
+    {
+      "who": "people",
+      "text": "Then we should tell her what was useful.",
+      "shot": "people",
+      "gap": 0.65,
+      "index": 11,
+      "start": 39.1965,
+      "end": 41.0211
+    },
+    {
+      "who": "accountant",
+      "text": "Someone wants to use the example she made.",
+      "shot": "grid",
+      "gap": 0.65,
+      "index": 12,
+      "start": 41.6711,
+      "end": 44.4417
+    },
+    {
+      "who": "synergy",
+      "text": "That is more specific than increased visibility.",
+      "shot": "synergy",
+      "gap": 0.65,
+      "index": 13,
+      "start": 45.0917,
+      "end": 47.865
+    },
+    {
+      "who": "people",
+      "text": "The link works. I’ll send it to her so she can reply.",
+      "shot": "people",
+      "gap": 0.65,
+      "index": 14,
+      "start": 48.515,
+      "end": 51.5552
+    },
+    {
+      "who": "accountant",
+      "text": "Does she need another report?",
+      "shot": "accountant",
+      "gap": 1.05,
+      "index": 15,
+      "start": 52.2052,
+      "end": 54.4666
+    },
+    {
+      "who": "people",
+      "text": "She needs to know what to make next.",
+      "shot": "grid",
+      "gap": 0.65,
+      "index": 16,
+      "start": 55.5166,
+      "end": 57.3525
+    },
+    {
+      "who": "synergy",
+      "text": "I had suggested a post about our approach to meaningful engagement.",
+      "shot": "synergy",
+      "gap": 0.65,
+      "index": 17,
+      "start": 58.0025,
+      "end": 61.9132
+    },
+    {
+      "who": "people",
+      "text": "She suggested showing how to use the checklist.",
+      "shot": "people",
+      "gap": 0.65,
+      "index": 18,
+      "start": 62.5632,
+      "end": 64.9078
+    },
+    {
+      "who": "synergy",
+      "text": "Let’s do that.",
+      "shot": "synergy",
+      "gap": 0.65,
+      "index": 19,
+      "start": 65.5578,
+      "end": 66.5597
+    },
+    {
+      "who": "accountant",
+      "text": "Are we keeping the ninety-three?",
+      "shot": "grid",
+      "gap": 1.05,
+      "index": 20,
+      "start": 67.2097,
+      "end": 69.3375
+    },
+    {
+      "who": "synergy",
+      "text": "Yes. It is what happened.",
+      "shot": "synergy",
+      "gap": 0.65,
+      "index": 21,
+      "start": 70.3875,
+      "end": 72.225
+    }
+  ],
+  "duration": 90.0,
+  "meetingEnd": 73.75,
+  "outroStart": 84.5,
+  "voiceEngine": "1.52.0",
+  "musicBpm": 96,
+  "scoreSha256": "f33d4f1240b54ad393653b3d1b93c75df379008d830d94a8d6c8abdbd7f2c627",
+  "reviewStatus": "first production cut; awaiting listening and creative review"
+}

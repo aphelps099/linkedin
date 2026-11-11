@@ -1,0 +1,369 @@
+{
+  "id": "continuing-development",
+  "title": "Continuing development.",
+  "episode": "04",
+  "status": "production-draft-1",
+  "cast": [
+    "synergy",
+    "people",
+    "operations",
+    "printer"
+  ],
+  "topic": "Professional development",
+  "lines": [
+    {
+      "who": "people",
+      "text": "Can we finish in ten minutes? I’ve still got the course.",
+      "shot": "grid",
+      "gap": 0.65
+    },
+    {
+      "who": "synergy",
+      "text": "This is the learning check-in.",
+      "shot": "synergy",
+      "gap": 0.65
+    },
+    {
+      "who": "operations",
+      "text": "Does this count?",
+      "shot": "operations",
+      "gap": 1.05
+    },
+    {
+      "who": "synergy",
+      "text": "It supports the learning.",
+      "shot": "synergy",
+      "gap": 0.65
+    },
+    {
+      "who": "people",
+      "text": "It’s in the half hour we set aside for the lesson.",
+      "shot": "grid",
+      "gap": 0.65
+    },
+    {
+      "who": "synergy",
+      "text": "I wanted everyone to have protected development time.",
+      "shot": "synergy",
+      "gap": 0.65
+    },
+    {
+      "who": "operations",
+      "text": "I’ve marked mine as started.",
+      "shot": "operations",
+      "gap": 0.65
+    },
+    {
+      "who": "people",
+      "text": "Have you started it?",
+      "shot": "people",
+      "gap": 1.05
+    },
+    {
+      "who": "operations",
+      "text": "I opened the first module. Then this invitation came in.",
+      "shot": "grid",
+      "gap": 0.65
+    },
+    {
+      "who": "synergy",
+      "text": "The check-in gives us visibility of progress.",
+      "shot": "synergy",
+      "gap": 0.65
+    },
+    {
+      "who": "people",
+      "text": "I’m trying to learn the caption settings. We keep fixing them after export.",
+      "shot": "people",
+      "gap": 0.65
+    },
+    {
+      "who": "operations",
+      "text": "That would actually save me time.",
+      "shot": "operations",
+      "gap": 0.65
+    },
+    {
+      "who": "synergy",
+      "text": "Would a shared learning tracker help?",
+      "shot": "grid",
+      "gap": 0.65
+    },
+    {
+      "who": "people",
+      "text": "Twenty minutes would help.",
+      "shot": "people",
+      "gap": 0.65
+    },
+    {
+      "who": "synergy",
+      "text": "We have eighteen left.",
+      "shot": "synergy",
+      "gap": 0.65
+    },
+    {
+      "who": "operations",
+      "text": "If we leave now.",
+      "shot": "operations",
+      "gap": 1.05
+    },
+    {
+      "who": "synergy",
+      "text": "I’ll cancel next week’s check-in. Keep the learning block.",
+      "shot": "grid",
+      "gap": 0.65
+    },
+    {
+      "who": "people",
+      "text": "We can show each other something useful afterwards.",
+      "shot": "people",
+      "gap": 0.65
+    },
+    {
+      "who": "operations",
+      "text": "After we’ve learned it.",
+      "shot": "operations",
+      "gap": 0.65
+    },
+    {
+      "who": "synergy",
+      "text": "I haven’t finished my module either.",
+      "shot": "synergy",
+      "gap": 0.65
+    },
+    {
+      "who": "people",
+      "text": "You can use the time too.",
+      "shot": "grid",
+      "gap": 1.05
+    },
+    {
+      "who": "synergy",
+      "text": "Thank you. I had not put that in the plan.",
+      "shot": "synergy",
+      "gap": 0.65
+    }
+  ],
+  "ending": {
+    "kind": "learning",
+    "heading": "Caption settings · Module 1",
+    "lines": [
+      "Development time",
+      "Notifications paused",
+      "Lesson in progress"
+    ],
+    "detail": "Synergy opens his own unfinished lesson."
+  },
+  "hashtags": [
+    "AlwaysLearning",
+    "ProfessionalDevelopment"
+  ],
+  "performance": "Sincere, restrained; preserve original cast voices. New takes require listening review.",
+  "events": [
+    {
+      "who": "people",
+      "text": "Can we finish in ten minutes? I’ve still got the course.",
+      "shot": "grid",
+      "gap": 0.65,
+      "index": 0,
+      "start": 3.1,
+      "end": 6.0736
+    },
+    {
+      "who": "synergy",
+      "text": "This is the learning check-in.",
+      "shot": "synergy",
+      "gap": 0.65,
+      "index": 1,
+      "start": 6.7236,
+      "end": 8.2478
+    },
+    {
+      "who": "operations",
+      "text": "Does this count?",
+      "shot": "operations",
+      "gap": 1.05,
+      "index": 2,
+      "start": 8.8978,
+      "end": 10.0063
+    },
+    {
+      "who": "synergy",
+      "text": "It supports the learning.",
+      "shot": "synergy",
+      "gap": 0.65,
+      "index": 3,
+      "start": 11.0563,
+      "end": 12.4165
+    },
+    {
+      "who": "people",
+      "text": "It’s in the half hour we set aside for the lesson.",
+      "shot": "grid",
+      "gap": 0.65,
+      "index": 4,
+      "start": 13.0665,
+      "end": 15.5513
+    },
+    {
+      "who": "synergy",
+      "text": "I wanted everyone to have protected development time.",
+      "shot": "synergy",
+      "gap": 0.65,
+      "index": 5,
+      "start": 16.2013,
+      "end": 19.7238
+    },
+    {
+      "who": "operations",
+      "text": "I’ve marked mine as started.",
+      "shot": "operations",
+      "gap": 0.65,
+      "index": 6,
+      "start": 20.3738,
+      "end": 22.1294
+    },
+    {
+      "who": "people",
+      "text": "Have you started it?",
+      "shot": "people",
+      "gap": 1.05,
+      "index": 7,
+      "start": 22.7794,
+      "end": 23.9117
+    },
+    {
+      "who": "operations",
+      "text": "I opened the first module. Then this invitation came in.",
+      "shot": "grid",
+      "gap": 0.65,
+      "index": 8,
+      "start": 24.9617,
+      "end": 28.8909
+    },
+    {
+      "who": "synergy",
+      "text": "The check-in gives us visibility of progress.",
+      "shot": "synergy",
+      "gap": 0.65,
+      "index": 9,
+      "start": 29.5409,
+      "end": 32.1767
+    },
+    {
+      "who": "people",
+      "text": "I’m trying to learn the caption settings. We keep fixing them after export.",
+      "shot": "people",
+      "gap": 0.65,
+      "index": 10,
+      "start": 32.8267,
+      "end": 36.8187
+    },
+    {
+      "who": "operations",
+      "text": "That would actually save me time.",
+      "shot": "operations",
+      "gap": 0.65,
+      "index": 11,
+      "start": 37.4687,
+      "end": 39.3336
+    },
+    {
+      "who": "synergy",
+      "text": "Would a shared learning tracker help?",
+      "shot": "grid",
+      "gap": 0.65,
+      "index": 12,
+      "start": 39.9836,
+      "end": 41.9533
+    },
+    {
+      "who": "people",
+      "text": "Twenty minutes would help.",
+      "shot": "people",
+      "gap": 0.65,
+      "index": 13,
+      "start": 42.6033,
+      "end": 43.8815
+    },
+    {
+      "who": "synergy",
+      "text": "We have eighteen left.",
+      "shot": "synergy",
+      "gap": 0.65,
+      "index": 14,
+      "start": 44.5315,
+      "end": 45.7126
+    },
+    {
+      "who": "operations",
+      "text": "If we leave now.",
+      "shot": "operations",
+      "gap": 1.05,
+      "index": 15,
+      "start": 46.3626,
+      "end": 47.53
+    },
+    {
+      "who": "synergy",
+      "text": "I’ll cancel next week’s check-in. Keep the learning block.",
+      "shot": "grid",
+      "gap": 0.65,
+      "index": 16,
+      "start": 48.58,
+      "end": 52.384
+    },
+    {
+      "who": "people",
+      "text": "We can show each other something useful afterwards.",
+      "shot": "people",
+      "gap": 0.65,
+      "index": 17,
+      "start": 53.034,
+      "end": 55.707
+    },
+    {
+      "who": "operations",
+      "text": "After we’ve learned it.",
+      "shot": "operations",
+      "gap": 0.65,
+      "index": 18,
+      "start": 56.357,
+      "end": 57.6261
+    },
+    {
+      "who": "synergy",
+      "text": "I haven’t finished my module either.",
+      "shot": "synergy",
+      "gap": 0.65,
+      "index": 19,
+      "start": 58.2761,
+      "end": 60.2845
+    },
+    {
+      "who": "people",
+      "text": "You can use the time too.",
+      "shot": "grid",
+      "gap": 1.05,
+      "index": 20,
+      "start": 60.9345,
+      "end": 62.3353
+    },
+    {
+      "who": "synergy",
+      "text": "Thank you. I had not put that in the plan.",
+      "shot": "synergy",
+      "gap": 0.65,
+      "index": 21,
+      "start": 63.3853,
+      "end": 66.2661
+    }
+  ],
+  "duration": 90.0,
+  "meetingEnd": 67.79166666666667,
+  "outroStart": 84.5,
+  "voiceEngine": "1.52.0",
+  "musicBpm": 96,
+  "scoreSha256": "f33d4f1240b54ad393653b3d1b93c75df379008d830d94a8d6c8abdbd7f2c627",
+  "reviewStatus": "first production cut; awaiting listening and creative review"
+}

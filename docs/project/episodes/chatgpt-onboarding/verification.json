@@ -1,0 +1,27 @@
+{
+  "duration": 90,
+  "resolution": [
+    1280,
+    720
+  ],
+  "fps": 24,
+  "fullDecode": "passed",
+  "audio": {
+    "input_i": "-16.33",
+    "input_tp": "-1.05",
+    "input_lra": "3.70",
+    "input_thresh": "-26.70",
+    "output_i": "-16.43",
+    "output_tp": "-1.50",
+    "output_lra": "3.40",
+    "output_thresh": "-26.72",
+    "normalization_type": "dynamic",
+    "target_offset": "0.43"
+  },
+  "dialogueOverlap": false,
+  "voices": "existing approved identities; new dialogue requires listening review",
+  "animation": "still-art crops, paper entrance, speaker emphasis and timed phrase cards; no lip sync",
+  "runwayCreditsThisScene": 0,
+  "imageGenerationThisScene": false,
+  "outputBytes": 15165944
+}

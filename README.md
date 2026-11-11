@@ -1,4 +1,9 @@
-# Circle Back® — The Professional Phrase Organ
+# LinkedIn Beats
+
+Start with the [LinkedIn Beats project bible](docs/project/README.md) for the current cross-project creative direction, cast, art, music and personalized meeting roadmap. The implementation history below remains available.
+
+
+## Original mixer implementation
 
 A satirical LinkedIn audio mixer: a 16-key phrase sampler that speaks corporate
 clichés ("Humbled and honored to share", "Let's circle back", "Full stop.")

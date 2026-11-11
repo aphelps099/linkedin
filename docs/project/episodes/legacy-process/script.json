@@ -1,0 +1,87 @@
+{
+  "id": "legacy-process",
+  "title": "The legacy process.",
+  "titleLines": [
+    "The legacy",
+    "process."
+  ],
+  "episode": "08",
+  "status": "production-draft-1",
+  "format": "short-meeting",
+  "minSeconds": 30,
+  "maxSeconds": 40,
+  "endingSeconds": 3,
+  "outroSeconds": 3,
+  "cast": [
+    "strategy",
+    "linda",
+    "synergy",
+    "printer"
+  ],
+  "topic": "Reporting · Platform transition",
+  "corporateVisit": false,
+  "lines": [
+    {
+      "who": "strategy",
+      "text": "We are retiring the legacy reporting process.",
+      "shot": "strategy",
+      "gap": 0.36
+    },
+    {
+      "who": "linda",
+      "text": "That’s my spreadsheet.",
+      "shot": "linda",
+      "gap": 0.36
+    },
+    {
+      "who": "strategy",
+      "text": "We’re moving to a single source of intelligence.",
+      "shot": "strategy",
+      "gap": 0.36
+    },
+    {
+      "who": "linda",
+      "text": "Does it still need the numbers by Friday?",
+      "shot": "linda",
+      "gap": 0.36
+    },
+    {
+      "who": "strategy",
+      "text": "The cadence remains unchanged.",
+      "shot": "strategy",
+      "gap": 0.36
+    },
+    {
+      "who": "linda",
+      "text": "So does the spreadsheet.",
+      "shot": "linda",
+      "gap": 0.36
+    },
+    {
+      "who": "synergy",
+      "text": "I have updated the file name.",
+      "shot": "synergy",
+      "gap": 0.36
+    },
+    {
+      "who": "linda",
+      "text": "Thank you. Don’t move the cells.",
+      "shot": "linda",
+      "gap": 0.8
+    }
+  ],
+  "ending": {
+    "kind": "prop",
+    "heading": "The legacy process.",
+    "prop": "sheet",
+    "lines": [
+      "Friday reporting",
+      "Intelligence platform"
+    ],
+    "resolution": "Same cells."
+  },
+  "hashtags": [
+    "DigitalTransformation",
+    "OperationalExcellence"
+  ]
+}

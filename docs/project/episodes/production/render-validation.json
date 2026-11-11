@@ -1,0 +1,23 @@
+[
+  {
+    "episode": "great-connecting",
+    "file": "/Users/ap457/Projects/linkedinbeats-meeting-art/optimizing/series/great-connecting/output/great-connecting-v1.mp4",
+    "bytes": 6665193,
+    "sha256": "b7953b94b8877e777200ed97a803fc121c34119d423ba1d4bfb356c085432a2c",
+    "full_decode": "passed"
+  },
+  {
+    "episode": "meaningful-increase",
+    "file": "/Users/ap457/Projects/linkedinbeats-meeting-art/optimizing/series/meaningful-increase/output/meaningful-increase-v1.mp4",
+    "bytes": 6984524,
+    "sha256": "c443ae961c863d31c74d3e15a0fa63c0894c6732cbe6a32ca7c352eff6256163",
+    "full_decode": "passed"
+  },
+  {
+    "episode": "continuing-development",
+    "file": "/Users/ap457/Projects/linkedinbeats-meeting-art/optimizing/series/continuing-development/output/continuing-development-v1.mp4",
+    "bytes": 6645129,
+    "sha256": "d6b3f8d524612413a6ef87509c30b06ea0e013f646b062b0950fe29d2e8938d9",
+    "full_decode": "passed"
+  }
+]

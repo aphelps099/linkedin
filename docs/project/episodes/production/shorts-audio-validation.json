@@ -1,0 +1,37 @@
+[
+  {
+    "episode": "new-direction",
+    "duration": 30.833333333333332,
+    "integrated_lufs": "-15.61",
+    "true_peak_dbtp": "-1.49",
+    "dialogue_timing": "passed"
+  },
+  {
+    "episode": "ai-reviewed",
+    "duration": 33.25,
+    "integrated_lufs": "-15.60",
+    "true_peak_dbtp": "-1.50",
+    "dialogue_timing": "passed"
+  },
+  {
+    "episode": "one-source",
+    "duration": 33.583333333333336,
+    "integrated_lufs": "-16.63",
+    "true_peak_dbtp": "-1.50",
+    "dialogue_timing": "passed"
+  },
+  {
+    "episode": "legacy-process",
+    "duration": 32.0,
+    "integrated_lufs": "-16.84",
+    "true_peak_dbtp": "-1.49",
+    "dialogue_timing": "passed"
+  },
+  {
+    "episode": "rollout-ready",
+    "duration": 32.875,
+    "integrated_lufs": "-15.55",
+    "true_peak_dbtp": "-1.50",
+    "dialogue_timing": "passed"
+  }
+]

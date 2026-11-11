@@ -1,0 +1,17 @@
+[
+  {
+    "episode": "great-connecting",
+    "integrated_lufs": "-16.96",
+    "true_peak_dbtp": "-1.49"
+  },
+  {
+    "episode": "meaningful-increase",
+    "integrated_lufs": "-16.48",
+    "true_peak_dbtp": "-1.49"
+  },
+  {
+    "episode": "continuing-development",
+    "integrated_lufs": "-16.80",
+    "true_peak_dbtp": "-1.49"
+  }
+]
