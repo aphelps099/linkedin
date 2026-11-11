@@ -1,4 +1,5 @@
 import React from 'react';
+import {createPortal} from 'react-dom';
 import {createRoot} from 'react-dom/client';
 import {HomepageEncore} from './home-2/HomepageEncore.jsx';
 import {SiteFooter} from './brand/SiteFooter.jsx';
@@ -6,4 +7,4 @@ import {GameDiscovery} from './home-2/GameDiscovery.jsx';
 import './home-game-banner.js';
 const root=import.meta.hot?.data.root??createRoot(document.getElementById('homepage-ending'));
 if(import.meta.hot)import.meta.hot.data.root=root;
-root.render(<><GameDiscovery/><HomepageEncore/><div id="homepage-footer"><SiteFooter base="/"/></div></>);
+root.render(<>{createPortal(<GameDiscovery/>,document.getElementById('homepage-game'))}<HomepageEncore/><div id="homepage-footer"><SiteFooter base="/"/></div></>);

@@ -1,29 +1,19 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {frame, SP, ICONS} from '../game/art.js';
-
-function Sprite({rows, palette, ...props}) {
-  return <g {...props}>{rows.flatMap((row,y)=>[...row].map((pixel,x)=>pixel==='.'?null:
-    <rect key={`${x}-${y}`} x={x} y={y} width="1" height="1" fill={typeof palette==='string'?palette:palette[pixel]}/>))}</g>;
-}
-
-// The game's own sprites, drawn as crisp vectors rather than a separate illustration.
-function CareerArtwork() {
-  return <svg className="career-game-art" viewBox="0 0 480 400" aria-hidden="true" shapeRendering="crispEdges">
-    <defs><pattern id="career-game-pegs" width="8" height="8" patternUnits="userSpaceOnUse"><rect x="3" y="3" width="1" height="1" fill="#203760"/></pattern></defs>
-    <rect width="480" height="400" fill="#020714"/>
-    <rect width="480" height="400" fill="url(#career-game-pegs)"/>
-    <path d="M0 364H104V312H220V260H336V208H480V400H0Z" fill="#0a1834"/>
-    <path d="M0 364H104V312H220V260H336V208H480" fill="none" stroke="#1f6bff" strokeWidth="4"/>
-    <g className="career-game-synergy"><Sprite rows={frame('jump')} palette={SP} transform="translate(174 78) scale(8)"/></g>
-    <Sprite rows={ICONS.like} palette="#1f6bff" transform="translate(64 192) scale(3)"/>
-    <Sprite rows={ICONS.insightful} palette="#ffe14a" transform="translate(352 66) scale(4)"/>
-    <Sprite rows={ICONS.love} palette="#1f6bff" transform="translate(380 286) scale(3)"/>
-  </svg>;
-}
 
 export function GameDiscovery() {
-  const dialog=useRef(null), opener=useRef(null), section=useRef(null);
+  const dialog=useRef(null), opener=useRef(null), section=useRef(null), preview=useRef(null);
+  const [visible,setVisible]=useState(false), [loaded,setLoaded]=useState(false), [ready,setReady]=useState(false);
+  const [paused,setPaused]=useState(()=>matchMedia('(prefers-reduced-motion:reduce)').matches);
   const [playing,setPlaying]=useState(false);
+  useEffect(()=>{
+    const observer=new IntersectionObserver(([entry])=>{setVisible(entry.isIntersecting);if(entry.isIntersecting)setLoaded(true);},{threshold:.1});
+    observer.observe(section.current);return ()=>observer.disconnect();
+  },[]);
+  useEffect(()=>{
+    const send=()=>preview.current?.contentWindow?.postMessage({type:'synergy-preview-playback',playing:visible&&!paused&&!playing},location.origin);
+    const onReady=event=>{if(event.origin===location.origin&&event.source===preview.current?.contentWindow&&event.data?.type==='synergy-preview-ready'){setReady(true);send();}};
+    send();addEventListener('message',onReady);return ()=>removeEventListener('message',onReady);
+  },[visible,paused,playing,loaded]);
   useEffect(()=>{if(location.hash==='#career-game')section.current.scrollIntoView();},[]);
   useEffect(()=>{
     if(!playing)return;
@@ -39,18 +29,20 @@ export function GameDiscovery() {
     <section ref={section} className="career-game-promo" id="career-game" aria-labelledby="career-game-title">
       <div className="career-game-copy">
         <p className="career-game-name">SYNERGY.EXE</p>
-        <h2 id="career-game-title">Career<br/>mode.</h2>
-        <p className="career-game-story">Climb the office. Catch the language.<br className="career-game-break"/> Post your way up.</p>
+        <h2 id="career-game-title"><span>Career advancement.</span><strong>Gamified.</strong></h2>
+        <p className="career-game-story"><strong>Optimized for LinkedIn.</strong><br/>Collect the jargon. Chase the reactions.<br/>Climb the corporate ladder.</p>
         <div className="career-game-actions">
           <button type="button" onClick={open}>Play the game</button>
           <a href="/game/">Open full screen</a>
         </div>
-        <p className="career-game-aside">Counts as professional development.</p>
       </div>
-      <button className="career-game-poster" type="button" onClick={open} aria-label="Preview SYNERGY.EXE: play the career game">
-        <CareerArtwork/>
-        <span className="career-game-insert">Your next move.</span>
-      </button>
+      <div className="career-game-cabinet">
+        <div className="career-game-screen">
+          {loaded&&<iframe ref={preview} style={{opacity:ready?1:0}} src="/game/?demo=1" title="Silent gameplay demonstration" tabIndex={-1} aria-hidden="true"/>}
+          <button type="button" className="career-game-takeover" onClick={open} aria-label="Take over: play SYNERGY.EXE"><span>Take over</span></button>
+        </div>
+        <div className="career-game-preview-controls"><span>Live gameplay</span><button type="button" onClick={()=>setPaused(value=>!value)} aria-pressed={paused}>{paused?'Resume preview':'Pause preview'}</button></div>
+      </div>
     </section>
     <dialog ref={dialog} className="career-game-dialog" aria-label="Play SYNERGY.EXE" onClose={closed} onClick={e=>{if(e.target===e.currentTarget)dialog.current.close();}}>
       <header><a href="/game/">Open full screen</a><button type="button" autoFocus onClick={()=>dialog.current.close()} aria-label="Close game preview">Close <span aria-hidden="true">×</span></button></header>

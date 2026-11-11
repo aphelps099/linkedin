@@ -13,6 +13,7 @@ import { pen, fit, begin, hud, tray, toast, drawToast, drawParts, showCard, hide
 import { enterFloor, stepWorld, drawWorld, recenter, floor, debug } from './world.js';
 import * as S from './scenes.js';
 
+function bootGame() {
 const TOP = FLOORS.length - 1;
 let saved = load();
 
@@ -277,3 +278,7 @@ window.SYN = {
   set hook(f) { hook = f; }, get hook() { return hook; },
   warp:debug.warp, go, pause,
 };
+
+}
+if(new URLSearchParams(location.search).get('demo')==='1')import('./preview.js');
+else bootGame();

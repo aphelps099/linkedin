@@ -157,3 +157,12 @@ canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;width
 }
 @media (max-width:359px){ .mast h1 span{display:none} }
 @media (prefers-reduced-motion:reduce){ *{scroll-behavior:auto !important} }
+
+/* Silent homepage demonstration; the playable game retains its complete cabinet. */
+.game-demo .mast,.game-demo .reality,.game-demo .pad{display:none}
+.game-demo .stage{max-width:none;padding:10px 12px 0}
+.game-demo .hud{padding:4px 0 12px}
+.game-demo .view{align-items:center}
+.game-demo .tray{max-width:100%}
+
+@media(max-width:300px){.game-demo .hud .facts{display:none}}
