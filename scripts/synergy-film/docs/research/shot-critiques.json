@@ -1,0 +1,1139 @@
+{
+ "summary": {
+  "s01": {
+   "scores": [
+    6,
+    6.5
+   ],
+   "revised": true,
+   "open_fixes": 6
+  },
+  "s02": {
+   "scores": [
+    8,
+    5
+   ],
+   "revised": false,
+   "open_fixes": 7
+  },
+  "s03": {
+   "scores": [
+    5,
+    6.5
+   ],
+   "revised": true,
+   "open_fixes": 6
+  },
+  "s04": {
+   "scores": [
+    4.5,
+    5.5
+   ],
+   "revised": false,
+   "open_fixes": 9
+  },
+  "s05": {
+   "scores": [
+    4.5,
+    6
+   ],
+   "revised": false,
+   "open_fixes": 9
+  },
+  "s06": {
+   "scores": [
+    4.5,
+    6
+   ],
+   "revised": false,
+   "open_fixes": 11
+  },
+  "s07": {
+   "scores": [
+    4.5,
+    5
+   ],
+   "revised": false,
+   "open_fixes": 16
+  },
+  "s08": {
+   "scores": [
+    5,
+    6.5
+   ],
+   "revised": false,
+   "open_fixes": 9
+  },
+  "s09": {
+   "scores": [
+    6,
+    7
+   ],
+   "revised": true,
+   "open_fixes": 7
+  },
+  "s10": {
+   "scores": [
+    5,
+    4
+   ],
+   "revised": false,
+   "open_fixes": 8
+  },
+  "s11": {
+   "scores": [
+    6,
+    5
+   ],
+   "revised": false,
+   "open_fixes": 9
+  },
+  "s12": {
+   "scores": [
+    4.5,
+    6.5
+   ],
+   "revised": false,
+   "open_fixes": 11
+  },
+  "s13": {
+   "scores": [
+    7,
+    7.5
+   ],
+   "revised": true,
+   "open_fixes": 3
+  },
+  "s14": {
+   "scores": [
+    5,
+    6.5
+   ],
+   "revised": false,
+   "open_fixes": 9
+  }
+ },
+ "shots": {
+  "s03": {
+   "critiques": [
+    {
+     "lens": "cine",
+     "round": 1,
+     "score": 5,
+     "verdict": "revise",
+     "fixes": [
+      {
+       "priority": "major",
+       "area": "Light and exposure: room legibility",
+       "problem": "The frame is almost all black. Proof f300 has a mean luma of 3.1% (sRGB), and only 5% of pixels sit above 10%. The side walls measure about 1.6% and the head wall about 0.4%, where the treatment asks for charcoal #1a1b1e (about 10%) falling to blue-black. The carpet measures about 7% blue, so it never reads as cobalt. The room's volume and the walls' converging lines never form, and only the table carries the one-point perspective. At contact-sheet or phone size the drop lands on a void: a small cluster of coloured dots in black. It is also a big step down from S02's well-exposed medium at the cut. Accidental text check: clean. There are no FONT objects, the only image is the screen atlas, and the CRT fields are flat; what looks like a pattern on the CRT sides is vent grilles.",
+       "fix": "In build(), set sc.view_settings.exposure to about +0.6 to +1.0 EV in place of 0.0. Add a shot-local wall graze: one long, soft area light high on each side wall, light-linked to the wall panels only, so the acoustic bays read as charcoal and converge on the vanishing point. Tested at f300 (crit1-cine/probe/var_compare.png): variant A (mist 0.25, +0.6 EV) gives a mean of 4.7%; variant B (mist 0.15, +1.0 EV) gives 6.0%, the carpet reads cobalt, the panel rhythm appears and the CRT fields hold without clipping. B is the better still. Even B leaves the walls at about 4.5%, so the graze is still needed. After lifting, render two consecutive final-tier frames (12 spp, animated seed, moving camera) to check the walls and carpet for denoiser crawl."
+      },
+      {
+       "priority": "major",
+       "area": "Compositing: depth mist on the subject",
+       "problem": "room.compositor() runs with its default mist_amount 0.55 (start 6 m, depth 46 m, linear) and mixes toward near-black (0.006, 0.008, 0.016). Synergy is 39.4 m from the lens, so he is blended about 40% toward black (0.55 x 33.4/46). The far terminals lose 30-36%. The subject at the vanishing point ends up the most-darkened thing in frame. At final tier his plates read as dim tan, not ivory, and his shoulders and arms dissolve into the black head wall.",
+       "fix": "Call room.compositor(threshold=0.9, mist_amount=0.15-0.25) for S03. Add the rig owner's proposed backlight (tools/synergy_in_room.py rim_light: area light at SYNERGY_POS + (0.35, 1.05, 2.55) aimed at his chest, cool 0.86/0.91/1.0, 55-80 W), set visible_camera False and light-link it to bpy.data.collections['Synergy'] the way walnut_bounce does. It lifts the crown and shoulder edges off the head wall (crit1-cine/probe/him_var.png)."
+      },
+      {
+       "priority": "major",
+       "area": "Framing: printer beat and bottom edge",
+       "problem": "The 1.5 m push carries the foreground out of the bottom edge. Probe projections: the printer's centre sits at 0.83 of frame height at f257, 0.92 at f300 and 0.99 at f352. The stack's base goes from 0.92 to 1.07. The printer's chair is gone by f300. The second bar's feed (f321-341) lands on a stack top in the bottom 8% of frame, about 2 px soft, so the 'feeds on each bar onto a stack that only grows' gag reads once, not twice. The trolley also slides out at the bottom-right corner (f273-297, centre at 0.99 at f300) before the droid drags it back in. At f257 the chair's star base touches the bottom edge. Bottom-edge crops of a beige box sitting on the axis are tangents a design director will reject.",
+       "fix": "Keep the approved lens, height and start position, but shorten or ease the push so the printer tray, its seat and the stack top stay at least 10% inside the bottom edge through f341. The probe fit (v = 0.188 + 5.04/d) puts the printer's centre at about 0.91 at f352 with 0.8 m of travel, against 0.99 now. Alternatively, keep 1.5 m and finish the ease by about f330 at about 1.0 m. Re-check that the trolley stays clear of the right edge between f273 and f297, or start the push from a slightly wider position so it never kisses the edge."
+      }
+     ]
+    },
+    {
+     "lens": "tech",
+     "round": 1,
+     "score": 6.5,
+     "verdict": "revise",
+     "fixes": [
+      {
+       "priority": "major",
+       "area": "lighting bug: paper_fill (s03_the_drop.py paper_fill)",
+       "problem": "PAPER_K has no effect. `pl.data = ff.data.copy()` keeps the foot fill's action (foot_fillAction), because set_state(1,'lit') keyed foot_fill.data.energy. At render time the fcurve overrides `pl.data.energy = ff.data.energy * k`. Measured: foot_fill 13.0 W and paper_fill 13.0 W (ratio 1.000) at f257/300/352, where 4.55 W was intended. So the floor stack and the fed sheets get the full foot fill that env_room deliberately keeps off the paper, and the stack is the brightest object in the lower frame (proof f257 stack mean about 27 of 255; with the fix about 11). Evidence: crit1-tech/insp2/log.txt (ENERGY lines) and crit1-tech/stack_cmp.png (left: as built, right: fixed).",
+       "fix": "In paper_fill(), straight after `pl.data = ff.data.copy()`, call `pl.data.animation_data_clear()`, then set `pl.data.energy = ff.data.energy * k`. S03 is lit throughout, so a constant is right. Verified with crit1-tech/tools/variant.py: paper_fill now evaluates to 4.55 W and the stack sits under the subject as the docstring says."
+      },
+      {
+       "priority": "major",
+       "area": "temporal noise / flicker (render settings)",
+       "problem": "The wide budget renders the final at 12 spp with use_animated_seed=True. The push eases to almost nothing from about f330 (3.4 mm/frame at f340, 0.3 at f348), so the last 20+ frames are effectively a held image and the edges boil. Final 1600x900, f341 to f342 (the camera moves about 2.5 mm, so every difference is noise): far table and screens mean diff 2.4, p99 31 levels; Synergy p99 31; slab p99 23; screen-edge pixels flip by more than 120 levels at (732,300) and (888,364). Walls and carpet are stable (p99 1). In the diff image the change sits on screen bezels, cords, his silhouette and grain in the slab: crit1-tech/final_diff_far.png.",
+       "fix": "Use a fixed seed for this slow push: `room.render_budget(kind='wide', samples=args.samples or None, locked=True)`, or set `sc.cycles.use_animated_seed = False` after it. Verified at proof with the same spp: far-end diff at 341 to 342 fell from mean 4.01 / p99 48 to 1.04 / p99 12; Synergy from 4.62 to 0.72; even at full cruise (257 to 258) 4.03 fell to 1.90. No visible screen-door effect at 20 mm/frame. For the GPU finals, also pass an explicit sample count (for example --samples 32): the 'wide' budget clamps the final tier to 12 spp, which suited CPU but is low for emissive edges at 1600 px."
+      },
+      {
+       "priority": "major",
+       "area": "sync point legibility: printer feeds f257 / f321",
+       "problem": "In code the feeds are exact: sheet0 hide_render switches 256 to 257 and lands f277; sheet1 switches 320 to 321 and lands f341. No warnings from check_room_sync. On screen, though, nothing happens on either downbeat. The approved camera sees the printer from behind, so the tray run (f257-268) is hidden. The sheet first shows as a dark 2-4 px sliver clearing the printer's left side at about f269-274, and the landing reads as a 1-2 frame skew of the stack top (f276/f340), 20 frames (1.25 beats) after the downbeat. Meanwhile the sound cues s03-printer-f257 and s03-printer-f321 (audio/cues.json) put the feed transient on 257/321, so sound and picture are 12-20 frames apart. Evidence: crit1-tech/sheet_flight.png (f266-276), crit1-tech/crop_feed1.png and crop_feed2.png.",
+       "fix": "Give S03 its own room timeline (copy demo_timeline's S03-relevant events, as S04's room_timeline already does) and feed at f245 and f309 instead of 257 and 321. The sheet then drops visibly past the printer's silhouette on the downbeats and settles on the stack at f265/f329. Mirror the same feed frames in s04_padlock_glide.room_timeline so the stack count agrees (0.4 mm a sheet, unseen in S04). Tell the sound owner the visible drop is on 257/321 and the stack hit is on 265/329. If the director prefers the room timeline untouched, record it as an accepted offset instead."
+      }
+     ]
+    }
+   ],
+   "revised_after": [
+    1
+   ]
+  },
+  "s02": {
+   "critiques": [
+    {
+     "lens": "tech",
+     "round": 1,
+     "score": 8,
+     "verdict": "ship",
+     "fixes": []
+    },
+    {
+     "lens": "cine",
+     "round": 1,
+     "score": 5,
+     "verdict": "revise",
+     "fixes": [
+      {
+       "priority": "blocker",
+       "area": "Macro post legibility, f129-150 (camera DOF and the envelope's value)",
+       "problem": "The beat the whole film rests on, ivory robot fingers posting a sealed envelope, does not read. At f/4 and 0.208 m the aperture is 25 mm wide, so depth of field is about 1 mm. The envelope stands about 18 mm nearer the lens than the slot rim and blurs by about 50 px at 1600 px wide. In proof f129 and f136 it is a soft grey slab across the top 40% of the frame. The fold and flap cannot be read, and the seal is a fuzzy blue rectangle. The envelope also reads grey, not white: its face measures about 184/255 against about 218 on the lid. The fingers are a brown and cream smudge clipped by the top-right corner, with no black joint band and no tip cap readable.",
+       "fix": "For f129-157, stop down to f/11-f/16 (the treatment says 'f/4 equivalent', which allows it). Set focus on the envelope's seal and fold plane, about 5-8 mm above the slot, instead of the slot rim. Rack to the rim over f144-148 as the envelope disappears, then open toward FSTOP1 during the move. Raise ENV_RAKE from 0.8 W to about 2.5 W, or widen the card, so the envelope face reads white against the lid. Change PINCH_X and the approach so the index tip, with one black band and its bronze cap, sits about 10-15% inside the right edge instead of being cut off by it. Check f129, f136 and f142 at proof."
+      },
+      {
+       "priority": "major",
+       "area": "Performance and contact: the envelope shrink, f136-148",
+       "problem": "stage_post scales the envelope toward the slot centre, but the fingers only follow PRESS_D = 2 mm and the pinch stays closed where it was. By f142 (scale 0.65) the end of the envelope is about 50 px clear of the pads at 800 px, so the fingers visibly pinch air while the paper slides out of them. The treatment's 'fingers press it edge-first into the slot' becomes a magic trick with a contact break that an ILM supervisor would reject.",
+       "fix": "Pick one of two fixes. (a) Mechanical let-go: key the thumb and index pads apart by 2-3 mm over SINK0 to SINK0+2, so the slot visibly takes the envelope from an opening pinch. (b) Keep contact: drive the pinch point with the shrink, pinch_at[f] = c + (pinch - c) * s(f), until about 0.3 scale, then release. Either way, hold the hand still for 2 frames after release before LIFT0."
+      },
+      {
+       "priority": "major",
+       "area": "Steam, f129-177",
+       "problem": "The treatment calls for two thin threads of steam rising past the lens. What renders is a milky, out-of-focus fog over the top third of the frame. In an A/B at f142 with STEAM_ALPHA=0, the top band is +60/255 brighter with steam: the cobalt carpet washes to grey and the fingers are veiled, so the steam actively hurts the frame. Puffs rise 0.17 m toward a lens 0.208 m above, into extreme defocus, so they can never read as threads.",
+       "fix": "Keep the threads in the focal zone and have them cross the frame. Cut STEAM_RISE to about 0.03-0.04 m and drift the puffs sideways along the slot's long axis or across the lid (a draft), not toward the lens. Shrink the puff size so each thread is a thin wisp. Cut STEAM_GLOW and STEAM_ALPHA by about half and let them read against the dark band beyond the lid rim. With the f/11 change they will hold shape. If they still read as fog at proof, drop the steam rather than ship a haze."
+      },
+      {
+       "priority": "major",
+       "area": "Amber slot glow, f146-154",
+       "problem": "At f148 the slot is a flat pale peach pill (core about sRGB 242,198,164) inside a hotter near-white rim (about 253,233,213), with no warm light on the lid around it. It reads as a sticker or an LED button, not 'a warm amber glow pulsing up out of the slot'. AgX desaturates the hot emission, and the s02_slot_glow point light (0.03 W peak) adds almost no spill.",
+       "fix": "Lower GLOW_PEAK but feed a more saturated amber (about #FF8A2A), so AgX keeps the hue below its highlight rolloff. Make the glow brightest at the centre of the well and darker at the lip, not the reverse. Raise the s02_slot_glow light 5-10x (about 0.2-0.3 W peak) so the raised spout lip, the inner rim and the lid next to the slot catch warm light that rises and falls with the pulse."
+      },
+      {
+       "priority": "major",
+       "area": "Camera move pacing and reveal order, f157-232",
+       "problem": "With MOVE_SHAPE (2.0, 3.6) the camera's speed peaks at about 2.0 m/s around f185-189. The lanyard V, badge, chest plates and chip, neck pistons, boom mic and face all go by in about 20 frames (f177-197). The face enters the frame at f191-193, near peak speed, and SHUTTER closes to 0.2 only to hide the smear. Then f197-229 is a 0.7 m creep-out that shows nothing new. The treatment's sequential 'rises past ... and finally the face' never registers, and the badge is never featured.",
+       "fix": "Rebalance the profile to be flatter and later, for example MOVE_SHAPE of about (1.6, 1.9), or split the path into two stages. The vertical reveal (cup, then lanyard and badge, chest and chip, pistons, mic, face) should then take about 45 frames, and the face should land with at least 15 frames of settle before f232. Then remove the SHUTTER dip and keep 180 degrees for the whole shot, so the motion texture does not change partway through the move."
+      },
+      {
+       "priority": "major",
+       "area": "Camera height: looking down into the collar cavity, about f177-196",
+       "problem": "The camera path stays at 1.50-1.57 m while it passes the shoulders, so the lens looks down into the open top of the torso. In animatic f185 (and still in proof f196) the black cavity with the A-frame rising out of it reads as an open cardboard box. That frame cannot be printed.",
+       "fix": "Lower the middle control points of Move.B to about 1.35-1.40 m, so the lens passes the chest at or below shoulder height and cranes up to END_H 1.58 m as it settles. That is also the 'rises past' feel the treatment describes. If the cavity still shows at level framing, send the rig owner a request for a collar plate. Do not fix it in the shot."
+      },
+      {
+       "priority": "major",
+       "area": "End-frame composition and colour bokeh, f232-256",
+       "problem": "END_DIST = 2.90 is needed to hold both the face and the badge, but the centred figure then fills only the middle ~55% of the frame width, with dead black on both sides. The cup sits at x = 0.40 (the centre column), not the treatment's lower-left third. The bokeh does not deliver the treatment's 'cobalt, acid yellow, pink, sky'. Cobalt, the brand colour and first in the list, is the dimmest disc (about 0,30,79) and touches the right edge of the frame. Orange (Operations, not in the list) is the most prominent disc. All six discs sit in one band along the top edge, which looks scattered rather than composed. The bottom edge also cuts through the dark waist gap with its orange and red cables.",
+       "fix": "Keep the distance, but move the composition off centre: shift or aim so the head sits a little right of centre and the cup lands on the left third line (or raise END_ANG to about 16-18 degrees and re-check the wedge and earcup read). Call room.front_bokeh with a chosen region, seed and n so that cobalt, acid yellow, pink and sky are the four discs that read, at 60-90 px on a 1600 px frame, none within about 5% of an edge. Place one beside the head on the right and one lower-left in the void, not all along the top. Check the bottom-edge crop against the badge at the same time."
+      }
+     ]
+    }
+   ],
+   "revised_after": []
+  },
+  "s04": {
+   "critiques": [
+    {
+     "lens": "cine",
+     "round": 1,
+     "score": 4.5,
+     "verdict": "revise",
+     "fixes": [
+      {
+       "priority": "blocker",
+       "area": "performance / camera timing (f410-418)",
+       "problem": "The shot's only performance beat happens off screen. The finger's descent is fully keyed: index tip z goes from 0.993 to 0.753 over f410-418, eased, and holds still with no flinch. But the camera is still swinging, so the tip projects to image x=2.49 at f410, 1.19 at f416 and 0.90 at f418. report() also prints 'hand first in frame f418'. The treatment says 'At f410 Synergy's left index fingertip lowers into frame top-right' in 'one clean 8-frame move'. On screen, the hand is never seen arriving. A finger that has already landed slides in from the right edge during a whip pan (f418-422: hand x 0.90 to 0.55 while the padlock moves 0.18 to 0.41), so hand and padlock seem to converge, like a grab instead of a waiting fingertip. Evidence: crit1-cine/contact_land.png, logs/probe.log.",
+       "fix": "Finish the camera's heading swing, and get the stop zone into frame top-right, by f406-408 at the latest. Then the whole 8-frame descent plays in a nearly settled frame. In practice: start the pass-by or swing earlier (ORBIT/AIM ending around f404, not f418/f422), or ride behind and beside the padlock looking up the travel line, so that at f410 the padlock sits in the lower-left third and the stop zone 2.2 m ahead is upper-right. Add a gate to report(): hand first in frame must be \u2264 f410, and the tip image position at f410 must fall inside x 0.55-0.95, y 0.55-0.95."
+      },
+      {
+       "priority": "major",
+       "area": "composition of the hold (f424-432) / contact read",
+       "problem": "The bronze fingertip is hidden behind the padlock for the whole hold. A ray from the lens to the index tip hits padlock_kevin_body on every frame f424-432. The camera ends about 126 deg round from the travel line, behind and to +X, and the slide line runs straight into the tip. The 'stops dead against one fingertip' gag therefore never reads, and the canon bronze tip cap is never shown. The f418-428 rack from padlock to fingertip is invisible because the target is 22 mm behind the padlock and occluded. Continuity: S09 already offsets its slide line 22 mm to his right (SLIDE_OFFSET=0.022) so the brass meets the tip with its camera-right shoulder and the tip stays visible. S04's centred contact therefore does not match the 'identical' repeat.",
+       "fix": "Use S09's contact. Run the slide line 22 mm to his right of the tip (stop_for with the offset start/tip, as in s09_same_padlock.py), so that from the +X-side lens the bronze tip shows beside the brass's right shoulder. Alternatively, end the camera at \u226495 deg from the travel line. Re-check with a lens-to-tip ray, which should come back clear for f424-432, then let the rack land on a visible tip."
+      },
+      {
+       "priority": "major",
+       "area": "camera move (f384-422)",
+       "problem": "The treatment's lateral track ('tracks toward the head at the padlock's speed, holding it in the lower third'; decelerates f416-424) became a 110 deg orbit-pan. Heading goes from 160 to 50 deg, peaking at 5.3 deg/frame (127 deg/s) over f396-404, which is about 88 px of motion-blur smear on the background at final res. In this window the padlock rides at the frame middle (image y 0.44-0.51 from the bottom), not the lower third. From about f397 to f415 it is seen edge-on as a thin sliver, so its shackle-and-body silhouette is lost for about 0.75 s, and the upper 60% of the frame is empty black (f401-f414). These frames do not survive as stills and do not fit the film's rigid, deadpan camera grammar. The dolly also starts braking at f404, not f416.",
+       "fix": "Keep pan rates \u22642.5 deg/frame, eased. Keep the padlock's broad face at \u226445 deg to the lens throughout the ride. Tilt up or add lens shift so the padlock rides on the lower third and the terminal colour discs (Keys cobalt, Synthia ivory) fill the upper frame behind it. If a pass-by pan is kept, place it early (about f386-402), at \u22650.5 m lateral distance, so it ends with the lens looking up the line. Move the dolly brake toward f412-424 so the overtake into centre happens on the treatment's frames."
+      },
+      {
+       "priority": "major",
+       "area": "frame content: rest of him in shot",
+       "problem": "From f415 to the end of the hold, fragments of his body sit in the top-right quarter: red and orange waist cables at the top centre, a cream hip plate behind the hand, and a cream thigh or pelvis trapezoid on the walnut horizon to the right of the hand. That last one reads as an unexplained object sitting on the table. The treatment says 'Only his left index finger and the back of his hand ... The rest of him is off frame.' At f/2.8 and about 1 m these are not soft enough to vanish (see proof/s04/0432.png, zoom_432.png).",
+       "fix": "In this shot, set visible_camera=False on the pelvis, thigh and hip plates and the waist cables (keep their shadows and glossy contribution), or re-aim or tilt so they fall outside the frame. Result: only the forearm, back-of-hand plate and index break the dark top-right."
+      },
+      {
+       "priority": "major",
+       "area": "light / walnut look",
+       "problem": "The walnut never delivers the treatment's 'mirror full of long coloured streaks' crossed by the skylight slab as 'a hard bright band'. In f353-388 it reads as a dusty mauve (sampled sRGB \u2248 98,77,73 lower-left), against S03's dark neutral walnut (\u2248 43,37,33): a visible cut mismatch at f353. From f398 to the end it is flat brown-black (0-12), with no slab band and no terminal streaks, so the lower half of the hold is a muddy reflection. The only time the slab shows is as a saturated yellow defocused stripe at f393-395, which reads as tape, not 6500K daylight.",
+       "fix": "Find what tints the grazing walnut pink: likely the reflected wall or carpet, or the compositor's mist or haze colour at this lens. Neutralise it toward S03's walnut. For the 3 cm lens, add glossy-only terminal-colour streak cards (light-linked to the walnut, as the room's streak cards are) and a bright glossy band, for example the slab's spill on the head wall, so that the walnut mirrors coloured streaks and a cool hard band near the horizon in the ride and the hold."
+      }
+     ]
+    },
+    {
+     "lens": "tech",
+     "round": 1,
+     "score": 5.5,
+     "verdict": "revise",
+     "fixes": [
+      {
+       "priority": "blocker",
+       "area": "sync: fingertip beat f410 (TREATMENT S04)",
+       "problem": "The treatment says that at f410 the left index 'lowers into frame top-right' in one clean 8-frame move, and that move never appears on screen. I checked visibility frame by frame with ray tests from the camera to the rig's vertices: no part of the left hand is in frame until f418. It enters from the right edge at image (0.896, 0.540), already resting, mid-height rather than top-right, and only because the pan carries it in. At f410 the fingertip projects to image x=2.50 (off screen); at f416 it is at x=1.19. The lowering at f410-418 is keyed correctly: a straight vertical, eased, tip z 0.9985 to 0.7585 at x,y (0.2907, -0.0924). It is just never filmed. The script's own report() says 'hand first in frame f418'.",
+       "fix": "Re-block the camera so the hover above the stop is already in frame top-right by f410 and the whole f410-418 lowering is seen. One option: end the swing behind-beside the padlock (BETA_END around 140-150 deg, ORBIT ending around 408) so the lens looks up-table toward the fingertip during f410-418, then ease to the final frame. Keep the finger keys and the s04-fingertip-rest cue at f418 as they are. Add an assert in report() that the index_3_L tip projects inside the frame (x<1, y>0.6) on f410."
+      },
+      {
+       "priority": "major",
+       "area": "camera: pan reverses direction f386",
+       "problem": "The signed heading per frame (measured from cam.matrix_world) pans right +0.035 to +1.05 deg/frame over f378-385, passes zero at f386-387 (+0.19, then -0.43), then pans left, accelerating to -5.31 deg/frame at f401-402. That is a reversal inside one move. It shows on the far bokeh in the animatic: Operations' orange disc drifts right about 11% of frame width over f377-386, then swings back left (contact_panrev.png). It reads as a hitch two frames before the f388 flash. The cause is ride_aim (line 299): its 12-frame blend from the approved s04_start offset to FRAME_RIDE x=+0.12 pans right while the ORBIT that starts at f384 pans left.",
+       "fix": "Make the heading monotonic. Either drop the rightward reframe (FRAME_RIDE[0] equal to the start's own offset), or start the orbit at f377 and drive the reframe blend with the same trap() curve so its rightward component never outruns the orbit. Add a check in key() that the sign of dh never flips between f377 and f422."
+      },
+      {
+       "priority": "major",
+       "area": "flicker: locked hold f424-432",
+       "problem": "The camera, padlock, hand and focus are all static from f428 (camera static from f424). I diffed consecutive proof renders of the hold. f429 vs f430: mean abs diff 1.52/255, 3.6% of pixels differ by more than 10/255, peak 181. f430 vs f431: 1.53/255, 3.8%. The diff image is classic OIDN blotch boil across the walnut reflections, the brass face, the master cord and the hand edges (diff_429_430_x12.png). The cause is render_budget(kind='macro') at line 489: it runs with locked=False, so use_animated_seed=True on frames whose camera is locked. The final tier (16 spp, adaptive 0.03) lowers the boil but does not remove it.",
+       "fix": "Fix the sampling seed on the static frames only. For example, register a frame_change_pre handler in build(): sc.cycles.use_animated_seed = sc.frame_current < 424. Keep the animated seed while the camera moves. Re-check with three consecutive proofs (429-431); the target is under 0.5% of pixels differing by more than 10/255."
+      },
+      {
+       "priority": "major",
+       "area": "sync: rack focus f418-428 does not read",
+       "problem": "The rack is keyed on the treatment's frames, but it only moves focus 17 mm. The focus distance goes 0.4574 m (f418, on the padlock) to 0.5711 (f424) to 0.5766 (f428), while the padlock sits at 0.5593 m from f424. At 40 mm f/2.8 focused near 0.57 m the depth of field is about 0.553-0.588 m, so the padlock and finger are both sharp before and after. The treatment's 'rack focus from padlock to fingertip' is not visible on screen. Between f418 and f424 the focus mostly tracks the padlock's own approach.",
+       "fix": "This resolves with the blocker's re-block: from behind-beside the padlock, the fingertip is 0.3-0.5 m beyond it at f418, so the rack covers a real distance. Otherwise, rack across a separation of at least 0.15 m or open the stop for the end beat. Verify by rendering f418 and f428 at proof and checking that sharpness swaps between padlock and fingertip."
+      }
+     ]
+    }
+   ],
+   "revised_after": []
+  },
+  "s05": {
+   "critiques": [
+    {
+     "lens": "cine",
+     "round": 1,
+     "score": 4.5,
+     "verdict": "revise",
+     "fixes": [
+      {
+       "priority": "blocker",
+       "area": "Post f500-519 (contact, shrink, glow): the shot's payoff",
+       "problem": "The padlock never reaches the lid. At contact (f508) its lowest point is 33.7 mm above the slot (DIAG), which reads as about 5 cm in frame (crit1-cine/proof/s05/0508.png). The shrink (line ~1091: scale 0.02^(t^2) toward a point 6 mm under the slot) keeps the padlock's lowest point above the slot plane until about f515. So from f510 to f514 a shrinking gold speck floats in mid-air in front of the chest plate and disappears there on f519 (crit1-cine/post.png, crit1-cine/proof_post_crops.png). The lens sees the lid at about 7 deg, so the slot is invisible and the lid never hides anything. 'Posted without looking' reads as a vanishing trick, and the sound's lid touch (f508) and plip (f512, audio/CUES.md) land on an object hanging in the air. At contact the lens also sees the padlock's keyway underside, so it reads as a gold box with a round dial, not a padlock. S07 repeats this posting action eight times.",
+       "fix": "Release on f508 and let the padlock drop: key its translation down the slot axis so its lowest point meets the slot plane on f510 (34 mm under gravity is 2 frames, eased in), with no scale change before that. Then shrink f510-518 toward a point 12-15 mm under the slot plane, so the lid's near rim covers it from the bottom up: at least half of it below the lid line on f512, nothing above the lid after f514. This matches the treatment's 'contact f508, shrink f510-518' exactly and puts the plip on a padlock that is half inside the lid. At contact, turn the padlock in the grip so the lens sees its profile with the shackle up (or its broad face), not the keyway underside. Check with proof crops at f508, 510, 512 and 514."
+      },
+      {
+       "priority": "major",
+       "area": "Arm silhouette while posting, f504-524",
+       "problem": "rig.post_pose's contact pose (extent 44 mm) puts the left forearm in a horizontal bar across the base of the neck at shoulder height, with the elbow winged out to frame right. After the release, the empty hand hovers as a claw beside the neck from f510 to f520 (crit1-cine/proof/s05/0517.png, crit1-cine/carry.png). This hides the neck A-frame, cuts the figure in two under the chin and reads as an arm across his throat. The exit (f520-524) then wipes sideways across the chest at shoulder height before it drops. For 20 frames there is no printable still.",
+       "fix": "Once the drop closes the gap, the hand can release higher, so solve the contact with your own place_arm_clear search instead of rig.post_pose's single solution. Try hand frames with the fingers pointing down and forward and the elbow below the shoulder: penalise pole z > -0.3 and a wrist above the collar line. Add a score term for how much the forearm overlaps the neck band in image space (head's lowest facet to collar), the same way hand_over_face already scores cover of the screen. After the release, withdraw at once along the same line (no 7-frame hover by the neck), then exit straight down at frame right."
+      },
+      {
+       "priority": "major",
+       "area": "Look of the hero padlock in the study, f441-500",
+       "problem": "The padlock's broad face renders as a flat, blown peach-white plate in both the animatic and the proof (crit1-cine/pad460_proof.png, crit1-cine/pads.png). The cause is s05_padlock_card at line 961 (pos = c + mirror * 0.6): it sits exactly on the face's mirror direction to the lens, so the polished brass reflects the card's hot core as a uniform rectangle. No brass colour, patina or scratches show, and it reads as a sugar cube. Those scratches set up the 'same scratches' recognition beat in S09.",
+       "fix": "Move the card 15-25 deg off the mirror direction, so the face catches the falloff at the card's edge rather than its core, and/or lower CARD_E from 2.5 to about 0.6-0.8. Target brass mid-tones on the face (around #a8853e) with the scratches legible at 1600 px. Check with a proof crop at f460."
+      },
+      {
+       "priority": "major",
+       "area": "Study staging, f446-500",
+       "problem": "The padlock sits beside the neck (image x 0.61 against the face at 0.51), just under the earcup. The tip of the mic boom touches the shackle, and hand, wrist, forearm, pauldron, boom and earcup pile into one cluttered knot at frame right (crit1-cine/proof/s05/0460.png and 0479.png). The elbow is raised to shoulder height. The face never points at the padlock, so the 3 deg pitch and 4 deg roll do not read as studying it.",
+       "fix": "Move STUDY_PINCH toward his centre line, lower and further forward, so the padlock sits just under the screen and in front of the dark neck A-frame, on one vertical with the face and the cup. A starting point is about (-0.03, -0.55, 1.38) in rig space, which allows for the 10 deg camera parallax. Then the pitch-down reads as looking at it, and the carry becomes a short move down-left to the lid. In the study score, require at least 4% of frame width of image-space clearance from the boom and the earcup, keep the elbow down, and leave the near (frame-left) neck piston unblocked."
+      },
+      {
+       "priority": "major",
+       "area": "Reflected skylight slot on the face glass (strange-loop setup)",
+       "problem": "The treatment's Risks section says the slot-shaped skylight must be established, including its reflection in his face glass in S02 and S05. glint() calls rig.glass_glint(cam, f) at the default strength of 7, while S02 uses GLINT = 40. At proof size it is a faint grey arc along the top edge of the glass (crit1-cine/glass479_proof.png, crit1-cine/glass465.png) and reads as a scratch or a bezel shadow.",
+       "fix": "Call rig.glass_glint(cam, f, strength=40) to match S02 and check that it reads as a rounded slot, clear of the bezel and the eyes; if it merges with the bezel line, try v of about 0.84. S07, S09 and S13 also call glass_glint at the default strength and need the same check."
+      }
+     ]
+    },
+    {
+     "lens": "tech",
+     "round": 1,
+     "score": 6,
+     "verdict": "revise",
+     "fixes": [
+      {
+       "priority": "major",
+       "area": "Exit f521-528: the hand lowers out of frame",
+       "problem": "There are three visible pops in the last frames before the cut. (1) In key_hand on the lower, line 859, `fingers=GRIP_FINGERS if f < END - 3 else 'relaxed'` makes the fingers jump 40 deg between f524 and f525. The whole hand is in frame on f525 (all 128 bbox corners, y 545-811 px at 1600x900). (2) pauldron_L turns 28.3 deg in a single frame on f526, against 4-5 deg/frame on either side. The cap visibly flips up off the shoulder on f525-526 (crit1-tech/exitcrops.png). (3) The upper arm sweeps 50 -> 12.7 -> -12.8 deg (bone euler X) over f525-527, then stops almost dead: bbox step 61 -> 136 -> 79 -> 11 px. The cause is the ease te = t*t*(1.6-0.6t) at line 853, which pushes most of the 8-frame drop into its last three frames, so the arm passes the pauldron's 80-degree ride-up threshold in one frame.",
+       "fix": "Blend the finger curl from GRIP_FINGERS to 'relaxed' per frame across f521-526, or keep the grip until the hand is out of frame (the hand bbox is 7/128 in frame on f527). Give the lower a symmetric ease, such as smoothstep over f521-528. Alternatively start it at f518, because after f514 the hover is only a hold. Aim for the upper arm under about 15 deg/frame and pauldron_L under about 8 deg/frame. Then re-run rig.bake_pauldrons(START, END) and check the per-frame cap rotation. If the ride-up release still steps, spread the arm's pass through 80 deg over 3-4 frames."
+      },
+      {
+       "priority": "major",
+       "area": "Carry f501-508: hand and padlock turn",
+       "problem": "Measured world rotation of hand_L (the padlock is identical) per frame: f502 2.1 deg, f503 25.2, f504 60.3, f505 32.4, f506 0.9. That is 117 deg in three frames, peaking at 60 deg in one. It reads as a whip, and the brass face flares as it sweeps through the light on f503/f504 (crit1-tech/seq_500.png). The cause is line 819: `blend_frames(..., smoother(min(1.0, t * 1.25)))` with t already smoother((f-500)/8). The double ease squeezes the turn into the middle three frames.",
+       "fix": "Drive the frame blend with one ease over the whole carry, for example smoother((f-500)/8) without the second smoother and the 1.25 factor. Or start the hand's turn earlier (from about f497, after the mouth wave, while the head returns). Either way the peak should stay at or below about 20 deg/frame. Re-run first_clip on the carry frames and check the padlock highlight on f502-506."
+      },
+      {
+       "priority": "major",
+       "area": "Post f508-519 vs the f512 plip (A/V sync and the posting grammar)",
+       "problem": "The padlock is released 33.7 mm above the slot (contact_post, extent 44 mm) and then shrinks in mid-air toward a point 6 mm under the slot. On f512, where audio/cues.json and CUES.md put the plip ('goes in with ONE wet plip on f512'), it is still at 0.535 scale. Its lowest point is about 15 mm above the slot plane, and in the final crops for f512 and f514 it visibly floats free above the lid (crit1-tech/lidcrops_final.png). It does not reach the slot plane until about f515 and disappears on f519. S02 (plip f148 as the envelope vanishes) and S07 (gone on B+16, which is the plip) both put the plip on the swallow, so S05 is 3-7 frames out of sync with its own sound and with the film's posting grammar. The director's 'start the shrink at contact' note is respected; the problem is that sink and scale are tied together.",
+       "fix": "In build() around lines 1089-1093, separate the translation from the scale. From f508, translate M0 down the slot axis so the padlock's lowest point reaches the slot plane by f510-511 (a 2-3 frame drop after the release). Then scale toward c so it is about half swallowed, with the lid hiding the rest, on f512, and down to 0.02 by f518 (hidden from f519 as now). If the picture must stay as it is, ask the audio owner to move s05-plip to the frame where the padlock vanishes, but the treatment pins f512."
+      },
+      {
+       "priority": "major",
+       "area": "Hero padlock look during the study (S04 -> S05 prop continuity)",
+       "problem": "In the final-quality f470 frame the padlock's broad face is burned out: 43% of the face pixels have a channel >= 250 (max 255,255,250; mean 176,159,140). It reads as a glowing cream tile, and the scratches and patina are gone (crit1-tech/padlock470.png). S04 f432 shows the same prop as dark, scratched brass on the walnut (crit1-tech/boundary.png), so the hero prop changes look across the cut and holds the clipped look for about 55 frames (f446-500). The cause is s05_padlock_card (CARD_E 2.5, 0.5 x 0.3 m) in lights(), placed exactly in the lens's mirror direction of that face (pos = c + mirror * 0.6), so the polished brass mirrors the card.",
+       "fix": "Lower CARD_E to about 0.6-0.8, or move the card 15-25 deg off the mirror direction so the face picks up the card's falloff rather than its core, or both. Target the face's peak below about 235 with the scratches readable. Check against S04 f424-432 at the same exposure."
+      }
+     ]
+    }
+   ],
+   "revised_after": []
+  },
+  "s07": {
+   "critiques": [
+    {
+     "lens": "cine",
+     "round": 1,
+     "score": 4.5,
+     "verdict": "revise",
+     "fixes": [
+      {
+       "priority": "blocker",
+       "area": "Canon: no text or glyph (binder accordion)",
+       "problem": "During the concertina squeeze (f731-735) the binder's blank white spine label window (object s07_binder_label, from props.binder) is bent by the lattice zigzag into a white 'W' / 'V' letterform on the cobalt spine, square to the lens and just under his face. It reads as a letter or logo. Evidence: the animatic frames 731, 733 and 735 in /tmp/claude-0/-home-user-linkedin/35346f8e-3086-50e0-b336-b295d0b54106/scratchpad/shots/s07/crit1-cine/squeeze.jpg, and the final-quality crop at f733 in /tmp/claude-0/-home-user-linkedin/35346f8e-3086-50e0-b336-b295d0b54106/scratchpad/shots/s07/crit1-cine/z733_spine.png.",
+       "fix": "In Machine.binder/accordion, key s07_binder_label (and the chrome finger-hole ring under it) hidden from f729, or leave them out of the LATTICE modifier so they only scale with the block. Better still, drop the half turn on the way to the lid (see the binder-weight fix) so the cobalt cover, not the spine, faces the lens. Re-render f729-744 at proof and check every frame."
+      },
+      {
+       "priority": "major",
+       "area": "Performance: return to rest (f745-749)",
+       "problem": "In the move from the hover pose (Hv) to the rest pose, the left elbow swings up and the forearm crosses in front of the face screen. At f746-747 it covers the viewer-right eye and the mouth row, five frames before the cut and while the mouth should be idling. DIAG shows no body collision, so the clearance model does not catch it: the arm is between the lens and the face. Evidence: /tmp/claude-0/-home-user-linkedin/35346f8e-3086-50e0-b336-b295d0b54106/scratchpad/shots/s07/crit1-cine/elbow_proof.jpg (proof crop of f746-748) and ending.jpg.",
+       "fix": "Rebuild the HAND_REST move. First drop the wrist straight down in front of the badge, then swing it to WAIT_WRIST. Hold the rest pole (0.9, 0.3, -0.3) from f745, so the elbow never blends through an up-pointing pole. Add a camera-space check for f705-752 (any arm sample projected inside the face-screen rectangle and nearer the lens than the glass counts as a failure) and run it in diagnostics()."
+      },
+      {
+       "priority": "major",
+       "area": "Performance and story: the post reads as hand-to-mouth",
+       "problem": "From this 1.55 m camera on his left, the lid projects at his chin. At every contact (f619, 635, 651, 667, 677, 685, 693, 701), in the 737-745 hover and with the binder (f729-737), the pinching hand sits against the lower-left corner of the face screen, with the forearm diagonal across his neck. Twelve hand-to-face gestures before S13 weaken the film's payoff, where the first sip is the first time anything goes to his face. They also cover the left end of the mouth row, where every sweep starts. The tabs hang 79 mm above the pinch (the log shows 'top 79 mm over the pinch' against HANG_TOP 0.02), right beside his jaw. Evidence: carry.jpg, proof_posts.jpg and proof_b.jpg in /tmp/claude-0/-home-user-linkedin/35346f8e-3086-50e0-b336-b295d0b54106/scratchpad/shots/s07/crit1-cine/.",
+       "fix": "Add a screen-space term to post_lens and hang_matrix: the hand's and the problem's projected tops stay at least about 0.25 of a face-screen height below the screen's bottom edge, and nothing overlaps the screen. Have the hand come in to the slot from outside the cup (frame left of it), wrist low and forearm close to horizontal at lid height, and lower POST_H. Make HANG_TOP a hard limit. Carry the binder at lid height rather than chin height. Cut the 737-745 hover and drop the hand straight away."
+      },
+      {
+       "priority": "major",
+       "area": "Framing and legibility",
+       "problem": "This is a full-figure frame from about 3.6 m, against the treatment's 1.6 m offset. His feet touch the bottom edge (a tangent crop), and roughly the top 55% of the frame is empty black. At 1600 px the face screen is about 60 px wide. Linda's glass zero, which sets up the S08 atoll, is a clear ring about 35 px across on dark walnut and does not read at f609-619. The envelopes are white specks once they shrink. The deferral machine's whole point (zero, envelopes, tabs, binder, each praised and posted) only half reads. Evidence: sheet_every8.jpg, and the lower crop of the prior proof (same script) in z609_low.png, both in /tmp/claude-0/-home-user-linkedin/35346f8e-3086-50e0-b336-b295d0b54106/scratchpad/shots/s07/crit1-cine/.",
+       "fix": "Keep the approved side and bearing: on his left, the arc running from about -37 to -49 degrees around him, him at frame right in three-quarter. Push in to r of about 2.7-2.8 m (CAM0 loc and ARC_OUT scaled to match) with pitch about -10 degrees, or a small shift_y. The frame then runs from shin height (about 0.3 m, feet out) to about 1.9 m: the face, the mouth sweeps and the problems all grow about 1.3x, the feet tangent goes and most of the dead void leaves the frame. Re-run choose_bokeh afterwards."
+      },
+      {
+       "priority": "major",
+       "area": "Framing: the droid's beat is out of frame",
+       "problem": "The treatment's f705-712 beat (the paper droid rolls into its bay and makes a measured stop) and its reverse-out from f737 are cropped. Only a sliver of the droid's dome shows along the bottom edge, with no visor and no cyan light; only the ream stack reads. The approved 's07_profile_lane' reference (26 mm, pitch -13 degrees) held the droid. The script's change to 35 mm and pitch -7.5 degrees dropped it. Evidence: /tmp/claude-0/-home-user-linkedin/35346f8e-3086-50e0-b336-b295d0b54106/scratchpad/shots/s07/crit1-cine/z712_droid.png (f712) and binder1.jpg.",
+       "fix": "Set the frame bottom at about 0.3 m at his distance, either through the push-in above or an eased tilt-down of about 3 degrees over f689-712 that settles before the binder reach. Check that the droid's visor and blinking pinlight are in frame and readable from f705 to f752."
+      },
+      {
+       "priority": "major",
+       "area": "Light: the colleague colour chase",
+       "problem": "Measured on his chest plate during each flare (hue, saturation, lightness): burgundy f609 is 11 degrees, 0.27, 0.57; pink f657 is 17 degrees, 0.21, 0.57, so the two match. Acid yellow f641 is 36 degrees, 0.25 and lime f673 is 38 degrees, 0.22, so they also match. Cobalt f625 is 310 degrees at saturation 0.05, effectively grey. The base enamel is 27 degrees. The seven-colour chase in the treatment collapses to salmon, grey, tan, salmon, tan, salmon and neutral. The causes: the 0.6 m cards sit on the camera side, so they wash his front on warm cream rather than rimming him, and the luminance equalisation in lights() (E scaled up for dark colours) lights Linda's burgundy as brightly as pink.",
+       "fix": "Remove the luminance equalisation and give burgundy a low, deep value. Cheat each rim card round to his back-left (about 110-140 degrees from the lens axis), smaller and harder, so the colour lands on his silhouette edges, crown and shoulder caps. Since the terminals are out of frame, also add a shot-local streak card per flaring screen, light-linked to the walnut and driven by crt_flare, so each colleague's colour visibly runs up the walnut in frame."
+      },
+      {
+       "priority": "major",
+       "area": "Composition: the colour discs",
+       "problem": "The BOKEH region (0.03-0.97 by 0.58-0.95) scatters the discs at ceiling height across the top of the frame, where nothing in the room is. Synthia's ivory disc at top centre is the brightest thing in the frame (about 180 out of 255, against about 150 on his face plate) and pulls the eye away from the face. The flares barely show on the discs: +11 to +30% in display value for a +60% flare. The orange disc enters through the right edge around f657 and the cobalt disc leaves through the left edge around f673, so the frame edges flicker. At f/5.6 the discs read as flat stickers, not defocused screens.",
+       "fix": "Restrict the region to frame left at the colleagues' eye line beyond the table, around (0.02, 0.45, 0.45, 0.72), with nothing above or beside his head. Keep Synthia's disc below the face plate's brightness. Drive the disc flare harder (about 2.5x emission over the 8 frames) so the beat reads. In choose_bokeh, penalise seeds whose discs come within one diameter of a frame edge at any frame of the arc."
+      },
+      {
+       "priority": "major",
+       "area": "Every frame a still: motion blur",
+       "problem": "In double time the hand covers about 0.6 m between the walnut and the lid in 3-4 frames. With the 180-degree shutter (common.py, shutter 0.5) the arm, the hand and the problem render as a furry brown smear across his chest and neck. No double-time post can be read as a still, and the normal-time carries smear too. Evidence: /tmp/claude-0/-home-user-linkedin/35346f8e-3086-50e0-b336-b295d0b54106/scratchpad/shots/s07/crit1-cine/proof/s07/0616.png, z686.png and z678.png.",
+       "fix": "For this shot, set scene.render.motion_blur_shutter to about 0.2-0.25 (staccato, mechanical, precise), or key it down over f671-705. Re-check f677-680 and f685-688 at proof."
+      },
+      {
+       "priority": "major",
+       "area": "VFX continuity: shrinking in the fingers, and props through the fingers",
+       "problem": "SHRINK_FROM = (5, 3) starts shrinking each problem in his fingers 5 frames (normal time) or 3 frames (double time) before contact: envelopes reach 0.53 and the zero 0.645 by contact. Compare the f630 and f635 proofs: the envelope halves in size mid-carry. This contradicts the rig owner's note to start the shrink at contact and is visible magic before the slot. DIAG at f616-619 and f633-635 also reports the zero intersecting middle_1_L (45-50 pairs) and the envelopes intersecting middle_2_L (46-66 pairs, also at f685).",
+       "fix": "Hold the envelopes and the zero by one end and hang them edge-down along the slot axis, with the pinch high enough that they clear the lid at full scale. Start the shrink at contact (SHRINK_FROM = 0), as in S05. Make overlap between the problem and the fingers a hard rejection in hang_matrix and in the per-frame turn search instead of a weighted score."
+      }
+     ]
+    },
+    {
+     "lens": "tech",
+     "round": 1,
+     "score": 5,
+     "verdict": "revise",
+     "fixes": [
+      {
+       "priority": "blocker",
+       "area": "interpenetration: binder carry f726-727",
+       "problem": "Between the trolley and the lid the binder passes through his chest. In probe2 (ray-parity depth) at f726, 895 binder vertices sit up to 61 mm inside the torso_f plates and lanyard, and the left arm is 38.7 mm inside the binder. The carry also runs too fast: the binder origin moves 0.36 m between f726 and f727 (8.5 m/s). With motion blur it reads as a pale ghost smeared across his torso (proof/s07/0726.png, 0727.png; animatic binder_721_729.jpg). Evidence is in /tmp/claude-0/-home-user-linkedin/35346f8e-3086-50e0-b336-b295d0b54106/scratchpad/shots/s07/crit1-tech/probe2.log.",
+       "fix": "In Machine.binder, route the f723-729 bezier outboard and in front of him: push a1/a2 further toward +x (his left) and -y (toward the table) so the binder swings round in front of the chest, not through it. Run a per-frame BVH check of the binder against the torso hull, as Hand.clear does for the arm. Replace the smoother ease with a cubic one, or start the rise at f722, to cut the 1.9x peak speed. Acceptance: no binder vertex inside torso, lanyard or arm on f722-729."
+      },
+      {
+       "priority": "blocker",
+       "area": "interpenetration: palm inside binder f728-737",
+       "problem": "Over the cup the hand is buried in the binder. Ray-parity depth of the left palm and fingers inside the binder: 37.7 mm at f728, 38.4 at f729, 38.8 at f730, 38.6 at f731, 37.6 at f732, 34.6 at f733, 31.4 at f734, 27.9 at f735, 16.8 at f736, 6.1 at f737. That is 680-2300 vertices per frame, and it is already 38 mm on f728, before any pleat lifts. In the final f733 (final/s07/0733.png, final733_binder.jpg) the forearm ends in the top of the binder and no hand is visible. Likely cause: flat() places the palm underside with a fixed hd['W'] + u*0.055 + w*0.017 and assumes the cover top is at local z = binder_thickness. The thumb at curl 0.3 points about 5 cm along the palm normal, and the hand rides edge[f] while the next pleat rises by amp.",
+       "fix": "Solve the wrist from the posed hand meshes, not from constants. Take the lowest point of the hand (fingers at FLAT_CURL and the thumb) along w and the binder's actual top from its evaluated mesh, and keep 2-3 mm of clearance. Curl the thumb round the near edge instead of into the cover. Re-check f728-737 by BVH, including the accordion's pleat lift next to the held edge. Acceptance: zero hand vertices inside the binder."
+      },
+      {
+       "priority": "blocker",
+       "area": "elbow pops (every cycle and the binder)",
+       "problem": "20 single-frame flips of the arm plane by 59-144 deg, with the elbow bent 90-120 deg: f616 84, f622 79, f632 77, f638 65, f648 88, f654 78, f664 77, f670 65, f676 77, f679 86, f684 65, f687 86, f692 65, f695 86, f700 77, f716 133, f725 66, f726 81, f727 59, f748 144. On those frames the elbow moves 9.8-11.8 m/s while its neighbours move 1-3 m/s and the wrist path stays smooth. On screen the elbow snaps from his hip to shoulder height in one frame: animatic 615->616 and 631->632 (carry_pops.jpg), 715->716 and 747->748 (elbow_716_748.jpg). The pauldron snaps with it (pauldron speed 2.9 -> 0.4 m/s on f679/687/695, 3.6 -> 0.35 on f749). Cause: Hand.blend lerps the pole between the reach and post solutions, and Hand.clear() jumps to another pole or shoulder offset when the blend penetrates, which happens as the wrist passes cup height.",
+       "fix": "Make the elbow continuous. Seed Hand.clear() with the previous frame's solved pole and shoulder, not the blended ones, and add a penalty on elbow displacement from the previous frame. Alternatively, key 2-3 solved intermediate poses per carry and per return (the rig owner's note), then call rig.bake_pauldrons(). Acceptance: arm-plane change under 20 deg per frame and elbow speed no more than 1.5x the wrist speed on every frame. Re-run probe2's elbow-plane check."
+      },
+      {
+       "priority": "major",
+       "area": "held problems flip in the pinch",
+       "problem": "Some problems spin in the fingers in a single frame. Rotation per frame: Keys' and People's envelopes turn 130 deg on f630->631 and f662->663. Strategy's first tabs turn 161 deg and jump 11 cm on f644->645, the frame after the grip. Arjun's tabs and Strategy's second tabs turn 143 deg on f674->675 and f698->699. Operations' and Synthia's envelopes turn 69 then 125 deg on f682-684 and f690-692. The tabs also pulse in scale 1.0 -> 0.8 -> 1.0 on f676 and f700. At final, motion blur turns these into a spinning smear. Cause: cycle()'s search lets k jump from k_prev straight to 1.0, turn_way can choose the long way (-rC), and the ss *= 0.8 loop runs only on some frames.",
+       "fix": "Clamp the change in k per frame (about 1.25/n) and the problem's rotation to 35 deg per frame. Prefer the short way unless the long way clears the fingers by a real margin. If a turn cannot clear the fingers in time, open the pinch a few mm rather than jump. Keep scale monotonic from SHRINK_FROM to contact."
+      },
+      {
+       "priority": "major",
+       "area": "sync: rim and bokeh colour in double time",
+       "problem": "FLARE_LEAD = 6 with dur 8 suits 16-frame cycles. In the 8-frame cycles each colleague's flare (B-6..B+2) covers 6 of the previous object's 8 frames. Operations' orange lights him on f675-683 while he lifts and posts Arjun's lime tabs (contact f677). Synthia's ivory does the same to Operations' envelope (f683-691), and Strategy's yellow to Synthia's (f691-699). The treatment's 'own colour for that beat' chase is off by one object for the whole double-time run (visible in animatic 676-680).",
+       "fix": "In double time use flare(B-2 or B-3, dur=6) so each colour sits on its own object's 8 frames. Keep the normal-time lead and every arrival, post and plip frame unchanged."
+      },
+      {
+       "priority": "major",
+       "area": "cut S06->S07: flash on the first frames",
+       "problem": "Linda's flare runs f603-611, so S07 opens on the tail of a burgundy flare. His torso goes from mean R 85 on f609 to 79 on f610 and 71 on f611, back to the base 68 by f612 (animatic flare_609_612.jpg; proof/s07/0609.png). Straight after S06's bright gold f608 (mean 0.46 against S07's 0.07, nbr/s06/0608.png), a red cast that drains in two frames reads as a flicker on the cut rather than as Linda's beat.",
+       "fix": "For the first object only, play the flare on screen: flare(609, dur=8), or hold it f609-616 and fall off after. The zero still arrives on f609 with its glass cue."
+      },
+      {
+       "priority": "major",
+       "area": "continuity: droid hand-off not readable",
+       "problem": "The beat 'the droid delivers the binder' (set up in S03 when the droid sets off) has no visible droid. Probe2 bounding boxes plus renders show only a sliver of its dome at the bottom edge from f690 to f737. The trolley reams slide in from frame right on their own (droid_in.jpg; proof/s07/0697, 0705, 0712). The measured stop on f712, synced to the caster-stop SFX on f711, has nothing to read on. The cause is the shot's 35 mm at -7.5 deg pitch: the approved s07_profile_lane (26 mm, -13 deg) was chosen to keep the droid in the foreground at f712.",
+       "fix": "Add an eased 3-4 deg tilt down, or a slight widening, across about f688-722 within the existing arc. Alternatively move the whole camera toward the approved pitch and lens, so the dome, visor and cyan blink are in frame through f705-737, with him still at frame right. Verify with probe2's droid bounding-box check and a proof of f712."
+      }
+     ]
+    }
+   ],
+   "revised_after": []
+  },
+  "s09": {
+   "critiques": [
+    {
+     "lens": "cine",
+     "round": 1,
+     "score": 6,
+     "verdict": "revise",
+     "fixes": [
+      {
+       "priority": "major",
+       "area": "light / story beat 1 (Kevin speaks again)",
+       "problem": "Kevin's key from behind the lens does not read as sky blue. It plays as a neutral flicker. Measured on the proof renders (crit1-cine/proof, f833-868): the chest averages blue/red 0.947-0.967 and the head enamel 0.79-0.84, so it is warm. The pulse is a roughly 10% luminance change with no hue. The walnut gets no blue at all because the key is created with visible_glossy=False. KEVIN_SAT is 1.0, which means no saturation push despite the comment. The treatment's first beat ('sky-blue light pulses across Synergy and the walnut: Kevin is speaking again') therefore does not land; only the small sky bokeh disc pulses (+15%).",
+       "fix": "In s09_same_padlock.py set KEVIN_SAT to about 1.6-1.8 (Kevin #b8d7fb becomes roughly linear (0.17, 0.49, 0.94)) and retune KEVIN_E so the overall exposure holds. Give the walnut its sky streak with a separate glossy-only card in Kevin's colour, driven by the same expression, rather than turning on glossy for the broad key. Target: chest blue/red at least 1.05 at syllable peaks and at least 1.0 at steady state, with the warm bounce left on the lower torso for contrast."
+      },
+      {
+       "priority": "major",
+       "area": "performance / continuity (the repetition is the joke)",
+       "problem": "The picture rhythm is not S04's rhythm and does not match the S09 sound. room_timeline calls terminals['kevin'].speak(833, 869, seed=7), which produces four syllables at f833 (8), f841 (9), f852 (6) and f858 (6), ending f866. S04's picture uses kevin_speaks with SYLLABLES ((353,8),(361,8),(369,8)), and audio/cues.json has s09-kevin-murmur-1/2/3 at f833/841/849, copied from S04. The third light pulse lands 3 frames late, on the knock. A fourth pulse (f858-863) flickers the key across his face during the look-down with no sound under it.",
+       "fix": "Port S04's kevin_speaks into S09 with SYLLABLES = ((833,8),(841,8),(849,8)) and the same SPEAK_PULSE 0.25 and band strength. The key then holds steady from f857, so the look-down plays in steady light. If the treatment's 'until f868' is wanted, sound and picture must extend together, but identical-to-S04 is the stronger joke."
+      },
+      {
+       "priority": "major",
+       "area": "staging / the knock (f852)",
+       "problem": "The padlock stops directly between the lens and the fingertip, so the contact is invisible. Its centre stops at (0.2887, -0.1089), 19 mm down-table of the tip at (0.29, -0.09) and nearly on the lens axis. From the camera the tip projects only about 5 mm right of the padlock centre, inside its roughly 22 mm half-width. In crit1-cine/zknock.png the bronze index tip is clear on the walnut at f833 and fully hidden by f852. What reads is a padlock stopping in front of a hand whose three curled fingers hang about 5 cm above the walnut. 'Stops against his fingertip with the same knock' is lost, and the visual rhyme with S04 (where the finger is visible) is lost too.",
+       "fix": "In padlock_slide, offset the slide line about 20-24 mm toward his right (-X, frame left), parallel to dirn. Keep stop_for(..., hand=rig.parts_on_bones(HAND_L)) so the contact stays real (a 1.5 mm gap). The brass then meets the tip with its camera-right shoulder. Verify with world_to_camera_view that at least 8 mm of the bronze tip shows beside the padlock at f852, and that the padlock still makes contact; beyond about 30 mm it misses the finger."
+      },
+      {
+       "priority": "major",
+       "area": "performance / the look-down (f857-868)",
+       "problem": "'For the first time he looks down at a problem' does not read as looking at the padlock. Measured: with a 12 deg pitch and no turn, the face normal ends 9.2 deg below horizontal and meets the walnut 4.6 m down-table. That is 58.9 deg off the padlock but only 28.8 deg off the lens. From this low frontal lens the move squares the face plate to camera, and the face centre moves only 13 px at 1600x900. It reads as Synergy looking into the lens, not at the padlock at frame right by his left hand. The 1-LED eye drop (dy=1) is the only cue.",
+       "fix": "Keep the treatment's 12 deg pitch and the eased timing (f857-868 down, f921-928 up). Point the eyes at the padlock with tl.look(857, 920, dx=1, dy=1) (+1 column is his left, toward frame right); the return stays hidden in the blink. Ideally also add a small turn toward his left (head z +6 to +8 deg) in the same single eased move and in the lift, so the face visibly turns toward the padlock. It is still one mechanical move and still not a dip. Re-measure the angle to the padlock against the angle to the lens."
+      },
+      {
+       "priority": "major",
+       "area": "light / still quality",
+       "problem": "The lighting is flat front fill with no hierarchy, so the eye goes to the badge and chest, not to the face where the whole performance happens. Proof f891 luminance: head enamel 136, chest grey panel 176, chest cream 158, pelvis plate 159, cup 182, badge 232 (the brightest object in frame, dead centre). The warm walnut bounce now lights the pelvis as brightly as the head. An ILM supervisor would call it a product turntable, not a tension beat.",
+       "fix": "Shape the light toward the head. Narrow Kevin's key (smaller spread, aimed at the screen and upper chest) so it falls off down the torso. Drop BOUNCE_E so the pelvis plate sits about one stop under the head enamel; it should still show, per the rig note, but subordinate. Keep the skylight top key and the rims. Target: head enamel at least as bright as the chest panels, and the badge no longer the frame's hottest large patch."
+      }
+     ]
+    },
+    {
+     "lens": "tech",
+     "round": 1,
+     "score": 7,
+     "verdict": "revise",
+     "fixes": [
+      {
+       "priority": "major",
+       "area": "sync: Kevin's key vs sound and S04",
+       "problem": "room_timeline calls terminals['kevin'].speak(833, 869, seed=7), and the docstring says this is 'identical rhythm to S04: seed 7'. It is not. S04 keys Kevin's screen with kevin_speaks() on the murmur bursts SYLLABLES=((353,8),(361,8),(369,8)). speak(seed=7) gives syllables at 833(8f), 841(9f), 852(6f) and 858(6f), then holds steady from f866. The cue sheet plays the S04 bursts again at f833, f841 and f849 (8 frames each). Measured on the animatic, the face key is in a trough at f849-852 and pulses up again on f853, one frame after the knock, so it reads as a flash reacting to the knock. A fourth light 'syllable' at f859-862 has no murmur and plays while his head goes down. Kevin's sky bokeh disc pulses the same wrong rhythm.",
+       "fix": "Replace the speak() call with S04's kevin_speaks grammar (import it or copy it) keyed on SYLLABLES=((833,8),(841,8),(849,8)), which is S04's +480, with the same SPEAK_PULSE and SPEAK_BAND. The key then holds steady from f857, the frame the look-down and its servo tick start. Update SPEAK and the docstring to match. Do not change the audio: the identical sample is the joke."
+      },
+      {
+       "priority": "major",
+       "area": "flicker: Kevin key on the hero",
+       "problem": "The s09_kevin_key driver passes the raw screen channels straight into the area light that keys his face and chest: gain, plus bamt, whose syllable-end keys are CONSTANT. The result is a sawtooth: it ramps up over 4 frames and drops in 1. In the every-frame animatic, face luminance steps 10-13% in a single frame at 839>840, 852>853, 856>857 and 862>863 (chest about 8%). Each step changes about 30-35k px (14% of the frame) by more than 8 levels. On a visible CRT this reads as speech; as an off-screen key on the hero it reads as electrical flicker. Peak to trough is +78% in energy (30.6 to 54.6 W).",
+       "fix": "Drive the key from a smoothed envelope instead of the screen channels. Key lt.data.energy per frame with a raised-cosine bump per syllable (rest 1.0, peak about 1.3, LINEAR keys, no CONSTANT steps), or drop the bamt term and smooth gain. Aim for no frame-to-frame change above about 4%, and keep the rest level after the speech equal to the envelope's base so f857 does not step down."
+      }
+     ]
+    }
+   ],
+   "revised_after": [
+    1
+   ]
+  },
+  "s10": {
+   "critiques": [
+    {
+     "lens": "cine",
+     "round": 1,
+     "score": 5,
+     "verdict": "revise",
+     "fixes": [
+      {
+       "priority": "blocker",
+       "area": "performance / contact (f945-992)",
+       "problem": "The jack is never actually held. I measured the gap with a BVH nearest-surface probe (/tmp/claude-0/-home-user-linkedin/35346f8e-3086-50e0-b336-b295d0b54106/scratchpad/shots/s10/crit1-cine/probe/contact.py). From the grip at f945 to the last frame at f992, the closest hand surfaces stay 2.9-3.1 mm (index_3_L) and 4.1-4.9 mm (thumb_2_L) away from jack_barrel/pin/relief. During the rock, index_2_L opens to 8-9 mm. The final-quality crops show it clearly (finalcrop/s10/0945.png, 0975.png): dark carpet is visible between the index and the knurl, and the thumb cap hovers above the barrel. Through the held beat, the pull and the dangle, the jack levitates between the fingers and rocks +/-14 deg about a point in the air. The script's contact report only tests for overlap, so it prints 'none' and misses this. The rig's thumb_pinch(gap=0.0099) does not produce the pad-to-knurl air it promises. The fault is either in the shot's pinch geometry or in synergy.py's pad radii (PAD_R_INDEX/PAD_R_THUMB against the mesh); report it to the rig owner.",
+       "fix": "Close the pinch to real contact. Measure each pad's nearest distance to the jack per frame (BVHTree.find_nearest over the index_3_L and thumb_2_L meshes) and shrink GAP, or shift the pinch point, until both pads sit 0-0.3 mm into the knurl (slight compression reads as grip). Add a gate to report() that fails if any pad is more than 0.5 mm off the jack on f945-992. Re-stage the post-pull motion so the read is physical. One option: a rigid pinch with no rock, where the coil carries the two damped cycles. The other: from f964 the jack pivots about the pad contact axis (the pinch axis through the pads, not the 'side' axis in the air) and hangs pin-down, swaying two damped cycles, which is the treatment's 'dangles from his fingers and sways'. S11 imports key_jack and left_hand, so re-check S11's f993-995 hand-over and the jack_drop start."
+      },
+      {
+       "priority": "major",
+       "area": "framing / story (hub and cord)",
+       "problem": "The treatment's key composition element is missing: 'its yellow coiled cord rises to the black starfish conference hub behind it (soft): the root that every terminal's cord runs into'. The probe puts the hub at image (-0.11, 1.24), well off frame. Only 8 of 37 cord sample points on the walnut top fall in frame. Swinging the approved s10_jack_macro (a low look-back along the cord with the soft hub behind) round to az 64 / el 16 kept the arm out of the lens but cut the jack off from the meeting. The audience sees a jack in the side of a table, not the master plug, which weakens the S10 to S11 cause and effect. The 16 deg view also makes the vertical apron face of the table ~45% of every frame: a featureless brown field with smeared finger reflections. The glossy walnut top, where the CRT pools and the slab should streak, is a sliver.",
+       "fix": "Return toward the approved geometry: look back along the master cord from about az 28-38 deg (the hub-to-socket line is about az 36), el 5-12 deg, 0.45-0.55 m, with shift_y keeping the socket and knurl in the lower third and the soft hub plus converging cords in the upper third. To clear his arm, push the camera further out along that line rather than swinging sideways. Make the hand's approach come from above the frame top: extend solve_grip's 'looks' to include the hub and the cord run, so the sight term keeps the forearm out of them. Gate it in report(): the hub's world_to_camera_view must be inside 0.1-0.9 on every frame. Note that at 100 mm the treatment's 'high three-quarter' and the hub cannot both be in frame; the director's low look-back with the hub wins."
+      },
+      {
+       "priority": "major",
+       "area": "light / palette (colleague bokeh)",
+       "problem": "The colleagues' colour glow is gone for most of the shot. The four re-laid discs sit at image x 0.76-0.98, exactly where his forearm and hand go. From f937 they are mostly covered, and from f963 to f992 there is no terminal colour in frame at all, leaving only brown, navy, ivory and gold. The treatment wants 'a distant terminal colour glow in the bokeh behind', and the colours need to be alive here so their death in S11 lands. The discs are also on the wrong side: the terminals are down-table, which this lens sees at frame left and top, not over the carpet behind him at frame right. The operations disc is clipped by the top-right corner at f929.",
+       "fix": "With the reframe, re-lay BOKEH points in the band beyond the walnut horizon, down-table and behind the hub, where the screens really are. Ray-test each disc against his hand and arm on every frame (not only f929) so at least three colours stay visible through f992. Keep discs fully inside the frame or fully out, with no corner tangents. If the walnut top is in frame, let the CRT colours streak on it."
+      },
+      {
+       "priority": "major",
+       "area": "performance legibility (finger close f936-945, held beat f945-960)",
+       "problem": "The coil arches through the hand. From f937 to f960 the master cord runs in front of the thumb and middle finger, so the canon one-at-a-time close (index f937, middle f939, thumb f941) does not read: the middle finger is never seen, and the thumb lands behind the coil. The 16-frame held beat, the longest still in the shot, reads as a hand tangled in a spring rather than a precise mechanical pinch on the knurl.",
+       "fix": "Choose a pinch orientation in which the cord's tail leaves away from the lens. Alternatively, use CORD_MIDS (provided for this insert) to route the overhang so it rises behind the hand rather than in front of it. Each finger's close should silhouette cleanly against the walnut or the carpet. Check with an animatic run every 2 frames over f933-947."
+      },
+      {
+       "priority": "major",
+       "area": "cord action (f964-982)",
+       "problem": "'The yellow coil springs, then relaxes across the walnut' is not on screen. In frame, the coil snaps from its arch to a taut straight diagonal from the frame top to the jack tail by about f968, then freezes through f992. It reads as stretched under tension, not relaxed. The settle across the walnut happens off frame.",
+       "fix": "Give MasterCord.pulled's in-frame span a visible overshoot and two damped settles into a soft sag, not a straight line. Once the reframe brings the walnut top in, keep the relax on screen. The cord should end slack, matching the dead meeting."
+      }
+     ]
+    },
+    {
+     "lens": "tech",
+     "round": 1,
+     "score": 4,
+     "verdict": "revise",
+     "fixes": [
+      {
+       "priority": "blocker",
+       "area": "grip contact (f945-992)",
+       "problem": "The pads never touch the knurl. Exact BVH distance, measured both ways (probe2.log), from the f945 grip through the pull and to f992: the thumb is 4.69 mm from jack_barrel and the index tip 3.03 mm (2.9-4.3 mm after the pull). That's a 17.5 mm opening around a 9.8 mm knurl, about 7.7 mm more air than GAP=0.0099 asks for. So he pulls out and carries a jack he isn't holding, and the gap shows at proof res (crit1-tech/zoom_pinch.png, f945/966/992). The f945 'pads bite' beat moves the thumb 0.08 mm, so the grip click cued at f945 (cues.json s10-grip) has no visible contact. The shot's S10_DEBUG report says 'none' because it only tests interpenetration, never the gap.",
+       "fix": "In s10_jack.py (GAP l.93, thumb_rots l.271), measure pad-to-barrel distance after solve_grip, by mesh distance from the thumb_2_L/index_3_L parts to jack_barrel at F_GRIP. Shrink GAP (about 2.2 mm here) or iterate until both pads sit 0.0-0.3 mm off the knurl with no overlap. Also check the err and pad_gap that rig.thumb_pinch returns. Key the f944-945 bite as a visible 0.3-0.5 mm squeeze. Add an assert to report(): pad distance <=0.3 mm on f945-992. Rig owner: thumb_pinch's PAD_R_INDEX/PAD_R_THUMB pad model leaves about 7.7 mm extra air at gap 9.9 mm with index angles (18,44,30). Check pad_gap on the S02/S05/S07 posts too."
+      },
+      {
+       "priority": "blocker",
+       "area": "master cord vs jack (f967-992, into S11)",
+       "problem": "From f967 on, the coil's last turns pass through the black strain relief, then end in a pig-tail loop beyond it. In probe2.log, jack_relief overlaps the coil by 122/242/224/140 triangle pairs at f967-970, 102 at f979, and 44-56 at f982-994, up to 12 mm from the attach point. Up to 64 of the overlap centroids per frame are visible to the lens, at frame centre, through the final hold (crit1-tech/tail_zoom.png). Cause: `tail`/`tail2` ride on the jack, but mid3/mid4 are keyed only by MasterCord.pulled(), which relaxes them -6 mm Y / -4 mm Z. Meanwhile the jack has moved +24 mm Y / +17 mm Z and then swings \u00b114\u00b0, so the order-3 curve has to fold back over the 12 mm tail2 lead.",
+       "fix": "After room.master.pulled(F_PULL), add the jack's own per-frame displacement to the near-jack mids: the pull offset from PULL plus the swing rotation about the pinch, weighted mid4 1.0, mid3 about 0.6, mid2 about 0.25. Alternatively, put a Child Of on mid4 to the jack root with influence keyed 0 to 1 over f960-963. Then check coil vs jack_relief overlap each frame (ignore 3 mm at the tail) in report(). Put this in one function (for example S10.cord_follow(room, M0, sol)) that S11's s10_handover also calls. S11 rebuilds the cord with its own pulled() call, so a fix that lives only in S10.build() would pop the cord at the f992 to f993 cut."
+      },
+      {
+       "priority": "major",
+       "area": "fingers into walnut (f930-940)",
+       "problem": "During the approach, Synergy_middle_3_L, ring_2/3_L and pinky_2/3_L go into the walnut: 30/129/118/99/101/100/110/130/133/87/14 triangle pairs on f930-940 (probe2.log). Every pair is inside the frame, with 3-11 overlap centroids per frame visible to the lens. You can see defocused fingers sinking into the head-edge face left of the jack (crit1-tech/walnut_zoom.png, f933/f937). ready_offset() only clears the jack, socket and cord (hand_overlaps l.456-468), so the -40 mm X ready point it picked was never tested against the table. The final grip pose itself is clear (0 pairs from f941).",
+       "fix": "Add R.walnut_objects(room) to the overlap set that ready_offset tests over F_DESC0-F_INDEX+1. Also hold middle/ring/pinky at their GRIP curl (or between OPEN and GRIP) during the descent so the tips stay tucked, or add a +Y component to the ready offset (away from the edge face). Add arm-vs-walnut to report() for f929-992."
+      }
+     ]
+    }
+   ],
+   "revised_after": []
+  },
+  "s13": {
+   "critiques": [
+    {
+     "lens": "cine",
+     "round": 1,
+     "score": 7,
+     "verdict": "revise",
+     "fixes": [
+      {
+       "priority": "major",
+       "area": "continuity (headset hand-over S11 -> S13 -> S14)",
+       "problem": "headset_on_walnut (s13_first_sip.py lines 274-320) ignores S11's HEADSET_REST. S11 sets the headset down at ((0.30, -0.25, 0.8221), quat (0.70182, -0.0867, -0.08595, 0.70182)) and holds it to its cut; it is visible in S11 f1150-1152. S13 re-poses it at (0.34, -0.12, z) with Ry(-90), which is 13.6 cm away and about 112 deg rotated. S14 copies S13's rest ('where S13 left it'), so the headset visibly jumps between S11's last frame and S14's top-down f1345, where it sits large beside the hub. It is off screen in S13, but S13 owns the hand-over.",
+       "fix": "Start from S11.HEADSET_REST, either moved into a shared constant or copied verbatim: set hs.location and hs.rotation_quaternion to it at START-10 instead of the (0.34, -0.12) / Ry(-90) solve. Then key the f1318-1334 slide of +0.035 m X from that rest. Keep the cord-hook (0, 0, 1) workaround. Update s14_circle_back.headset_on_walnut to the same rest plus 0.035 m. Check with a top-down still at f1249 against S11 f1152."
+      },
+      {
+       "priority": "major",
+       "area": "light (chiaroscuro / torso competes with face)",
+       "problem": "The treatment asks for chiaroscuro: a hard top light carving the head, with darkness everywhere else. Measured linear luminance from f1249 to f1320: head-top p90 is 0.52 and breastplate p90 is 0.28-0.30, under 1 stop apart, and the medians are about equal. So a large lit ochre breastplate with the saturated blue chip fills the bottom 25% of every frame and pulls the eye off the LED face. The plates sit in the mid-tones, so they read mustard rather than the ivory they read as in S05/S11 (S05 head top sRGB 225/214/201 against 200/178/155 here). Only after f1330, when the slab edge leaves his right side, does the frame become chiaroscuro. f1344 is the best still in the shot, which shows the gap.",
+       "fix": "Take the breastplate down about 2 stops (torso p90 <= ~0.12 linear) and leave the head key, right forearm, hand and cup alone. Either use a camera-invisible, shadow-only flag card above the chest that cuts the room sun off the breastplate below the collar (it must stay clear of rays to the head face and the cup at the chin), or use an object-index or ID-mask compositor grade on the torso plates. Then consider raising EXPOSURE from -0.3 toward 0 so the crown's top facets reach ivory. Keep the slab-edge slide across the forearm, elbow and head cone readable."
+      }
+     ]
+    },
+    {
+     "lens": "tech",
+     "round": 1,
+     "score": 7.5,
+     "verdict": "revise",
+     "fixes": [
+      {
+       "priority": "major",
+       "area": "continuity: headset rest (S11 -> S13 -> S14)",
+       "problem": "s13_first_sip.py headset_on_walnut places the headset at its own spot: (0.34, -0.12, 0.9) with a -90 deg turn about Y, then snaps it to the table. It does not use the pose S11 exports for exactly this hand-over: s11_shutdown.HEADSET_REST = ((0.3, -0.25, 0.8221), (0.70182, -0.0867, -0.08595, 0.70182)). A build of S11 confirms that pose at f1150/f1152. Measured headset bbox centre: S11 f1152 (0.281, -0.244, 0.858); S13 f1249 (0.301, -0.110, 0.986). That is 13.4 cm closer to him, 12.8 cm higher, and resting on a different face. The headset is off screen in S13, but S14 copies S13's pose plus the 3.5 cm slide (verified identical at f1345). So the prop visibly jumps and turns between S11's set-down beside the hub and S14's top-down f1345-1356, where it is in frame. Both placements are physically valid (lowest vertex +0.5 mm / +0.4 mm above the walnut, no BVH overlap with hub, padlock, socket or cord). They just disagree.",
+       "fix": "In headset_on_walnut, key hs.location and hs.rotation_quaternion at START-10 from S11's HEADSET_REST, either by importing s11_shutdown.HEADSET_REST or by copying the constant with a comment. Drop the zmin re-snap: S11's rest is already 0.4 mm above the walnut. Apply the HEADSET_DX slide from that rest; +X moves away from the hub. Make the same change in s14_circle_back.headset_on_walnut (rest + 0.035 m in X). Then re-run a BVH overlap of the slid headset against hub_body, padlock_kevin_*, master cord and socket at f1334-1344."
+      }
+     ]
+    }
+   ],
+   "revised_after": [
+    1
+   ]
+  },
+  "s11": {
+   "critiques": [
+    {
+     "lens": "cine",
+     "round": 1,
+     "score": 6,
+     "verdict": "revise",
+     "fixes": [
+      {
+       "priority": "major",
+       "area": "performance: hand rise f1121-1128 (headset_off, rise_keys, s11_shutdown.py ~546-563)",
+       "problem": "Every beat lands on its treatment frame, but the left hand is not deadpan or mechanical here. Probe of world positions: the hand covers 1.07 m in 5 frames (f1121-1126) at 4.4/5.5/4.8/6.0/5.0 m/s, which is punch speed. It overshoots above the band to z 1.772 at f1127, then drops 6 cm onto it at f1129. The proof at f1124 shows a blurred ivory smear swinging out past the pauldron. It reads as a swat, not a precise servo reach.",
+       "fix": "Use all 8 treatment frames: rise_keys = (1120, pa), (1124, w1), (1128, w2), (1129, pb). Cut the w1 detour (+0.24 m in x) to the minimum that clears the pauldron. Approach the band from the side at its own height: drop the +0.35 z tilt of out_n and HS['approach'] up-and-out, so the hand never rises above the grip point. Prefer two eased straight segments with a 1-frame hold at w1 (servo move, stop, move) over the Catmull-Rom swoop. Target a peak of 2.5 m/s or less. Re-run S11_DEBUG report() for arm clearances."
+      },
+      {
+       "priority": "major",
+       "area": "performance: headset turn and set-down f1136-1150 (HS['lift'] lines 296-298, delta()/_hermite)",
+       "problem": "The lift itself is good: 10 cm at about 0.5 m/s, f1130-1135. After that the headset whips 75\u00b0 about the vertical in 5 frames (1.35-2.15 m/s, f1136-1140). The Catmull-Rom tangent carries that speed through f1140 into a 0.8 m plunge to the walnut peaking at 2.9 m/s (f1144-1145). That is 15 continuous frames at 2-3 m/s, which reads as yank and drop. Proof frames f1140 and f1145 are blurred smears of hand and arm.",
+       "fix": "Keep the treatment landmarks (10 cm up by f1135, on the walnut with the parent swap at f1150) and make f1136-1150 one deliberate move. Spread the 75-90\u00b0 yaw across f1136-1150 instead of f1136-1140, don't let the grip rise during the turn, and give LIFT_END a zero tangent (or drop it as a key) so the set-down is a single eased, near-straight line. Target a peak of about 1.5 m/s. Re-check the right earcup's clearance past the face with report()."
+      },
+      {
+       "priority": "major",
+       "area": "framing: frame-top contact f1136-1139",
+       "problem": "At f1138 Synergy_palm_L reaches z 1.855 and touches the top edge of the frame (ray-cast hit at image y 0.01; lit pixel in row 0 of the proof). The debug report has headset vertices at 0.986-0.996 of frame height for f1137-1139. The 75\u00b0 turn adds 4.4 cm of rise (palm z 1.795 at f1135 to 1.839 at f1138). A hand cropped by the frame edge is not a printable still.",
+       "fix": "Hold the grip at or below its f1135 height through the turn (see the previous fix). Add a gate to report(): the highest image point of palm, fingers and headset stays at or below 0.95 of frame height (at least 45 px of headroom at 900) on every frame f1121-1150. If the band can't clear the crown under that cap, move it out to +X before up."
+      },
+      {
+       "priority": "major",
+       "area": "readability: the black headset vanishes against the black room",
+       "problem": "The film's last action in the room, the headset coming off and being set down, has no visible prop. At f1145 a 28 px window round the headset averages 0.032 luma (p90 0.054). At f1135-1140 only a hairline of band shows, so the action reads as 'arm swings over head'; only the bare head afterwards tells you what happened. In the final still f1152 the headset is two dark circles by the dark hub.",
+       "fix": "Add a small light, light-linked to the headset and its children only, on the slab side (above and front-left of the head, out of the lens's view). Key it on from f1128 to the end so the band's top edge and the earcup shells carry a thin specular line through the lift and at rest. Alternatively, add the headset to a receiver set for a glancing slab-coloured spot. Target headset edges of 0.15 luma or more against black at f1135-1150, and an unmistakable headset silhouette at f1152. Keep visible_camera off."
+      },
+      {
+       "priority": "major",
+       "area": "light: terminal rim cards (terminal_rims, RIM, s11_shutdown.py 664-708)",
+       "problem": "1) The rim cards ignore distance: E = 26*sqrt(6/d). The probe reads Linda (23 m) at 13-17 W and People (18 m) at about 20 W at their flares, against Synthia's 26 W at 3 m; inverse-square gives Linda about 1/60 of Synthia. So at f1025-1041 his head, earcup, neck and left arm carry a saturated magenta-red rim (442 px with saturation above 0.3 at f1036), the most saturated thing in frame. Its source is a speck hidden in the vanishing-point stack, so the flash seems to come from beside him and the wave doesn't recede. 2) All nine cards have visible_glossy on. When Pat powers on, the 0.7 m card mirrors in the enamel: the probe names the plate head_cheek_l_low, and that pixel jumps from 0.056 to 0.93 luma, the brightest point on him, from 'a soft grey glow 23 m away'. The A/B render with rim glossy off removes the streak (head max 0.93 to 0.82; pixels above 0.6 drop from 1168 to 899).",
+       "fix": "Use E = RIM['energy'] * min(1, (3.0/d)**2), or at least 1/d with a low floor, so the far colleagues' flashes are whispers and the colour visibly drains near to far. Set lt.visible_glossy = False on every rim card. The real screens already reflect in the glass and enamel, and the cards only exist to light diffusely. Drop RIM['pat'] from 12 to about 1-2 W, so Pat's arrival is a faint grey breath on his edge rather than a lamp switched on next to him."
+      },
+      {
+       "priority": "major",
+       "area": "continuity: HEADSET_REST is not used by S13/S14",
+       "problem": "S11 leaves the headset at (0.30, -0.25, 0.822) standing on its earcups, yawed 90\u00b0 (earcups in line down the table), and prints HEADSET_REST for S13 and S14. Both shots ignore it. s13_first_sip.py headset_on_walnut (line 274) and s14_circle_back.py headset_on_walnut (line 329) hard-code (0.34, -0.12) rotated -90\u00b0 about Y, which lays it on its side; S14 adds +3.5 cm. S14's top-down f1345 explicitly shows the headset beside the hub, so it won't match S11's last frame.",
+       "fix": "S13 and S14 should import s11_shutdown.HEADSET_REST (location and quaternion) as their start pose and apply S13's slide from there; their owners make that edit. S11 already prints and checks the value; keep it authoritative."
+      }
+     ]
+    },
+    {
+     "lens": "tech",
+     "round": 1,
+     "score": 5,
+     "verdict": "revise",
+     "fixes": [
+      {
+       "priority": "blocker",
+       "area": "Headset take-off: left-arm IK pops (f1121-1150), s11_shutdown.py _solve_hand / headset_off",
+       "problem": "_solve_hand re-runs rig.solve_arm_clear on every frame and picks the elbow pole and shoulder from discrete candidate sets (GRIP_SHOULDERS steps 4-10 deg, poles at \u00b10.35 offsets). The prefer() continuity weight (0.6\u00b7pole + 0.004\u00b7deg) is too weak, so the solution jumps between frames. Per-frame bone data (crit1-tech/anim/arm.json): upperarm_L turns 96.8 deg/frame at f1125 and 114.3 deg/frame at f1145, where the elbow moves 236 mm in one frame against 123 mm for the wrist. The arm goes from bent to straight between f1136 and f1137. shoulder_L and pauldron_L jitter on alternate frames: 0 / 8.5 / 0 / 8.2 / 0.5 / 12.8 / 24.1 deg from f1129 to f1135, the pauldron moves 48 deg/frame at f1135 and 40 at f1137, and the shoulder 39.8 at f1141 and 40.2 at f1144. This is clearly visible in the every-frame animatic: crit1-tech/pops_lift.png and headset_every.png show the arm hanging at f1124, a straight diagonal at f1125 and vertical at f1126, plus the pauldron flips at f1137 and f1145. With motion blur at proof quality the frames become smeared streaks (arm_zoom_a.png, zoom_b.png). This is the shot's hero action, and it is exactly the cheap-looking hand contact the treatment's risk list warns about.",
+       "fix": "Stop searching on every frame. Solve only the key poses: the f1120 hold, f1124, GRIP 1129, 1132, LIFT_UP 1135, LIFT_END 1140, 1145 and SET 1150. In each segment, interpolate the shoulder angles and the elbow pole vector continuously (lerp the shoulder, slerp the pole) between the key solutions. On the in-between frames, re-solve only the wrist with that fixed pole and shoulder, and keep the clearance search for the key frames. Alternatively, limit the per-frame candidates to the previous pole and shoulder \u00b12 deg and raise the continuity weight by about 100x. Then call rig.bake_pauldrons(RISE[0], END+2). Add a gate to report(): no left-arm bone over 15 deg/frame and no frame where the elbow moves more than 1.5x the wrist. Re-check with an every-frame animatic over f1119-1152."
+      },
+      {
+       "priority": "major",
+       "area": "Hand rise speed (f1121-1128)",
+       "problem": "The hand covers about 1 m in 5 frames. Hand-bone speed is 64 mm at f1121 (a 6.4 cm first-frame jump with no ease-in), then 156, 194, 183, 243 (f1125: 5.8 m/s), 210, 52 and 60 mm/frame. The near-stop at the w2 waypoint (GRIP-3) is a 177 mm/frame\u00b2 deceleration in one frame. On a deadpan robot this reads as a whip, and at proof and final quality it renders as a motion-blur smear (r0/1124.png). The +24 cm outward detour w1 makes the path about 25% longer than it needs to be.",
+       "fix": "Shrink the w1 detour to the minimum the clearance solver accepts (about 8 cm) and use one eased C1 curve over f1121-1129, with the approach waypoint at f1127 instead of f1126 so the deceleration is spread out. Aim for a peak of 150 mm/frame or less and a first-frame move under 2 cm. If clearance makes that impossible inside the treatment's 8 frames, tell the director that an 8-frame rise from the table edge to the earcup cannot read as calm."
+      },
+      {
+       "priority": "major",
+       "area": "Continuity S11 -> S13/S14: headset rest",
+       "problem": "S11 solves and prints HEADSET_REST = (0.30, -0.25, 0.8221), q(0.70182, -0.0867, -0.08595, 0.70182), and verified it numerically: headset 0.4 mm above the walnut, still from f1150. The docstring says this is 'for S13/S14', but neither script uses it. s13_first_sip.headset_on_walnut and s14_circle_back.headset_on_walnut hard-code (0.34, -0.12) rotated -90 deg about Y; S14 adds +3.5 cm. That is 13-14 cm away from S11's rest and about 112 deg different in orientation. S14's top-down shot (f1345-1356) shows the headset in a different place, sitting over Kevin's padlock, which S11's rest search keeps 25 mm clear (s14/p2/s14/1345.png; crit1-tech/s14_1345_headedge_x4.png).",
+       "fix": "In S13 and S14, `from s11_shutdown import HEADSET_REST` and key the headset empty to it at the same frames they key it now. Keep S13's downhill slide as a world-space offset from that rest. Optionally have S11 write the rest to a small JSON file so S13 and S14 don't need to import S11's build code. Re-render S14 at f1345 to confirm."
+      }
+     ]
+    }
+   ],
+   "revised_after": []
+  },
+  "s01": {
+   "critiques": [
+    {
+     "lens": "cine",
+     "round": 1,
+     "score": 6,
+     "verdict": "revise",
+     "fixes": [
+      {
+       "priority": "blocker",
+       "area": "Eclipse silhouette f106-128: reads as a UI toggle-switch icon, not as fingers",
+       "problem": "Renders are in /tmp/claude-0/-home-user-linkedin/35346f8e-3086-50e0-b336-b295d0b54106/scratchpad/shots/s01/crit1-cine/ (proof/s01, end.png, crops.png, anim_end.png). At f108-f112 a perfect dark disc appears inside the right end of the flat white pill. At f116-f120 that dark 'knob' slides along the pill. At the rest frame f124-f128 (the match-cut frame) the result is a black pill with a round lobe at its right end, set off by the notch waist, plus a small grey nub just outside the rim. That is the iOS on/off toggle icon, an accidental pictogram in a film with no glyphs. The treatment's 'fingertips pinching the edge of a folded envelope' never reads, so the cut cannot make 'the occluding silhouette become the real fingers'. Causes: (a) eclipse_outline() is the slot inset by 1.5 m, so the leading edge is the slot's own semicircular cap, concentric with it; (b) the two notches (x = +18 and +24 m after the half turn) sit almost opposite each other and pinch a waist, leaving a near-circular lobe about 45 m wide; (c) the uncovered slot is a flat clipped white with almost no halation, so it reads as a graphic pill, not a sun; (d) HAND_SHADE is two soft boxes, so the lid only darkens as a shapeless gradient and no hand reads anywhere in the frame.",
+       "fix": "Do this inside the shot: build_eclipse is owned by the library, so replace or add the rig's child geometry in stage_eclipse. (1) Lead with the envelope's straight folded edge, slanted about 20-30 degrees off vertical, or with its corner. The first dark shape inside the slot must be a straight diagonal, never a disc. (2) Replace the opposed notch pair with unequal, offset pads: the index pad on the top edge and the thumb pad on the bottom edge, 25-35 m apart along X, with different radii. They may just break the rim, so the outline is organic and asymmetric, with no waist and no round end lobe. (3) Turn the lid shade into a soft but legible thumb-and-index silhouette on the backlit vault, like a shadow puppet behind paper, readable from about f110. It should converge on the slot from the lower right, toward the rim: after the cut's vertical flip, that is where S02's fingers enter, upper right. (4) Give the uncovered slot a sun's warm halation on the vault (f96-f112) that falls away with the eclipse, so it reads as light. Re-measure the cut afterwards. Today S01's silhouette is 0.179 W x 0.084 H with its centre at 0.498/0.498, and S02 f129's slot is 0.179-0.181 W x 0.093 H with its centre at 0.498-0.500/0.505: keep at least that agreement."
+      },
+      {
+       "priority": "major",
+       "area": "Arch f14-f104: the padlocks are already legible",
+       "problem": "The treatment says 'The arch reads only as a silhouette; its padlocks are not yet legible.' On the 800 px proof (c50.png) you can pick out shackle hooks all along both legs and blocky padlock bodies, and the scree at the feet glints as recognisable padlocks. At the 1600 px final they will read more clearly. This gives away S06's reveal of the arch of six hundred padlocks, and the arch's flat black, unhazed cut-out also flattens the depth between it and the cliff.",
+       "fix": "Change S01 only. Lower the fills for padlock and arch_stone from the framing's 0.3 and 0.35 to about 0.05-0.1. Cut the warm key's gold glints off the arch and the scree, either with apply_light_levels on the key or by keeping the key's glossy contribution off the arch. Add a few per cent of haze on the arch so its outline softens into a single mass. Then check a --quality final crop of f50: no shackle or padlock body should be identifiable."
+      },
+      {
+       "priority": "major",
+       "area": "Glide f20-f80: barely reads as forward travel",
+       "problem": "Over 60 frames the camera covers 7.5 m toward a world about 240 m away. The arch's size and position on screen do not change measurably (the wall differs by 0.005 mean between f41 and f49), so f20, f50 and f80 are practically the same still. The only cue of travel is one lens floe about every 14 frames. The treatment's 'low forward glide' plays as a locked-off shot with debris drifting through it.",
+       "fix": "Keep 3 m/s and the approved framing, but add continuous near-field cues within 2-10 m of the lens. Stream crema lace, bubble specks or fine foam streaks on the water under the lens. Add more, smaller floes (one every 4-6 frames), including some near the left and right frame edges for parallax. Strengthen the capillary flow on the water near the lens so it slides toward camera. Check the result on a step-2 animatic of f20-80."
+      }
+     ]
+    },
+    {
+     "lens": "tech",
+     "round": 1,
+     "score": 6.5,
+     "verdict": "revise",
+     "fixes": [
+      {
+       "priority": "major",
+       "area": "Match-cut frame f112-128: the shaft prism shows through the slot",
+       "problem": "env_offline.build_shaft starts the beam prism on the plane through SLOT_C that is perpendicular to SHAFT_DIR. That plane sits 18.5 deg off the lid's slot plane (perpendicular to SLOT_N), so on one side the prism's top pokes about 10-20 m out through the hole. From the S01 lens it puts a grey film over the silhouette's right lobe and a hard-edged grey crescent with a doubled edge at the slot's right end. This shows from f112 and through the f124-128 hold, so the rim at the cut is not even. Ray casts at f128 inside the hole hit OFF_Shaft 5-13 m beyond the slot plane. Hiding the shaft from camera removes the artifact completely: luminance of the inside right lobe drops from 28.7 to 9.8 (final crops). Evidence: crit1-tech/measure/noshaft_compare2x.png and shaftclip_compare2x.png; final crops in crit1-tech/final_crop/.",
+       "fix": "Shot-side, until the library changes: after build, add to h['mats']['shaft'] a TexCoord(object=h['objects']['slot_frame']) -> SeparateXYZ.Z -> MapRange (SMOOTHSTEP, from -20 to 0 => 1 to 0) node chain, and multiply its result into the Emission node's Strength. Tested at final on f104, f116 and f128: the crescent and the film are gone, the ghost shaft stays, and the beam still leaves the slot at f104 (test script: crit1-tech/probe/lidfix.py mode shaftclip). Report to the env_offline owner: build the prism's first ring on the slot plane (project the cap points along SHAFT_DIR onto the plane perpendicular to SLOT_N through SLOT_C) and measure 'head' from there. Any shot that sees the slot (S06, S08) has the same problem."
+      },
+      {
+       "priority": "major",
+       "area": "Lens floes f9-88: dark 'sunburst' on every floe",
+       "problem": "Every crema floe shows a ring of dark radial wedges round its centre. The lens floes are 150-250 px wide at 1600 px, for example the bottom-centre floe at f40 (crit1-tech/measure/f40_final_floes.png). Root cause is in env_offline._floe_blob: the centre-fan triangles are wound counter-clockwise (normal +Z), but the ring quads from grid_faces are wound the other way (normal -Z). Only 28,272 of 92,852 floe faces face up. Smooth shading averages opposite normals at the first ring, which produces the wedges. Ray casts confirm it: the quads are back-facing. It is not holes or interpenetration: filling the holes or flattening the pieces changed nothing.",
+       "fix": "Shot-side workaround (tested at final on f40, sunburst gone: crit1-tech/measure/floefix3_compare.png): after build_offline, run bmesh on h['objects']['floes'].data: bmesh.ops.recalc_face_normals(bm, faces=bm.faces), then normal_flip() every face with normal.z < 0, then to_mesh. Library fix for the env_offline owner: reverse the quad winding in _floe_blob (fq = fq[:, ::-1]). The floes in S06, S08, S12 and S14 have the same bug."
+      },
+      {
+       "priority": "major",
+       "area": "S01 f128 -> S02 f129 match cut: size and vertical position",
+       "problem": "Both frames measured at proof (800 px) with the same threshold. S01 f128: dark silhouette 19.0% of width, centre (0.499, 0.499); bright outline 20.5%; geometric slot 20.0%. S02 f129: dark slot 17.6-17.9%, centre (0.501, 0.504). So S02's slot is about 6% narrower than S01's dark shape and about 10% narrower than S01's slot, and it sits 0.0055 of the frame height lower (about 5 px at 1600x900). The S01 docstring says S02's slot edge lands on S01's bright rim. That is false: it lands about 4 px (at 800) inside the silhouette at each end. Orientation matches: long axis within 1 deg, lid centre flips top/bottom as documented, fingers at frame right in both. The treatment requires the same size. Evidence: crit1-tech/cut_pair.jpg, cut_overlay_zoom.png (red = S01, cyan = S02), cut_blend.png.",
+       "fix": "Agree one target with the S02 owner. Preferred: S02 D0 from 0.208 to about 0.196 m, so its dark slot reads about 19% like S01's silhouette, and raise S02's framing by about 0.005 of frame height. S01-only alternative: END_LOC, END_LENS = E.slot_match_camera(frac=0.188) (about 41.1 mm), so S01's silhouette is about 17.9%, plus keying cam.data.shift_y to about +0.003 through the settle so the slot sits 5 px lower. Re-measure both frames with crit1-tech/measure/blob.py (dark < 0.2) and aim for under 2% width and under 2 px difference."
+      }
+     ]
+    }
+   ],
+   "revised_after": [
+    1
+   ]
+  },
+  "s06": {
+   "critiques": [
+    {
+     "lens": "cine",
+     "round": 1,
+     "score": 4.5,
+     "verdict": "revise",
+     "fixes": [
+      {
+       "priority": "major",
+       "area": "Camera move f560-608 (pacing, reveal, printable stills)",
+       "problem": "The +8.3 to +67.5 deg tilt and the 67 m push are packed into about f572-600 by C.ease(t**1.2). Report values give a peak of 2.4 deg/frame (58 deg/s) and a push of about 2.8 m/frame (66 m/s), so the 22.9 deg vertical FOV is crossed in under 10 frames: a whip-tilt, not a reveal. Frames f575-f596 are motion smears: Sobel edge energy is 3.1 at f588 against 7.0 at rest (f608). f585, f588 and f594 are about 60% empty paper wall with one smeared diagonal leg. The treatment's payoff is the ageing gradient read 'as we tilt' (brass, patina, verdigris, lichen), and it passes at peak speed, so it never reads. The move is still turning at f606-608, so the payoff composition gets no hold before the f609 cut. A 240 km/h dolly past 11 m padlocks is also a miniature tell. The hero slides out of frame at about f577, before its f578 settle. Evidence: crit1-cine/anim_sheet.jpg, proof/s06/0578.png, 0588.png, proof2/s06/0575.png, 0594.png (all under /tmp/claude-0/-home-user-linkedin/35346f8e-3086-50e0-b336-b295d0b54106/scratchpad/shots/s06/).",
+       "fix": "Replace C.ease(t**MOVE_WARP) in Move.u with a linear-cruise profile: an 8-10 frame ease-in, constant speed, and a 10-12 frame ease-out landing by about f598, then hold at rest f598-608 so the slot-in-arch frame reads before the cut. Start the move as the hop lands (f556-558 if the director accepts a 2-4 frame shift; otherwise keep f560) so the slow start doesn't eat 10 frames. Cap the peak at about 7% of the vertical FOV per frame. Start the push closer (about 85-95 m from the arch on the same landing line, not 121 m) so the reveal is mostly tilt, not dolly. Keep the settled hero in frame until about f580. Check with an every-2nd-frame animatic over f556-608."
+      },
+      {
+       "priority": "major",
+       "area": "Lens and payoff framing (needs a director decision)",
+       "problem": "At 50 mm the end frame (env 's06_arch', 55 m out) is a worm's-eye view through a ring. Both legs are cropped at the sides and the crest at the top, so the audience never sees 'the whole 110 m arch' the treatment's reveal promises. The blown white slot inside the grey lid-ring ellipse reads as a ceiling lamp seen through a doughnut. A probe with the shot's own camera keys and only the lens changed to 35 mm (crit1-cine/lens35/s06/0608.png) shows both legs, the crest, and the slot inside the opening under the ribbed dome: a readable arch. At f553 (lens35/s06/0553.png) it also adds the espresso sea with its gold glitter path and the cliff's height, both asked for in the treatment's Light section and cropped out at 50 mm. The 50 mm lens also forces the near-60 deg tilt above.",
+       "fix": "Propose 35 mm for S06 to the director, alongside the cup-world lens changes already accepted (S01 19 mm, S08 14 mm, S12 30 mm, S14 18 mm). If approved, re-pick the opening pitch so the landing sits in the lower third with the falling padlock still large enough to read. Re-solve the end pitch so the slot sits in the upper half of the opening. The required tilt shrinks and its speed relative to the frame drops by about 30%, which compounds with the cruise-profile fix. If 50 mm must stay, test ending 10-20 m further out to get both legs' inner edges into frame, confirming the slot stays inside the opening."
+      },
+      {
+       "priority": "major",
+       "area": "Hero padlock tumble: identity lost on the flash frames, scale tell",
+       "problem": "SPIN = 45 deg/frame is 3.0 rev/s; the comment says 1.9 rev/s, which is wrong. For an 11 m 'three-storey' body that is about 100 m/s at the tips, a classic miniature giveaway. The half-frame shutter smears the shackle exactly on the flash frames. At final quality f548 (crit1-cine/final/crop_0548.png) the padlock reads as a cream slab with a translucent half-disc fan, not a padlock. The off-flash frames f546 and f550 read crisply (crops/flash_strip.png). So the object is unrecognisable on precisely the beats designed to feature it.",
+       "fix": "Re-key retumble() at 15 deg/frame or less (1 rev/s), nearer 8-10 if the flashes allow. Get the three treatment flashes from three different surfaces crossing the glint direction (broad face, shackle crown, opposite face or bevel), or from a second glossy-only glint disc, rather than from three half-turns. Verify at final with motion blur that the shackle stays a solid U on every flash frame."
+      },
+      {
+       "priority": "major",
+       "area": "Flash colour (treatment: 'flashes gold')",
+       "problem": "Measured on proof f544 and f548, the top 3% of hero pixels sit at hue 27-28 deg, saturation 0.17, value 0.97-0.98: pale peach-cream. A gold reference (#ffd17a) is hue 39 deg, saturation 0.52. At final, f548's face reads as soap, not brass. GLINT_L = 12 at GLINT_K = 3600 overexposes the face, and AgX desaturates it toward white, despite the comment claiming it stays gold.",
+       "fix": "Lower GLINT_L to about 5-6 and GLINT_K to 2800-3000 (or tint the disc toward #ffc060). Target a flash face around 0.8-0.85 display luma with saturation of 0.4 or more and hue 35-45 deg, measured at final. Keep the flash brighter than its neighbours (today p95 luma alternates 226/157/229/75/228 over f544-552, which is the right cadence)."
+      },
+      {
+       "priority": "major",
+       "area": "Bounce physics f553-566 (scale)",
+       "problem": "animate_hero_padlock keys a 3.2 m hop apex over the 13-frame bounce: 8 x 3.2 / (13/24)^2 = 87 m/s^2, about 9 g. In f556-559 the padlock floats horizontally several metres above the scree like a flicked toy. At real gravity a 13-frame hop rises only 0.36 m. Gravity is what sells size; the fall itself is keyed at real g, so the hop contradicts it.",
+       "fix": "Re-key the f554-566 segment in the shot after the env call, as retumble() already does for the fall. Make it a heavy bite: a heave of 0.5 m or less plus a rock about its leading edge (tip about 10-15 deg and fall back) on f553-566, then the slide to settle on f567-578, keeping the treatment frames. Keep the dust on f554. Report to the Offline owner that the hop height (lift = 3.2) should be a parameter of animate_hero_padlock."
+      },
+      {
+       "priority": "major",
+       "area": "Cut-in and fall timing f529-552",
+       "problem": "After the hard cut that is meant to be 'following the padlock in', f529-541 are 13 frames (0.55 s) of a static leg with nothing moving. The shackle first breaks the top edge at f542 (proof2/s06/0542.png), so the whole fall is on screen for about 10 frames (0.4 s): too short to read the tumble, the three flashes and the size. The flashes on f544/548/552 each sit one frame ahead of the 16th-note grid (545/549/553); beat 34 starts at f545.",
+       "fix": "Lower IMPACT from 62 to about 32-38 m/s, still at real g. The drop then reads slower and bigger, and the padlock breaks the top edge by about f533-537, giving 16-20 frames of fall. Put the flashes on the grid at f541, f545 (the beat-34 downbeat) and f549, with the impact on f553. Re-run env's arch-clearance check; animate_hero_padlock re-solves the start candidates."
+      },
+      {
+       "priority": "major",
+       "area": "Crest look: lichen and age read (env-owned, report to Offline)",
+       "problem": "The treatment's oldest padlocks are 'crusted with chartreuse #e5ff8d and frost-grey lichen'. In final f608 (crit1-cine/final/s06/0608.png), chartreuse covers 0.01% of pixels. The crest reads as charcoal terrazzo with an even polka-dot print of grey dots and pin-point yellow cores, not crust. The undersides of the stone-age padlocks, lit by warm bounce, read as brown cardboard. In the mid-tilt frames (f585) the patina transition is a teal-and-brown camouflage patchwork.",
+       "fix": "Report to the env_offline owner (mat_padlock, stone stage): fewer, larger, irregular clumped rosettes with clear chartreuse cores, thicker coverage on top faces and toward the crest, varied size and density so it stops reading as a print. If the owner can't turn it round, override in-shot the way soften_puddles() and glow_dust() do (lichen threshold and colour nodes) and verify at final f608."
+      },
+      {
+       "priority": "major",
+       "area": "Payoff has no scale cue; pines missing",
+       "problem": "The treatment tops the arch with 'a fringe of small pines', its own device for reading 110 m. The shot drops them because they sit on the crest's top face, out of sight from below. The end frame then has no scale reference: no pines, no haze on the arch, nothing small. Together with the crisp lid ring it reads as a tabletop arch under a lamp.",
+       "fix": "In-shot, let 8-15 pine tips break the crest's outer silhouette against the lid in the end frame. Use instances from env pine_templates along the visible crest rim, or nudge the existing crest pines nearest the edge outward. Check at final that they read as tiny trees, not fuzz. A wider end lens (fix 2) makes them read more easily."
+      }
+     ]
+    },
+    {
+     "lens": "tech",
+     "round": 1,
+     "score": 6,
+     "verdict": "revise",
+     "fixes": [
+      {
+       "priority": "major",
+       "area": "Hero padlock settle: a pop and the padlock passing through the scree (f564-571)",
+       "problem": "I sampled the hero padlock's keys at quarter frames and tested them against the scree and arch BVHs. The env's _lift_clear keeps the padlock on top of loose scree padlocks until f570 (centre z 11.0 m, 1.2-1.6 m above the mound). On f571 it drops 1.3 m in a single frame to its bedded rest (z 9.7, 0.3 m into the mound). In the proofs that is about 18 px of its own motion at 800 px, roughly 36 px at final, after four frames of nearly level sliding. The linear interpolation between those keys cuts through scree padlocks at subframes 570.25 and 570.75 (18 and 20 overlapping triangle pairs). That falls inside the shutters of f570 and f571, and final/s06/0571.png shows a vertical ghost of the body and shackle over the scree. The hop also touches down early: z reaches 11.5 on f564, holds through f565, then rises 0.1 m on f566, so the BOUNCE sync point (f566) never reads as a contact. The arch itself is clear on every frame and subframe, and so is the fall (f529-553).",
+       "fix": "Do this inside s06 after animate_hero_padlock() and retumble(). Re-solve the ground keys f554-578 on quarter-frame samples. Take z_req(t) as the _lift_clear height against E._scree_bvh(arch, land, rest, radius>=40), and build z(t) = max(z_req, a slope-limited envelope): one forward and one backward pass, with |dz| no more than about 0.3 m per frame. That turns the 1.3 m step into an eased slide-off over about f569-575. Build the hop on lerp(z_land, z_req(566), t) + 3.2*4t(1-t) so it touches down exactly on f566. Keep the f578 pose identical to the current rest (z 9.7): s08_landscape.py calls animate_hero_padlock() and holds that pose, so this keeps S08 continuity. Key every frame, then assert zero scree and arch overlaps at f-0.25, f and f+0.25 for f553-578."
+      },
+      {
+       "priority": "major",
+       "area": "Tilt speed: heavy motion blur, and frames that do not hold as stills (f574-600)",
+       "problem": "The measured turn rate peaks at 2.53 deg/frame on f588. The docstring says 2.4. At 50 mm on a 1600 px frame that is about 98 px of motion per frame and about 49 px of blur at the 0.5 shutter. Frames f574-f600 (27 of the shot's 80) carry more than 20 px of blur. The proof frames proof/s06/0578.png and 0588.png are diagonal smears of the leg, not stills worth printing. The treatment's 25->55 deg move peaks near 1.2 deg/frame. The documented deviation (+8.3 -> +67.5 deg pitch plus a 67 m push, all inside f560-608, shaped by smootherstep on t**1.2 with a peak of about 1.9x the average) doubles it. Noise handling during the move is correct. The seed is fixed through f562 (motion 1.3 px/frame or less), animated f563-607 and fixed on f608, so no noise sticks to the screen.",
+       "fix": "Replace C.ease(t**MOVE_WARP) with a trapezoidal velocity profile: accelerate f560-574, cruise, decelerate f590-608 into the slot. That gives a peak of about 1.8 deg/frame. For a further cut, start the opening frame 3-4 deg higher (the f553 landing still clears the bottom edge at y of about 0.05-0.25), and/or key render.motion_blur_shutter down to about 0.3 over f576-598. Target: blur no more than about 25 px at final on every frame. Check with proof renders of f580, f588 and f596 and an animatic strip of f576-600."
+      },
+      {
+       "priority": "major",
+       "area": "Continuity with S04/S05: Kevin's padlock has a steel shackle in the room, a brass one in Offline",
+       "problem": "In the room, props.padlock() gives Kevin's padlock a silver hardened-steel shackle (shackle_steel), and it reads clearly in S05 (s05 proof f479). The Offline hero is E.padlock_template(variant 0) with a single mat_padlock(age=0.03), so its shackle is brass like the body. You can see this in proof/s06/0544.png and final/s06/0571.png. The proportions do match: body W/H is 1.19 in both, the shackle rises about 0.8 of the body height, and the wire is about 0.09 of the body height. So the shackle colour is the one cue that breaks 'same padlock'. S09 brings the steel-shackled padlock back.",
+       "fix": "Inside s06, after build_offline: append a steel material slot to h['objects']['hero_padlock']. Use metallic 1, base about (0.6, 0.6, 0.58), roughness about 0.22, and reuse the pits/scratch bump if possible. Set material_index=1 on the shackle polygons: the faces after the body box, whose count is len(E._rounded_box(0.31, 0.13, 0.26, 0.07, n=12)[1]), through the tube and its two caps. Leave the collars brass, as on the room prop. Report it to the env_offline owner so build_hero_padlock() does the same for S08, which shows the padlock at rest."
+      }
+     ]
+    }
+   ],
+   "revised_after": []
+  },
+  "s08": {
+   "critiques": [
+    {
+     "lens": "cine",
+     "round": 1,
+     "score": 5,
+     "verdict": "revise",
+     "fixes": [
+      {
+       "priority": "major",
+       "area": "performance: envelope-to-bird unfold (f772-790)",
+       "problem": "The film's key transformation never reads as folding. The envelope is a 7-vertex fan blended straight into the 7-vertex bird. At delivery resolution it goes from a flat card (f772) to a flat white pentagon with a blue square (f776, f779) to an edge-on rhombus (f784), then becomes a paper dart (f790). There are no flaps, creases or wings opening. An ILM supervisor would read this as a polygon tween, not paper. Evidence: crit1-cine/probe/envcrop_sheet.png (1600 px crops, final quality).",
+       "fix": "Give the shot its own hinged envelope mesh, about 12-16 vertices: a body diamond plus top, bottom and two side flaps, written to the same s08 pc2. Animate rigid rotations about the crease lines rather than a vertex lerp. f768-774: the top flap lifts and becomes the head and tail. f772-784: the side flaps swing out 0 to 150 degrees and become the wings, then join the WINGBEAT flap. Use flat-shaded facets so alternate folds catch the beam light and the fill. Fold the seal under the closing body by about f780 instead of shrinking it in place. Keep the beat-48 face-on pose on f769 and the f772 unfold sound sync."
+      },
+      {
+       "priority": "major",
+       "area": "cinematography: hero legibility on beat 48 (f766-772)",
+       "problem": "On the beat-48 'face-on, seal showing' frame the hero is a soft smear. The crane pull-back adds to the fall, so on screen the card moves 92 px/frame (f760-764) and 55 px/frame (f764-768) at 1600 px. At a 0.5 shutter that blurs about 25 px across a 130-170 px card, and the seal smears into a vertical streak (envcrop 0766, 0769). The card is also the same value as what sits behind it, the beam and the paper wall (card about RGB 231,220,211; wall about 226,220,215 at f768). It is parked between the two brightest whites in frame (the shaft and the falls), so the eye has to hunt for it. The seal reads periwinkle (166,179,226), not cobalt #0757ec.",
+       "fix": "Re-time envelope_path so the card catches air and hangs. Bring the deceleration forward so screen speed is under 10 px/frame over f767-771, with a flutter-swing apex on f769, and let it drop and slide again after the unfold. Alternatively give the crane a slow passage at f766-772 instead of its peak speed at the cut. Move ENV_FRAME's target off the beam and falls, e.g. ENV_X_OFF negative into the darker mid-wall left of the shaft, or ENV_Y lower against the darker lower cliff, so white sits on a field at least 25% darker. Rebalance ENV_SUN and ENV_FILL so the lens-facing side is brighter than the wall without washing out the seal. Check the seal reads as cobalt at final quality."
+      },
+      {
+       "priority": "major",
+       "area": "hero prop: the seal turns black (f772)",
+       "problem": "When the tumble shows the face away from both light-linked lamps, the opaque principled cobalt seal drops to near-black with an orange fringe. It reads as a burn hole or printed mark on the card (proof 0772 crop; envcrop 0772). It is not text, but it is an artefact on the hero.",
+       "fix": "Give the seal what the paper already has: a little translucency or a small emission floor in the shot's own seal material, or a fill lamp linked to it from the lens side. Or adjust the ENV_FACE and TUMBLE phase so the seal's lit face is the one toward the lens whenever the seal is visible (f764-778)."
+      },
+      {
+       "priority": "major",
+       "area": "murmuration: bird colour and continuity with the hero bird",
+       "problem": "The treatment calls for white origami birds with glowing edges. The flock renders as brown and black specks, and the near strays as 20-40 px brown triangles, which read as moths, soot or bats (crops/0790_strays.png, final 0832). Because the hero bird has its own linked lamps, it is the only white bird in the frame. The beat 'it joins a murmuration of thousands of them' fails: it visibly does not match them. From f785 to f801 the brown strays are also larger and stronger than the hero, so they pull the eye away from it.",
+       "fix": "In the shot, call apply_values(h, {'bird': {'BirdEdgeGlow': 3-4}}). Add a soft front fill from behind the lens, light-linked to the murmuration, near-stray and roost objects only (the same pattern as envelope_lights), so their faces read as shaded white paper at about 0.6-0.8 of the wall value with bright rims, not 0.3. Then match the hero bird's linked lamps to that look so it disappears into the flock by f832. If the env owner wants the dark-cored ribbon kept, raise it with them; as rendered, it contradicts the treatment."
+      },
+      {
+       "priority": "major",
+       "area": "story legibility: the ring atoll",
+       "problem": "From the approved 10 m lens the atoll is about 470 m away. The 150 m ring is foreshortened to about 4 px, so all that reads is a strip of palms on the horizon, which looks like mangroves (final 0832 crop, envcrop 0784-0801). The glowing caramel lagoon is invisible. The 'glass zero carried forward' payoff, one of only four landforms and the setup for Linda's zero in S07, is lost.",
+       "fix": "Keep the approved framing and make the ring read through light. In the shot, apply_values(h, {'sea': {'LagoonGlow': about 2-3}}) so a caramel band glows between the palm groves and reflects in the near water. Check that the ivory inner beach catches the beam. If it still reads as a line, ask the Offline owner to thin the near-side palms on the atoll so the lagoon glow shows through the gap."
+      },
+      {
+       "priority": "major",
+       "area": "light and colour: golden afternoon and the attendee blooms",
+       "problem": "The poster is monochrome tan. Sampled wall hue is 23-33 degrees at saturation 0.10-0.45 across the frame, so it reads as cardboard rather than gold. Of the eight blooms, only Operations orange (right edge) and a faint People pink behind the arch read. Keys cobalt and Strategy acid yellow project to x 0.48-0.54, y 0.53-0.60, exactly behind the shaft, and wash into pale lavender. Kevin sky (x 0.28, y 0.68) barely shows. The treatment asks for 'cliff glow at its strongest, with every terminal's colour bloom present' and a gold shaft.",
+       "fix": "As S01 does, pass a blooms level dict through the shot's build kwargs: for example keys 1.8, strategy 1.6, kevin 1.8, people 1.6, synthia 1.2, operations 1.0, arjun 1.0, linda 1.0. Check that cobalt and yellow separate as two distinct glows either side of the beam rather than mixing. Warm the beam and grade toward gold through apply_look or the shaft colour, so the slot-sun shaft reads gold-white against the paper. Re-check AgX, accepting a slightly olive acid yellow."
+      }
+     ]
+    },
+    {
+     "lens": "tech",
+     "round": 1,
+     "score": 6.5,
+     "verdict": "revise",
+     "fixes": [
+      {
+       "priority": "major",
+       "area": "Hero envelope seal: passes through the paper and appears on the wrong side (f766-f784)",
+       "problem": "I ran a triangle-triangle test on the envelope cache (out/cache/s08/envelope_751_834.pc2). The seal quad cuts through all six fan triangles near the apex on f771-773. Final-quality crops show it there as a dark, half-buried square. From f774 to f789 the seal sits 0.11-0.18 m on the back of the paper while the back faces the lens (the dot product of the front normal with the view direction runs -0.24 to -0.98 from f775 to f784), so the bird shows a cobalt square on its underside from f775 to f781. Before the unfold the seal is flat at z = ENV_PUFF + 0.03, but the 0.5 m bulge falls away under it: its corners float 0.14 m above the paper (0.03 m at the centre) and cast an offset shadow strip, visible on f766 without motion blur. Evidence: crit1-tech/env_seal_sequence.jpg, env_noblock_test.jpg (top-left panel), and the cine critic's crops of f772, f776 and f779.",
+       "fix": "In build_envelope, stop interpolating the seal toward z=-0.3 and BIRD[0]. On each frame, place each seal corner on the morphed surface: take the point under the corner on its fan triangle by barycentric lookup and offset it 0.01 m along that triangle's normal. Shrink the seal to zero size by about f773, before u reaches 0.15 and before the back turns toward the lens on f775. Re-run the triangle-triangle check (expect no hits from f768 to f790) and render final crops of f766, f770-781."
+      },
+      {
+       "priority": "major",
+       "area": "Hero bird never reads as joining the flock (lighting and heading continuity, f790-832)",
+       "problem": "S08_EnvelopeSun (6 W/m2) and S08_EnvelopeFill (14 W/m2) are linked to the bird for the whole shot. At f832 the bird that should be 'one among thousands' is therefore the brightest object near the arch: display luma 0.85-0.91 against 0.63 for the wall, while every flock bird and near stray reads as a dark core (about 0.42). Measured at final quality in crit1-tech/hero832_final_x4.png. At f832 it is 74 m from the lens and 183 m from the nearest flock bird. Its velocity is nearly perpendicular to the flock's (cosine 0.10), and on screen it moves left (-1.8 px/frame in x) against the ribbon's left-to-right flow (+3.3 px/frame). It ends 56 px from the nearest flock bird, under the ribbon rather than in it.",
+       "fix": "Key both envelope lamps down from f790, as the bird leaves the beam, to 0 by about f806. Blend the bird's shading toward OFF_Bird's day look (dark core with a 3600K edge glow) using a keyed mix factor. Steer it with lead pursuit toward a point ahead of the flock's head along the mean flock velocity, so its heading matches the ribbon by about f820 and it ends inside the ribbon's screen footprint at f832."
+      },
+      {
+       "priority": "major",
+       "area": "Foreground wet-stone shelf boils, and the fixed seed does not stop it (f777-832)",
+       "problem": "The moving crowds (flock, falls sheets, spray, envelope) catch some of the shelf's shadow, diffuse and glossy rays on every frame, which re-rolls the noise on the glossy wet stone (roughness 0.14). Final-quality crop x 0.12-0.42, y 0-0.2 (the rock area): frame-to-frame p95 |dL*| is 17-19 on f826-829 (animated seed, camera moving under 1.5 px/frame) and still 10.8-13.6 on the fixed-seed frames f830-832. With the camera locked and the swell frozen it is still 9.3. With the crowds hidden it is 0.00, and rendering the same frame twice gives identical images. At 48 spp it is still 8.4, so the GPU sample budget will not cure it. The distant paper wall is bit-identical on f830-832, so the problem is limited to near, glossy surfaces. Raw renders (denoiser off, adaptive sampling off) still differ on 39% of rock pixels, which rules out the denoiser. Evidence: crit1-tech/shelf_static_diff.jpg, shelf_boil_14_vs_48.jpg, shelfprobe/*.png and the shelf_probe*.py logs.",
+       "fix": "Tested fix: in the S08 build, set visible_shadow=False and visible_diffuse=False on OFF_Murmuration, OFF_FallsSheets, OFF_FallsSpray and OFF_HeroEnvelope, and set visible_glossy=False on OFF_Murmuration, OFF_FallsSpray and OFF_HeroEnvelope. Keep glossy visibility on the falls sheets so the sea still mirrors the falls. Result for f831 to f832: rock p95 0.46 L* (was 9.3). Side effect: the shelf brightens from 31.5 to 35.2 L* once the crowd occlusion is gone, so re-check its value. Separately, consider bringing the crane to exact rest a few frames before f832 so the fixed-seed frames are truly static. With the crowds on, the 0.3 mm camera shift between f831 and f832 alone moved rock pixels by p95 7.6 L*; I did not re-test that with the fix applied. Tell the env_offline owner: S01, S06, S12 and S14 crowds probably do the same to any near glossy surface."
+      }
+     ]
+    }
+   ],
+   "revised_after": []
+  },
+  "s12": {
+   "critiques": [
+    {
+     "lens": "cine",
+     "round": 1,
+     "score": 4.5,
+     "verdict": "revise",
+     "fixes": [
+      {
+       "priority": "blocker",
+       "area": "Accidental glyph: in-focus near fireflies streak (f1199-1203, also f1153-1180)",
+       "problem": "OFF_FirefliesNear holds every firefly within 15 m. The ones 11-15 m out (probe ids n2, n4, n5, n12) are sharp at the 16 m focus, but they still have motion blur, because CRISP_FIREFLIES only covers 'fireflies' and 'fireflies_light'. While rising they smear into short vertical strokes with hooked ends, and the denoiser smooths these into solid ticks. At f1201 n5 (13.4 m, about 45 px/frame at 1600) is a green 'l/J'-shaped stroke at the right edge (proof crit1-cine/proof/s12/1201.png, x 776 y 185; zoom in crit1-cine/cmp/tick1201.png). It is about 22 px tall at final. The author's own note already calls a firefly streak a glyph.",
+       "fix": "In tune_fireflies() add 'fireflies_near' to the no-motion-blur loop. Then re-probe the lens-side discs n14 (f1167-1190, 2-3 m, about 54 px/frame at 1600) and n16 (f1153-1189) for strobing. If they strobe, ask the env owner to pass build_fireflies(near_bokeh=...) through build_offline and set it to about 5 m. Only the true lens-side discs then stay in the blurred, denoised object, and the 6-15 m points become crisp, unblurred light-group points."
+      },
+      {
+       "priority": "major",
+       "area": "Story beat: Pat's late grey firefly (f1189, f1203) is invisible",
+       "problem": "The clock is correct (peaks at f1189 and f1203, locked at f1217), but nobody can see the beat. Pat's firefly is about 248 m away in the arch opening. Because of the 1.4 px rule it is a 2-3 px point, the same size as the other 1,500, and its light grey reads as white. When it peaks the swarm is still at 46% (f1189) and 74% (f1203) of its flash, so it stands out by nothing. In the 1185-vs-1189 crop it is a single light pixel (crit1-cine/cmp/grey_1185_1189.png). Pat's faint grey bloom on the left cliff is also unreadable next to the much brighter shaft haze, so Pat's whole thread in this shot is gone.",
+       "fix": "At shot level, add one dedicated Pat firefly: an ico-sphere about 2-3 cm in radius with mat_firefly. Set ff_grey=1, ff_col #8a8a8a, ff_phase=ff_freq=0 and ff_lgain=0, and hide or recolour the swarm's own grey point. Key a slow drift 8-12 m from the lens on the ray to the dark arch opening (screen about x 0.41-0.44, y 0.45-0.55). At f/2.8 focused at 16 m it then reads as a soft, visibly grey disc that is clearly larger than the swarm points. Its lone late bloom at f1189 and f1203 should be the only change in that part of the frame. Check with the probe that it stays in the opening from f1185 to f1217."
+      },
+      {
+       "priority": "major",
+       "area": "Mirror doubling missing at the lock (f1217, f1233)",
+       "problem": "The treatment's beat is 'every flash doubled in the terrace water mirrors'. The 3 m rise and the tilt to +10 push the paddy's far edge to about -7.4 degrees, and the frame's bottom edge sits at -9.7 degrees. By ray cast the paddy is the bottom 5% or less at f1217 ((0.5, 0.1) already hits the sea at 113 m) and it is gone at f1233. The far swarm, 2-15 m over the sea and 100-250 m out, can only reflect in the paddy within about 3 degrees of the horizon, so it never doubles there. The rippled sea turns the flash into a dense field of white glitter in the lower-left quarter, pulsing with each beat (r0/final/1217.png, crit1-cine/cmp/final1217_sea.png). It reads as noise or a starfield, not as coloured doubles. The author's note says the doubling is 'kept in frame at every sync point'; that does not hold.",
+       "fix": "Keep the black mirror in frame at every sync point. For example, use RISE about 1.2 m and PITCH0/PITCH1 about +2.5/+7. That keeps the paddy at about 15-19% of the frame bottom through f1233, and the crest still arrives with about 8% headroom (y about 0.92) by f1248. Add a report ray at (0.5, 0.12) that must hit OFF_Paddies on f1185, f1201, f1217 and f1233. Ask the env owner for a near layer of about 150-300 fireflies hovering 0.5-4 m over the lens's own paddy and the next one (8-40 m out), so the doubles land in the mirror. Their main body, the terraces, sits behind this lens."
+      },
+      {
+       "priority": "major",
+       "area": "Night grade and contrast: fireflies don't separate (whole shot)",
+       "problem": "S12 is flat mid-grey: median 31-36 and 95th percentile 103-124 on f1153, f1217 and f1248. The same world's night in S14 (f1371) has median 12 and 95th percentile 51, and S11/S13 on either side are near-black (median 0-2). The cut in at f1153 is a 5x luminance jump. At the lock the saturated firefly pixels average L 116, which equals the shaft haze behind them (upper right, L 114), so the fireflies separate only by hue. The unison flash moves the frame mean by only about 8%. At feed or phone size (strip in crit1-cine/cmp/cuts.png) the shot reads as grey fog. The brightest region of every frame is the empty upper-right veil of the shaft. The shaft's near surface is about 100 m from the lens and it is 135 m wide, so it is a featureless column, not a beam.",
+       "fix": "Bring the world down about 1-1.3 EV for this shot by lowering the night shaft glow and the paper wall's night backlight (apply_values / apply_light_levels). Leave view exposure alone so the firefly cores keep their level. Targets: frame median about 12-15 to match S14's exterior, firefly cores at least 3x the background behind them, and the flash clearly the brightest event on every beat. Recheck the percentiles on f1153, f1217 and f1248."
+      },
+      {
+       "priority": "major",
+       "area": "Arch silhouette and scale: 'all colour lives in the fireflies'",
+       "problem": "The treatment asks for the arch silhouetted against the silver shaft. From this lens the shaft stands about 23 degrees right of the arch, so the arch can't be silhouetted against it. It is also lit verdigris-teal (FILLS 0.5) against dark paper. On every flash it takes a pastel blue, violet, pink and green wash from the swarm's light copy (crit1-cine/proof/s12/1217.png and 1233.png). The script already light-linked the island off for this exact 'pastel mottle'. A 110 m monument lit by insects 50-250 m away tells the eye that the fireflies are lamps or the arch is a model. That breaks the scale, which the treatment names as its first risk. The green-lit grass and the riser also put colour outside the fireflies.",
+       "fix": "Set FILLS to about 0.25 (the S01 silhouette range) so the arch reads as a near-black shape outlined by the crest's halo of fireflies. Extend the DARK_ISLAND receiver collection on the light copy to the arch's stone and padlock objects. The crest pines can keep a little light, since fireflies actually sit in them. The swarm then lights only the grass tips and water round each flash, as the treatment says."
+      },
+      {
+       "priority": "major",
+       "area": "Framing edges: right-edge terrace riser, box tangent, crest tangent (f1153-f1190)",
+       "problem": "By ray cast, the frame's right 7% (x 0.93-0.99) from f1153 to about f1190 is the OFF_Terraces riser 13.8-14.7 m away. It is a green, low-poly lump whose flat-shaded triangles are visible at final (r0/final/1153.png, x 1480-1600, y 600-780). Its edge touches the right end of the meeting-room box (box ends at x about 0.93), so the planted box is clipped by a CG lump. At the cut (f1153) the crest sits exactly on the top edge (y 0.984), right at the legs' junction: a tangent crop on the opening still.",
+       "fix": "Offset the lens about 1.2 m to the left, perpendicular to the view azimuth, over the same paddy. Parallax at 14 m moves the riser about 0.08 of the frame width right, out of frame, while the 140-300 m world moves less than 0.01. Verify that rays at (0.97, 0.4) and (0.95, 0.3) on f1153 no longer hit OFF_Terraces. Start the tilt so the top edge cuts decisively through the crest mass (PITCH0 about +2 to +3), not on the junction."
+      },
+      {
+       "priority": "major",
+       "area": "Swarm reads as a flat band of identical dots (f1153-f1201)",
+       "problem": "The lens stands about 10-13 m up and looks away from the terraces. The visible swarm is the drift over the sea, 50-250 m out and 2-15 m up, so until about f1201 it is compressed into a band within about 3 degrees of the horizon. The 1.4 px rule makes every point the same 3-4 px with equal brightness at any distance, so there are no depth cues. At final the unison flash reads as a flat overlay of Christmas lights or confetti (crit1-cine/cmp/arch_lower_1217.png), not as a volume of insects.",
+       "fix": "Library request to the env owner: past about 120 m, let points shrink below 1.4 px and dim with distance (keep the energy and the 2-3 px floor only mid-field); give each firefly a peak variance of about 0.6-1.0; add the near paddy layer from the doubling fix so the flash spans foreground to far ground. Shot side: the lower pitch from the doubling fix also gives the near layer more frame."
+      }
+     ]
+    },
+    {
+     "lens": "tech",
+     "round": 1,
+     "score": 6.5,
+     "verdict": "revise",
+     "fixes": [
+      {
+       "priority": "major",
+       "area": "sync / cut out (f1247-1248)",
+       "problem": "The last frame of the shot carries a half flash. With FIREFLY_T0=1217 and a 16-frame period, the swarm starts its 2-frame rise into the beat-78 flash at f1249, which is S13's first frame. The flash itself is never seen, but f1248 pops from base glow to about 55%. Measured on the animatic, saturated firefly pixels go 396 (f1247) -> 1907 (f1248), against 2075 at the f1217 lock. So the shot ends on a one-frame off-beat flicker, right as the lens settles and we cut to the black room.",
+       "fix": "In s12 build(), after tune_fireflies(), hold the swarm clock at base glow across the cut. For both h['mats']['firefly'] and h['mats']['firefly_light'], add keys to their 'FireflyClock' value node with E.key_value(node, 1246, 1246.0) and E.key_value(node, 1250, 1246.0). At clock 1246, u=13, so the swarm and the grey both sit at base 0.1 on f1247-1248. Re-render f1246-1248 at animatic and check that the saturated-pixel count stays near 400. If a flash on the cut is wanted instead, make that an explicit director decision. As built it reads as an accident."
+      },
+      {
+       "priority": "major",
+       "area": "temporal stability: arch (firefly light)",
+       "problem": "Coloured mottle crawls on the arch under the per-frame seed. I rendered final f1217 with seeds 1217 and 7: the crest stone differs by 1.41% mean and 5.1% p95 (8-bit luminance) from the seed alone. That is visible blotchy pink and blue smudging that re-shuffles every frame while the lens moves (f1153-1246). The source is the swarm's light (OFF_FirefliesLight, 1,500 tiny emitters) on the arch. More samples do not help: 42 spp gave 1.38%, and 42 spp with adaptive threshold 0.01 gave 1.31%. Light-linking the swarm light off the arch drops it to 0.44% mean and 2.1% p95, and the arch then reads as the clean dark shape the docstring asks for.",
+       "fix": "In tune_fireflies(), extend the existing DARK_ISLAND receiver-exclusion collection on OFF_FirefliesLight with OFF_ArchCore, OFF_ArchFill, OFF_ArchPadlocks, OFF_ArchScree*, and the OFF_PadlockTmpl_* instance templates (all were needed in my test). OFF_ArchPines can stay lit if you want the crest halo; re-measure that case. Verify with two seeds on the crest crop: border 0.32-0.50 x, 0.70-0.95 y. My test scripts are in the scratchpad: cresttest2.py."
+      },
+      {
+       "priority": "major",
+       "area": "temporal stability: sea and paddy band (lower third)",
+       "problem": "The lower-left sea band is a field of white specks that outnumbers the coloured firefly doubles. Most of it is env_offline's night moon glitter (sea 'GlintLevel', built as roughly 1 px points for S14's top-down lens). Seen from S12's grazing 1.5 m lens, at f1217 in the mirror crop (x 0.30-0.62, y 0-0.25) there are 651 white specks, and 296 with GlintLevel 0. In the same crop, only about 56-60% of the white specks and 58% of the coloured reflection blobs survive a seed change. The rest is sampling noise in the undenoised firefly light group and in the glossy ripples, and with the per-frame seed it boils every frame. Treatment: 'sea near-black with silver glints', every flash doubled.",
+       "fix": "After E.apply_values(h, fr.get('values')), add E.apply_values(h, {'sea': {'GlintLevel': 0.2}}) (or 0). That keeps a few silver glints and lets the coloured doubles read. Re-check with a two-seed crop. The remaining coloured-reflection boil comes from the light group never being denoised. If it still reads as noise in motion, raise this shot's final budget and lower the adaptive threshold in that band, then compare persistence across seeds, or accept it as water glitter."
+      },
+      {
+       "priority": "major",
+       "area": "sync legibility: Pat's grey firefly (f1189, f1203)",
+       "problem": "The timing is exact, verified in pixels on final-resolution crops around the grey. It sits at base on f1185 and f1201, peaks f1189 (0.62) and f1203 (0.60), and flashes in unison at f1217 (0.60, rise 0.40 at f1216). But the late flash does not read. On screen the #8a8a8a grey core is a white dot, and an ivory (Synthia #fff1d6) firefly rises through the same opening at about 11 px/frame (f1185 (115,104) to f1190 (114,46) in the 180x140 crop) and passes about 35 px from the grey at its solo peak. It is brighter than the grey (0.69-0.80). A saturated firefly also sits at the bottom of the opening (0.5-0.6). So 'alone in the arch's opening, 4 frames late' is ambiguous at f1185-1190. Note also that the grey only rises into the opening by about f1185 (t_rise 1155.4, z 0.5 m at f1153). report() prints its home position, not its path.",
+       "fix": "After the build, take every firefly whose projected path comes within about 60 px (at 1600 px) of the grey's path (about x 705, y 468-495) during f1181-1207, excluding the grey itself. Recolour each one to a saturated hue by rewriting its 42 vertices' 'ff_col' attribute on OFF_Fireflies (index order = the far-object sel), or push it out of the opening. At minimum no near-white (Synthia) point may sit in the opening then. Optionally print the grey's actual path in report() (E.firefly_positions with ids) instead of h['grey_firefly']."
+      }
+     ]
+    }
+   ],
+   "revised_after": []
+  },
+  "s14": {
+   "critiques": [
+    {
+     "lens": "cine",
+     "round": 1,
+     "score": 5,
+     "verdict": "revise",
+     "fixes": [
+      {
+       "priority": "blocker",
+       "area": "Accidental glyph, tilt-up f1389-1395",
+       "problem": "The tilt-up runs along the beam and frames the paper-falls ledge with its thin night trickle hanging from the middle. For 7 frames this reads as a clean white capital 'T'. It is the only distinct shape against flat grey cliff, and at f1390-1392 it is upright and crisp. Evidence: /tmp/claude-0/-home-user-linkedin/35346f8e-3086-50e0-b336-b295d0b54106/scratchpad/shots/s14/crit1-cine/crops/whip.png and /tmp/claude-0/-home-user-linkedin/35346f8e-3086-50e0-b336-b295d0b54106/scratchpad/shots/s14/crit1-cine/proof/s14/1392.png. Under the no-text rule this blocks the shot.",
+       "fix": "Do not let the ledge and trickle isolate as a T. Best fix: re-route the tilt (see the tilt-read item) so the sweep crosses the sea's waterline on the cliffs instead of the falls. Otherwise keep the falls cropped at a frame edge, or break the ledge's straight bar in this shot, for example by hiding its flat lip from camera over f1386-1396 while keeping the trickle and its mist. If any trace stays, keep it under 2 frames and never upright."
+      },
+      {
+       "priority": "major",
+       "area": "Story: the world tilt does not read",
+       "problem": "The finale's punchline ('the whole world is tilting... the sea's horizon rolls and climbs the cliffs... a foam line climbing one cliff') never reads. In the hold the lens looks down at -61 to -64 deg, so there is no horizon or waterline. An A/B with gravity forced level is almost identical at f1363 (only the island's foam ring changes). At f1380 the difference is a half-drowned atoll and a higher arch, which read as fixed geography, not motion. During the tilt-up the sea line shows only at f1386, under a -52 deg camera roll that hides it. No foam line or swell is visible anywhere. A/Bs: /tmp/claude-0/-home-user-linkedin/35346f8e-3086-50e0-b336-b295d0b54106/scratchpad/shots/s14/crit1-cine/crops/ab_1363.png, ab_1380.png, ab_1386.png.",
+       "fix": "Give the tilt-up a 6-8 frame passage (around f1386-1395, the f1393 flash below it) where the sea's far waterline crosses the cup wall with the lid's level rings or rolled rim in frame as a reference. The sea line should sit visibly 10-12 deg off the rim. Make the crema/foam band at the cliff foot catch silver at night so the climbing line reads. Do most of the -52 deg slot-levelling roll before or after that passage so the camera's roll does not read as the world's. Optionally add a moving cue in the hold, such as the atoll's flank visibly going under over f1363-1380."
+      },
+      {
+       "priority": "major",
+       "area": "Tilt-up frames f1388-1394 are not printable",
+       "problem": "About 150 deg of tilt in 22 frames (peaking near 10 deg/frame) plus a 52 deg roll produces 7 near-identical frames of grey cliff and silver veil. They hold no composition and show nothing of the 'vast world' (no horizon, no terraces, no flash). Every frame should be a still worth printing.",
+       "fix": "Re-time and re-path together with the tilt-read fix. Slow the sweep where it crosses the waterline and the terraces (the f1393 flash in frame, doubled in the mirrors, as the treatment asks), then accelerate up the beam to the slot. Keep the eased start and end."
+      },
+      {
+       "priority": "major",
+       "area": "Exterior hold look f1361-1383",
+       "problem": "The frames are busy and lose the restrained night palette. Fireflies are sized for f1377 (FIREFLY_VIEW), so at f1362-1363 they are 3-4 px blobs, a confetti of saturated colour over half the frame. The sea is covered evenly in white specks (present with gravity level too, so floes or glints, not the tilt) that read as a star field rather than black water. The flooded atoll's palms read as green blobs floating on black water. The arch reads as a blue speckled caterpillar. Only the box, its slot and the beam read cleanly. Evidence: proof/s14/1363.png, 1370.png, 1377.png in /tmp/claude-0/-home-user-linkedin/35346f8e-3086-50e0-b336-b295d0b54106/scratchpad/shots/s14/crit1-cine/.",
+       "fix": "Size firefly points per frame for distance, or pick a FIREFLY_VIEW closer to f1363, and drop their between-flash level so the f1377 unison flash is the one burst of colour against near-black. Cut the floes/glint specks for this shot (apply_values or include) to a silver glitter path under the beam only. Darken or hide the drowned atoll palms. Consider tightening so the box, beam, terraces and atoll carry the frame."
+      },
+      {
+       "priority": "major",
+       "area": "Interior f1345-1356: hub hot spot outshines the cup",
+       "problem": "The hub dome's specular is clipped. It covers 63x40 px above 230/255 (max 255) and blooms, sitting 90 px from the cup lid, which peaks at 215 over roughly 16x20 px. The brightest, largest white in the frame is the conference hub, not the cup at his chin, which is the shot's story object (he is still sipping).",
+       "fix": "Kill or narrow the hub dome's camera-visible gloss in S14 (roughness override, or light-link the slab suns off the hub's glossy) so the white lid is the brightest accent. Let the hub glint bloom only during the flare ramp (f1356-1359) if wanted."
+      },
+      {
+       "priority": "major",
+       "area": "Interior light hierarchy: the slab down the spine",
+       "problem": "The 'skylight slab down the table's spine' does not read as a slab. With WALNUT_SUN_IN=3.0 the walnut is flat, grainless mauve-grey (lit about 49/40/38, unlit about 8/6/5). The slab's edge falls exactly on the brass channel, and the channel's lips still draw two white neon lines. Meanwhile the slab on the cobalt carpet behind him gets the full main sun (about 63/78/102) and is the strongest light shape in frame. The canon reads 'only the slab and one grey glow remain'.",
+       "fix": "Rebalance so the slab on the walnut is at least as bright as the carpet pool. Raise WALNUT_SUN_IN, or light-link the main sun down on the carpet. Kill the channel-lip specular lines and let the walnut's grain and clearcoat read in the slab. Keeping the slot-shaped carpet pool is fine and a good echo, but it should be secondary."
+      }
+     ]
+    },
+    {
+     "lens": "tech",
+     "round": 1,
+     "score": 6.5,
+     "verdict": "revise",
+     "fixes": [
+      {
+       "priority": "major",
+       "area": "Continuity across the white flare (f1359 -> f1361)",
+       "problem": "The slot's orientation jumps about 50 deg across the stitch. Inside, the skylight and table spine run horizontal (0 deg) through f1359 (ROLL_IN 90). Outside, the box's roof slot (parallel to BOX_AXIS) projects at 50.2 deg on f1361, 49.8 deg on f1363 and 45.4 deg on f1380. I measured this by projecting the ends of OFF_BoxSkylight; see stitch_orientation.png, which puts f1356/1357 next to f1363/1365. The point the rise expands from also jumps: the lens nadir sits at 0.64 of frame width (SHIFT_IN -0.14), but the box appears at 0.50. The rise speed itself is well matched (image scale x1.07/frame inside on f1357-1359, box width x1.076/frame on f1362-1364), so only orientation and position break the 'we came up out of that slot' read.",
+       "fix": "Set ROLL_HOLD so the box slot is level during the hold. Roll 0 gives +50 deg, so either about +50 or about -130 levels it; check which sign works with S14_DIAG. Prefer -130 if it levels: its roll sweep to the end roll of -51.6 is 78 deg, against 102 deg for +50 (it is 52 deg now). Then re-check the tilt. Also key cam.data.shift_x from -0.14 to 0 over about f1350-1359, so the exit point lands at frame centre where the box appears on f1361."
+      },
+      {
+       "priority": "major",
+       "area": "Beam reveal (f1371-1376)",
+       "problem": "The beam switches on instead of being revealed. The lens leaves the shaft prism on f1371, and beam_reveal fades the shaft in over REVEAL=6 frames (smoother: 4%, 21%, 50%, 79%, 96%, 100%) while the veil eases off on the same frames. Mean luma in the beam zone (top 200 px, x 250-520 at 800 px) reads 15, 30, 48, 64, 73, 77 on f1371-1376: a 5x rise in 4 frames across the upper third of the frame, during the hold that should be calm. See beam_seq.png.",
+       "fix": "Raise REVEAL to at least 14 (peak about 13%/frame), and start the veil-off a few frames before the exit, so the reveal spans about f1369-1385 and settles after the f1377 flash. Better still, have the env owner let the prism wall sweep in from the frame edge instead of a global fade."
+      },
+      {
+       "priority": "major",
+       "area": "Tilt-up motion cadence (f1382-1400)",
+       "problem": "The tilt-up will strobe. TILT_UP turns 150 deg in 22 frames, and the signed pitch rate runs -2.1, -3.6, -4.9, -6.1, -7.1, -8.0, -8.7, -9.2, -9.6, -9.9, -9.9 (f1392), -9.8, -9.5, -9.0, -8.4, -7.6, -6.6, -5.4, -4.1, -2.6 deg/frame, with a -51.6 deg roll on the same frames. At 18 mm on a 36 mm sensor, 10 deg/frame moves the frame centre about 141 px per frame at 1600 px, but SHUTTER_OUT 0.15 blurs only about 21 px. So f1386-1396 will strobe as disjoint stills rather than read as one move; proof frames f1386/1388/1390/1392 are crisp and do not overlap.",
+       "fix": "Key scene.render.motion_blur_shutter per frame: 0.15 through the hold, easing to about 0.5 over f1384-1397, then back to about 0.2 for the slot. This keeps the held frames crisp, which was the reason for 0.15 globally. First confirm that Cycles 4.5 honours a keyed shutter. The alternative is to stretch TILT_UP (start about f1377, peak at most 6 deg/frame), which trades against the hold length."
+      }
+     ]
+    }
+   ],
+   "revised_after": []
+  }
+ }
+}

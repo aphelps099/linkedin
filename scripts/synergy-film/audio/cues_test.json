@@ -1,0 +1,522 @@
+{
+ "title": "Offline - mixer self-test",
+ "note": "Self-test for mix.py. Music cues are generated from music_edit.json (segments M1-M3, sample-exact fades and guards); the music lanes follow its automation_from_treatment. SFX are real library recordings exercising tape/stretch pitch, loops, anchors, static and automated filters, pan lanes, hard stops and a reverb send (skipped: no recorded IR in the library yet).",
+ "frames": 1440,
+ "library_root": "../out/audio/raw",
+ "manifest": "../out/audio/raw/manifest.json",
+ "grid": {
+  "bpm": 90,
+  "zero_frame": 1,
+  "beats_per_bar": 4
+ },
+ "buses": {
+  "music": {
+   "gain_db": -3.0
+  },
+  "sfx": {
+   "gain_db": 0.0
+  },
+  "ambience": {
+   "gain_db": -2.0
+  }
+ },
+ "lanes": {
+  "music_main": {
+   "lowpass_hz": [
+    [
+     1,
+     400
+    ],
+    [
+     129,
+     400
+    ],
+    [
+     250,
+     "open"
+    ],
+    [
+     529,
+     600,
+     "step"
+    ],
+    [
+     609,
+     "open",
+     "step"
+    ],
+    [
+     753,
+     600,
+     "step"
+    ],
+    [
+     833,
+     5000,
+     "step"
+    ],
+    [
+     1153,
+     "open",
+     "step"
+    ],
+    [
+     1249,
+     600,
+     "step"
+    ],
+    [
+     1281,
+     600
+    ],
+    [
+     1297,
+     3000,
+     "smooth"
+    ],
+    [
+     1345,
+     3000
+    ],
+    [
+     1361,
+     "open"
+    ]
+   ],
+   "gain_db": [
+    [
+     1,
+     0
+    ],
+    [
+     529,
+     -6,
+     "step"
+    ],
+    [
+     609,
+     0,
+     "step"
+    ],
+    [
+     753,
+     -6,
+     "step"
+    ],
+    [
+     833,
+     -4,
+     "step"
+    ],
+    [
+     1153,
+     0,
+     "step"
+    ],
+    [
+     1281,
+     0
+    ],
+    [
+     1297,
+     6,
+     "smooth"
+    ],
+    [
+     1408,
+     6
+    ]
+   ]
+  }
+ },
+ "reverbs": {
+  "cup": {
+   "ir": "auto",
+   "return_bus": "sfx",
+   "predelay_ms": 10
+  }
+ },
+ "master": {
+  "lufs": -14.0,
+  "true_peak_dbtp": -1.0,
+  "glue": {
+   "enabled": true,
+   "threshold_db": -18.0,
+   "ratio": 1.5,
+   "knee_db": 6.0,
+   "attack_ms": 30.0,
+   "release_ms": 250.0
+  },
+  "limiter": {
+   "lookahead_ms": 3.0,
+   "release_ms": 120.0
+  }
+ },
+ "cues": [
+  {
+   "id": "music-M1",
+   "bus": "music",
+   "file": "music_lofi/mixkit-970-night-sky-hip-hop.mp3",
+   "src_in": 0.0,
+   "src_out": 5.3333333333,
+   "at_frame": 1,
+   "end_frame": 129,
+   "fade_in_samples": 12,
+   "fade_out_samples": 192,
+   "guard_samples": 48,
+   "automation": "music_main",
+   "note": "music_edit.json segment M1: intro pass 1 (S01, inside the cup)"
+  },
+  {
+   "id": "music-M2",
+   "bus": "music",
+   "file": "music_lofi/mixkit-970-night-sky-hip-hop.mp3",
+   "src_in": 0.0,
+   "src_out": 34.6666666667,
+   "at_frame": 129,
+   "end_frame": 961,
+   "fade_in_samples": 12,
+   "fade_out_samples": 192,
+   "guard_samples": 48,
+   "automation": "music_main",
+   "note": "music_edit.json segment M2: intro pass 2 + groove (S02-S10)"
+  },
+  {
+   "id": "music-M3",
+   "bus": "music",
+   "file": "music_lofi/mixkit-970-night-sky-hip-hop.mp3",
+   "src_in": 0.0,
+   "src_out": 10.6666666667,
+   "at_frame": 1153,
+   "end_frame": 1409,
+   "fade_in_samples": 12,
+   "fade_out_samples": 192,
+   "guard_samples": 48,
+   "automation": "music_main",
+   "note": "music_edit.json segment M3: offline return (S12-S14)"
+  },
+  {
+   "id": "s01-world-breath",
+   "file": "ambience/sonniss2017-hzandbits-hvac-elements--roomtone-hvac-drone-hum-low-mids-loop.wav",
+   "at_frame": 1,
+   "bus": "ambience",
+   "src_in": 10.0,
+   "src_out": 12.0,
+   "pitch_mode": "tape",
+   "pitch_semitones": -12,
+   "loop": true,
+   "loop_xfade_ms": 400,
+   "end_frame": 129,
+   "fade_in": 12,
+   "fade_out": 3,
+   "gain_db": -8,
+   "note": "HVAC drone -12 st (tape), looped 2 s region: loop + tape test"
+  },
+  {
+   "id": "s01-lapping",
+   "file": "ambience/sonniss2018-discover-oregon-ocean-and-stream--streams-quietstream.wav",
+   "at_frame": 1,
+   "bus": "ambience",
+   "src_in": 4.0,
+   "src_out": 12.0,
+   "speed": 0.8,
+   "rb_options": "transients=smooth:window=long:pitchq=quality:channels=together",
+   "end_frame": 129,
+   "fade_in": 12,
+   "fade_out": 3,
+   "gain_db": 2,
+   "note": "quiet stream slowed (rubberband tempo 0.8): stretch test"
+  },
+  {
+   "id": "s01-eclipse-whoosh",
+   "file": "sfx/whoosh/mixkit-2604-deep-air-woosh.wav",
+   "at_frame": 110,
+   "anchor_s": "peak",
+   "gain_db": -8,
+   "lowpass_hz": 2500,
+   "end_frame": 129,
+   "fade_out": 2,
+   "note": "peak of the whoosh on the eclipse, cut at the match cut"
+  },
+  {
+   "id": "s02-lid-tick",
+   "file": "sfx/office/mixkit-1113-mouse-click-close.wav",
+   "at_frame": 131,
+   "anchor_s": "onset",
+   "gain_db": -12,
+   "pan": 0.1
+  },
+  {
+   "id": "s02-envelope",
+   "file": "sfx/paper/mixkit-2380-paper-quick-movement.wav",
+   "at_frame": 140,
+   "anchor_s": "peak",
+   "gain_db": -14,
+   "pan": 0.1
+  },
+  {
+   "id": "s02-plip",
+   "file": "sfx/nature/mixkit-3179-water-drop-splashes-in-cave.wav",
+   "at_frame": 150,
+   "anchor_s": "onset",
+   "gain_db": -4
+  },
+  {
+   "id": "s02-neck-servo",
+   "file": "sfx/caster_motor/usc-sse-library-motors-servo-motrsrvo-spaceship-servo-motors-from-2010-cs-usc.wav",
+   "at_frame": 157,
+   "src_in": 0.15,
+   "src_out": 3.6,
+   "pitch_semitones": -3,
+   "end_frame": 233,
+   "fade_in": 6,
+   "fade_out": 8,
+   "gain_db": -14,
+   "note": "servo pitched -3 st with rubberband (latency auto-aligned)"
+  },
+  {
+   "id": "printer-feed-f257",
+   "file": "sfx/office/sonniss2015-robert-cordova-base--printer-02.wav",
+   "at_frame": 257,
+   "anchor_s": "onset",
+   "gain_db": -10,
+   "pan": 0.0
+  },
+  {
+   "id": "printer-feed-f321",
+   "file": "sfx/office/sonniss2015-robert-cordova-base--printer-02.wav",
+   "at_frame": 321,
+   "anchor_s": "onset",
+   "gain_db": -10,
+   "pan": 0.0
+  },
+  {
+   "id": "s03-droid-motor",
+   "file": "sfx/caster_motor/usc-sse-library-motors-servo-motrsrvo-spaceship-servo-motors-from-2010-cs-usc.wav",
+   "at_frame": 270,
+   "src_in": 19.7,
+   "src_out": 24.0,
+   "end_frame": 353,
+   "fade_in": 4,
+   "fade_out": 10,
+   "gain_db": -16,
+   "automation": {
+    "pan": [
+     [
+      270,
+      0.35
+     ],
+     [
+      352,
+      -0.15
+     ]
+    ],
+    "gain_db": [
+     [
+      270,
+      0
+     ],
+     [
+      352,
+      -10
+     ]
+    ],
+    "lowpass_hz": [
+     [
+      270,
+      9000
+     ],
+     [
+      352,
+      2500
+     ]
+    ]
+   },
+   "note": "receding droid: pan, gain and low-pass lanes"
+  },
+  {
+   "id": "s04-kevin-murmur",
+   "file": "ambience/berklee-v10-crowd1.wav",
+   "at_frame": 361,
+   "src_in": 5.0,
+   "src_out": 8.0,
+   "channels": "mono",
+   "pan": -0.3,
+   "highpass_hz": 300,
+   "lowpass_hz": 3000,
+   "lowpass_slope": 24,
+   "end_frame": 409,
+   "fade_in": 2,
+   "fade_out": 4,
+   "gain_db": -8,
+   "note": "walla band-passed 300 Hz-3 kHz (static filters)"
+  },
+  {
+   "id": "s04-padlock-knock",
+   "file": "sfx/robot_mech/mixkit-2857-gear-fast-lock-tap.wav",
+   "at_frame": 417,
+   "anchor_s": "onset",
+   "gain_db": -6
+  },
+  {
+   "id": "s05-post-plip",
+   "file": "sfx/cup_drop/mixkit-2834-dropping-ice-into-a-glass.wav",
+   "at_frame": 512,
+   "anchor_s": "onset",
+   "gain_db": -14,
+   "reverb": "cup",
+   "reverb_send": -10,
+   "note": "reverb send: skipped while the library has no recorded IR"
+  },
+  {
+   "id": "s06-impact-low",
+   "file": "sfx/impact/sonniss2016-3maze-high-impact--long-metal-005.wav",
+   "at_frame": 553,
+   "anchor_s": "onset",
+   "pitch_mode": "tape",
+   "pitch_semitones": -12,
+   "gain_db": -6,
+   "lowpass_hz": 1800,
+   "end_frame": 609,
+   "fade_out": 6
+  },
+  {
+   "id": "s06-bulkhead",
+   "file": "sfx/impact/sonniss2016-alexander-kopeikin-sci-fi-metal-elements--sci-fi-metal-impact-steel-bulkhead-hit-low-01.wav",
+   "at_frame": 553,
+   "anchor_s": "onset",
+   "gain_db": -12,
+   "lowpass_hz": 1200,
+   "end_frame": 609,
+   "fade_out": 6
+  },
+  {
+   "id": "s07-plip-1",
+   "file": "sfx/cup_drop/usc-gold-tape-53-54-water-g54-34-metallic-drops.wav",
+   "at_frame": 609,
+   "src_in": 0.1,
+   "src_out": 0.4,
+   "anchor_s": "onset",
+   "gain_db": -6,
+   "pan": -0.2,
+   "fade_out": 2
+  },
+  {
+   "id": "s07-plip-2",
+   "file": "sfx/cup_drop/usc-gold-tape-53-54-water-g54-34-metallic-drops.wav",
+   "at_frame": 625,
+   "src_in": 0.38,
+   "src_out": 0.6,
+   "anchor_s": "onset",
+   "gain_db": -6,
+   "pan": 0.2,
+   "fade_out": 2
+  },
+  {
+   "id": "s07-plip-3",
+   "file": "sfx/cup_drop/usc-gold-tape-53-54-water-g54-34-metallic-drops.wav",
+   "at_frame": 641,
+   "src_in": 2.4,
+   "src_out": 2.75,
+   "anchor_s": "onset",
+   "gain_db": -6,
+   "pan": -0.1,
+   "fade_out": 2
+  },
+  {
+   "id": "s07-plip-4",
+   "file": "sfx/cup_drop/usc-gold-tape-53-54-water-g54-34-metallic-drops.wav",
+   "at_frame": 657,
+   "src_in": 3.99,
+   "src_out": 4.3,
+   "anchor_s": "onset",
+   "gain_db": -6,
+   "pan": 0.1,
+   "fade_out": 2
+  },
+  {
+   "id": "s10-line-buzz",
+   "file": "sfx/jack/sonniss2016-matiasmacsd-noise-electricguitarampcableconnection-003.wav",
+   "at_frame": 929,
+   "src_in": 3.14,
+   "src_out": 6.6,
+   "end_frame": 961,
+   "guard_ms": 0,
+   "fade_in": 4,
+   "fade_out_ms": 2,
+   "gain_db": -14,
+   "note": "hard stop exactly at the f961 boundary (no guard)"
+  },
+  {
+   "id": "s10-jack-click",
+   "file": "sfx/jack/sonniss2024-bolt-arp-2600-droids-blips-drones-more-mechmisc-trs-cable-plug-in-solid-metal-thump-bolt-arp2600.wav",
+   "at_frame": 961,
+   "src_in": 0.0,
+   "src_out": 0.42,
+   "anchor_s": "onset",
+   "gain_db": 0,
+   "note": "take 1, transient on sample 1,920,000"
+  },
+  {
+   "id": "s11-room-tone",
+   "file": "ambience/sonniss2017-detunized-room-tones-office-building--rt-office-heater-tone-2.flac",
+   "at_frame": 962,
+   "bus": "ambience",
+   "src_in": 30.0,
+   "end_frame": 1153,
+   "fade_in": 2,
+   "fade_out": 6,
+   "gain_db": 4
+  },
+  {
+   "id": "s12-night",
+   "file": "ambience/mixkit-1227-summer-night-in-the-forest.wav",
+   "at_frame": 1153,
+   "bus": "ambience",
+   "src_in": 20.0,
+   "end_frame": 1409,
+   "fade_in": 12,
+   "fade_out_ms": 3,
+   "gain_db": 0,
+   "note": "hard stop on the cut to black"
+  },
+  {
+   "id": "s13-sip",
+   "file": "sfx/sip/mixkit-153-mouth-sipping-a-hot-small-drink.wav",
+   "at_frame": 1297,
+   "anchor_s": 0.11,
+   "gain_db": 10,
+   "note": "intake (0.11 s) lands on f1297"
+  },
+  {
+   "id": "s13-tilt-creak",
+   "file": "sfx/office/sonniss2017-soundbits-unsettling-creaks-and-squeaks--office-chair-creak-70.wav",
+   "at_frame": 1305,
+   "src_in": 3.8,
+   "src_out": 5.97,
+   "anchor_s": "onset",
+   "pitch_mode": "tape",
+   "pitch_semitones": -12,
+   "gain_db": -4,
+   "end_frame": 1409,
+   "fade_out_ms": 3
+  },
+  {
+   "id": "s14-rise",
+   "file": "sfx/whoosh/mixkit-3161-transition-flying-swoosh.wav",
+   "at_frame": 1404,
+   "anchor_s": "peak",
+   "gain_db": -2,
+   "highpass_hz": 150,
+   "end_frame": 1409,
+   "fade_out_ms": 3
+  },
+  {
+   "id": "s14-printer-over-black",
+   "file": "sfx/office/sonniss2015-robert-cordova-base--printer-02.wav",
+   "at_frame": 1418,
+   "anchor_s": "onset",
+   "gain_db": -8
+  }
+ ]
+}
