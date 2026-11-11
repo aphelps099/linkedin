@@ -1,0 +1,17 @@
+{
+  "name": "SYNERGY.EXE · Career Mode",
+  "short_name": "SYNERGY.EXE",
+  "description": "Synergy said something true. Nobody reacted. Climb the office, catch the language, post your way up.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
