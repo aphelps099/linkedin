@@ -3,7 +3,7 @@
 // the two ways it can end.
 
 import { G, $, reduce, pad2, clock } from './state.js';
-import { FACT, OPTIMIZED, WORDS, FILLER, INTRO, MEETING, FLOORS } from './level.js';
+import { FACT, OPTIMIZED, WORDS, FILLER, INTRO, MEETING, CALL, FLOORS } from './level.js';
 import { C, SP, HEAD, frame, PERSON, KEV, LIN, PEOPLE, ICONS, ICON_KEYS, PEG5, avatar } from './art.js';
 import { pen, unitsOf, burst, sparks, hud, toast } from './ui.js';
 import { Score } from './score.js';
@@ -404,57 +404,108 @@ export function drawRoof() {
 }
 
 /* ---------- called on: the meeting, from the inside ---------- */
-// Moving under the host's eye in a meeting room rings Synergy into the call. He is put in front of
-// the screen, in profile, with everyone looking. Then he is sent back to the door with the notes.
-const CALL = [
-  { name:'Linda, Governance', text:'Synergy. Anything to share?' },
-  { name:'Linda, Governance', text:'Great. We will schedule a follow-up.', voice:'followup' },
-];
+// Moving under the host's eye in a meeting room rings Synergy into the call, in profile, in front of
+// everyone. The first time in a room: "just a few more minutes", five minutes that pass in a blink
+// while the gallery fills, then the question, out loud. Then he has to say something.
+//   a share that lands  -> the meeting is adjourned for good, and he walks on
+//   the fact, or silence -> back to the door, taking notes; the meeting is still on
 const CROWD = ['kev', 'arj', 'rec', 'sam', 'pat', 'kev', 'lin', 'rec', 'arj', 'sam', 'pat', 'rec', 'kev', 'arj', 'sam', 'pat'];
+const HUSH = 7, WAIT = 1.8;                       // seconds of silence allowed; how long five minutes takes
 let call = null;
-export function enterCall({ back }) {
-  call = { t:0, i:0, n:0, hold:0, back };
-  Score.setLevel(6); Score.watch(false); Score.duck(false); G.fade = 1;
-  $('say').hidden = false; $('sayHint').textContent = 'Tap to skip'; $('sayR').textContent = '47 people are watching'; paintCall();
+export function enterCall({ first, back }) {
+  call = { phase:first ? 'wait' : 'ask', line:first ? CALL.wait : CALL.again, n:0, t:0, hold:0, back, first, here:first ? 3 : 47, mins:first ? 0 : 5, picks:[], escaped:false, mu:0, at:-1, n0:G.run.bumps };
+  Score.setLevel(6); Score.watch(false); Score.duck(true); G.fade = 1;
+  $('meet').hidden = false; $('mGo').hidden = true; $('mPick').textContent = ''; $('mQuiet').hidden = true;
+  $('mR').textContent = first ? '3 of 47 are here' : '47 people are watching';
+  Score.voice(first ? 'minutes' : 'anyone', .25);
+  paintCall();
 }
-function paintCall() { const c = CALL[call.i]; $('sayWho').textContent = c.name; $('sayLine').textContent = c.text.slice(0, call.n | 0); }
-function leaveCall() { const back = call.back; call = null; $('say').hidden = true; G.parts.length = 0; back(); }
-export function skipCall() { if (call && call.t > .5) leaveCall(); }
+function paintCall() { $('mWho').textContent = 'Linda, Governance'; $('mLine').textContent = call.line.slice(0, call.n | 0); }
+function sayCall(line, phase) { Object.assign(call, { line, phase, n:0, hold:0, at:-1 }); $('mPick').textContent = ''; $('mQuiet').hidden = true; paintCall(); }
+function offerCall() {
+  const c = call, run = G.run, pool = run.collected.slice(), out = [];
+  for (let i = 0; i < 2; i++) { const w = pool.length ? pool.splice((c.n0 + i * 2) % pool.length, 1)[0] : null;
+    out.push(w ? { kind:'buzz', text:WORDS[w].say } : { kind:'fill', text:FILLER[(c.n0 + i) % FILLER.length] }); }
+  out.splice(c.n0 % 3, 0, { kind:'fact', text:FACT });
+  c.phase = 'pick'; c.t = HUSH; c.picks = out; c.at = -1;
+  const ol = $('mPick'); ol.textContent = '';
+  out.forEach((o, i) => { const li = document.createElement('li'), b = document.createElement('button'), n = document.createElement('i'), sp = document.createElement('span');
+    n.textContent = i + 1; sp.textContent = o.text; b.append(n, sp); if (o.kind === 'fact') b.className = 'fact';
+    b.addEventListener('click', () => pickCall(i)); li.appendChild(b); ol.appendChild(li); });
+  $('mQuiet').hidden = false; $('mBar').style.transform = 'scaleX(1)'; $('mR').textContent = 'Say something';
+}
+export function pickCall(i) {
+  const c = call; if (!c || c.phase !== 'pick' || !c.picks[i]) return;
+  const o = c.picks[i], run = G.run;
+  if (o.kind === 'fact') { Score.accent('flat'); $('mR').textContent = '0 reactions. Meeting extended.'; sayCall(CALL.offline, 'reply'); }
+  else { const gain = o.kind === 'buzz' ? 40 : 12; c.escaped = true; run.reactions += gain; hud();
+    burst(104, 70, o.kind === 'buzz' ? 10 : 4, 96); Score.accent('promote'); Score.voice('share', .1);
+    $('mR').textContent = `+${gain} reactions. Meeting adjourned.`; sayCall(CALL.good[c.n0 % CALL.good.length], 'reply'); }
+}
+function leaveCall() { const c = call; call = null; $('meet').hidden = true; G.parts.length = 0; Score.duck(false); c.back(c.escaped); }
+// space, enter or a tap: finish the line being typed; 1, 2, 3: answer
+export function callKey(key) {
+  const c = call; if (!c) return false;
+  if (c.phase === 'pick' && '123'.includes(key)) { pickCall(Number(key) - 1); return true; }
+  if ((key === ' ' || key === 'Enter') && c.phase !== 'pick' && c.phase !== 'clock' && c.n < c.line.length) { c.n = c.line.length; paintCall(); return true; }
+  return false;
+}
+export const tapCall = () => callKey(' ');
 export function stepCall(dt) {
-  const c = call, line = CALL[c.i]; c.t += dt;
-  if (c.n < line.text.length) { const b = c.n | 0; c.n += dt * 34; if ((c.n | 0) !== b) { if ((c.n | 0) % 2 === 0) Score.accent('type'); paintCall(); } return; }
+  const c = call;
+  if (c.phase === 'clock') {                      // five minutes, at speed: the clock runs and the gallery fills
+    c.t += dt; const k = Math.min(1, c.t / WAIT), mins = Math.floor(k * 5), here = 3 + Math.round(k * k * 44);
+    if (mins !== c.mins) { c.mins = mins; Score.accent('tick', mins); }
+    if (here !== c.here) { c.here = here; $('mR').textContent = `${here} of 47 are here`; }
+    if (k >= 1) { c.mins = 5; c.here = 47; $('mR').textContent = '47 people are watching'; Score.accent('ding'); Score.voice('anyone', .2); sayCall(CALL.ask, 'ask'); }
+    return;
+  }
+  if (c.phase === 'pick') {
+    c.t -= dt; $('mBar').style.transform = `scaleX(${Math.max(0, c.t / HUSH)})`;
+    if (c.t <= 0) { Score.accent('caught'); Score.voice('followup', .3); $('mR').textContent = 'Silence. Noted.'; sayCall(CALL.mute, 'reply'); }
+    return;
+  }
+  if (c.n < c.line.length) { const b = c.n | 0; c.n += dt * 34; if ((c.n | 0) !== b) { if ((c.n | 0) % 2 === 0) Score.accent('type'); paintCall(); } return; }
   c.hold += dt;
-  if (c.hold < (c.i ? 1.5 : .9)) return;
-  if (c.i < CALL.length - 1) { c.i++; c.n = 0; c.hold = 0; if (CALL[c.i].voice) Score.voice(CALL[c.i].voice, .1); burst(104, 60, 6, 90); paintCall(); }
-  else leaveCall();
+  if (c.phase === 'wait' && c.hold > .55) { c.phase = 'clock'; c.t = 0; }
+  else if (c.phase === 'ask' && c.hold > .3) offerCall();
+  else if (c.phase === 'reply' && c.hold > 1.4) leaveCall();
 }
 export function drawCall() {
-  const c = call, W = G.W, t = G.t, fy = Math.max(96, G.H - sayUnits() - 12);
+  const c = call, W = G.W, t = G.t;
+  if (c.at !== G.layout) { c.at = G.layout; c.mu = unitsOf($('meet')); }
+  const fy = Math.max(84, G.H - c.mu - 12), k = fy >= 170 ? 3 : 2;
   litRoom(fy);
-  // the call: sixteen faces you can see, and a number for the rest
-  const rows = fy > 190 ? 4 : fy > 164 ? 3 : 2, sx = 49, sw = 110, sh = rows * 27 + 13, sy = fy - 70 - sh < 20 ? 20 : fy - 70 - sh;
+  // the call: sixteen tiles you can see, and a count for the rest
+  const rows = Math.max(1, Math.min(4, Math.floor((fy - 20 * k - 10 - 22 - 13) / 27))), sx = 49, sw = 110, sh = rows * 27 + 13, sy = Math.max(20, fy - 20 * k - 10 - sh);
   if (sy > 34) { R(55, sy - 18, 98, 11, C.ink); R(58, sy - 15, 5, 5, (t * 2 | 0) % 2 ? C.signal : '#7a6a1e'); text('MEETING IN PROGRESS', 67, sy - 15, C.cream); }
   R(sx, sy, sw, sh, C.ink);
-  camera(sx + 4, sy + 3, '#7fa8ff'); text('ALL-HANDS', sx + 16, sy + 4, C.cream); text('47', sx + sw - 4, sy + 4, C.signal, { align:'right' });
-  const speaking = c.n < CALL[c.i].text.length;
+  camera(sx + 4, sy + 3, '#7fa8ff'); text('ALL-HANDS', sx + 16, sy + 4, C.cream); text(String(c.here), sx + sw - 4, sy + 4, C.signal, { align:'right' });
+  const speaking = c.phase !== 'pick' && c.phase !== 'clock' && c.n < c.line.length, tiles = rows * 4, seated = Math.round((c.here - 3) / 44 * (tiles - 3)) + 3;
   for (let j = 0; j < rows; j++) for (let i = 0; i < 4; i++) {
-    const n = j * 4 + i, x = sx + 2 + i * 27, y = sy + 12 + j * 27, host = n === 1, you = n === rows * 4 - 2;
-    R(x, y, 25, 25, host ? C.signal : you ? C.cobalt : '#2c3558'); R(x + 1, y + 1, 23, 23, you ? '#10204f' : '#39446e');
+    const n = j * 4 + i, x = sx + 2 + i * 27, y = sy + 12 + j * 27, host = n === 1, you = n === tiles - 2, order = (n * 7 + 3) % tiles, inRoom = host || you || order < seated;
+    R(x, y, 25, 25, host ? C.signal : you ? C.cobalt : '#2c3558'); R(x + 1, y + 1, 23, 23, you ? '#10204f' : inRoom ? '#39446e' : '#1c2440');
     if (you) { bmp(HEAD, SP, x + 5, y + 6, true, 1); text('YOU', x + 3, y + 18, C.signal); }
-    else if (n === 6) text('MUTED', x + 13, y + 10, '#8794b8', { align:'center' });
+    else if (!inRoom) text('…', x + 13, y + 11, '#55608a', { align:'center' });
+    else if (n === 6 && !host) text('MUTED', x + 13, y + 10, '#8794b8', { align:'center' });
     else { const id = host ? 'lin' : CROWD[n % CROWD.length], hop = host && speaking && (t * 9 | 0) % 2 ? 1 : 0;
       bmp(PERSON.slice(0, 10), PEOPLE[id].pal, x + 3, y + 4 - hop, (n % 3) === 0, 2);
-      if (!host && (t * .7 + n * 1.3 | 0) % 5 === 0) R(x + 19, y + 3, 3, 3, C.led); }
+      if (!host && (c.escaped || (t * .7 + n * 1.3 | 0) % 5 === 0)) R(x + 19, y + 3, 3, 3, C.led); }
   }
   R(sx + 50, sy + sh, 10, 4, C.ink);
+  // the clock on the wall: five minutes go by while everyone else gets here
+  const running = c.phase === 'clock', cy0 = Math.max(6, sy);
+  R(3, cy0, 42, 15, C.ink); wire(3, cy0, 42, 15, running ? C.signal : C.ink);
+  text(`2:0${c.mins}`, 8, cy0 + 4, running || c.mins === 5 ? C.signal : C.cream, { font:PEG5 }); text('PM', 32, cy0 + 6, '#8794b8');
+  if (running) for (let i = 0; i < 3; i++) R(47 - ((t * 60 + i * 9 | 0) % 14), cy0 + 17 + i * 2, 3, 1, C.signal);
   // Synergy, in profile, in front of all of it
-  const k = 3, ox = 4, P = (x, y, w, h, col) => R(ox + x * k, fy - (y + h) * k, w * k, h * k, col);
+  const ox = 4, P = (x, y, w, h, col) => R(ox + x * k, fy - (y + h) * k, w * k, h * k, col);
   P(-1, 0, 2, 14, '#2a3a78'); P(-1, 4, 13, 2, '#2a3a78');
   bmp(frame('sit'), SP, ox + 2 * k, fy - 24 * k, false, k);
   P(14, 0, 1, 4, C.cream); P(14, 0, 3, 1, C.tan);
   if (blink()) R(ox + 2 * k + 7 * k, fy - 24 * k + 5 * k, 6 * k, 2 * k, C.visor);
-  ticks(ox + 30, fy - 24 * k - 4, C.signal);
-  for (let i = 0; i < 3; i++) R(60 + i * 5, fy - 40 - ((t * 6 | 0) % 3 === i ? 2 : 0), 2, 2, C.ink);   // nothing to share
+  if (c.phase === 'pick') { ticks(ox + 10 * k, fy - 24 * k - 4, C.signal); if (c.t < 3 && (t * 6 | 0) % 2) text('…', ox + 22 * k, fy - 18 * k, C.ink); }
+  else if (c.phase === 'clock' || c.phase === 'wait') for (let i = 0; i < 3; i++) R(ox + 20 * k + i * 5, fy - 13 * k - ((t * 6 | 0) % 3 === i ? 2 : 0), 2, 2, C.ink);   // waiting
 }
 
 /* ---------- ending two: go back down and do the onboarding yourself ---------- */

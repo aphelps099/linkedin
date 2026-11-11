@@ -159,7 +159,7 @@ function act() {
   else if (m === 'post') S.postButton();
   else if (m === 'meeting') S.meetingKey(' ');
   else if (m === 'roof') S.skipRoof();
-  else if (m === 'call') S.skipCall();
+  else if (m === 'call') S.callKey(' ');
   else if (m === 'onboard') S.advanceOnboard();
 }
 const KEYMAP = { ArrowLeft:'left', a:'left', A:'left', ArrowRight:'right', d:'right', D:'right', ArrowUp:'jump', w:'jump', W:'jump', ' ':'jump' };
@@ -171,6 +171,7 @@ addEventListener('keydown', e => {
   if (G.paused) { if ((e.key === ' ' || e.key === 'Enter') && !onButton) { e.preventDefault(); pause(false); } return; }
   if (G.mode === 'play') { const k = KEYMAP[e.key]; if (k) { e.preventDefault(); src.kb[k] = true; sync(); } return; }
   if (G.mode === 'meeting' && '123'.includes(e.key)) { e.preventDefault(); if (!e.repeat) S.meetingKey(e.key); return; }
+  if (G.mode === 'call' && '123'.includes(e.key)) { e.preventDefault(); if (!e.repeat) S.callKey(e.key); return; }
   if (e.key === ' ' || e.key === 'Enter') { if (onButton) return; e.preventDefault(); if (!e.repeat) act(); }
   else if (KEYMAP[e.key]) e.preventDefault();
 });
@@ -197,8 +198,9 @@ let taps = 0;
 $('screen').addEventListener('click', e => {
   if (e.target.closest('button, [role="button"], .post')) return;
   const m = G.mode;
-  if (m === 'intro' || m === 'roof' || m === 'call' || m === 'onboard') act();
+  if (m === 'intro' || m === 'roof' || m === 'onboard') act();
   else if (m === 'meeting') S.tapMeeting();
+  else if (m === 'call') S.tapCall();
   else if (m === 'title' && ++taps % 5 === 0) { Score.start(); setTimeout(() => Score.voice('tagline'), 250); toast('SOUND LIKE YOU MEAN BUSINESS', 2.4); }
 });
 

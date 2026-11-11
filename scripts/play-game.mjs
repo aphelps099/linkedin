@@ -30,6 +30,8 @@ function installPilot() {
     run(legs) { B.queue = legs.slice(); B.leg = null; B.result = null; B.mode = 'route'; },
     boss() { B.queue = []; B.leg = null; B.result = null; B.mode = 'boss'; },
     stop() { B.queue = []; B.leg = null; B.mode = 'route'; } };
+  // If he does get rung into a meeting, he says something agreeable, and the meeting ends.
+  setInterval(() => { if (SYN.state === 'call') { const b = document.querySelector('#mPick button:not(.fact)'); if (b) b.click(); } }, 250);
   const cell = p => ({ cx:Math.floor(p.x / 8), cy:Math.round(p.y / 8) });
   const steer = (keys, p, tx, slack = .4) => { const dx = tx - p.x, stop = p.vx * p.vx / 3000; keys.left = dx < -(stop + slack); keys.right = dx > stop + slack; };
   SYN.hook = (keys, F) => {

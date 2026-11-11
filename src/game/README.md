@@ -13,7 +13,7 @@ The frozen v1 prototype is kept, untouched, in `design_handoff_synergy_exe/`.
 | --- | --- |
 | 01 Break room | Four lines of dialogue. The fact gets 0 reactions. |
 | 02 Open plan | Learn to move, jump and bounce. Rolling chairs. Desk 1: a post that keeps the fact. |
-| 03 Meetings | Kevin takes credit for your last phrase; land on him to take it back. Two rooms with a meeting in progress: move while the host is looking and the call rings, Synergy is pulled in front of the screen, and the scene cuts to the meeting from the inside, 47 people watching. A hop straight up is always allowed. |
+| 03 Meetings | Kevin takes credit for your last phrase; land on him to take it back. Two rooms with a meeting in progress: move while the host is looking and the call rings, Synergy is pulled in front of the screen, and the scene cuts to the meeting from the inside. "Just a few more minutes while everyone else gets here", five minutes pass in a blink, and then the question, out loud: "Anyone have something to share for the good of the group?" A share that lands adjourns that room's meeting for good. The fact, or silence, sends him back to the door. A hop straight up is always allowed. |
 | 04 Boardroom | The meeting he cannot walk around. Three shares that land, or the fact three times until someone listens. |
 | 05 Executive | The VP of Reactions ("Optimize the onboarding."). Dodge the action items, wait for "out of office", land on him. Desk 2: optimize the fact, or stand by it. |
 | Roof, or back down | Optimize it ("Proud to be optimizing the onboarding process."): the ship, the launch, and the onboarding is still a PDF. Keep the fact: take the lift down and onboard the new hire in person. It takes one minute. |
@@ -77,7 +77,7 @@ web directory). Nothing in the game calls the server.
 
 ## Console
 
-`SYN` in the console: `SYN.state`, `SYN.run`, `SYN.floor`, `SYN.loaded()` (13 voice takes once
+`SYN` in the console: `SYN.state`, `SYN.run`, `SYN.floor`, `SYN.loaded()` (16 voice takes once
 sound has started), `SYN.go('floor', { i:3 })` to step out on a floor.
 
 ## Not verified

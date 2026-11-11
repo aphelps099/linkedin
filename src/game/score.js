@@ -51,9 +51,12 @@ function init() {
   loadVoices();
 }
 
-const voiceUrl = k => new URL(`../cutting-room/sounds/film-voices/${VOICES[k]}.mp3`, location.href).href;
+// The meeting's own lines, public/game/voices/: the site's robot voice, heard through a laptop speaker.
+const CALLS = { minutes:'meeting-minutes', anyone:'meeting-anyone' };
+const voiceUrl = k => new URL(CALLS[k] ? `voices/${CALLS[k]}.mp3` : `../cutting-room/sounds/film-voices/${VOICES[k]}.mp3`, location.href).href;
+const ALL = [...Object.keys(VOICES), ...Object.keys(CALLS)];
 function loadVoices() {
-  for (const k in VOICES) {
+  for (const k of ALL) {
     fetch(voiceUrl(k)).then(r => r.ok ? r.arrayBuffer() : Promise.reject(r.status))
       .then(a => new Promise((ok, no) => ac.decodeAudioData(a, ok, no)))
       .then(b => { buf[k] = b; }, () => {});   // a missing take is silence, never an error
@@ -155,8 +158,8 @@ export const Score = {
   toggle() { on = !on; if (ac) master.gain.setTargetAtTime(on ? .9 : 0, ac.currentTime, .03); return on; },
   setOn(v) { if (v !== on) this.toggle(); },
   loaded() { return Object.keys(buf).length; },
-  voices: Object.keys(VOICES).length,
-  urls: () => Object.keys(VOICES).map(voiceUrl),
+  voices: ALL.length,
+  urls: () => ALL.map(voiceUrl),
   voice(name, delay = 0, v = 1) {
     if (!ac || ac.state !== 'running' || !buf[name]) return 0;
     const s = ac.createBufferSource(), g = ac.createGain(); s.buffer = buf[name]; g.gain.value = v;
@@ -197,6 +200,7 @@ export const Score = {
       case 'bosshit': hit('impact', t, .7); hit('gang', t + .05, .6); hit('gang', t + .3, .5); break;
       case 'ding': hit('chime', t, .4, fx, m(91)); hit('chime', t + .22, .4, fx, m(86)); break;
       case 'count': I.tick(ac, fx, t, .5, { accent:true }); hit('rim', t, .3); break;
+      case 'tick': I.tick(ac, fx, t, .4, { accent:i % 2 === 0 }); break;
       case 'launch': I.sawRiser(ac, fx, t, 2.6, 45, 81, .09); I.subDrop(ac, fx, t + 2.5, .6); hit('crash', t + 2.5, .6); hit('impact', t + 2.5, .8); break;
       case 'fix': I.tick(ac, fx, t, .5); hit('rim', t + .02, .3); if (i % 2) hit('creak', t, .4, fx, { len:.2 }); break;
       case 'fixed': [0, 4, 7, 12, 16].forEach((n, j) => hit('chime', t + j * .1, .3, fx, m(79 + n))); hit('gang', t + .6, .5); break;
