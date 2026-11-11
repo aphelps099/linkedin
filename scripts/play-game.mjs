@@ -70,7 +70,7 @@ function installPilot() {
     if (b.state === 'dazed' && b.t > .5) {
       const side = b.x < F.px / 2 ? 1 : -1, ax = b.x + side * 31;
       if (p.ground && p.y === GROUND) { if (Math.abs(p.x - ax) > 2.5 || Math.abs(p.vx) > 30) steer(keys, p, ax, 1); else { keys.jump = true; keys[side > 0 ? 'left' : 'right'] = true; } }
-      else if (p.ground) { keys[ax > p.x ? 'right' : 'left'] = true; }
+      else if (p.ground) steer(keys, p, b.x, 1);                                   // on a platform: walk off its end and drop on him
       else { keys.jump = p.vy < 0; if (p.y < GROUND - 26 || p.vy < 0) steer(keys, p, b.x, 1.5); else steer(keys, p, ax, 1); }
     } else {
       if (p.ground && p.y === PLAT) steer(keys, p, home, 2);

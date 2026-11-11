@@ -28,9 +28,10 @@ export function enterFloor(i) {
   F.shots = [];
   F.zones = (def.zones || []).map(z => ({ x0:z.x * T, y0:z.y * T, x1:(z.x + z.w) * T, y1:(z.y + z.h) * T, name:z.name, phase:'idle', t:0, inside:false, entry:null }));
   F.screens = (def.decor || []).filter(d => d.k === 'screen').map(d => ({ x:d.x * T, y:d.y * T, zone:F.zones[d.zone] }));
-  F.revealed = false; F.printed = 0; F.atPrinter = false; F.squish = 0; F.nag = 0;
+  F.revealed = false; F.printed = 0; F.atPrinter = false; F.squish = 0; F.nag = 0; F.atDesk = 0; F.deskTold = false;
   F.bossDone = !def.boss || !!run.posted[def.id];
-  F.boss = def.boss && !F.bossDone ? { x:F.boss.x, y:F.boss.y, dir:-1, state:'intro', t:2.4, hp:3, n:0, min:36, max:F.px - 22, line:'MY DOOR IS ALWAYS OPEN.' } : null;
+  // He charges all the way to the wall, clear of the platforms, so you can drop on him from their ends.
+  F.boss = def.boss && !F.bossDone ? { x:F.boss.x, y:F.boss.y, dir:-1, state:'intro', t:2.4, hp:3, n:0, min:20, max:F.px - 20, line:'MY DOOR IS ALWAYS OPEN.' } : null;
   if (F.bossDone) F.words.forEach(w => { w.hidden = false; });
   F.p = Object.assign(newBody(F.spawn.x, F.spawn.y), { stun:0, safe:0, knock:0, idle:0 });
   F.safe = { x:F.spawn.x, y:F.spawn.y };
@@ -134,7 +135,11 @@ export function stepWorld() {
 
   // the desk and the lift
   const d = F.desk, l = F.lift, posted = run.posted[F.def.id];
-  if (d && p.ground && !posted && F.bossDone && within(p, d.x + 4, d.y - 12, d.x + d.w - 4, d.y + 1)) { G.go('post', { desk:F.def.boss ? 2 : 1 }); return; }
+  // Posting takes intent: stop at the desk. Running past it does nothing, so the floor can still be explored.
+  if (d && p.ground && !posted && F.bossDone && within(p, d.x + 4, d.y - 12, d.x + d.w - 4, d.y + 1)) {
+    if (Math.abs(p.vx) < 6) { F.atDesk += dt; if (F.atDesk > .3) { G.go('post', { desk:F.def.boss ? 2 : 1 }); return; } }
+    else { F.atDesk = 0; if (!F.deskTold) { F.deskTold = true; hint('STOP AT THE DESK TO POST'); } }
+  } else F.atDesk = 0;
   if (l && p.ground && p.stun <= 0 && within(p, l.x + 3, l.y - 12, l.x + l.w - 3, l.y + 1)) {
     if (F.def.lift === 'post' && !posted) { if (F.nag <= 0) { F.nag = 2.2; toast(F.bossDone ? 'POST FIRST. THEN THE LIFT.' : 'LIFT LOCKED. ASK THE VP.'); Score.accent('bonk'); } }
     else { G.go('lift', {}); return; }
