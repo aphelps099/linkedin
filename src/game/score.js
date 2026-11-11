@@ -21,6 +21,7 @@ const VOICES = {
   tagline:'welcome-v2-tagline-e781d585',       // "Sound like you mean business."
   followup:'synthia-follow-up-6d0a5c00',       // "Then we will schedule a follow-up."
   loading:'printer-loading-82ee956c',          // "Loading."
+  onboarding:'welcome-v2-onboarding-phrase-c924e4b5', // "Optimize the onboarding."
 };
 
 // Each instrument's level at v = 1 against the v1 sample pack, measured, so v1's mix carries over.
@@ -122,6 +123,16 @@ function sched(s, t) {
     if (b % 2 === 0) I.rhodes(ac, music, t, [69 + PENT[(b / 2 + bar) % 10]], spb * 1.6, .7, { level:.045 }); }
 }
 
+// An incoming call: two bursts of a two-tone trill.
+function ring(t) {
+  for (let b = 0; b < 2; b++) for (let i = 0; i < 9; i++) {
+    const at = t + b * .5 + i * .038, o = ac.createOscillator(), g = ac.createGain();
+    o.type = 'triangle'; o.frequency.value = i % 2 ? 1568 : 1319;
+    g.gain.setValueAtTime(0, at); g.gain.linearRampToValueAtTime(.16, at + .004); g.gain.setValueAtTime(.16, at + .028); g.gain.linearRampToValueAtTime(0, at + .036);
+    o.connect(g); g.connect(fx); o.onended = () => { o.disconnect(); g.disconnect(); }; o.start(at); o.stop(at + .04);
+  }
+}
+
 function wake() {
   if (!ac || held || ac.state === 'running') return;
   mobile.resume().catch(() => {});
@@ -173,6 +184,7 @@ export const Score = {
       case 'printer': hit('printer', t, .9); break;
       case 'warn': hit('chime', t, .3, fx, m(88)); hit('chime', t + .16, .3, fx, m(88)); break;
       case 'caught': I.subDrop(ac, fx, t, .5); hit('creak', t + .1, .7, fx, { len:.9 }); break;
+      case 'ring': ring(t); break;
       case 'steal': hit('creak', t, .8, fx, { len:.35 }); hit('tom', t + .04, .5, fx, m(38)); break;
       case 'reclaim': [0, 4, 7, 12].forEach((n, j) => hit('mug', t + j * .07, .55, fx, m(76 + n))); break;
       case 'bop': hit('tom', t, .6, fx, m(48)); break;

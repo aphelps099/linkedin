@@ -2,7 +2,7 @@
 // way in (keys, touch, gamepad), pause, save, and the installable app.
 //
 //   title → break room → open plan → meeting rooms → boardroom → executive floor
-//         → the roof and the launch, or back down to fix the coffee machine.
+//         → the roof and the launch, or back down to onboard the new hire in person.
 
 import { G, $, reduce, coarse, newRun, clock } from './state.js';
 import { FLOORS } from './level.js';
@@ -20,7 +20,7 @@ let saved = load();
 function chrome() {
   const m = G.mode, def = FLOORS[G.floor], playing = m === 'play';
   $('mode').textContent = m === 'title' || m === 'intro' ? (m === 'intro' ? '01 Break room' : 'Career mode')
-    : m === 'roof' ? 'RF Roof' : m === 'coffee' ? '01 Break room' : m === 'end' ? 'Career mode' : `${def.no} ${def.name}`;
+    : m === 'roof' ? 'RF Roof' : m === 'onboard' ? '01 Break room' : m === 'end' ? 'Career mode' : `${def.no} ${def.name}`;
   $('pad').classList.toggle('idle', !playing);
   $('tray').hidden = !playing;
   $('pause').hidden = !(playing || m === 'meeting');
@@ -36,20 +36,21 @@ function go(mode, d = {}) {
     saved = save({ run:snapshot() });
     hud(); tray();
     if (def.scene === 'meeting') { G.mode = 'meeting'; S.enterMeeting(); }
-    else { enterFloor(d.i); G.mode = 'play'; G.fade = 1; toast(d.fresh ? 'LIGHTS OFF. START CLIMBING.' : `${def.no} ${def.name.toUpperCase()}`, 2.2); }
+    else { enterFloor(d.i); G.mode = 'play'; G.fade = 1; toast(d.fresh ? 'ONBOARDING IS SELF-GUIDED. CLIMB.' : `${def.no} ${def.name.toUpperCase()}`, 2.4); }
   }
   else if (mode === 'play') { G.mode = 'play'; Score.setLevel(FLOORS[G.floor].music + (run.collected.length >= 7 ? 1 : 0)); if (d.say) toast(d.say, 2.2); }
   else if (mode === 'post') { G.mode = 'post'; clearKeys(); S.enterPost(d); }
+  else if (mode === 'call') { G.mode = 'call'; clearKeys(); S.enterCall(d); }                // rung into a meeting; d.back() returns to the floor
   else if (mode === 'lift') {
     const from = FLOORS[G.floor];
     if (G.floor === TOP && run.ending) {
       const down = run.ending === 'b';
-      S.enterLift({ from, to:down ? { no:'01', name:'Break room' } : { no:'RF', name:'Roof' }, down, then:() => go(down ? 'coffee' : 'roof') });
-    } else S.enterLift({ from, to:FLOORS[G.floor + 1], then:() => go('floor', { i:G.floor + 1 }) });
+      S.enterLift({ from, to:down ? { no:'01', name:'Break room' } : { no:'RF', name:'Roof' }, down, note:down ? 'ONBOARDING: IN PERSON' : 'ONBOARDING: OPTIMIZED', then:() => go(down ? 'onboard' : 'roof') });
+    } else S.enterLift({ from, to:FLOORS[G.floor + 1], note:`ONBOARDING: STEP ${G.floor + 2} OF 5`, then:() => go('floor', { i:G.floor + 1 }) });
     G.mode = 'lift'; clearKeys();
   }
   else if (mode === 'roof') { G.mode = 'roof'; G.parts.length = 0; S.enterRoof(); }
-  else if (mode === 'coffee') { G.mode = 'coffee'; G.parts.length = 0; S.enterCoffee(); }
+  else if (mode === 'onboard') { G.mode = 'onboard'; G.parts.length = 0; S.enterOnboard(); }
   else if (mode === 'end') { G.mode = 'end'; finish(); }
   chrome();
 }
@@ -69,7 +70,7 @@ function title() {
     go:at ? `Continue • ${at.no}` : 'Start career', alt:at ? 'New career' : '', more:installLabel(),
     keys:(coarse ? 'Buttons below to move and jump.' : 'Arrow keys to move. Space to jump.') + best,
   });
-  $('real').textContent = 'the coffee machine broke.'; $('real').classList.remove('fixed');
+  $('real').textContent = 'the onboarding is a PDF.'; $('real').classList.remove('fixed');
   G.run = null; $('hw').textContent = '00'; $('hf').textContent = '01'; $('hr').textContent = '0'; tray();
   Score.setLevel(0);
 }
@@ -86,11 +87,11 @@ function finish() {
   Score.setLevel(0); if (b) Score.voice('honored', .5); else Score.accent('circle');
   const n = run.reactions.toLocaleString('en-US');
   showCard(b ? {
-    h:'You fixed the coffee machine.', p:`Final post: ${run.words} words, 01 fact, ${n} reactions. Nobody was promoted. Everybody has coffee.`,
-    sig:'Coffee: fixed.', go:'Circle back', alt:'Share the post',
+    h:'You onboarded someone.', p:`Final post: ${run.words} words, 01 fact, ${n} reactions. Nobody was promoted. Somebody knows where the door is.`,
+    sig:'Onboarding: one minute. No PDF.', go:'Circle back', alt:'Share the post',
   } : {
     h:'Access granted. Thought Leader.', p:`Final post: ${run.words} words, 00 facts, ${n} reactions. Same role. Higher altitude.`,
-    sig:'Coffee: still broken.', go:'Circle back', alt:'Share the post',
+    sig:'Onboarding: still a PDF.', go:'Circle back', alt:'Share the post',
   });
   $('cK').innerHTML = `Ending ${b ? 2 : 1} of 2 <b>•</b> Mugs ${run.mugs.length}/3 <b>•</b> ${clock(run.time)}` + (both ? '' : '<br>There is another way this ends.');
 }
@@ -157,7 +158,8 @@ function act() {
   else if (m === 'post') S.postButton();
   else if (m === 'meeting') S.meetingKey(' ');
   else if (m === 'roof') S.skipRoof();
-  else if (m === 'coffee') S.advanceCoffee();
+  else if (m === 'call') S.skipCall();
+  else if (m === 'onboard') S.advanceOnboard();
 }
 const KEYMAP = { ArrowLeft:'left', a:'left', A:'left', ArrowRight:'right', d:'right', D:'right', ArrowUp:'jump', w:'jump', W:'jump', ' ':'jump' };
 addEventListener('keydown', e => {
@@ -194,7 +196,7 @@ let taps = 0;
 $('screen').addEventListener('click', e => {
   if (e.target.closest('button, [role="button"], .post')) return;
   const m = G.mode;
-  if (m === 'intro' || m === 'roof' || m === 'coffee') act();
+  if (m === 'intro' || m === 'roof' || m === 'call' || m === 'onboard') act();
   else if (m === 'meeting') S.tapMeeting();
   else if (m === 'title' && ++taps % 5 === 0) { Score.start(); setTimeout(() => Score.voice('tagline'), 250); toast('SOUND LIKE YOU MEAN BUSINESS', 2.4); }
 });
@@ -223,7 +225,7 @@ function loop(now) {
     if (G.mode === 'play') { acc += dt; let n = 0; while (acc >= DT && n++ < 14 && G.mode === 'play') { acc -= DT; if (hook) hook(G.keys, floor()); stepWorld(); } if (n >= 14) acc = 0; }
     else { acc = 0; const m = G.mode;
       if (m === 'intro') S.stepIntro(dt); else if (m === 'post') S.stepPost(dt); else if (m === 'meeting') S.stepMeeting(dt);
-      else if (m === 'lift') S.stepLift(dt); else if (m === 'roof') S.stepRoof(dt); else if (m === 'coffee') S.stepCoffee(dt); }
+      else if (m === 'lift') S.stepLift(dt); else if (m === 'roof') S.stepRoof(dt); else if (m === 'call') S.stepCall(dt); else if (m === 'onboard') S.stepOnboard(dt); }
   }
   draw(G.paused ? 0 : dt);
 }
@@ -237,7 +239,8 @@ function draw(dt) {
   else if (m === 'meeting') S.drawMeeting();
   else if (m === 'lift') S.drawLift();
   else if (m === 'roof') S.drawRoof();
-  else if (m === 'coffee') S.drawCoffee(false);
+  else if (m === 'call') S.drawCall();
+  else if (m === 'onboard') S.drawOnboard(false);
   else if (m === 'end') S.drawEnd();
   drawParts(dt, cam ? cam.cx : 0, cam ? cam.cy : 0);
   if (m !== 'title' || G.toast) drawToast(dt);

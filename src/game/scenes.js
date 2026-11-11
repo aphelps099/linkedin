@@ -3,12 +3,12 @@
 // the two ways it can end.
 
 import { G, $, reduce, pad2, clock } from './state.js';
-import { FACT, WORDS, FILLER, INTRO, MEETING, FLOORS } from './level.js';
+import { FACT, OPTIMIZED, WORDS, FILLER, INTRO, MEETING, FLOORS } from './level.js';
 import { C, SP, HEAD, frame, PERSON, KEV, LIN, PEOPLE, ICONS, ICON_KEYS, PEG5, avatar } from './art.js';
 import { pen, unitsOf, burst, sparks, hud, toast } from './ui.js';
 import { Score } from './score.js';
 
-const { R, wire, bmp, text, ticks, chip } = pen;
+const { R, wire, bmp, text, ticks, chip, camera } = pen;
 
 /* ---------- shared set pieces ---------- */
 function litRoom(fy) {
@@ -17,21 +17,24 @@ function litRoom(fy) {
   for (let x = 0; x < W; x += 12) R(x, fy + 6 + (x / 12 % 2) * 6, 6, 1, C.carpet2);
   R(22, 0, 40, 3, C.ink); R(24, 3, 36, 2, '#fff6cf'); R(100, 0, 40, 3, C.ink); R(102, 3, 36, 2, '#fff6cf');
 }
-// state: 'broken' blinks a warning, 'fixed' shows a green light
-function coffee(x, fy, state = 'broken') {
-  R(x, fy - 46, 22, 24, C.ink); R(x + 3, fy - 42, 16, 6, '#3a4672'); R(x + 5, fy - 32, 12, 8, '#0d1226');
-  if (state === 'fixed') { R(x + 13, fy - 41, 7, 9, C.led); R(x + 15, fy - 38, 3, 3, C.ink); }
-  else { R(x + 13, fy - 41, 7, 9, (G.t * 2 | 0) % 2 ? C.signal : '#b89c1f'); R(x + 16, fy - 39, 1, 4, C.ink); R(x + 16, fy - 34, 1, 1, C.ink); }
+// Break room furniture. Nobody is talking about it.
+function coffee(x, fy) {
+  R(x, fy - 46, 22, 24, C.ink); R(x + 3, fy - 42, 16, 6, '#3a4672'); R(x + 5, fy - 32, 12, 8, '#0d1226'); R(x + 16, fy - 40, 2, 2, C.led);
 }
-function breakRoom(fy, state) {
+function breakRoom(fy) {
   litRoom(fy);
   R(6, fy - 92, 42, 46, C.ink); R(8, fy - 90, 38, 42, C.sky); R(26, fy - 90, 2, 42, C.ink);
   [[9, 18], [17, 28], [29, 14], [37, 22]].forEach(([x, h]) => R(x, fy - 48 - h, 7, h, '#6f9fd6'));
   if (fy > 150) { R(86, fy - 132, 66, 34, C.paper); wire(86, fy - 132, 66, 34, C.ink);
     text('EVERY SETBACK', 119, fy - 123, C.ink, { align:'center' }); text('IS CONTENT', 119, fy - 114, C.ink, { align:'center' }); R(104, fy - 104, 30, 1, C.signal); }
   R(106, fy - 22, 54, 22, C.wood); R(106, fy - 22, 54, 2, C.wood2); R(132, fy - 18, 1, 16, C.wood2);
-  coffee(110, fy, state);
+  coffee(110, fy);
   R(141, fy - 62, 12, 16, '#7fb3ff'); R(139, fy - 46, 16, 46, '#c8cede'); R(143, fy - 36, 8, 6, '#8e97b3');
+}
+// Sam, day one, holding the onboarding. All of it.
+function newHire(x, fy, pdf = true, flip = false) {
+  bmp(PERSON, PEOPLE.sam.pal, x, fy - 40, flip, 2);
+  if (pdf) { const px = flip ? x - 5 : x + 17; R(px, fy - 24, 8, 10, C.white); wire(px, fy - 24, 8, 10, C.ink); R(px + 2, fy - 21, 4, 1, C.grey); R(px + 2, fy - 19, 4, 1, C.grey); R(px + 2, fy - 17, 3, 1, C.grey); }
 }
 const blink = () => (G.t % 3.2) < .12;
 let sayU = 0, sayAt = -1;
@@ -78,7 +81,7 @@ export function stepIntro(dt) {
     if (intro.n >= s.text.length) finishLine(); }
 }
 export function drawIntro() {
-  const fy = G.H - sayUnits() - 12; breakRoom(fy, 'broken');
+  const fy = G.H - sayUnits() - 12; breakRoom(fy);
   const who = INTRO[intro.i].who;
   bmp(frame('idle'), SP, 12, fy - 40, false, 2);
   if (blink()) R(12 + 14, fy - 40 + 10, 12, 4, C.visor);
@@ -88,8 +91,8 @@ export function drawIntro() {
 
 /* ---------- the desk: write the post ---------- */
 const HEADLINE = { 'Associate':'Associate | Break Room Operations', 'Senior Associate':'Senior Associate | Cross-Functional Alignment',
-  'Thought Leader':'Thought Leader | Keynote Listener | Ex-Associate' };
-const FACT_HINT = 'Leadership prefers fewer specifics. Tap the highlighted line to cut it.';
+  'Thought Leader':'Thought Leader | Onboarding Optimization | Ex-Associate' };
+const FACT_HINT = 'Leadership prefers fewer specifics. Tap the highlighted line to optimize it.';
 let post = { desk:1, lines:[], phase:'typing', ch:0, cut:false, acc:0, pu:0 };
 
 function buildLines(desk) {
@@ -99,7 +102,14 @@ function buildLines(desk) {
   return [...s[0], { t:FACT, fact:true }, ...s[2], ...s[3], ...tags];
 }
 const total = () => post.lines.reduce((n, l) => n + l.t.length, 0);
-const liveLines = () => post.lines.filter(l => !(l.fact && post.cut));
+// What actually gets posted: once optimized, the fact is replaced by its LinkedIn translation.
+const liveLines = () => post.lines.map(l => l.fact && post.cut ? { t:OPTIMIZED } : l);
+function paintFact() {
+  const f = post.lines.find(l => l.fact).el; f.textContent = '';
+  if (post.cut) { const was = document.createElement('s'), now = document.createElement('span'); was.textContent = FACT; now.textContent = OPTIMIZED; f.append(was, now); }
+  else f.textContent = FACT;
+  f.classList.toggle('cut', post.cut); f.classList.toggle('live', !post.cut);
+}
 function meters() {
   $('pW').textContent = liveLines().reduce((n, l) => n + l.t.split(/\s+/).length, 0); $('pF').textContent = pad2(post.cut ? 0 : 1);
 }
@@ -130,14 +140,14 @@ function ready() {
   post.lines.forEach(l => { l.el.textContent = l.t; });
   $('post').classList.remove('drafting'); $('pGo').textContent = 'Post'; $('pAlt').hidden = true; $('pBody').scrollTop = 0;
   const f = post.lines.find(l => l.fact).el;
-  if (post.desk === 2) { f.classList.toggle('live', !post.cut); f.tabIndex = 0; f.setAttribute('role', 'button');
-    $('pNote').textContent = post.cut ? 'Fact removed. Nothing left to dispute.' : FACT_HINT; }
+  if (post.desk === 2) { paintFact(); f.tabIndex = 0; f.setAttribute('role', 'button');
+    $('pNote').textContent = post.cut ? 'Optimized. Nothing left to dispute.' : FACT_HINT; }
   else $('pNote').textContent = 'One fact detected. Acceptable at your level.';
 }
 function cutFact() {
   if (post.desk !== 2 || post.phase !== 'ready') return;
-  post.cut = !post.cut; const f = post.lines.find(l => l.fact).el; f.classList.toggle('cut', post.cut); f.classList.toggle('live', !post.cut);
-  $('pNote').textContent = post.cut ? 'Fact removed. Nothing left to dispute.' : FACT_HINT;
+  post.cut = !post.cut; paintFact();
+  $('pNote').textContent = post.cut ? 'Optimized. Nothing left to dispute.' : FACT_HINT;
   meters(); Score.accent(post.cut ? 'word' : 'bump', 3); if (post.cut) Score.voice('optimized', .15);
 }
 function publish() {
@@ -162,7 +172,7 @@ function standBy() {
   if (post.phase !== 'revise') return;
   const run = G.run;
   post.phase = 'done'; post.kept = true; run.reactions += post.target; hud();
-  if (run.honest) { const li = commentRow('arj', 'It is broken. I checked.'); $('pC').appendChild(li); $('pC').scrollTop = 1e4; $('pCm').textContent = '2 comments'; }
+  if (run.honest) { const li = commentRow('arj', 'It is a PDF. I checked.'); $('pC').appendChild(li); $('pC').scrollTop = 1e4; $('pCm').textContent = '2 comments'; }
   $('pNote').textContent = 'No promotion. The lift only goes down.'; $('pGo').textContent = 'Go back down'; $('pAlt').hidden = true;
   Score.accent('lights');
 }
@@ -213,7 +223,6 @@ export function drawPost() {
   if (k === 3) { R(108, fy - 150, 44, 46, C.ink); R(110, fy - 148, 40, 42, C.sky); R(129, fy - 148, 2, 42, C.ink);
     [[112, 16], [120, 26], [133, 12], [141, 20]].forEach(([x, h]) => R(x, fy - 106 - h, 7, h, '#6f9fd6'));
     R(6, fy - 112, 34, 2, C.wood2); coffee(12, fy - 112); }
-  else coffee(4, fy);
   P(-3, 0, 2, 14, '#2a3a78'); P(-3, 4, 13, 2, '#2a3a78');
   P(15, 10, 29, 1, C.wood2); P(17, 0, 1, 10, C.wood2); P(41, 0, 1, 10, C.wood2);
   P(29, 11, 8, 1, C.ink); P(32, 12, 2, 2, C.ink); P(25, 14, 16, 12, C.ink); P(26, 15, 14, 10, '#10204f');
@@ -278,7 +287,7 @@ export function pick(i) {
   }
 }
 function wrap() {
-  say('Linda, Governance', 'lin', meet.facts >= 3 ? 'Noted. Facilities has a form for that. Meeting adjourned.' : MEETING.wrap, () => {
+  say('Linda, Governance', 'lin', meet.facts >= 3 ? MEETING.noted : MEETING.wrap, () => {
     meet.phase = 'out'; $('mGo').hidden = false; $('mR').textContent = meet.facts >= 3 ? 'Meeting survived. Honestly.' : 'Meeting survived.'; Score.accent('ding'); });
 }
 export const leaveMeeting = () => { $('meet').hidden = true; G.go('lift', {}); };
@@ -314,7 +323,7 @@ export function drawMeeting() {
   if (gy > 12) { R(40, gy, 108, 46, C.ink);
     for (let i = 0; i < 4; i++) for (let j = 0; j < 2; j++) { const x = 43 + i * 26, y = gy + 3 + j * 21; R(x, y, 24, 19, '#2c3558');
       if (i === 1 && j === 1) text('MUTED', x + 12, y + 7, '#55608a', { align:'center' }); else { R(x + 8, y + 3, 8, 7, '#55608a'); R(x + 5, y + 11, 14, 8, '#55608a'); } }
-    R(92, gy + 46, 4, 6, C.ink); }
+    R(92, gy + 46, 4, 6, C.ink); camera(42, gy - 10, C.ink); text('ALL-HANDS', 54, gy - 9, C.ink); text('47 ON THE CALL', 148, gy - 9, C.tan, { align:'right' }); }
   // the table and who is at it
   for (const s of SEATS) { const hop = m.speaker === s.id && m.n < m.line.length && (t * 9 | 0) % 2 ? 1 : 0;
     bmp(PERSON.slice(0, 13), PEOPLE[s.id].pal, s.x, fy - 54 - hop, s.id === 'lin' || s.id === 'rec', 2); if (m.speaker === s.id) ticks(s.x + 10, fy - 60, C.ink); }
@@ -328,8 +337,8 @@ export function drawMeeting() {
 
 /* ---------- the lift ---------- */
 let lift = null;
-export function enterLift({ from, to, down, then }) {
-  lift = { t:0, from, to, down, then, len:reduce ? 1.1 : 2.3, rang:false };
+export function enterLift({ from, to, down, then, note = '' }) {
+  lift = { t:0, from, to, down, then, note, len:reduce ? 1.1 : 2.3, rang:false };
   Score.duck(true); Score.watch(false); G.fade = .6;
 }
 export function stepLift(dt) {
@@ -350,6 +359,7 @@ export function drawLift() {
   if (!arrived) { const ax = W / 2, ay = mid - 74 + (l.down ? 6 : 0), s = l.down ? -1 : 1, b = (t * 4 | 0) % 2;
     for (let i = 0; i < 4; i++) R(ax - i, ay + i * s + (b ? s : 0), 1 + i * 2, 1, C.signal); }
   text((arrived ? l.to.name : l.down ? 'Going down' : 'Going up').toUpperCase(), W / 2, mid + 40, arrived ? C.cream : C.dim, { align:'center' });
+  if (l.note) text(l.note, W / 2, mid + 52, C.dim, { align:'center' });
 }
 
 /* ---------- ending one: the roof, the ship, the launch ---------- */
@@ -393,69 +403,125 @@ export function drawRoof() {
     text('HIGHER ALTITUDE.'.slice(0, Math.ceil(b * 16)), W / 2, H * .36 + 20, C.signal, { font:PEG5, k:1, align:'center' }); }
 }
 
-/* ---------- ending two: go back down and fix it ---------- */
-const FIXES = 5;
-const AFTER = [
-  { who:'kev', name:'Kevin, Partnerships', text:'Is there oat milk?', react:'+1 reaction' },
-  { who:'lin', name:'Linda, Governance', text:'Finally.', react:'+1 reaction' },
-  { who:'syn', name:'Synergy', text:'The coffee machine works.', react:'Facts: 01' },
+/* ---------- called on: the meeting, from the inside ---------- */
+// Moving under the host's eye in a meeting room rings Synergy into the call. He is put in front of
+// the screen, in profile, with everyone looking. Then he is sent back to the door with the notes.
+const CALL = [
+  { name:'Linda, Governance', text:'Synergy. Anything to share?' },
+  { name:'Linda, Governance', text:'Great. We will schedule a follow-up.', voice:'followup' },
 ];
-let fix = null;
-export function enterCoffee() {
-  fix = { t:0, phase:'walk', n:0, i:0, typed:0, done:false, jolt:0 };
-  Score.setLevel(0); Score.duck(false); G.fade = 1;
-  $('say').hidden = false; $('sayWho').textContent = 'Synergy'; $('sayLine').textContent = FACT; $('sayR').textContent = ''; $('sayHint').textContent = '';
+const CROWD = ['kev', 'arj', 'rec', 'sam', 'pat', 'kev', 'lin', 'rec', 'arj', 'sam', 'pat', 'rec', 'kev', 'arj', 'sam', 'pat'];
+let call = null;
+export function enterCall({ back }) {
+  call = { t:0, i:0, n:0, hold:0, back };
+  Score.setLevel(6); Score.watch(false); Score.duck(false); G.fade = 1;
+  $('say').hidden = false; $('sayHint').textContent = 'Tap to skip'; $('sayR').textContent = '47 people are watching'; paintCall();
 }
-function paintFix() {
-  const f = fix;
-  if (f.phase === 'fix') { $('sayWho').textContent = 'Synergy'; $('sayLine').textContent = ['It is the filter.', 'It was always the filter.', 'Nobody looked.', 'Almost.', 'One more.'][Math.min(4, f.n)];
-    $('sayR').textContent = `Fixed ${f.n} of ${FIXES}`; $('sayHint').textContent = 'Tap or press space to fix'; }
+function paintCall() { const c = CALL[call.i]; $('sayWho').textContent = c.name; $('sayLine').textContent = c.text.slice(0, call.n | 0); }
+function leaveCall() { const back = call.back; call = null; $('say').hidden = true; G.parts.length = 0; back(); }
+export function skipCall() { if (call && call.t > .5) leaveCall(); }
+export function stepCall(dt) {
+  const c = call, line = CALL[c.i]; c.t += dt;
+  if (c.n < line.text.length) { const b = c.n | 0; c.n += dt * 34; if ((c.n | 0) !== b) { if ((c.n | 0) % 2 === 0) Score.accent('type'); paintCall(); } return; }
+  c.hold += dt;
+  if (c.hold < (c.i ? 1.5 : .9)) return;
+  if (c.i < CALL.length - 1) { c.i++; c.n = 0; c.hold = 0; if (CALL[c.i].voice) Score.voice(CALL[c.i].voice, .1); burst(104, 60, 6, 90); paintCall(); }
+  else leaveCall();
+}
+export function drawCall() {
+  const c = call, W = G.W, t = G.t, fy = Math.max(96, G.H - sayUnits() - 12);
+  litRoom(fy);
+  // the call: sixteen faces you can see, and a number for the rest
+  const rows = fy > 190 ? 4 : fy > 164 ? 3 : 2, sx = 49, sw = 110, sh = rows * 27 + 13, sy = fy - 70 - sh < 20 ? 20 : fy - 70 - sh;
+  if (sy > 34) { R(55, sy - 18, 98, 11, C.ink); R(58, sy - 15, 5, 5, (t * 2 | 0) % 2 ? C.signal : '#7a6a1e'); text('MEETING IN PROGRESS', 67, sy - 15, C.cream); }
+  R(sx, sy, sw, sh, C.ink);
+  camera(sx + 4, sy + 3, '#7fa8ff'); text('ALL-HANDS', sx + 16, sy + 4, C.cream); text('47', sx + sw - 4, sy + 4, C.signal, { align:'right' });
+  const speaking = c.n < CALL[c.i].text.length;
+  for (let j = 0; j < rows; j++) for (let i = 0; i < 4; i++) {
+    const n = j * 4 + i, x = sx + 2 + i * 27, y = sy + 12 + j * 27, host = n === 1, you = n === rows * 4 - 2;
+    R(x, y, 25, 25, host ? C.signal : you ? C.cobalt : '#2c3558'); R(x + 1, y + 1, 23, 23, you ? '#10204f' : '#39446e');
+    if (you) { bmp(HEAD, SP, x + 5, y + 6, true, 1); text('YOU', x + 3, y + 18, C.signal); }
+    else if (n === 6) text('MUTED', x + 13, y + 10, '#8794b8', { align:'center' });
+    else { const id = host ? 'lin' : CROWD[n % CROWD.length], hop = host && speaking && (t * 9 | 0) % 2 ? 1 : 0;
+      bmp(PERSON.slice(0, 10), PEOPLE[id].pal, x + 3, y + 4 - hop, (n % 3) === 0, 2);
+      if (!host && (t * .7 + n * 1.3 | 0) % 5 === 0) R(x + 19, y + 3, 3, 3, C.led); }
+  }
+  R(sx + 50, sy + sh, 10, 4, C.ink);
+  // Synergy, in profile, in front of all of it
+  const k = 3, ox = 4, P = (x, y, w, h, col) => R(ox + x * k, fy - (y + h) * k, w * k, h * k, col);
+  P(-1, 0, 2, 14, '#2a3a78'); P(-1, 4, 13, 2, '#2a3a78');
+  bmp(frame('sit'), SP, ox + 2 * k, fy - 24 * k, false, k);
+  P(14, 0, 1, 4, C.cream); P(14, 0, 3, 1, C.tan);
+  if (blink()) R(ox + 2 * k + 7 * k, fy - 24 * k + 5 * k, 6 * k, 2 * k, C.visor);
+  ticks(ox + 30, fy - 24 * k - 4, C.signal);
+  for (let i = 0; i < 3; i++) R(60 + i * 5, fy - 40 - ((t * 6 | 0) % 3 === i ? 2 : 0), 2, 2, C.ink);   // nothing to share
+}
+
+/* ---------- ending two: go back down and do the onboarding yourself ---------- */
+const TOUR = ['This is the door. It opens.', 'This is your desk. Kevin sits behind you.', 'Kevin will take credit. Land on him.', 'The printer is still loading.', 'That is everything.'];
+const AFTER = [
+  { who:'sam', name:'Sam, New hire', text:'That took one minute.', react:'+1 reaction' },
+  { who:'lin', name:'Linda, Governance', text:'We did this last year.', react:'+1 reaction', voice:'linda' },
+  { who:'syn', name:'Synergy', text:'The onboarding works.', react:'Facts: 01' },
+];
+let tour = null;
+export function enterOnboard() {
+  tour = { t:0, phase:'walk', n:0, i:0, typed:0, done:false, jolt:0 };
+  Score.setLevel(0); Score.duck(false); G.fade = 1;
+  $('say').hidden = false; $('sayWho').textContent = 'Sam, New hire'; $('sayLine').textContent = 'Hi. It is my first day. I have a PDF.'; $('sayR').textContent = ''; $('sayHint').textContent = '';
+}
+function paintTour() {
+  const f = tour;
+  if (f.phase === 'show') { $('sayWho').textContent = 'Synergy'; $('sayLine').textContent = f.n ? TOUR[f.n - 1] : 'Welcome. You already know how to work.';
+    $('sayR').textContent = `Onboarded ${f.n} of ${TOUR.length}`; $('sayHint').textContent = 'Tap or press space to onboard'; }
   else if (f.phase === 'talk') { const s = AFTER[f.i]; $('sayWho').textContent = s.name; $('sayLine').textContent = s.text.slice(0, f.typed | 0); $('sayR').textContent = f.done ? s.react : ''; $('sayHint').textContent = 'Tap or press space'; }
 }
-export function advanceCoffee() {
-  const f = fix; if (!f) return;
-  if (f.phase === 'fix') {
-    f.n++; f.jolt = .12; Score.accent('fix', f.n); sparks(121, G.H - sayUnits() - 12 - 30, 5, false);
-    if (f.n >= FIXES) { f.phase = 'pour'; f.t = 0; Score.accent('pour'); $('sayLine').textContent = '…'; $('sayR').textContent = ''; $('sayHint').textContent = ''; }
-    else paintFix();
+export function advanceOnboard() {
+  const f = tour; if (!f) return;
+  if (f.phase === 'show') {
+    f.n++; f.jolt = .12; Score.accent('fix', f.n); sparks(104, G.H - sayUnits() - 12 - 44, 5, false); paintTour();
+    if (f.n >= TOUR.length) { f.phase = 'drop'; f.t = 0; $('sayHint').textContent = ''; }
   } else if (f.phase === 'talk') {
     const s = AFTER[f.i];
     if (!f.done) { f.typed = s.text.length; f.done = true; landLine(); return; }
-    if (f.i < AFTER.length - 1) { f.i++; f.typed = 0; f.done = false; paintFix(); return; }
+    if (f.i < AFTER.length - 1) { f.i++; f.typed = 0; f.done = false; if (AFTER[f.i].voice) Score.voice(AFTER[f.i].voice, .1); paintTour(); return; }
     $('say').hidden = true; G.go('end', {});
   }
 }
 function landLine() {
-  const s = AFTER[fix.i]; paintFix();
-  if (s.who !== 'syn') { G.run.reactions += 1; hud(); burst(s.who === 'kev' ? 64 : 92, G.H - sayUnits() - 60, 1, 6); Score.accent('react'); }
+  const s = AFTER[tour.i]; paintTour();
+  if (s.who !== 'syn') { G.run.reactions += 1; hud(); burst(s.who === 'sam' ? 104 : 30, G.H - sayUnits() - 60, 1, 6); Score.accent('react'); }
 }
-export function stepCoffee(dt) {
-  const f = fix; f.t += dt; if (f.jolt > 0) f.jolt -= dt;
-  if (f.phase === 'walk' && f.t > 1.5) { f.phase = 'fix'; paintFix(); }
-  else if (f.phase === 'pour' && f.t > 1.5) { f.phase = 'talk'; f.i = 0; f.typed = 0; f.done = false; Score.accent('fixed');
-    $('real').textContent = 'the coffee machine works.'; $('real').classList.add('fixed'); paintFix(); }
-  else if (f.phase === 'talk' && !f.done) { const s = AFTER[f.i], b = f.typed | 0; f.typed += dt * 34; if ((f.typed | 0) !== b) { if ((f.typed | 0) % 2 === 0) Score.accent('type'); paintFix(); }
+export function stepOnboard(dt) {
+  const f = tour; f.t += dt; if (f.jolt > 0) f.jolt -= dt;
+  if (f.phase === 'walk' && f.t > 1.7) { f.phase = 'show'; Score.voice('welcome', .1); paintTour(); }
+  else if (f.phase === 'drop' && f.t > 1.4) { f.phase = 'talk'; f.i = 0; f.typed = 0; f.done = false; Score.accent('fixed');
+    $('real').textContent = 'someone got onboarded.'; $('real').classList.add('fixed'); paintTour(); }
+  else if (f.phase === 'talk' && !f.done) { const s = AFTER[f.i], b = f.typed | 0; f.typed += dt * 34; if ((f.typed | 0) !== b) { if ((f.typed | 0) % 2 === 0) Score.accent('type'); paintTour(); }
     if (f.typed >= s.text.length) { f.done = true; landLine(); } }
 }
-export function drawCoffee(final) {
-  const f = fix, fy = final ? endFloor() : G.H - sayUnits() - 12, t = G.t;
-  const working = final || (f && (f.phase === 'talk' || (f.phase === 'pour' && f.t > 1.1)));
-  breakRoom(fy, working ? 'fixed' : 'broken');
-  const sx = final ? 84 : f.phase === 'walk' ? -10 + Math.min(1, f.t / 1.4) * 94 : 84;
-  const pose = !final && f.phase === 'walk' && f.t < 1.4 ? ((t * 10 | 0) % 2 ? 'runA' : 'runB') : 'idle';
+export function drawOnboard(final) {
+  const f = tour, fy = final ? endFloor() : G.H - sayUnits() - 12, t = G.t;
+  breakRoom(fy);
+  const done = final || (f && (f.phase === 'talk' || f.phase === 'drop'));
+  const sx = final ? 50 : f.phase === 'walk' ? -12 + Math.min(1, f.t / 1.5) * 62 : 50;
+  const pose = !final && f.phase === 'walk' && f.t < 1.5 ? ((t * 10 | 0) % 2 ? 'runA' : 'runB') : 'idle';
+  if (final || (f.phase === 'talk' && f.i >= 1)) bmp(PERSON, LIN, 14, fy - 40, false, 2);
   bmp(frame(pose), SP, sx, fy - 40 - (f && f.jolt > 0 ? 2 : 0), false, 2);
   if (blink()) R(sx + 14, fy - 30, 12, 4, C.visor);
-  if (f && f.phase === 'fix') for (let i = 0; i < FIXES; i++) R(110 + i * 5, fy - 52, 3, 3, i < f.n ? C.led : C.ink);
-  if (f && f.phase === 'pour') { const h = Math.min(8, Math.floor(f.t * 7)); R(120, fy - 32, 2, h, '#5a3b22'); }
-  if (working) { R(118, fy - 27, 6, 3, C.white); for (let i = 0; i < 3; i++) R(119 + i * 2, fy - 31 - ((t * 6 + i * 3 | 0) % 5), 1, 1, C.grey); }
-  if (final || (f && f.phase === 'talk')) { bmp(PERSON, KEV, 46, fy - 40, false, 2); if (final || f.i >= 1) bmp(PERSON, LIN, 20, fy - 40, false, 2);
-    if (!final) { const who = AFTER[f.i].who; ticks(who === 'syn' ? sx + 16 : who === 'kev' ? 56 : 30, fy - 46, who === 'syn' ? C.cobalt : C.ink); } }
+  newHire(94, fy, !done, true);
+  if (done) { const d = final ? 1 : f.phase === 'drop' ? Math.min(1, f.t / .7) : 1; R(82, fy - 24 + Math.round(d * 21), 8, d >= 1 ? 3 : 10, C.white); wire(82, fy - 24 + Math.round(d * 21), 8, d >= 1 ? 3 : 10, C.ink); }
+  if (f && f.phase === 'show') for (let i = 0; i < TOUR.length; i++) R(92 + i * 5, fy - 50, 3, 3, i < f.n ? C.led : C.ink);
+  if (!final && f.phase === 'walk') text('?', 104, fy - 54, C.ink, { font:PEG5, align:'center' });
+  if (!final && f.phase === 'talk') { const who = AFTER[f.i].who; ticks(who === 'syn' ? sx + 16 : who === 'sam' ? 104 : 24, fy - 46, who === 'syn' ? C.cobalt : C.ink); }
 }
 
 /* ---------- the last card's backdrop ---------- */
 // The card's copy sits on the lower half, so the room is staged in the upper half.
 const endFloor = () => Math.round(G.H * .44);
 export function drawEnd() {
-  if (G.run && G.run.ending === 'b') { drawCoffee(true); return; }
-  const fy = endFloor(); breakRoom(fy, 'broken'); bmp(frame('idle'), SP, 12, fy - 40, false, 2); if (blink()) R(26, fy - 30, 12, 4, C.visor);
+  if (G.run && G.run.ending === 'b') { drawOnboard(true); return; }
+  // Synergy is in orbit. Sam is still here, with the PDF.
+  const fy = endFloor(); breakRoom(fy); newHire(40, fy, true);
+  if ((G.t % 4) < 2) text('…', 50, fy - 52, C.ink, { align:'center' });
 }

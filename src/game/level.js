@@ -13,7 +13,9 @@
 export const T = 8;
 export const EMPTY = 0, SOLID = 1, ONEWAY = 2, BALL = 3;
 
-export const FACT = 'The coffee machine broke.';
+// The one true thing Synergy says, and what it becomes once leadership has had a look at it.
+export const FACT = 'The onboarding is a PDF.';
+export const OPTIMIZED = 'Proud to be optimizing the onboarding process.';
 
 // slot: where the line lands in a post (0 opener, 2 body, 3 closer). say: the meeting version.
 export const WORDS = {
@@ -48,7 +50,8 @@ export const MEETING = {
   praise:['Love that.', 'So powerful.', 'Say more. Later.'],
   offline:'Let’s take that offline.',
   mute:'Synergy, you’re on mute.',
-  listened:'Wait. It IS broken.',
+  listened:'Wait. It IS a PDF.',
+  noted:'Noted. We will form a working group. Meeting adjourned.',
   wrap:'Great energy. Giving everyone four minutes back.',
 };
 
@@ -65,10 +68,10 @@ export const FLOORS = [
     id:'open-plan', no:'02', name:'Open plan', music:1, lift:'post', wall:'cubicles', mark:{ x:12, y:12, k:7 },
     words:['THRILLED', 'JOURNEY', 'HUMBLED'],
     signs:[
-      { x:7, y:24, t:'MOVE' }, { x:17, y:30, t:'JUMP' }, { x:12, y:20, t:'BOUNCE' },
+      { x:7, y:24, t:'STEP 1: MOVE' }, { x:17, y:30, t:'STEP 2: JUMP' }, { x:12, y:20, t:'STEP 3: BOUNCE' },
     ],
     decor:[
-      { k:'coffee', x:6, y:32 }, { k:'cooler', x:10, y:32 }, { k:'cubicle', x:24, y:32 },
+      { k:'poster', x:6, y:27, t:['WELCOME', 'SEE PDF'] }, { k:'cooler', x:19, y:32 }, { k:'cubicle', x:24, y:32 },
       { k:'plant', x:31, y:32 }, { k:'poster', x:3, y:15, t:['THERE IS NO I', 'IN SYNERGY'] }, { k:'cubicle', x:20, y:22 }, { k:'plant', x:29, y:22 },
       { k:'lamp', x:12, y:23 }, { k:'lamp', x:24, y:23 }, { k:'lamp', x:8, y:1, top:true }, { k:'lamp', x:20, y:1, top:true }, { k:'lamp', x:32, y:1, top:true },
       { k:'window', x:8, y:3, w:9, h:6, top:true }, { k:'window', x:22, y:3, w:9, h:6, top:true },
@@ -120,7 +123,7 @@ export const FLOORS = [
       { x:6, y:16, w:21, h:7, name:'Stand-up' },
       { x:10, y:8, w:21, h:7, name:'Sync' },
     ],
-    signs:[{ x:28, y:20, t:'HOLD STILL' }, { x:28, y:21, t:'WHEN WATCHED' }],
+    signs:[{ x:28, y:19, t:'STEP 4:' }, { x:28, y:20, t:'HOLD STILL' }, { x:28, y:21, t:'WHEN WATCHED' }],
     decor:[
       { k:'cubicle', x:6, y:32 }, { k:'plant', x:17, y:32 }, { k:'cubicle', x:25, y:32 },
       { k:'poster', x:16, y:27, t:['HANG IN THERE', 'UNTIL Q4'] }, { k:'lamp', x:8, y:24 }, { k:'lamp', x:20, y:24 },
@@ -144,7 +147,7 @@ export const FLOORS = [
       '#e.....................................#',
       '#====.............====.................#',
       '#......................................#',
-      '#.............c...........c........L...#',
+      '#.............c....................L...#',
       '#.....##################################',
       '#......................................#',
       '#===...................................#',

@@ -54,6 +54,7 @@ export const PEOPLE = {
   lin:{ n:'Linda', h:'Governance | Policy enthusiast', pal:LIN },
   arj:{ n:'Arjun', h:'Finance | Numbers person', pal:{ h:'#1d1d28', s:'#b98560', j:'#2f3a66', w:'#f4f4f4', t:'#8a6a00', p:'#27356b', k:'#151a30' } },
   rec:{ n:'Dana', h:'Talent Partner | Hiring rockstars', pal:{ h:'#a8672c', s:'#f0c9a4', j:'#7a2f4f', w:'#f4f4f4', t:'#f4f4f4', p:'#3a2a44', k:'#151a30' } },
+  sam:{ n:'Sam', h:'New hire | Day one', pal:{ h:'#3a2a1a', s:'#e8b98f', j:'#1f6bff', w:'#f4f4f4', t:'#ffe14a', p:'#27356b', k:'#151a30' } },
   pat:{ n:'Pat', h:'Thought Leadership | Offline', pal:{ h:'#9aa3b8', s:'#c9cfdd', j:'#9aa3b8', w:'#c9cfdd', t:'#c9cfdd', p:'#8e97b3', k:'#6a7288' } } };
 
 // The VP of Reactions. All face.
@@ -130,7 +131,9 @@ export function makePen(ctx) {
     R(x, y, w, 11, bg); wire(x, y, w, 11, edge); text(s, x + 4, y + 3, fg);
     return w;
   }
-  return { ctx, R, wire, bmp, mosaic, text, ticks, chip };
+  // A video call, as a sign: a camera body and its lens. 9 x 7.
+  const camera = (x, y, c) => { R(x, y + 1, 6, 5, c); R(x + 6, y + 3, 1, 1, c); R(x + 7, y + 2, 1, 3, c); R(x + 8, y + 1, 1, 5, c); };
+  return { ctx, R, wire, bmp, mosaic, text, ticks, chip, camera };
 }
 
 // A little portrait for the DOM (post header, comments).

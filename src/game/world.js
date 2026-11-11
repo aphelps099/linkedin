@@ -11,8 +11,8 @@ import { Score } from './score.js';
 let F = null;
 export const floor = () => F;
 
-const BOSS_LINES = ['LET’S ALIGN.', 'QUICK WIN?', 'BIG IF TRUE.', 'LOVE THE ENERGY.', 'TAKE THE L. LEARN.'];
-const PRINTER_LINES = ['PRINTER: LOADING.', 'PRINTER: STILL LOADING.', 'PRINTER: PLEASE ADVISE.'];
+const BOSS_LINES = ['OPTIMIZE THE ONBOARDING.', 'LET’S ALIGN.', 'QUICK WIN?', 'BIG IF TRUE.', 'LOVE THE ENERGY.'];
+const PRINTER_LINES = ['PRINTING: ONBOARDING.PDF', 'PAGE 1 OF 214. LOADING.', 'PRINTER: PLEASE ADVISE.'];
 
 /* ---------- arrive ---------- */
 export function enterFloor(i) {
@@ -97,9 +97,10 @@ export function stepWorld() {
 
   // things in the way
   for (const c of F.chairs) {
-    c.x += c.dir * 22 * dt;
+    c.x += c.dir * 26 * dt;
     if (c.x < c.min) { c.x = c.min; c.dir = 1; } else if (c.x > c.max - 9) { c.x = c.max - 9; c.dir = -1; }
-    if (within(p, c.x, c.y - 11, c.x + 9, c.y)) bump(p.x < c.x + 4.5 ? -1 : 1, 'OBSTACLE: CHAIR');
+    // A narrow box, so a hop straight up clears a chair: the way out when a meeting says hold still.
+    if (within(p, c.x + 1.5, c.y - 11, c.x + 7.5, c.y)) bump(p.x < c.x + 4.5 ? -1 : 1, 'OBSTACLE: CHAIR');
   }
   for (const kv of F.kevins) stepKevin(kv, dt);
   for (const b of F.inboxes) { b.t -= dt; if (b.t <= 0) { b.t = 2.6; F.shots.push({ kind:'mail', x:b.x + 9, y:b.y - 9, vx:70 * b.dir, vy:0, g:0, life:2.4 }); if (Math.abs(p.y - b.y) < 60 && Math.abs(p.x - b.x) < 150) Score.accent('mail'); } }
@@ -141,14 +142,19 @@ export function stepWorld() {
   camera(dt);
 }
 
+// Called on. The call rings, Synergy is pulled in front of the screen, and the scene cuts to the
+// meeting from the inside (scenes.js). Afterwards he is back at the door he came in by, taking notes.
 function calledOn(z) {
-  const p = F.p;
-  p.vx = 0; G.run.bumps++; buzz(60);
-  Score.accent('caught'); Score.voice('followup', .25);
-  F.freeze = { t:1.9, kind:'called', done() {
-    p.x = z.entry.x; p.y = z.entry.y; p.vx = p.vy = 0; p.ground = true; p.safe = 1;
-    z.phase = 'idle'; z.inside = false; Score.watch(false); G.fade = .7; camera(0, true); G.keys.left = G.keys.right = false;
-    toast('VOLUNTEERED: TAKING NOTES');
+  const p = F.p, scr = F.screens.find(s => s.zone === z);
+  G.run.bumps++; buzz([40, 70, 40]); Score.accent('ring'); Score.watch(false); G.toast = null;
+  if (scr) { sparks(p.x, p.y - 10, 8); p.x = scr.x + 28; p.y = z.y1; p.face = 1; sparks(p.x, p.y - 10, 8); }
+  p.vx = p.vy = 0; p.ground = true;
+  F.freeze = { t:1.05, kind:'ring', done() {
+    G.go('call', { back() {
+      p.x = z.entry.x; p.y = z.entry.y; p.vx = p.vy = 0; p.ground = true; p.stun = 0; p.safe = 1;
+      z.phase = 'idle'; z.inside = false; camera(0, true); G.keys.left = G.keys.right = false;
+      G.fade = .8; G.go('play', { say:'VOLUNTEERED: TAKING NOTES' });
+    } });
   } };
 }
 
@@ -184,7 +190,7 @@ function stepBoss(b, dt) {
   const p = F.p, run = G.run, face = () => { b.dir = p.x < b.x ? -1 : 1; };
   b.t -= dt;
   const to = (state, t, line = '') => { b.state = state; b.t = t; b.line = line; };
-  if (b.state === 'intro') { if (b.t <= 0) to('idle', 1.1, BOSS_LINES[0]); }
+  if (b.state === 'intro') { if (b.t <= 0) { to('idle', 1.6, BOSS_LINES[0]); Score.voice('onboarding', .05); } }
   else if (b.state === 'idle') { face(); if (b.t <= 0) { to('throw', 1.5, 'ACTION ITEMS.'); b.n = 3; b.next = .15; } }
   else if (b.state === 'throw') {
     face(); b.next -= dt;
@@ -307,17 +313,19 @@ export function drawWorld() {
   const X = x => Math.round(x) - cx, Y = y => Math.round(y) - cy;
   const seen = (x, y, m = 40) => x - cx > -m && x - cx < W + m && y - cy > -m && y - cy < H + m;
 
-  // the call on the wall
+  // the call on the wall: the host, six of the forty-seven, and a camera that is on
   for (const s of F.screens) {
-    if (!seen(s.x, s.y, 60)) continue;
-    const x = X(s.x), y = Y(s.y), z = s.zone, ph = z.phase, look = ph === 'watch', warn = ph === 'warn' && (t * 8 | 0) % 2;
-    R(x, y, 50, 30, C.ink);
-    for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) { const ax = x + 3 + (i ? 35 : 0), ay = y + 3 + j * 13; R(ax, ay, 12, 11, '#2c3558'); R(ax + 4, ay + 2, 4, 4, '#55608a'); R(ax + 2, ay + 7, 8, 4, '#55608a'); }
-    R(x + 17, y + 3, 16, 24, look || warn ? C.signal : '#2c3558'); R(x + 18, y + 4, 14, 22, '#39446e');
-    R(x + 21, y + 7, 8, 9, LIN_SKIN); R(x + 20, y + 5, 10, 3, '#2a2f45'); R(x + 19, y + 18, 12, 8, '#5d6788');
-    if (look) { const e = p.x < s.x + 25 ? 0 : 1; R(x + 22, y + 10, 2, 2, C.white); R(x + 26, y + 10, 2, 2, C.white); R(x + 22 + e, y + 10, 1, 2, C.ink); R(x + 26 + e, y + 10, 1, 2, C.ink); }
-    else { R(x + 22, y + 11, 2, 1, C.ink); R(x + 26, y + 11, 2, 1, C.ink); }
-    if (ph === 'warn') text('?', x + 25, y - 9, C.signal, { font:PEG5, align:'center' });
+    if (!seen(s.x, s.y, 70)) continue;
+    const x = X(s.x), y = Y(s.y), z = s.zone, ph = z.phase, look = ph === 'watch', ring = !!F.freeze && (t * 10 | 0) % 2, hot = look || ring || (ph === 'warn' && (t * 8 | 0) % 2);
+    R(x, y, 56, 34, C.ink);
+    pen.camera(x + 3, y + 2, hot ? C.signal : '#7fa8ff'); R(x + 15, y + 4, 2, 2, look ? C.signal : C.led); text('47', x + 53, y + 3, '#8794b8', { align:'right' });
+    R(x + 2, y + 10, 18, 22, hot ? C.signal : '#2c3558'); R(x + 3, y + 11, 16, 20, '#39446e');
+    R(x + 7, y + 15, 8, 9, LIN_SKIN); R(x + 6, y + 13, 10, 3, '#2a2f45'); R(x + 5, y + 25, 12, 6, '#5d6788');
+    if (look || ring) { const e = p.x < s.x + 11 ? 0 : 1; R(x + 8, y + 18, 2, 2, C.white); R(x + 12, y + 18, 2, 2, C.white); R(x + 8 + e, y + 18, 1, 2, C.ink); R(x + 12 + e, y + 18, 1, 2, C.ink); }
+    else { R(x + 8, y + 19, 2, 1, C.ink); R(x + 12, y + 19, 2, 1, C.ink); }
+    for (let j = 0; j < 2; j++) for (let i = 0; i < 4; i++) { const ax = x + 22 + i * 8, ay = y + 10 + j * 11, n = i + j * 4;
+      R(ax, ay, 7, 10, '#2c3558'); R(ax + 2, ay + 2, 3, 3, FACES[n]); R(ax + 1, ay + 6, 5, 4, n % 3 ? '#55608a' : '#6f7aa3'); }
+    if (ph === 'warn') text('?', x + 28, y - 9, C.signal, { font:PEG5, align:'center' });
   }
 
   // lift and desk
@@ -383,13 +391,14 @@ export function drawWorld() {
 
   // on camera
   const z = F.zones.find(q => q.inside);
-  if (F.freeze) { chip('SYNERGY. ANYTHING TO SHARE?', W / 2, 34, C.signal, C.signal); wire(0, 0, W, H, C.signal); wire(1, 1, W - 2, H - 2, C.signal); }
+  if (F.freeze) { const w = chip('   INCOMING CALL', W / 2, 22, C.signal, C.signal); if ((t * 10 | 0) % 2) pen.camera(Math.round(W / 2 - w / 2) + 4, 24, C.signal); wire(0, 0, W, H, C.signal); wire(1, 1, W - 2, H - 2, C.signal); }
   else if (z && (z.phase === 'watch' || (z.phase === 'warn' && (t * 8 | 0) % 2))) {
     wire(0, 0, W, H, C.signal); if (z.phase === 'watch') { wire(1, 1, W - 2, H - 2, C.signal); R(W - 27, 4, 23, 9, C.signal); text('LIVE', W - 24, 6, C.ink); }
   }
   return { cx, cy };
 }
 const LIN_SKIN = '#c98f66';
+const FACES = ['#e8b98f', '#b98560', '#f0c9a4', '#c98f66', '#c9cfdd', '#e8b98f', '#b98560', '#f0c9a4'];
 
 // For the browser test and the console: where things are, and a way to stand somewhere.
 export const debug = {

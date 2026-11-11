@@ -1,8 +1,9 @@
 # SYNERGY.EXE · Career Mode
 
-The playable game at `/game/`. Synergy states a fact in the break room, nobody reacts, and he
-climbs the office catching LinkedIn phrases. His posts are built only from the phrases the
-player caught. One tower, five floors, two endings.
+The playable game at `/game/`. It is Synergy's first week. He states a fact in the break room
+("The onboarding is a PDF."), nobody reacts, and he climbs the office catching LinkedIn
+phrases. His posts are built only from the phrases the player caught. The running joke: the
+fact never gets fixed, it gets optimized. One tower, five floors, two endings.
 
 The frozen v1 prototype is kept, untouched, in `design_handoff_synergy_exe/`.
 
@@ -12,10 +13,10 @@ The frozen v1 prototype is kept, untouched, in `design_handoff_synergy_exe/`.
 | --- | --- |
 | 01 Break room | Four lines of dialogue. The fact gets 0 reactions. |
 | 02 Open plan | Learn to move, jump and bounce. Rolling chairs. Desk 1: a post that keeps the fact. |
-| 03 Meetings | Kevin takes credit for your last phrase; land on him to take it back. Two rooms with a meeting in progress: move while the host is looking and you get called on. |
+| 03 Meetings | Kevin takes credit for your last phrase; land on him to take it back. Two rooms with a meeting in progress: move while the host is looking and the call rings, Synergy is pulled in front of the screen, and the scene cuts to the meeting from the inside, 47 people watching. A hop straight up is always allowed. |
 | 04 Boardroom | The meeting he cannot walk around. Three shares that land, or the fact three times until someone listens. |
-| 05 Executive | The VP of Reactions. Dodge the action items, wait for "out of office", land on him. Desk 2: cut the fact, or stand by it. |
-| Roof, or back down | Cut the fact: the ship, the launch, coffee still broken. Keep it: take the lift down and fix the machine. |
+| 05 Executive | The VP of Reactions ("Optimize the onboarding."). Dodge the action items, wait for "out of office", land on him. Desk 2: optimize the fact, or stand by it. |
+| Roof, or back down | Optimize it ("Proud to be optimizing the onboarding process."): the ship, the launch, and the onboarding is still a PDF. Keep the fact: take the lift down and onboard the new hire in person. It takes one minute. |
 
 Secrets: one mug per platforming floor (a supply closet, a print room, a top shelf), a printer
 that is still loading, five taps on the title card.
