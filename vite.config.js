@@ -134,6 +134,8 @@ export default defineConfig({
         roast: fileURLToPath(new URL('./roast/index.html', import.meta.url)),
         // The Museum of Professional Communication, served at /museum/
         museum: fileURLToPath(new URL('./museum/index.html', import.meta.url)),
+        // SYNERGY.EXE, the career-mode game (v1 prototype). Unlisted and noindex, served at /game/
+        game: fileURLToPath(new URL('./game/index.html', import.meta.url)),
         // The Company Store — Circle Back merchandise, served at /store/
         store: fileURLToPath(new URL('./store/index.html', import.meta.url)),
         // LinkedIn Beats — the umbrella-brand homepage (future home), served at /v2/
