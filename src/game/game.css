@@ -91,7 +91,9 @@ canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;width
 .post .body p{margin-bottom:calc(var(--u)*2.8)}
 .post .body p.tag{color:#0a55c9}
 .post .body p.fact.live{display:table;background:var(--signal);cursor:pointer;padding:0 4px}
-.post .body p.fact.cut{display:table;color:#9aa1b5;text-decoration:line-through;cursor:pointer}
+.post .body p.fact.cut{cursor:pointer}
+.post .body p.fact.cut s{display:block;color:#9aa1b5}
+.post .body p.fact.cut span{display:table;background:#dfe8ff;color:#0a55c9;padding:0 4px;margin-top:2px}
 .post .note{font:400 calc(var(--u)*6.6)/1.1 var(--read);text-transform:none;color:#0a55c9;min-height:calc(var(--u)*7.4);padding:calc(var(--u)*1.2) 0 calc(var(--u)*2)}
 .sum{display:flex;align-items:center;gap:calc(var(--u)*3);color:#5b6480;padding:calc(var(--u)*2.4) 0;border-top:1px solid #c9cddb}
 .sum .icons{display:flex;gap:2px}

@@ -57,7 +57,7 @@ writeFileSync(new URL('apple-touch-icon.png', out), icon(180, .74));
   for (let i = x; i < 1116; i += 12) c.R(i, 246, 6, 6, C.cobalt);
   c.peg('SYNERGY SAID', x, 292, 6, C.cream); c.peg('SOMETHING TRUE.', x, 352, 6, C.cream); c.peg('NOBODY REACTED.', x, 412, 6, C.signal);
   for (let i = x; i < 1116; i += 12) c.R(i, 492, 6, 6, C.cobalt);
-  c.peg('REALITY: THE COFFEE MACHINE BROKE.', x, 522, 3, '#8794b8');
+  c.peg('REALITY: THE ONBOARDING IS A PDF.', x, 522, 3, '#8794b8');
   writeFileSync(new URL('og.png', out), c.png());
 }
 console.log('SYNERGY.EXE: wrote icon-192, icon-512, icon-maskable-512, apple-touch-icon and og to public/game/');

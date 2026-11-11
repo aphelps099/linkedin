@@ -4,8 +4,8 @@
 // the game's own clock. Needs Playwright; not part of `npm run build`.
 //
 //   npm start                                  (or: npx vite)
-//   node scripts/play-game.mjs                 ending one: cut the fact, take the ship
-//   node scripts/play-game.mjs --ending b      ending two: keep the fact, fix the machine
+//   node scripts/play-game.mjs                 ending one: optimize the fact, take the ship
+//   node scripts/play-game.mjs --ending b      ending two: keep the fact, onboard the new hire
 //   node scripts/play-game.mjs --url http://localhost:5173/game/ --shots /tmp/shots --touch
 
 import { createRequire } from 'node:module';
@@ -38,11 +38,17 @@ function installPilot() {
     if (!B.leg) { if (!B.queue.length) return; B.leg = B.queue.shift(); B.phase = 'align'; }
     const L = B.leg, tx = L.cx * 8 + 4, z = F.zones.find(q => q.inside), fail = why => { B.result = { ok:false, why, at:cell(p) }; B.leg = null; B.queue = []; };
     if (B.phase === 'align') {
-      if (!p.ground || p.stun > 0 || F.freeze) return;
+      if (!p.ground || p.stun > 0 || F.freeze || SYN.state !== 'play') return;
+      // a chair rolling at him: hop straight up, which is allowed even when the host is looking
+      if (F.chairs.some(c => Math.abs(c.y - p.y) < 2 && Math.abs(c.x + 4.5 - p.x) < 15 && (c.x + 4.5 - p.x) * c.dir < 0)) { keys.jump = true; return; }
       if (Math.round(p.y / 8) !== L.cy || Math.abs(p.x - tx) > 14) return fail('off route');
       if (z && z.phase !== 'closed') return;                                   // the host is looking: hold still
       if (Math.abs(p.x - tx) > .45 || Math.abs(p.vx) > .5) { steer(keys, p, tx, .3); return; }
       if (z && z.t < L.input / 120 + .14) return;                              // not enough time before the next look
+      // do not walk into a chair: let it roll out of the way first (but not forever)
+      const end = L.to.cx * 8 + 4, lo = Math.min(p.x, end) - 12, hi = Math.max(p.x, end) + 12;
+      if (L.to.cy === L.cy && F.chairs.some(c => Math.abs(c.y - p.y) < 2 && c.x + 9 > lo && c.x < hi) && (B.waited = (B.waited || 0) + 1) < 480) return;
+      B.waited = 0;
       B.phase = 'run'; B.frame = 0;
     }
     if (B.phase === 'run') {
@@ -79,7 +85,7 @@ const floors = new Map();
 function floorOf(i) { if (!floors.has(i)) { const f = parseFloor(FLOORS[i]); floors.set(i, { f, goals:goalsOf(f), cache:new Map() }); } return floors.get(i); }
 
 async function standing(page) {
-  try { return (await page.waitForFunction(() => { const p = SYN.p, F = SYN.floor; return SYN.state !== 'play' ? { gone:true } : (p && p.ground && p.stun <= 0 && !F.freeze && Math.abs(p.vx) < 1) ? { x:p.x, y:p.y } : null; }, null, { timeout:20000 })).jsonValue(); }
+  try { return (await page.waitForFunction(() => { const p = SYN.p, F = SYN.floor; return SYN.state === 'call' ? null : SYN.state !== 'play' ? { gone:true } : (p && p.ground && p.stun <= 0 && !F.freeze && Math.abs(p.vx) < 1) ? { x:p.x, y:p.y } : null; }, null, { timeout:20000 })).jsonValue(); }
   catch (e) { return null; }
 }
 async function goTo(page, i, id, done, tries = 40) {
@@ -95,7 +101,7 @@ async function goTo(page, i, id, done, tries = 40) {
     if (!route) { note(`no route to ${id} from ${under},${cy}; waiting`); await page.waitForTimeout(400); continue; }
     let at = r.start; const legs = route.map(e => { const leg = { cx:at.cx, cy:at.cy, to:e.to, recipe:e.recipe, input:lengthOf(e.recipe) }; at = e.to; return leg; });
     await page.evaluate(l => BOT.run(l), legs);
-    await page.waitForFunction(() => BOT.result || SYN.state !== 'play', null, { timeout:90000 }).catch(() => {});
+    await page.waitForFunction(() => BOT.result || (SYN.state !== 'play' && SYN.state !== 'call'), null, { timeout:90000 }).catch(() => {});
     const res = await page.evaluate(() => BOT.result);
     if (res && !res.ok) { note(`${id}: ${res.why} at ${res.at.cx},${res.at.cy}; re-planning`); await page.waitForTimeout(150 + Math.random() * 900); }   // and not in step with the same chair
   }
@@ -160,7 +166,7 @@ try {
   await waitState(page, 'post'); await page.waitForTimeout(700); await shot(page, '04-desk-typing');
   await waitLabel(page, 'pGo', 'Post');
   const body1 = await page.evaluate(() => [...document.querySelectorAll('#pBody p')].map(e => e.textContent));
-  check('desk 1 post keeps the fact', body1.includes('The coffee machine broke.'), `${body1.length} lines`);
+  check('desk 1 post keeps the fact', body1.includes('The onboarding is a PDF.'), `${body1.length} lines`);
   await tap('#pGo'); await waitLabel(page, 'pGo', 'Keep climbing'); await shot(page, '05-desk-posted');
   note(`desk 1: ${await label(page, 'pR')} · ${await label(page, 'pNote')}`);
   await tap('#pGo'); await waitState(page, 'play');
@@ -218,29 +224,29 @@ try {
     check('desk 2 offers "Stand by it"', await page.isVisible('#pAlt'));
     await tap('#pAlt'); await waitLabel(page, 'pGo', 'Go back down'); await shot(page, '12-stood-by-it');
     await tap('#pGo');
-    await waitState(page, 'coffee', 20000);
+    await waitState(page, 'onboard', 20000);
     check('ending two: back in the break room', true);
-    await page.waitForFunction(() => /fix/i.test(document.getElementById('sayHint').textContent), null, { timeout:10000 });
+    await page.waitForFunction(() => /onboard/i.test(document.getElementById('sayHint').textContent), null, { timeout:10000 });
     for (let i = 0; i < 5; i++) { if (TOUCH) await page.tap('#screen', { position:{ x:60, y:60 } }); else await page.keyboard.press('Space'); await page.waitForTimeout(220); }
-    await page.waitForFunction(() => document.getElementById('real').textContent === 'the coffee machine works.', null, { timeout:10000 });
-    check('the coffee machine is fixed', true); await page.waitForTimeout(600); await shot(page, '13-fixed');
-    for (let i = 0; i < 12 && await page.evaluate(() => SYN.state) === 'coffee'; i++) { if (TOUCH) await page.tap('#screen', { position:{ x:60, y:60 } }); else await page.keyboard.press('Space'); await page.waitForTimeout(450); }
+    await page.waitForFunction(() => document.getElementById('real').textContent === 'someone got onboarded.', null, { timeout:10000 });
+    check('the new hire is onboarded', true); await page.waitForTimeout(600); await shot(page, '13-fixed');
+    for (let i = 0; i < 12 && await page.evaluate(() => SYN.state) === 'onboard'; i++) { if (TOUCH) await page.tap('#screen', { position:{ x:60, y:60 } }); else await page.keyboard.press('Space'); await page.waitForTimeout(450); }
     await waitState(page, 'end', 15000);
-    check('end card: "Coffee: fixed."', (await label(page, 'cS')) === 'Coffee: fixed.' && /fixed the coffee machine/.test(await label(page, 'cH')), await label(page, 'cP'));
+    check('end card: "Onboarding: one minute. No PDF."', (await label(page, 'cS')) === 'Onboarding: one minute. No PDF.' && /onboarded someone/.test(await label(page, 'cH')), await label(page, 'cP'));
   } else {
     await tap('#pGo'); await page.waitForSelector('#pBody p.fact.live', { timeout:8000 });
     await tap('#pBody p.fact.live');
-    check('the fact is struck out', await page.evaluate(() => !!document.querySelector('#pBody p.fact.cut')));
+    check('the fact is optimized', await page.evaluate(() => { const f = document.querySelector('#pBody p.fact.cut'); return !!f && /optimizing the onboarding process/.test(f.textContent); }));
     await tap('#pGo'); await waitLabel(page, 'pGo', 'Take the lift');
     const big = await label(page, 'pR');
-    check('cutting the fact goes viral', /and [\d,]+ others/.test(big) && (await label(page, 'hf')) === '00', `${big} · facts ${await label(page, 'hf')}`);
+    check('the optimized post goes viral', /and [\d,]+ others/.test(big) && (await label(page, 'hf')) === '00', `${big} · facts ${await label(page, 'hf')}`);
     await shot(page, '12-viral');
     await tap('#pGo');
     await waitState(page, 'roof', 20000);
     check('ending one: the roof', true);
     await page.waitForTimeout(6600); await shot(page, '13-launch');
     await waitState(page, 'end', 20000);
-    check('end card: "Coffee: still broken."', (await label(page, 'cS')) === 'Coffee: still broken.' && (await label(page, 'cGo')) === 'Circle back', await label(page, 'cP'));
+    check('end card: "Onboarding: still a PDF."', (await label(page, 'cS')) === 'Onboarding: still a PDF.' && (await label(page, 'cGo')) === 'Circle back', await label(page, 'cP'));
   }
   await page.waitForTimeout(700); await shot(page, '14-end');
   note((await label(page, 'cK')).replace(/\s+/g, ' '));
