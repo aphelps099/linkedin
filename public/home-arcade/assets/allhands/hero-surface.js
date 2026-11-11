@@ -21,7 +21,7 @@ function draw(now){requestAnimationFrame(draw);if(!board||!visible||document.hid
    typeContext.font=`400 ${size}px Founders, Mono, monospace`;
    typeContext.textBaseline='top';typeContext.fillStyle='#fff';
    const lines=['THE SOUNDTRACK','FOR THOUGHT','LEADERS.'],lineHeight=size*1.16;
-   const bottom=mobile?196:138,left=mobile?20:geo.w*.035;
+   const bottom=mobile?132:138,left=mobile?20:geo.w*.035;
    lines.forEach((line,i)=>{typeContext.globalAlpha=reduced?1:Math.max(0,Math.min(1,(t-.45-i*.12)/.35));typeContext.fillText(line,left,geo.h-bottom-3*lineHeight+i*lineHeight)});
    typeContext.globalAlpha=1;
  }

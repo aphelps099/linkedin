@@ -67,7 +67,7 @@ function title() {
   const run = saved.run, at = run && FLOORS[run.floor];
   const best = saved.best ? `<br>Best: <b>${saved.best.toLocaleString('en-US')}</b> reactions` : '';
   showCard({
-    h:'Synergy said something true. Nobody reacted.', p:'Climb the office. Catch the language. Post your way up.',
+    h:'Climb the office. Catch the language. Post your way up.', p:'',
     go:at ? `Continue • ${at.no}` : 'Start career', alt:at ? 'New career' : '', more:installLabel(),
     keys:(coarse ? 'Buttons below to move and jump.' : 'Arrow keys to move. Space to jump.') + best,
   });

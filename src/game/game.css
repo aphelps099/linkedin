@@ -123,6 +123,7 @@ canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;width
 .card.solid{background:rgba(0,0,0,.86)}
 .card h2{font:400 calc(var(--u)*14.4)/.98 var(--read);text-transform:none;max-width:13em}
 .card p{font:400 calc(var(--u)*8.6)/1.1 var(--read);text-transform:none;color:var(--mute);margin-top:calc(var(--u)*4);max-width:22em}
+.card p:empty{display:none}
 .card p.sig{color:var(--signal)}
 .card .acts{display:flex;flex-wrap:wrap;gap:calc(var(--u)*3);margin-top:calc(var(--u)*6.5)}
 .card .go{font-size:var(--l2);line-height:1;letter-spacing:.06em;color:var(--void);background:var(--cobalt);padding:calc(var(--u)*4.4) calc(var(--u)*6)}
