@@ -164,7 +164,7 @@ function act() {
 const KEYMAP = { ArrowLeft:'left', a:'left', A:'left', ArrowRight:'right', d:'right', D:'right', ArrowUp:'jump', w:'jump', W:'jump', ' ':'jump' };
 addEventListener('keydown', e => {
   if (e.metaKey || e.ctrlKey || e.altKey) return;
-  const onButton = e.target instanceof Element && e.target.closest('button, [role="button"]');
+  const onButton = e.target instanceof Element && e.target.closest('button, a, [role="button"]');
   if (e.key === 'Escape' || e.key === 'p' || e.key === 'P') { if (!e.repeat && (pausable() || G.paused)) pause(!G.paused); return; }
   if (e.key === 'm' || e.key === 'M') { if (!e.repeat) sound(!Score.on); return; }
   if (G.paused) { if ((e.key === ' ' || e.key === 'Enter') && !onButton) { e.preventDefault(); pause(false); } return; }

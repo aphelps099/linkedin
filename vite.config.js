@@ -134,7 +134,7 @@ export default defineConfig({
         roast: fileURLToPath(new URL('./roast/index.html', import.meta.url)),
         // The Museum of Professional Communication, served at /museum/
         museum: fileURLToPath(new URL('./museum/index.html', import.meta.url)),
-        // SYNERGY.EXE, the career-mode game (src/game). Installable, unlisted and noindex, served at /game/
+        // SYNERGY.EXE, the career-mode game (src/game). Installable, served at /game/
         game: fileURLToPath(new URL('./game/index.html', import.meta.url)),
         // The Company Store — Circle Back merchandise, served at /store/
         store: fileURLToPath(new URL('./store/index.html', import.meta.url)),

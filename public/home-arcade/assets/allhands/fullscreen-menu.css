@@ -179,6 +179,7 @@ html:has(#departmentMenu){scrollbar-gutter:stable}
 #departmentMenu.menu-header-anchored .menu-close{box-sizing:border-box;position:absolute;right:var(--anchor-control-right);top:var(--anchor-control-y);height:var(--anchor-control-height);min-height:0;margin:0;padding:0;border:0;gap:10px;align-items:center;font-family:var(--anchor-control-font-family);font-size:var(--anchor-control-font-size);font-weight:var(--anchor-control-font-weight);line-height:var(--anchor-control-line-height);letter-spacing:var(--anchor-control-letter-spacing)}
 
 /* A single readout, aligned with the navigation beneath it. */
+.menu-universe .dept-item[data-menu-view=game]{grid-column:1/-1;min-height:72px;padding-top:12px;padding-bottom:12px}
 .menu-universe .menu-stage{grid-template-columns:minmax(0,1fr);gap:0;padding:0 32px;box-sizing:border-box}
 .menu-universe #menuPegTitle{grid-column:1;grid-row:1;height:clamp(75px,9vw,136px)}
 .menu-universe .menu-layout{gap:24px}

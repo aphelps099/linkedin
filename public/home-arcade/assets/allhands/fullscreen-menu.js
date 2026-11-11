@@ -2,6 +2,7 @@ import {g as peg9,e as normalize,J as layout} from './stage-CDrfDtUj.js';
 const menu=document.querySelector('#departmentMenu'),trigger=document.querySelector('#menuToggle');
 const title=document.querySelector('#menuPegTitle'),stage=document.querySelector('.menu-stage');
 const choices={
+ game:{lines:['CAREER','MODE.'],color:'#ffe14a',copy:'Climb the office. Catch the language. Post your way up.'},
  beats:{lines:['MAKE','BEATS.'],color:'#4776ff',copy:'Turn office noise into a very good beat.'},
  optimize:{lines:['SMALL NEWS.','BIG DEAL.'],color:'#557dff',copy:'Give your perfectly ordinary day an extraordinary announcement.'},
  roast:{lines:['FEEL','THE BURN.'],color:'#fa8758',copy:'A performance review for your personal brand.'},
@@ -95,7 +96,7 @@ window.addEventListener('resize',()=>{if(menu.open)alignMenuHeader();const key=a
 menu.addEventListener('scroll',()=>{bursts=[];brush.clearRect(0,0,innerWidth,innerHeight)},{passive:true});
 
 // A single short glint on entry. No looping flashes or movement of the controls.
-const hoverInks={beats:'#91acff',optimize:'#91acff',roast:'#ffad85',learn:'#f2df82',meetings:'#82e7d4',archives:'#dfbbf4'};
+const hoverInks={game:'#ffe14a',beats:'#91acff',optimize:'#91acff',roast:'#ffad85',learn:'#f2df82',meetings:'#82e7d4',archives:'#dfbbf4'};
 const glintTimers=new Map();let openingTimer=0;
 function sparkle(link){
  if(quiet.matches)return;

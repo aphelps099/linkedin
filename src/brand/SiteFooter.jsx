@@ -92,6 +92,7 @@ export const SiteFooter = memo(function SiteFooter({base='/'}) {
           <a href={`${base}optimizer`}>LinkedInifier</a>
           <a href={`${base}roast/`}>Roast my post</a>
           <a href={`${base}learn/`}>Get certified</a>
+          <a href={`${base}game/`}>Play the game</a>
           <a href={`${base}studio/#meetings`}>Meetings</a>
           <a href={`${base}archives/`}>Archives</a>
         </nav>
