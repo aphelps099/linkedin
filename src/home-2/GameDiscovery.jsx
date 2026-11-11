@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState} from 'react';
 
 export function GameDiscovery() {
   const dialog=useRef(null), opener=useRef(null), section=useRef(null), preview=useRef(null);
-  const [visible,setVisible]=useState(false), [loaded,setLoaded]=useState(false), [ready,setReady]=useState(false);
+  const [visible,setVisible]=useState(false), [loaded,setLoaded]=useState(false);
   const [paused,setPaused]=useState(()=>matchMedia('(prefers-reduced-motion:reduce)').matches);
   const [playing,setPlaying]=useState(false);
   useEffect(()=>{
@@ -10,9 +10,14 @@ export function GameDiscovery() {
     observer.observe(section.current);return ()=>observer.disconnect();
   },[]);
   useEffect(()=>{
-    const send=()=>preview.current?.contentWindow?.postMessage({type:'synergy-preview-playback',playing:visible&&!paused&&!playing},location.origin);
-    const onReady=event=>{if(event.origin===location.origin&&event.source===preview.current?.contentWindow&&event.data?.type==='synergy-preview-ready'){setReady(true);send();}};
-    send();addEventListener('message',onReady);return ()=>removeEventListener('message',onReady);
+    const video=preview.current;
+    const sync=()=>{
+      if(loaded&&visible&&!paused&&!playing&&!document.hidden){
+        video.play().catch(error=>{if(error.name!=='AbortError')setPaused(true);});
+      }else video.pause();
+    };
+    sync();document.addEventListener('visibilitychange',sync);
+    return ()=>{document.removeEventListener('visibilitychange',sync);video.pause();};
   },[visible,paused,playing,loaded]);
   useEffect(()=>{if(location.hash==='#career-game')section.current.scrollIntoView();},[]);
   useEffect(()=>{
@@ -38,10 +43,10 @@ export function GameDiscovery() {
       </div>
       <div className="career-game-cabinet">
         <div className="career-game-screen">
-          {loaded&&<iframe ref={preview} style={{opacity:ready?1:0}} src="/game/?demo=1" title="Silent gameplay demonstration" tabIndex={-1} aria-hidden="true"/>}
+          <video ref={preview} src={loaded?'/home-arcade/assets/synergy-exe/loop.mp4':undefined} poster="/home-arcade/assets/synergy-exe/loop.jpg" muted loop playsInline preload="none" aria-hidden="true"/>
           <button type="button" className="career-game-takeover" onClick={open} aria-label="Take over: play SYNERGY.EXE"><span>Take over</span></button>
         </div>
-        <div className="career-game-preview-controls"><span>Live gameplay</span><button type="button" onClick={()=>setPaused(value=>!value)} aria-pressed={paused}>{paused?'Resume preview':'Pause preview'}</button></div>
+        <div className="career-game-preview-controls"><span>Gameplay preview</span><button type="button" onClick={()=>setPaused(value=>!value)} aria-pressed={paused}>{paused?'Resume preview':'Pause preview'}</button></div>
       </div>
     </section>
     <dialog ref={dialog} className="career-game-dialog" aria-label="Play SYNERGY.EXE" onClose={closed} onClick={e=>{if(e.target===e.currentTarget)dialog.current.close();}}>
