@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Circle Back\u00ae \u2014 The Professional Phrase Organ. A satirical LinkedIn audio mixer.",
+  "description": "Circle Back® — The Professional Phrase Organ. A satirical LinkedIn audio mixer.",
   "scripts": {
     "dev": "vite",
     "build": "node scripts/package-afterbeat-identity.mjs && node scripts/sync-home-gallery.mjs && vite build",
@@ -25,6 +25,8 @@
     "check:meeting": "node scripts/check-meeting-season.mjs",
     "check:meeting-voices": "node scripts/check-meeting-voices.mjs",
     "check:allhands": "node scripts/check-allhands.mjs",
+    "check:game": "node scripts/check-game.mjs",
+    "play:game": "node scripts/play-game.mjs",
     "check:pixel": "node scripts/check-pixel-export.mjs",
     "check:pixel-type": "node scripts/check-pixel-type.mjs",
     "check:eq": "node scripts/check-eq.mjs",
@@ -44,6 +46,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1153.0",
     "@aws-sdk/s3-request-presigner": "^3.1153.0",
+    "@fontsource/vt323": "^5.3.0",
     "@huggingface/transformers": "3.8.1",
     "express": "^4.21.2",
     "fast-xml-parser": "^5.11.2",
