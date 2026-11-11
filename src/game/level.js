@@ -42,8 +42,8 @@ export const INTRO = [
 // The meeting Synergy has to sit through. Three shares that land, or three facts nobody wants.
 export const MEETING = {
   prompts:[
-    'Does anyone have something to share for the good of the group?',
-    'Any wins this week? Big or small.',
+    'Let’s go around the room. Any wins this week?',
+    'Any blockers? Keep it positive.',
     'Before we wrap. Final thoughts?',
   ],
   again:['Anyone else?', 'Let’s hear another voice.', 'Someone we haven’t heard from?'],
@@ -62,6 +62,17 @@ function tall(n, def) {
   return { ...def, map:[def.map[0], ...Array(n).fill(blank), ...def.map.slice(1)],
     zones:(def.zones || []).map(dy), signs:(def.signs || []).map(dy), decor:(def.decor || []).map(dy), mark:def.mark && dy(def.mark) };
 }
+
+// Getting rung into a meeting room's call. Everyone is late, five minutes pass in a blink, and then
+// the question. A share that lands ends that meeting for good; the fact, or silence, keeps it running.
+export const CALL = {
+  wait:'Just a few more minutes while everyone else gets here.',
+  ask:'Anyone have something to share for the good of the group?',
+  again:'Anyone? For the good of the group?',
+  good:['Love that. Giving you your time back.', 'So powerful. You can drop off.'],
+  offline:'Let’s take that offline. Stay on, please.',
+  mute:'Synergy, you’re on mute. Stay on, please.',
+};
 
 export const FLOORS = [
   tall(7, {

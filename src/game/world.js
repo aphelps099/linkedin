@@ -26,7 +26,7 @@ export function enterFloor(i) {
   F.kevins = F.kevins.map(k => ({ ...k, dir:1, state:'walk', t:0, holds:null, cool:2.5, said:0, ...patrolRange(F, k.x, k.y, 9) }));
   F.inboxes.forEach(b => { b.t = 1.4; });
   F.shots = [];
-  F.zones = (def.zones || []).map(z => ({ x0:z.x * T, y0:z.y * T, x1:(z.x + z.w) * T, y1:(z.y + z.h) * T, name:z.name, phase:'idle', t:0, inside:false, entry:null }));
+  F.zones = (def.zones || []).map(z => ({ x0:z.x * T, y0:z.y * T, x1:(z.x + z.w) * T, y1:(z.y + z.h) * T, name:z.name, phase:'idle', t:0, inside:false, entry:null, calls:0, done:false }));
   F.screens = (def.decor || []).filter(d => d.k === 'screen').map(d => ({ x:d.x * T, y:d.y * T, zone:F.zones[d.zone] }));
   F.revealed = false; F.printed = 0; F.atPrinter = false; F.squish = 0; F.nag = 0; F.atDesk = 0; F.deskTold = false;
   F.bossDone = !def.boss || !!run.posted[def.id];
@@ -117,19 +117,21 @@ export function stepWorld() {
   let inZone = false;
   for (const z of F.zones) {
     const inside = p.x > z.x0 && p.x < z.x1 && p.y > z.y0 && p.y <= z.y1 + 1;
-    if (inside && !z.inside) { z.entry = { ...F.safe }; z.phase = 'closed'; z.t = .5; }   // the first look comes fast: nobody sprints through a meeting
+    if (z.done) { z.inside = inside; continue; }                                    // adjourned: just a room now
+    if (inside && !z.inside) { z.entry = { ...F.safe }; z.phase = 'closed'; z.t = .8;   // the first look comes soon: nobody sprints through a meeting
+      if (!F.zoneTold) { F.zoneTold = true; hint('HOLD STILL WHEN THE HOST LOOKS', 3); } }
     if (!inside && z.inside) { z.phase = 'idle'; Score.watch(false); }
     z.inside = inside;
     if (!inside) continue;
     inZone = true; z.t -= dt;
     if (z.t <= 0) {
-      if (z.phase === 'closed') { z.phase = 'warn'; z.t = .8; Score.accent('warn'); }
-      else if (z.phase === 'warn') { z.phase = 'watch'; z.t = 1.4; Score.watch(true); }
-      else { z.phase = 'closed'; z.t = 1.5; Score.watch(false); }
+      if (z.phase === 'closed') { z.phase = 'warn'; z.t = .9; Score.accent('warn'); }
+      else if (z.phase === 'warn') { z.phase = 'watch'; z.t = 1.3; Score.watch(true); }
+      else { z.phase = 'closed'; z.t = 1.9; Score.watch(false); }
     }
     // Looked at, on the floor, and moving: called on. A jump already in the air is allowed to land,
     // and being knocked about by a chair does not count as volunteering.
-    if (z.phase === 'watch' && z.t < 1.18 && p.ground && Math.abs(p.vx) > 14 && p.stun <= 0 && p.safe <= 0) calledOn(z);
+    if (z.phase === 'watch' && z.t < 1.08 && p.ground && Math.abs(p.vx) > 14 && p.stun <= 0 && p.safe <= 0) calledOn(z);
   }
   if (p.ground && !inZone && p.stun <= 0) { F.safe.x = p.x; F.safe.y = p.y; }
 
@@ -148,17 +150,20 @@ export function stepWorld() {
 }
 
 // Called on. The call rings, Synergy is pulled in front of the screen, and the scene cuts to the
-// meeting from the inside (scenes.js). Afterwards he is back at the door he came in by, taking notes.
+// meeting from the inside (scenes.js), where he is asked to share. A share that lands adjourns this
+// room's meeting for good and he walks on from where he stands. The fact, or silence, sends him back
+// to the door he came in by, taking notes. Either way a meeting can always be ended with a good answer.
 function calledOn(z) {
   const p = F.p, scr = F.screens.find(s => s.zone === z);
   G.run.bumps++; buzz([40, 70, 40]); Score.accent('ring'); Score.watch(false); G.toast = null;
   if (scr) { sparks(p.x, p.y - 10, 8); p.x = scr.x + 28; p.y = z.y1; p.face = 1; sparks(p.x, p.y - 10, 8); }
   p.vx = p.vy = 0; p.ground = true;
   F.freeze = { t:1.05, kind:'ring', done() {
-    G.go('call', { back() {
-      p.x = z.entry.x; p.y = z.entry.y; p.vx = p.vy = 0; p.ground = true; p.stun = 0; p.safe = 1;
-      z.phase = 'idle'; z.inside = false; camera(0, true); G.keys.left = G.keys.right = false;
-      G.fade = .8; G.go('play', { say:'VOLUNTEERED: TAKING NOTES' });
+    G.go('call', { first:z.calls++ === 0, back(escaped) {
+      p.vx = p.vy = 0; p.ground = true; p.stun = 0; p.safe = 1; z.phase = 'idle'; z.inside = false; G.keys.left = G.keys.right = false; G.fade = .8;
+      if (escaped) { z.done = true; z.phase = 'off'; Score.accent('ding'); G.go('play', { say:'MEETING ADJOURNED. WALK ON.' }); }
+      else { p.x = z.entry.x; p.y = z.entry.y; G.go('play', { say:'VOLUNTEERED: TAKING NOTES' }); }
+      camera(0, true);
     } });
   } };
 }
@@ -323,6 +328,7 @@ export function drawWorld() {
     if (!seen(s.x, s.y, 70)) continue;
     const x = X(s.x), y = Y(s.y), z = s.zone, ph = z.phase, look = ph === 'watch', ring = !!F.freeze && (t * 10 | 0) % 2, hot = look || ring || (ph === 'warn' && (t * 8 | 0) % 2);
     R(x, y, 56, 34, C.ink);
+    if (z.done) { pen.camera(x + 3, y + 2, '#39446e'); R(x + 2, y + 10, 52, 22, '#10182f'); text('MEETING', x + 28, y + 14, '#55608a', { align:'center' }); text('ENDED', x + 28, y + 22, '#55608a', { align:'center' }); continue; }
     pen.camera(x + 3, y + 2, hot ? C.signal : '#7fa8ff'); R(x + 15, y + 4, 2, 2, look ? C.signal : C.led); text('47', x + 53, y + 3, '#8794b8', { align:'right' });
     R(x + 2, y + 10, 18, 22, hot ? C.signal : '#2c3558'); R(x + 3, y + 11, 16, 20, '#39446e');
     R(x + 7, y + 15, 8, 9, LIN_SKIN); R(x + 6, y + 13, 10, 3, '#2a2f45'); R(x + 5, y + 25, 12, 6, '#5d6788');
